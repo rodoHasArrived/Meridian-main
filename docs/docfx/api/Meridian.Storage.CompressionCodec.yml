@@ -1,0 +1,205 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.CompressionCodec
+  commentId: T:Meridian.Storage.CompressionCodec
+  id: CompressionCodec
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.CompressionCodec.Brotli
+  - Meridian.Storage.CompressionCodec.Gzip
+  - Meridian.Storage.CompressionCodec.LZ4
+  - Meridian.Storage.CompressionCodec.None
+  - Meridian.Storage.CompressionCodec.Zstd
+  langs:
+  - csharp
+  - vb
+  name: CompressionCodec
+  nameWithType: CompressionCodec
+  fullName: Meridian.Storage.CompressionCodec
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionCodec
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Compression codec options.
+  example: []
+  syntax:
+    content: 'public enum CompressionCodec : byte'
+    content.vb: Public Enum CompressionCodec As Byte
+- uid: Meridian.Storage.CompressionCodec.None
+  commentId: F:Meridian.Storage.CompressionCodec.None
+  id: None
+  parent: Meridian.Storage.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: CompressionCodec.None
+  fullName: Meridian.Storage.CompressionCodec.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: No compression.
+  example: []
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Storage.CompressionCodec
+- uid: Meridian.Storage.CompressionCodec.LZ4
+  commentId: F:Meridian.Storage.CompressionCodec.LZ4
+  id: LZ4
+  parent: Meridian.Storage.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: LZ4
+  nameWithType: CompressionCodec.LZ4
+  fullName: Meridian.Storage.CompressionCodec.LZ4
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LZ4
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: LZ4 - fast compression, lower ratio.
+  example: []
+  syntax:
+    content: LZ4 = 1
+    return:
+      type: Meridian.Storage.CompressionCodec
+- uid: Meridian.Storage.CompressionCodec.Gzip
+  commentId: F:Meridian.Storage.CompressionCodec.Gzip
+  id: Gzip
+  parent: Meridian.Storage.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: Gzip
+  nameWithType: CompressionCodec.Gzip
+  fullName: Meridian.Storage.CompressionCodec.Gzip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gzip
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Gzip - balanced compression.
+  example: []
+  syntax:
+    content: Gzip = 2
+    return:
+      type: Meridian.Storage.CompressionCodec
+- uid: Meridian.Storage.CompressionCodec.Zstd
+  commentId: F:Meridian.Storage.CompressionCodec.Zstd
+  id: Zstd
+  parent: Meridian.Storage.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: Zstd
+  nameWithType: CompressionCodec.Zstd
+  fullName: Meridian.Storage.CompressionCodec.Zstd
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zstd
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Zstd - high compression ratio.
+  example: []
+  syntax:
+    content: Zstd = 3
+    return:
+      type: Meridian.Storage.CompressionCodec
+- uid: Meridian.Storage.CompressionCodec.Brotli
+  commentId: F:Meridian.Storage.CompressionCodec.Brotli
+  id: Brotli
+  parent: Meridian.Storage.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: Brotli
+  nameWithType: CompressionCodec.Brotli
+  fullName: Meridian.Storage.CompressionCodec.Brotli
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Brotli
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Brotli - high compression, slower.
+  example: []
+  syntax:
+    content: Brotli = 4
+    return:
+      type: Meridian.Storage.CompressionCodec
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.CompressionCodec
+  commentId: T:Meridian.Storage.CompressionCodec
+  parent: Meridian.Storage
+  href: Meridian.Storage.CompressionCodec.html
+  name: CompressionCodec
+  nameWithType: CompressionCodec
+  fullName: Meridian.Storage.CompressionCodec

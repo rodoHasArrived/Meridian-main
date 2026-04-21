@@ -1,0 +1,607 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  id: FailoverTriggeredEvent
+  parent: Meridian.Infrastructure.Adapters.Failover
+  children:
+  - Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset)
+  - Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FromProviderId
+  - Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Reason
+  - Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.RuleId
+  - Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Timestamp
+  - Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.ToProviderId
+  langs:
+  - csharp
+  - vb
+  name: FailoverTriggeredEvent
+  nameWithType: FailoverTriggeredEvent
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverTriggeredEvent
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 477
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Raised when an automatic or manual failover is triggered.
+  example: []
+  syntax:
+    content: 'public readonly record struct FailoverTriggeredEvent : IEquatable<FailoverTriggeredEvent>'
+    content.vb: Public Structure FailoverTriggeredEvent Implements IEquatable(Of FailoverTriggeredEvent)
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset)'
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  langs:
+  - csharp
+  - vb
+  name: FailoverTriggeredEvent(string, string, string, string, DateTimeOffset)
+  nameWithType: FailoverTriggeredEvent.FailoverTriggeredEvent(string, string, string, string, DateTimeOffset)
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FailoverTriggeredEvent(string, string, string, string, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 477
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Raised when an automatic or manual failover is triggered.
+  example: []
+  syntax:
+    content: public FailoverTriggeredEvent(string RuleId, string FromProviderId, string ToProviderId, string Reason, DateTimeOffset Timestamp)
+    parameters:
+    - id: RuleId
+      type: System.String
+    - id: FromProviderId
+      type: System.String
+    - id: ToProviderId
+      type: System.String
+    - id: Reason
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(RuleId As String, FromProviderId As String, ToProviderId As String, Reason As String, Timestamp As DateTimeOffset)
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.#ctor*
+  nameWithType.vb: FailoverTriggeredEvent.New(String, String, String, String, DateTimeOffset)
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.New(String, String, String, String, System.DateTimeOffset)
+  name.vb: New(String, String, String, String, DateTimeOffset)
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.RuleId
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.RuleId
+  id: RuleId
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  langs:
+  - csharp
+  - vb
+  name: RuleId
+  nameWithType: FailoverTriggeredEvent.RuleId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.RuleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RuleId
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 478
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string RuleId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RuleId As String
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.RuleId*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FromProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FromProviderId
+  id: FromProviderId
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  langs:
+  - csharp
+  - vb
+  name: FromProviderId
+  nameWithType: FailoverTriggeredEvent.FromProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FromProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 479
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string FromProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FromProviderId As String
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FromProviderId*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.ToProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.ToProviderId
+  id: ToProviderId
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  langs:
+  - csharp
+  - vb
+  name: ToProviderId
+  nameWithType: FailoverTriggeredEvent.ToProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.ToProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 480
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string ToProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ToProviderId As String
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.ToProviderId*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Reason
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Reason
+  id: Reason
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: FailoverTriggeredEvent.Reason
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 481
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Reason*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Timestamp
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Timestamp
+  id: Timestamp
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: FailoverTriggeredEvent.Timestamp
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 482
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Timestamp*
+references:
+- uid: Meridian.Infrastructure.Adapters.Failover
+  commentId: N:Meridian.Infrastructure.Adapters.Failover
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Failover
+  nameWithType: Meridian.Infrastructure.Adapters.Failover
+  fullName: Meridian.Infrastructure.Adapters.Failover
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FailoverTriggeredEvent>
+  nameWithType: IEquatable<FailoverTriggeredEvent>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent>
+  nameWithType.vb: IEquatable(Of FailoverTriggeredEvent)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent)
+  name.vb: IEquatable(Of FailoverTriggeredEvent)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+    name: FailoverTriggeredEvent
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+    name: FailoverTriggeredEvent
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.#ctor
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html#Meridian_Infrastructure_Adapters_Failover_FailoverTriggeredEvent__ctor_System_String_System_String_System_String_System_String_System_DateTimeOffset_
+  name: FailoverTriggeredEvent
+  nameWithType: FailoverTriggeredEvent.FailoverTriggeredEvent
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FailoverTriggeredEvent
+  nameWithType.vb: FailoverTriggeredEvent.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.RuleId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.RuleId
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html#Meridian_Infrastructure_Adapters_Failover_FailoverTriggeredEvent_RuleId
+  name: RuleId
+  nameWithType: FailoverTriggeredEvent.RuleId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.RuleId
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FromProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FromProviderId
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html#Meridian_Infrastructure_Adapters_Failover_FailoverTriggeredEvent_FromProviderId
+  name: FromProviderId
+  nameWithType: FailoverTriggeredEvent.FromProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.FromProviderId
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.ToProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.ToProviderId
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html#Meridian_Infrastructure_Adapters_Failover_FailoverTriggeredEvent_ToProviderId
+  name: ToProviderId
+  nameWithType: FailoverTriggeredEvent.ToProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.ToProviderId
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Reason*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Reason
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html#Meridian_Infrastructure_Adapters_Failover_FailoverTriggeredEvent_Reason
+  name: Reason
+  nameWithType: FailoverTriggeredEvent.Reason
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Reason
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Timestamp*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Timestamp
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html#Meridian_Infrastructure_Adapters_Failover_FailoverTriggeredEvent_Timestamp
+  name: Timestamp
+  nameWithType: FailoverTriggeredEvent.Timestamp
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.Timestamp

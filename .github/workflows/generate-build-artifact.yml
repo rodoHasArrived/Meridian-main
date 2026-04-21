@@ -1,0 +1,227 @@
+# Generate Build Artifact Workflow
+# Builds the Meridian .NET solution and stores the compiled output as a
+# GitHub Actions artifact. The artifact can be downloaded by other workflows
+# (e.g. test-matrix, nightly) to run tests without re-building from source.
+#
+# Usage as a reusable workflow:
+#   jobs:
+#     build-artifact:
+#       uses: ./.github/workflows/generate-build-artifact.yml
+#       with:
+#         configuration: Release
+#         artifact-retention-days: 7
+#
+#     run-tests:
+#       needs: [build-artifact]
+#       runs-on: ubuntu-latest
+#       steps:
+#         - uses: actions/download-artifact@v4
+#           with:
+#             name: ${{ needs.build-artifact.outputs.artifact-name }}
+#         # then: dotnet test --no-build ...
+#
+# Usage for cross-workflow artifact download (after this workflow ran separately):
+#   - uses: actions/download-artifact@v4
+#     with:
+#       name: meridian-build-release-<short-sha>
+#       github-token: ${{ secrets.GITHUB_TOKEN }}
+#       run-id: <run-id from generate-build-artifact workflow>
+
+name: Generate Build Artifact
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '**/*.csproj'
+      - '**/*.fsproj'
+      - 'Directory.Build.props'
+      - 'Directory.Packages.props'
+      - 'global.json'
+      - '.github/workflows/generate-build-artifact.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '**/*.csproj'
+      - '**/*.fsproj'
+  workflow_call:
+    inputs:
+      configuration:
+        description: 'Build configuration (Release or Debug)'
+        required: false
+        type: string
+        default: 'Release'
+      artifact-retention-days:
+        description: 'Number of days to retain the build artifact'
+        required: false
+        type: number
+        default: 7
+      dotnet-version:
+        description: '.NET SDK version'
+        required: false
+        type: string
+        default: '9.0.x'
+    outputs:
+      artifact-name:
+        description: 'Name of the uploaded build artifact (pass to actions/download-artifact)'
+        value: ${{ jobs.build.outputs.artifact-name }}
+      run-id:
+        description: 'Workflow run ID — required when downloading the artifact from a different workflow run'
+        value: ${{ jobs.build.outputs.run-id }}
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: 'Build configuration'
+        required: false
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - Debug
+      artifact-retention-days:
+        description: 'Number of days to retain the build artifact'
+        required: false
+        default: '7'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: 1
+
+jobs:
+  build:
+    name: Build & Upload Artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    outputs:
+      artifact-name: ${{ steps.artifact-meta.outputs.artifact-name }}
+      run-id: ${{ github.run_id }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ inputs.dotnet-version || '9.0.x' }}
+          cache-suffix: 'build-artifact'
+
+      - name: Restore dependencies
+        shell: bash
+        run: |
+          dotnet restore Meridian.sln \
+            -p:EnableWindowsTargeting=true \
+            --verbosity minimal
+
+      - name: Build solution
+        id: build
+        shell: bash
+        run: |
+          dotnet build Meridian.sln \
+            -c "${{ inputs.configuration || 'Release' }}" \
+            --no-restore \
+            -p:EnableWindowsTargeting=true \
+            --verbosity minimal
+
+      - name: Compute artifact metadata
+        id: artifact-meta
+        shell: bash
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          CONFIG="${{ inputs.configuration || 'Release' }}"
+          # Lower-case the config name for the artifact slug
+          CONFIG_SLUG="${CONFIG,,}"
+          ARTIFACT_NAME="meridian-build-${CONFIG_SLUG}-${SHORT_SHA}"
+          echo "artifact-name=${ARTIFACT_NAME}" >> "$GITHUB_OUTPUT"
+          echo "config=${CONFIG}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifact
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.artifact-meta.outputs.artifact-name }}
+          # Include both src and tests bin directories so consumers can run
+          # 'dotnet test --no-build' directly against the downloaded artifact.
+          path: |
+            src/**/bin/${{ steps.artifact-meta.outputs.config }}/
+            tests/**/bin/${{ steps.artifact-meta.outputs.config }}/
+            !src/**/bin/${{ steps.artifact-meta.outputs.config }}/**/ref/
+            !tests/**/bin/${{ steps.artifact-meta.outputs.config }}/**/ref/
+          if-no-files-found: error
+          retention-days: ${{ fromJSON(inputs.artifact-retention-days || '7') }}
+
+      - name: Write step summary
+        if: always()
+        shell: bash
+        run: |
+          SHORT_SHA="${GITHUB_SHA::7}"
+          BUILD_OUTCOME="${{ steps.build.outcome }}"
+          UPLOAD_OUTCOME="${{ steps.upload.outcome }}"
+          ARTIFACT_NAME="${{ steps.artifact-meta.outputs.artifact-name }}"
+          CONFIG="${{ steps.artifact-meta.outputs.config }}"
+
+          outcome_label() {
+            case "$1" in
+              success)   echo "✅ Passed" ;;
+              skipped)   echo "⏭️ Skipped" ;;
+              cancelled) echo "🚫 Cancelled" ;;
+              *)         echo "❌ Failed" ;;
+            esac
+          }
+
+          {
+            echo "## Generate Build Artifact Summary"
+            echo ""
+            echo "| Item | Value |"
+            echo "|------|-------|"
+            echo "| Artifact Name | \`${ARTIFACT_NAME}\` |"
+            echo "| Configuration | \`${CONFIG}\` |"
+            echo "| Commit | \`${SHORT_SHA}\` |"
+            echo "| Run ID | \`${{ github.run_id }}\` |"
+            echo ""
+            echo "| Step | Status |"
+            echo "|------|--------|"
+            echo "| Build | $(outcome_label "${BUILD_OUTCOME}") |"
+            echo "| Upload | $(outcome_label "${UPLOAD_OUTCOME}") |"
+            echo ""
+            echo "### How to consume this artifact in another workflow"
+            echo ""
+            echo "**Same workflow run (reusable workflow call):**"
+            echo "\`\`\`yaml"
+            echo "jobs:"
+            echo "  build-artifact:"
+            echo "    uses: ./.github/workflows/generate-build-artifact.yml"
+            echo ""
+            echo "  run-tests:"
+            echo "    needs: [build-artifact]"
+            echo "    runs-on: ubuntu-latest"
+            echo "    steps:"
+            echo "      - uses: actions/download-artifact@v4"
+            echo "        with:"
+            echo '          name: ${{ needs.build-artifact.outputs.artifact-name }}'
+            echo "\`\`\`"
+            echo ""
+            echo "**Cross-run download (reference a specific run):**"
+            echo "\`\`\`yaml"
+            echo "- uses: actions/download-artifact@v4"
+            echo "  with:"
+            echo "    name: ${ARTIFACT_NAME}"
+            echo '    github-token: ${{ secrets.GITHUB_TOKEN }}'
+            echo "    run-id: ${{ github.run_id }}"
+            echo "\`\`\`"
+          } >> "$GITHUB_STEP_SUMMARY"

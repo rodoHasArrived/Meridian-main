@@ -1,0 +1,938 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance.MaintenanceResult
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceResult
+  id: MaintenanceResult
+  parent: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.MaintenanceResult.BytesSaved
+  - Meridian.Storage.Maintenance.MaintenanceResult.FilesFailed
+  - Meridian.Storage.Maintenance.MaintenanceResult.FilesProcessed
+  - Meridian.Storage.Maintenance.MaintenanceResult.FilesSkipped
+  - Meridian.Storage.Maintenance.MaintenanceResult.Issues
+  - Meridian.Storage.Maintenance.MaintenanceResult.IssuesFound
+  - Meridian.Storage.Maintenance.MaintenanceResult.IssuesResolved
+  - Meridian.Storage.Maintenance.MaintenanceResult.Metrics
+  - Meridian.Storage.Maintenance.MaintenanceResult.Success
+  - Meridian.Storage.Maintenance.MaintenanceResult.Summary
+  - Meridian.Storage.Maintenance.MaintenanceResult.TotalBytesScanned
+  - Meridian.Storage.Maintenance.MaintenanceResult.TotalFiles
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceResult
+  nameWithType: MaintenanceResult
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceResult
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Summary result of a maintenance operation.
+  example: []
+  syntax:
+    content: public sealed class MaintenanceResult
+    content.vb: Public NotInheritable Class MaintenanceResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.Success
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.Success
+  id: Success
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: MaintenanceResult.Success
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.Success
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 397
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool Success { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Success As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.Success*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.Summary
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.Summary
+  id: Summary
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: MaintenanceResult.Summary
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 398
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public string Summary { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Summary As String
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.Summary*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.TotalFiles
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.TotalFiles
+  id: TotalFiles
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: MaintenanceResult.TotalFiles
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFiles
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 399
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int TotalFiles { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalFiles As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.TotalFiles*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.FilesProcessed
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.FilesProcessed
+  id: FilesProcessed
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: FilesProcessed
+  nameWithType: MaintenanceResult.FilesProcessed
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.FilesProcessed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesProcessed
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 400
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int FilesProcessed { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FilesProcessed As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.FilesProcessed*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.FilesSkipped
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.FilesSkipped
+  id: FilesSkipped
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: FilesSkipped
+  nameWithType: MaintenanceResult.FilesSkipped
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.FilesSkipped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesSkipped
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int FilesSkipped { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FilesSkipped As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.FilesSkipped*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.FilesFailed
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.FilesFailed
+  id: FilesFailed
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: FilesFailed
+  nameWithType: MaintenanceResult.FilesFailed
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.FilesFailed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesFailed
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int FilesFailed { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FilesFailed As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.FilesFailed*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.TotalBytesScanned
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.TotalBytesScanned
+  id: TotalBytesScanned
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: TotalBytesScanned
+  nameWithType: MaintenanceResult.TotalBytesScanned
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.TotalBytesScanned
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytesScanned
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 403
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public long TotalBytesScanned { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalBytesScanned As Long
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.TotalBytesScanned*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.BytesSaved
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.BytesSaved
+  id: BytesSaved
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: BytesSaved
+  nameWithType: MaintenanceResult.BytesSaved
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.BytesSaved
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BytesSaved
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public long BytesSaved { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BytesSaved As Long
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.BytesSaved*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.IssuesFound
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.IssuesFound
+  id: IssuesFound
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: IssuesFound
+  nameWithType: MaintenanceResult.IssuesFound
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.IssuesFound
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IssuesFound
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 405
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int IssuesFound { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property IssuesFound As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.IssuesFound*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.IssuesResolved
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.IssuesResolved
+  id: IssuesResolved
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: IssuesResolved
+  nameWithType: MaintenanceResult.IssuesResolved
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.IssuesResolved
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IssuesResolved
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 406
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int IssuesResolved { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property IssuesResolved As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.IssuesResolved*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.Issues
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.Issues
+  id: Issues
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: MaintenanceResult.Issues
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 407
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public List<MaintenanceIssue> Issues { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceIssue}
+    content.vb: Public Property Issues As List(Of MaintenanceIssue)
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.Issues*
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.Metrics
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceResult.Metrics
+  id: Metrics
+  parent: Meridian.Storage.Maintenance.MaintenanceResult
+  langs:
+  - csharp
+  - vb
+  name: Metrics
+  nameWithType: MaintenanceResult.Metrics
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.Metrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metrics
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 408
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public Dictionary<string, object> Metrics { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+    content.vb: Public Property Metrics As Dictionary(Of String, Object)
+  overload: Meridian.Storage.Maintenance.MaintenanceResult.Metrics*
+references:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.Success*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.Success
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_Success
+  name: Success
+  nameWithType: MaintenanceResult.Success
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.Success
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.Summary*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.Summary
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_Summary
+  name: Summary
+  nameWithType: MaintenanceResult.Summary
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.Summary
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.TotalFiles*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.TotalFiles
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_TotalFiles
+  name: TotalFiles
+  nameWithType: MaintenanceResult.TotalFiles
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.TotalFiles
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.FilesProcessed*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.FilesProcessed
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_FilesProcessed
+  name: FilesProcessed
+  nameWithType: MaintenanceResult.FilesProcessed
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.FilesProcessed
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.FilesSkipped*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.FilesSkipped
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_FilesSkipped
+  name: FilesSkipped
+  nameWithType: MaintenanceResult.FilesSkipped
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.FilesSkipped
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.FilesFailed*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.FilesFailed
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_FilesFailed
+  name: FilesFailed
+  nameWithType: MaintenanceResult.FilesFailed
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.FilesFailed
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.TotalBytesScanned*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.TotalBytesScanned
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_TotalBytesScanned
+  name: TotalBytesScanned
+  nameWithType: MaintenanceResult.TotalBytesScanned
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.TotalBytesScanned
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.BytesSaved*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.BytesSaved
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_BytesSaved
+  name: BytesSaved
+  nameWithType: MaintenanceResult.BytesSaved
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.BytesSaved
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.IssuesFound*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.IssuesFound
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_IssuesFound
+  name: IssuesFound
+  nameWithType: MaintenanceResult.IssuesFound
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.IssuesFound
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.IssuesResolved*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.IssuesResolved
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_IssuesResolved
+  name: IssuesResolved
+  nameWithType: MaintenanceResult.IssuesResolved
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.IssuesResolved
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.Issues*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.Issues
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_Issues
+  name: Issues
+  nameWithType: MaintenanceResult.Issues
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.Issues
+- uid: System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceIssue}
+  commentId: T:System.Collections.Generic.List{Meridian.Storage.Maintenance.MaintenanceIssue}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<MaintenanceIssue>
+  nameWithType: List<MaintenanceIssue>
+  fullName: System.Collections.Generic.List<Meridian.Storage.Maintenance.MaintenanceIssue>
+  nameWithType.vb: List(Of MaintenanceIssue)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Storage.Maintenance.MaintenanceIssue)
+  name.vb: List(Of MaintenanceIssue)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Storage.Maintenance.MaintenanceIssue
+    name: MaintenanceIssue
+    href: Meridian.Storage.Maintenance.MaintenanceIssue.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Maintenance.MaintenanceIssue
+    name: MaintenanceIssue
+    href: Meridian.Storage.Maintenance.MaintenanceIssue.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Maintenance.MaintenanceResult.Metrics*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceResult.Metrics
+  href: Meridian.Storage.Maintenance.MaintenanceResult.html#Meridian_Storage_Maintenance_MaintenanceResult_Metrics
+  name: Metrics
+  nameWithType: MaintenanceResult.Metrics
+  fullName: Meridian.Storage.Maintenance.MaintenanceResult.Metrics
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )

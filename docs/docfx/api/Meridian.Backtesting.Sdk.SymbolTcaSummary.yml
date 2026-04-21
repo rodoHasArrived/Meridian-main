@@ -1,0 +1,760 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  commentId: T:Meridian.Backtesting.Sdk.SymbolTcaSummary
+  id: SymbolTcaSummary
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.SymbolTcaSummary.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Int32)
+  - Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgBuyPrice
+  - Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgSellPrice
+  - Meridian.Backtesting.Sdk.SymbolTcaSummary.CommissionRateBps
+  - Meridian.Backtesting.Sdk.SymbolTcaSummary.Symbol
+  - Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalBuyNotional
+  - Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalCommission
+  - Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalFills
+  - Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalSellNotional
+  langs:
+  - csharp
+  - vb
+  name: SymbolTcaSummary
+  nameWithType: SymbolTcaSummary
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolTcaSummary
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Per-symbol execution cost breakdown for a simulation run.
+  example: []
+  syntax:
+    content: 'public sealed record SymbolTcaSummary : IEquatable<SymbolTcaSummary>'
+    content.vb: Public NotInheritable Class SymbolTcaSummary Implements IEquatable(Of SymbolTcaSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.SymbolTcaSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Int32)
+  commentId: M:Meridian.Backtesting.Sdk.SymbolTcaSummary.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Int32)
+  id: '#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Double,System.Int32)'
+  parent: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  langs:
+  - csharp
+  - vb
+  name: SymbolTcaSummary(string, decimal, decimal, decimal, decimal, decimal, double, int)
+  nameWithType: SymbolTcaSummary.SymbolTcaSummary(string, decimal, decimal, decimal, decimal, decimal, double, int)
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.SymbolTcaSummary(string, decimal, decimal, decimal, decimal, decimal, double, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Per-symbol execution cost breakdown for a simulation run.
+  example: []
+  syntax:
+    content: public SymbolTcaSummary(string Symbol, decimal TotalBuyNotional, decimal TotalSellNotional, decimal AvgBuyPrice, decimal AvgSellPrice, decimal TotalCommission, double CommissionRateBps, int TotalFills)
+    parameters:
+    - id: Symbol
+      type: System.String
+      description: The traded symbol.
+    - id: TotalBuyNotional
+      type: System.Decimal
+      description: Notional value of all buy fills for this symbol.
+    - id: TotalSellNotional
+      type: System.Decimal
+      description: Notional value of all sell fills for this symbol.
+    - id: AvgBuyPrice
+      type: System.Decimal
+      description: Volume-weighted average buy fill price (0 if no buys).
+    - id: AvgSellPrice
+      type: System.Decimal
+      description: Volume-weighted average sell fill price (0 if no sells).
+    - id: TotalCommission
+      type: System.Decimal
+      description: Total commissions paid for this symbol.
+    - id: CommissionRateBps
+      type: System.Double
+      description: Commission as a fraction of symbol notional, in basis points.
+    - id: TotalFills
+      type: System.Int32
+      description: Total fill events for this symbol.
+    content.vb: Public Sub New(Symbol As String, TotalBuyNotional As Decimal, TotalSellNotional As Decimal, AvgBuyPrice As Decimal, AvgSellPrice As Decimal, TotalCommission As Decimal, CommissionRateBps As Double, TotalFills As Integer)
+  overload: Meridian.Backtesting.Sdk.SymbolTcaSummary.#ctor*
+  nameWithType.vb: SymbolTcaSummary.New(String, Decimal, Decimal, Decimal, Decimal, Decimal, Double, Integer)
+  fullName.vb: Meridian.Backtesting.Sdk.SymbolTcaSummary.New(String, Decimal, Decimal, Decimal, Decimal, Decimal, Double, Integer)
+  name.vb: New(String, Decimal, Decimal, Decimal, Decimal, Decimal, Double, Integer)
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.SymbolTcaSummary.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolTcaSummary.Symbol
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: The traded symbol.
+  example: []
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.SymbolTcaSummary.Symbol*
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalBuyNotional
+  commentId: P:Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalBuyNotional
+  id: TotalBuyNotional
+  parent: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalBuyNotional
+  nameWithType: SymbolTcaSummary.TotalBuyNotional
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalBuyNotional
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBuyNotional
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Notional value of all buy fills for this symbol.
+  example: []
+  syntax:
+    content: public decimal TotalBuyNotional { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalBuyNotional As Decimal
+  overload: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalBuyNotional*
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalSellNotional
+  commentId: P:Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalSellNotional
+  id: TotalSellNotional
+  parent: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalSellNotional
+  nameWithType: SymbolTcaSummary.TotalSellNotional
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalSellNotional
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSellNotional
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Notional value of all sell fills for this symbol.
+  example: []
+  syntax:
+    content: public decimal TotalSellNotional { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalSellNotional As Decimal
+  overload: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalSellNotional*
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgBuyPrice
+  commentId: P:Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgBuyPrice
+  id: AvgBuyPrice
+  parent: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  langs:
+  - csharp
+  - vb
+  name: AvgBuyPrice
+  nameWithType: SymbolTcaSummary.AvgBuyPrice
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgBuyPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvgBuyPrice
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Volume-weighted average buy fill price (0 if no buys).
+  example: []
+  syntax:
+    content: public decimal AvgBuyPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AvgBuyPrice As Decimal
+  overload: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgBuyPrice*
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgSellPrice
+  commentId: P:Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgSellPrice
+  id: AvgSellPrice
+  parent: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  langs:
+  - csharp
+  - vb
+  name: AvgSellPrice
+  nameWithType: SymbolTcaSummary.AvgSellPrice
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgSellPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvgSellPrice
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Volume-weighted average sell fill price (0 if no sells).
+  example: []
+  syntax:
+    content: public decimal AvgSellPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AvgSellPrice As Decimal
+  overload: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgSellPrice*
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalCommission
+  commentId: P:Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalCommission
+  id: TotalCommission
+  parent: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalCommission
+  nameWithType: SymbolTcaSummary.TotalCommission
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalCommission
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCommission
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Total commissions paid for this symbol.
+  example: []
+  syntax:
+    content: public decimal TotalCommission { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalCommission As Decimal
+  overload: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalCommission*
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.CommissionRateBps
+  commentId: P:Meridian.Backtesting.Sdk.SymbolTcaSummary.CommissionRateBps
+  id: CommissionRateBps
+  parent: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  langs:
+  - csharp
+  - vb
+  name: CommissionRateBps
+  nameWithType: SymbolTcaSummary.CommissionRateBps
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.CommissionRateBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionRateBps
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Commission as a fraction of symbol notional, in basis points.
+  example: []
+  syntax:
+    content: public double CommissionRateBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CommissionRateBps As Double
+  overload: Meridian.Backtesting.Sdk.SymbolTcaSummary.CommissionRateBps*
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalFills
+  commentId: P:Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalFills
+  id: TotalFills
+  parent: Meridian.Backtesting.Sdk.SymbolTcaSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalFills
+  nameWithType: SymbolTcaSummary.TotalFills
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalFills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFills
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Total fill events for this symbol.
+  example: []
+  syntax:
+    content: public int TotalFills { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalFills As Integer
+  overload: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalFills*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.SymbolTcaSummary}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.SymbolTcaSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolTcaSummary>
+  nameWithType: IEquatable<SymbolTcaSummary>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.SymbolTcaSummary>
+  nameWithType.vb: IEquatable(Of SymbolTcaSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.SymbolTcaSummary)
+  name.vb: IEquatable(Of SymbolTcaSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.SymbolTcaSummary
+    name: SymbolTcaSummary
+    href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.SymbolTcaSummary
+    name: SymbolTcaSummary
+    href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolTcaSummary.#ctor
+  href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html#Meridian_Backtesting_Sdk_SymbolTcaSummary__ctor_System_String_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Double_System_Int32_
+  name: SymbolTcaSummary
+  nameWithType: SymbolTcaSummary.SymbolTcaSummary
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.SymbolTcaSummary
+  nameWithType.vb: SymbolTcaSummary.New
+  fullName.vb: Meridian.Backtesting.Sdk.SymbolTcaSummary.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolTcaSummary.Symbol
+  href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html#Meridian_Backtesting_Sdk_SymbolTcaSummary_Symbol
+  name: Symbol
+  nameWithType: SymbolTcaSummary.Symbol
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.Symbol
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalBuyNotional*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalBuyNotional
+  href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html#Meridian_Backtesting_Sdk_SymbolTcaSummary_TotalBuyNotional
+  name: TotalBuyNotional
+  nameWithType: SymbolTcaSummary.TotalBuyNotional
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalBuyNotional
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalSellNotional*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalSellNotional
+  href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html#Meridian_Backtesting_Sdk_SymbolTcaSummary_TotalSellNotional
+  name: TotalSellNotional
+  nameWithType: SymbolTcaSummary.TotalSellNotional
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalSellNotional
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgBuyPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgBuyPrice
+  href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html#Meridian_Backtesting_Sdk_SymbolTcaSummary_AvgBuyPrice
+  name: AvgBuyPrice
+  nameWithType: SymbolTcaSummary.AvgBuyPrice
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgBuyPrice
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgSellPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgSellPrice
+  href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html#Meridian_Backtesting_Sdk_SymbolTcaSummary_AvgSellPrice
+  name: AvgSellPrice
+  nameWithType: SymbolTcaSummary.AvgSellPrice
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.AvgSellPrice
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalCommission*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalCommission
+  href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html#Meridian_Backtesting_Sdk_SymbolTcaSummary_TotalCommission
+  name: TotalCommission
+  nameWithType: SymbolTcaSummary.TotalCommission
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalCommission
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.CommissionRateBps*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolTcaSummary.CommissionRateBps
+  href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html#Meridian_Backtesting_Sdk_SymbolTcaSummary_CommissionRateBps
+  name: CommissionRateBps
+  nameWithType: SymbolTcaSummary.CommissionRateBps
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.CommissionRateBps
+- uid: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalFills*
+  commentId: Overload:Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalFills
+  href: Meridian.Backtesting.Sdk.SymbolTcaSummary.html#Meridian_Backtesting_Sdk_SymbolTcaSummary_TotalFills
+  name: TotalFills
+  nameWithType: SymbolTcaSummary.TotalFills
+  fullName: Meridian.Backtesting.Sdk.SymbolTcaSummary.TotalFills

@@ -1,0 +1,492 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.RetentionConfiguration
+  commentId: T:Meridian.Ui.Services.RetentionConfiguration
+  id: RetentionConfiguration
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.RetentionConfiguration.CleanupSchedule
+  - Meridian.Ui.Services.RetentionConfiguration.EnableScheduledCleanup
+  - Meridian.Ui.Services.RetentionConfiguration.Guardrails
+  - Meridian.Ui.Services.RetentionConfiguration.NotifyOnCleanup
+  - Meridian.Ui.Services.RetentionConfiguration.RequireApproval
+  langs:
+  - csharp
+  - vb
+  name: RetentionConfiguration
+  nameWithType: RetentionConfiguration
+  fullName: Meridian.Ui.Services.RetentionConfiguration
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetentionConfiguration
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Retention configuration.
+  example: []
+  syntax:
+    content: public sealed class RetentionConfiguration
+    content.vb: Public NotInheritable Class RetentionConfiguration
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.RetentionConfiguration.Guardrails
+  commentId: P:Meridian.Ui.Services.RetentionConfiguration.Guardrails
+  id: Guardrails
+  parent: Meridian.Ui.Services.RetentionConfiguration
+  langs:
+  - csharp
+  - vb
+  name: Guardrails
+  nameWithType: RetentionConfiguration.Guardrails
+  fullName: Meridian.Ui.Services.RetentionConfiguration.Guardrails
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Guardrails
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public RetentionGuardrails Guardrails { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.RetentionGuardrails
+    content.vb: Public Property Guardrails As RetentionGuardrails
+  overload: Meridian.Ui.Services.RetentionConfiguration.Guardrails*
+- uid: Meridian.Ui.Services.RetentionConfiguration.EnableScheduledCleanup
+  commentId: P:Meridian.Ui.Services.RetentionConfiguration.EnableScheduledCleanup
+  id: EnableScheduledCleanup
+  parent: Meridian.Ui.Services.RetentionConfiguration
+  langs:
+  - csharp
+  - vb
+  name: EnableScheduledCleanup
+  nameWithType: RetentionConfiguration.EnableScheduledCleanup
+  fullName: Meridian.Ui.Services.RetentionConfiguration.EnableScheduledCleanup
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableScheduledCleanup
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool EnableScheduledCleanup { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableScheduledCleanup As Boolean
+  overload: Meridian.Ui.Services.RetentionConfiguration.EnableScheduledCleanup*
+- uid: Meridian.Ui.Services.RetentionConfiguration.CleanupSchedule
+  commentId: P:Meridian.Ui.Services.RetentionConfiguration.CleanupSchedule
+  id: CleanupSchedule
+  parent: Meridian.Ui.Services.RetentionConfiguration
+  langs:
+  - csharp
+  - vb
+  name: CleanupSchedule
+  nameWithType: RetentionConfiguration.CleanupSchedule
+  fullName: Meridian.Ui.Services.RetentionConfiguration.CleanupSchedule
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CleanupSchedule
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string CleanupSchedule { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CleanupSchedule As String
+  overload: Meridian.Ui.Services.RetentionConfiguration.CleanupSchedule*
+- uid: Meridian.Ui.Services.RetentionConfiguration.NotifyOnCleanup
+  commentId: P:Meridian.Ui.Services.RetentionConfiguration.NotifyOnCleanup
+  id: NotifyOnCleanup
+  parent: Meridian.Ui.Services.RetentionConfiguration
+  langs:
+  - csharp
+  - vb
+  name: NotifyOnCleanup
+  nameWithType: RetentionConfiguration.NotifyOnCleanup
+  fullName: Meridian.Ui.Services.RetentionConfiguration.NotifyOnCleanup
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyOnCleanup
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool NotifyOnCleanup { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property NotifyOnCleanup As Boolean
+  overload: Meridian.Ui.Services.RetentionConfiguration.NotifyOnCleanup*
+- uid: Meridian.Ui.Services.RetentionConfiguration.RequireApproval
+  commentId: P:Meridian.Ui.Services.RetentionConfiguration.RequireApproval
+  id: RequireApproval
+  parent: Meridian.Ui.Services.RetentionConfiguration
+  langs:
+  - csharp
+  - vb
+  name: RequireApproval
+  nameWithType: RetentionConfiguration.RequireApproval
+  fullName: Meridian.Ui.Services.RetentionConfiguration.RequireApproval
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequireApproval
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool RequireApproval { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property RequireApproval As Boolean
+  overload: Meridian.Ui.Services.RetentionConfiguration.RequireApproval*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.RetentionConfiguration.Guardrails*
+  commentId: Overload:Meridian.Ui.Services.RetentionConfiguration.Guardrails
+  href: Meridian.Ui.Services.RetentionConfiguration.html#Meridian_Ui_Services_RetentionConfiguration_Guardrails
+  name: Guardrails
+  nameWithType: RetentionConfiguration.Guardrails
+  fullName: Meridian.Ui.Services.RetentionConfiguration.Guardrails
+- uid: Meridian.Ui.Services.RetentionGuardrails
+  commentId: T:Meridian.Ui.Services.RetentionGuardrails
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.RetentionGuardrails.html
+  name: RetentionGuardrails
+  nameWithType: RetentionGuardrails
+  fullName: Meridian.Ui.Services.RetentionGuardrails
+- uid: Meridian.Ui.Services.RetentionConfiguration.EnableScheduledCleanup*
+  commentId: Overload:Meridian.Ui.Services.RetentionConfiguration.EnableScheduledCleanup
+  href: Meridian.Ui.Services.RetentionConfiguration.html#Meridian_Ui_Services_RetentionConfiguration_EnableScheduledCleanup
+  name: EnableScheduledCleanup
+  nameWithType: RetentionConfiguration.EnableScheduledCleanup
+  fullName: Meridian.Ui.Services.RetentionConfiguration.EnableScheduledCleanup
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.RetentionConfiguration.CleanupSchedule*
+  commentId: Overload:Meridian.Ui.Services.RetentionConfiguration.CleanupSchedule
+  href: Meridian.Ui.Services.RetentionConfiguration.html#Meridian_Ui_Services_RetentionConfiguration_CleanupSchedule
+  name: CleanupSchedule
+  nameWithType: RetentionConfiguration.CleanupSchedule
+  fullName: Meridian.Ui.Services.RetentionConfiguration.CleanupSchedule
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.RetentionConfiguration.NotifyOnCleanup*
+  commentId: Overload:Meridian.Ui.Services.RetentionConfiguration.NotifyOnCleanup
+  href: Meridian.Ui.Services.RetentionConfiguration.html#Meridian_Ui_Services_RetentionConfiguration_NotifyOnCleanup
+  name: NotifyOnCleanup
+  nameWithType: RetentionConfiguration.NotifyOnCleanup
+  fullName: Meridian.Ui.Services.RetentionConfiguration.NotifyOnCleanup
+- uid: Meridian.Ui.Services.RetentionConfiguration.RequireApproval*
+  commentId: Overload:Meridian.Ui.Services.RetentionConfiguration.RequireApproval
+  href: Meridian.Ui.Services.RetentionConfiguration.html#Meridian_Ui_Services_RetentionConfiguration_RequireApproval
+  name: RequireApproval
+  nameWithType: RetentionConfiguration.RequireApproval
+  fullName: Meridian.Ui.Services.RetentionConfiguration.RequireApproval

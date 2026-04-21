@@ -1,0 +1,283 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Pipeline.IngestionJobState
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJobState
+  id: IngestionJobState
+  parent: Meridian.Contracts.Pipeline
+  children:
+  - Meridian.Contracts.Pipeline.IngestionJobState.Cancelled
+  - Meridian.Contracts.Pipeline.IngestionJobState.Completed
+  - Meridian.Contracts.Pipeline.IngestionJobState.Draft
+  - Meridian.Contracts.Pipeline.IngestionJobState.Failed
+  - Meridian.Contracts.Pipeline.IngestionJobState.Paused
+  - Meridian.Contracts.Pipeline.IngestionJobState.Queued
+  - Meridian.Contracts.Pipeline.IngestionJobState.Running
+  langs:
+  - csharp
+  - vb
+  name: IngestionJobState
+  nameWithType: IngestionJobState
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IngestionJobState
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: States for the unified ingestion job state machine.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter))]
+
+      public enum IngestionJobState : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter))>
+
+      Public Enum IngestionJobState As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter
+- uid: Meridian.Contracts.Pipeline.IngestionJobState.Draft
+  commentId: F:Meridian.Contracts.Pipeline.IngestionJobState.Draft
+  id: Draft
+  parent: Meridian.Contracts.Pipeline.IngestionJobState
+  langs:
+  - csharp
+  - vb
+  name: Draft
+  nameWithType: IngestionJobState.Draft
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState.Draft
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Draft
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Job is being configured but not yet submitted.
+  example: []
+  syntax:
+    content: Draft = 0
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: Meridian.Contracts.Pipeline.IngestionJobState.Queued
+  commentId: F:Meridian.Contracts.Pipeline.IngestionJobState.Queued
+  id: Queued
+  parent: Meridian.Contracts.Pipeline.IngestionJobState
+  langs:
+  - csharp
+  - vb
+  name: Queued
+  nameWithType: IngestionJobState.Queued
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState.Queued
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Queued
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Job is submitted and waiting to run.
+  example: []
+  syntax:
+    content: Queued = 1
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: Meridian.Contracts.Pipeline.IngestionJobState.Running
+  commentId: F:Meridian.Contracts.Pipeline.IngestionJobState.Running
+  id: Running
+  parent: Meridian.Contracts.Pipeline.IngestionJobState
+  langs:
+  - csharp
+  - vb
+  name: Running
+  nameWithType: IngestionJobState.Running
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState.Running
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Running
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Job is actively processing data.
+  example: []
+  syntax:
+    content: Running = 2
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: Meridian.Contracts.Pipeline.IngestionJobState.Paused
+  commentId: F:Meridian.Contracts.Pipeline.IngestionJobState.Paused
+  id: Paused
+  parent: Meridian.Contracts.Pipeline.IngestionJobState
+  langs:
+  - csharp
+  - vb
+  name: Paused
+  nameWithType: IngestionJobState.Paused
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState.Paused
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Paused
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Job has been temporarily paused by user or system.
+  example: []
+  syntax:
+    content: Paused = 3
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: Meridian.Contracts.Pipeline.IngestionJobState.Completed
+  commentId: F:Meridian.Contracts.Pipeline.IngestionJobState.Completed
+  id: Completed
+  parent: Meridian.Contracts.Pipeline.IngestionJobState
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: IngestionJobState.Completed
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Job has successfully completed all work.
+  example: []
+  syntax:
+    content: Completed = 4
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: Meridian.Contracts.Pipeline.IngestionJobState.Failed
+  commentId: F:Meridian.Contracts.Pipeline.IngestionJobState.Failed
+  id: Failed
+  parent: Meridian.Contracts.Pipeline.IngestionJobState
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: IngestionJobState.Failed
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Job encountered a fatal error and stopped.
+  example: []
+  syntax:
+    content: Failed = 5
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+- uid: Meridian.Contracts.Pipeline.IngestionJobState.Cancelled
+  commentId: F:Meridian.Contracts.Pipeline.IngestionJobState.Cancelled
+  id: Cancelled
+  parent: Meridian.Contracts.Pipeline.IngestionJobState
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: IngestionJobState.Cancelled
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Pipeline/IngestionJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Contracts/Pipeline/IngestionJob.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Pipeline
+  summary: Job was cancelled by user request.
+  example: []
+  syntax:
+    content: Cancelled = 6
+    return:
+      type: Meridian.Contracts.Pipeline.IngestionJobState
+references:
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+- uid: Meridian.Contracts.Pipeline.IngestionJobState
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJobState
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionJobState.html
+  name: IngestionJobState
+  nameWithType: IngestionJobState
+  fullName: Meridian.Contracts.Pipeline.IngestionJobState

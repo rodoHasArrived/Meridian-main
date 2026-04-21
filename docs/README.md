@@ -1,55 +1,48 @@
 # Meridian Documentation
 
-**Version:** 1.7.3
-**Last Updated:** 2026-03-30
+**Last Reviewed:** 2026-04-09
+**Scope:** Active hand-authored documentation plus generated status and reference entry points
 
-This index is the main entry point for Meridian documentation. The current documentation set is synchronized around two connected product tracks inside a broader comprehensive fund-management objective:
-
-- a workflow-centric front-office workstation for research, implementation, and trade management
-- a governance and fund-operations expansion for middle- and back-office workflows built on Security Master, portfolio, ledger, reconciliation, and UFL asset-package foundations
+This index is the main entry point for the active `docs/` tree. It is organized around the current Meridian product shape: a shared platform that now spans research, trading, data operations, governance, provider readiness, and a Windows WPF workstation backed by desktop-local APIs.
 
 ## Platform At A Glance
 
-Meridian's active solution now spans:
+Meridian's current solution includes:
 
-- a console/host application in `src/Meridian/`
-- application, domain, contracts, infrastructure, and storage layers in `src/Meridian.Application/`, `src/Meridian.Domain/`, `src/Meridian.Contracts/`, `src/Meridian.Infrastructure/`, and `src/Meridian.Storage/`
-- execution, risk, strategy, provider, and backtesting seams in `src/Meridian.Execution*/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, `src/Meridian.ProviderSdk/`, and `src/Meridian.Backtesting*/`
-- ledger, direct-lending, and F# support projects in `src/Meridian.Ledger/`, `src/Meridian.FSharp*/`
-- web and desktop UI surfaces in `src/Meridian.Ui/`, `src/Meridian.Ui.Shared/`, `src/Meridian.Ui.Services/`, and `src/Meridian.Wpf/`
+- a console and host application in `src/Meridian/`
+- application, contracts, core, domain, infrastructure, and storage layers in `src/Meridian.Application/`, `src/Meridian.Contracts/`, `src/Meridian.Core/`, `src/Meridian.Domain/`, `src/Meridian.Infrastructure/`, `src/Meridian.Infrastructure.CppTrader/`, and `src/Meridian.Storage/`
+- execution, provider, risk, strategy, and backtesting seams in `src/Meridian.Execution*/`, `src/Meridian.ProviderSdk/`, `src/Meridian.Risk/`, `src/Meridian.Strategies/`, and `src/Meridian.Backtesting*/`
+- ledger, direct-lending, and F# support projects in `src/Meridian.Ledger/`, `src/Meridian.FSharp*/`, and `src/Meridian.IbApi.SmokeStub/`
+- desktop UI surfaces in `src/Meridian.Ui.Shared/`, `src/Meridian.Ui.Services/`, and `src/Meridian.Wpf/`
 - scripting and MCP surfaces in `src/Meridian.QuantScript/`, `src/Meridian.Mcp/`, and `src/Meridian.McpServer/`
 
-## Quick Start
+## Start Here
 
-- **New users** -> [Getting Started Guide](getting-started/README.md)
-- **Developers** -> [Repository Organization Guide](development/repository-organization-guide.md)
-- **Trading workstation migration** -> [Trading Workstation Migration Blueprint](plans/trading-workstation-migration-blueprint.md)
-- **Governance and fund operations expansion** -> [Governance and Fund Operations Blueprint](plans/governance-fund-ops-blueprint.md)
-- **Direct lending target state** -> [UFL Direct Lending Target-State Package V2](plans/ufl-direct-lending-target-state-v2.md)
-- **Direct lending execution roadmap** -> [UFL Direct Lending Implementation Roadmap](plans/ufl-direct-lending-implementation-roadmap.md)
-- **UFL asset packages** -> [UFL Supported Asset Packages](plans/ufl-supported-assets-index.md)
-- **Operators** -> [Operator Runbook](operations/operator-runbook.md)
+- **First local setup:** [Getting Started Guide](getting-started/README.md)
+- **Operator reference:** [Help and FAQ](HELP.md)
+- **Operational procedures:** [Operator Runbook](operations/operator-runbook.md)
+- **Docs navigation by folder:** [Plans Overview](plans/README.md), [Status Docs Index](status/README.md), [Architecture Docs](architecture/README.md), [Development Guides](development/README.md)
+- **Current roadmap snapshot:** [Combined Roadmap](status/ROADMAP_COMBINED.md)
+- **Current delivery plan:** [Project Roadmap](status/ROADMAP.md)
+- **Target product narrative:** [Target End Product](status/TARGET_END_PRODUCT.md)
 
 ## Documentation Zones
 
 | Zone | Folders | Audience |
-| ------ | --------- | ---------- |
+|------|---------|----------|
 | Product | `getting-started/`, `providers/`, `operations/` | Users and operators |
-| Engineering | `architecture/`, `adr/`, `development/`, `integrations/`, `reference/`, `diagrams/` | Developers |
+| Engineering | `architecture/`, `adr/`, `development/`, `integrations/`, `reference/`, `diagrams/`, `ai/` | Developers and tool authors |
 | Governance | `status/`, `plans/`, `evaluations/`, `audits/`, `security/` | Core team and stakeholders |
 
-`generated/` contains auto-generated files and should not be edited manually.
+`generated/` and any file marked as auto-generated should be refreshed by script rather than edited by hand. `docs/_site/` is the built documentation site output.
 
 ## By Audience
 
 ### Users and operators
 
 - [Getting Started](getting-started/README.md)
-- [Workflow Guide](WORKFLOW_GUIDE.md) — step-by-step guide with screenshots for the web dashboard
 - [Help and FAQ](HELP.md)
-- [Dependencies Reference](DEPENDENCIES.md)
 - [Provider Setup Guides](providers/README.md)
-- [Backfill Guide](providers/backfill-guide.md)
 - [Operator Runbook](operations/operator-runbook.md)
 - [Deployment Guide](operations/deployment.md)
 - [Service Level Objectives](operations/service-level-objectives.md)
@@ -57,68 +50,74 @@ Meridian's active solution now spans:
 ### Developers
 
 - [Repository Organization Guide](development/repository-organization-guide.md)
+- [Repository Rule Set](development/repository-rule-set.md)
 - [Provider Implementation Guide](development/provider-implementation.md)
-- [WPF Implementation Notes](development/wpf-implementation-notes.md)
 - [Desktop Testing Guide](development/desktop-testing-guide.md)
-- [Central Package Management Guide](development/central-package-management.md)
-- [F# Decision Rule](development/fsharp-decision-rule.md)
-- [Language Strategy](integrations/language-strategy.md)
 - [Documentation Contribution Guide](development/documentation-contribution-guide.md)
+- [Architecture Overview](architecture/overview.md)
+- [AI Assistant Resources](ai/README.md)
 
 ### Architecture and design
 
 - [Architecture Overview](architecture/overview.md)
 - [Layer Boundaries](architecture/layer-boundaries.md)
-- [Desktop Layers](architecture/desktop-layers.md)
 - [Storage Design](architecture/storage-design.md)
-- [Deterministic Canonicalization](architecture/deterministic-canonicalization.md)
-- [Trading Workstation Migration Blueprint](plans/trading-workstation-migration-blueprint.md)
-- [Governance and Fund Operations Blueprint](plans/governance-fund-ops-blueprint.md)
-- [UFL Supported Asset Packages](plans/ufl-supported-assets-index.md)
-- [UFL Direct Lending Target-State Package V2](plans/ufl-direct-lending-target-state-v2.md)
-- [UFL Direct Lending Implementation Roadmap](plans/ufl-direct-lending-implementation-roadmap.md)
-- [Fund Management Product Vision and Capability Matrix](plans/fund-management-product-vision-and-capability-matrix.md)
-- [Fund Management Module Implementation Backlog](plans/fund-management-module-implementation-backlog.md)
-- [Fund Management PR-Sequenced Execution Roadmap](plans/fund-management-pr-sequenced-roadmap.md)
+- [Ledger Architecture](architecture/ledger-architecture.md)
+- [Desktop Layers](architecture/desktop-layers.md)
+- [WPF Shell MVVM](architecture/wpf-shell-mvvm.md)
 - [ADRs](adr/README.md)
 
 ### Status and planning
 
+- [Combined Roadmap](status/ROADMAP_COMBINED.md)
 - [Project Roadmap](status/ROADMAP.md)
+- [Opportunity Scan](status/OPPORTUNITY_SCAN.md)
+- [Target End Product](status/TARGET_END_PRODUCT.md)
 - [Feature Inventory](status/FEATURE_INVENTORY.md)
+- [Provider Validation Matrix](status/provider-validation-matrix.md)
+- [Plans Overview](plans/README.md)
 - [Improvements Tracker](status/IMPROVEMENTS.md)
 - [Production Status](status/production-status.md)
-- [Status Docs Index](status/README.md)
-- [Evaluations and Audits Summary](status/EVALUATIONS_AND_AUDITS.md)
 
-## Current Planning Source of Truth
+## Current Planning Source Of Truth
 
-These documents are the reconciled, living planning set. Historical or superseded material has moved to the archive so you can trust the links below when making decisions.
+Use these documents together when planning implementation. The active core operator-readiness path is:
 
-Use these documents together when planning implementation:
+- Wave 1: provider confidence and checkpoint evidence
+- Wave 2: paper-trading cockpit hardening
+- Wave 3: shared run / portfolio / ledger continuity
+- Wave 4: governance and fund-operations productization on top of the delivered Security Master baseline
 
-1. [status/ROADMAP.md](status/ROADMAP.md) for delivery waves and target state
-2. [plans/fund-management-product-vision-and-capability-matrix.md](plans/fund-management-product-vision-and-capability-matrix.md) for the formal product vision and phased capability view
-3. [plans/fund-management-module-implementation-backlog.md](plans/fund-management-module-implementation-backlog.md) for project-by-project backlog mapping and file anchors
-4. [plans/fund-management-pr-sequenced-roadmap.md](plans/fund-management-pr-sequenced-roadmap.md) for dependency-aware PR slices and parallel implementation lanes
-5. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for workstation structure
-6. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Security Master, multi-ledger, cash-flow, reconciliation, and reporting
-7. [plans/ufl-supported-assets-index.md](plans/ufl-supported-assets-index.md) for the supported UFL asset packages across the current security-master model
-8. [plans/ufl-direct-lending-target-state-v2.md](plans/ufl-direct-lending-target-state-v2.md) for the direct-lending specialization of the governance and fund-ops target state
-9. [plans/ufl-direct-lending-implementation-roadmap.md](plans/ufl-direct-lending-implementation-roadmap.md) for the dependency-aware path from the current slice to the full direct-lending target state
-10. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status
-11. [status/FULL_IMPLEMENTATION_TODO_2026_03_20.md](status/FULL_IMPLEMENTATION_TODO_2026_03_20.md) for the normalized non-assembly implementation backlog
-12. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
+Use the documents below to manage that path:
+
+1. [status/ROADMAP_COMBINED.md](status/ROADMAP_COMBINED.md) for the shortest complete roadmap snapshot
+2. [status/ROADMAP.md](status/ROADMAP.md) for the full wave-structured delivery plan
+3. [status/OPPORTUNITY_SCAN.md](status/OPPORTUNITY_SCAN.md) for prioritized repo-grounded opportunities
+4. [status/TARGET_END_PRODUCT.md](status/TARGET_END_PRODUCT.md) for the intended finished product narrative
+5. [plans/README.md](plans/README.md) for the active blueprint and roadmap catalog
+6. [plans/meridian-6-week-roadmap.md](plans/meridian-6-week-roadmap.md) for the current time-boxed execution plan
+7. [plans/provider-reliability-data-confidence-wave-1-blueprint.md](plans/provider-reliability-data-confidence-wave-1-blueprint.md) for the Wave 1 trust and checkpoint-evidence gate
+8. [plans/trading-workstation-migration-blueprint.md](plans/trading-workstation-migration-blueprint.md) for Wave 2 cockpit hardening and Wave 3 shared-model migration shape
+9. [plans/governance-fund-ops-blueprint.md](plans/governance-fund-ops-blueprint.md) for Wave 4 governance, Security Master, reconciliation, and reporting direction
+10. [plans/backtest-studio-unification-blueprint.md](plans/backtest-studio-unification-blueprint.md) for the Wave 5 backtesting unification follow-on
+11. [status/FEATURE_INVENTORY.md](status/FEATURE_INVENTORY.md) for capability status by area
+12. [status/provider-validation-matrix.md](status/provider-validation-matrix.md) for provider-readiness evidence and gaps
+13. [status/production-status.md](status/production-status.md) for current readiness caveats
+14. [status/IMPROVEMENTS.md](status/IMPROVEMENTS.md) for tracked implementation themes
 
 ## Verified Build And Run References
 
-These repo entry points are currently reflected in the active codebase and build scripts:
+These commands are currently reflected in the repo's code and build scripts:
 
-- `make help` for the current Make task index
-- `make run-ui` for the cross-platform dashboard path
-- `dotnet run --project src/Meridian/Meridian.csproj -- --help` for the CLI host
-- `dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true` for the full Windows WPF build/run path
-- `npm --prefix src/Meridian.Ui/dashboard run build` for the dashboard frontend bundle
+- `make help`
+- `make setup-dev`
+- `make run`
+- `make run-backfill`
+- `make run-selftest`
+- `dotnet run --project src/Meridian/Meridian.csproj -- --quickstart`
+- `dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080`
+- `dotnet run --project src/Meridian/Meridian.csproj -- --validate-config`
+- `dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableFullWpfBuild=true`
 
 ## Reference
 
@@ -130,21 +129,16 @@ These repo entry points are currently reflected in the active codebase and build
 
 ## Archive
 
-Historical, deprecated, and superseded documentation now lives outside the active docs tree in [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs`](https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs).
+Historical and superseded material now lives outside the active docs tree under `archive/docs/`.
 
-- [Archive index](../archive/docs/INDEX.md)
-- [Archive overview](../archive/docs/README.md)
-
-## Documentation Maintenance
-
-- [Documentation triage 2026-03-21](status/DOCUMENTATION_TRIAGE_2026_03_21.md)
-- [Project roadmap refresh 2026-03-22](status/ROADMAP.md)
+- [Archive index](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/INDEX.md)
+- [Archive overview](https://github.com/rodoHasArrived/Meridian-main/blob/main/archive/docs/README.md)
 
 ## Maintenance Checklist
 
 When documentation changes in a PR:
 
-1. Update this index if navigation changes.
-2. Update the touched document dates.
-3. Keep `ROADMAP.md`, `FEATURE_INVENTORY.md`, `IMPROVEMENTS.md`, and the relevant blueprint docs synchronized around the full fund-management target state.
-4. Avoid editing generated docs by hand.
+1. Update this index if the main navigation or source-of-truth set changes.
+2. Keep `status/ROADMAP*.md`, `status/OPPORTUNITY_SCAN.md`, `status/TARGET_END_PRODUCT.md`, `status/FEATURE_INVENTORY.md`, and the relevant blueprint docs aligned.
+3. Prefer updating folder `README.md` files when you add or retire documents.
+4. Avoid editing generated docs by hand unless you are also updating the generator.

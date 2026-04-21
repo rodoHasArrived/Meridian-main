@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -16,6 +18,7 @@ namespace Meridian.Wpf.Services;
 public sealed class BackendServiceManager : BackendServiceManagerBase
 {
     private static readonly Lazy<BackendServiceManager> _instance = new(() => new BackendServiceManager());
+    private const int DefaultDesktopPort = 8080;
     private readonly HttpClient _httpClient;
 
     public static BackendServiceManager Instance => _instance.Value;
@@ -59,7 +62,42 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
         return null;
     }
 
-    protected override int? StartProcess(string executablePath, string workingDirectory)
+    protected override IReadOnlyList<string> GetProcessArguments(string executablePath)
+        => BuildProcessArguments(
+            FirstRunService.Instance.ConfigFilePath,
+            ConnectionService.Instance.ServiceUrl);
+
+    protected override IReadOnlyDictionary<string, string?> GetProcessEnvironmentVariables(string executablePath)
+        => new Dictionary<string, string?>(StringComparer.Ordinal)
+        {
+            ["MDC_CONFIG_PATH"] = FirstRunService.Instance.ConfigFilePath
+        };
+
+    internal static IReadOnlyList<string> BuildProcessArguments(string configPath, string serviceUrl)
+        => [
+            "--mode",
+            "desktop",
+            "--config",
+            configPath,
+            "--http-port",
+            ResolveHttpPort(serviceUrl).ToString(CultureInfo.InvariantCulture)
+        ];
+
+    internal static int ResolveHttpPort(string serviceUrl)
+    {
+        if (Uri.TryCreate(serviceUrl, UriKind.Absolute, out var serviceUri) && serviceUri.Port > 0)
+        {
+            return serviceUri.Port;
+        }
+
+        return DefaultDesktopPort;
+    }
+
+    protected override int? StartProcess(
+        string executablePath,
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        IReadOnlyDictionary<string, string?> environmentVariables)
     {
         var processStartInfo = new ProcessStartInfo
         {
@@ -68,6 +106,23 @@ public sealed class BackendServiceManager : BackendServiceManagerBase
             UseShellExecute = false,
             CreateNoWindow = true
         };
+
+        foreach (var argument in arguments)
+        {
+            processStartInfo.ArgumentList.Add(argument);
+        }
+
+        foreach (var environmentVariable in environmentVariables)
+        {
+            if (environmentVariable.Value == null)
+            {
+                processStartInfo.Environment.Remove(environmentVariable.Key);
+            }
+            else
+            {
+                processStartInfo.Environment[environmentVariable.Key] = environmentVariable.Value;
+            }
+        }
 
         var process = Process.Start(processStartInfo);
         return process?.Id;

@@ -1,0 +1,326 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.IMarketDataStore
+  commentId: T:Meridian.Storage.Interfaces.IMarketDataStore
+  id: IMarketDataStore
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IMarketDataStore
+  nameWithType: IMarketDataStore
+  fullName: Meridian.Storage.Interfaces.IMarketDataStore
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IMarketDataStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IMarketDataStore
+    path: ../../src/Meridian.Storage/Interfaces/IMarketDataStore.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: >-
+    Unified read abstraction over all stored market data.
+
+    Replaces the fragmented query paths across <code>HistoricalDataQueryService</code>,
+
+    <code>MemoryMappedJsonlReader</code>, <code>JsonlReplayer</code>, <code>StorageSearchService</code>,
+
+    and <code>StorageCatalogService</code> with a single testable, optimised entry point.
+  example: []
+  syntax:
+    content: public interface IMarketDataStore
+    content.vb: Public Interface IMarketDataStore
+  derivedClasses:
+  - Meridian.Storage.Store.CompositeMarketDataStore
+  - Meridian.Storage.Store.JsonlMarketDataStore
+- uid: Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  id: QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IMarketDataStore
+  langs:
+  - csharp
+  - vb
+  name: QueryAsync(MarketDataQuery, CancellationToken)
+  nameWithType: IMarketDataStore.QueryAsync(MarketDataQuery, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IMarketDataStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueryAsync
+    path: ../../src/Meridian.Storage/Interfaces/IMarketDataStore.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: >-
+    Streams <xref href="Meridian.Domain.Events.MarketEvent" data-throw-if-not-resolved="false"></xref> records that match <code class="paramref">query</code>,
+
+    ordered by <xref href="Meridian.Domain.Events.MarketEvent.Timestamp" data-throw-if-not-resolved="false"></xref> ascending.
+  example: []
+  syntax:
+    content: IAsyncEnumerable<MarketEvent> QueryAsync(MarketDataQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.Store.MarketDataQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Domain.Events.MarketEvent}
+    content.vb: Function QueryAsync(query As MarketDataQuery, ct As CancellationToken = Nothing) As IAsyncEnumerable(Of MarketEvent)
+  overload: Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync*
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Domain.Events.MarketEvent.Timestamp
+  commentId: P:Meridian.Domain.Events.MarketEvent.Timestamp
+  name: Timestamp
+  nameWithType: MarketEvent.Timestamp
+  fullName: Meridian.Domain.Events.MarketEvent.Timestamp
+- uid: Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync
+  href: Meridian.Storage.Interfaces.IMarketDataStore.html#Meridian_Storage_Interfaces_IMarketDataStore_QueryAsync_Meridian_Contracts_Store_MarketDataQuery_System_Threading_CancellationToken_
+  name: QueryAsync
+  nameWithType: IMarketDataStore.QueryAsync
+  fullName: Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync
+- uid: Meridian.Contracts.Store.MarketDataQuery
+  commentId: T:Meridian.Contracts.Store.MarketDataQuery
+  parent: Meridian.Contracts.Store
+  href: Meridian.Contracts.Store.MarketDataQuery.html
+  name: MarketDataQuery
+  nameWithType: MarketDataQuery
+  fullName: Meridian.Contracts.Store.MarketDataQuery
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Domain.Events.MarketEvent}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Domain.Events.MarketEvent}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<MarketEvent>
+  nameWithType: IAsyncEnumerable<MarketEvent>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Domain.Events.MarketEvent>
+  nameWithType.vb: IAsyncEnumerable(Of MarketEvent)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Domain.Events.MarketEvent)
+  name.vb: IAsyncEnumerable(Of MarketEvent)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Contracts.Store
+  commentId: N:Meridian.Contracts.Store
+  href: Meridian.html
+  name: Meridian.Contracts.Store
+  nameWithType: Meridian.Contracts.Store
+  fullName: Meridian.Contracts.Store
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Store
+    name: Store
+    href: Meridian.Contracts.Store.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Store
+    name: Store
+    href: Meridian.Contracts.Store.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

@@ -105,13 +105,12 @@ Use this map as a starting point before diving into generated type/member pages.
 
 ## REST API Endpoints
 
-The application exposes a REST API when running with `--ui` or `--mode web`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set. Swagger UI is available at `/swagger` in development mode.
+The application exposes a REST API when running with `--mode desktop`. All `/api/*` endpoints require an API key when `MDC_API_KEY` is set. Swagger UI is available at `/swagger` in development mode.
 
 ### Authentication
 
 Set the `MDC_API_KEY` environment variable to enable authentication. Pass the key via:
 - `X-Api-Key` header (recommended)
-- `api_key` query parameter
 
 Health probes (`/healthz`, `/readyz`, `/livez`) are always exempt.
 
@@ -176,15 +175,19 @@ curl http://localhost:8080/api/data/quotes/SPY
 **Run a historical backfill:**
 
 ```bash
+cat <<'JSON' > /tmp/backfill-request.json
+{
+  "provider": "stooq",
+  "symbols": ["SPY", "AAPL"],
+  "from": "2024-01-01",
+  "to": "2024-01-31"
+}
+JSON
+
 curl -X POST http://localhost:8080/api/backfill/run \
   -H "Content-Type: application/json" \
   -H "X-Api-Key: your-key" \
-  -d '{
-    "provider": "stooq",
-    "symbols": ["SPY", "AAPL"],
-    "from": "2024-01-01",
-    "to": "2024-01-31"
-  }'
+  --data-binary @/tmp/backfill-request.json
 ```
 
 **Check data quality for a symbol:**
@@ -225,6 +228,8 @@ All endpoints return errors in a consistent format:
 | Packaging | 6 | Portable data package creation, import, validation, listing |
 | Maintenance | 18 | Archive maintenance schedules, executions, status, presets |
 | Providers | 8 | Provider status, metrics, catalog, comparison, latency |
+| Options | 7 | Options chains, expirations, strikes, quotes, refresh, provider status |
+| Execution | 21 | Execution blotter, keyed position actions, session continuity, orders, health, audit, controls |
 | Failover | 7 | Failover rules, health, force failover |
 | Interactive Brokers | 3 | IB-specific status, error codes, API limits |
 | Symbol Mapping | 5 | Cross-provider symbol mappings, CSV import |
@@ -347,6 +352,57 @@ Checkpoint endpoints expose the persisted job state that enables backfill operat
 | GET | `/api/providers/latency` | Latency statistics |
 | GET | `/api/connections` | Connection health summary |
 
+Provider catalog responses expose capability flags such as `supportsOptionsChain` and `supportsBrokerage`, which desktop setup flows can use to distinguish data feeds from broker-backed options providers like Robinhood.
+
+### Options (`/api/options/*`)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/options/expirations/{underlyingSymbol}` | Available expirations for an underlying |
+| GET | `/api/options/strikes/{underlyingSymbol}/{expiration}` | Available strikes for a specific expiration |
+| GET | `/api/options/chains/{underlyingSymbol}` | Cached or fetched option chain snapshots |
+| GET | `/api/options/quotes/{underlyingSymbol}` | Cached option quotes for an underlying |
+| GET | `/api/options/summary` | Options summary plus active provider identity, mode, and fallback state |
+| GET | `/api/options/underlyings` | Tracked option underlyings |
+| POST | `/api/options/refresh` | Refresh a specific option chain snapshot |
+
+`/api/options/summary` now includes:
+
+- `providerId` and `providerDisplayName` for the active provider
+- `providerMode` with `Configured`, `Fallback`, or `Unavailable`
+- `isFallbackProvider` to distinguish synthetic fallback from live providers
+- `providerStatusMessage` for UI-ready status text
+
+### Execution (`/api/execution/*`)
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/execution/account` | Account-level execution snapshot |
+| GET | `/api/execution/positions` | Legacy paper-trading positions list |
+| GET | `/api/execution/positions/blotter` | Broker-aware blotter snapshot used by desktop position views |
+| POST | `/api/execution/positions/actions/close` | Submit a keyed close action for a blotter position |
+| POST | `/api/execution/positions/actions/upsize` | Submit a keyed upsize action for a blotter position |
+| POST | `/api/execution/positions/{symbol}/close` | Legacy symbol-based close action; rejects ambiguous matches |
+| GET | `/api/execution/orders` | Open orders |
+| POST | `/api/execution/orders/submit` | Submit an order |
+| POST | `/api/execution/orders/{orderId}/cancel` | Cancel a single order |
+| POST | `/api/execution/orders/cancel-all` | Cancel all open orders |
+| GET | `/api/execution/portfolio` | Portfolio snapshot |
+| GET | `/api/execution/health` | Gateway health and live-connection summary |
+| GET | `/api/execution/capabilities` | Order-gateway capabilities |
+| GET | `/api/execution/audit` | Operator audit trail |
+| GET | `/api/execution/controls` | Execution operator controls snapshot |
+| POST | `/api/execution/controls/circuit-breaker` | Open or close the execution circuit breaker |
+| GET | `/api/execution/sessions` | Paper-session summaries for the trading cockpit |
+| GET | `/api/execution/sessions/{sessionId}` | Paper-session detail including tracked symbols, portfolio, and order history |
+| POST | `/api/execution/sessions/create` | Create a paper session and persist the requested symbol universe |
+| POST | `/api/execution/sessions/{sessionId}/close` | Close a paper session and return an audited operator action result |
+| GET | `/api/execution/sessions/{sessionId}/replay` | Replay persisted fills and report whether the replay matches the current session state |
+
+`/api/execution/positions/blotter` is the preferred position endpoint for desktop execution surfaces because it returns broker-backed/live state, a source label, a status message, and keyed position metadata needed for broker option actions.
+
+`/api/execution/sessions/{sessionId}/replay` is the Wave 2 operator continuity check for paper trading: it replays the durable fill log, compares the replayed portfolio to the current session snapshot, and records the verification step in the execution audit trail.
+
 ### Failover (`/api/failover/*`)
 
 | Method | Route | Description |
@@ -454,6 +510,28 @@ Checkpoint endpoints expose the persisted job state that enables backfill operat
 | GET | `/api/quality/drops` | Dropped event statistics |
 | GET | `/api/quality/drops/{symbol}` | Drops for specific symbol |
 
+### Environment Designer (`/api/environment-designer/*`)
+
+These endpoints expose the company-umbrella environment designer workflow used by the WPF
+governance admin surface.
+
+| Method | Route | Description |
+|--------|-------|-------------|
+| GET | `/api/environment-designer/drafts` | List environment drafts ordered by last update. |
+| GET | `/api/environment-designer/drafts/{draftId}` | Load a single environment draft. |
+| POST | `/api/environment-designer/drafts` | Create a new environment draft. |
+| PUT | `/api/environment-designer/drafts/{draftId}` | Save an edited environment draft. |
+| DELETE | `/api/environment-designer/drafts/{draftId}` | Delete an environment draft. |
+| POST | `/api/environment-designer/validate` | Validate a draft, optionally against a publish plan. |
+| POST | `/api/environment-designer/publish/preview` | Preview publish diff and destructive-change status. |
+| POST | `/api/environment-designer/publish` | Publish a draft and create a new versioned runtime projection. |
+| GET | `/api/environment-designer/versions` | List published versions, optionally filtered by organization. |
+| GET | `/api/environment-designer/versions/current` | Get the current published version for an organization or the latest current version. |
+| GET | `/api/environment-designer/versions/{versionId}` | Load a published version. |
+| POST | `/api/environment-designer/versions/{versionId}/rollback` | Roll back the current published version pointer. |
+| GET | `/api/environment-designer/runtime/current` | Fetch the current published runtime projection. |
+| GET | `/api/environment-designer/runtime/versions/{versionId}` | Fetch the runtime projection for a specific published version. |
+
 ### Health (`/healthz`, `/api/*`)
 
 | Method | Route | Description |
@@ -487,7 +565,7 @@ When adding or changing public APIs:
 ---
 
 **Version:** 1.6.2
-**Last Updated:** 2026-03-16
+**Last Updated:** 2026-04-07
 **Audience:** Contributors maintaining the HTTP API surface and AI assistants working on endpoint documentation.
 
 

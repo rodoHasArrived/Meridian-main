@@ -1,0 +1,865 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.PackageProgress
+  commentId: T:Meridian.Storage.Packaging.PackageProgress
+  id: PackageProgress
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.PackageProgress.BytesProcessed
+  - Meridian.Storage.Packaging.PackageProgress.CurrentFile
+  - Meridian.Storage.Packaging.PackageProgress.EstimatedSecondsRemaining
+  - Meridian.Storage.Packaging.PackageProgress.FilesProcessed
+  - Meridian.Storage.Packaging.PackageProgress.JobId
+  - Meridian.Storage.Packaging.PackageProgress.PercentComplete
+  - Meridian.Storage.Packaging.PackageProgress.Stage
+  - Meridian.Storage.Packaging.PackageProgress.ThroughputBytesPerSecond
+  - Meridian.Storage.Packaging.PackageProgress.TotalBytes
+  - Meridian.Storage.Packaging.PackageProgress.TotalFiles
+  langs:
+  - csharp
+  - vb
+  name: PackageProgress
+  nameWithType: PackageProgress
+  fullName: Meridian.Storage.Packaging.PackageProgress
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageProgress
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 333
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Progress information for packaging/import operations.
+  example: []
+  syntax:
+    content: public sealed class PackageProgress
+    content.vb: Public NotInheritable Class PackageProgress
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Packaging.PackageProgress.JobId
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.JobId
+  id: JobId
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: JobId
+  nameWithType: PackageProgress.JobId
+  fullName: Meridian.Storage.Packaging.PackageProgress.JobId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobId
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 335
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("jobId")]
+
+      public string JobId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("jobId")>
+
+      Public Property JobId As String
+  overload: Meridian.Storage.Packaging.PackageProgress.JobId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: jobId
+- uid: Meridian.Storage.Packaging.PackageProgress.Stage
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.Stage
+  id: Stage
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: Stage
+  nameWithType: PackageProgress.Stage
+  fullName: Meridian.Storage.Packaging.PackageProgress.Stage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stage
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 338
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("stage")]
+
+      public PackageStage Stage { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+    content.vb: >-
+      <JsonPropertyName("stage")>
+
+      Public Property Stage As PackageStage
+  overload: Meridian.Storage.Packaging.PackageProgress.Stage*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: stage
+- uid: Meridian.Storage.Packaging.PackageProgress.CurrentFile
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.CurrentFile
+  id: CurrentFile
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: CurrentFile
+  nameWithType: PackageProgress.CurrentFile
+  fullName: Meridian.Storage.Packaging.PackageProgress.CurrentFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentFile
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("currentFile")]
+
+      public string? CurrentFile { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("currentFile")>
+
+      Public Property CurrentFile As String
+  overload: Meridian.Storage.Packaging.PackageProgress.CurrentFile*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: currentFile
+- uid: Meridian.Storage.Packaging.PackageProgress.FilesProcessed
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.FilesProcessed
+  id: FilesProcessed
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: FilesProcessed
+  nameWithType: PackageProgress.FilesProcessed
+  fullName: Meridian.Storage.Packaging.PackageProgress.FilesProcessed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesProcessed
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("filesProcessed")]
+
+      public int FilesProcessed { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("filesProcessed")>
+
+      Public Property FilesProcessed As Integer
+  overload: Meridian.Storage.Packaging.PackageProgress.FilesProcessed*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: filesProcessed
+- uid: Meridian.Storage.Packaging.PackageProgress.TotalFiles
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.TotalFiles
+  id: TotalFiles
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: PackageProgress.TotalFiles
+  fullName: Meridian.Storage.Packaging.PackageProgress.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFiles
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 347
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("totalFiles")]
+
+      public int TotalFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("totalFiles")>
+
+      Public Property TotalFiles As Integer
+  overload: Meridian.Storage.Packaging.PackageProgress.TotalFiles*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalFiles
+- uid: Meridian.Storage.Packaging.PackageProgress.BytesProcessed
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.BytesProcessed
+  id: BytesProcessed
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: BytesProcessed
+  nameWithType: PackageProgress.BytesProcessed
+  fullName: Meridian.Storage.Packaging.PackageProgress.BytesProcessed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BytesProcessed
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("bytesProcessed")]
+
+      public long BytesProcessed { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("bytesProcessed")>
+
+      Public Property BytesProcessed As Long
+  overload: Meridian.Storage.Packaging.PackageProgress.BytesProcessed*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: bytesProcessed
+- uid: Meridian.Storage.Packaging.PackageProgress.TotalBytes
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.TotalBytes
+  id: TotalBytes
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: TotalBytes
+  nameWithType: PackageProgress.TotalBytes
+  fullName: Meridian.Storage.Packaging.PackageProgress.TotalBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytes
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 353
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("totalBytes")]
+
+      public long TotalBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalBytes")>
+
+      Public Property TotalBytes As Long
+  overload: Meridian.Storage.Packaging.PackageProgress.TotalBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalBytes
+- uid: Meridian.Storage.Packaging.PackageProgress.PercentComplete
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.PercentComplete
+  id: PercentComplete
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: PercentComplete
+  nameWithType: PackageProgress.PercentComplete
+  fullName: Meridian.Storage.Packaging.PackageProgress.PercentComplete
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PercentComplete
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("percentComplete")]
+
+      public double PercentComplete { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <JsonPropertyName("percentComplete")>
+
+      Public ReadOnly Property PercentComplete As Double
+  overload: Meridian.Storage.Packaging.PackageProgress.PercentComplete*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: percentComplete
+- uid: Meridian.Storage.Packaging.PackageProgress.EstimatedSecondsRemaining
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.EstimatedSecondsRemaining
+  id: EstimatedSecondsRemaining
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: EstimatedSecondsRemaining
+  nameWithType: PackageProgress.EstimatedSecondsRemaining
+  fullName: Meridian.Storage.Packaging.PackageProgress.EstimatedSecondsRemaining
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedSecondsRemaining
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 361
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("estimatedSecondsRemaining")]
+
+      public double? EstimatedSecondsRemaining { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: >-
+      <JsonPropertyName("estimatedSecondsRemaining")>
+
+      Public Property EstimatedSecondsRemaining As Double?
+  overload: Meridian.Storage.Packaging.PackageProgress.EstimatedSecondsRemaining*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: estimatedSecondsRemaining
+- uid: Meridian.Storage.Packaging.PackageProgress.ThroughputBytesPerSecond
+  commentId: P:Meridian.Storage.Packaging.PackageProgress.ThroughputBytesPerSecond
+  id: ThroughputBytesPerSecond
+  parent: Meridian.Storage.Packaging.PackageProgress
+  langs:
+  - csharp
+  - vb
+  name: ThroughputBytesPerSecond
+  nameWithType: PackageProgress.ThroughputBytesPerSecond
+  fullName: Meridian.Storage.Packaging.PackageProgress.ThroughputBytesPerSecond
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ThroughputBytesPerSecond
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 364
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("throughputBytesPerSecond")]
+
+      public double ThroughputBytesPerSecond { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <JsonPropertyName("throughputBytesPerSecond")>
+
+      Public Property ThroughputBytesPerSecond As Double
+  overload: Meridian.Storage.Packaging.PackageProgress.ThroughputBytesPerSecond*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: throughputBytesPerSecond
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Packaging.PackageProgress.JobId*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.JobId
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_JobId
+  name: JobId
+  nameWithType: PackageProgress.JobId
+  fullName: Meridian.Storage.Packaging.PackageProgress.JobId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Packaging.PackageProgress.Stage*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.Stage
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_Stage
+  name: Stage
+  nameWithType: PackageProgress.Stage
+  fullName: Meridian.Storage.Packaging.PackageProgress.Stage
+- uid: Meridian.Storage.Packaging.PackageStage
+  commentId: T:Meridian.Storage.Packaging.PackageStage
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageStage.html
+  name: PackageStage
+  nameWithType: PackageStage
+  fullName: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageProgress.CurrentFile*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.CurrentFile
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_CurrentFile
+  name: CurrentFile
+  nameWithType: PackageProgress.CurrentFile
+  fullName: Meridian.Storage.Packaging.PackageProgress.CurrentFile
+- uid: Meridian.Storage.Packaging.PackageProgress.FilesProcessed*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.FilesProcessed
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_FilesProcessed
+  name: FilesProcessed
+  nameWithType: PackageProgress.FilesProcessed
+  fullName: Meridian.Storage.Packaging.PackageProgress.FilesProcessed
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Packaging.PackageProgress.TotalFiles*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.TotalFiles
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_TotalFiles
+  name: TotalFiles
+  nameWithType: PackageProgress.TotalFiles
+  fullName: Meridian.Storage.Packaging.PackageProgress.TotalFiles
+- uid: Meridian.Storage.Packaging.PackageProgress.BytesProcessed*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.BytesProcessed
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_BytesProcessed
+  name: BytesProcessed
+  nameWithType: PackageProgress.BytesProcessed
+  fullName: Meridian.Storage.Packaging.PackageProgress.BytesProcessed
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Packaging.PackageProgress.TotalBytes*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.TotalBytes
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_TotalBytes
+  name: TotalBytes
+  nameWithType: PackageProgress.TotalBytes
+  fullName: Meridian.Storage.Packaging.PackageProgress.TotalBytes
+- uid: Meridian.Storage.Packaging.PackageProgress.PercentComplete*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.PercentComplete
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_PercentComplete
+  name: PercentComplete
+  nameWithType: PackageProgress.PercentComplete
+  fullName: Meridian.Storage.Packaging.PackageProgress.PercentComplete
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Storage.Packaging.PackageProgress.EstimatedSecondsRemaining*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.EstimatedSecondsRemaining
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_EstimatedSecondsRemaining
+  name: EstimatedSecondsRemaining
+  nameWithType: PackageProgress.EstimatedSecondsRemaining
+  fullName: Meridian.Storage.Packaging.PackageProgress.EstimatedSecondsRemaining
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Packaging.PackageProgress.ThroughputBytesPerSecond*
+  commentId: Overload:Meridian.Storage.Packaging.PackageProgress.ThroughputBytesPerSecond
+  href: Meridian.Storage.Packaging.PackageProgress.html#Meridian_Storage_Packaging_PackageProgress_ThroughputBytesPerSecond
+  name: ThroughputBytesPerSecond
+  nameWithType: PackageProgress.ThroughputBytesPerSecond
+  fullName: Meridian.Storage.Packaging.PackageProgress.ThroughputBytesPerSecond

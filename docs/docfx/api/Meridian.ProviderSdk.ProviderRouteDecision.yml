@@ -1,0 +1,907 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.ProviderRouteDecision
+  commentId: T:Meridian.ProviderSdk.ProviderRouteDecision
+  id: ProviderRouteDecision
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.ProviderRouteDecision.#ctor(System.String,System.String,Meridian.ProviderSdk.ProviderCapabilityKind,Meridian.ProviderSdk.ProviderSafetyMode,System.Int32,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String)
+  - Meridian.ProviderSdk.ProviderRouteDecision.Capability
+  - Meridian.ProviderSdk.ProviderRouteDecision.ConnectionId
+  - Meridian.ProviderSdk.ProviderRouteDecision.FallbackConnectionIds
+  - Meridian.ProviderSdk.ProviderRouteDecision.IsHealthy
+  - Meridian.ProviderSdk.ProviderRouteDecision.PolicyGate
+  - Meridian.ProviderSdk.ProviderRouteDecision.Priority
+  - Meridian.ProviderSdk.ProviderRouteDecision.ProviderFamilyId
+  - Meridian.ProviderSdk.ProviderRouteDecision.ReasonCodes
+  - Meridian.ProviderSdk.ProviderRouteDecision.SafetyMode
+  - Meridian.ProviderSdk.ProviderRouteDecision.ScopeRank
+  langs:
+  - csharp
+  - vb
+  name: ProviderRouteDecision
+  nameWithType: ProviderRouteDecision
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderRouteDecision
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 252
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: One candidate routing decision.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderRouteDecision : IEquatable<ProviderRouteDecision>'
+    content.vb: Public NotInheritable Class ProviderRouteDecision Implements IEquatable(Of ProviderRouteDecision)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.ProviderSdk.ProviderRouteDecision}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.#ctor(System.String,System.String,Meridian.ProviderSdk.ProviderCapabilityKind,Meridian.ProviderSdk.ProviderSafetyMode,System.Int32,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String)
+  commentId: M:Meridian.ProviderSdk.ProviderRouteDecision.#ctor(System.String,System.String,Meridian.ProviderSdk.ProviderCapabilityKind,Meridian.ProviderSdk.ProviderSafetyMode,System.Int32,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String)
+  id: '#ctor(System.String,System.String,Meridian.ProviderSdk.ProviderCapabilityKind,Meridian.ProviderSdk.ProviderSafetyMode,System.Int32,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String)'
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: ProviderRouteDecision(string, string, ProviderCapabilityKind, ProviderSafetyMode, int, int, bool, IReadOnlyList<string>, IReadOnlyList<string>, string?)
+  nameWithType: ProviderRouteDecision.ProviderRouteDecision(string, string, ProviderCapabilityKind, ProviderSafetyMode, int, int, bool, IReadOnlyList<string>, IReadOnlyList<string>, string?)
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ProviderRouteDecision(string, string, Meridian.ProviderSdk.ProviderCapabilityKind, Meridian.ProviderSdk.ProviderSafetyMode, int, int, bool, System.Collections.Generic.IReadOnlyList<string>, System.Collections.Generic.IReadOnlyList<string>, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 252
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: One candidate routing decision.
+  example: []
+  syntax:
+    content: public ProviderRouteDecision(string ConnectionId, string ProviderFamilyId, ProviderCapabilityKind Capability, ProviderSafetyMode SafetyMode, int ScopeRank, int Priority, bool IsHealthy, IReadOnlyList<string> ReasonCodes, IReadOnlyList<string> FallbackConnectionIds, string? PolicyGate = null)
+    parameters:
+    - id: ConnectionId
+      type: System.String
+    - id: ProviderFamilyId
+      type: System.String
+    - id: Capability
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+    - id: SafetyMode
+      type: Meridian.ProviderSdk.ProviderSafetyMode
+    - id: ScopeRank
+      type: System.Int32
+    - id: Priority
+      type: System.Int32
+    - id: IsHealthy
+      type: System.Boolean
+    - id: ReasonCodes
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: FallbackConnectionIds
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: PolicyGate
+      type: System.String
+    content.vb: Public Sub New(ConnectionId As String, ProviderFamilyId As String, Capability As ProviderCapabilityKind, SafetyMode As ProviderSafetyMode, ScopeRank As Integer, Priority As Integer, IsHealthy As Boolean, ReasonCodes As IReadOnlyList(Of String), FallbackConnectionIds As IReadOnlyList(Of String), PolicyGate As String = Nothing)
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.#ctor*
+  nameWithType.vb: ProviderRouteDecision.New(String, String, ProviderCapabilityKind, ProviderSafetyMode, Integer, Integer, Boolean, IReadOnlyList(Of String), IReadOnlyList(Of String), String)
+  fullName.vb: Meridian.ProviderSdk.ProviderRouteDecision.New(String, String, Meridian.ProviderSdk.ProviderCapabilityKind, Meridian.ProviderSdk.ProviderSafetyMode, Integer, Integer, Boolean, System.Collections.Generic.IReadOnlyList(Of String), System.Collections.Generic.IReadOnlyList(Of String), String)
+  name.vb: New(String, String, ProviderCapabilityKind, ProviderSafetyMode, Integer, Integer, Boolean, IReadOnlyList(Of String), IReadOnlyList(Of String), String)
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.ConnectionId
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.ConnectionId
+  id: ConnectionId
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: ConnectionId
+  nameWithType: ProviderRouteDecision.ConnectionId
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ConnectionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionId
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 253
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public string ConnectionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConnectionId As String
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.ConnectionId*
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.ProviderFamilyId
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.ProviderFamilyId
+  id: ProviderFamilyId
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: ProviderFamilyId
+  nameWithType: ProviderRouteDecision.ProviderFamilyId
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ProviderFamilyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderFamilyId
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 254
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public string ProviderFamilyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderFamilyId As String
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.ProviderFamilyId*
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.Capability
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.Capability
+  id: Capability
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: Capability
+  nameWithType: ProviderRouteDecision.Capability
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.Capability
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capability
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 255
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public ProviderCapabilityKind Capability { get; init; }
+    parameters: []
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+    content.vb: Public Property Capability As ProviderCapabilityKind
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.Capability*
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.SafetyMode
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.SafetyMode
+  id: SafetyMode
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: SafetyMode
+  nameWithType: ProviderRouteDecision.SafetyMode
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.SafetyMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SafetyMode
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 256
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public ProviderSafetyMode SafetyMode { get; init; }
+    parameters: []
+    return:
+      type: Meridian.ProviderSdk.ProviderSafetyMode
+    content.vb: Public Property SafetyMode As ProviderSafetyMode
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.SafetyMode*
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.ScopeRank
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.ScopeRank
+  id: ScopeRank
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: ScopeRank
+  nameWithType: ProviderRouteDecision.ScopeRank
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ScopeRank
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScopeRank
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 257
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public int ScopeRank { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ScopeRank As Integer
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.ScopeRank*
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.Priority
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.Priority
+  id: Priority
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: ProviderRouteDecision.Priority
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 258
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.Priority*
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.IsHealthy
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.IsHealthy
+  id: IsHealthy
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: IsHealthy
+  nameWithType: ProviderRouteDecision.IsHealthy
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.IsHealthy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHealthy
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 259
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public bool IsHealthy { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsHealthy As Boolean
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.IsHealthy*
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.ReasonCodes
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.ReasonCodes
+  id: ReasonCodes
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: ReasonCodes
+  nameWithType: ProviderRouteDecision.ReasonCodes
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ReasonCodes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReasonCodes
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 260
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public IReadOnlyList<string> ReasonCodes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property ReasonCodes As IReadOnlyList(Of String)
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.ReasonCodes*
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.FallbackConnectionIds
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.FallbackConnectionIds
+  id: FallbackConnectionIds
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: FallbackConnectionIds
+  nameWithType: ProviderRouteDecision.FallbackConnectionIds
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.FallbackConnectionIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FallbackConnectionIds
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 261
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public IReadOnlyList<string> FallbackConnectionIds { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property FallbackConnectionIds As IReadOnlyList(Of String)
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.FallbackConnectionIds*
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.PolicyGate
+  commentId: P:Meridian.ProviderSdk.ProviderRouteDecision.PolicyGate
+  id: PolicyGate
+  parent: Meridian.ProviderSdk.ProviderRouteDecision
+  langs:
+  - csharp
+  - vb
+  name: PolicyGate
+  nameWithType: ProviderRouteDecision.PolicyGate
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.PolicyGate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PolicyGate
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 262
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: public string? PolicyGate { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PolicyGate As String
+  overload: Meridian.ProviderSdk.ProviderRouteDecision.PolicyGate*
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.ProviderSdk.ProviderRouteDecision}
+  commentId: T:System.IEquatable{Meridian.ProviderSdk.ProviderRouteDecision}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderRouteDecision>
+  nameWithType: IEquatable<ProviderRouteDecision>
+  fullName: System.IEquatable<Meridian.ProviderSdk.ProviderRouteDecision>
+  nameWithType.vb: IEquatable(Of ProviderRouteDecision)
+  fullName.vb: System.IEquatable(Of Meridian.ProviderSdk.ProviderRouteDecision)
+  name.vb: IEquatable(Of ProviderRouteDecision)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.ProviderSdk.ProviderRouteDecision
+    name: ProviderRouteDecision
+    href: Meridian.ProviderSdk.ProviderRouteDecision.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderRouteDecision
+    name: ProviderRouteDecision
+    href: Meridian.ProviderSdk.ProviderRouteDecision.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.#ctor*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.#ctor
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision__ctor_System_String_System_String_Meridian_ProviderSdk_ProviderCapabilityKind_Meridian_ProviderSdk_ProviderSafetyMode_System_Int32_System_Int32_System_Boolean_System_Collections_Generic_IReadOnlyList_System_String__System_Collections_Generic_IReadOnlyList_System_String__System_String_
+  name: ProviderRouteDecision
+  nameWithType: ProviderRouteDecision.ProviderRouteDecision
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ProviderRouteDecision
+  nameWithType.vb: ProviderRouteDecision.New
+  fullName.vb: Meridian.ProviderSdk.ProviderRouteDecision.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind
+  commentId: T:Meridian.ProviderSdk.ProviderCapabilityKind
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderCapabilityKind.html
+  name: ProviderCapabilityKind
+  nameWithType: ProviderCapabilityKind
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderSafetyMode
+  commentId: T:Meridian.ProviderSdk.ProviderSafetyMode
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderSafetyMode.html
+  name: ProviderSafetyMode
+  nameWithType: ProviderSafetyMode
+  fullName: Meridian.ProviderSdk.ProviderSafetyMode
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.ConnectionId*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.ConnectionId
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_ConnectionId
+  name: ConnectionId
+  nameWithType: ProviderRouteDecision.ConnectionId
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ConnectionId
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.ProviderFamilyId*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.ProviderFamilyId
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_ProviderFamilyId
+  name: ProviderFamilyId
+  nameWithType: ProviderRouteDecision.ProviderFamilyId
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ProviderFamilyId
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.Capability*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.Capability
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_Capability
+  name: Capability
+  nameWithType: ProviderRouteDecision.Capability
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.Capability
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.SafetyMode*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.SafetyMode
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_SafetyMode
+  name: SafetyMode
+  nameWithType: ProviderRouteDecision.SafetyMode
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.SafetyMode
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.ScopeRank*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.ScopeRank
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_ScopeRank
+  name: ScopeRank
+  nameWithType: ProviderRouteDecision.ScopeRank
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ScopeRank
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.Priority*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.Priority
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_Priority
+  name: Priority
+  nameWithType: ProviderRouteDecision.Priority
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.Priority
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.IsHealthy*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.IsHealthy
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_IsHealthy
+  name: IsHealthy
+  nameWithType: ProviderRouteDecision.IsHealthy
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.IsHealthy
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.ReasonCodes*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.ReasonCodes
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_ReasonCodes
+  name: ReasonCodes
+  nameWithType: ProviderRouteDecision.ReasonCodes
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.ReasonCodes
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.FallbackConnectionIds*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.FallbackConnectionIds
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_FallbackConnectionIds
+  name: FallbackConnectionIds
+  nameWithType: ProviderRouteDecision.FallbackConnectionIds
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.FallbackConnectionIds
+- uid: Meridian.ProviderSdk.ProviderRouteDecision.PolicyGate*
+  commentId: Overload:Meridian.ProviderSdk.ProviderRouteDecision.PolicyGate
+  href: Meridian.ProviderSdk.ProviderRouteDecision.html#Meridian_ProviderSdk_ProviderRouteDecision_PolicyGate
+  name: PolicyGate
+  nameWithType: ProviderRouteDecision.PolicyGate
+  fullName: Meridian.ProviderSdk.ProviderRouteDecision.PolicyGate

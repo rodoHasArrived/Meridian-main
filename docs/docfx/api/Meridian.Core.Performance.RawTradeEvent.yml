@@ -1,0 +1,753 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Performance.RawTradeEvent
+  commentId: T:Meridian.Core.Performance.RawTradeEvent
+  id: RawTradeEvent
+  parent: Meridian.Core.Performance
+  children:
+  - Meridian.Core.Performance.RawTradeEvent.#ctor(System.Int64,System.Int32,System.Decimal,System.Int64,System.Byte,System.Int64)
+  - Meridian.Core.Performance.RawTradeEvent.Aggressor
+  - Meridian.Core.Performance.RawTradeEvent.Price
+  - Meridian.Core.Performance.RawTradeEvent.Sequence
+  - Meridian.Core.Performance.RawTradeEvent.Size
+  - Meridian.Core.Performance.RawTradeEvent.SymbolHash
+  - Meridian.Core.Performance.RawTradeEvent.TimestampTicks
+  langs:
+  - csharp
+  - vb
+  name: RawTradeEvent
+  nameWithType: RawTradeEvent
+  fullName: Meridian.Core.Performance.RawTradeEvent
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RawTradeEvent
+    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: >-
+    Zero-allocation struct representation of a trade event for the hot path.
+
+    Uses <xref href="System.Runtime.InteropServices.LayoutKind.Sequential" data-throw-if-not-resolved="false"></xref> for predictable memory layout in
+
+    the <xref href="Meridian.Core.Performance.SpscRingBuffer%601" data-throw-if-not-resolved="false"></xref> backing array.
+  remarks: >-
+    The symbol is stored as a pre-computed integer ID from <xref href="Meridian.Core.Performance.SymbolTable" data-throw-if-not-resolved="false"></xref>
+
+    to avoid string references on the producer thread.
+
+    Consumers resolve the ID back to a symbol string via the same table.
+  example: []
+  syntax:
+    content: public readonly struct RawTradeEvent
+    content.vb: Public Structure RawTradeEvent
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Core.Performance.RawTradeEvent.TimestampTicks
+  commentId: F:Meridian.Core.Performance.RawTradeEvent.TimestampTicks
+  id: TimestampTicks
+  parent: Meridian.Core.Performance.RawTradeEvent
+  langs:
+  - csharp
+  - vb
+  name: TimestampTicks
+  nameWithType: RawTradeEvent.TimestampTicks
+  fullName: Meridian.Core.Performance.RawTradeEvent.TimestampTicks
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampTicks
+    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: >-
+    Timestamp as UTC ticks (100-nanosecond intervals since 0001-01-01 UTC,
+
+    i.e. <xref href="System.DateTimeOffset.UtcTicks" data-throw-if-not-resolved="false"></xref>).
+
+    Reconstruct the wall-clock time with
+
+    <code>new DateTimeOffset(TimestampTicks, TimeSpan.Zero)</code>.
+  example: []
+  syntax:
+    content: public readonly long TimestampTicks
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly TimestampTicks As Long
+- uid: Meridian.Core.Performance.RawTradeEvent.SymbolHash
+  commentId: F:Meridian.Core.Performance.RawTradeEvent.SymbolHash
+  id: SymbolHash
+  parent: Meridian.Core.Performance.RawTradeEvent
+  langs:
+  - csharp
+  - vb
+  name: SymbolHash
+  nameWithType: RawTradeEvent.SymbolHash
+  fullName: Meridian.Core.Performance.RawTradeEvent.SymbolHash
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolHash
+    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: >-
+    Pre-computed symbol identifier assigned by <xref href="Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)" data-throw-if-not-resolved="false"></xref>.
+
+    Resolve back to the symbol string with <xref href="Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public readonly int SymbolHash
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly SymbolHash As Integer
+- uid: Meridian.Core.Performance.RawTradeEvent.Price
+  commentId: F:Meridian.Core.Performance.RawTradeEvent.Price
+  id: Price
+  parent: Meridian.Core.Performance.RawTradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: RawTradeEvent.Price
+  fullName: Meridian.Core.Performance.RawTradeEvent.Price
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Execution price of the trade.
+  example: []
+  syntax:
+    content: public readonly decimal Price
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Price As Decimal
+- uid: Meridian.Core.Performance.RawTradeEvent.Size
+  commentId: F:Meridian.Core.Performance.RawTradeEvent.Size
+  id: Size
+  parent: Meridian.Core.Performance.RawTradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: RawTradeEvent.Size
+  fullName: Meridian.Core.Performance.RawTradeEvent.Size
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Number of shares or contracts traded.
+  example: []
+  syntax:
+    content: public readonly long Size
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Size As Long
+- uid: Meridian.Core.Performance.RawTradeEvent.Aggressor
+  commentId: F:Meridian.Core.Performance.RawTradeEvent.Aggressor
+  id: Aggressor
+  parent: Meridian.Core.Performance.RawTradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Aggressor
+  nameWithType: RawTradeEvent.Aggressor
+  fullName: Meridian.Core.Performance.RawTradeEvent.Aggressor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Aggressor
+    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: >-
+    Aggressor side encoded as the underlying byte value of
+
+    <xref href="Meridian.Contracts.Domain.Enums.AggressorSide" data-throw-if-not-resolved="false"></xref>:
+
+    0 = Unknown, 1 = Buy, 2 = Sell.
+  example: []
+  syntax:
+    content: public readonly byte Aggressor
+    return:
+      type: System.Byte
+    content.vb: Public ReadOnly Aggressor As Byte
+- uid: Meridian.Core.Performance.RawTradeEvent.Sequence
+  commentId: F:Meridian.Core.Performance.RawTradeEvent.Sequence
+  id: Sequence
+  parent: Meridian.Core.Performance.RawTradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Sequence
+  nameWithType: RawTradeEvent.Sequence
+  fullName: Meridian.Core.Performance.RawTradeEvent.Sequence
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sequence
+    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Provider-assigned sequence number for ordering and gap detection.
+  example: []
+  syntax:
+    content: public readonly long Sequence
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Sequence As Long
+- uid: Meridian.Core.Performance.RawTradeEvent.#ctor(System.Int64,System.Int32,System.Decimal,System.Int64,System.Byte,System.Int64)
+  commentId: M:Meridian.Core.Performance.RawTradeEvent.#ctor(System.Int64,System.Int32,System.Decimal,System.Int64,System.Byte,System.Int64)
+  id: '#ctor(System.Int64,System.Int32,System.Decimal,System.Int64,System.Byte,System.Int64)'
+  parent: Meridian.Core.Performance.RawTradeEvent
+  langs:
+  - csharp
+  - vb
+  name: RawTradeEvent(long, int, decimal, long, byte, long)
+  nameWithType: RawTradeEvent.RawTradeEvent(long, int, decimal, long, byte, long)
+  fullName: Meridian.Core.Performance.RawTradeEvent.RawTradeEvent(long, int, decimal, long, byte, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Performance/Performance/RawTradeEvent.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Creates a new <xref href="Meridian.Core.Performance.RawTradeEvent" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public RawTradeEvent(long timestampTicks, int symbolHash, decimal price, long size, byte aggressor, long sequence)
+    parameters:
+    - id: timestampTicks
+      type: System.Int64
+      description: Stopwatch timestamp ticks.
+    - id: symbolHash
+      type: System.Int32
+      description: Symbol ID from <xref href="Meridian.Core.Performance.SymbolTable" data-throw-if-not-resolved="false"></xref>.
+    - id: price
+      type: System.Decimal
+      description: Execution price (must be positive).
+    - id: size
+      type: System.Int64
+      description: Trade size (must be non-negative).
+    - id: aggressor
+      type: System.Byte
+      description: Aggressor side byte value.
+    - id: sequence
+      type: System.Int64
+      description: Provider sequence number.
+    content.vb: Public Sub New(timestampTicks As Long, symbolHash As Integer, price As Decimal, size As Long, aggressor As Byte, sequence As Long)
+  overload: Meridian.Core.Performance.RawTradeEvent.#ctor*
+  nameWithType.vb: RawTradeEvent.New(Long, Integer, Decimal, Long, Byte, Long)
+  fullName.vb: Meridian.Core.Performance.RawTradeEvent.New(Long, Integer, Decimal, Long, Byte, Long)
+  name.vb: New(Long, Integer, Decimal, Long, Byte, Long)
+references:
+- uid: System.Runtime.InteropServices.LayoutKind.Sequential
+  commentId: F:System.Runtime.InteropServices.LayoutKind.Sequential
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.runtime.interopservices.layoutkind#system-runtime-interopservices-layoutkind-sequential
+  name: Sequential
+  nameWithType: LayoutKind.Sequential
+  fullName: System.Runtime.InteropServices.LayoutKind.Sequential
+- uid: Meridian.Core.Performance.SpscRingBuffer`1
+  commentId: T:Meridian.Core.Performance.SpscRingBuffer`1
+  href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  name: SpscRingBuffer<T>
+  nameWithType: SpscRingBuffer<T>
+  fullName: Meridian.Core.Performance.SpscRingBuffer<T>
+  nameWithType.vb: SpscRingBuffer(Of T)
+  fullName.vb: Meridian.Core.Performance.SpscRingBuffer(Of T)
+  name.vb: SpscRingBuffer(Of T)
+  spec.csharp:
+  - uid: Meridian.Core.Performance.SpscRingBuffer`1
+    name: SpscRingBuffer
+    href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Core.Performance.SpscRingBuffer`1
+    name: SpscRingBuffer
+    href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Core.Performance.SymbolTable
+  commentId: T:Meridian.Core.Performance.SymbolTable
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.SymbolTable.html
+  name: SymbolTable
+  nameWithType: SymbolTable
+  fullName: Meridian.Core.Performance.SymbolTable
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  href: Meridian.html
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.DateTimeOffset.UtcTicks
+  commentId: P:System.DateTimeOffset.UtcTicks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset.utcticks
+  name: UtcTicks
+  nameWithType: DateTimeOffset.UtcTicks
+  fullName: System.DateTimeOffset.UtcTicks
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+  commentId: M:Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+  isExternal: true
+  href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_GetOrAdd_System_String_
+  name: GetOrAdd(string)
+  nameWithType: SymbolTable.GetOrAdd(string)
+  fullName: Meridian.Core.Performance.SymbolTable.GetOrAdd(string)
+  nameWithType.vb: SymbolTable.GetOrAdd(String)
+  fullName.vb: Meridian.Core.Performance.SymbolTable.GetOrAdd(String)
+  name.vb: GetOrAdd(String)
+  spec.csharp:
+  - uid: Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+    name: GetOrAdd
+    href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_GetOrAdd_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Core.Performance.SymbolTable.GetOrAdd(System.String)
+    name: GetOrAdd
+    href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_GetOrAdd_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+  commentId: M:Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+  isExternal: true
+  href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_TryGetSymbol_System_Int32_
+  name: TryGetSymbol(int)
+  nameWithType: SymbolTable.TryGetSymbol(int)
+  fullName: Meridian.Core.Performance.SymbolTable.TryGetSymbol(int)
+  nameWithType.vb: SymbolTable.TryGetSymbol(Integer)
+  fullName.vb: Meridian.Core.Performance.SymbolTable.TryGetSymbol(Integer)
+  name.vb: TryGetSymbol(Integer)
+  spec.csharp:
+  - uid: Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+    name: TryGetSymbol
+    href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_TryGetSymbol_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Core.Performance.SymbolTable.TryGetSymbol(System.Int32)
+    name: TryGetSymbol
+    href: Meridian.Core.Performance.SymbolTable.html#Meridian_Core_Performance_SymbolTable_TryGetSymbol_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Domain.Enums.AggressorSide
+  commentId: T:Meridian.Contracts.Domain.Enums.AggressorSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.AggressorSide.html
+  name: AggressorSide
+  nameWithType: AggressorSide
+  fullName: Meridian.Contracts.Domain.Enums.AggressorSide
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Core.Performance.RawTradeEvent
+  commentId: T:Meridian.Core.Performance.RawTradeEvent
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.RawTradeEvent.html
+  name: RawTradeEvent
+  nameWithType: RawTradeEvent
+  fullName: Meridian.Core.Performance.RawTradeEvent
+- uid: Meridian.Core.Performance.RawTradeEvent.#ctor*
+  commentId: Overload:Meridian.Core.Performance.RawTradeEvent.#ctor
+  href: Meridian.Core.Performance.RawTradeEvent.html#Meridian_Core_Performance_RawTradeEvent__ctor_System_Int64_System_Int32_System_Decimal_System_Int64_System_Byte_System_Int64_
+  name: RawTradeEvent
+  nameWithType: RawTradeEvent.RawTradeEvent
+  fullName: Meridian.Core.Performance.RawTradeEvent.RawTradeEvent
+  nameWithType.vb: RawTradeEvent.New
+  fullName.vb: Meridian.Core.Performance.RawTradeEvent.New
+  name.vb: New

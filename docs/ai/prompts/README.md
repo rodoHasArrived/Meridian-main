@@ -8,8 +8,8 @@ discover them.
 
 ## Available Prompts
 
-Prompt files are located in [`.github/prompts/`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/prompts).
-Full usage instructions are in [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/promptsREADME.md).
+Prompt files are located in [`.github/prompts/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/prompts).
+Full usage instructions are in [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/prompts/README.md).
 
 ### Development
 
@@ -44,6 +44,11 @@ Full usage instructions are in [`.github/prompts/README.md`](https://github.com/
 | `optimize-performance.prompt.yml` | Identify and fix performance bottlenecks |
 | `configure-deployment.prompt.yml` | Configure deployment (Docker, K8s, systemd) |
 | `wpf-debug-improve.prompt.yml` | Debug and improve WPF desktop UI |
+| `simulate-user-panel.prompt.yml` | Generic manifest-driven user-panel review |
+| `simulate-user-panel-design-partner.prompt.yml` | Product-shaping critique for early ideas and surfaces |
+| `simulate-user-panel-release-gate.prompt.yml` | Near-ship release gate for workflows and screens |
+| `simulate-user-panel-usability-lab.prompt.yml` | Benchmark-oriented user-panel review |
+| `simulate-user-panel-choose-mode.prompt.yml` | Choose the right user-panel mode from artifacts |
 
 ### CI-Generated (Auto-Updated)
 
@@ -70,7 +75,7 @@ Or use them as a starting template and customize for your specific task.
 
 ## Auto-Generation
 
-The [`prompt-generation.yml`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/workflows/prompt-generation.yml) workflow
+The [`prompt-generation.yml`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/workflows/prompt-generation.yml) workflow
 automatically generates targeted prompts from CI/CD failures:
 
 1. Analyzes failed workflow runs (test-matrix, code-quality, security, benchmarks)
@@ -86,7 +91,7 @@ Trigger manually: **Actions → Prompt Generation → Run workflow**
 
 1. Create a new `.prompt.yml` file in `.github/prompts/`
 2. Follow the YAML format used by existing prompts
-3. Add an entry to [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/promptsREADME.md)
+3. Add an entry to [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/prompts/README.md)
 4. Add an entry to this README
 
 ---
@@ -95,10 +100,10 @@ Trigger manually: **Actions → Prompt Generation → Run workflow**
 
 | Resource | Purpose |
 |----------|---------|
-| [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/promptsREADME.md) | Full prompt usage guide |
+| [`.github/prompts/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/prompts/README.md) | Full prompt usage guide |
 | [`docs/ai/agents/README.md`](../agents/README.md) | Full agent definitions |
-| [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian/blob/main/docs/ai/README.md) | Master AI resource index |
+| [`docs/ai/README.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/docs/ai/README.md) | Master AI resource index |
 
 ---
 
-*Last Updated: 2026-03-16*
+*Last Updated: 2026-04-14*

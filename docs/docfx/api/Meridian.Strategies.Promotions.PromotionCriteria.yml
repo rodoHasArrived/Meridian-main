@@ -1,0 +1,561 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Promotions.PromotionCriteria
+  commentId: T:Meridian.Strategies.Promotions.PromotionCriteria
+  id: PromotionCriteria
+  parent: Meridian.Strategies.Promotions
+  children:
+  - Meridian.Strategies.Promotions.PromotionCriteria.#ctor(System.Double,System.Decimal,System.Decimal)
+  - Meridian.Strategies.Promotions.PromotionCriteria.Default
+  - Meridian.Strategies.Promotions.PromotionCriteria.MaxAllowedDrawdownPercent
+  - Meridian.Strategies.Promotions.PromotionCriteria.MinSharpeRatio
+  - Meridian.Strategies.Promotions.PromotionCriteria.MinTotalReturn
+  langs:
+  - csharp
+  - vb
+  name: PromotionCriteria
+  nameWithType: PromotionCriteria
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PromotionCriteria
+    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  summary: Minimum thresholds that a strategy must meet to be eligible for promotion.
+  example: []
+  syntax:
+    content: 'public sealed record PromotionCriteria : IEquatable<PromotionCriteria>'
+    content.vb: Public NotInheritable Class PromotionCriteria Implements IEquatable(Of PromotionCriteria)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Strategies.Promotions.PromotionCriteria}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Promotions.PromotionCriteria.#ctor(System.Double,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Strategies.Promotions.PromotionCriteria.#ctor(System.Double,System.Decimal,System.Decimal)
+  id: '#ctor(System.Double,System.Decimal,System.Decimal)'
+  parent: Meridian.Strategies.Promotions.PromotionCriteria
+  langs:
+  - csharp
+  - vb
+  name: PromotionCriteria(double, decimal, decimal)
+  nameWithType: PromotionCriteria.PromotionCriteria(double, decimal, decimal)
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria.PromotionCriteria(double, decimal, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  summary: Minimum thresholds that a strategy must meet to be eligible for promotion.
+  example: []
+  syntax:
+    content: public PromotionCriteria(double MinSharpeRatio, decimal MaxAllowedDrawdownPercent, decimal MinTotalReturn)
+    parameters:
+    - id: MinSharpeRatio
+      type: System.Double
+    - id: MaxAllowedDrawdownPercent
+      type: System.Decimal
+    - id: MinTotalReturn
+      type: System.Decimal
+    content.vb: Public Sub New(MinSharpeRatio As Double, MaxAllowedDrawdownPercent As Decimal, MinTotalReturn As Decimal)
+  overload: Meridian.Strategies.Promotions.PromotionCriteria.#ctor*
+  nameWithType.vb: PromotionCriteria.New(Double, Decimal, Decimal)
+  fullName.vb: Meridian.Strategies.Promotions.PromotionCriteria.New(Double, Decimal, Decimal)
+  name.vb: New(Double, Decimal, Decimal)
+- uid: Meridian.Strategies.Promotions.PromotionCriteria.MinSharpeRatio
+  commentId: P:Meridian.Strategies.Promotions.PromotionCriteria.MinSharpeRatio
+  id: MinSharpeRatio
+  parent: Meridian.Strategies.Promotions.PromotionCriteria
+  langs:
+  - csharp
+  - vb
+  name: MinSharpeRatio
+  nameWithType: PromotionCriteria.MinSharpeRatio
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria.MinSharpeRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSharpeRatio
+    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  syntax:
+    content: public double MinSharpeRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MinSharpeRatio As Double
+  overload: Meridian.Strategies.Promotions.PromotionCriteria.MinSharpeRatio*
+- uid: Meridian.Strategies.Promotions.PromotionCriteria.MaxAllowedDrawdownPercent
+  commentId: P:Meridian.Strategies.Promotions.PromotionCriteria.MaxAllowedDrawdownPercent
+  id: MaxAllowedDrawdownPercent
+  parent: Meridian.Strategies.Promotions.PromotionCriteria
+  langs:
+  - csharp
+  - vb
+  name: MaxAllowedDrawdownPercent
+  nameWithType: PromotionCriteria.MaxAllowedDrawdownPercent
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria.MaxAllowedDrawdownPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxAllowedDrawdownPercent
+    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  syntax:
+    content: public decimal MaxAllowedDrawdownPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MaxAllowedDrawdownPercent As Decimal
+  overload: Meridian.Strategies.Promotions.PromotionCriteria.MaxAllowedDrawdownPercent*
+- uid: Meridian.Strategies.Promotions.PromotionCriteria.MinTotalReturn
+  commentId: P:Meridian.Strategies.Promotions.PromotionCriteria.MinTotalReturn
+  id: MinTotalReturn
+  parent: Meridian.Strategies.Promotions.PromotionCriteria
+  langs:
+  - csharp
+  - vb
+  name: MinTotalReturn
+  nameWithType: PromotionCriteria.MinTotalReturn
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria.MinTotalReturn
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinTotalReturn
+    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  syntax:
+    content: public decimal MinTotalReturn { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MinTotalReturn As Decimal
+  overload: Meridian.Strategies.Promotions.PromotionCriteria.MinTotalReturn*
+- uid: Meridian.Strategies.Promotions.PromotionCriteria.Default
+  commentId: F:Meridian.Strategies.Promotions.PromotionCriteria.Default
+  id: Default
+  parent: Meridian.Strategies.Promotions.PromotionCriteria
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: PromotionCriteria.Default
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria.Default
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Strategies/Promotions/BacktestToLivePromoter.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Promotions
+  summary: Conservative default criteria suitable for first-time promotion to paper trading.
+  example: []
+  syntax:
+    content: public static readonly PromotionCriteria Default
+    return:
+      type: Meridian.Strategies.Promotions.PromotionCriteria
+    content.vb: Public Shared ReadOnly [Default] As PromotionCriteria
+references:
+- uid: Meridian.Strategies.Promotions
+  commentId: N:Meridian.Strategies.Promotions
+  href: Meridian.html
+  name: Meridian.Strategies.Promotions
+  nameWithType: Meridian.Strategies.Promotions
+  fullName: Meridian.Strategies.Promotions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Strategies.Promotions.PromotionCriteria}
+  commentId: T:System.IEquatable{Meridian.Strategies.Promotions.PromotionCriteria}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PromotionCriteria>
+  nameWithType: IEquatable<PromotionCriteria>
+  fullName: System.IEquatable<Meridian.Strategies.Promotions.PromotionCriteria>
+  nameWithType.vb: IEquatable(Of PromotionCriteria)
+  fullName.vb: System.IEquatable(Of Meridian.Strategies.Promotions.PromotionCriteria)
+  name.vb: IEquatable(Of PromotionCriteria)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Strategies.Promotions.PromotionCriteria
+    name: PromotionCriteria
+    href: Meridian.Strategies.Promotions.PromotionCriteria.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Promotions.PromotionCriteria
+    name: PromotionCriteria
+    href: Meridian.Strategies.Promotions.PromotionCriteria.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Strategies.Promotions.PromotionCriteria.#ctor*
+  commentId: Overload:Meridian.Strategies.Promotions.PromotionCriteria.#ctor
+  href: Meridian.Strategies.Promotions.PromotionCriteria.html#Meridian_Strategies_Promotions_PromotionCriteria__ctor_System_Double_System_Decimal_System_Decimal_
+  name: PromotionCriteria
+  nameWithType: PromotionCriteria.PromotionCriteria
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria.PromotionCriteria
+  nameWithType.vb: PromotionCriteria.New
+  fullName.vb: Meridian.Strategies.Promotions.PromotionCriteria.New
+  name.vb: New
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Strategies.Promotions.PromotionCriteria.MinSharpeRatio*
+  commentId: Overload:Meridian.Strategies.Promotions.PromotionCriteria.MinSharpeRatio
+  href: Meridian.Strategies.Promotions.PromotionCriteria.html#Meridian_Strategies_Promotions_PromotionCriteria_MinSharpeRatio
+  name: MinSharpeRatio
+  nameWithType: PromotionCriteria.MinSharpeRatio
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria.MinSharpeRatio
+- uid: Meridian.Strategies.Promotions.PromotionCriteria.MaxAllowedDrawdownPercent*
+  commentId: Overload:Meridian.Strategies.Promotions.PromotionCriteria.MaxAllowedDrawdownPercent
+  href: Meridian.Strategies.Promotions.PromotionCriteria.html#Meridian_Strategies_Promotions_PromotionCriteria_MaxAllowedDrawdownPercent
+  name: MaxAllowedDrawdownPercent
+  nameWithType: PromotionCriteria.MaxAllowedDrawdownPercent
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria.MaxAllowedDrawdownPercent
+- uid: Meridian.Strategies.Promotions.PromotionCriteria.MinTotalReturn*
+  commentId: Overload:Meridian.Strategies.Promotions.PromotionCriteria.MinTotalReturn
+  href: Meridian.Strategies.Promotions.PromotionCriteria.html#Meridian_Strategies_Promotions_PromotionCriteria_MinTotalReturn
+  name: MinTotalReturn
+  nameWithType: PromotionCriteria.MinTotalReturn
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria.MinTotalReturn
+- uid: Meridian.Strategies.Promotions.PromotionCriteria
+  commentId: T:Meridian.Strategies.Promotions.PromotionCriteria
+  parent: Meridian.Strategies.Promotions
+  href: Meridian.Strategies.Promotions.PromotionCriteria.html
+  name: PromotionCriteria
+  nameWithType: PromotionCriteria
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria

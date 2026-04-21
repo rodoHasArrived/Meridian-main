@@ -1,0 +1,190 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  id: CarryScenarioType
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.CreditSpreadWidening
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.EquityShock
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.LiquidityCrunch
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.RateSpike
+  langs:
+  - csharp
+  - vb
+  name: CarryScenarioType
+  nameWithType: CarryScenarioType
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CarryScenarioType
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public enum CarryScenarioType
+    content.vb: Public Enum CarryScenarioType
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.RateSpike
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.RateSpike
+  id: RateSpike
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  langs:
+  - csharp
+  - vb
+  name: RateSpike
+  nameWithType: CarryScenarioType.RateSpike
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.RateSpike
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateSpike
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: RateSpike = 0
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.CreditSpreadWidening
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.CreditSpreadWidening
+  id: CreditSpreadWidening
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  langs:
+  - csharp
+  - vb
+  name: CreditSpreadWidening
+  nameWithType: CarryScenarioType.CreditSpreadWidening
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.CreditSpreadWidening
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreditSpreadWidening
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: CreditSpreadWidening = 1
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.EquityShock
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.EquityShock
+  id: EquityShock
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  langs:
+  - csharp
+  - vb
+  name: EquityShock
+  nameWithType: CarryScenarioType.EquityShock
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.EquityShock
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EquityShock
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: EquityShock = 2
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.LiquidityCrunch
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.LiquidityCrunch
+  id: LiquidityCrunch
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  langs:
+  - csharp
+  - vb
+  name: LiquidityCrunch
+  nameWithType: CarryScenarioType.LiquidityCrunch
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.LiquidityCrunch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LiquidityCrunch
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: LiquidityCrunch = 3
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType.html
+  name: CarryScenarioType
+  nameWithType: CarryScenarioType
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryScenarioType

@@ -5,17 +5,19 @@ using Meridian.Wpf.ViewModels;
 namespace Meridian.Wpf.Views;
 
 /// <summary>
-/// Code-behind for QuantScriptPage. Intentionally thin: DI wiring and AvalonEdit synchronisation.
+/// Code-behind for QuantScriptPage. Intentionally thin: DI wiring and layout persistence.
 /// ScottPlot rendering is handled by <see cref="Behaviors.PlotRenderBehavior"/> via the attached property.
 /// </summary>
 public partial class QuantScriptPage : Page
 {
     private QuantScriptViewModel? _vm;
-    private bool _suppressSync;
 
-    public QuantScriptPage()
+    public QuantScriptPage(QuantScriptViewModel viewModel)
     {
+        EnsureFallbackResources();
         InitializeComponent();
+        _vm = viewModel;
+        DataContext = _vm;
         Loaded += OnPageLoaded;
         Unloaded += OnPageUnloaded;
     }
@@ -29,35 +31,31 @@ public partial class QuantScriptPage : Page
         var (chartHeight, editorHeight) = _vm.OnActivated();
         if (chartHeight > 0)  ChartRow.Height  = new GridLength(chartHeight,  GridUnitType.Star);
         if (editorHeight > 0) EditorRow.Height = new GridLength(editorHeight, GridUnitType.Star);
-
-        ScriptEditor.TextChanged += OnScriptEditorTextChanged;
-        _vm.PropertyChanged += OnVmPropertyChanged;
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
     {
         if (_vm is null) return;
-        ScriptEditor.TextChanged -= OnScriptEditorTextChanged;
-        _vm.PropertyChanged -= OnVmPropertyChanged;
         _vm.SaveLayout(ChartRow.Height.Value, EditorRow.Height.Value);
         _vm.Dispose();
     }
 
-    private void OnScriptEditorTextChanged(object? sender, EventArgs e)
+    private void EnsureFallbackResources()
     {
-        if (_suppressSync || _vm is null) return;
-        _suppressSync = true;
-        _vm.ScriptSource = ScriptEditor.Text;
-        _suppressSync = false;
-    }
+        if (TryFindResource("ConsoleBackgroundDarkBrush") is null)
+        {
+            Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Meridian.Desktop;component/Styles/ThemeTokens.xaml", UriKind.Relative)
+            });
+        }
 
-    private void OnVmPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName != nameof(QuantScriptViewModel.ScriptSource) || _vm is null) return;
-        if (_suppressSync || ScriptEditor.Text == _vm.ScriptSource) return;
-
-        _suppressSync = true;
-        ScriptEditor.Text = _vm.ScriptSource;
-        _suppressSync = false;
+        if (TryFindResource("PrimaryButtonStyle") is null)
+        {
+            Resources.MergedDictionaries.Add(new ResourceDictionary
+            {
+                Source = new Uri("/Meridian.Desktop;component/Styles/ThemeControls.xaml", UriKind.Relative)
+            });
+        }
     }
 }

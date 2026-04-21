@@ -1,0 +1,197 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState
+  commentId: T:Meridian.Contracts.Treasury.MmfLiquidityState
+  id: MmfLiquidityState
+  parent: Meridian.Contracts.Treasury
+  children:
+  - Meridian.Contracts.Treasury.MmfLiquidityState.Inactive
+  - Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+  - Meridian.Contracts.Treasury.MmfLiquidityState.Restricted
+  - Meridian.Contracts.Treasury.MmfLiquidityState.Suspended
+  langs:
+  - csharp
+  - vb
+  name: MmfLiquidityState
+  nameWithType: MmfLiquidityState
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MmfLiquidityState
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  summary: >-
+    Operational liquidity state of a money market fund.
+
+    Liquid funds are within standard WAM limits and fully operational.
+
+    Restricted funds have elevated WAM or suspended redemptions.
+
+    Suspended funds are under regulatory or operational hold.
+
+    Inactive funds have been deactivated in the security master.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<MmfLiquidityState>))]
+
+      public enum MmfLiquidityState
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of MmfLiquidityState)))>
+
+      Public Enum MmfLiquidityState
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.Treasury.MmfLiquidityState}
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+  commentId: F:Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+  id: Liquid
+  parent: Meridian.Contracts.Treasury.MmfLiquidityState
+  langs:
+  - csharp
+  - vb
+  name: Liquid
+  nameWithType: MmfLiquidityState.Liquid
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Liquid
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: Liquid = 0
+    return:
+      type: Meridian.Contracts.Treasury.MmfLiquidityState
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState.Restricted
+  commentId: F:Meridian.Contracts.Treasury.MmfLiquidityState.Restricted
+  id: Restricted
+  parent: Meridian.Contracts.Treasury.MmfLiquidityState
+  langs:
+  - csharp
+  - vb
+  name: Restricted
+  nameWithType: MmfLiquidityState.Restricted
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState.Restricted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Restricted
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: Restricted = 1
+    return:
+      type: Meridian.Contracts.Treasury.MmfLiquidityState
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState.Suspended
+  commentId: F:Meridian.Contracts.Treasury.MmfLiquidityState.Suspended
+  id: Suspended
+  parent: Meridian.Contracts.Treasury.MmfLiquidityState
+  langs:
+  - csharp
+  - vb
+  name: Suspended
+  nameWithType: MmfLiquidityState.Suspended
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState.Suspended
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Suspended
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: Suspended = 2
+    return:
+      type: Meridian.Contracts.Treasury.MmfLiquidityState
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState.Inactive
+  commentId: F:Meridian.Contracts.Treasury.MmfLiquidityState.Inactive
+  id: Inactive
+  parent: Meridian.Contracts.Treasury.MmfLiquidityState
+  langs:
+  - csharp
+  - vb
+  name: Inactive
+  nameWithType: MmfLiquidityState.Inactive
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState.Inactive
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Inactive
+    path: ../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Treasury
+  syntax:
+    content: Inactive = 3
+    return:
+      type: Meridian.Contracts.Treasury.MmfLiquidityState
+references:
+- uid: Meridian.Contracts.Treasury
+  commentId: N:Meridian.Contracts.Treasury
+  href: Meridian.html
+  name: Meridian.Contracts.Treasury
+  nameWithType: Meridian.Contracts.Treasury
+  fullName: Meridian.Contracts.Treasury
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Treasury
+    name: Treasury
+    href: Meridian.Contracts.Treasury.html
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState
+  commentId: T:Meridian.Contracts.Treasury.MmfLiquidityState
+  parent: Meridian.Contracts.Treasury
+  href: Meridian.Contracts.Treasury.MmfLiquidityState.html
+  name: MmfLiquidityState
+  nameWithType: MmfLiquidityState
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState

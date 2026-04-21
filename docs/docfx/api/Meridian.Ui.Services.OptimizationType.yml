@@ -1,0 +1,284 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.OptimizationType
+  commentId: T:Meridian.Ui.Services.OptimizationType
+  id: OptimizationType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.OptimizationType.Compress
+  - Meridian.Ui.Services.OptimizationType.DeleteStale
+  - Meridian.Ui.Services.OptimizationType.MergeSmallFiles
+  - Meridian.Ui.Services.OptimizationType.MoveToColdTier
+  - Meridian.Ui.Services.OptimizationType.MoveToWarmTier
+  - Meridian.Ui.Services.OptimizationType.PotentialDuplicates
+  - Meridian.Ui.Services.OptimizationType.Recompress
+  - Meridian.Ui.Services.OptimizationType.RemoveDuplicates
+  langs:
+  - csharp
+  - vb
+  name: OptimizationType
+  nameWithType: OptimizationType
+  fullName: Meridian.Ui.Services.OptimizationType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptimizationType
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1401
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Type of optimization.
+  example: []
+  syntax:
+    content: 'public enum OptimizationType : byte'
+    content.vb: Public Enum OptimizationType As Byte
+- uid: Meridian.Ui.Services.OptimizationType.RemoveDuplicates
+  commentId: F:Meridian.Ui.Services.OptimizationType.RemoveDuplicates
+  id: RemoveDuplicates
+  parent: Meridian.Ui.Services.OptimizationType
+  langs:
+  - csharp
+  - vb
+  name: RemoveDuplicates
+  nameWithType: OptimizationType.RemoveDuplicates
+  fullName: Meridian.Ui.Services.OptimizationType.RemoveDuplicates
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveDuplicates
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1403
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: RemoveDuplicates = 0
+    return:
+      type: Meridian.Ui.Services.OptimizationType
+- uid: Meridian.Ui.Services.OptimizationType.PotentialDuplicates
+  commentId: F:Meridian.Ui.Services.OptimizationType.PotentialDuplicates
+  id: PotentialDuplicates
+  parent: Meridian.Ui.Services.OptimizationType
+  langs:
+  - csharp
+  - vb
+  name: PotentialDuplicates
+  nameWithType: OptimizationType.PotentialDuplicates
+  fullName: Meridian.Ui.Services.OptimizationType.PotentialDuplicates
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PotentialDuplicates
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1404
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: PotentialDuplicates = 1
+    return:
+      type: Meridian.Ui.Services.OptimizationType
+- uid: Meridian.Ui.Services.OptimizationType.Compress
+  commentId: F:Meridian.Ui.Services.OptimizationType.Compress
+  id: Compress
+  parent: Meridian.Ui.Services.OptimizationType
+  langs:
+  - csharp
+  - vb
+  name: Compress
+  nameWithType: OptimizationType.Compress
+  fullName: Meridian.Ui.Services.OptimizationType.Compress
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compress
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1405
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Compress = 2
+    return:
+      type: Meridian.Ui.Services.OptimizationType
+- uid: Meridian.Ui.Services.OptimizationType.Recompress
+  commentId: F:Meridian.Ui.Services.OptimizationType.Recompress
+  id: Recompress
+  parent: Meridian.Ui.Services.OptimizationType
+  langs:
+  - csharp
+  - vb
+  name: Recompress
+  nameWithType: OptimizationType.Recompress
+  fullName: Meridian.Ui.Services.OptimizationType.Recompress
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Recompress
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1406
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Recompress = 3
+    return:
+      type: Meridian.Ui.Services.OptimizationType
+- uid: Meridian.Ui.Services.OptimizationType.MergeSmallFiles
+  commentId: F:Meridian.Ui.Services.OptimizationType.MergeSmallFiles
+  id: MergeSmallFiles
+  parent: Meridian.Ui.Services.OptimizationType
+  langs:
+  - csharp
+  - vb
+  name: MergeSmallFiles
+  nameWithType: OptimizationType.MergeSmallFiles
+  fullName: Meridian.Ui.Services.OptimizationType.MergeSmallFiles
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MergeSmallFiles
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1407
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: MergeSmallFiles = 4
+    return:
+      type: Meridian.Ui.Services.OptimizationType
+- uid: Meridian.Ui.Services.OptimizationType.MoveToColdTier
+  commentId: F:Meridian.Ui.Services.OptimizationType.MoveToColdTier
+  id: MoveToColdTier
+  parent: Meridian.Ui.Services.OptimizationType
+  langs:
+  - csharp
+  - vb
+  name: MoveToColdTier
+  nameWithType: OptimizationType.MoveToColdTier
+  fullName: Meridian.Ui.Services.OptimizationType.MoveToColdTier
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MoveToColdTier
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1408
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: MoveToColdTier = 5
+    return:
+      type: Meridian.Ui.Services.OptimizationType
+- uid: Meridian.Ui.Services.OptimizationType.MoveToWarmTier
+  commentId: F:Meridian.Ui.Services.OptimizationType.MoveToWarmTier
+  id: MoveToWarmTier
+  parent: Meridian.Ui.Services.OptimizationType
+  langs:
+  - csharp
+  - vb
+  name: MoveToWarmTier
+  nameWithType: OptimizationType.MoveToWarmTier
+  fullName: Meridian.Ui.Services.OptimizationType.MoveToWarmTier
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MoveToWarmTier
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1409
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: MoveToWarmTier = 6
+    return:
+      type: Meridian.Ui.Services.OptimizationType
+- uid: Meridian.Ui.Services.OptimizationType.DeleteStale
+  commentId: F:Meridian.Ui.Services.OptimizationType.DeleteStale
+  id: DeleteStale
+  parent: Meridian.Ui.Services.OptimizationType
+  langs:
+  - csharp
+  - vb
+  name: DeleteStale
+  nameWithType: OptimizationType.DeleteStale
+  fullName: Meridian.Ui.Services.OptimizationType.DeleteStale
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteStale
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1410
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: DeleteStale = 7
+    return:
+      type: Meridian.Ui.Services.OptimizationType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.OptimizationType
+  commentId: T:Meridian.Ui.Services.OptimizationType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.OptimizationType.html
+  name: OptimizationType
+  nameWithType: OptimizationType
+  fullName: Meridian.Ui.Services.OptimizationType

@@ -1,6 +1,8 @@
+using System.Globalization;
 using System.Windows.Media;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Sdk;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Services;
@@ -21,6 +23,8 @@ public sealed class StrategyRunWorkspaceService
 
     private readonly IStrategyRepository _store;
     private readonly StrategyRunReadService _readService;
+    private readonly BrokerageConfiguration? _brokerageConfiguration;
+    private string? _activeRunId;
 
     public static StrategyRunWorkspaceService Instance => _instance ?? _fallbackInstance.Value;
 
@@ -32,20 +36,32 @@ public sealed class StrategyRunWorkspaceService
     public StrategyRunWorkspaceService(
         IStrategyRepository store,
         PortfolioReadService portfolioReadService,
-        LedgerReadService ledgerReadService)
+        LedgerReadService ledgerReadService,
+        BrokerageConfiguration? brokerageConfiguration = null)
         : this(store, new StrategyRunReadService(
             store ?? throw new ArgumentNullException(nameof(store)),
             portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService)),
-            ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService))))
+            ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService))),
+            brokerageConfiguration)
     {
     }
 
     public StrategyRunWorkspaceService(
         IStrategyRepository store,
-        StrategyRunReadService readService)
+        StrategyRunReadService readService,
+        BrokerageConfiguration? brokerageConfiguration = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _readService = readService ?? throw new ArgumentNullException(nameof(readService));
+        _brokerageConfiguration = brokerageConfiguration;
+    }
+
+    public StrategyRunWorkspaceService(
+        IStrategyRepository store,
+        StrategyRunReadService readService,
+        FundContextService? fundContextService)
+        : this(store, readService, brokerageConfiguration: null)
+    {
     }
 
     public static void SetInstance(StrategyRunWorkspaceService service)
@@ -56,9 +72,27 @@ public sealed class StrategyRunWorkspaceService
     public string? LastRecordedRunId { get; private set; }
 
     public event EventHandler<StrategyRunSummary>? RunRecorded;
+    public event EventHandler<ActiveRunContext?>? ActiveRunContextChanged;
 
     public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(string? strategyId = null, CancellationToken ct = default) =>
         _readService.GetRunsAsync(strategyId, ct: ct);
+
+    public Task<IReadOnlyList<StrategyRunSummary>> GetRecordedRunsAsync(CancellationToken ct = default) =>
+        GetRunsAsync(null, ct);
+
+    public Task<IReadOnlyList<StrategyRunSummary>> GetRecordedRunsForStrategyAsync(string? strategyId, CancellationToken ct = default) =>
+        GetRunsAsync(strategyId, ct);
+
+    public async Task<IReadOnlyList<StrategyRunEntry>> GetRecordedRunEntriesAsync(CancellationToken ct = default)
+    {
+        var runs = new List<StrategyRunEntry>();
+        await foreach (var run in _store.GetAllRunsAsync(ct).WithCancellation(ct).ConfigureAwait(false))
+        {
+            runs.Add(run);
+        }
+
+        return runs;
+    }
 
     public Task<StrategyRunDetail?> GetRunDetailAsync(string runId, CancellationToken ct = default) =>
         _readService.GetRunDetailAsync(runId, ct);
@@ -92,13 +126,34 @@ public sealed class StrategyRunWorkspaceService
 
     public async Task<StrategyRunSummary?> GetLatestRunAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService
+            .GetRunsAsync(strategyId: null, runType: null, ct: ct)
+            .ConfigureAwait(false);
         return runs.FirstOrDefault();
+    }
+
+    public async Task<ActiveRunContext?> GetActiveRunContextAsync(CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(_activeRunId))
+        {
+            return null;
+        }
+
+        return await BuildActiveRunContextAsync(_activeRunId, ct).ConfigureAwait(false);
+    }
+
+    public async Task SetActiveRunContextAsync(string? runId, CancellationToken ct = default)
+    {
+        _activeRunId = string.IsNullOrWhiteSpace(runId) ? null : runId;
+        var activeContext = await GetActiveRunContextAsync(ct).ConfigureAwait(false);
+        ActiveRunContextChanged?.Invoke(this, activeContext);
     }
 
     public async Task<TradingWorkspaceSummary> GetTradingSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService
+            .GetRunsAsync(strategyId: null, runType: null, ct: ct)
+            .ConfigureAwait(false);
 
         var paperRuns = runs.Where(r => r.Mode == StrategyRunMode.Paper).ToList();
         var liveRuns = runs.Where(r => r.Mode == StrategyRunMode.Live).ToList();
@@ -106,12 +161,17 @@ public sealed class StrategyRunWorkspaceService
         var totalEquity = runs
             .Where(r => r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live)
             .Sum(r => r.FinalEquity ?? 0m);
+        var activeRunContext = await GetActiveRunContextAsync(ct).ConfigureAwait(false);
+        var promotionStatus = activeRunContext?.PromotionStatus ?? BuildTradingPromotionStatus(runs);
+        var auditStatus = activeRunContext?.AuditStatus ?? BuildTradingAuditStatus(runs);
+        var validationStatus = activeRunContext?.ValidationStatus ?? BuildTradingValidationStatus(runs);
+        var activeTradingRuns = runs
+            .Where(r => r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live && r.Status == StrategyRunStatus.Running)
+            .ToList();
 
         var positions = new List<TradingActivePositionItem>();
 
-        foreach (var run in runs.Where(r =>
-            r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live &&
-            r.Status == StrategyRunStatus.Running))
+        foreach (var run in activeTradingRuns)
         {
             var detail = await _readService.GetRunDetailAsync(run.RunId, ct).ConfigureAwait(false);
             if (detail?.Portfolio?.Positions is null) continue;
@@ -146,13 +206,19 @@ public sealed class StrategyRunWorkspaceService
             MaxDrawdownFormatted = "—",
             PositionLimitLabel = "—",
             OrderRateLabel = "—",
+            PromotionStatus = promotionStatus,
+            AuditStatus = auditStatus,
+            ValidationStatus = validationStatus,
+            ActiveRunContext = activeRunContext,
             ActivePositions = positions
         };
     }
 
     public async Task<ResearchWorkspaceSummary> GetResearchSummaryAsync(CancellationToken ct = default)
     {
-        var runs = await _readService.GetRunsAsync(null, ct: ct).ConfigureAwait(false);
+        var runs = await _readService
+            .GetRunsAsync(strategyId: null, runType: null, ct: ct)
+            .ConfigureAwait(false);
 
         var promoted = runs.Count(r =>
             r.Mode is StrategyRunMode.Paper or StrategyRunMode.Live);
@@ -255,8 +321,384 @@ public sealed class StrategyRunWorkspaceService
             RunRecorded?.Invoke(this, summary.Summary);
         }
 
+        await SetActiveRunContextAsync(entry.RunId, ct).ConfigureAwait(false);
+
         return entry.RunId;
     }
+
+    private async Task<ActiveRunContext?> BuildActiveRunContextAsync(string runId, CancellationToken ct)
+    {
+        var detail = await _readService.GetRunDetailAsync(runId, ct).ConfigureAwait(false);
+        if (detail is null)
+        {
+            return null;
+        }
+
+        var summary = detail.Summary;
+        var portfolio = detail.Portfolio;
+        var ledger = detail.Ledger;
+
+        var fundScopeLabel = !string.IsNullOrWhiteSpace(summary.FundDisplayName)
+            ? summary.FundDisplayName!
+            : !string.IsNullOrWhiteSpace(summary.FundProfileId)
+                ? $"Fund {summary.FundProfileId}"
+                : "Global scope";
+
+        var portfolioPreview = portfolio is null
+            ? summary.FinalEquity.HasValue
+                ? $"Final equity {summary.FinalEquity.Value.ToString("C0", CultureInfo.InvariantCulture)}."
+                : "Portfolio preview unavailable."
+            : $"{portfolio.Positions.Count} position(s) · equity {portfolio.TotalEquity.ToString("C0", CultureInfo.InvariantCulture)}";
+
+        var ledgerPreview = ledger is null
+            ? !string.IsNullOrWhiteSpace(summary.LedgerReference)
+                ? $"Ledger reference {summary.LedgerReference} is ready for review."
+                : "Ledger preview unavailable."
+            : $"{ledger.JournalEntryCount} journal entr{(ledger.JournalEntryCount == 1 ? "y" : "ies")} · equity {ledger.EquityBalance.ToString("C0", CultureInfo.InvariantCulture)}";
+
+        var riskSummary = summary.NetPnl.HasValue || summary.TotalReturn.HasValue
+            ? $"{FormatCurrency(summary.NetPnl)} net P&L · {FormatPercent(summary.TotalReturn)} total return · {summary.FillCount} fills"
+            : $"{summary.FillCount} fills captured · status {summary.Status}";
+        var promotionStatus = BuildPromotionStatus(detail);
+        var auditStatus = BuildAuditStatus(detail);
+        var validationStatus = BuildValidationStatus(detail);
+
+        return new ActiveRunContext
+        {
+            RunId = summary.RunId,
+            StrategyName = summary.StrategyName,
+            ModeLabel = summary.Mode.ToString(),
+            StatusLabel = summary.Status.ToString(),
+            FundScopeLabel = fundScopeLabel,
+            ParentRunId = summary.ParentRunId,
+            PortfolioPreview = portfolioPreview,
+            LedgerPreview = ledgerPreview,
+            RiskSummary = riskSummary,
+            PromotionStatus = promotionStatus,
+            AuditStatus = auditStatus,
+            ValidationStatus = validationStatus,
+            CanPromoteToPaper =
+                summary.Mode == StrategyRunMode.Backtest &&
+                summary.Status == StrategyRunStatus.Completed &&
+                (summary.Promotion is null ||
+                 summary.Promotion.RequiresReview ||
+                 summary.Promotion.SuggestedNextMode is null ||
+                 summary.Promotion.SuggestedNextMode == StrategyRunMode.Paper)
+        };
+    }
+
+    private static TradingWorkspaceStatusItem BuildPromotionStatus(StrategyRunDetail detail)
+    {
+        var summary = detail.Summary;
+        var promotion = detail.Promotion ?? summary.Promotion;
+        if (promotion is null)
+        {
+            return CreateStatusItem(
+                "Promotion unavailable",
+                "Promotion guidance has not been projected for this run yet.",
+                TradingWorkspaceStatusTone.Info);
+        }
+
+        var detailText = !string.IsNullOrWhiteSpace(summary.ParentRunId)
+            ? $"Source run {summary.ParentRunId} · {promotion.Reason}"
+            : promotion.Reason;
+
+        return promotion.State switch
+        {
+            StrategyRunPromotionState.RequiresCompletion => CreateStatusItem(
+                "Requires completion",
+                detailText,
+                TradingWorkspaceStatusTone.Warning),
+            StrategyRunPromotionState.CandidateForPaper => CreateStatusItem(
+                "Candidate for paper",
+                AppendSuggestedNextMode(detailText, promotion.SuggestedNextMode),
+                TradingWorkspaceStatusTone.Warning),
+            StrategyRunPromotionState.CandidateForLive => CreateStatusItem(
+                "Candidate for live",
+                AppendSuggestedNextMode(detailText, promotion.SuggestedNextMode),
+                TradingWorkspaceStatusTone.Warning),
+            StrategyRunPromotionState.LiveManaged => CreateStatusItem(
+                "Live managed",
+                detailText,
+                TradingWorkspaceStatusTone.Success),
+            _ => CreateStatusItem(
+                "No promotion queue",
+                detailText,
+                TradingWorkspaceStatusTone.Info)
+        };
+    }
+
+    private static TradingWorkspaceStatusItem BuildAuditStatus(StrategyRunDetail detail)
+    {
+        var summary = detail.Summary;
+        var ledger = detail.Ledger;
+        var auditReference = ResolveAuditReference(summary);
+        if (string.IsNullOrWhiteSpace(auditReference))
+        {
+            var missingText = summary.Status == StrategyRunStatus.Running
+                ? "This run is active, but no audit reference has been recorded yet."
+                : "No audit reference has been recorded for this run yet.";
+
+            return CreateStatusItem(
+                "Audit trail pending",
+                missingText,
+                TradingWorkspaceStatusTone.Warning);
+        }
+
+        var ledgerText = ledger is null
+            ? "Ledger review remains available from the same cockpit."
+            : $"{ledger.JournalEntryCount} journal entr{(ledger.JournalEntryCount == 1 ? "y" : "ies")} are ready for review.";
+
+        return CreateStatusItem(
+            "Audit trail ready",
+            $"Reference {auditReference} is linked. {ledgerText}",
+            TradingWorkspaceStatusTone.Success);
+    }
+
+    private TradingWorkspaceStatusItem BuildValidationStatus(StrategyRunDetail detail)
+    {
+        var summary = detail.Summary;
+        if (ShouldSurfaceBrokerValidation(summary))
+        {
+            var validation = BrokerageValidationEvaluator.Evaluate(_brokerageConfiguration);
+            return CreateStatusItem(
+                validation.HasBlockingGap ? "Broker validation gap" : "Broker validation required",
+                validation.Summary,
+                validation.HasBlockingGap ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Info);
+        }
+
+        return BuildGovernanceValidationStatus(detail);
+    }
+
+    private static TradingWorkspaceStatusItem BuildGovernanceValidationStatus(StrategyRunDetail detail)
+    {
+        var summary = detail.Summary;
+        var governance = detail.Governance ?? summary.Governance;
+        var issues = new List<string>(6);
+
+        AppendCoverageIssue(governance?.HasParameters == true, "parameters", issues);
+        AppendCoverageIssue(governance?.HasPortfolio == true, "portfolio", issues);
+        AppendCoverageIssue(governance?.HasLedger == true, "ledger", issues);
+
+        if (detail.Portfolio is { SecurityMissingCount: > 0 } portfolio)
+        {
+            issues.Add($"{portfolio.SecurityMissingCount} unresolved portfolio security match(es)");
+        }
+
+        if (detail.Ledger is { SecurityMissingCount: > 0 } ledger)
+        {
+            issues.Add($"{ledger.SecurityMissingCount} unresolved ledger security match(es)");
+        }
+
+        var boundaryText = summary.Mode switch
+        {
+            StrategyRunMode.Paper => $"{summary.Engine} execution remains a simulated trading boundary until review is complete.",
+            StrategyRunMode.Live => "Broker-connected execution still depends on governed operator review and audit continuity.",
+            _ => "Research results stay out of the trading lane until promotion review is complete."
+        };
+
+        if (issues.Count == 0)
+        {
+            return CreateStatusItem(
+                "Validation ready",
+                $"{boundaryText} Parameters, portfolio, and ledger coverage are all present.",
+                TradingWorkspaceStatusTone.Success);
+        }
+
+        return CreateStatusItem(
+            "Validation attention",
+            $"{boundaryText} Resolve {string.Join("; ", issues)}.",
+            TradingWorkspaceStatusTone.Warning);
+    }
+
+    private static TradingWorkspaceStatusItem BuildTradingPromotionStatus(
+        IReadOnlyList<StrategyRunSummary> runs)
+    {
+        if (runs.Count == 0)
+        {
+            return CreateStatusItem(
+                "Awaiting runs",
+                "Record or select a run to surface promotion review posture.",
+                TradingWorkspaceStatusTone.Info);
+        }
+
+        var candidates = runs
+            .Where(static run => run.Promotion?.State is StrategyRunPromotionState.CandidateForPaper or StrategyRunPromotionState.CandidateForLive)
+            .ToList();
+
+        if (candidates.Count > 0)
+        {
+            var nextCandidate = candidates[0];
+            var nextMode = nextCandidate.Promotion?.SuggestedNextMode?.ToString() ?? "promotion";
+            return CreateStatusItem(
+                "Awaiting review",
+                $"{candidates.Count} run(s) are ready for promotion review. Latest: {nextCandidate.StrategyName} for {nextMode}.",
+                TradingWorkspaceStatusTone.Warning);
+        }
+
+        var incompleteRuns = runs
+            .Where(static run => run.Promotion?.State == StrategyRunPromotionState.RequiresCompletion)
+            .ToList();
+
+        if (incompleteRuns.Count > 0)
+        {
+            return CreateStatusItem(
+                "Completion required",
+                $"{incompleteRuns.Count} run(s) must complete before promotion review can start.",
+                TradingWorkspaceStatusTone.Warning);
+        }
+
+        return CreateStatusItem(
+            "No promotion queue",
+            "Recorded runs do not currently require promotion review.",
+            TradingWorkspaceStatusTone.Info);
+    }
+
+    private static TradingWorkspaceStatusItem BuildTradingAuditStatus(
+        IReadOnlyList<StrategyRunSummary> runs)
+    {
+        if (runs.Count == 0)
+        {
+            return CreateStatusItem(
+                "Awaiting runs",
+                "Audit coverage appears after runs are recorded.",
+                TradingWorkspaceStatusTone.Info);
+        }
+
+        var auditedRuns = runs
+            .Where(static run => run.Governance?.HasAuditTrail == true || !string.IsNullOrWhiteSpace(ResolveAuditReference(run)))
+            .ToList();
+
+        if (auditedRuns.Count == 0)
+        {
+            return CreateStatusItem(
+                "Audit pending",
+                "Recorded runs do not yet expose audit-trail linkage.",
+                TradingWorkspaceStatusTone.Warning);
+        }
+
+        var latestAuditedRun = auditedRuns[0];
+        var auditReference = ResolveAuditReference(latestAuditedRun);
+        var missingCount = runs.Count - auditedRuns.Count;
+
+        if (missingCount == 0)
+        {
+            return CreateStatusItem(
+                "Audit trail ready",
+                $"All recorded runs expose audit linkage. Latest reference: {auditReference ?? "available"}.",
+                TradingWorkspaceStatusTone.Success);
+        }
+
+        return CreateStatusItem(
+            "Partial audit coverage",
+            $"{missingCount} run(s) still need audit linkage. Latest audited run: {latestAuditedRun.StrategyName}.",
+            TradingWorkspaceStatusTone.Warning);
+    }
+
+    private TradingWorkspaceStatusItem BuildTradingValidationStatus(
+        IReadOnlyList<StrategyRunSummary> runs)
+    {
+        if (runs.Count == 0)
+        {
+            return CreateStatusItem(
+                "Awaiting runs",
+                "Validation coverage appears after recorded runs project governance controls.",
+                TradingWorkspaceStatusTone.Info);
+        }
+
+        var brokerValidationRun = runs.FirstOrDefault(ShouldSurfaceBrokerValidation);
+        if (brokerValidationRun is not null)
+        {
+            var validation = BrokerageValidationEvaluator.Evaluate(_brokerageConfiguration);
+            return CreateStatusItem(
+                validation.HasBlockingGap ? "Broker validation gap" : "Broker validation required",
+                validation.Summary,
+                validation.HasBlockingGap ? TradingWorkspaceStatusTone.Warning : TradingWorkspaceStatusTone.Info);
+        }
+
+        var readyRuns = runs
+            .Where(static run => HasValidationCoverage(run))
+            .ToList();
+
+        if (readyRuns.Count == 0)
+        {
+            return CreateStatusItem(
+                "Validation attention",
+                "Recorded runs are still missing parameters, portfolio, or ledger coverage.",
+                TradingWorkspaceStatusTone.Warning);
+        }
+
+        var missingCount = runs.Count - readyRuns.Count;
+        if (missingCount == 0)
+        {
+            return CreateStatusItem(
+                "Validation ready",
+                "All recorded runs project parameters, portfolio, and ledger coverage.",
+                TradingWorkspaceStatusTone.Success);
+        }
+
+        return CreateStatusItem(
+            "Validation attention",
+            $"{missingCount} run(s) still have control gaps; {readyRuns.Count} run(s) already project the required coverage.",
+            TradingWorkspaceStatusTone.Warning);
+    }
+
+    private static bool ShouldSurfaceBrokerValidation(StrategyRunSummary summary) =>
+        summary.Mode == StrategyRunMode.Live ||
+        (summary.Mode == StrategyRunMode.Paper &&
+         summary.Status == StrategyRunStatus.Completed &&
+         summary.Promotion?.SuggestedNextMode == StrategyRunMode.Live);
+
+    private static string? ResolveAuditReference(StrategyRunSummary summary) =>
+        summary.AuditReference
+        ?? summary.Execution?.AuditReference
+        ?? summary.Governance?.AuditReference;
+
+    private static bool HasValidationCoverage(StrategyRunSummary run) =>
+        run.Governance is
+        {
+            HasParameters: true,
+            HasPortfolio: true,
+            HasLedger: true
+        };
+
+    private static string AppendSuggestedNextMode(string detail, StrategyRunMode? suggestedNextMode)
+    {
+        return suggestedNextMode.HasValue
+            ? $"{detail} Next review target: {suggestedNextMode.Value}."
+            : detail;
+    }
+
+    private static void AppendCoverageIssue(bool isPresent, string part, ICollection<string> issues)
+    {
+        if (!isPresent)
+        {
+            issues.Add(part);
+        }
+    }
+
+    private static TradingWorkspaceStatusItem CreateStatusItem(
+        string label,
+        string detail,
+        TradingWorkspaceStatusTone tone) =>
+        new()
+        {
+            Label = label,
+            Detail = detail,
+            Tone = tone
+        };
+
+    private static string FormatCurrency(decimal? value)
+        => !value.HasValue
+            ? "—"
+            : value.Value >= 0m
+                ? $"+{value.Value.ToString("C0", CultureInfo.InvariantCulture)}"
+                : value.Value.ToString("C0", CultureInfo.InvariantCulture);
+
+    private static string FormatPercent(decimal? value)
+        => value.HasValue
+            ? value.Value.ToString("P2", CultureInfo.InvariantCulture)
+            : "—";
 
     private static string BuildFeedReference(BacktestRequest request)
     {

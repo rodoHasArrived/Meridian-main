@@ -1,0 +1,1429 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog
+  commentId: T:Meridian.Application.Scheduling.BackfillExecutionLog
+  id: BackfillExecutionLog
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.BackfillExecutionLog.CompletedAt
+  - Meridian.Application.Scheduling.BackfillExecutionLog.Duration
+  - Meridian.Application.Scheduling.BackfillExecutionLog.ErrorMessage
+  - Meridian.Application.Scheduling.BackfillExecutionLog.ErrorStackTrace
+  - Meridian.Application.Scheduling.BackfillExecutionLog.ExecutionId
+  - Meridian.Application.Scheduling.BackfillExecutionLog.FromDate
+  - Meridian.Application.Scheduling.BackfillExecutionLog.JobId
+  - Meridian.Application.Scheduling.BackfillExecutionLog.ProviderStats
+  - Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleId
+  - Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleName
+  - Meridian.Application.Scheduling.BackfillExecutionLog.ScheduledAt
+  - Meridian.Application.Scheduling.BackfillExecutionLog.StartedAt
+  - Meridian.Application.Scheduling.BackfillExecutionLog.Statistics
+  - Meridian.Application.Scheduling.BackfillExecutionLog.Status
+  - Meridian.Application.Scheduling.BackfillExecutionLog.SymbolResults
+  - Meridian.Application.Scheduling.BackfillExecutionLog.Symbols
+  - Meridian.Application.Scheduling.BackfillExecutionLog.ToDate
+  - Meridian.Application.Scheduling.BackfillExecutionLog.Trigger
+  - Meridian.Application.Scheduling.BackfillExecutionLog.Warnings
+  langs:
+  - csharp
+  - vb
+  name: BackfillExecutionLog
+  nameWithType: BackfillExecutionLog
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillExecutionLog
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: >-
+    Records the execution history of scheduled backfill jobs.
+
+    Provides visibility into past runs, successes, failures, and performance metrics.
+  example: []
+  syntax:
+    content: public sealed class BackfillExecutionLog
+    content.vb: Public NotInheritable Class BackfillExecutionLog
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ExecutionId
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.ExecutionId
+  id: ExecutionId
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: ExecutionId
+  nameWithType: BackfillExecutionLog.ExecutionId
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ExecutionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionId
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Unique identifier for this execution.
+  example: []
+  syntax:
+    content: public string ExecutionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExecutionId As String
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.ExecutionId*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleId
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleId
+  id: ScheduleId
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: ScheduleId
+  nameWithType: BackfillExecutionLog.ScheduleId
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleId
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: ID of the schedule that triggered this execution.
+  example: []
+  syntax:
+    content: public string ScheduleId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScheduleId As String
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleId*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleName
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleName
+  id: ScheduleName
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: ScheduleName
+  nameWithType: BackfillExecutionLog.ScheduleName
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleName
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Name of the schedule for display purposes.
+  example: []
+  syntax:
+    content: public string ScheduleName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScheduleName As String
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleName*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.JobId
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.JobId
+  id: JobId
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: JobId
+  nameWithType: BackfillExecutionLog.JobId
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.JobId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobId
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: ID of the backfill job created for this execution.
+  example: []
+  syntax:
+    content: public string? JobId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property JobId As String
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.JobId*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Trigger
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.Trigger
+  id: Trigger
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: Trigger
+  nameWithType: BackfillExecutionLog.Trigger
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Trigger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trigger
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: How this execution was triggered.
+  example: []
+  syntax:
+    content: public ExecutionTrigger Trigger { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Scheduling.ExecutionTrigger
+    content.vb: Public Property Trigger As ExecutionTrigger
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.Trigger*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Status
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.Status
+  id: Status
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: BackfillExecutionLog.Status
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Current status of the execution.
+  example: []
+  syntax:
+    content: public ExecutionStatus Status { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatus
+    content.vb: Public Property Status As ExecutionStatus
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.Status*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduledAt
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.ScheduledAt
+  id: ScheduledAt
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: ScheduledAt
+  nameWithType: BackfillExecutionLog.ScheduledAt
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduledAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledAt
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: When the execution was scheduled to run.
+  example: []
+  syntax:
+    content: public DateTimeOffset ScheduledAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ScheduledAt As DateTimeOffset
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduledAt*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.StartedAt
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.StartedAt
+  id: StartedAt
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: BackfillExecutionLog.StartedAt
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: When the execution actually started.
+  example: []
+  syntax:
+    content: public DateTimeOffset? StartedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property StartedAt As DateTimeOffset?
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.StartedAt*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.CompletedAt
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: BackfillExecutionLog.CompletedAt
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: When the execution completed.
+  example: []
+  syntax:
+    content: public DateTimeOffset? CompletedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CompletedAt As DateTimeOffset?
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.CompletedAt*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Duration
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.Duration
+  id: Duration
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: Duration
+  nameWithType: BackfillExecutionLog.Duration
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Duration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duration
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Duration of the execution.
+  example: []
+  syntax:
+    content: >-
+      [JsonIgnore]
+
+      public TimeSpan? Duration { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: >-
+      <JsonIgnore>
+
+      Public ReadOnly Property Duration As TimeSpan?
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.Duration*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.FromDate
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.FromDate
+  id: FromDate
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: FromDate
+  nameWithType: BackfillExecutionLog.FromDate
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.FromDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromDate
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Date range that was backfilled.
+  example: []
+  syntax:
+    content: public DateOnly FromDate { get; set; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property FromDate As DateOnly
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.FromDate*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ToDate
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.ToDate
+  id: ToDate
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: ToDate
+  nameWithType: BackfillExecutionLog.ToDate
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ToDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDate
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: End date of the backfill range.
+  example: []
+  syntax:
+    content: public DateOnly ToDate { get; set; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property ToDate As DateOnly
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.ToDate*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Symbols
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.Symbols
+  id: Symbols
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: BackfillExecutionLog.Symbols
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Symbols that were processed.
+  example: []
+  syntax:
+    content: public List<string> Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Symbols As List(Of String)
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.Symbols*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Statistics
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.Statistics
+  id: Statistics
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: Statistics
+  nameWithType: BackfillExecutionLog.Statistics
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Statistics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Statistics
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Detailed statistics from the execution.
+  example: []
+  syntax:
+    content: public ExecutionStatistics Statistics { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatistics
+    content.vb: Public Property Statistics As ExecutionStatistics
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.Statistics*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorMessage
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: BackfillExecutionLog.ErrorMessage
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Error message if the execution failed.
+  example: []
+  syntax:
+    content: public string? ErrorMessage { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorMessage As String
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorMessage*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorStackTrace
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.ErrorStackTrace
+  id: ErrorStackTrace
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: ErrorStackTrace
+  nameWithType: BackfillExecutionLog.ErrorStackTrace
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorStackTrace
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorStackTrace
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Stack trace for debugging (only for failures).
+  example: []
+  syntax:
+    content: public string? ErrorStackTrace { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorStackTrace As String
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorStackTrace*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Warnings
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.Warnings
+  id: Warnings
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: Warnings
+  nameWithType: BackfillExecutionLog.Warnings
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Warnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warnings
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Warnings generated during execution.
+  example: []
+  syntax:
+    content: public List<string> Warnings { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Warnings As List(Of String)
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.Warnings*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ProviderStats
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.ProviderStats
+  id: ProviderStats
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: ProviderStats
+  nameWithType: BackfillExecutionLog.ProviderStats
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ProviderStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderStats
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Provider usage breakdown.
+  example: []
+  syntax:
+    content: public Dictionary<string, ProviderUsageStats> ProviderStats { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Scheduling.ProviderUsageStats}
+    content.vb: Public Property ProviderStats As Dictionary(Of String, ProviderUsageStats)
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.ProviderStats*
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.SymbolResults
+  commentId: P:Meridian.Application.Scheduling.BackfillExecutionLog.SymbolResults
+  id: SymbolResults
+  parent: Meridian.Application.Scheduling.BackfillExecutionLog
+  langs:
+  - csharp
+  - vb
+  name: SymbolResults
+  nameWithType: BackfillExecutionLog.SymbolResults
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.SymbolResults
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolResults
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Per-symbol results.
+  example: []
+  syntax:
+    content: public ConcurrentDictionary<string, SymbolExecutionResult> SymbolResults { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Concurrent.ConcurrentDictionary{System.String,Meridian.Application.Scheduling.SymbolExecutionResult}
+    content.vb: Public Property SymbolResults As ConcurrentDictionary(Of String, SymbolExecutionResult)
+  overload: Meridian.Application.Scheduling.BackfillExecutionLog.SymbolResults*
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ExecutionId*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.ExecutionId
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_ExecutionId
+  name: ExecutionId
+  nameWithType: BackfillExecutionLog.ExecutionId
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ExecutionId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleId*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleId
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_ScheduleId
+  name: ScheduleId
+  nameWithType: BackfillExecutionLog.ScheduleId
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleId
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleName*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleName
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_ScheduleName
+  name: ScheduleName
+  nameWithType: BackfillExecutionLog.ScheduleName
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduleName
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.JobId*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.JobId
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_JobId
+  name: JobId
+  nameWithType: BackfillExecutionLog.JobId
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.JobId
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Trigger*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.Trigger
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_Trigger
+  name: Trigger
+  nameWithType: BackfillExecutionLog.Trigger
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Trigger
+- uid: Meridian.Application.Scheduling.ExecutionTrigger
+  commentId: T:Meridian.Application.Scheduling.ExecutionTrigger
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ExecutionTrigger.html
+  name: ExecutionTrigger
+  nameWithType: ExecutionTrigger
+  fullName: Meridian.Application.Scheduling.ExecutionTrigger
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Status*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.Status
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_Status
+  name: Status
+  nameWithType: BackfillExecutionLog.Status
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Status
+- uid: Meridian.Application.Scheduling.ExecutionStatus
+  commentId: T:Meridian.Application.Scheduling.ExecutionStatus
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ExecutionStatus.html
+  name: ExecutionStatus
+  nameWithType: ExecutionStatus
+  fullName: Meridian.Application.Scheduling.ExecutionStatus
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduledAt*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.ScheduledAt
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_ScheduledAt
+  name: ScheduledAt
+  nameWithType: BackfillExecutionLog.ScheduledAt
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ScheduledAt
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.StartedAt*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.StartedAt
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_StartedAt
+  name: StartedAt
+  nameWithType: BackfillExecutionLog.StartedAt
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.StartedAt
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.CompletedAt*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.CompletedAt
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_CompletedAt
+  name: CompletedAt
+  nameWithType: BackfillExecutionLog.CompletedAt
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.CompletedAt
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Duration*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.Duration
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_Duration
+  name: Duration
+  nameWithType: BackfillExecutionLog.Duration
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Duration
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.FromDate*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.FromDate
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_FromDate
+  name: FromDate
+  nameWithType: BackfillExecutionLog.FromDate
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.FromDate
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ToDate*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.ToDate
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_ToDate
+  name: ToDate
+  nameWithType: BackfillExecutionLog.ToDate
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ToDate
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Symbols*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.Symbols
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_Symbols
+  name: Symbols
+  nameWithType: BackfillExecutionLog.Symbols
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Symbols
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Statistics*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.Statistics
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_Statistics
+  name: Statistics
+  nameWithType: BackfillExecutionLog.Statistics
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Statistics
+- uid: Meridian.Application.Scheduling.ExecutionStatistics
+  commentId: T:Meridian.Application.Scheduling.ExecutionStatistics
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html
+  name: ExecutionStatistics
+  nameWithType: ExecutionStatistics
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorMessage*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.ErrorMessage
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_ErrorMessage
+  name: ErrorMessage
+  nameWithType: BackfillExecutionLog.ErrorMessage
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorMessage
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorStackTrace*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.ErrorStackTrace
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_ErrorStackTrace
+  name: ErrorStackTrace
+  nameWithType: BackfillExecutionLog.ErrorStackTrace
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ErrorStackTrace
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.Warnings*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.Warnings
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_Warnings
+  name: Warnings
+  nameWithType: BackfillExecutionLog.Warnings
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.Warnings
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.ProviderStats*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.ProviderStats
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_ProviderStats
+  name: ProviderStats
+  nameWithType: BackfillExecutionLog.ProviderStats
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.ProviderStats
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Application.Scheduling.ProviderUsageStats}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Application.Scheduling.ProviderUsageStats}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, ProviderUsageStats>
+  nameWithType: Dictionary<string, ProviderUsageStats>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Application.Scheduling.ProviderUsageStats>
+  nameWithType.vb: Dictionary(Of String, ProviderUsageStats)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Application.Scheduling.ProviderUsageStats)
+  name.vb: Dictionary(Of String, ProviderUsageStats)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Scheduling.ProviderUsageStats
+    name: ProviderUsageStats
+    href: Meridian.Application.Scheduling.ProviderUsageStats.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Scheduling.ProviderUsageStats
+    name: ProviderUsageStats
+    href: Meridian.Application.Scheduling.ProviderUsageStats.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Application.Scheduling.BackfillExecutionLog.SymbolResults*
+  commentId: Overload:Meridian.Application.Scheduling.BackfillExecutionLog.SymbolResults
+  href: Meridian.Application.Scheduling.BackfillExecutionLog.html#Meridian_Application_Scheduling_BackfillExecutionLog_SymbolResults
+  name: SymbolResults
+  nameWithType: BackfillExecutionLog.SymbolResults
+  fullName: Meridian.Application.Scheduling.BackfillExecutionLog.SymbolResults
+- uid: System.Collections.Concurrent.ConcurrentDictionary{System.String,Meridian.Application.Scheduling.SymbolExecutionResult}
+  commentId: T:System.Collections.Concurrent.ConcurrentDictionary{System.String,Meridian.Application.Scheduling.SymbolExecutionResult}
+  parent: System.Collections.Concurrent
+  definition: System.Collections.Concurrent.ConcurrentDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.concurrent.concurrentdictionary-2
+  name: ConcurrentDictionary<string, SymbolExecutionResult>
+  nameWithType: ConcurrentDictionary<string, SymbolExecutionResult>
+  fullName: System.Collections.Concurrent.ConcurrentDictionary<string, Meridian.Application.Scheduling.SymbolExecutionResult>
+  nameWithType.vb: ConcurrentDictionary(Of String, SymbolExecutionResult)
+  fullName.vb: System.Collections.Concurrent.ConcurrentDictionary(Of String, Meridian.Application.Scheduling.SymbolExecutionResult)
+  name.vb: ConcurrentDictionary(Of String, SymbolExecutionResult)
+  spec.csharp:
+  - uid: System.Collections.Concurrent.ConcurrentDictionary`2
+    name: ConcurrentDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.concurrent.concurrentdictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Scheduling.SymbolExecutionResult
+    name: SymbolExecutionResult
+    href: Meridian.Application.Scheduling.SymbolExecutionResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Concurrent.ConcurrentDictionary`2
+    name: ConcurrentDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.concurrent.concurrentdictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Scheduling.SymbolExecutionResult
+    name: SymbolExecutionResult
+    href: Meridian.Application.Scheduling.SymbolExecutionResult.html
+  - name: )
+- uid: System.Collections.Concurrent.ConcurrentDictionary`2
+  commentId: T:System.Collections.Concurrent.ConcurrentDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.concurrent.concurrentdictionary-2
+  name: ConcurrentDictionary<TKey, TValue>
+  nameWithType: ConcurrentDictionary<TKey, TValue>
+  fullName: System.Collections.Concurrent.ConcurrentDictionary<TKey, TValue>
+  nameWithType.vb: ConcurrentDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Concurrent.ConcurrentDictionary(Of TKey, TValue)
+  name.vb: ConcurrentDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Concurrent.ConcurrentDictionary`2
+    name: ConcurrentDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.concurrent.concurrentdictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Concurrent.ConcurrentDictionary`2
+    name: ConcurrentDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.concurrent.concurrentdictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Concurrent
+  commentId: N:System.Collections.Concurrent
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Concurrent
+  nameWithType: System.Collections.Concurrent
+  fullName: System.Collections.Concurrent
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Concurrent
+    name: Concurrent
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.concurrent
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Concurrent
+    name: Concurrent
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.concurrent

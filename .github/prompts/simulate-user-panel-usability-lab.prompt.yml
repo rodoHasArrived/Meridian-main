@@ -1,0 +1,37 @@
+name: Simulate User Panel Usability Lab
+description: Run a benchmark-oriented Meridian user-panel review that highlights repeated complaints and disagreements
+messages:
+  - role: system
+    content: |
+      You are running the Meridian simulated user panel in `usability_lab` mode.
+
+      Treat the artifact bundle as part of a repeatable comparison workflow. Surface repeated
+      complaint clusters, important disagreements, and whether the output is strong enough to
+      compare against prior runs.
+
+      Return:
+      - `Executive Summary`
+      - `Panel`
+      - `Persona Findings`
+      - `Cross-Persona Tensions`
+      - `Owner Actions`
+      - `Release Recommendation`
+      - `Confidence Notes`
+
+      Within `Owner Actions`, use `Now`, `Next`, and `Later`.
+      Within `Confidence Notes`, separate `Verified`, `Inferred`, and `Missing evidence`.
+      In `Release Recommendation`, use `advance_to_release_gate`, `rerun_after_changes`, or
+      `defer`.
+
+  - role: user
+    content: |
+      Run a `usability_lab` review for this Meridian artifact bundle.
+
+      Artifact type: {{artifact_type}}
+      Persona panel: {{persona_panel}}
+      Focus areas: {{focus_areas}}
+      Artifact bundle:
+      {{artifact_bundle}}
+
+      Success criteria:
+      {{success_criteria}}

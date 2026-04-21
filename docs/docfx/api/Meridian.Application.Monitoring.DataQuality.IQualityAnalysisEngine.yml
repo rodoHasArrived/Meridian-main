@@ -1,0 +1,444 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine
+  commentId: T:Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine
+  id: IQualityAnalysisEngine
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeAllAsync``1(``0,Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig,System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeWithAsync``1(``0,System.Collections.Generic.IEnumerable{System.String},Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IQualityAnalysisEngine
+  nameWithType: IQualityAnalysisEngine
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IQualityAnalysisEngine
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 323
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Engine for running quality analysis across multiple analyzers.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Quality analysis engine")]
+
+      public interface IQualityAnalysisEngine
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Quality analysis engine")>
+
+      Public Interface IQualityAnalysisEngine
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Quality analysis engine
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeAllAsync``1(``0,Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeAllAsync``1(``0,Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig,System.Threading.CancellationToken)
+  id: AnalyzeAllAsync``1(``0,Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine
+  langs:
+  - csharp
+  - vb
+  name: AnalyzeAllAsync<TData>(TData, QualityAnalyzerConfig?, CancellationToken)
+  nameWithType: IQualityAnalysisEngine.AnalyzeAllAsync<TData>(TData, QualityAnalyzerConfig?, CancellationToken)
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeAllAsync<TData>(TData, Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnalyzeAllAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 334
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Runs all registered analyzers on the provided data.
+  example: []
+  syntax:
+    content: Task<AggregatedQualityReport> AnalyzeAllAsync<TData>(TData data, QualityAnalyzerConfig? config = null, CancellationToken ct = default)
+    parameters:
+    - id: data
+      type: '{TData}'
+      description: Data to analyze.
+    - id: config
+      type: Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig
+      description: Optional configuration.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    typeParameters:
+    - id: TData
+      description: Data type.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport}
+      description: Aggregated analysis results.
+    content.vb: Function AnalyzeAllAsync(Of TData)(data As TData, config As QualityAnalyzerConfig = Nothing, ct As CancellationToken = Nothing) As Task(Of AggregatedQualityReport)
+  overload: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeAllAsync*
+  nameWithType.vb: IQualityAnalysisEngine.AnalyzeAllAsync(Of TData)(TData, QualityAnalyzerConfig, CancellationToken)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeAllAsync(Of TData)(TData, Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig, System.Threading.CancellationToken)
+  name.vb: AnalyzeAllAsync(Of TData)(TData, QualityAnalyzerConfig, CancellationToken)
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeWithAsync``1(``0,System.Collections.Generic.IEnumerable{System.String},Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeWithAsync``1(``0,System.Collections.Generic.IEnumerable{System.String},Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig,System.Threading.CancellationToken)
+  id: AnalyzeWithAsync``1(``0,System.Collections.Generic.IEnumerable{System.String},Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine
+  langs:
+  - csharp
+  - vb
+  name: AnalyzeWithAsync<TData>(TData, IEnumerable<string>, QualityAnalyzerConfig?, CancellationToken)
+  nameWithType: IQualityAnalysisEngine.AnalyzeWithAsync<TData>(TData, IEnumerable<string>, QualityAnalyzerConfig?, CancellationToken)
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeWithAsync<TData>(TData, System.Collections.Generic.IEnumerable<string>, Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnalyzeWithAsync
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Runs specific analyzers by name.
+  example: []
+  syntax:
+    content: Task<AggregatedQualityReport> AnalyzeWithAsync<TData>(TData data, IEnumerable<string> analyzerNames, QualityAnalyzerConfig? config = null, CancellationToken ct = default)
+    parameters:
+    - id: data
+      type: '{TData}'
+      description: Data to analyze.
+    - id: analyzerNames
+      type: System.Collections.Generic.IEnumerable{System.String}
+      description: Names of analyzers to run.
+    - id: config
+      type: Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig
+      description: Optional configuration.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    typeParameters:
+    - id: TData
+      description: Data type.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport}
+      description: Analysis results from specified analyzers.
+    content.vb: Function AnalyzeWithAsync(Of TData)(data As TData, analyzerNames As IEnumerable(Of String), config As QualityAnalyzerConfig = Nothing, ct As CancellationToken = Nothing) As Task(Of AggregatedQualityReport)
+  overload: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeWithAsync*
+  nameWithType.vb: IQualityAnalysisEngine.AnalyzeWithAsync(Of TData)(TData, IEnumerable(Of String), QualityAnalyzerConfig, CancellationToken)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeWithAsync(Of TData)(TData, System.Collections.Generic.IEnumerable(Of String), Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig, System.Threading.CancellationToken)
+  name.vb: AnalyzeWithAsync(Of TData)(TData, IEnumerable(Of String), QualityAnalyzerConfig, CancellationToken)
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeAllAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeAllAsync
+  href: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.html#Meridian_Application_Monitoring_DataQuality_IQualityAnalysisEngine_AnalyzeAllAsync__1___0_Meridian_Application_Monitoring_DataQuality_QualityAnalyzerConfig_System_Threading_CancellationToken_
+  name: AnalyzeAllAsync
+  nameWithType: IQualityAnalysisEngine.AnalyzeAllAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeAllAsync
+- uid: '{TData}'
+  commentId: '!:TData'
+  definition: TData
+  name: TData
+  nameWithType: TData
+  fullName: TData
+- uid: Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig.html
+  name: QualityAnalyzerConfig
+  nameWithType: QualityAnalyzerConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityAnalyzerConfig
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AggregatedQualityReport>
+  nameWithType: Task<AggregatedQualityReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport>
+  nameWithType.vb: Task(Of AggregatedQualityReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport)
+  name.vb: Task(Of AggregatedQualityReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport
+    name: AggregatedQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport
+    name: AggregatedQualityReport
+    href: Meridian.Application.Monitoring.DataQuality.AggregatedQualityReport.html
+  - name: )
+- uid: TData
+  name: TData
+  nameWithType: TData
+  fullName: TData
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeWithAsync*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeWithAsync
+  href: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.html#Meridian_Application_Monitoring_DataQuality_IQualityAnalysisEngine_AnalyzeWithAsync__1___0_System_Collections_Generic_IEnumerable_System_String__Meridian_Application_Monitoring_DataQuality_QualityAnalyzerConfig_System_Threading_CancellationToken_
+  name: AnalyzeWithAsync
+  nameWithType: IQualityAnalysisEngine.AnalyzeWithAsync
+  fullName: Meridian.Application.Monitoring.DataQuality.IQualityAnalysisEngine.AnalyzeWithAsync
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

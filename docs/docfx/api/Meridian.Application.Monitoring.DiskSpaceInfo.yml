@@ -1,0 +1,727 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo
+  commentId: T:Meridian.Application.Monitoring.DiskSpaceInfo
+  id: DiskSpaceInfo
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.DiskSpaceInfo.#ctor(System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Boolean)
+  - Meridian.Application.Monitoring.DiskSpaceInfo.DriveName
+  - Meridian.Application.Monitoring.DiskSpaceInfo.FreeSpaceGb
+  - Meridian.Application.Monitoring.DiskSpaceInfo.IsCritical
+  - Meridian.Application.Monitoring.DiskSpaceInfo.IsWarning
+  - Meridian.Application.Monitoring.DiskSpaceInfo.Path
+  - Meridian.Application.Monitoring.DiskSpaceInfo.TotalSpaceGb
+  - Meridian.Application.Monitoring.DiskSpaceInfo.UsedPercent
+  - Meridian.Application.Monitoring.DiskSpaceInfo.UsedSpaceGb
+  langs:
+  - csharp
+  - vb
+  name: DiskSpaceInfo
+  nameWithType: DiskSpaceInfo
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiskSpaceInfo
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 337
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Information about disk space for a monitored path.
+  example: []
+  syntax:
+    content: 'public readonly record struct DiskSpaceInfo : IEquatable<DiskSpaceInfo>'
+    content.vb: Public Structure DiskSpaceInfo Implements IEquatable(Of DiskSpaceInfo)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DiskSpaceInfo}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.#ctor(System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Application.Monitoring.DiskSpaceInfo.#ctor(System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Boolean)
+  id: '#ctor(System.String,System.String,System.Double,System.Double,System.Double,System.Double,System.Boolean,System.Boolean)'
+  parent: Meridian.Application.Monitoring.DiskSpaceInfo
+  langs:
+  - csharp
+  - vb
+  name: DiskSpaceInfo(string, string, double, double, double, double, bool, bool)
+  nameWithType: DiskSpaceInfo.DiskSpaceInfo(string, string, double, double, double, double, bool, bool)
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.DiskSpaceInfo(string, string, double, double, double, double, bool, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 337
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Information about disk space for a monitored path.
+  example: []
+  syntax:
+    content: public DiskSpaceInfo(string Path, string DriveName, double TotalSpaceGb, double FreeSpaceGb, double UsedSpaceGb, double UsedPercent, bool IsCritical, bool IsWarning)
+    parameters:
+    - id: Path
+      type: System.String
+    - id: DriveName
+      type: System.String
+    - id: TotalSpaceGb
+      type: System.Double
+    - id: FreeSpaceGb
+      type: System.Double
+    - id: UsedSpaceGb
+      type: System.Double
+    - id: UsedPercent
+      type: System.Double
+    - id: IsCritical
+      type: System.Boolean
+    - id: IsWarning
+      type: System.Boolean
+    content.vb: Public Sub New(Path As String, DriveName As String, TotalSpaceGb As Double, FreeSpaceGb As Double, UsedSpaceGb As Double, UsedPercent As Double, IsCritical As Boolean, IsWarning As Boolean)
+  overload: Meridian.Application.Monitoring.DiskSpaceInfo.#ctor*
+  nameWithType.vb: DiskSpaceInfo.New(String, String, Double, Double, Double, Double, Boolean, Boolean)
+  fullName.vb: Meridian.Application.Monitoring.DiskSpaceInfo.New(String, String, Double, Double, Double, Double, Boolean, Boolean)
+  name.vb: New(String, String, Double, Double, Double, Double, Boolean, Boolean)
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.Path
+  commentId: P:Meridian.Application.Monitoring.DiskSpaceInfo.Path
+  id: Path
+  parent: Meridian.Application.Monitoring.DiskSpaceInfo
+  langs:
+  - csharp
+  - vb
+  name: Path
+  nameWithType: DiskSpaceInfo.Path
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.Path
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Path
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 338
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Path { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Path As String
+  overload: Meridian.Application.Monitoring.DiskSpaceInfo.Path*
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.DriveName
+  commentId: P:Meridian.Application.Monitoring.DiskSpaceInfo.DriveName
+  id: DriveName
+  parent: Meridian.Application.Monitoring.DiskSpaceInfo
+  langs:
+  - csharp
+  - vb
+  name: DriveName
+  nameWithType: DiskSpaceInfo.DriveName
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.DriveName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DriveName
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 339
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string DriveName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DriveName As String
+  overload: Meridian.Application.Monitoring.DiskSpaceInfo.DriveName*
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.TotalSpaceGb
+  commentId: P:Meridian.Application.Monitoring.DiskSpaceInfo.TotalSpaceGb
+  id: TotalSpaceGb
+  parent: Meridian.Application.Monitoring.DiskSpaceInfo
+  langs:
+  - csharp
+  - vb
+  name: TotalSpaceGb
+  nameWithType: DiskSpaceInfo.TotalSpaceGb
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.TotalSpaceGb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSpaceGb
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 340
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double TotalSpaceGb { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property TotalSpaceGb As Double
+  overload: Meridian.Application.Monitoring.DiskSpaceInfo.TotalSpaceGb*
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.FreeSpaceGb
+  commentId: P:Meridian.Application.Monitoring.DiskSpaceInfo.FreeSpaceGb
+  id: FreeSpaceGb
+  parent: Meridian.Application.Monitoring.DiskSpaceInfo
+  langs:
+  - csharp
+  - vb
+  name: FreeSpaceGb
+  nameWithType: DiskSpaceInfo.FreeSpaceGb
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.FreeSpaceGb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FreeSpaceGb
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double FreeSpaceGb { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property FreeSpaceGb As Double
+  overload: Meridian.Application.Monitoring.DiskSpaceInfo.FreeSpaceGb*
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.UsedSpaceGb
+  commentId: P:Meridian.Application.Monitoring.DiskSpaceInfo.UsedSpaceGb
+  id: UsedSpaceGb
+  parent: Meridian.Application.Monitoring.DiskSpaceInfo
+  langs:
+  - csharp
+  - vb
+  name: UsedSpaceGb
+  nameWithType: DiskSpaceInfo.UsedSpaceGb
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.UsedSpaceGb
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsedSpaceGb
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 342
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double UsedSpaceGb { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property UsedSpaceGb As Double
+  overload: Meridian.Application.Monitoring.DiskSpaceInfo.UsedSpaceGb*
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.UsedPercent
+  commentId: P:Meridian.Application.Monitoring.DiskSpaceInfo.UsedPercent
+  id: UsedPercent
+  parent: Meridian.Application.Monitoring.DiskSpaceInfo
+  langs:
+  - csharp
+  - vb
+  name: UsedPercent
+  nameWithType: DiskSpaceInfo.UsedPercent
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.UsedPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsedPercent
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 343
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double UsedPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property UsedPercent As Double
+  overload: Meridian.Application.Monitoring.DiskSpaceInfo.UsedPercent*
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.IsCritical
+  commentId: P:Meridian.Application.Monitoring.DiskSpaceInfo.IsCritical
+  id: IsCritical
+  parent: Meridian.Application.Monitoring.DiskSpaceInfo
+  langs:
+  - csharp
+  - vb
+  name: IsCritical
+  nameWithType: DiskSpaceInfo.IsCritical
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.IsCritical
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsCritical
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public bool IsCritical { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsCritical As Boolean
+  overload: Meridian.Application.Monitoring.DiskSpaceInfo.IsCritical*
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.IsWarning
+  commentId: P:Meridian.Application.Monitoring.DiskSpaceInfo.IsWarning
+  id: IsWarning
+  parent: Meridian.Application.Monitoring.DiskSpaceInfo
+  langs:
+  - csharp
+  - vb
+  name: IsWarning
+  nameWithType: DiskSpaceInfo.IsWarning
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.IsWarning
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsWarning
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public bool IsWarning { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsWarning As Boolean
+  overload: Meridian.Application.Monitoring.DiskSpaceInfo.IsWarning*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.DiskSpaceInfo}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DiskSpaceInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DiskSpaceInfo>
+  nameWithType: IEquatable<DiskSpaceInfo>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DiskSpaceInfo>
+  nameWithType.vb: IEquatable(Of DiskSpaceInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DiskSpaceInfo)
+  name.vb: IEquatable(Of DiskSpaceInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DiskSpaceInfo
+    name: DiskSpaceInfo
+    href: Meridian.Application.Monitoring.DiskSpaceInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DiskSpaceInfo
+    name: DiskSpaceInfo
+    href: Meridian.Application.Monitoring.DiskSpaceInfo.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DiskSpaceInfo.#ctor
+  href: Meridian.Application.Monitoring.DiskSpaceInfo.html#Meridian_Application_Monitoring_DiskSpaceInfo__ctor_System_String_System_String_System_Double_System_Double_System_Double_System_Double_System_Boolean_System_Boolean_
+  name: DiskSpaceInfo
+  nameWithType: DiskSpaceInfo.DiskSpaceInfo
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.DiskSpaceInfo
+  nameWithType.vb: DiskSpaceInfo.New
+  fullName.vb: Meridian.Application.Monitoring.DiskSpaceInfo.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.Path*
+  commentId: Overload:Meridian.Application.Monitoring.DiskSpaceInfo.Path
+  href: Meridian.Application.Monitoring.DiskSpaceInfo.html#Meridian_Application_Monitoring_DiskSpaceInfo_Path
+  name: Path
+  nameWithType: DiskSpaceInfo.Path
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.Path
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.DriveName*
+  commentId: Overload:Meridian.Application.Monitoring.DiskSpaceInfo.DriveName
+  href: Meridian.Application.Monitoring.DiskSpaceInfo.html#Meridian_Application_Monitoring_DiskSpaceInfo_DriveName
+  name: DriveName
+  nameWithType: DiskSpaceInfo.DriveName
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.DriveName
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.TotalSpaceGb*
+  commentId: Overload:Meridian.Application.Monitoring.DiskSpaceInfo.TotalSpaceGb
+  href: Meridian.Application.Monitoring.DiskSpaceInfo.html#Meridian_Application_Monitoring_DiskSpaceInfo_TotalSpaceGb
+  name: TotalSpaceGb
+  nameWithType: DiskSpaceInfo.TotalSpaceGb
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.TotalSpaceGb
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.FreeSpaceGb*
+  commentId: Overload:Meridian.Application.Monitoring.DiskSpaceInfo.FreeSpaceGb
+  href: Meridian.Application.Monitoring.DiskSpaceInfo.html#Meridian_Application_Monitoring_DiskSpaceInfo_FreeSpaceGb
+  name: FreeSpaceGb
+  nameWithType: DiskSpaceInfo.FreeSpaceGb
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.FreeSpaceGb
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.UsedSpaceGb*
+  commentId: Overload:Meridian.Application.Monitoring.DiskSpaceInfo.UsedSpaceGb
+  href: Meridian.Application.Monitoring.DiskSpaceInfo.html#Meridian_Application_Monitoring_DiskSpaceInfo_UsedSpaceGb
+  name: UsedSpaceGb
+  nameWithType: DiskSpaceInfo.UsedSpaceGb
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.UsedSpaceGb
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.UsedPercent*
+  commentId: Overload:Meridian.Application.Monitoring.DiskSpaceInfo.UsedPercent
+  href: Meridian.Application.Monitoring.DiskSpaceInfo.html#Meridian_Application_Monitoring_DiskSpaceInfo_UsedPercent
+  name: UsedPercent
+  nameWithType: DiskSpaceInfo.UsedPercent
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.UsedPercent
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.IsCritical*
+  commentId: Overload:Meridian.Application.Monitoring.DiskSpaceInfo.IsCritical
+  href: Meridian.Application.Monitoring.DiskSpaceInfo.html#Meridian_Application_Monitoring_DiskSpaceInfo_IsCritical
+  name: IsCritical
+  nameWithType: DiskSpaceInfo.IsCritical
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.IsCritical
+- uid: Meridian.Application.Monitoring.DiskSpaceInfo.IsWarning*
+  commentId: Overload:Meridian.Application.Monitoring.DiskSpaceInfo.IsWarning
+  href: Meridian.Application.Monitoring.DiskSpaceInfo.html#Meridian_Application_Monitoring_DiskSpaceInfo_IsWarning
+  name: IsWarning
+  nameWithType: DiskSpaceInfo.IsWarning
+  fullName: Meridian.Application.Monitoring.DiskSpaceInfo.IsWarning

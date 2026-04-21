@@ -1,0 +1,574 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.CommissionCashFlow
+  commentId: T:Meridian.Backtesting.Sdk.CommissionCashFlow
+  id: CommissionCashFlow
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.CommissionCashFlow.#ctor(System.DateTimeOffset,System.Decimal,System.String,System.Guid,System.String)
+  - Meridian.Backtesting.Sdk.CommissionCashFlow.OrderId
+  - Meridian.Backtesting.Sdk.CommissionCashFlow.Symbol
+  langs:
+  - csharp
+  - vb
+  name: CommissionCashFlow
+  nameWithType: CommissionCashFlow
+  fullName: Meridian.Backtesting.Sdk.CommissionCashFlow
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionCashFlow
+    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Brokerage commission paid on an order (negative amount).
+  example: []
+  syntax:
+    content: 'public sealed record CommissionCashFlow : CashFlowEntry, IEquatable<CashFlowEntry>, IEquatable<CommissionCashFlow>'
+    content.vb: Public NotInheritable Class CommissionCashFlow Inherits CashFlowEntry Implements IEquatable(Of CashFlowEntry), IEquatable(Of CommissionCashFlow)
+  inheritance:
+  - System.Object
+  - Meridian.Backtesting.Sdk.CashFlowEntry
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.CashFlowEntry}
+  - System.IEquatable{Meridian.Backtesting.Sdk.CommissionCashFlow}
+  inheritedMembers:
+  - Meridian.Backtesting.Sdk.CashFlowEntry.Timestamp
+  - Meridian.Backtesting.Sdk.CashFlowEntry.Amount
+  - Meridian.Backtesting.Sdk.CashFlowEntry.AccountId
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.CommissionCashFlow.#ctor(System.DateTimeOffset,System.Decimal,System.String,System.Guid,System.String)
+  commentId: M:Meridian.Backtesting.Sdk.CommissionCashFlow.#ctor(System.DateTimeOffset,System.Decimal,System.String,System.Guid,System.String)
+  id: '#ctor(System.DateTimeOffset,System.Decimal,System.String,System.Guid,System.String)'
+  parent: Meridian.Backtesting.Sdk.CommissionCashFlow
+  langs:
+  - csharp
+  - vb
+  name: CommissionCashFlow(DateTimeOffset, decimal, string, Guid, string?)
+  nameWithType: CommissionCashFlow.CommissionCashFlow(DateTimeOffset, decimal, string, Guid, string?)
+  fullName: Meridian.Backtesting.Sdk.CommissionCashFlow.CommissionCashFlow(System.DateTimeOffset, decimal, string, System.Guid, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Brokerage commission paid on an order (negative amount).
+  example: []
+  syntax:
+    content: public CommissionCashFlow(DateTimeOffset Timestamp, decimal Amount, string Symbol, Guid OrderId, string? AccountId = null)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Amount
+      type: System.Decimal
+    - id: Symbol
+      type: System.String
+    - id: OrderId
+      type: System.Guid
+    - id: AccountId
+      type: System.String
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Amount As Decimal, Symbol As String, OrderId As Guid, AccountId As String = Nothing)
+  overload: Meridian.Backtesting.Sdk.CommissionCashFlow.#ctor*
+  nameWithType.vb: CommissionCashFlow.New(DateTimeOffset, Decimal, String, Guid, String)
+  fullName.vb: Meridian.Backtesting.Sdk.CommissionCashFlow.New(System.DateTimeOffset, Decimal, String, System.Guid, String)
+  name.vb: New(DateTimeOffset, Decimal, String, Guid, String)
+- uid: Meridian.Backtesting.Sdk.CommissionCashFlow.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.CommissionCashFlow.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.CommissionCashFlow
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: CommissionCashFlow.Symbol
+  fullName: Meridian.Backtesting.Sdk.CommissionCashFlow.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.CommissionCashFlow.Symbol*
+- uid: Meridian.Backtesting.Sdk.CommissionCashFlow.OrderId
+  commentId: P:Meridian.Backtesting.Sdk.CommissionCashFlow.OrderId
+  id: OrderId
+  parent: Meridian.Backtesting.Sdk.CommissionCashFlow
+  langs:
+  - csharp
+  - vb
+  name: OrderId
+  nameWithType: CommissionCashFlow.OrderId
+  fullName: Meridian.Backtesting.Sdk.CommissionCashFlow.OrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderId
+    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid OrderId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property OrderId As Guid
+  overload: Meridian.Backtesting.Sdk.CommissionCashFlow.OrderId*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Backtesting.Sdk.CashFlowEntry
+  commentId: T:Meridian.Backtesting.Sdk.CashFlowEntry
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.CashFlowEntry.html
+  name: CashFlowEntry
+  nameWithType: CashFlowEntry
+  fullName: Meridian.Backtesting.Sdk.CashFlowEntry
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.CashFlowEntry}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.CashFlowEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CashFlowEntry>
+  nameWithType: IEquatable<CashFlowEntry>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.CashFlowEntry>
+  nameWithType.vb: IEquatable(Of CashFlowEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.CashFlowEntry)
+  name.vb: IEquatable(Of CashFlowEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.CashFlowEntry
+    name: CashFlowEntry
+    href: Meridian.Backtesting.Sdk.CashFlowEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.CashFlowEntry
+    name: CashFlowEntry
+    href: Meridian.Backtesting.Sdk.CashFlowEntry.html
+  - name: )
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.CommissionCashFlow}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.CommissionCashFlow}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CommissionCashFlow>
+  nameWithType: IEquatable<CommissionCashFlow>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.CommissionCashFlow>
+  nameWithType.vb: IEquatable(Of CommissionCashFlow)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.CommissionCashFlow)
+  name.vb: IEquatable(Of CommissionCashFlow)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.CommissionCashFlow
+    name: CommissionCashFlow
+    href: Meridian.Backtesting.Sdk.CommissionCashFlow.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.CommissionCashFlow
+    name: CommissionCashFlow
+    href: Meridian.Backtesting.Sdk.CommissionCashFlow.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.CashFlowEntry.Timestamp
+  commentId: P:Meridian.Backtesting.Sdk.CashFlowEntry.Timestamp
+  parent: Meridian.Backtesting.Sdk.CashFlowEntry
+  href: Meridian.Backtesting.Sdk.CashFlowEntry.html#Meridian_Backtesting_Sdk_CashFlowEntry_Timestamp
+  name: Timestamp
+  nameWithType: CashFlowEntry.Timestamp
+  fullName: Meridian.Backtesting.Sdk.CashFlowEntry.Timestamp
+- uid: Meridian.Backtesting.Sdk.CashFlowEntry.Amount
+  commentId: P:Meridian.Backtesting.Sdk.CashFlowEntry.Amount
+  parent: Meridian.Backtesting.Sdk.CashFlowEntry
+  href: Meridian.Backtesting.Sdk.CashFlowEntry.html#Meridian_Backtesting_Sdk_CashFlowEntry_Amount
+  name: Amount
+  nameWithType: CashFlowEntry.Amount
+  fullName: Meridian.Backtesting.Sdk.CashFlowEntry.Amount
+- uid: Meridian.Backtesting.Sdk.CashFlowEntry.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.CashFlowEntry.AccountId
+  parent: Meridian.Backtesting.Sdk.CashFlowEntry
+  href: Meridian.Backtesting.Sdk.CashFlowEntry.html#Meridian_Backtesting_Sdk_CashFlowEntry_AccountId
+  name: AccountId
+  nameWithType: CashFlowEntry.AccountId
+  fullName: Meridian.Backtesting.Sdk.CashFlowEntry.AccountId
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.CommissionCashFlow.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.CommissionCashFlow.#ctor
+  href: Meridian.Backtesting.Sdk.CommissionCashFlow.html#Meridian_Backtesting_Sdk_CommissionCashFlow__ctor_System_DateTimeOffset_System_Decimal_System_String_System_Guid_System_String_
+  name: CommissionCashFlow
+  nameWithType: CommissionCashFlow.CommissionCashFlow
+  fullName: Meridian.Backtesting.Sdk.CommissionCashFlow.CommissionCashFlow
+  nameWithType.vb: CommissionCashFlow.New
+  fullName.vb: Meridian.Backtesting.Sdk.CommissionCashFlow.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Backtesting.Sdk.CommissionCashFlow.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.CommissionCashFlow.Symbol
+  href: Meridian.Backtesting.Sdk.CommissionCashFlow.html#Meridian_Backtesting_Sdk_CommissionCashFlow_Symbol
+  name: Symbol
+  nameWithType: CommissionCashFlow.Symbol
+  fullName: Meridian.Backtesting.Sdk.CommissionCashFlow.Symbol
+- uid: Meridian.Backtesting.Sdk.CommissionCashFlow.OrderId*
+  commentId: Overload:Meridian.Backtesting.Sdk.CommissionCashFlow.OrderId
+  href: Meridian.Backtesting.Sdk.CommissionCashFlow.html#Meridian_Backtesting_Sdk_CommissionCashFlow_OrderId
+  name: OrderId
+  nameWithType: CommissionCashFlow.OrderId
+  fullName: Meridian.Backtesting.Sdk.CommissionCashFlow.OrderId

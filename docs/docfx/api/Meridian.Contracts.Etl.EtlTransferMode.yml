@@ -1,0 +1,132 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Etl.EtlTransferMode
+  commentId: T:Meridian.Contracts.Etl.EtlTransferMode
+  id: EtlTransferMode
+  parent: Meridian.Contracts.Etl
+  children:
+  - Meridian.Contracts.Etl.EtlTransferMode.BatchExchange
+  - Meridian.Contracts.Etl.EtlTransferMode.ScheduledDelivery
+  langs:
+  - csharp
+  - vb
+  name: EtlTransferMode
+  nameWithType: EtlTransferMode
+  fullName: Meridian.Contracts.Etl.EtlTransferMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EtlTransferMode
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter))]
+
+      public enum EtlTransferMode : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter))>
+
+      Public Enum EtlTransferMode As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter
+- uid: Meridian.Contracts.Etl.EtlTransferMode.BatchExchange
+  commentId: F:Meridian.Contracts.Etl.EtlTransferMode.BatchExchange
+  id: BatchExchange
+  parent: Meridian.Contracts.Etl.EtlTransferMode
+  langs:
+  - csharp
+  - vb
+  name: BatchExchange
+  nameWithType: EtlTransferMode.BatchExchange
+  fullName: Meridian.Contracts.Etl.EtlTransferMode.BatchExchange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BatchExchange
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: BatchExchange = 0
+    return:
+      type: Meridian.Contracts.Etl.EtlTransferMode
+- uid: Meridian.Contracts.Etl.EtlTransferMode.ScheduledDelivery
+  commentId: F:Meridian.Contracts.Etl.EtlTransferMode.ScheduledDelivery
+  id: ScheduledDelivery
+  parent: Meridian.Contracts.Etl.EtlTransferMode
+  langs:
+  - csharp
+  - vb
+  name: ScheduledDelivery
+  nameWithType: EtlTransferMode.ScheduledDelivery
+  fullName: Meridian.Contracts.Etl.EtlTransferMode.ScheduledDelivery
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledDelivery
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: ScheduledDelivery = 1
+    return:
+      type: Meridian.Contracts.Etl.EtlTransferMode
+references:
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Contracts.Etl.EtlTransferMode
+  commentId: T:Meridian.Contracts.Etl.EtlTransferMode
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlTransferMode.html
+  name: EtlTransferMode
+  nameWithType: EtlTransferMode
+  fullName: Meridian.Contracts.Etl.EtlTransferMode

@@ -1,0 +1,500 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.TierUsageResponse
+  commentId: T:Meridian.Ui.Services.TierUsageResponse
+  id: TierUsageResponse
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.TierUsageResponse.TierUsage
+  - Meridian.Ui.Services.TierUsageResponse.TotalFiles
+  - Meridian.Ui.Services.TierUsageResponse.TotalSizeBytes
+  langs:
+  - csharp
+  - vb
+  name: TierUsageResponse
+  nameWithType: TierUsageResponse
+  fullName: Meridian.Ui.Services.TierUsageResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TierUsageResponse
+    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: HTTP response payload for tier usage.
+  example: []
+  syntax:
+    content: public sealed class TierUsageResponse
+    content.vb: Public NotInheritable Class TierUsageResponse
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.TierUsageResponse.TierUsage
+  commentId: P:Meridian.Ui.Services.TierUsageResponse.TierUsage
+  id: TierUsage
+  parent: Meridian.Ui.Services.TierUsageResponse
+  langs:
+  - csharp
+  - vb
+  name: TierUsage
+  nameWithType: TierUsageResponse.TierUsage
+  fullName: Meridian.Ui.Services.TierUsageResponse.TierUsage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TierUsage
+    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<TierUsage>? TierUsage { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.TierUsage}
+    content.vb: Public Property TierUsage As List(Of TierUsage)
+  overload: Meridian.Ui.Services.TierUsageResponse.TierUsage*
+- uid: Meridian.Ui.Services.TierUsageResponse.TotalSizeBytes
+  commentId: P:Meridian.Ui.Services.TierUsageResponse.TotalSizeBytes
+  id: TotalSizeBytes
+  parent: Meridian.Ui.Services.TierUsageResponse
+  langs:
+  - csharp
+  - vb
+  name: TotalSizeBytes
+  nameWithType: TierUsageResponse.TotalSizeBytes
+  fullName: Meridian.Ui.Services.TierUsageResponse.TotalSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSizeBytes
+    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalSizeBytes As Long
+  overload: Meridian.Ui.Services.TierUsageResponse.TotalSizeBytes*
+- uid: Meridian.Ui.Services.TierUsageResponse.TotalFiles
+  commentId: P:Meridian.Ui.Services.TierUsageResponse.TotalFiles
+  id: TotalFiles
+  parent: Meridian.Ui.Services.TierUsageResponse
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: TierUsageResponse.TotalFiles
+  fullName: Meridian.Ui.Services.TierUsageResponse.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFiles
+    path: ../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalFiles As Long
+  overload: Meridian.Ui.Services.TierUsageResponse.TotalFiles*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.TierUsageResponse.TierUsage*
+  commentId: Overload:Meridian.Ui.Services.TierUsageResponse.TierUsage
+  href: Meridian.Ui.Services.TierUsageResponse.html#Meridian_Ui_Services_TierUsageResponse_TierUsage
+  name: TierUsage
+  nameWithType: TierUsageResponse.TierUsage
+  fullName: Meridian.Ui.Services.TierUsageResponse.TierUsage
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.TierUsage}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.TierUsage}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<TierUsage>
+  nameWithType: List<TierUsage>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.TierUsage>
+  nameWithType.vb: List(Of TierUsage)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.TierUsage)
+  name.vb: List(Of TierUsage)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.TierUsage
+    name: TierUsage
+    href: Meridian.Ui.Services.TierUsage.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TierUsage
+    name: TierUsage
+    href: Meridian.Ui.Services.TierUsage.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.TierUsageResponse.TotalSizeBytes*
+  commentId: Overload:Meridian.Ui.Services.TierUsageResponse.TotalSizeBytes
+  href: Meridian.Ui.Services.TierUsageResponse.html#Meridian_Ui_Services_TierUsageResponse_TotalSizeBytes
+  name: TotalSizeBytes
+  nameWithType: TierUsageResponse.TotalSizeBytes
+  fullName: Meridian.Ui.Services.TierUsageResponse.TotalSizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.TierUsageResponse.TotalFiles*
+  commentId: Overload:Meridian.Ui.Services.TierUsageResponse.TotalFiles
+  href: Meridian.Ui.Services.TierUsageResponse.html#Meridian_Ui_Services_TierUsageResponse_TotalFiles
+  name: TotalFiles
+  nameWithType: TierUsageResponse.TotalFiles
+  fullName: Meridian.Ui.Services.TierUsageResponse.TotalFiles

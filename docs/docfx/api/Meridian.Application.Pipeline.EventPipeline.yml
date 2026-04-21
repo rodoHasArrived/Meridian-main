@@ -1,0 +1,2310 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.EventPipeline
+  commentId: T:Meridian.Application.Pipeline.EventPipeline
+  id: EventPipeline
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.EventPipeline.#ctor(Meridian.Storage.Interfaces.IStorageSink,Meridian.Application.Pipeline.EventPipelinePolicy,System.Nullable{System.TimeSpan},System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline},Meridian.Application.Pipeline.DroppedEventAuditTrail,Meridian.Storage.Archival.WriteAheadLog,Meridian.Application.Monitoring.IEventMetrics,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Meridian.Application.Pipeline.IEventValidator,Meridian.Application.Pipeline.DeadLetterSink,Meridian.Application.Pipeline.PersistentDedupLedger,System.Int32)
+  - Meridian.Application.Pipeline.EventPipeline.#ctor(Meridian.Storage.Interfaces.IStorageSink,System.Int32,System.Threading.Channels.BoundedChannelFullMode,System.Nullable{System.TimeSpan},System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline},Meridian.Application.Pipeline.DroppedEventAuditTrail,Meridian.Storage.Archival.WriteAheadLog,Meridian.Application.Monitoring.IEventMetrics,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Meridian.Application.Pipeline.IEventValidator,Meridian.Application.Pipeline.DeadLetterSink,Meridian.Application.Pipeline.PersistentDedupLedger,System.Int32)
+  - Meridian.Application.Pipeline.EventPipeline.AuditTrail
+  - Meridian.Application.Pipeline.EventPipeline.AverageProcessingTimeUs
+  - Meridian.Application.Pipeline.EventPipeline.Complete
+  - Meridian.Application.Pipeline.EventPipeline.ConsumedCount
+  - Meridian.Application.Pipeline.EventPipeline.CurrentQueueSize
+  - Meridian.Application.Pipeline.EventPipeline.DeduplicatedCount
+  - Meridian.Application.Pipeline.EventPipeline.DisposeAsync
+  - Meridian.Application.Pipeline.EventPipeline.DroppedCount
+  - Meridian.Application.Pipeline.EventPipeline.EventMetrics
+  - Meridian.Application.Pipeline.EventPipeline.FlushAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.EventPipeline.GetStatistics
+  - Meridian.Application.Pipeline.EventPipeline.IsDeduplicationEnabled
+  - Meridian.Application.Pipeline.EventPipeline.IsUnderPressure
+  - Meridian.Application.Pipeline.EventPipeline.IsValidationEnabled
+  - Meridian.Application.Pipeline.EventPipeline.IsWalEnabled
+  - Meridian.Application.Pipeline.EventPipeline.PeakQueueSize
+  - Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.EventPipeline.PublishedCount
+  - Meridian.Application.Pipeline.EventPipeline.QueueCapacity
+  - Meridian.Application.Pipeline.EventPipeline.QueueUtilization
+  - Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Pipeline.EventPipeline.RecoveredCount
+  - Meridian.Application.Pipeline.EventPipeline.RejectedCount
+  - Meridian.Application.Pipeline.EventPipeline.TimeSinceLastFlush
+  - Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  - Meridian.Application.Pipeline.EventPipeline.TryPublishWithResult(Meridian.Domain.Events.MarketEvent@)
+  langs:
+  - csharp
+  - vb
+  name: EventPipeline
+  nameWithType: EventPipeline
+  fullName: Meridian.Application.Pipeline.EventPipeline
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventPipeline
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    High-throughput, backpressured pipeline that decouples producers from storage sinks.
+
+    Includes periodic flushing, capacity monitoring, performance metrics, and optional
+
+    Write-Ahead Log (WAL) integration for crash-safe durability.
+  remarks: >-
+    When a <xref href="Meridian.Storage.Archival.WriteAheadLog" data-throw-if-not-resolved="false"></xref> is provided, the pipeline ensures events are
+
+    persisted to the WAL before being written to the primary storage sink. On startup,
+
+    <xref href="Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> replays any uncommitted WAL records to the sink, preventing
+
+    data loss from crashes. The consumer writes each event to the WAL, then to the sink,
+
+    and commits the WAL after each batch is flushed. Both <xref href="Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent%40)" data-throw-if-not-resolved="false"></xref> and
+
+    <xref href="Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> defer WAL writes to the consumer to ensure each event is
+
+    recorded exactly once, preventing duplicate records during recovery.
+  example: []
+  syntax:
+    content: 'public sealed class EventPipeline : IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable, IFlushable'
+    content.vb: Public NotInheritable Class EventPipeline Implements IMarketEventPublisher, IBackpressureSignal, IAsyncDisposable, IFlushable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Domain.Events.IMarketEventPublisher
+  - Meridian.Domain.Events.IBackpressureSignal
+  - System.IAsyncDisposable
+  - Meridian.Application.Services.IFlushable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Pipeline.EventPipeline.#ctor(Meridian.Storage.Interfaces.IStorageSink,System.Int32,System.Threading.Channels.BoundedChannelFullMode,System.Nullable{System.TimeSpan},System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline},Meridian.Application.Pipeline.DroppedEventAuditTrail,Meridian.Storage.Archival.WriteAheadLog,Meridian.Application.Monitoring.IEventMetrics,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Meridian.Application.Pipeline.IEventValidator,Meridian.Application.Pipeline.DeadLetterSink,Meridian.Application.Pipeline.PersistentDedupLedger,System.Int32)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.#ctor(Meridian.Storage.Interfaces.IStorageSink,System.Int32,System.Threading.Channels.BoundedChannelFullMode,System.Nullable{System.TimeSpan},System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline},Meridian.Application.Pipeline.DroppedEventAuditTrail,Meridian.Storage.Archival.WriteAheadLog,Meridian.Application.Monitoring.IEventMetrics,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Meridian.Application.Pipeline.IEventValidator,Meridian.Application.Pipeline.DeadLetterSink,Meridian.Application.Pipeline.PersistentDedupLedger,System.Int32)
+  id: '#ctor(Meridian.Storage.Interfaces.IStorageSink,System.Int32,System.Threading.Channels.BoundedChannelFullMode,System.Nullable{System.TimeSpan},System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline},Meridian.Application.Pipeline.DroppedEventAuditTrail,Meridian.Storage.Archival.WriteAheadLog,Meridian.Application.Monitoring.IEventMetrics,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Meridian.Application.Pipeline.IEventValidator,Meridian.Application.Pipeline.DeadLetterSink,Meridian.Application.Pipeline.PersistentDedupLedger,System.Int32)'
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: EventPipeline(IStorageSink, int, BoundedChannelFullMode, TimeSpan?, int, bool, ILogger<EventPipeline>?, DroppedEventAuditTrail?, WriteAheadLog?, IEventMetrics?, TimeSpan?, TimeSpan?, IEventValidator?, DeadLetterSink?, PersistentDedupLedger?, int)
+  nameWithType: EventPipeline.EventPipeline(IStorageSink, int, BoundedChannelFullMode, TimeSpan?, int, bool, ILogger<EventPipeline>?, DroppedEventAuditTrail?, WriteAheadLog?, IEventMetrics?, TimeSpan?, TimeSpan?, IEventValidator?, DeadLetterSink?, PersistentDedupLedger?, int)
+  fullName: Meridian.Application.Pipeline.EventPipeline.EventPipeline(Meridian.Storage.Interfaces.IStorageSink, int, System.Threading.Channels.BoundedChannelFullMode, System.TimeSpan?, int, bool, Microsoft.Extensions.Logging.ILogger<Meridian.Application.Pipeline.EventPipeline>?, Meridian.Application.Pipeline.DroppedEventAuditTrail?, Meridian.Storage.Archival.WriteAheadLog?, Meridian.Application.Monitoring.IEventMetrics?, System.TimeSpan?, System.TimeSpan?, Meridian.Application.Pipeline.IEventValidator?, Meridian.Application.Pipeline.DeadLetterSink?, Meridian.Application.Pipeline.PersistentDedupLedger?, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Creates a new EventPipeline with configurable capacity and flush behavior.
+  example: []
+  syntax:
+    content: public EventPipeline(IStorageSink sink, int capacity = 100000, BoundedChannelFullMode fullMode = BoundedChannelFullMode.DropOldest, TimeSpan? flushInterval = null, int batchSize = 100, bool enablePeriodicFlush = true, ILogger<EventPipeline>? logger = null, DroppedEventAuditTrail? auditTrail = null, WriteAheadLog? wal = null, IEventMetrics? metrics = null, TimeSpan? finalFlushTimeout = null, TimeSpan? sinkFlushTimeout = null, IEventValidator? validator = null, DeadLetterSink? deadLetterSink = null, PersistentDedupLedger? dedupLedger = null, int consumerCount = 1)
+    parameters:
+    - id: sink
+      type: Meridian.Storage.Interfaces.IStorageSink
+      description: The storage sink for persisting events.
+    - id: capacity
+      type: System.Int32
+      description: Maximum number of events the queue can hold. Default is 100,000.
+    - id: fullMode
+      type: System.Threading.Channels.BoundedChannelFullMode
+      description: Behavior when the queue is full. Default is DropOldest.
+    - id: flushInterval
+      type: System.Nullable{System.TimeSpan}
+      description: Interval between periodic flushes. Default is 5 seconds.
+    - id: batchSize
+      type: System.Int32
+      description: Number of events to batch before writing. Default is 100.
+    - id: enablePeriodicFlush
+      type: System.Boolean
+      description: Whether to enable periodic flushing. Default is true.
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline}
+      description: Optional logger for error reporting. When provided, enables logging for flush failures and disposal errors.
+    - id: auditTrail
+      type: Meridian.Application.Pipeline.DroppedEventAuditTrail
+      description: Optional audit trail for tracking dropped events.
+    - id: wal
+      type: Meridian.Storage.Archival.WriteAheadLog
+      description: >-
+        Optional Write-Ahead Log for crash-safe durability. When provided, events
+            are written to the WAL before the primary sink. Call <xref href="Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> on startup
+            to replay any uncommitted records from a prior crash.
+    - id: metrics
+      type: Meridian.Application.Monitoring.IEventMetrics
+      description: Optional event metrics for tracking pipeline throughput.
+    - id: finalFlushTimeout
+      type: System.Nullable{System.TimeSpan}
+      description: Optional timeout for the final flush during shutdown. Defaults to 30 seconds.
+    - id: sinkFlushTimeout
+      type: System.Nullable{System.TimeSpan}
+      description: Optional per-call timeout for periodic sink flushes. Prevents a hung sink from stalling the pipeline indefinitely. Defaults to 60 seconds.
+    - id: validator
+      type: Meridian.Application.Pipeline.IEventValidator
+      description: Optional event validator for pre-persistence validation.
+    - id: deadLetterSink
+      type: Meridian.Application.Pipeline.DeadLetterSink
+      description: Optional dead-letter sink for rejected events.
+    - id: dedupLedger
+      type: Meridian.Application.Pipeline.PersistentDedupLedger
+      description: Optional persistent deduplication ledger for suppressing duplicate events.
+    - id: consumerCount
+      type: System.Int32
+      description: Requested number of consumer tasks for the slow path. Values greater than 1 are honored only when WAL, validation, dead-letter routing, and deduplication are disabled.
+    content.vb: Public Sub New(sink As IStorageSink, capacity As Integer = 100000, fullMode As BoundedChannelFullMode = BoundedChannelFullMode.DropOldest, flushInterval As TimeSpan? = Nothing, batchSize As Integer = 100, enablePeriodicFlush As Boolean = True, logger As ILogger(Of EventPipeline) = Nothing, auditTrail As DroppedEventAuditTrail = Nothing, wal As WriteAheadLog = Nothing, metrics As IEventMetrics = Nothing, finalFlushTimeout As TimeSpan? = Nothing, sinkFlushTimeout As TimeSpan? = Nothing, validator As IEventValidator = Nothing, deadLetterSink As DeadLetterSink = Nothing, dedupLedger As PersistentDedupLedger = Nothing, consumerCount As Integer = 1)
+  overload: Meridian.Application.Pipeline.EventPipeline.#ctor*
+  nameWithType.vb: EventPipeline.New(IStorageSink, Integer, BoundedChannelFullMode, TimeSpan?, Integer, Boolean, ILogger(Of EventPipeline), DroppedEventAuditTrail, WriteAheadLog, IEventMetrics, TimeSpan?, TimeSpan?, IEventValidator, DeadLetterSink, PersistentDedupLedger, Integer)
+  fullName.vb: Meridian.Application.Pipeline.EventPipeline.New(Meridian.Storage.Interfaces.IStorageSink, Integer, System.Threading.Channels.BoundedChannelFullMode, System.TimeSpan?, Integer, Boolean, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Pipeline.EventPipeline), Meridian.Application.Pipeline.DroppedEventAuditTrail, Meridian.Storage.Archival.WriteAheadLog, Meridian.Application.Monitoring.IEventMetrics, System.TimeSpan?, System.TimeSpan?, Meridian.Application.Pipeline.IEventValidator, Meridian.Application.Pipeline.DeadLetterSink, Meridian.Application.Pipeline.PersistentDedupLedger, Integer)
+  name.vb: New(IStorageSink, Integer, BoundedChannelFullMode, TimeSpan?, Integer, Boolean, ILogger(Of EventPipeline), DroppedEventAuditTrail, WriteAheadLog, IEventMetrics, TimeSpan?, TimeSpan?, IEventValidator, DeadLetterSink, PersistentDedupLedger, Integer)
+- uid: Meridian.Application.Pipeline.EventPipeline.#ctor(Meridian.Storage.Interfaces.IStorageSink,Meridian.Application.Pipeline.EventPipelinePolicy,System.Nullable{System.TimeSpan},System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline},Meridian.Application.Pipeline.DroppedEventAuditTrail,Meridian.Storage.Archival.WriteAheadLog,Meridian.Application.Monitoring.IEventMetrics,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Meridian.Application.Pipeline.IEventValidator,Meridian.Application.Pipeline.DeadLetterSink,Meridian.Application.Pipeline.PersistentDedupLedger,System.Int32)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.#ctor(Meridian.Storage.Interfaces.IStorageSink,Meridian.Application.Pipeline.EventPipelinePolicy,System.Nullable{System.TimeSpan},System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline},Meridian.Application.Pipeline.DroppedEventAuditTrail,Meridian.Storage.Archival.WriteAheadLog,Meridian.Application.Monitoring.IEventMetrics,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Meridian.Application.Pipeline.IEventValidator,Meridian.Application.Pipeline.DeadLetterSink,Meridian.Application.Pipeline.PersistentDedupLedger,System.Int32)
+  id: '#ctor(Meridian.Storage.Interfaces.IStorageSink,Meridian.Application.Pipeline.EventPipelinePolicy,System.Nullable{System.TimeSpan},System.Int32,System.Boolean,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline},Meridian.Application.Pipeline.DroppedEventAuditTrail,Meridian.Storage.Archival.WriteAheadLog,Meridian.Application.Monitoring.IEventMetrics,System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},Meridian.Application.Pipeline.IEventValidator,Meridian.Application.Pipeline.DeadLetterSink,Meridian.Application.Pipeline.PersistentDedupLedger,System.Int32)'
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: EventPipeline(IStorageSink, EventPipelinePolicy, TimeSpan?, int, bool, ILogger<EventPipeline>?, DroppedEventAuditTrail?, WriteAheadLog?, IEventMetrics?, TimeSpan?, TimeSpan?, IEventValidator?, DeadLetterSink?, PersistentDedupLedger?, int)
+  nameWithType: EventPipeline.EventPipeline(IStorageSink, EventPipelinePolicy, TimeSpan?, int, bool, ILogger<EventPipeline>?, DroppedEventAuditTrail?, WriteAheadLog?, IEventMetrics?, TimeSpan?, TimeSpan?, IEventValidator?, DeadLetterSink?, PersistentDedupLedger?, int)
+  fullName: Meridian.Application.Pipeline.EventPipeline.EventPipeline(Meridian.Storage.Interfaces.IStorageSink, Meridian.Application.Pipeline.EventPipelinePolicy, System.TimeSpan?, int, bool, Microsoft.Extensions.Logging.ILogger<Meridian.Application.Pipeline.EventPipeline>?, Meridian.Application.Pipeline.DroppedEventAuditTrail?, Meridian.Storage.Archival.WriteAheadLog?, Meridian.Application.Monitoring.IEventMetrics?, System.TimeSpan?, System.TimeSpan?, Meridian.Application.Pipeline.IEventValidator?, Meridian.Application.Pipeline.DeadLetterSink?, Meridian.Application.Pipeline.PersistentDedupLedger?, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Creates a new EventPipeline with a shared policy for capacity and backpressure.
+  example: []
+  syntax:
+    content: public EventPipeline(IStorageSink sink, EventPipelinePolicy policy, TimeSpan? flushInterval = null, int batchSize = 100, bool enablePeriodicFlush = true, ILogger<EventPipeline>? logger = null, DroppedEventAuditTrail? auditTrail = null, WriteAheadLog? wal = null, IEventMetrics? metrics = null, TimeSpan? finalFlushTimeout = null, TimeSpan? sinkFlushTimeout = null, IEventValidator? validator = null, DeadLetterSink? deadLetterSink = null, PersistentDedupLedger? dedupLedger = null, int consumerCount = 1)
+    parameters:
+    - id: sink
+      type: Meridian.Storage.Interfaces.IStorageSink
+      description: The storage sink for persisting events.
+    - id: policy
+      type: Meridian.Application.Pipeline.EventPipelinePolicy
+      description: The pipeline policy controlling channel capacity and backpressure.
+    - id: flushInterval
+      type: System.Nullable{System.TimeSpan}
+      description: Interval between periodic flushes. Default is 5 seconds.
+    - id: batchSize
+      type: System.Int32
+      description: Number of events to batch before writing. Default is 100.
+    - id: enablePeriodicFlush
+      type: System.Boolean
+      description: Whether to enable periodic flushing. Default is true.
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline}
+      description: Optional logger for error reporting.
+    - id: auditTrail
+      type: Meridian.Application.Pipeline.DroppedEventAuditTrail
+      description: Optional audit trail for tracking dropped events.
+    - id: wal
+      type: Meridian.Storage.Archival.WriteAheadLog
+      description: Optional Write-Ahead Log for crash-safe durability.
+    - id: metrics
+      type: Meridian.Application.Monitoring.IEventMetrics
+      description: Optional event metrics for tracking pipeline throughput.
+    - id: finalFlushTimeout
+      type: System.Nullable{System.TimeSpan}
+      description: Optional timeout for the final flush during shutdown. Defaults to 30 seconds.
+    - id: sinkFlushTimeout
+      type: System.Nullable{System.TimeSpan}
+      description: Optional per-call timeout for periodic sink flushes. Defaults to 60 seconds.
+    - id: validator
+      type: Meridian.Application.Pipeline.IEventValidator
+      description: >-
+        Optional event validator. When provided, events that fail validation
+            are routed to the <code class="paramref">deadLetterSink</code> and excluded from primary storage.
+    - id: deadLetterSink
+      type: Meridian.Application.Pipeline.DeadLetterSink
+      description: Optional dead-letter sink for events rejected by the validator.
+    - id: dedupLedger
+      type: Meridian.Application.Pipeline.PersistentDedupLedger
+      description: Optional persistent deduplication ledger for suppressing duplicate events.
+    - id: consumerCount
+      type: System.Int32
+      description: Requested number of consumer tasks for the slow path. Values greater than 1 are honored only when WAL, validation, dead-letter routing, and deduplication are disabled.
+    content.vb: Public Sub New(sink As IStorageSink, policy As EventPipelinePolicy, flushInterval As TimeSpan? = Nothing, batchSize As Integer = 100, enablePeriodicFlush As Boolean = True, logger As ILogger(Of EventPipeline) = Nothing, auditTrail As DroppedEventAuditTrail = Nothing, wal As WriteAheadLog = Nothing, metrics As IEventMetrics = Nothing, finalFlushTimeout As TimeSpan? = Nothing, sinkFlushTimeout As TimeSpan? = Nothing, validator As IEventValidator = Nothing, deadLetterSink As DeadLetterSink = Nothing, dedupLedger As PersistentDedupLedger = Nothing, consumerCount As Integer = 1)
+  overload: Meridian.Application.Pipeline.EventPipeline.#ctor*
+  nameWithType.vb: EventPipeline.New(IStorageSink, EventPipelinePolicy, TimeSpan?, Integer, Boolean, ILogger(Of EventPipeline), DroppedEventAuditTrail, WriteAheadLog, IEventMetrics, TimeSpan?, TimeSpan?, IEventValidator, DeadLetterSink, PersistentDedupLedger, Integer)
+  fullName.vb: Meridian.Application.Pipeline.EventPipeline.New(Meridian.Storage.Interfaces.IStorageSink, Meridian.Application.Pipeline.EventPipelinePolicy, System.TimeSpan?, Integer, Boolean, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Pipeline.EventPipeline), Meridian.Application.Pipeline.DroppedEventAuditTrail, Meridian.Storage.Archival.WriteAheadLog, Meridian.Application.Monitoring.IEventMetrics, System.TimeSpan?, System.TimeSpan?, Meridian.Application.Pipeline.IEventValidator, Meridian.Application.Pipeline.DeadLetterSink, Meridian.Application.Pipeline.PersistentDedupLedger, Integer)
+  name.vb: New(IStorageSink, EventPipelinePolicy, TimeSpan?, Integer, Boolean, ILogger(Of EventPipeline), DroppedEventAuditTrail, WriteAheadLog, IEventMetrics, TimeSpan?, TimeSpan?, IEventValidator, DeadLetterSink, PersistentDedupLedger, Integer)
+- uid: Meridian.Application.Pipeline.EventPipeline.PublishedCount
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.PublishedCount
+  id: PublishedCount
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: PublishedCount
+  nameWithType: EventPipeline.PublishedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.PublishedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishedCount
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 265
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of events successfully published to the pipeline.
+  example: []
+  syntax:
+    content: public long PublishedCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property PublishedCount As Long
+  overload: Meridian.Application.Pipeline.EventPipeline.PublishedCount*
+- uid: Meridian.Application.Pipeline.EventPipeline.DroppedCount
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.DroppedCount
+  id: DroppedCount
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: DroppedCount
+  nameWithType: EventPipeline.DroppedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.DroppedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DroppedCount
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 268
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of events dropped due to backpressure.
+  example: []
+  syntax:
+    content: public long DroppedCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property DroppedCount As Long
+  overload: Meridian.Application.Pipeline.EventPipeline.DroppedCount*
+- uid: Meridian.Application.Pipeline.EventPipeline.ConsumedCount
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.ConsumedCount
+  id: ConsumedCount
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: ConsumedCount
+  nameWithType: EventPipeline.ConsumedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.ConsumedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsumedCount
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 271
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of events consumed and written to storage.
+  example: []
+  syntax:
+    content: public long ConsumedCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property ConsumedCount As Long
+  overload: Meridian.Application.Pipeline.EventPipeline.ConsumedCount*
+- uid: Meridian.Application.Pipeline.EventPipeline.RecoveredCount
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.RecoveredCount
+  id: RecoveredCount
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: RecoveredCount
+  nameWithType: EventPipeline.RecoveredCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.RecoveredCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecoveredCount
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 274
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of events recovered from WAL on startup.
+  example: []
+  syntax:
+    content: public long RecoveredCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property RecoveredCount As Long
+  overload: Meridian.Application.Pipeline.EventPipeline.RecoveredCount*
+- uid: Meridian.Application.Pipeline.EventPipeline.RejectedCount
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.RejectedCount
+  id: RejectedCount
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: RejectedCount
+  nameWithType: EventPipeline.RejectedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.RejectedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RejectedCount
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 277
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of events rejected by the validator and sent to the dead-letter sink.
+  example: []
+  syntax:
+    content: public long RejectedCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property RejectedCount As Long
+  overload: Meridian.Application.Pipeline.EventPipeline.RejectedCount*
+- uid: Meridian.Application.Pipeline.EventPipeline.DeduplicatedCount
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.DeduplicatedCount
+  id: DeduplicatedCount
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: DeduplicatedCount
+  nameWithType: EventPipeline.DeduplicatedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.DeduplicatedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeduplicatedCount
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 280
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the total number of duplicate events filtered by the dedup ledger.
+  example: []
+  syntax:
+    content: public long DeduplicatedCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property DeduplicatedCount As Long
+  overload: Meridian.Application.Pipeline.EventPipeline.DeduplicatedCount*
+- uid: Meridian.Application.Pipeline.EventPipeline.IsDeduplicationEnabled
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.IsDeduplicationEnabled
+  id: IsDeduplicationEnabled
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: IsDeduplicationEnabled
+  nameWithType: EventPipeline.IsDeduplicationEnabled
+  fullName: Meridian.Application.Pipeline.EventPipeline.IsDeduplicationEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsDeduplicationEnabled
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets whether deduplication is enabled for this pipeline.
+  example: []
+  syntax:
+    content: public bool IsDeduplicationEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsDeduplicationEnabled As Boolean
+  overload: Meridian.Application.Pipeline.EventPipeline.IsDeduplicationEnabled*
+- uid: Meridian.Application.Pipeline.EventPipeline.PeakQueueSize
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.PeakQueueSize
+  id: PeakQueueSize
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: PeakQueueSize
+  nameWithType: EventPipeline.PeakQueueSize
+  fullName: Meridian.Application.Pipeline.EventPipeline.PeakQueueSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PeakQueueSize
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 286
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the peak queue size observed during operation.
+  example: []
+  syntax:
+    content: public long PeakQueueSize { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property PeakQueueSize As Long
+  overload: Meridian.Application.Pipeline.EventPipeline.PeakQueueSize*
+- uid: Meridian.Application.Pipeline.EventPipeline.CurrentQueueSize
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.CurrentQueueSize
+  id: CurrentQueueSize
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: CurrentQueueSize
+  nameWithType: EventPipeline.CurrentQueueSize
+  fullName: Meridian.Application.Pipeline.EventPipeline.CurrentQueueSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentQueueSize
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the current number of events in the queue.
+  example: []
+  syntax:
+    content: public int CurrentQueueSize { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property CurrentQueueSize As Integer
+  overload: Meridian.Application.Pipeline.EventPipeline.CurrentQueueSize*
+- uid: Meridian.Application.Pipeline.EventPipeline.QueueUtilization
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.QueueUtilization
+  id: QueueUtilization
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: QueueUtilization
+  nameWithType: EventPipeline.QueueUtilization
+  fullName: Meridian.Application.Pipeline.EventPipeline.QueueUtilization
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueUtilization
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the queue capacity utilization as a percentage (0-100).
+  example: []
+  syntax:
+    content: public double QueueUtilization { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property QueueUtilization As Double
+  overload: Meridian.Application.Pipeline.EventPipeline.QueueUtilization*
+- uid: Meridian.Application.Pipeline.EventPipeline.AverageProcessingTimeUs
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.AverageProcessingTimeUs
+  id: AverageProcessingTimeUs
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: AverageProcessingTimeUs
+  nameWithType: EventPipeline.AverageProcessingTimeUs
+  fullName: Meridian.Application.Pipeline.EventPipeline.AverageProcessingTimeUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageProcessingTimeUs
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the average processing time per event in microseconds.
+  example: []
+  syntax:
+    content: public double AverageProcessingTimeUs { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property AverageProcessingTimeUs As Double
+  overload: Meridian.Application.Pipeline.EventPipeline.AverageProcessingTimeUs*
+- uid: Meridian.Application.Pipeline.EventPipeline.TimeSinceLastFlush
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.TimeSinceLastFlush
+  id: TimeSinceLastFlush
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: TimeSinceLastFlush
+  nameWithType: EventPipeline.TimeSinceLastFlush
+  fullName: Meridian.Application.Pipeline.EventPipeline.TimeSinceLastFlush
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeSinceLastFlush
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 308
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the time since the last flush operation.
+  example: []
+  syntax:
+    content: public TimeSpan TimeSinceLastFlush { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public ReadOnly Property TimeSinceLastFlush As TimeSpan
+  overload: Meridian.Application.Pipeline.EventPipeline.TimeSinceLastFlush*
+- uid: Meridian.Application.Pipeline.EventPipeline.IsWalEnabled
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.IsWalEnabled
+  id: IsWalEnabled
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: IsWalEnabled
+  nameWithType: EventPipeline.IsWalEnabled
+  fullName: Meridian.Application.Pipeline.EventPipeline.IsWalEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsWalEnabled
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets whether a WAL is configured for this pipeline.
+  example: []
+  syntax:
+    content: public bool IsWalEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsWalEnabled As Boolean
+  overload: Meridian.Application.Pipeline.EventPipeline.IsWalEnabled*
+- uid: Meridian.Application.Pipeline.EventPipeline.IsValidationEnabled
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.IsValidationEnabled
+  id: IsValidationEnabled
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: IsValidationEnabled
+  nameWithType: EventPipeline.IsValidationEnabled
+  fullName: Meridian.Application.Pipeline.EventPipeline.IsValidationEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValidationEnabled
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 322
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets whether event validation is enabled for this pipeline.
+  example: []
+  syntax:
+    content: public bool IsValidationEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsValidationEnabled As Boolean
+  overload: Meridian.Application.Pipeline.EventPipeline.IsValidationEnabled*
+- uid: Meridian.Application.Pipeline.EventPipeline.IsUnderPressure
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.IsUnderPressure
+  id: IsUnderPressure
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: IsUnderPressure
+  nameWithType: EventPipeline.IsUnderPressure
+  fullName: Meridian.Application.Pipeline.EventPipeline.IsUnderPressure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsUnderPressure
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 328
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when the queue utilization has reached or exceeded 80 %.
+
+    Upstream producers should observe this signal and slow down publishing to avoid data loss.
+  example: []
+  syntax:
+    content: public bool IsUnderPressure { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsUnderPressure As Boolean
+  overload: Meridian.Application.Pipeline.EventPipeline.IsUnderPressure*
+  implements:
+  - Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+- uid: Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)
+  id: RecoverAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: RecoverAsync(CancellationToken)
+  nameWithType: EventPipeline.RecoverAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecoverAsync
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Recovers uncommitted events from the WAL and replays them to the storage sink.
+
+    Call this method once on startup, before publishing new events, to ensure
+
+    data from a prior crash is not lost.
+  remarks: >-
+    This method initializes the WAL and reads any records that were written
+
+    but not committed (i.e., not yet confirmed persisted to the primary sink).
+
+    Each recovered event is written to the sink and then the WAL is committed.
+
+    If no WAL is configured, this method is a no-op.
+  example: []
+  syntax:
+    content: public Task RecoverAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecoverAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Pipeline.EventPipeline.RecoverAsync*
+- uid: Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  id: TryPublish(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: TryPublish(in MarketEvent)
+  nameWithType: EventPipeline.TryPublish(in MarketEvent)
+  fullName: Meridian.Application.Pipeline.EventPipeline.TryPublish(in Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryPublish
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 452
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Attempts to publish an event to the pipeline without blocking.
+
+    Returns false if the queue is full (event will be dropped based on FullMode).
+  remarks: >-
+    WAL writes are deferred to the consumer task to preserve the non-blocking contract of
+
+    this method. Events enqueued via this path carry <code>WalSequence == 0</code>; the consumer
+
+    detects this and appends the event to the WAL before forwarding it to the storage sink,
+
+    maintaining the same durability guarantee as <xref href="Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> at the cost of a
+
+    slightly larger crash-recovery window. Callers that require the event to be WAL-persisted
+
+    before this call returns should use <xref href="Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> instead.
+  example: []
+  syntax:
+    content: public bool TryPublish(in MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    return:
+      type: System.Boolean
+    content.vb: Public Function TryPublish(evt As MarketEvent) As Boolean
+  overload: Meridian.Application.Pipeline.EventPipeline.TryPublish*
+  implements:
+  - Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  nameWithType.vb: EventPipeline.TryPublish(MarketEvent)
+  fullName.vb: Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublish(MarketEvent)
+- uid: Meridian.Application.Pipeline.EventPipeline.TryPublishWithResult(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.TryPublishWithResult(Meridian.Domain.Events.MarketEvent@)
+  id: TryPublishWithResult(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: TryPublishWithResult(in MarketEvent)
+  nameWithType: EventPipeline.TryPublishWithResult(in MarketEvent)
+  fullName: Meridian.Application.Pipeline.EventPipeline.TryPublishWithResult(in Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryPublishWithResult
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 532
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Attempts to publish an event and returns a <xref href="Meridian.Domain.Events.PublishResult" data-throw-if-not-resolved="false"></xref> that describes
+
+    the outcome in detail — accepted, accepted under pressure, or dropped.
+  remarks: >-
+    Use this method when the caller needs to react to backpressure (e.g. pause a subscription,
+
+    log a drop, or adjust polling rate). For fire-and-forget callers the original
+
+    <xref href="Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent%40)" data-throw-if-not-resolved="false"></xref> remains the recommended hot-path method.
+  example: []
+  syntax:
+    content: public PublishResult TryPublishWithResult(in MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    return:
+      type: Meridian.Domain.Events.PublishResult
+    content.vb: Public Function TryPublishWithResult(evt As MarketEvent) As PublishResult
+  overload: Meridian.Application.Pipeline.EventPipeline.TryPublishWithResult*
+  nameWithType.vb: EventPipeline.TryPublishWithResult(MarketEvent)
+  fullName.vb: Meridian.Application.Pipeline.EventPipeline.TryPublishWithResult(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublishWithResult(MarketEvent)
+- uid: Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  id: PublishAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: PublishAsync(MarketEvent, CancellationToken)
+  nameWithType: EventPipeline.PublishAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishAsync
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 575
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Publishes an event to the pipeline, waiting if necessary.
+
+    When WAL is enabled, the event is appended to the WAL before the queue handoff
+
+    so a successful publish is crash-safe even if the consumer has not run yet.
+  example: []
+  syntax:
+    content: public ValueTask PublishAsync(MarketEvent evt, CancellationToken ct = default)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask
+    content.vb: Public Function PublishAsync(evt As MarketEvent, ct As CancellationToken = Nothing) As ValueTask
+  overload: Meridian.Application.Pipeline.EventPipeline.PublishAsync*
+- uid: Meridian.Application.Pipeline.EventPipeline.Complete
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.Complete
+  id: Complete
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: Complete()
+  nameWithType: EventPipeline.Complete()
+  fullName: Meridian.Application.Pipeline.EventPipeline.Complete()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Complete
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 589
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Signals that no more events will be published.
+  example: []
+  syntax:
+    content: public void Complete()
+    content.vb: Public Sub Complete()
+  overload: Meridian.Application.Pipeline.EventPipeline.Complete*
+- uid: Meridian.Application.Pipeline.EventPipeline.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.FlushAsync(System.Threading.CancellationToken)
+  id: FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: FlushAsync(CancellationToken)
+  nameWithType: EventPipeline.FlushAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.EventPipeline.FlushAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FlushAsync
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 601
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Waits for the consumer to process all currently-queued events, then forces
+
+    an immediate flush of buffered data to storage.
+  remarks: >-
+    If events were dropped due to backpressure during the flush window, a warning
+
+    is logged. The flush still writes all events that <em>were</em> consumed to
+
+    storage — it does not suppress the flush because of drops — but callers should
+
+    treat the warning as an indication that the result set is incomplete.
+  example: []
+  syntax:
+    content: public Task FlushAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function FlushAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Pipeline.EventPipeline.FlushAsync*
+  implements:
+  - Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.Pipeline.EventPipeline.GetStatistics
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.GetStatistics
+  id: GetStatistics
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: GetStatistics()
+  nameWithType: EventPipeline.GetStatistics()
+  fullName: Meridian.Application.Pipeline.EventPipeline.GetStatistics()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatistics
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 663
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets a snapshot of current pipeline statistics.
+  example: []
+  syntax:
+    content: public PipelineStatistics GetStatistics()
+    return:
+      type: Meridian.Application.Pipeline.PipelineStatistics
+    content.vb: Public Function GetStatistics() As PipelineStatistics
+  overload: Meridian.Application.Pipeline.EventPipeline.GetStatistics*
+- uid: Meridian.Application.Pipeline.EventPipeline.DisposeAsync
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: EventPipeline.DisposeAsync()
+  fullName: Meridian.Application.Pipeline.EventPipeline.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 904
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Pipeline.EventPipeline.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Application.Pipeline.EventPipeline.AuditTrail
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.AuditTrail
+  id: AuditTrail
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: AuditTrail
+  nameWithType: EventPipeline.AuditTrail
+  fullName: Meridian.Application.Pipeline.EventPipeline.AuditTrail
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditTrail
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 993
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the dropped event audit trail, if configured.
+  example: []
+  syntax:
+    content: public DroppedEventAuditTrail? AuditTrail { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Pipeline.DroppedEventAuditTrail
+    content.vb: Public ReadOnly Property AuditTrail As DroppedEventAuditTrail
+  overload: Meridian.Application.Pipeline.EventPipeline.AuditTrail*
+- uid: Meridian.Application.Pipeline.EventPipeline.QueueCapacity
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.QueueCapacity
+  id: QueueCapacity
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: QueueCapacity
+  nameWithType: EventPipeline.QueueCapacity
+  fullName: Meridian.Application.Pipeline.EventPipeline.QueueCapacity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueCapacity
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 998
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the queue capacity.
+  example: []
+  syntax:
+    content: public int QueueCapacity { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property QueueCapacity As Integer
+  overload: Meridian.Application.Pipeline.EventPipeline.QueueCapacity*
+- uid: Meridian.Application.Pipeline.EventPipeline.EventMetrics
+  commentId: P:Meridian.Application.Pipeline.EventPipeline.EventMetrics
+  id: EventMetrics
+  parent: Meridian.Application.Pipeline.EventPipeline
+  langs:
+  - csharp
+  - vb
+  name: EventMetrics
+  nameWithType: EventPipeline.EventMetrics
+  fullName: Meridian.Application.Pipeline.EventPipeline.EventMetrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/EventPipeline.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventMetrics
+    path: ../../src/Meridian.Application/Pipeline/EventPipeline.cs
+    startLine: 1003
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Gets the injected event metrics instance.
+  example: []
+  syntax:
+    content: public IEventMetrics EventMetrics { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.IEventMetrics
+    content.vb: Public ReadOnly Property EventMetrics As IEventMetrics
+  overload: Meridian.Application.Pipeline.EventPipeline.EventMetrics*
+references:
+- uid: Meridian.Storage.Archival.WriteAheadLog
+  commentId: T:Meridian.Storage.Archival.WriteAheadLog
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.WriteAheadLog.html
+  name: WriteAheadLog
+  nameWithType: WriteAheadLog
+  fullName: Meridian.Storage.Archival.WriteAheadLog
+- uid: Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_RecoverAsync_System_Threading_CancellationToken_
+  name: RecoverAsync(CancellationToken)
+  nameWithType: EventPipeline.RecoverAsync(CancellationToken)
+  fullName: Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)
+    name: RecoverAsync
+    href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_RecoverAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.EventPipeline.RecoverAsync(System.Threading.CancellationToken)
+    name: RecoverAsync
+    href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_RecoverAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_TryPublish_Meridian_Domain_Events_MarketEvent__
+  name: TryPublish(in MarketEvent)
+  nameWithType: EventPipeline.TryPublish(in MarketEvent)
+  fullName: Meridian.Application.Pipeline.EventPipeline.TryPublish(in Meridian.Domain.Events.MarketEvent)
+  nameWithType.vb: EventPipeline.TryPublish(MarketEvent)
+  fullName.vb: Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublish(MarketEvent)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - name: in
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.EventPipeline.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+- uid: Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_PublishAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: PublishAsync(MarketEvent, CancellationToken)
+  nameWithType: EventPipeline.PublishAsync(MarketEvent, CancellationToken)
+  fullName: Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: PublishAsync
+    href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_PublishAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.EventPipeline.PublishAsync(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+    name: PublishAsync
+    href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_PublishAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IMarketEventPublisher.html
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+- uid: Meridian.Domain.Events.IBackpressureSignal
+  commentId: T:Meridian.Domain.Events.IBackpressureSignal
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IBackpressureSignal.html
+  name: IBackpressureSignal
+  nameWithType: IBackpressureSignal
+  fullName: Meridian.Domain.Events.IBackpressureSignal
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: Meridian.Application.Services.IFlushable
+  commentId: T:Meridian.Application.Services.IFlushable
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.IFlushable.html
+  name: IFlushable
+  nameWithType: IFlushable
+  fullName: Meridian.Application.Services.IFlushable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Pipeline.EventPipeline.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.#ctor
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline__ctor_Meridian_Storage_Interfaces_IStorageSink_System_Int32_System_Threading_Channels_BoundedChannelFullMode_System_Nullable_System_TimeSpan__System_Int32_System_Boolean_Microsoft_Extensions_Logging_ILogger_Meridian_Application_Pipeline_EventPipeline__Meridian_Application_Pipeline_DroppedEventAuditTrail_Meridian_Storage_Archival_WriteAheadLog_Meridian_Application_Monitoring_IEventMetrics_System_Nullable_System_TimeSpan__System_Nullable_System_TimeSpan__Meridian_Application_Pipeline_IEventValidator_Meridian_Application_Pipeline_DeadLetterSink_Meridian_Application_Pipeline_PersistentDedupLedger_System_Int32_
+  name: EventPipeline
+  nameWithType: EventPipeline.EventPipeline
+  fullName: Meridian.Application.Pipeline.EventPipeline.EventPipeline
+  nameWithType.vb: EventPipeline.New
+  fullName.vb: Meridian.Application.Pipeline.EventPipeline.New
+  name.vb: New
+- uid: Meridian.Storage.Interfaces.IStorageSink
+  commentId: T:Meridian.Storage.Interfaces.IStorageSink
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IStorageSink.html
+  name: IStorageSink
+  nameWithType: IStorageSink
+  fullName: Meridian.Storage.Interfaces.IStorageSink
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Channels.BoundedChannelFullMode
+  commentId: T:System.Threading.Channels.BoundedChannelFullMode
+  parent: System.Threading.Channels
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.channels.boundedchannelfullmode
+  name: BoundedChannelFullMode
+  nameWithType: BoundedChannelFullMode
+  fullName: System.Threading.Channels.BoundedChannelFullMode
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.Pipeline.EventPipeline}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<EventPipeline>
+  nameWithType: ILogger<EventPipeline>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.Pipeline.EventPipeline>
+  nameWithType.vb: ILogger(Of EventPipeline)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Pipeline.EventPipeline)
+  name.vb: ILogger(Of EventPipeline)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.EventPipeline
+    name: EventPipeline
+    href: Meridian.Application.Pipeline.EventPipeline.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.EventPipeline
+    name: EventPipeline
+    href: Meridian.Application.Pipeline.EventPipeline.html
+  - name: )
+- uid: Meridian.Application.Pipeline.DroppedEventAuditTrail
+  commentId: T:Meridian.Application.Pipeline.DroppedEventAuditTrail
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.DroppedEventAuditTrail.html
+  name: DroppedEventAuditTrail
+  nameWithType: DroppedEventAuditTrail
+  fullName: Meridian.Application.Pipeline.DroppedEventAuditTrail
+- uid: Meridian.Application.Monitoring.IEventMetrics
+  commentId: T:Meridian.Application.Monitoring.IEventMetrics
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.IEventMetrics.html
+  name: IEventMetrics
+  nameWithType: IEventMetrics
+  fullName: Meridian.Application.Monitoring.IEventMetrics
+- uid: Meridian.Application.Pipeline.IEventValidator
+  commentId: T:Meridian.Application.Pipeline.IEventValidator
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.IEventValidator.html
+  name: IEventValidator
+  nameWithType: IEventValidator
+  fullName: Meridian.Application.Pipeline.IEventValidator
+- uid: Meridian.Application.Pipeline.DeadLetterSink
+  commentId: T:Meridian.Application.Pipeline.DeadLetterSink
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.DeadLetterSink.html
+  name: DeadLetterSink
+  nameWithType: DeadLetterSink
+  fullName: Meridian.Application.Pipeline.DeadLetterSink
+- uid: Meridian.Application.Pipeline.PersistentDedupLedger
+  commentId: T:Meridian.Application.Pipeline.PersistentDedupLedger
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.PersistentDedupLedger.html
+  name: PersistentDedupLedger
+  nameWithType: PersistentDedupLedger
+  fullName: Meridian.Application.Pipeline.PersistentDedupLedger
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: System.Threading.Channels
+  commentId: N:System.Threading.Channels
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Channels
+  nameWithType: System.Threading.Channels
+  fullName: System.Threading.Channels
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Channels
+    name: Channels
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.channels
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Channels
+    name: Channels
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.channels
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy
+  commentId: T:Meridian.Application.Pipeline.EventPipelinePolicy
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html
+  name: EventPipelinePolicy
+  nameWithType: EventPipelinePolicy
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy
+- uid: Meridian.Application.Pipeline.EventPipeline.PublishedCount*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.PublishedCount
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_PublishedCount
+  name: PublishedCount
+  nameWithType: EventPipeline.PublishedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.PublishedCount
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Pipeline.EventPipeline.DroppedCount*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.DroppedCount
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_DroppedCount
+  name: DroppedCount
+  nameWithType: EventPipeline.DroppedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.DroppedCount
+- uid: Meridian.Application.Pipeline.EventPipeline.ConsumedCount*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.ConsumedCount
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_ConsumedCount
+  name: ConsumedCount
+  nameWithType: EventPipeline.ConsumedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.ConsumedCount
+- uid: Meridian.Application.Pipeline.EventPipeline.RecoveredCount*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.RecoveredCount
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_RecoveredCount
+  name: RecoveredCount
+  nameWithType: EventPipeline.RecoveredCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.RecoveredCount
+- uid: Meridian.Application.Pipeline.EventPipeline.RejectedCount*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.RejectedCount
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_RejectedCount
+  name: RejectedCount
+  nameWithType: EventPipeline.RejectedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.RejectedCount
+- uid: Meridian.Application.Pipeline.EventPipeline.DeduplicatedCount*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.DeduplicatedCount
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_DeduplicatedCount
+  name: DeduplicatedCount
+  nameWithType: EventPipeline.DeduplicatedCount
+  fullName: Meridian.Application.Pipeline.EventPipeline.DeduplicatedCount
+- uid: Meridian.Application.Pipeline.EventPipeline.IsDeduplicationEnabled*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.IsDeduplicationEnabled
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_IsDeduplicationEnabled
+  name: IsDeduplicationEnabled
+  nameWithType: EventPipeline.IsDeduplicationEnabled
+  fullName: Meridian.Application.Pipeline.EventPipeline.IsDeduplicationEnabled
+- uid: Meridian.Application.Pipeline.EventPipeline.PeakQueueSize*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.PeakQueueSize
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_PeakQueueSize
+  name: PeakQueueSize
+  nameWithType: EventPipeline.PeakQueueSize
+  fullName: Meridian.Application.Pipeline.EventPipeline.PeakQueueSize
+- uid: Meridian.Application.Pipeline.EventPipeline.CurrentQueueSize*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.CurrentQueueSize
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_CurrentQueueSize
+  name: CurrentQueueSize
+  nameWithType: EventPipeline.CurrentQueueSize
+  fullName: Meridian.Application.Pipeline.EventPipeline.CurrentQueueSize
+- uid: Meridian.Application.Pipeline.EventPipeline.QueueUtilization*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.QueueUtilization
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_QueueUtilization
+  name: QueueUtilization
+  nameWithType: EventPipeline.QueueUtilization
+  fullName: Meridian.Application.Pipeline.EventPipeline.QueueUtilization
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Pipeline.EventPipeline.AverageProcessingTimeUs*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.AverageProcessingTimeUs
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_AverageProcessingTimeUs
+  name: AverageProcessingTimeUs
+  nameWithType: EventPipeline.AverageProcessingTimeUs
+  fullName: Meridian.Application.Pipeline.EventPipeline.AverageProcessingTimeUs
+- uid: Meridian.Application.Pipeline.EventPipeline.TimeSinceLastFlush*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.TimeSinceLastFlush
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_TimeSinceLastFlush
+  name: TimeSinceLastFlush
+  nameWithType: EventPipeline.TimeSinceLastFlush
+  fullName: Meridian.Application.Pipeline.EventPipeline.TimeSinceLastFlush
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.Pipeline.EventPipeline.IsWalEnabled*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.IsWalEnabled
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_IsWalEnabled
+  name: IsWalEnabled
+  nameWithType: EventPipeline.IsWalEnabled
+  fullName: Meridian.Application.Pipeline.EventPipeline.IsWalEnabled
+- uid: Meridian.Application.Pipeline.EventPipeline.IsValidationEnabled*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.IsValidationEnabled
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_IsValidationEnabled
+  name: IsValidationEnabled
+  nameWithType: EventPipeline.IsValidationEnabled
+  fullName: Meridian.Application.Pipeline.EventPipeline.IsValidationEnabled
+- uid: Meridian.Application.Pipeline.EventPipeline.IsUnderPressure*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.IsUnderPressure
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_IsUnderPressure
+  name: IsUnderPressure
+  nameWithType: EventPipeline.IsUnderPressure
+  fullName: Meridian.Application.Pipeline.EventPipeline.IsUnderPressure
+- uid: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  commentId: P:Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+  parent: Meridian.Domain.Events.IBackpressureSignal
+  href: Meridian.Domain.Events.IBackpressureSignal.html#Meridian_Domain_Events_IBackpressureSignal_IsUnderPressure
+  name: IsUnderPressure
+  nameWithType: IBackpressureSignal.IsUnderPressure
+  fullName: Meridian.Domain.Events.IBackpressureSignal.IsUnderPressure
+- uid: Meridian.Application.Pipeline.EventPipeline.RecoverAsync*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.RecoverAsync
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_RecoverAsync_System_Threading_CancellationToken_
+  name: RecoverAsync
+  nameWithType: EventPipeline.RecoverAsync
+  fullName: Meridian.Application.Pipeline.EventPipeline.RecoverAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Pipeline.EventPipeline.TryPublish*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.TryPublish
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_TryPublish_Meridian_Domain_Events_MarketEvent__
+  name: TryPublish
+  nameWithType: EventPipeline.TryPublish
+  fullName: Meridian.Application.Pipeline.EventPipeline.TryPublish
+- uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Domain.Events.IMarketEventPublisher
+  href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  name: TryPublish(in MarketEvent)
+  nameWithType: IMarketEventPublisher.TryPublish(in MarketEvent)
+  fullName: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(in Meridian.Domain.Events.MarketEvent)
+  nameWithType.vb: IMarketEventPublisher.TryPublish(MarketEvent)
+  fullName.vb: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublish(MarketEvent)
+  spec.csharp:
+  - uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - name: in
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+    href: Meridian.Domain.Events.MarketEvent.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+    href: Meridian.Domain.Events.MarketEvent.html
+  - name: )
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Domain.Events.PublishResult
+  commentId: T:Meridian.Domain.Events.PublishResult
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.PublishResult.html
+  name: PublishResult
+  nameWithType: PublishResult
+  fullName: Meridian.Domain.Events.PublishResult
+- uid: Meridian.Application.Pipeline.EventPipeline.TryPublishWithResult*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.TryPublishWithResult
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_TryPublishWithResult_Meridian_Domain_Events_MarketEvent__
+  name: TryPublishWithResult
+  nameWithType: EventPipeline.TryPublishWithResult
+  fullName: Meridian.Application.Pipeline.EventPipeline.TryPublishWithResult
+- uid: Meridian.Application.Pipeline.EventPipeline.PublishAsync*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.PublishAsync
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_PublishAsync_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: PublishAsync
+  nameWithType: EventPipeline.PublishAsync
+  fullName: Meridian.Application.Pipeline.EventPipeline.PublishAsync
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: Meridian.Application.Pipeline.EventPipeline.Complete*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.Complete
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_Complete
+  name: Complete
+  nameWithType: EventPipeline.Complete
+  fullName: Meridian.Application.Pipeline.EventPipeline.Complete
+- uid: Meridian.Application.Pipeline.EventPipeline.FlushAsync*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.FlushAsync
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_FlushAsync_System_Threading_CancellationToken_
+  name: FlushAsync
+  nameWithType: EventPipeline.FlushAsync
+  fullName: Meridian.Application.Pipeline.EventPipeline.FlushAsync
+- uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.IFlushable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: FlushAsync(CancellationToken)
+  nameWithType: IFlushable.FlushAsync(CancellationToken)
+  fullName: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Services.IFlushable.FlushAsync(System.Threading.CancellationToken)
+    name: FlushAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Pipeline.EventPipeline.GetStatistics*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.GetStatistics
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_GetStatistics
+  name: GetStatistics
+  nameWithType: EventPipeline.GetStatistics
+  fullName: Meridian.Application.Pipeline.EventPipeline.GetStatistics
+- uid: Meridian.Application.Pipeline.PipelineStatistics
+  commentId: T:Meridian.Application.Pipeline.PipelineStatistics
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.PipelineStatistics.html
+  name: PipelineStatistics
+  nameWithType: PipelineStatistics
+  fullName: Meridian.Application.Pipeline.PipelineStatistics
+- uid: Meridian.Application.Pipeline.EventPipeline.DisposeAsync*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.DisposeAsync
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_DisposeAsync
+  name: DisposeAsync
+  nameWithType: EventPipeline.DisposeAsync
+  fullName: Meridian.Application.Pipeline.EventPipeline.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: Meridian.Application.Pipeline.EventPipeline.AuditTrail*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.AuditTrail
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_AuditTrail
+  name: AuditTrail
+  nameWithType: EventPipeline.AuditTrail
+  fullName: Meridian.Application.Pipeline.EventPipeline.AuditTrail
+- uid: Meridian.Application.Pipeline.EventPipeline.QueueCapacity*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.QueueCapacity
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_QueueCapacity
+  name: QueueCapacity
+  nameWithType: EventPipeline.QueueCapacity
+  fullName: Meridian.Application.Pipeline.EventPipeline.QueueCapacity
+- uid: Meridian.Application.Pipeline.EventPipeline.EventMetrics*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipeline.EventMetrics
+  href: Meridian.Application.Pipeline.EventPipeline.html#Meridian_Application_Pipeline_EventPipeline_EventMetrics
+  name: EventMetrics
+  nameWithType: EventPipeline.EventMetrics
+  fullName: Meridian.Application.Pipeline.EventPipeline.EventMetrics

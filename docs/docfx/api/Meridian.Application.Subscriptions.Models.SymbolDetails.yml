@@ -1,0 +1,1570 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+  commentId: T:Meridian.Application.Subscriptions.Models.SymbolDetails
+  id: SymbolDetails
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.Nullable{System.DateOnly},System.Nullable{System.Boolean},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.AssetType
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.AverageVolume
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.CompositeFigi
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Country
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Currency
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Cusip
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Description
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.DividendYield
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Exchange
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Figi
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Industry
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.IpoDate
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Isin
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.LastPrice
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.LastUpdated
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.LogoUrl
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.MarketCap
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Name
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.PaysDividend
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.PeRatio
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Sector
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.SharesOutstanding
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Source
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Symbol
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.WebUrl
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Week52High
+  - Meridian.Application.Subscriptions.Models.SymbolDetails.Week52Low
+  langs:
+  - csharp
+  - vb
+  name: SymbolDetails
+  nameWithType: SymbolDetails
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolDetails
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Detailed symbol information including market data.
+  example: []
+  syntax:
+    content: 'public sealed record SymbolDetails : IEquatable<SymbolDetails>'
+    content.vb: Public NotInheritable Class SymbolDetails Implements IEquatable(Of SymbolDetails)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.Nullable{System.DateOnly},System.Nullable{System.Boolean},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Application.Subscriptions.Models.SymbolDetails.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.Nullable{System.DateOnly},System.Nullable{System.Boolean},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.Nullable{System.DateOnly},System.Nullable{System.Boolean},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: SymbolDetails(string, string, string?, string?, string?, string?, string?, string?, string?, decimal?, long?, decimal?, decimal?, decimal?, string?, string?, DateOnly?, bool?, decimal?, decimal?, long?, string?, string?, string?, string?, string?, DateTimeOffset?)
+  nameWithType: SymbolDetails.SymbolDetails(string, string, string?, string?, string?, string?, string?, string?, string?, decimal?, long?, decimal?, decimal?, decimal?, string?, string?, DateOnly?, bool?, decimal?, decimal?, long?, string?, string?, string?, string?, string?, DateTimeOffset?)
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.SymbolDetails(string, string, string?, string?, string?, string?, string?, string?, string?, decimal?, long?, decimal?, decimal?, decimal?, string?, string?, System.DateOnly?, bool?, decimal?, decimal?, long?, string?, string?, string?, string?, string?, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Detailed symbol information including market data.
+  example: []
+  syntax:
+    content: public SymbolDetails(string Symbol, string Name, string? Description = null, string? Exchange = null, string? AssetType = null, string? Sector = null, string? Industry = null, string? Country = null, string? Currency = null, decimal? MarketCap = null, long? AverageVolume = null, decimal? Week52High = null, decimal? Week52Low = null, decimal? LastPrice = null, string? WebUrl = null, string? LogoUrl = null, DateOnly? IpoDate = null, bool? PaysDividend = null, decimal? DividendYield = null, decimal? PeRatio = null, long? SharesOutstanding = null, string? Figi = null, string? CompositeFigi = null, string? Isin = null, string? Cusip = null, string? Source = null, DateTimeOffset? LastUpdated = null)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: Description
+      type: System.String
+    - id: Exchange
+      type: System.String
+    - id: AssetType
+      type: System.String
+    - id: Sector
+      type: System.String
+    - id: Industry
+      type: System.String
+    - id: Country
+      type: System.String
+    - id: Currency
+      type: System.String
+    - id: MarketCap
+      type: System.Nullable{System.Decimal}
+    - id: AverageVolume
+      type: System.Nullable{System.Int64}
+    - id: Week52High
+      type: System.Nullable{System.Decimal}
+    - id: Week52Low
+      type: System.Nullable{System.Decimal}
+    - id: LastPrice
+      type: System.Nullable{System.Decimal}
+    - id: WebUrl
+      type: System.String
+    - id: LogoUrl
+      type: System.String
+    - id: IpoDate
+      type: System.Nullable{System.DateOnly}
+    - id: PaysDividend
+      type: System.Nullable{System.Boolean}
+    - id: DividendYield
+      type: System.Nullable{System.Decimal}
+    - id: PeRatio
+      type: System.Nullable{System.Decimal}
+    - id: SharesOutstanding
+      type: System.Nullable{System.Int64}
+    - id: Figi
+      type: System.String
+    - id: CompositeFigi
+      type: System.String
+    - id: Isin
+      type: System.String
+    - id: Cusip
+      type: System.String
+    - id: Source
+      type: System.String
+    - id: LastUpdated
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(Symbol As String, Name As String, Description As String = Nothing, Exchange As String = Nothing, AssetType As String = Nothing, Sector As String = Nothing, Industry As String = Nothing, Country As String = Nothing, Currency As String = Nothing, MarketCap As Decimal? = Nothing, AverageVolume As Long? = Nothing, Week52High As Decimal? = Nothing, Week52Low As Decimal? = Nothing, LastPrice As Decimal? = Nothing, WebUrl As String = Nothing, LogoUrl As String = Nothing, IpoDate As DateOnly? = Nothing, PaysDividend As Boolean? = Nothing, DividendYield As Decimal? = Nothing, PeRatio As Decimal? = Nothing, SharesOutstanding As Long? = Nothing, Figi As String = Nothing, CompositeFigi As String = Nothing, Isin As String = Nothing, Cusip As String = Nothing, Source As String = Nothing, LastUpdated As DateTimeOffset? = Nothing)
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.#ctor*
+  nameWithType.vb: SymbolDetails.New(String, String, String, String, String, String, String, String, String, Decimal?, Long?, Decimal?, Decimal?, Decimal?, String, String, DateOnly?, Boolean?, Decimal?, Decimal?, Long?, String, String, String, String, String, DateTimeOffset?)
+  fullName.vb: Meridian.Application.Subscriptions.Models.SymbolDetails.New(String, String, String, String, String, String, String, String, String, Decimal?, Long?, Decimal?, Decimal?, Decimal?, String, String, System.DateOnly?, Boolean?, Decimal?, Decimal?, Long?, String, String, String, String, String, System.DateTimeOffset?)
+  name.vb: New(String, String, String, String, String, String, String, String, String, Decimal?, Long?, Decimal?, Decimal?, Decimal?, String, String, DateOnly?, Boolean?, Decimal?, Decimal?, Long?, String, String, String, String, String, DateTimeOffset?)
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Symbol
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Symbol
+  id: Symbol
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolDetails.Symbol
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Symbol*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Name
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Name
+  id: Name
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: SymbolDetails.Name
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Name*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Description
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Description
+  id: Description
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: SymbolDetails.Description
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Description*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Exchange
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Exchange
+  id: Exchange
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: SymbolDetails.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Exchange*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.AssetType
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.AssetType
+  id: AssetType
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: AssetType
+  nameWithType: SymbolDetails.AssetType
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.AssetType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetType
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? AssetType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetType As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.AssetType*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Sector
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Sector
+  id: Sector
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Sector
+  nameWithType: SymbolDetails.Sector
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Sector
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sector
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Sector { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Sector As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Sector*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Industry
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Industry
+  id: Industry
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Industry
+  nameWithType: SymbolDetails.Industry
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Industry
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Industry
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Industry { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Industry As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Industry*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Country
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Country
+  id: Country
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Country
+  nameWithType: SymbolDetails.Country
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Country
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Country
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Country { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Country As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Country*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Currency
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Currency
+  id: Currency
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: SymbolDetails.Currency
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Currency*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.MarketCap
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.MarketCap
+  id: MarketCap
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: MarketCap
+  nameWithType: SymbolDetails.MarketCap
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.MarketCap
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketCap
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? MarketCap { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property MarketCap As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.MarketCap*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.AverageVolume
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.AverageVolume
+  id: AverageVolume
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: AverageVolume
+  nameWithType: SymbolDetails.AverageVolume
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.AverageVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageVolume
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long? AverageVolume { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property AverageVolume As Long?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.AverageVolume*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52High
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Week52High
+  id: Week52High
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Week52High
+  nameWithType: SymbolDetails.Week52High
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52High
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Week52High
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? Week52High { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property Week52High As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52High*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52Low
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Week52Low
+  id: Week52Low
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Week52Low
+  nameWithType: SymbolDetails.Week52Low
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52Low
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Week52Low
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? Week52Low { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property Week52Low As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52Low*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.LastPrice
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.LastPrice
+  id: LastPrice
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: LastPrice
+  nameWithType: SymbolDetails.LastPrice
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.LastPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastPrice
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? LastPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property LastPrice As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.LastPrice*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.WebUrl
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.WebUrl
+  id: WebUrl
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: WebUrl
+  nameWithType: SymbolDetails.WebUrl
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.WebUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WebUrl
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? WebUrl { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property WebUrl As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.WebUrl*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.LogoUrl
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.LogoUrl
+  id: LogoUrl
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: LogoUrl
+  nameWithType: SymbolDetails.LogoUrl
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.LogoUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogoUrl
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? LogoUrl { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LogoUrl As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.LogoUrl*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.IpoDate
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.IpoDate
+  id: IpoDate
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: IpoDate
+  nameWithType: SymbolDetails.IpoDate
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.IpoDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IpoDate
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public DateOnly? IpoDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property IpoDate As DateOnly?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.IpoDate*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.PaysDividend
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.PaysDividend
+  id: PaysDividend
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: PaysDividend
+  nameWithType: SymbolDetails.PaysDividend
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.PaysDividend
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaysDividend
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public bool? PaysDividend { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property PaysDividend As Boolean?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.PaysDividend*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.DividendYield
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.DividendYield
+  id: DividendYield
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: DividendYield
+  nameWithType: SymbolDetails.DividendYield
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.DividendYield
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendYield
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? DividendYield { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property DividendYield As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.DividendYield*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.PeRatio
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.PeRatio
+  id: PeRatio
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: PeRatio
+  nameWithType: SymbolDetails.PeRatio
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.PeRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PeRatio
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? PeRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property PeRatio As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.PeRatio*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.SharesOutstanding
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.SharesOutstanding
+  id: SharesOutstanding
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: SharesOutstanding
+  nameWithType: SymbolDetails.SharesOutstanding
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.SharesOutstanding
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SharesOutstanding
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long? SharesOutstanding { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property SharesOutstanding As Long?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.SharesOutstanding*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Figi
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Figi
+  id: Figi
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Figi
+  nameWithType: SymbolDetails.Figi
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Figi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Figi
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Figi { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Figi As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Figi*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.CompositeFigi
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.CompositeFigi
+  id: CompositeFigi
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: CompositeFigi
+  nameWithType: SymbolDetails.CompositeFigi
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.CompositeFigi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompositeFigi
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? CompositeFigi { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CompositeFigi As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.CompositeFigi*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Isin
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Isin
+  id: Isin
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Isin
+  nameWithType: SymbolDetails.Isin
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Isin
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Isin
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Isin { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Isin As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Isin*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Cusip
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Cusip
+  id: Cusip
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Cusip
+  nameWithType: SymbolDetails.Cusip
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Cusip
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cusip
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Cusip { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Cusip As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Cusip*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Source
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.Source
+  id: Source
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: SymbolDetails.Source
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Source { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.Source*
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.LastUpdated
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolDetails.LastUpdated
+  id: LastUpdated
+  parent: Meridian.Application.Subscriptions.Models.SymbolDetails
+  langs:
+  - csharp
+  - vb
+  name: LastUpdated
+  nameWithType: SymbolDetails.LastUpdated
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.LastUpdated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdated
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public DateTimeOffset? LastUpdated { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastUpdated As DateTimeOffset?
+  overload: Meridian.Application.Subscriptions.Models.SymbolDetails.LastUpdated*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolDetails>
+  nameWithType: IEquatable<SymbolDetails>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.SymbolDetails>
+  nameWithType.vb: IEquatable(Of SymbolDetails)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.SymbolDetails)
+  name.vb: IEquatable(Of SymbolDetails)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+    href: Meridian.Application.Subscriptions.Models.SymbolDetails.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+    href: Meridian.Application.Subscriptions.Models.SymbolDetails.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.#ctor
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails__ctor_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_Nullable_System_Decimal__System_Nullable_System_Int64__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_String_System_String_System_Nullable_System_DateOnly__System_Nullable_System_Boolean__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Int64__System_String_System_String_System_String_System_String_System_String_System_Nullable_System_DateTimeOffset__
+  name: SymbolDetails
+  nameWithType: SymbolDetails.SymbolDetails
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.SymbolDetails
+  nameWithType.vb: SymbolDetails.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.SymbolDetails.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Symbol*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Symbol
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Symbol
+  name: Symbol
+  nameWithType: SymbolDetails.Symbol
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Symbol
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Name*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Name
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Name
+  name: Name
+  nameWithType: SymbolDetails.Name
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Name
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Description*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Description
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Description
+  name: Description
+  nameWithType: SymbolDetails.Description
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Description
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Exchange*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Exchange
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Exchange
+  name: Exchange
+  nameWithType: SymbolDetails.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Exchange
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.AssetType*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.AssetType
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_AssetType
+  name: AssetType
+  nameWithType: SymbolDetails.AssetType
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.AssetType
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Sector*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Sector
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Sector
+  name: Sector
+  nameWithType: SymbolDetails.Sector
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Sector
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Industry*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Industry
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Industry
+  name: Industry
+  nameWithType: SymbolDetails.Industry
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Industry
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Country*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Country
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Country
+  name: Country
+  nameWithType: SymbolDetails.Country
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Country
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Currency*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Currency
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Currency
+  name: Currency
+  nameWithType: SymbolDetails.Currency
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Currency
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.MarketCap*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.MarketCap
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_MarketCap
+  name: MarketCap
+  nameWithType: SymbolDetails.MarketCap
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.MarketCap
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.AverageVolume*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.AverageVolume
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_AverageVolume
+  name: AverageVolume
+  nameWithType: SymbolDetails.AverageVolume
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.AverageVolume
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52High*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Week52High
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Week52High
+  name: Week52High
+  nameWithType: SymbolDetails.Week52High
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52High
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52Low*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Week52Low
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Week52Low
+  name: Week52Low
+  nameWithType: SymbolDetails.Week52Low
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Week52Low
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.LastPrice*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.LastPrice
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_LastPrice
+  name: LastPrice
+  nameWithType: SymbolDetails.LastPrice
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.LastPrice
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.WebUrl*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.WebUrl
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_WebUrl
+  name: WebUrl
+  nameWithType: SymbolDetails.WebUrl
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.WebUrl
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.LogoUrl*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.LogoUrl
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_LogoUrl
+  name: LogoUrl
+  nameWithType: SymbolDetails.LogoUrl
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.LogoUrl
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.IpoDate*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.IpoDate
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_IpoDate
+  name: IpoDate
+  nameWithType: SymbolDetails.IpoDate
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.IpoDate
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.PaysDividend*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.PaysDividend
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_PaysDividend
+  name: PaysDividend
+  nameWithType: SymbolDetails.PaysDividend
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.PaysDividend
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.DividendYield*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.DividendYield
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_DividendYield
+  name: DividendYield
+  nameWithType: SymbolDetails.DividendYield
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.DividendYield
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.PeRatio*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.PeRatio
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_PeRatio
+  name: PeRatio
+  nameWithType: SymbolDetails.PeRatio
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.PeRatio
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.SharesOutstanding*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.SharesOutstanding
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_SharesOutstanding
+  name: SharesOutstanding
+  nameWithType: SymbolDetails.SharesOutstanding
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.SharesOutstanding
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Figi*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Figi
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Figi
+  name: Figi
+  nameWithType: SymbolDetails.Figi
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Figi
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.CompositeFigi*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.CompositeFigi
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_CompositeFigi
+  name: CompositeFigi
+  nameWithType: SymbolDetails.CompositeFigi
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.CompositeFigi
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Isin*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Isin
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Isin
+  name: Isin
+  nameWithType: SymbolDetails.Isin
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Isin
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Cusip*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Cusip
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Cusip
+  name: Cusip
+  nameWithType: SymbolDetails.Cusip
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Cusip
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.Source*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.Source
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_Source
+  name: Source
+  nameWithType: SymbolDetails.Source
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.Source
+- uid: Meridian.Application.Subscriptions.Models.SymbolDetails.LastUpdated*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolDetails.LastUpdated
+  href: Meridian.Application.Subscriptions.Models.SymbolDetails.html#Meridian_Application_Subscriptions_Models_SymbolDetails_LastUpdated
+  name: LastUpdated
+  nameWithType: SymbolDetails.LastUpdated
+  fullName: Meridian.Application.Subscriptions.Models.SymbolDetails.LastUpdated

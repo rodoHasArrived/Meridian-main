@@ -1,0 +1,203 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.SymbolPreset
+  commentId: T:Meridian.Application.Services.SymbolPreset
+  id: SymbolPreset
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.SymbolPreset.Crypto
+  - Meridian.Application.Services.SymbolPreset.Custom
+  - Meridian.Application.Services.SymbolPreset.SP500Top20
+  - Meridian.Application.Services.SymbolPreset.TechGiants
+  - Meridian.Application.Services.SymbolPreset.USMajorIndices
+  langs:
+  - csharp
+  - vb
+  name: SymbolPreset
+  nameWithType: SymbolPreset
+  fullName: Meridian.Application.Services.SymbolPreset
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolPreset
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 998
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Preset symbol lists.
+  example: []
+  syntax:
+    content: 'public enum SymbolPreset : byte'
+    content.vb: Public Enum SymbolPreset As Byte
+- uid: Meridian.Application.Services.SymbolPreset.Custom
+  commentId: F:Meridian.Application.Services.SymbolPreset.Custom
+  id: Custom
+  parent: Meridian.Application.Services.SymbolPreset
+  langs:
+  - csharp
+  - vb
+  name: Custom
+  nameWithType: SymbolPreset.Custom
+  fullName: Meridian.Application.Services.SymbolPreset.Custom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custom
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 1000
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Custom = 0
+    return:
+      type: Meridian.Application.Services.SymbolPreset
+- uid: Meridian.Application.Services.SymbolPreset.USMajorIndices
+  commentId: F:Meridian.Application.Services.SymbolPreset.USMajorIndices
+  id: USMajorIndices
+  parent: Meridian.Application.Services.SymbolPreset
+  langs:
+  - csharp
+  - vb
+  name: USMajorIndices
+  nameWithType: SymbolPreset.USMajorIndices
+  fullName: Meridian.Application.Services.SymbolPreset.USMajorIndices
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: USMajorIndices
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 1001
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: USMajorIndices = 1
+    return:
+      type: Meridian.Application.Services.SymbolPreset
+- uid: Meridian.Application.Services.SymbolPreset.TechGiants
+  commentId: F:Meridian.Application.Services.SymbolPreset.TechGiants
+  id: TechGiants
+  parent: Meridian.Application.Services.SymbolPreset
+  langs:
+  - csharp
+  - vb
+  name: TechGiants
+  nameWithType: SymbolPreset.TechGiants
+  fullName: Meridian.Application.Services.SymbolPreset.TechGiants
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TechGiants
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 1002
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: TechGiants = 2
+    return:
+      type: Meridian.Application.Services.SymbolPreset
+- uid: Meridian.Application.Services.SymbolPreset.SP500Top20
+  commentId: F:Meridian.Application.Services.SymbolPreset.SP500Top20
+  id: SP500Top20
+  parent: Meridian.Application.Services.SymbolPreset
+  langs:
+  - csharp
+  - vb
+  name: SP500Top20
+  nameWithType: SymbolPreset.SP500Top20
+  fullName: Meridian.Application.Services.SymbolPreset.SP500Top20
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SP500Top20
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 1003
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: SP500Top20 = 3
+    return:
+      type: Meridian.Application.Services.SymbolPreset
+- uid: Meridian.Application.Services.SymbolPreset.Crypto
+  commentId: F:Meridian.Application.Services.SymbolPreset.Crypto
+  id: Crypto
+  parent: Meridian.Application.Services.SymbolPreset
+  langs:
+  - csharp
+  - vb
+  name: Crypto
+  nameWithType: SymbolPreset.Crypto
+  fullName: Meridian.Application.Services.SymbolPreset.Crypto
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Crypto
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 1004
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Crypto = 4
+    return:
+      type: Meridian.Application.Services.SymbolPreset
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.SymbolPreset
+  commentId: T:Meridian.Application.Services.SymbolPreset
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.SymbolPreset.html
+  name: SymbolPreset
+  nameWithType: SymbolPreset
+  fullName: Meridian.Application.Services.SymbolPreset

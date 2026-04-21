@@ -6,4 +6,9 @@ public sealed record BacktestProgressEvent(
     DateOnly CurrentDate,
     decimal PortfolioValue,
     long EventsProcessed,
-    string? Message = null);
+    string? Message = null,
+    /// <summary>
+    /// Rolling performance metrics available after at least 60 trading days have elapsed.
+    /// <c>null</c> before that threshold or on the final completion event.
+    /// </summary>
+    IntermediateMetrics? LiveMetrics = null);

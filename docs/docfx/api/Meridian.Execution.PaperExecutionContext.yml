@@ -1,0 +1,1296 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.PaperExecutionContext
+  commentId: T:Meridian.Execution.PaperExecutionContext
+  id: PaperExecutionContext
+  parent: Meridian.Execution
+  children:
+  - Meridian.Execution.PaperExecutionContext.#ctor(Meridian.Execution.Interfaces.IOrderGateway,Meridian.Execution.Interfaces.ILiveFeedAdapter,System.Collections.Generic.IReadOnlySet{System.String},System.Decimal,Meridian.Ledger.Ledger)
+  - Meridian.Execution.PaperExecutionContext.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  - Meridian.Execution.PaperExecutionContext.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  - Meridian.Execution.PaperExecutionContext.CurrentTime
+  - Meridian.Execution.PaperExecutionContext.Feed
+  - Meridian.Execution.PaperExecutionContext.Gateway
+  - Meridian.Execution.PaperExecutionContext.Ledger
+  - Meridian.Execution.PaperExecutionContext.Portfolio
+  - Meridian.Execution.PaperExecutionContext.Tick(System.DateTimeOffset,System.String,System.Nullable{System.Decimal})
+  - Meridian.Execution.PaperExecutionContext.Universe
+  langs:
+  - csharp
+  - vb
+  name: PaperExecutionContext
+  nameWithType: PaperExecutionContext
+  fullName: Meridian.Execution.PaperExecutionContext
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaperExecutionContext
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: >-
+    Concrete <xref href="Meridian.Execution.Interfaces.IExecutionContext" data-throw-if-not-resolved="false"></xref> for paper trading sessions.
+
+    Wires a <xref href="Meridian.Execution.PaperTradingGateway" data-throw-if-not-resolved="false"></xref> together with a
+
+    <xref href="Meridian.Execution.Services.PaperTradingPortfolio" data-throw-if-not-resolved="false"></xref> and an optional double-entry
+
+    <xref href="Meridian.Ledger.Ledger" data-throw-if-not-resolved="false"></xref> for full accounting coverage.
+
+    Enforced by ADR-015 (paper trading gateway — risk-free strategy validation).
+  example: []
+  syntax:
+    content: 'public sealed class PaperExecutionContext : IExecutionContext'
+    content.vb: Public NotInheritable Class PaperExecutionContext Implements IExecutionContext
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Execution.Interfaces.IExecutionContext
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.PaperExecutionContext.#ctor(Meridian.Execution.Interfaces.IOrderGateway,Meridian.Execution.Interfaces.ILiveFeedAdapter,System.Collections.Generic.IReadOnlySet{System.String},System.Decimal,Meridian.Ledger.Ledger)
+  commentId: M:Meridian.Execution.PaperExecutionContext.#ctor(Meridian.Execution.Interfaces.IOrderGateway,Meridian.Execution.Interfaces.ILiveFeedAdapter,System.Collections.Generic.IReadOnlySet{System.String},System.Decimal,Meridian.Ledger.Ledger)
+  id: '#ctor(Meridian.Execution.Interfaces.IOrderGateway,Meridian.Execution.Interfaces.ILiveFeedAdapter,System.Collections.Generic.IReadOnlySet{System.String},System.Decimal,Meridian.Ledger.Ledger)'
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: PaperExecutionContext(IOrderGateway, ILiveFeedAdapter, IReadOnlySet<string>, decimal, Ledger?)
+  nameWithType: PaperExecutionContext.PaperExecutionContext(IOrderGateway, ILiveFeedAdapter, IReadOnlySet<string>, decimal, Ledger?)
+  fullName: Meridian.Execution.PaperExecutionContext.PaperExecutionContext(Meridian.Execution.Interfaces.IOrderGateway, Meridian.Execution.Interfaces.ILiveFeedAdapter, System.Collections.Generic.IReadOnlySet<string>, decimal, Meridian.Ledger.Ledger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Creates a paper execution context.
+  example: []
+  syntax:
+    content: public PaperExecutionContext(IOrderGateway gateway, ILiveFeedAdapter feed, IReadOnlySet<string> universe, decimal initialCash, Ledger? ledger = null)
+    parameters:
+    - id: gateway
+      type: Meridian.Execution.Interfaces.IOrderGateway
+      description: The paper trading gateway for order routing.
+    - id: feed
+      type: Meridian.Execution.Interfaces.ILiveFeedAdapter
+      description: The live feed adapter for the session's universe.
+    - id: universe
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+      description: Symbols available in this session.
+    - id: initialCash
+      type: System.Decimal
+      description: Starting cash balance for the paper portfolio.
+    - id: ledger
+      type: Meridian.Ledger.Ledger
+      description: >-
+        Optional ledger. When provided, every fill, commission, and opening capital
+
+        posting is recorded as balanced double-entry journal entries.
+    content.vb: Public Sub New(gateway As IOrderGateway, feed As ILiveFeedAdapter, universe As IReadOnlySet(Of String), initialCash As Decimal, ledger As Ledger = Nothing)
+  overload: Meridian.Execution.PaperExecutionContext.#ctor*
+  nameWithType.vb: PaperExecutionContext.New(IOrderGateway, ILiveFeedAdapter, IReadOnlySet(Of String), Decimal, Ledger)
+  fullName.vb: Meridian.Execution.PaperExecutionContext.New(Meridian.Execution.Interfaces.IOrderGateway, Meridian.Execution.Interfaces.ILiveFeedAdapter, System.Collections.Generic.IReadOnlySet(Of String), Decimal, Meridian.Ledger.Ledger)
+  name.vb: New(IOrderGateway, ILiveFeedAdapter, IReadOnlySet(Of String), Decimal, Ledger)
+- uid: Meridian.Execution.PaperExecutionContext.Gateway
+  commentId: P:Meridian.Execution.PaperExecutionContext.Gateway
+  id: Gateway
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Gateway
+  nameWithType: PaperExecutionContext.Gateway
+  fullName: Meridian.Execution.PaperExecutionContext.Gateway
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gateway
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: The order gateway used to submit and cancel orders in this session.
+  example: []
+  syntax:
+    content: public IOrderGateway Gateway { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Interfaces.IOrderGateway
+    content.vb: Public ReadOnly Property Gateway As IOrderGateway
+  overload: Meridian.Execution.PaperExecutionContext.Gateway*
+  implements:
+  - Meridian.Execution.Interfaces.IExecutionContext.Gateway
+- uid: Meridian.Execution.PaperExecutionContext.Feed
+  commentId: P:Meridian.Execution.PaperExecutionContext.Feed
+  id: Feed
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Feed
+  nameWithType: PaperExecutionContext.Feed
+  fullName: Meridian.Execution.PaperExecutionContext.Feed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Feed
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Live market data adapter for the symbols in this session.
+  example: []
+  syntax:
+    content: public ILiveFeedAdapter Feed { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Interfaces.ILiveFeedAdapter
+    content.vb: Public ReadOnly Property Feed As ILiveFeedAdapter
+  overload: Meridian.Execution.PaperExecutionContext.Feed*
+  implements:
+  - Meridian.Execution.Interfaces.IExecutionContext.Feed
+- uid: Meridian.Execution.PaperExecutionContext.Portfolio
+  commentId: P:Meridian.Execution.PaperExecutionContext.Portfolio
+  id: Portfolio
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Portfolio
+  nameWithType: PaperExecutionContext.Portfolio
+  fullName: Meridian.Execution.PaperExecutionContext.Portfolio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Portfolio
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Read-only view of the current portfolio state.
+  example: []
+  syntax:
+    content: public IPortfolioState Portfolio { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Models.IPortfolioState
+    content.vb: Public ReadOnly Property Portfolio As IPortfolioState
+  overload: Meridian.Execution.PaperExecutionContext.Portfolio*
+  implements:
+  - Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+- uid: Meridian.Execution.PaperExecutionContext.Universe
+  commentId: P:Meridian.Execution.PaperExecutionContext.Universe
+  id: Universe
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Universe
+  nameWithType: PaperExecutionContext.Universe
+  fullName: Meridian.Execution.PaperExecutionContext.Universe
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Universe
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Symbols available in this execution session.
+  example: []
+  syntax:
+    content: public IReadOnlySet<string> Universe { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+    content.vb: Public ReadOnly Property Universe As IReadOnlySet(Of String)
+  overload: Meridian.Execution.PaperExecutionContext.Universe*
+  implements:
+  - Meridian.Execution.Interfaces.IExecutionContext.Universe
+- uid: Meridian.Execution.PaperExecutionContext.CurrentTime
+  commentId: P:Meridian.Execution.PaperExecutionContext.CurrentTime
+  id: CurrentTime
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: CurrentTime
+  nameWithType: PaperExecutionContext.CurrentTime
+  fullName: Meridian.Execution.PaperExecutionContext.CurrentTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentTime
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Wall-clock time at the moment of the current market event.
+  example: []
+  syntax:
+    content: public DateTimeOffset CurrentTime { get; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CurrentTime As DateTimeOffset
+  overload: Meridian.Execution.PaperExecutionContext.CurrentTime*
+  implements:
+  - Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+- uid: Meridian.Execution.PaperExecutionContext.Ledger
+  commentId: P:Meridian.Execution.PaperExecutionContext.Ledger
+  id: Ledger
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Ledger
+  nameWithType: PaperExecutionContext.Ledger
+  fullName: Meridian.Execution.PaperExecutionContext.Ledger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ledger
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: >-
+    Read-only view of the double-entry ledger for this session.
+
+    <code>null</code> when the session was started without ledger tracking enabled.
+  example: []
+  syntax:
+    content: public IReadOnlyLedger? Ledger { get; }
+    parameters: []
+    return:
+      type: Meridian.Ledger.IReadOnlyLedger
+    content.vb: Public ReadOnly Property Ledger As IReadOnlyLedger
+  overload: Meridian.Execution.PaperExecutionContext.Ledger*
+  implements:
+  - Meridian.Execution.Interfaces.IExecutionContext.Ledger
+- uid: Meridian.Execution.PaperExecutionContext.Tick(System.DateTimeOffset,System.String,System.Nullable{System.Decimal})
+  commentId: M:Meridian.Execution.PaperExecutionContext.Tick(System.DateTimeOffset,System.String,System.Nullable{System.Decimal})
+  id: Tick(System.DateTimeOffset,System.String,System.Nullable{System.Decimal})
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: Tick(DateTimeOffset, string?, decimal?)
+  nameWithType: PaperExecutionContext.Tick(DateTimeOffset, string?, decimal?)
+  fullName: Meridian.Execution.PaperExecutionContext.Tick(System.DateTimeOffset, string?, decimal?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tick
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: >-
+    Advances the context clock and optionally updates the last-known market
+
+    price so that unrealised P&amp;L stays current.
+  example: []
+  syntax:
+    content: public void Tick(DateTimeOffset time, string? symbol = null, decimal? lastPrice = null)
+    parameters:
+    - id: time
+      type: System.DateTimeOffset
+    - id: symbol
+      type: System.String
+    - id: lastPrice
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Sub Tick(time As DateTimeOffset, symbol As String = Nothing, lastPrice As Decimal? = Nothing)
+  overload: Meridian.Execution.PaperExecutionContext.Tick*
+  nameWithType.vb: PaperExecutionContext.Tick(DateTimeOffset, String, Decimal?)
+  fullName.vb: Meridian.Execution.PaperExecutionContext.Tick(System.DateTimeOffset, String, Decimal?)
+  name.vb: Tick(DateTimeOffset, String, Decimal?)
+- uid: Meridian.Execution.PaperExecutionContext.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.PaperExecutionContext.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: ApplyCorporateActionsAsync(string, DateTimeOffset, CancellationToken)
+  nameWithType: PaperExecutionContext.ApplyCorporateActionsAsync(string, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Execution.PaperExecutionContext.ApplyCorporateActionsAsync(string, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyCorporateActionsAsync
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: >-
+    Applies corporate-action adjustments (splits, dividends) to an open position by delegating
+
+    to <xref href="Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String%2cSystem.DateTimeOffset%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref>.
+
+    This should be called by the session coordinator whenever a corporate action ex-date
+
+    is detected for a symbol that is currently held.
+  example: []
+  syntax:
+    content: public Task ApplyCorporateActionsAsync(string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Ticker symbol of the position to adjust.
+    - id: positionOpenedAt
+      type: System.DateTimeOffset
+      description: When the position was first opened (UTC).
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ApplyCorporateActionsAsync(symbol As String, positionOpenedAt As DateTimeOffset, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.PaperExecutionContext.ApplyCorporateActionsAsync*
+  nameWithType.vb: PaperExecutionContext.ApplyCorporateActionsAsync(String, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Execution.PaperExecutionContext.ApplyCorporateActionsAsync(String, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: ApplyCorporateActionsAsync(String, DateTimeOffset, CancellationToken)
+- uid: Meridian.Execution.PaperExecutionContext.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  commentId: M:Meridian.Execution.PaperExecutionContext.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  id: ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  parent: Meridian.Execution.PaperExecutionContext
+  langs:
+  - csharp
+  - vb
+  name: ApplyFill(ExecutionReport)
+  nameWithType: PaperExecutionContext.ApplyFill(ExecutionReport)
+  fullName: Meridian.Execution.PaperExecutionContext.ApplyFill(Meridian.Execution.Sdk.ExecutionReport)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/PaperExecutionContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyFill
+    path: ../../src/Meridian.Execution/PaperExecutionContext.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: >-
+    Applies an execution report (fill or partial fill) to the portfolio and
+
+    posts the corresponding double-entry journal entries to the ledger.
+  example: []
+  syntax:
+    content: public void ApplyFill(ExecutionReport report)
+    parameters:
+    - id: report
+      type: Meridian.Execution.Sdk.ExecutionReport
+    content.vb: Public Sub ApplyFill(report As ExecutionReport)
+  overload: Meridian.Execution.PaperExecutionContext.ApplyFill*
+references:
+- uid: Meridian.Execution.Interfaces.IExecutionContext
+  commentId: T:Meridian.Execution.Interfaces.IExecutionContext
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IExecutionContext.html
+  name: IExecutionContext
+  nameWithType: IExecutionContext
+  fullName: Meridian.Execution.Interfaces.IExecutionContext
+- uid: Meridian.Execution.PaperTradingGateway
+  commentId: T:Meridian.Execution.PaperTradingGateway
+  href: Meridian.Execution.PaperTradingGateway.html
+  name: PaperTradingGateway
+  nameWithType: PaperTradingGateway
+  fullName: Meridian.Execution.PaperTradingGateway
+- uid: Meridian.Execution.Services.PaperTradingPortfolio
+  commentId: T:Meridian.Execution.Services.PaperTradingPortfolio
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html
+  name: PaperTradingPortfolio
+  nameWithType: PaperTradingPortfolio
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio
+- uid: Meridian.Ledger.Ledger
+  commentId: T:Meridian.Ledger.Ledger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.Ledger.html
+  name: Ledger
+  nameWithType: Ledger
+  fullName: Meridian.Ledger.Ledger
+- uid: Meridian.Execution
+  commentId: N:Meridian.Execution
+  href: Meridian.html
+  name: Meridian.Execution
+  nameWithType: Meridian.Execution
+  fullName: Meridian.Execution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.PaperExecutionContext.#ctor*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.#ctor
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext__ctor_Meridian_Execution_Interfaces_IOrderGateway_Meridian_Execution_Interfaces_ILiveFeedAdapter_System_Collections_Generic_IReadOnlySet_System_String__System_Decimal_Meridian_Ledger_Ledger_
+  name: PaperExecutionContext
+  nameWithType: PaperExecutionContext.PaperExecutionContext
+  fullName: Meridian.Execution.PaperExecutionContext.PaperExecutionContext
+  nameWithType.vb: PaperExecutionContext.New
+  fullName.vb: Meridian.Execution.PaperExecutionContext.New
+  name.vb: New
+- uid: Meridian.Execution.Interfaces.IOrderGateway
+  commentId: T:Meridian.Execution.Interfaces.IOrderGateway
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IOrderGateway.html
+  name: IOrderGateway
+  nameWithType: IOrderGateway
+  fullName: Meridian.Execution.Interfaces.IOrderGateway
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  commentId: T:Meridian.Execution.Interfaces.ILiveFeedAdapter
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html
+  name: ILiveFeedAdapter
+  nameWithType: ILiveFeedAdapter
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter
+- uid: System.Collections.Generic.IReadOnlySet{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<string>
+  nameWithType: IReadOnlySet<string>
+  fullName: System.Collections.Generic.IReadOnlySet<string>
+  nameWithType.vb: IReadOnlySet(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of String)
+  name.vb: IReadOnlySet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.PaperExecutionContext.Gateway*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.Gateway
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext_Gateway
+  name: Gateway
+  nameWithType: PaperExecutionContext.Gateway
+  fullName: Meridian.Execution.PaperExecutionContext.Gateway
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Gateway
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Gateway
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Gateway
+  name: Gateway
+  nameWithType: IExecutionContext.Gateway
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Gateway
+- uid: Meridian.Execution.PaperExecutionContext.Feed*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.Feed
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext_Feed
+  name: Feed
+  nameWithType: PaperExecutionContext.Feed
+  fullName: Meridian.Execution.PaperExecutionContext.Feed
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Feed
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Feed
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Feed
+  name: Feed
+  nameWithType: IExecutionContext.Feed
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Feed
+- uid: Meridian.Execution.PaperExecutionContext.Portfolio*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.Portfolio
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext_Portfolio
+  name: Portfolio
+  nameWithType: PaperExecutionContext.Portfolio
+  fullName: Meridian.Execution.PaperExecutionContext.Portfolio
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Portfolio
+  name: Portfolio
+  nameWithType: IExecutionContext.Portfolio
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Portfolio
+- uid: Meridian.Execution.Models.IPortfolioState
+  commentId: T:Meridian.Execution.Models.IPortfolioState
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.IPortfolioState.html
+  name: IPortfolioState
+  nameWithType: IPortfolioState
+  fullName: Meridian.Execution.Models.IPortfolioState
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.PaperExecutionContext.Universe*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.Universe
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext_Universe
+  name: Universe
+  nameWithType: PaperExecutionContext.Universe
+  fullName: Meridian.Execution.PaperExecutionContext.Universe
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Universe
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Universe
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Universe
+  name: Universe
+  nameWithType: IExecutionContext.Universe
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Universe
+- uid: Meridian.Execution.PaperExecutionContext.CurrentTime*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.CurrentTime
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext_CurrentTime
+  name: CurrentTime
+  nameWithType: PaperExecutionContext.CurrentTime
+  fullName: Meridian.Execution.PaperExecutionContext.CurrentTime
+- uid: Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_CurrentTime
+  name: CurrentTime
+  nameWithType: IExecutionContext.CurrentTime
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.CurrentTime
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Execution.PaperExecutionContext.Ledger*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.Ledger
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext_Ledger
+  name: Ledger
+  nameWithType: PaperExecutionContext.Ledger
+  fullName: Meridian.Execution.PaperExecutionContext.Ledger
+- uid: Meridian.Execution.Interfaces.IExecutionContext.Ledger
+  commentId: P:Meridian.Execution.Interfaces.IExecutionContext.Ledger
+  parent: Meridian.Execution.Interfaces.IExecutionContext
+  href: Meridian.Execution.Interfaces.IExecutionContext.html#Meridian_Execution_Interfaces_IExecutionContext_Ledger
+  name: Ledger
+  nameWithType: IExecutionContext.Ledger
+  fullName: Meridian.Execution.Interfaces.IExecutionContext.Ledger
+- uid: Meridian.Ledger.IReadOnlyLedger
+  commentId: T:Meridian.Ledger.IReadOnlyLedger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.IReadOnlyLedger.html
+  name: IReadOnlyLedger
+  nameWithType: IReadOnlyLedger
+  fullName: Meridian.Ledger.IReadOnlyLedger
+- uid: Meridian.Execution.PaperExecutionContext.Tick*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.Tick
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext_Tick_System_DateTimeOffset_System_String_System_Nullable_System_Decimal__
+  name: Tick
+  nameWithType: PaperExecutionContext.Tick
+  fullName: Meridian.Execution.PaperExecutionContext.Tick
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_ApplyCorporateActionsAsync_System_String_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: ApplyCorporateActionsAsync(string, DateTimeOffset, CancellationToken)
+  nameWithType: PaperTradingPortfolio.ApplyCorporateActionsAsync(string, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(string, System.DateTimeOffset, System.Threading.CancellationToken)
+  nameWithType.vb: PaperTradingPortfolio.ApplyCorporateActionsAsync(String, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(String, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: ApplyCorporateActionsAsync(String, DateTimeOffset, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: ApplyCorporateActionsAsync
+    href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_ApplyCorporateActionsAsync_System_String_System_DateTimeOffset_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Services.PaperTradingPortfolio.ApplyCorporateActionsAsync(System.String,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: ApplyCorporateActionsAsync
+    href: Meridian.Execution.Services.PaperTradingPortfolio.html#Meridian_Execution_Services_PaperTradingPortfolio_ApplyCorporateActionsAsync_System_String_System_DateTimeOffset_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Execution.PaperExecutionContext.ApplyCorporateActionsAsync*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.ApplyCorporateActionsAsync
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext_ApplyCorporateActionsAsync_System_String_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: ApplyCorporateActionsAsync
+  nameWithType: PaperExecutionContext.ApplyCorporateActionsAsync
+  fullName: Meridian.Execution.PaperExecutionContext.ApplyCorporateActionsAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Execution.PaperExecutionContext.ApplyFill*
+  commentId: Overload:Meridian.Execution.PaperExecutionContext.ApplyFill
+  href: Meridian.Execution.PaperExecutionContext.html#Meridian_Execution_PaperExecutionContext_ApplyFill_Meridian_Execution_Sdk_ExecutionReport_
+  name: ApplyFill
+  nameWithType: PaperExecutionContext.ApplyFill
+  fullName: Meridian.Execution.PaperExecutionContext.ApplyFill
+- uid: Meridian.Execution.Sdk.ExecutionReport
+  commentId: T:Meridian.Execution.Sdk.ExecutionReport
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.ExecutionReport.html
+  name: ExecutionReport
+  nameWithType: ExecutionReport
+  fullName: Meridian.Execution.Sdk.ExecutionReport
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html

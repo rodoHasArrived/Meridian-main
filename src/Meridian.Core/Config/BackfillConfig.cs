@@ -276,15 +276,15 @@ public sealed record FredConfig(
 );
 
 /// <summary>
-/// Robinhood provider configuration.
-/// Uses Robinhood's public historicals API — no authentication required.
-/// Free tier: conservative ~10 requests/minute to avoid throttling.
+/// Robinhood historical data provider configuration.
+/// Uses the unofficial Robinhood API; requires a personal access token.
+/// No official public API exists — set ROBINHOOD_ACCESS_TOKEN via environment variable.
 /// </summary>
 /// <param name="Enabled">Enable this provider.</param>
-/// <param name="Priority">Priority in fallback chain (lower = tried first).</param>
-/// <param name="RateLimitPerMinute">Maximum requests per minute.</param>
+/// <param name="Priority">Priority in fallback chain (lower = tried first). Defaults to 35.</param>
+/// <param name="RateLimitPerHour">Maximum requests per hour. Defaults to 100 (conservative, undocumented limit).</param>
 public sealed record RobinhoodConfig(
-    bool Enabled = true,
-    int Priority = 25,
-    int RateLimitPerMinute = 10
+    bool Enabled = false,
+    int Priority = 35,
+    int RateLimitPerHour = 100
 );

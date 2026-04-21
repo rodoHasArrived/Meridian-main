@@ -4,6 +4,38 @@ open System
 
 [<RequireQualifiedAccess>]
 module SecurityMasterLegacyUpgrade =
+    let private preferredTermsFromClassification classification =
+        match classification with
+        | Some (EquityClassification.Preferred preferred)
+        | Some (EquityClassification.ConvertiblePreferred (preferred, _)) -> Some preferred
+        | _ -> None
+
+    let private mapDistributionPolicy = function
+        | None -> None
+        | Some label -> DistributionPolicy.OtherDistribution label |> Some
+
+    let private mapRedemptionStyle = function
+        | None -> None
+        | Some label -> RedemptionStyle.OtherRedemption label |> Some
+
+    let private mapCouponKind = function
+        | "ZeroCoupon" -> CouponKind.ZeroCoupon
+        | "Floating" -> CouponKind.Floating
+        | "Fixed" -> CouponKind.Fixed
+        | "Discount" -> CouponKind.DiscountNote
+        | "SimpleInterest" -> CouponKind.OtherCoupon "SimpleInterest"
+        | other -> CouponKind.OtherCoupon other
+
+    let private mapDayCount = Option.map DayCountConvention.OtherDayCount
+
+    let private mapSweepVehicle = function
+        | "MoneyMarketFund" -> SweepVehicle.MoneyMarketFund
+        | "BankDeposit" -> SweepVehicle.BankDeposit
+        | "Repo" -> SweepVehicle.Repo
+        | other -> SweepVehicle.OtherVehicle other
+
+    let private mapSweepFrequency = Option.map PaymentFrequency.OtherFrequency
+
     let private classificationFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity _ ->
@@ -14,6 +46,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Equity"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.Option _ ->
             {
@@ -23,6 +56,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Option"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.Future _ ->
             {
@@ -32,6 +66,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Future"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.Bond _ ->
             {
@@ -41,6 +76,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Bond"
                 IssuerType = Some "Corporate"
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.FxSpot _ ->
             {
@@ -50,6 +86,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "FxSpot"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.Deposit terms ->
             {
@@ -63,6 +100,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Deposit"
                 IssuerType = Some "Bank"
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.MoneyMarketFund _ ->
             {
@@ -72,6 +110,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "MoneyMarketFund"
                 IssuerType = Some "FundVehicle"
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.CertificateOfDeposit _ ->
             {
@@ -81,6 +120,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "CertificateOfDeposit"
                 IssuerType = Some "Bank"
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.CommercialPaper _ ->
             {
@@ -90,6 +130,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "CommercialPaper"
                 IssuerType = Some "Corporate"
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.TreasuryBill _ ->
             {
@@ -99,6 +140,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "TreasuryBill"
                 IssuerType = Some "Sovereign"
                 RiskCountry = Some "US"
+                Taxonomy = None
             }
         | SecurityKind.Repo _ ->
             {
@@ -108,6 +150,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Repo"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.CashSweep _ ->
             {
@@ -117,6 +160,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "CashSweep"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.OtherSecurity terms ->
             {
@@ -126,6 +170,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "OtherSecurity"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.Swap _ ->
             {
@@ -135,6 +180,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Swap"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.DirectLoan _ ->
             {
@@ -144,6 +190,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "DirectLoan"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.Commodity _ ->
             {
@@ -153,6 +200,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Commodity"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.CryptoCurrency _ ->
             {
@@ -162,6 +210,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "CryptoCurrency"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.Cfd _ ->
             {
@@ -171,6 +220,7 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Cfd"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
         | SecurityKind.Warrant _ ->
             {
@@ -180,19 +230,45 @@ module SecurityMasterLegacyUpgrade =
                 TypeName = "Warrant"
                 IssuerType = None
                 RiskCountry = None
+                Taxonomy = None
             }
 
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
+            let preferredTerms = preferredTermsFromClassification terms.Classification
             {
                 SecurityTermModules.empty with
                     EquityBehavior =
                         Some {
                             ShareClass = terms.ShareClass
-                            VotingRights = None
-                            DistributionType = None
+                            VotingRights = terms.VotingRightsCat |> Option.map VotingRightsCat.asString
+                            DistributionType =
+                                preferredTerms
+                                |> Option.map (fun preferred -> preferred.DividendType |> DividendType.asString |> DistributionPolicy.OtherDistribution)
                         }
+                    Redemption =
+                        preferredTerms
+                        |> Option.map (fun preferred ->
+                            {
+                                RedemptionType =
+                                    Some (preferred.LiquidationPreference |> LiquidationPreference.asString |> RedemptionStyle.OtherRedemption)
+                                RedemptionPrice = preferred.RedemptionPrice
+                                IsBullet = None
+                                IsAmortizing = None
+                            })
+                    Call =
+                        preferredTerms
+                        |> Option.map (fun preferred ->
+                            {
+                                IsCallable = preferred.CallableDate.IsSome
+                                FirstCallDate = preferred.CallableDate
+                                CallPrice = None
+                                CallSchedule = []
+                                MakeWholeSpreadBps = None
+                                IsPuttable = false
+                                PutSchedule = []
+                            })
             }
         | SecurityKind.Option terms ->
             {
@@ -215,6 +291,36 @@ module SecurityMasterLegacyUpgrade =
                         }
             }
         | SecurityKind.Bond terms ->
+            let isStructured =
+                match terms.Subclass with
+                | BondSubclass.MortgageBacked | BondSubclass.AgencyMbs | BondSubclass.CommercialMbs
+                | BondSubclass.Cmo | BondSubclass.Clo | BondSubclass.Cdo
+                | BondSubclass.AssetBacked
+                | BondSubclass.PrincipalOnly | BondSubclass.InterestOnly | BondSubclass.InverseInterestOnly -> true
+                | _ -> false
+            let structuredTerms =
+                if isStructured then
+                    Some {
+                        Factor = None
+                        FactorDate = None
+                        WeightedAvgCoupon = None
+                        WeightedAvgMaturityMonths = None
+                        WeightedAvgLoanAgeMos = None
+                        CollateralType = None
+                        PoolIdentifier = None
+                        TrancheClass = None
+                        PrepaymentAssumption = None
+                        AverageLifeYears = None
+                        IsInterestOnly =
+                            match terms.Subclass with
+                            | BondSubclass.InterestOnly | BondSubclass.InverseInterestOnly -> true
+                            | _ -> false
+                        IsPrincipalOnly = terms.Subclass = BondSubclass.PrincipalOnly
+                        NotionalBalance = None
+                        Originator = None
+                        CreditEnhancementPct = None
+                    }
+                else None
             {
                 SecurityTermModules.empty with
                     Maturity =
@@ -225,11 +331,16 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Coupon =
                         Some {
-                            CouponType = Some (match terms.Coupon with BondCouponStructure.ZeroCoupon -> "ZeroCoupon" | BondCouponStructure.Floating _ -> "Floating" | _ -> "Fixed")
+                            CouponType =
+                                Some (match terms.Coupon with
+                                      | BondCouponStructure.ZeroCoupon -> CouponKind.ZeroCoupon
+                                      | BondCouponStructure.Floating _ -> CouponKind.Floating
+                                      | _ -> CouponKind.Fixed)
                             CouponRate = BondTerms.couponRate terms
                             PaymentFrequency = None
-                            DayCount = BondTerms.dayCount terms
+                            DayCount = BondTerms.dayCount terms |> mapDayCount
                         }
+                    StructuredProduct = structuredTerms
             }
         | SecurityKind.FxSpot _ ->
             SecurityTermModules.empty
@@ -244,22 +355,30 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Coupon =
                         Some {
-                            CouponType = Some "SimpleInterest"
+                            CouponType = Some (mapCouponKind "SimpleInterest")
                             CouponRate = terms.InterestRate
                             PaymentFrequency = None
-                            DayCount = terms.DayCount
+                            DayCount = terms.DayCount |> mapDayCount
                         }
                     Call =
                         Some {
                             IsCallable = terms.IsCallable
                             FirstCallDate = None
                             CallPrice = None
+                            CallSchedule = []
+                            MakeWholeSpreadBps = None
+                            IsPuttable = false
+                            PutSchedule = []
                         }
                     Issuer =
                         Some {
                             IssuerName = None
                             InstitutionName = Some terms.InstitutionName
                             IssuerProgram = Some terms.DepositType
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
                         }
             }
         | SecurityKind.MoneyMarketFund terms ->
@@ -284,22 +403,30 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Coupon =
                         Some {
-                            CouponType = Some "Fixed"
+                            CouponType = Some CouponKind.Fixed
                             CouponRate = terms.CouponRate
                             PaymentFrequency = None
-                            DayCount = terms.DayCount
+                            DayCount = terms.DayCount |> mapDayCount
                         }
                     Call =
                         Some {
                             IsCallable = terms.CallableDate.IsSome
                             FirstCallDate = terms.CallableDate
                             CallPrice = None
+                            CallSchedule = []
+                            MakeWholeSpreadBps = None
+                            IsPuttable = false
+                            PutSchedule = []
                         }
                     Issuer =
                         Some {
                             IssuerName = Some terms.IssuerName
                             InstitutionName = None
                             IssuerProgram = None
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
                         }
             }
         | SecurityKind.CommercialPaper terms ->
@@ -318,16 +445,20 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Coupon =
                         Some {
-                            CouponType = Some "Discount"
+                            CouponType = Some (mapCouponKind "Discount")
                             CouponRate = None
                             PaymentFrequency = None
-                            DayCount = terms.DayCount
+                            DayCount = terms.DayCount |> mapDayCount
                         }
                     Issuer =
                         Some {
                             IssuerName = Some terms.IssuerName
                             InstitutionName = None
                             IssuerProgram = if terms.IsAssetBacked then Some "AssetBacked" else None
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
                         }
             }
         | SecurityKind.TreasuryBill terms ->
@@ -354,6 +485,10 @@ module SecurityMasterLegacyUpgrade =
                             IssuerName = Some "US Treasury"
                             InstitutionName = None
                             IssuerProgram = terms.CUSIP
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = Some "US"
                         }
             }
         | SecurityKind.Repo terms ->
@@ -385,8 +520,8 @@ module SecurityMasterLegacyUpgrade =
                     Sweep =
                         Some {
                             ProgramName = Some terms.ProgramName
-                            SweepVehicleType = Some terms.SweepVehicleType
-                            SweepFrequency = terms.SweepFrequency
+                            SweepVehicleType = Some (mapSweepVehicle terms.SweepVehicleType)
+                            SweepFrequency = terms.SweepFrequency |> mapSweepFrequency
                             TargetAccountType = terms.TargetAccountType
                         }
                     Discount =
@@ -415,6 +550,10 @@ module SecurityMasterLegacyUpgrade =
                             IssuerName = terms.IssuerName
                             InstitutionName = None
                             IssuerProgram = terms.SettlementType
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
                         }
             }
         | SecurityKind.Swap terms ->
@@ -441,6 +580,10 @@ module SecurityMasterLegacyUpgrade =
                             IssuerName = Some terms.Borrower
                             InstitutionName = None
                             IssuerProgram = None
+                            LeiCode = None
+                            UltimateParentName = None
+                            IssuerSector = None
+                            IssuerCountry = None
                         }
             }
         | SecurityKind.Commodity terms ->

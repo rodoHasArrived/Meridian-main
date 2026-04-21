@@ -1,6 +1,6 @@
 # Meridian - System Architecture
 
-**Last Updated:** 2026-03-26
+**Last Updated:** 2026-04-09
 
 Meridian is a modular, event-driven trading platform that is being productized as a comprehensive fund management system. The architecture already supports ingestion, storage, replay, backtesting, export, portfolio, ledger, and desktop workflows. The current roadmap extends that baseline into a connected front-, middle-, and back-office product with stronger governance and fund-operations capabilities.
 
@@ -28,7 +28,7 @@ This is an expansion of the existing architecture, not a replacement of it.
 ### Presentation layer
 
 - WPF desktop application
-- web dashboard and API surfaces
+- desktop-local API host and retained workstation API surfaces
 - CLI and operator tooling
 
 This layer should present workflows, not isolated technical pages. The current migration focus is on real workspace-first shells.

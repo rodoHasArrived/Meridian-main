@@ -41,14 +41,15 @@ public abstract class NavigationServiceBase
             return false;
         }
 
-        var result = NavigateToPageCore(pageType, parameter);
+        var effectiveParameter = TransformNavigationParameter(pageTag, pageType, parameter);
+        var result = NavigateToPageCore(pageTag, pageType, effectiveParameter);
 
         if (result)
         {
             var entry = new NavigationEntry
             {
                 PageTag = pageTag,
-                Parameter = parameter,
+                Parameter = effectiveParameter,
                 Timestamp = DateTime.UtcNow
             };
             _navigationHistory.Push(entry);
@@ -56,7 +57,7 @@ public abstract class NavigationServiceBase
             Navigated?.Invoke(this, new NavigationEventArgs
             {
                 PageTag = pageTag,
-                Parameter = parameter
+                Parameter = effectiveParameter
             });
         }
 
@@ -68,7 +69,8 @@ public abstract class NavigationServiceBase
     /// </summary>
     public bool NavigateTo(Type pageType, object? parameter = null)
     {
-        return NavigateToPageCore(pageType, parameter);
+        var pageTag = ResolvePageTag(pageType);
+        return NavigateToPageCore(pageTag, pageType, parameter);
     }
 
     /// <summary>
@@ -149,10 +151,11 @@ public abstract class NavigationServiceBase
     /// <summary>
     /// When overridden, performs the platform-specific navigation to a page type.
     /// </summary>
+    /// <param name="pageTag">The registered navigation tag used for metadata-aware routing.</param>
     /// <param name="pageType">The Type of the page to navigate to.</param>
     /// <param name="parameter">Optional navigation parameter.</param>
     /// <returns>True if navigation succeeded.</returns>
-    protected abstract bool NavigateToPageCore(Type pageType, object? parameter);
+    protected abstract bool NavigateToPageCore(string pageTag, Type pageType, object? parameter);
 
     /// <summary>
     /// When overridden, performs the platform-specific back navigation.
@@ -165,9 +168,29 @@ public abstract class NavigationServiceBase
     protected abstract void ClearHistoryCore();
 
     /// <summary>
+    /// Allows derived navigation services to normalize or synthesize parameters
+    /// for page-tag aliases before a page is created.
+    /// </summary>
+    protected virtual object? TransformNavigationParameter(string pageTag, Type pageType, object? parameter)
+        => parameter;
+
+    /// <summary>
     /// Called when navigation to an unknown page tag is attempted.
     /// </summary>
     protected virtual void OnNavigationFailed(string pageTag)
     {
+    }
+
+    private string ResolvePageTag(Type pageType)
+    {
+        foreach (var entry in _pageRegistry)
+        {
+            if (entry.Value == pageType)
+            {
+                return entry.Key;
+            }
+        }
+
+        return pageType.Name;
     }
 }

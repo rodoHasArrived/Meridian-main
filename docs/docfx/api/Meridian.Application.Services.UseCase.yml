@@ -1,0 +1,203 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.UseCase
+  commentId: T:Meridian.Application.Services.UseCase
+  id: UseCase
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.UseCase.BackfillOnly
+  - Meridian.Application.Services.UseCase.Development
+  - Meridian.Application.Services.UseCase.Production
+  - Meridian.Application.Services.UseCase.RealTimeTrading
+  - Meridian.Application.Services.UseCase.Research
+  langs:
+  - csharp
+  - vb
+  name: UseCase
+  nameWithType: UseCase
+  fullName: Meridian.Application.Services.UseCase
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseCase
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 986
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Use case for configuration.
+  example: []
+  syntax:
+    content: 'public enum UseCase : byte'
+    content.vb: Public Enum UseCase As Byte
+- uid: Meridian.Application.Services.UseCase.Development
+  commentId: F:Meridian.Application.Services.UseCase.Development
+  id: Development
+  parent: Meridian.Application.Services.UseCase
+  langs:
+  - csharp
+  - vb
+  name: Development
+  nameWithType: UseCase.Development
+  fullName: Meridian.Application.Services.UseCase.Development
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Development
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 988
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Development = 0
+    return:
+      type: Meridian.Application.Services.UseCase
+- uid: Meridian.Application.Services.UseCase.Research
+  commentId: F:Meridian.Application.Services.UseCase.Research
+  id: Research
+  parent: Meridian.Application.Services.UseCase
+  langs:
+  - csharp
+  - vb
+  name: Research
+  nameWithType: UseCase.Research
+  fullName: Meridian.Application.Services.UseCase.Research
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Research
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 989
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Research = 1
+    return:
+      type: Meridian.Application.Services.UseCase
+- uid: Meridian.Application.Services.UseCase.RealTimeTrading
+  commentId: F:Meridian.Application.Services.UseCase.RealTimeTrading
+  id: RealTimeTrading
+  parent: Meridian.Application.Services.UseCase
+  langs:
+  - csharp
+  - vb
+  name: RealTimeTrading
+  nameWithType: UseCase.RealTimeTrading
+  fullName: Meridian.Application.Services.UseCase.RealTimeTrading
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealTimeTrading
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 990
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: RealTimeTrading = 2
+    return:
+      type: Meridian.Application.Services.UseCase
+- uid: Meridian.Application.Services.UseCase.BackfillOnly
+  commentId: F:Meridian.Application.Services.UseCase.BackfillOnly
+  id: BackfillOnly
+  parent: Meridian.Application.Services.UseCase
+  langs:
+  - csharp
+  - vb
+  name: BackfillOnly
+  nameWithType: UseCase.BackfillOnly
+  fullName: Meridian.Application.Services.UseCase.BackfillOnly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillOnly
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 991
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: BackfillOnly = 3
+    return:
+      type: Meridian.Application.Services.UseCase
+- uid: Meridian.Application.Services.UseCase.Production
+  commentId: F:Meridian.Application.Services.UseCase.Production
+  id: Production
+  parent: Meridian.Application.Services.UseCase
+  langs:
+  - csharp
+  - vb
+  name: Production
+  nameWithType: UseCase.Production
+  fullName: Meridian.Application.Services.UseCase.Production
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/AutoConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Production
+    path: ../../src/Meridian.Application/Services/AutoConfigurationService.cs
+    startLine: 992
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Production = 4
+    return:
+      type: Meridian.Application.Services.UseCase
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.UseCase
+  commentId: T:Meridian.Application.Services.UseCase
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.UseCase.html
+  name: UseCase
+  nameWithType: UseCase
+  fullName: Meridian.Application.Services.UseCase

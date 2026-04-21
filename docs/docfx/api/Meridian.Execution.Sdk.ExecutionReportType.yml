@@ -1,0 +1,257 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.ExecutionReportType
+  commentId: T:Meridian.Execution.Sdk.ExecutionReportType
+  id: ExecutionReportType
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.ExecutionReportType.Cancelled
+  - Meridian.Execution.Sdk.ExecutionReportType.Expired
+  - Meridian.Execution.Sdk.ExecutionReportType.Fill
+  - Meridian.Execution.Sdk.ExecutionReportType.Modified
+  - Meridian.Execution.Sdk.ExecutionReportType.New
+  - Meridian.Execution.Sdk.ExecutionReportType.PartialFill
+  - Meridian.Execution.Sdk.ExecutionReportType.Rejected
+  langs:
+  - csharp
+  - vb
+  name: ExecutionReportType
+  nameWithType: ExecutionReportType
+  fullName: Meridian.Execution.Sdk.ExecutionReportType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionReportType
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Execution report type.
+  example: []
+  syntax:
+    content: public enum ExecutionReportType
+    content.vb: Public Enum ExecutionReportType
+- uid: Meridian.Execution.Sdk.ExecutionReportType.New
+  commentId: F:Meridian.Execution.Sdk.ExecutionReportType.New
+  id: New
+  parent: Meridian.Execution.Sdk.ExecutionReportType
+  langs:
+  - csharp
+  - vb
+  name: New
+  nameWithType: ExecutionReportType.New
+  fullName: Meridian.Execution.Sdk.ExecutionReportType.New
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: New
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: New = 0
+    return:
+      type: Meridian.Execution.Sdk.ExecutionReportType
+- uid: Meridian.Execution.Sdk.ExecutionReportType.Fill
+  commentId: F:Meridian.Execution.Sdk.ExecutionReportType.Fill
+  id: Fill
+  parent: Meridian.Execution.Sdk.ExecutionReportType
+  langs:
+  - csharp
+  - vb
+  name: Fill
+  nameWithType: ExecutionReportType.Fill
+  fullName: Meridian.Execution.Sdk.ExecutionReportType.Fill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fill
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Fill = 1
+    return:
+      type: Meridian.Execution.Sdk.ExecutionReportType
+- uid: Meridian.Execution.Sdk.ExecutionReportType.PartialFill
+  commentId: F:Meridian.Execution.Sdk.ExecutionReportType.PartialFill
+  id: PartialFill
+  parent: Meridian.Execution.Sdk.ExecutionReportType
+  langs:
+  - csharp
+  - vb
+  name: PartialFill
+  nameWithType: ExecutionReportType.PartialFill
+  fullName: Meridian.Execution.Sdk.ExecutionReportType.PartialFill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PartialFill
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: PartialFill = 2
+    return:
+      type: Meridian.Execution.Sdk.ExecutionReportType
+- uid: Meridian.Execution.Sdk.ExecutionReportType.Cancelled
+  commentId: F:Meridian.Execution.Sdk.ExecutionReportType.Cancelled
+  id: Cancelled
+  parent: Meridian.Execution.Sdk.ExecutionReportType
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: ExecutionReportType.Cancelled
+  fullName: Meridian.Execution.Sdk.ExecutionReportType.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Cancelled = 3
+    return:
+      type: Meridian.Execution.Sdk.ExecutionReportType
+- uid: Meridian.Execution.Sdk.ExecutionReportType.Rejected
+  commentId: F:Meridian.Execution.Sdk.ExecutionReportType.Rejected
+  id: Rejected
+  parent: Meridian.Execution.Sdk.ExecutionReportType
+  langs:
+  - csharp
+  - vb
+  name: Rejected
+  nameWithType: ExecutionReportType.Rejected
+  fullName: Meridian.Execution.Sdk.ExecutionReportType.Rejected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rejected
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Rejected = 4
+    return:
+      type: Meridian.Execution.Sdk.ExecutionReportType
+- uid: Meridian.Execution.Sdk.ExecutionReportType.Modified
+  commentId: F:Meridian.Execution.Sdk.ExecutionReportType.Modified
+  id: Modified
+  parent: Meridian.Execution.Sdk.ExecutionReportType
+  langs:
+  - csharp
+  - vb
+  name: Modified
+  nameWithType: ExecutionReportType.Modified
+  fullName: Meridian.Execution.Sdk.ExecutionReportType.Modified
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Modified
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Modified = 5
+    return:
+      type: Meridian.Execution.Sdk.ExecutionReportType
+- uid: Meridian.Execution.Sdk.ExecutionReportType.Expired
+  commentId: F:Meridian.Execution.Sdk.ExecutionReportType.Expired
+  id: Expired
+  parent: Meridian.Execution.Sdk.ExecutionReportType
+  langs:
+  - csharp
+  - vb
+  name: Expired
+  nameWithType: ExecutionReportType.Expired
+  fullName: Meridian.Execution.Sdk.ExecutionReportType.Expired
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expired
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Expired = 6
+    return:
+      type: Meridian.Execution.Sdk.ExecutionReportType
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.ExecutionReportType
+  commentId: T:Meridian.Execution.Sdk.ExecutionReportType
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.ExecutionReportType.html
+  name: ExecutionReportType
+  nameWithType: ExecutionReportType
+  fullName: Meridian.Execution.Sdk.ExecutionReportType

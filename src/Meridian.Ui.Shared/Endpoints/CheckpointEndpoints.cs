@@ -151,7 +151,16 @@ public static class CheckpointEndpoints
             // If job was successful, no pending symbols
             if (status.Success)
             {
-                return Results.Json(new { jobId, pendingSymbols = Array.Empty<string>(), count = 0 }, jsonOptions);
+                return Results.Json(new
+                {
+                    jobId,
+                    provider = status.Provider,
+                    from = status.From,
+                    to = status.To,
+                    pendingSymbols = Array.Empty<string>(),
+                    count = 0,
+                    completedCount = status.Symbols?.Length ?? 0
+                }, jsonOptions);
             }
 
             // Use per-symbol checkpoints when available to return only the genuinely pending symbols.
@@ -177,6 +186,9 @@ public static class CheckpointEndpoints
             return Results.Json(new
             {
                 jobId,
+                provider = status.Provider,
+                from = status.From,
+                to = status.To,
                 pendingSymbols,
                 count = pendingSymbols.Length,
                 completedCount = allSymbols.Length - pendingSymbols.Length

@@ -1,0 +1,708 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.HistoricalDataQueryService
+  commentId: T:Meridian.Application.Services.HistoricalDataQueryService
+  id: HistoricalDataQueryService
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.HistoricalDataQueryService.#ctor(System.String)
+  - Meridian.Application.Services.HistoricalDataQueryService.GetAvailableSymbols
+  - Meridian.Application.Services.HistoricalDataQueryService.GetDateRange(System.String)
+  - Meridian.Application.Services.HistoricalDataQueryService.QueryAsync(Meridian.Application.Services.HistoricalDataQuery,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: HistoricalDataQueryService
+  nameWithType: HistoricalDataQueryService
+  fullName: Meridian.Application.Services.HistoricalDataQueryService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalDataQueryService
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Service for querying historical market data from storage.
+
+    Implements QW-15: Query Endpoint for Historical Data.
+  example: []
+  syntax:
+    content: public sealed class HistoricalDataQueryService
+    content.vb: Public NotInheritable Class HistoricalDataQueryService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.HistoricalDataQueryService.#ctor(System.String)
+  commentId: M:Meridian.Application.Services.HistoricalDataQueryService.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Application.Services.HistoricalDataQueryService
+  langs:
+  - csharp
+  - vb
+  name: HistoricalDataQueryService(string)
+  nameWithType: HistoricalDataQueryService.HistoricalDataQueryService(string)
+  fullName: Meridian.Application.Services.HistoricalDataQueryService.HistoricalDataQueryService(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public HistoricalDataQueryService(string dataRoot)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    content.vb: Public Sub New(dataRoot As String)
+  overload: Meridian.Application.Services.HistoricalDataQueryService.#ctor*
+  nameWithType.vb: HistoricalDataQueryService.New(String)
+  fullName.vb: Meridian.Application.Services.HistoricalDataQueryService.New(String)
+  name.vb: New(String)
+- uid: Meridian.Application.Services.HistoricalDataQueryService.QueryAsync(Meridian.Application.Services.HistoricalDataQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.HistoricalDataQueryService.QueryAsync(Meridian.Application.Services.HistoricalDataQuery,System.Threading.CancellationToken)
+  id: QueryAsync(Meridian.Application.Services.HistoricalDataQuery,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.HistoricalDataQueryService
+  langs:
+  - csharp
+  - vb
+  name: QueryAsync(HistoricalDataQuery, CancellationToken)
+  nameWithType: HistoricalDataQueryService.QueryAsync(HistoricalDataQuery, CancellationToken)
+  fullName: Meridian.Application.Services.HistoricalDataQueryService.QueryAsync(Meridian.Application.Services.HistoricalDataQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueryAsync
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Queries historical data for a symbol within a date range.
+  example: []
+  syntax:
+    content: public Task<HistoricalDataQueryResult> QueryAsync(HistoricalDataQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Application.Services.HistoricalDataQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.HistoricalDataQueryResult}
+    content.vb: Public Function QueryAsync(query As HistoricalDataQuery, ct As CancellationToken = Nothing) As Task(Of HistoricalDataQueryResult)
+  overload: Meridian.Application.Services.HistoricalDataQueryService.QueryAsync*
+- uid: Meridian.Application.Services.HistoricalDataQueryService.GetAvailableSymbols
+  commentId: M:Meridian.Application.Services.HistoricalDataQueryService.GetAvailableSymbols
+  id: GetAvailableSymbols
+  parent: Meridian.Application.Services.HistoricalDataQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetAvailableSymbols()
+  nameWithType: HistoricalDataQueryService.GetAvailableSymbols()
+  fullName: Meridian.Application.Services.HistoricalDataQueryService.GetAvailableSymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAvailableSymbols
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets available symbols in the data store.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> GetAvailableSymbols()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Function GetAvailableSymbols() As IReadOnlyList(Of String)
+  overload: Meridian.Application.Services.HistoricalDataQueryService.GetAvailableSymbols*
+- uid: Meridian.Application.Services.HistoricalDataQueryService.GetDateRange(System.String)
+  commentId: M:Meridian.Application.Services.HistoricalDataQueryService.GetDateRange(System.String)
+  id: GetDateRange(System.String)
+  parent: Meridian.Application.Services.HistoricalDataQueryService
+  langs:
+  - csharp
+  - vb
+  name: GetDateRange(string)
+  nameWithType: HistoricalDataQueryService.GetDateRange(string)
+  fullName: Meridian.Application.Services.HistoricalDataQueryService.GetDateRange(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/HistoricalDataQueryService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDateRange
+    path: ../../src/Meridian.Application/Services/HistoricalDataQueryService.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets date range for available data for a symbol.
+  example: []
+  syntax:
+    content: public HistoricalDataDateRange GetDateRange(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Application.Services.HistoricalDataDateRange
+    content.vb: Public Function GetDateRange(symbol As String) As HistoricalDataDateRange
+  overload: Meridian.Application.Services.HistoricalDataQueryService.GetDateRange*
+  nameWithType.vb: HistoricalDataQueryService.GetDateRange(String)
+  fullName.vb: Meridian.Application.Services.HistoricalDataQueryService.GetDateRange(String)
+  name.vb: GetDateRange(String)
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.HistoricalDataQueryService.#ctor*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataQueryService.#ctor
+  href: Meridian.Application.Services.HistoricalDataQueryService.html#Meridian_Application_Services_HistoricalDataQueryService__ctor_System_String_
+  name: HistoricalDataQueryService
+  nameWithType: HistoricalDataQueryService.HistoricalDataQueryService
+  fullName: Meridian.Application.Services.HistoricalDataQueryService.HistoricalDataQueryService
+  nameWithType.vb: HistoricalDataQueryService.New
+  fullName.vb: Meridian.Application.Services.HistoricalDataQueryService.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.HistoricalDataQueryService.QueryAsync*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataQueryService.QueryAsync
+  href: Meridian.Application.Services.HistoricalDataQueryService.html#Meridian_Application_Services_HistoricalDataQueryService_QueryAsync_Meridian_Application_Services_HistoricalDataQuery_System_Threading_CancellationToken_
+  name: QueryAsync
+  nameWithType: HistoricalDataQueryService.QueryAsync
+  fullName: Meridian.Application.Services.HistoricalDataQueryService.QueryAsync
+- uid: Meridian.Application.Services.HistoricalDataQuery
+  commentId: T:Meridian.Application.Services.HistoricalDataQuery
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.HistoricalDataQuery.html
+  name: HistoricalDataQuery
+  nameWithType: HistoricalDataQuery
+  fullName: Meridian.Application.Services.HistoricalDataQuery
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.HistoricalDataQueryResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.HistoricalDataQueryResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<HistoricalDataQueryResult>
+  nameWithType: Task<HistoricalDataQueryResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.HistoricalDataQueryResult>
+  nameWithType.vb: Task(Of HistoricalDataQueryResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.HistoricalDataQueryResult)
+  name.vb: Task(Of HistoricalDataQueryResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.HistoricalDataQueryResult
+    name: HistoricalDataQueryResult
+    href: Meridian.Application.Services.HistoricalDataQueryResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.HistoricalDataQueryResult
+    name: HistoricalDataQueryResult
+    href: Meridian.Application.Services.HistoricalDataQueryResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Services.HistoricalDataQueryService.GetAvailableSymbols*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataQueryService.GetAvailableSymbols
+  href: Meridian.Application.Services.HistoricalDataQueryService.html#Meridian_Application_Services_HistoricalDataQueryService_GetAvailableSymbols
+  name: GetAvailableSymbols
+  nameWithType: HistoricalDataQueryService.GetAvailableSymbols
+  fullName: Meridian.Application.Services.HistoricalDataQueryService.GetAvailableSymbols
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.HistoricalDataQueryService.GetDateRange*
+  commentId: Overload:Meridian.Application.Services.HistoricalDataQueryService.GetDateRange
+  href: Meridian.Application.Services.HistoricalDataQueryService.html#Meridian_Application_Services_HistoricalDataQueryService_GetDateRange_System_String_
+  name: GetDateRange
+  nameWithType: HistoricalDataQueryService.GetDateRange
+  fullName: Meridian.Application.Services.HistoricalDataQueryService.GetDateRange
+- uid: Meridian.Application.Services.HistoricalDataDateRange
+  commentId: T:Meridian.Application.Services.HistoricalDataDateRange
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.HistoricalDataDateRange.html
+  name: HistoricalDataDateRange
+  nameWithType: HistoricalDataDateRange
+  fullName: Meridian.Application.Services.HistoricalDataDateRange

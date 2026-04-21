@@ -1,0 +1,238 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem
+  commentId: T:Meridian.Application.Monitoring.Core.SloSubsystem
+  id: SloSubsystem
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.SloSubsystem.Availability
+  - Meridian.Application.Monitoring.Core.SloSubsystem.DataCompleteness
+  - Meridian.Application.Monitoring.Core.SloSubsystem.DataFreshness
+  - Meridian.Application.Monitoring.Core.SloSubsystem.Ingestion
+  - Meridian.Application.Monitoring.Core.SloSubsystem.ProviderConnectivity
+  - Meridian.Application.Monitoring.Core.SloSubsystem.Storage
+  langs:
+  - csharp
+  - vb
+  name: SloSubsystem
+  nameWithType: SloSubsystem
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SloSubsystem
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 311
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Subsystem classification for SLO grouping.
+  example: []
+  syntax:
+    content: 'public enum SloSubsystem : byte'
+    content.vb: Public Enum SloSubsystem As Byte
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem.Ingestion
+  commentId: F:Meridian.Application.Monitoring.Core.SloSubsystem.Ingestion
+  id: Ingestion
+  parent: Meridian.Application.Monitoring.Core.SloSubsystem
+  langs:
+  - csharp
+  - vb
+  name: Ingestion
+  nameWithType: SloSubsystem.Ingestion
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem.Ingestion
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ingestion
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 313
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: Ingestion = 0
+    return:
+      type: Meridian.Application.Monitoring.Core.SloSubsystem
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem.DataCompleteness
+  commentId: F:Meridian.Application.Monitoring.Core.SloSubsystem.DataCompleteness
+  id: DataCompleteness
+  parent: Meridian.Application.Monitoring.Core.SloSubsystem
+  langs:
+  - csharp
+  - vb
+  name: DataCompleteness
+  nameWithType: SloSubsystem.DataCompleteness
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem.DataCompleteness
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataCompleteness
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 314
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: DataCompleteness = 1
+    return:
+      type: Meridian.Application.Monitoring.Core.SloSubsystem
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem.Availability
+  commentId: F:Meridian.Application.Monitoring.Core.SloSubsystem.Availability
+  id: Availability
+  parent: Meridian.Application.Monitoring.Core.SloSubsystem
+  langs:
+  - csharp
+  - vb
+  name: Availability
+  nameWithType: SloSubsystem.Availability
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem.Availability
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Availability
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: Availability = 2
+    return:
+      type: Meridian.Application.Monitoring.Core.SloSubsystem
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem.DataFreshness
+  commentId: F:Meridian.Application.Monitoring.Core.SloSubsystem.DataFreshness
+  id: DataFreshness
+  parent: Meridian.Application.Monitoring.Core.SloSubsystem
+  langs:
+  - csharp
+  - vb
+  name: DataFreshness
+  nameWithType: SloSubsystem.DataFreshness
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem.DataFreshness
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataFreshness
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: DataFreshness = 3
+    return:
+      type: Meridian.Application.Monitoring.Core.SloSubsystem
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem.Storage
+  commentId: F:Meridian.Application.Monitoring.Core.SloSubsystem.Storage
+  id: Storage
+  parent: Meridian.Application.Monitoring.Core.SloSubsystem
+  langs:
+  - csharp
+  - vb
+  name: Storage
+  nameWithType: SloSubsystem.Storage
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem.Storage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Storage
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: Storage = 4
+    return:
+      type: Meridian.Application.Monitoring.Core.SloSubsystem
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem.ProviderConnectivity
+  commentId: F:Meridian.Application.Monitoring.Core.SloSubsystem.ProviderConnectivity
+  id: ProviderConnectivity
+  parent: Meridian.Application.Monitoring.Core.SloSubsystem
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnectivity
+  nameWithType: SloSubsystem.ProviderConnectivity
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem.ProviderConnectivity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderConnectivity
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 318
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  syntax:
+    content: ProviderConnectivity = 5
+    return:
+      type: Meridian.Application.Monitoring.Core.SloSubsystem
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem
+  commentId: T:Meridian.Application.Monitoring.Core.SloSubsystem
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.SloSubsystem.html
+  name: SloSubsystem
+  nameWithType: SloSubsystem
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem

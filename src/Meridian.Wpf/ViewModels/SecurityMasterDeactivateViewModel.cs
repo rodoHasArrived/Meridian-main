@@ -9,12 +9,13 @@ namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
 /// ViewModel for deactivating a security in the Security Master.
-/// Wraps POST /api/security-master/{id}/deactivate with reason and confirmation logic.
+/// Uses <see cref="ISecurityMasterService"/> directly for in-process deactivation.
 /// </summary>
 public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
 {
     private readonly WpfServices.LoggingService _loggingService;
     private readonly WpfServices.NotificationService _notificationService;
+    private readonly ISecurityMasterService _service;
 
     // ── Bindable properties ─────────────────────────────────────────────────
     [ObservableProperty] private string _securityName = string.Empty;
@@ -36,10 +37,12 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
     // ── Constructor ─────────────────────────────────────────────────────────
     public SecurityMasterDeactivateViewModel(
         WpfServices.LoggingService loggingService,
-        WpfServices.NotificationService notificationService)
+        WpfServices.NotificationService notificationService,
+        ISecurityMasterService service)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
+        _service = service;
 
         CancelCommand = new RelayCommand(() => CancelRequested?.Invoke());
     }
@@ -62,22 +65,7 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
                 SourceRecordId: null,
                 Reason: string.IsNullOrWhiteSpace(Reason) ? "Deactivated via WPF UI" : Reason);
 
-            var response = await ApiClientService.Instance
-                .PostWithResponseAsync<object>(
-                    $"/api/security-master/deactivate",
-                    request,
-                    ct)
-                .ConfigureAwait(false);
-
-            if (!response.Success)
-            {
-                StatusText = $"Deactivation failed: {response.ErrorMessage ?? "Unknown error"}";
-                _notificationService.ShowNotification(
-                    "Security Master",
-                    "Failed to deactivate security.",
-                    NotificationType.Error);
-                return;
-            }
+            await _service.DeactivateAsync(request, ct).ConfigureAwait(false);
 
             StatusText = "Security deactivated successfully.";
             DeactivateCompleted?.Invoke();
@@ -89,7 +77,7 @@ public sealed partial class SecurityMasterDeactivateViewModel : BindableBase
         catch (Exception ex)
         {
             _loggingService.LogError("Security Master deactivation failed", ex);
-            StatusText = "Deactivation failed. Check connection to backend.";
+            StatusText = "Deactivation failed.";
             _notificationService.ShowNotification(
                 "Security Master",
                 "Failed to deactivate security.",

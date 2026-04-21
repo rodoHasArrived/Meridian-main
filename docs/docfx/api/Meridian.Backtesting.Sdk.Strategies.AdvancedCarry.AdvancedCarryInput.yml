@@ -1,0 +1,738 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  id: AdvancedCarryInput
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot},Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation},System.Nullable{System.DateTimeOffset})
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AsOf
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Assets
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Correlations
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Portfolio
+  langs:
+  - csharp
+  - vb
+  name: AdvancedCarryInput
+  nameWithType: AdvancedCarryInput
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdvancedCarryInput
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: 'public sealed record AdvancedCarryInput : IEquatable<AdvancedCarryInput>'
+    content.vb: Public NotInheritable Class AdvancedCarryInput Implements IEquatable(Of AdvancedCarryInput)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot},Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot},Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation},System.Nullable{System.DateTimeOffset})
+  id: '#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot},Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation},System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  langs:
+  - csharp
+  - vb
+  name: AdvancedCarryInput(IReadOnlyList<CarryAssetSnapshot>, CarryPortfolioState, IReadOnlyList<AssetCorrelation>?, DateTimeOffset?)
+  nameWithType: AdvancedCarryInput.AdvancedCarryInput(IReadOnlyList<CarryAssetSnapshot>, CarryPortfolioState, IReadOnlyList<AssetCorrelation>?, DateTimeOffset?)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AdvancedCarryInput(System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot>, Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation>?, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public AdvancedCarryInput(IReadOnlyList<CarryAssetSnapshot> Assets, CarryPortfolioState Portfolio, IReadOnlyList<AssetCorrelation>? Correlations = null, DateTimeOffset? AsOf = null)
+    parameters:
+    - id: Assets
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot}
+    - id: Portfolio
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+    - id: Correlations
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation}
+    - id: AsOf
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(Assets As IReadOnlyList(Of CarryAssetSnapshot), Portfolio As CarryPortfolioState, Correlations As IReadOnlyList(Of AssetCorrelation) = Nothing, AsOf As DateTimeOffset? = Nothing)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.#ctor*
+  nameWithType.vb: AdvancedCarryInput.New(IReadOnlyList(Of CarryAssetSnapshot), CarryPortfolioState, IReadOnlyList(Of AssetCorrelation), DateTimeOffset?)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.New(System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot), Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState, System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation), System.DateTimeOffset?)
+  name.vb: New(IReadOnlyList(Of CarryAssetSnapshot), CarryPortfolioState, IReadOnlyList(Of AssetCorrelation), DateTimeOffset?)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Assets
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Assets
+  id: Assets
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  langs:
+  - csharp
+  - vb
+  name: Assets
+  nameWithType: AdvancedCarryInput.Assets
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Assets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Assets
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public IReadOnlyList<CarryAssetSnapshot> Assets { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot}
+    content.vb: Public Property Assets As IReadOnlyList(Of CarryAssetSnapshot)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Assets*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Portfolio
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Portfolio
+  id: Portfolio
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  langs:
+  - csharp
+  - vb
+  name: Portfolio
+  nameWithType: AdvancedCarryInput.Portfolio
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Portfolio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Portfolio
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public CarryPortfolioState Portfolio { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+    content.vb: Public Property Portfolio As CarryPortfolioState
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Portfolio*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Correlations
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Correlations
+  id: Correlations
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  langs:
+  - csharp
+  - vb
+  name: Correlations
+  nameWithType: AdvancedCarryInput.Correlations
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Correlations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Correlations
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public IReadOnlyList<AssetCorrelation>? Correlations { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation}
+    content.vb: Public Property Correlations As IReadOnlyList(Of AssetCorrelation)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Correlations*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AsOf
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AsOf
+  id: AsOf
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: AdvancedCarryInput.AsOf
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public DateTimeOffset? AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property AsOf As DateTimeOffset?
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AsOf*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AdvancedCarryInput>
+  nameWithType: IEquatable<AdvancedCarryInput>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput>
+  nameWithType.vb: IEquatable(Of AdvancedCarryInput)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput)
+  name.vb: IEquatable(Of AdvancedCarryInput)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+    name: AdvancedCarryInput
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput
+    name: AdvancedCarryInput
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryInput__ctor_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryAssetSnapshot__Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryPortfolioState_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AssetCorrelation__System_Nullable_System_DateTimeOffset__
+  name: AdvancedCarryInput
+  nameWithType: AdvancedCarryInput.AdvancedCarryInput
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AdvancedCarryInput
+  nameWithType.vb: AdvancedCarryInput.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.New
+  name.vb: New
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<CarryAssetSnapshot>
+  nameWithType: IReadOnlyList<CarryAssetSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot>
+  nameWithType.vb: IReadOnlyList(Of CarryAssetSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot)
+  name.vb: IReadOnlyList(Of CarryAssetSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+    name: CarryAssetSnapshot
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot
+    name: CarryAssetSnapshot
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryAssetSnapshot.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.html
+  name: CarryPortfolioState
+  nameWithType: CarryPortfolioState
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AssetCorrelation>
+  nameWithType: IReadOnlyList<AssetCorrelation>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation>
+  nameWithType.vb: IReadOnlyList(Of AssetCorrelation)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation)
+  name.vb: IReadOnlyList(Of AssetCorrelation)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation
+    name: AssetCorrelation
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation
+    name: AssetCorrelation
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AssetCorrelation.html
+  - name: )
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Assets*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Assets
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryInput_Assets
+  name: Assets
+  nameWithType: AdvancedCarryInput.Assets
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Assets
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Portfolio*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Portfolio
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryInput_Portfolio
+  name: Portfolio
+  nameWithType: AdvancedCarryInput.Portfolio
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Portfolio
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Correlations*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Correlations
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryInput_Correlations
+  name: Correlations
+  nameWithType: AdvancedCarryInput.Correlations
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.Correlations
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AsOf*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AsOf
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryInput_AsOf
+  name: AsOf
+  nameWithType: AdvancedCarryInput.AsOf
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryInput.AsOf

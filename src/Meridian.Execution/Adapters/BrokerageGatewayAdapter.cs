@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Meridian.Application.Exceptions;
 using Meridian.Execution.Exceptions;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
@@ -132,21 +131,12 @@ public sealed class BrokerageGatewayAdapter : IOrderGateway
     {
         await foreach (var report in _inner.StreamExecutionReportsAsync(ct).ConfigureAwait(false))
         {
-            var filledQuantity = report.FilledQuantity;
-            var truncatedFilledQuantity = decimal.Truncate(filledQuantity);
-
-            if (filledQuantity != truncatedFilledQuantity)
-            {
-                throw new MeridianException(
-                    $"Execution report for order '{report.OrderId}' contains fractional FilledQuantity '{filledQuantity}' which cannot be represented in OrderStatusUpdate.");
-            }
-
             yield return new OrderStatusUpdate(
                 OrderId: report.OrderId,
                 ClientOrderId: report.ClientOrderId ?? report.OrderId,
                 Symbol: report.Symbol,
                 Status: MapStatus(report.OrderStatus),
-                FilledQuantity: (long)truncatedFilledQuantity,
+                FilledQuantity: report.FilledQuantity,
                 AverageFillPrice: report.FillPrice,
                 RejectReason: report.RejectReason,
                 Timestamp: report.Timestamp);

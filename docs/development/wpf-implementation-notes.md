@@ -1,6 +1,6 @@
 # WPF Desktop Application — Implementation Notes
 
-**Version**: 1.7.x | **Last updated**: 2026-03-26 | **Status**: Authored / Included in solution build
+**Version**: 1.7.x | **Last updated**: 2026-04-16 | **Status**: Authored / Included in solution build
 
 ## Overview
 
@@ -9,16 +9,18 @@ Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Wind
 ## Architecture
 
 ### Stack
+
 - **.NET 9.0 + WPF** — Windows-only, `.csproj` targets `net9.0-windows`
 - **MVVM** — `BindableBase` (from `Meridian.Ui.Services.Services`) + `INotifyPropertyChanged`
 - **DI** — `Microsoft.Extensions.Hosting`; singleton services resolved via `IServiceProvider`
 - **Shared services** — `Meridian.Ui.Services` and `Meridian.Ui.Shared` for cross-surface logic
 
 ### Project references
+
 | Project | Role |
-|---------|------|
+| --- | --- |
 | `Meridian.Wpf` | Views, code-behind, WPF-specific services |
-| `Meridian.Wpf.Tests` | 101 unit tests for WPF-specific services |
+| `Meridian.Wpf.Tests` | 104 unit tests for WPF-specific services and shell projections |
 | `Meridian.Ui.Services` | Shared service layer (CommandPaletteService, WorkspaceService, NavigationServiceBase, etc.) |
 | `Meridian.Ui.Tests` | 171 tests for shared UI services |
 | `Meridian.Ui.Shared` | Endpoint helpers, DTO extensions, HTML template generator |
@@ -30,7 +32,7 @@ Meridian's WPF desktop application (`src/Meridian.Wpf/`) is the sole native Wind
 
 ### MainPage — four-section sidebar + command palette
 
-```
+```text
 Left Sidebar (288 px)
 ├── Header: logo, app title, version badge
 ├── RESEARCH section  (7 items)
@@ -48,7 +50,9 @@ Content Frame
 └── WPF Frame → page navigation
 ```
 
-**Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state.
+**Workspace-aware navigation** — `ResolveWorkspaceIdForPage()` maps a page tag to its home workspace so that clicking a sidebar item or executing a command palette entry also activates the correct workspace session state. `WorkspacePrimaryNavList`, `WorkspaceSecondaryNavList`, `WorkspaceOverflowNavList`, and `RelatedWorkflowNavList` all dispatch through the same `NavigateToPageCommand` contract when the operator changes selection.
+
+**Security Master runtime fallback** — `SecurityMasterViewModel.SearchAsync()` now checks `ISecurityMasterRuntimeStatus.IsAvailable` before issuing workstation search calls so an unconfigured desktop shows the runtime guidance text instead of a misleading zero-results message.
 
 **Selection suppression** — `_suppressNavSelection` prevents feedback loops when the NavigationService drives sidebar selection changes programmatically.
 
@@ -57,13 +61,14 @@ Content Frame
 Four built-in workspace templates:
 
 | Workspace ID | Pages |
-|---|---|
+| --- | --- |
 | `research` | Dashboard, LiveData, Charts, RunMat, StrategyRuns, OrderBook, Watchlist |
 | `trading` | Backtest, StrategyRuns, LeanIntegration, PortfolioImport, TradingHours |
 | `data-operations` | Provider, Symbols, Backfill, Storage, DataExport, PackageManager, Schedules |
 | `governance` | DataQuality, ProviderHealth, SystemHealth, Diagnostics, Settings, AdminMaintenance |
 
 Each workspace persists:
+
 - `ActivePageTag` — last active page within the workspace
 - `OpenPages` — MRU list (max 8)
 - `WidgetLayout`, `ActiveFilters`, `WorkspaceContext` — per-workspace state
@@ -81,11 +86,20 @@ Each workspace persists:
 
 ## Page Registry
 
-All pages registered in `NavigationService.RegisterAllPages()` and declared in `Views/Pages.cs`.
+Catalog-backed desktop pages now live in the `ShellNavigationCatalog` partials under
+`src/Meridian.Wpf/Models/`. `NavigationService.RegisterAllPages()` and the WPF DI setup both loop
+over that catalog, so adding a new shell page typically requires:
+
+1. the page and its view model
+2. one `ShellNavigationCatalog` entry
+3. optionally, a workspace default-pane entry if the page should open in a shell layout
+
+Only non-catalog utility pages still need direct manual registration in `App.xaml.cs`.
 
 ### Research workspace pages
+
 | Tag | Class | Notes |
-|-----|-------|-------|
+| --- | --- | --- |
 | `Dashboard` | `DashboardPage` | Default landing page |
 | `Watchlist` | `WatchlistPage` | |
 | `RunMat` | `RunMatPage` | Quant / script lab |
@@ -96,8 +110,9 @@ All pages registered in `NavigationService.RegisterAllPages()` and declared in `
 | `AdvancedAnalytics` | `AdvancedAnalyticsPage` | |
 
 ### Trading workspace pages
+
 | Tag | Class | Notes |
-|-----|-------|-------|
+| --- | --- | --- |
 | `Backtest` | `BacktestPage` | |
 | `LiveData` | `LiveDataViewerPage` | Real-time feed viewer |
 | `RunPortfolio` | `RunPortfolioPage` | Positions, exposure, P&L drill-in |
@@ -106,8 +121,9 @@ All pages registered in `NavigationService.RegisterAllPages()` and declared in `
 | `TradingHours` | `TradingHoursPage` | Market calendar |
 
 ### Data Operations workspace pages
+
 | Tag | Class |
-|-----|-------|
+| --- | --- |
 | `Provider` | `ProviderPage` |
 | `DataSources` | `DataSourcesPage` |
 | `Symbols` | `SymbolsPage` |
@@ -130,8 +146,9 @@ All pages registered in `NavigationService.RegisterAllPages()` and declared in `
 | `Schedules` | `ScheduleManagerPage` |
 
 ### Governance workspace pages
+
 | Tag | Class |
-|-----|-------|
+| --- | --- |
 | `DataQuality` | `DataQualityPage` |
 | `ProviderHealth` | `ProviderHealthPage` |
 | `CollectionSessions` | `CollectionSessionPage` |
@@ -148,8 +165,9 @@ All pages registered in `NavigationService.RegisterAllPages()` and declared in `
 | `NotificationCenter` | `NotificationCenterPage` |
 
 ### Support / cross-workspace pages
+
 | Tag | Class |
-|-----|-------|
+| --- | --- |
 | `Help` | `HelpPage` |
 | `Welcome` | `WelcomePage` |
 | `Settings` | `SettingsPage` |
@@ -166,7 +184,7 @@ All workstation-facing read models live in `src/Meridian.Contracts/Workstation/`
 
 ### `StrategyRunReadModels.cs`
 
-```
+```text
 StrategyRunMode           — Backtest | Paper | Live
 StrategyRunEngine         — MeridianNative | Lean | BrokerPaper | BrokerLive
 StrategyRunStatus         — Pending | Running | Paused | Completed | Failed | Cancelled | Stopped
@@ -189,7 +207,7 @@ WorkstationSecurityReference — lightweight Security Master ref used by portfol
 
 ### `ReconciliationDtos.cs`
 
-```
+```text
 ReconciliationRunRequest  — RunId, tolerance thresholds
 ReconciliationBreakDto    — check ID, category, status, variance, source metadata
 ReconciliationBreakCategory — AmountMismatch | MissingLedgerCoverage | MissingPortfolioCoverage | ...
@@ -200,7 +218,7 @@ ReconciliationBreakCategory — AmountMismatch | MissingLedgerCoverage | Missing
 ## Strategy Run Workstation — ViewModel Layer
 
 | ViewModel | Key properties | Commands |
-|-----------|----------------|----------|
+| --- | --- | --- |
 | `StrategyRunBrowserViewModel` | `Runs`, `SearchText`, `SelectedModeFilter` | `RefreshCommand`, `OpenDetailCommand`, `OpenPortfolioCommand`, `OpenLedgerCommand` |
 | `StrategyRunDetailViewModel` | Execution summary, mode, timing, P&L, parameters | Cross-nav to Browser / Portfolio / Ledger |
 | `StrategyRunPortfolioViewModel` | `TotalEquity`, `Cash`, exposure, `Positions` | Security Master resolve count |
@@ -213,8 +231,9 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 ## Services Layer
 
 ### WPF-specific services (`Meridian.Wpf.Services`)
+
 | Service | Responsibility |
-|---------|----------------|
+| --- | --- |
 | `NavigationService` | Frame-based navigation; 50+ pages; history, breadcrumb, onboarding tour hooks |
 | `ConnectionService` | Provider connection state; latency tracking |
 | `ConfigService` | App configuration with `ConfigPath` |
@@ -230,6 +249,7 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 | `PendingOperationsQueueService` | Offline operation queue |
 
 ### Shared services (from `Meridian.Ui.Services`)
+
 `CommandPaletteService`, `NavigationServiceBase`, `WorkspaceService` base, `SearchService`, `FixtureModeDetector`, `OnboardingTourService`, `ActivityFeedService`, `AlertService`, `DataQualityPresentationService`, and 40+ additional services used by both the WPF app and the web dashboard.
 
 ---
@@ -237,7 +257,7 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 ## Keyboard Shortcuts
 
 | Shortcut | Action |
-|----------|--------|
+| --- | --- |
 | `Ctrl+K` | Open command palette |
 | `Ctrl+D` | Dashboard |
 | `Ctrl+B` | Backfill |
@@ -263,7 +283,7 @@ Parameter passing follows the standard MVVM drill-in pattern: `NavigationService
 Style resources in `Meridian.Wpf/Styles/`:
 
 | File | Contains |
-|------|----------|
+| --- | --- |
 | `ThemeTokens.xaml` | Semantic color tokens (`ConsoleTextPrimaryBrush`, `InfoColorBrush`, etc.) |
 | `ThemeSurfaces.xaml` | Surface-level brushes (`ShellWindowBackgroundBrush`, `ShellRailBackgroundBrush`) |
 | `ThemeControls.xaml` | Control styles (`NavItemStyle`, `CardStyle`, `PrimaryButtonStyle`, etc.) |
@@ -274,15 +294,23 @@ Style resources in `Meridian.Wpf/Styles/`:
 
 ---
 
-## Research and Trading Workspace Shells
+## Workspace Shells
 
-Two dedicated workspace shell pages provide the initial entry point into each primary workflow. They are lightweight presenter pages — no deep data logic — that surface the workspace's key metrics and provide quick navigation entry points to drill-in pages.
+Research and Trading workspace shells remain lightweight presenter pages that surface the workspace's key metrics and provide quick navigation entry points to drill-in pages. Data Operations now uses a service-backed projection layer that folds provider, backfill, storage, session, notification, and export-job telemetry into a single operator shell.
+
+Shell implementation now shares descriptor-driven infrastructure:
+
+- `WorkspaceShellPageBase<TStateProvider, TViewModel>` owns dock restore/save, fallback content, and pane opening
+- `WorkspaceShellViewModelBase` carries shell command state
+- `IWorkspaceShellStateProvider` and `WorkspaceShellState` translate active run, operating-context, and preset state into declarative default panes
+- `ShellNavigationCatalog.Workspaces.cs` is the source of truth for default panes and preset layouts across `Research`, `Trading`, `Data Operations`, and `Governance`
 
 ### `ResearchWorkspaceShellPage` (`Views/ResearchWorkspaceShellPage.xaml`)
 
 **Purpose**: Single-page landing for the Research workspace. Shows recent strategy runs, performance at a glance, and quick-links to Backtest, RunMat, Charts, and the run browser.
 
 **Design zones**:
+
 1. **Header** — Active strategy count, cumulative P&L across completed runs, last-run timestamp
 2. **Recent Runs strip** — Horizontal scroll, `StrategyRunSummary` cards (mode badge, status, net P&L, return %)
 3. **Quick Actions** — New Backtest, Open RunMat, Open Charts, Open Run Browser
@@ -290,13 +318,31 @@ Two dedicated workspace shell pages provide the initial entry point into each pr
 
 ### `TradingWorkspaceShellPage` (`Views/TradingWorkspaceShellPage.xaml`)
 
-**Purpose**: Single-page landing for the Trading workspace. Shows live execution state, active paper/live positions, and key risk metrics.
+**Purpose**: Single-page landing for the Trading workspace. Shows live execution state, active paper/live positions, and a compact promotion/audit/validation status card for the active run or aggregate workspace posture.
 
 **Design zones**:
-1. **Header** — Active run count (paper + live), total equity under management, connection status
-2. **Live Positions strip** — `PortfolioPositionSummary` rows for active paper/live runs; gross/net exposure
-3. **Quick Actions** — Open Live Data, Open Portfolio, Import Positions, View Trading Hours
-4. **Risk Rail** — Drawdown gauge, position-limit utilization, order-rate throttle status (from `CompositeRiskValidator`)
+
+1. **Header** — Active fund context, active run, and a promotion/status card that projects promotion readiness, audit linkage, and validation posture from `StrategyRunWorkspaceService`
+2. **KPI strip** — Active paper/live run counts and total equity under management
+3. **Desk panels** — Strategy/watchlist posture, market-core/accounting access, and risk/alerts/audit quick actions
+4. **Workbench rail** — Active positions plus capital and risk inspector cards for the current trading posture
+
+### `DataOperationsWorkspaceShellPage` (`Views/DataOperationsWorkspaceShellPage.xaml`)
+
+**Purpose**: Operational cockpit for provider readiness, backfill pressure, storage posture, collection sessions, and export delivery.
+
+**Data composition**:
+
+1. `DataOperationsWorkspaceShellPage.xaml.cs` loads provider catalog/status, backfill health, resumable checkpoints, execution history, schedules, storage stats/health, active and recent collection sessions, persisted export jobs, and notification history.
+2. `DataOperationsWorkspacePresentationBuilder` converts those service responses into shell context badges, queue cards, summary values, recent operations, and quick-action wiring.
+3. Primary actions route directly to `ProviderHealth`, `Backfill`, and `DataExport`; secondary actions keep `Providers`, `Storage`, `CollectionSessions`, `Schedules`, and `PackageManager` in the same shell flow.
+
+**Design zones**:
+
+1. **Context strip** — Scope, freshness, backfill review state, and critical blockers derived from live operational state instead of static labels.
+2. **Queue boards** — Provider health, backfill queue/session state, storage posture, and export job visibility.
+3. **Recent operations rail** — Latest session, resumable backfill, export run, or alert-linked notification with a deep link back into the owning page.
+4. **Support surfaces** — Fast open buttons for Providers, Backfill, Symbols, Storage, Collection Sessions, Data Export, Schedules, and Package Manager.
 
 ---
 
@@ -307,28 +353,29 @@ Two dedicated workspace shell pages provide the initial entry point into each pr
 dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj /p:EnableWindowsTargeting=true -c Release
 
 # WPF + shared UI services tests
-dotnet test tests/Meridian.Wpf.Tests /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Wpf.Tests /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true
 dotnet test tests/Meridian.Ui.Tests /p:EnableWindowsTargeting=true
 ```
 
 ### Common errors
 
 | Error | Fix |
-|-------|-----|
+| --- | --- |
 | NETSDK1100 | Add `/p:EnableWindowsTargeting=true` on non-Windows hosts |
 | `NU1008` | Remove `Version="..."` from any `<PackageReference>` — versions live in `Directory.Packages.props` |
-| Page not found at runtime | Ensure page is declared in `Views/Pages.cs` **and** registered in `NavigationService.RegisterAllPages()` |
+| Page not found at runtime | Ensure the page has a `ShellNavigationCatalog` entry with the correct `PageType`, and that `AddMeridianWpfShell()` is active in `App.ConfigureServices()` |
 
 ---
 
 ## Testing
 
 | Test project | Count | Covers |
-|---|---|---|
-| `Meridian.Wpf.Tests` | 101 | WPF-specific services: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, etc. |
+| --- | --- | --- |
+| `Meridian.Wpf.Tests` | 104 | WPF-specific services and shell projections: Navigation, Config, Connection, InfoBar, Keyboard, RunMat, Data Operations shell projection, etc. |
 | `Meridian.Ui.Tests` | 171 | Shared services: ApiClient, Backfill, Charting, Watchlist, DataQuality, StrategyRun drill-ins |
 
 Run with:
+
 ```bash
 make test-desktop-services
 ```
@@ -337,9 +384,9 @@ make test-desktop-services
 
 ## Contributing
 
-1. **Register new pages** in both `Views/Pages.cs` (partial class) and `NavigationService.RegisterAllPages()`
+1. **Register new shell pages** by adding one `ShellNavigationCatalog` entry; add a workspace pane definition only if the page belongs in a default dock layout
 2. **Add command palette entry** in `CommandPaletteService.RegisterDefaultCommands()` — include workspace label in the `pageTag` argument so `BuildNavigationDescription` resolves correctly
-3. **Follow MVVM patterns** — all data logic in ViewModels; code-behind restricted to UI event wiring
+3. **Follow MVVM patterns** — all data logic in ViewModels; code-behind restricted to UI event wiring and shell-specific visual concerns
 4. **Event cleanup** — always unsubscribe in `OnPageUnloaded` / `OnNavigatedFrom`
 5. **Use shared contracts** — workstation read models live in `Meridian.Contracts.Workstation`; never duplicate DTO types in the WPF project
 
@@ -349,7 +396,7 @@ make test-desktop-services
 
 - [`docs/architecture/desktop-layers.md`](../architecture/desktop-layers.md) — Layer boundaries
 - [`docs/development/desktop-testing-guide.md`](./desktop-testing-guide.md) — Testing procedures
-- [`docs/evaluations/desktop-improvements-executive-summary.md`](../evaluations/desktop-improvements-executive-summary.md) — Platform improvement roadmap
+- [`docs/evaluations/desktop-platform-improvements-implementation-guide.md`](../evaluations/desktop-platform-improvements-implementation-guide.md) — Platform improvement roadmap and implementation reference
 - [`docs/development/ui-fixture-mode-guide.md`](./ui-fixture-mode-guide.md) — Offline / fixture mode development
 - [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — Desktop items in the project roadmap
 - [`docs/development/policies/desktop-support-policy.md`](./policies/desktop-support-policy.md) — Contribution requirements

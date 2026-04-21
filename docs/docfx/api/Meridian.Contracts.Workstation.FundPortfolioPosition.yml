@@ -1,0 +1,1237 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition
+  commentId: T:Meridian.Contracts.Workstation.FundPortfolioPosition
+  id: FundPortfolioPosition
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.#ctor(System.String,System.Int64,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Int32,System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.Int32)
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.AssetClass
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRunIds
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRuns
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.CoverageLabel
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.HasSecurityCoverage
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.LinkedAccounts
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.NetQuantity
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.PrimaryIdentifier
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.RealizedPnl
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityDisplayName
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityId
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityMissingContributions
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityResolvedContributions
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.SecuritySubType
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.Symbol
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.UnrealizedPnl
+  - Meridian.Contracts.Workstation.FundPortfolioPosition.WeightedAverageCostBasis
+  langs:
+  - csharp
+  - vb
+  name: FundPortfolioPosition
+  nameWithType: FundPortfolioPosition
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundPortfolioPosition
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Fund-level position row aggregated across strategy-run portfolio summaries.
+  example: []
+  syntax:
+    content: 'public sealed record FundPortfolioPosition : IEquatable<FundPortfolioPosition>'
+    content.vb: Public NotInheritable Class FundPortfolioPosition Implements IEquatable(Of FundPortfolioPosition)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundPortfolioPosition}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.#ctor(System.String,System.Int64,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Int32,System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.Int32)
+  commentId: M:Meridian.Contracts.Workstation.FundPortfolioPosition.#ctor(System.String,System.Int64,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Int32,System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.Int32)
+  id: '#ctor(System.String,System.Int64,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Int32,System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.Int32)'
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: FundPortfolioPosition(string, long, decimal, decimal, decimal, int, int, Guid?, string?, string?, string?, string?, bool, string, IReadOnlyList<string>?, int, int)
+  nameWithType: FundPortfolioPosition.FundPortfolioPosition(string, long, decimal, decimal, decimal, int, int, Guid?, string?, string?, string?, string?, bool, string, IReadOnlyList<string>?, int, int)
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.FundPortfolioPosition(string, long, decimal, decimal, decimal, int, int, System.Guid?, string?, string?, string?, string?, bool, string, System.Collections.Generic.IReadOnlyList<string>?, int, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Fund-level position row aggregated across strategy-run portfolio summaries.
+  example: []
+  syntax:
+    content: public FundPortfolioPosition(string Symbol, long NetQuantity, decimal WeightedAverageCostBasis, decimal RealizedPnl, decimal UnrealizedPnl, int ContributingRuns, int LinkedAccounts, Guid? SecurityId = null, string? SecurityDisplayName = null, string? AssetClass = null, string? SecuritySubType = null, string? PrimaryIdentifier = null, bool HasSecurityCoverage = false, string CoverageLabel = "Unresolved", IReadOnlyList<string>? ContributingRunIds = null, int SecurityResolvedContributions = 0, int SecurityMissingContributions = 0)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: NetQuantity
+      type: System.Int64
+    - id: WeightedAverageCostBasis
+      type: System.Decimal
+    - id: RealizedPnl
+      type: System.Decimal
+    - id: UnrealizedPnl
+      type: System.Decimal
+    - id: ContributingRuns
+      type: System.Int32
+    - id: LinkedAccounts
+      type: System.Int32
+    - id: SecurityId
+      type: System.Nullable{System.Guid}
+    - id: SecurityDisplayName
+      type: System.String
+    - id: AssetClass
+      type: System.String
+    - id: SecuritySubType
+      type: System.String
+    - id: PrimaryIdentifier
+      type: System.String
+    - id: HasSecurityCoverage
+      type: System.Boolean
+    - id: CoverageLabel
+      type: System.String
+    - id: ContributingRunIds
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: SecurityResolvedContributions
+      type: System.Int32
+    - id: SecurityMissingContributions
+      type: System.Int32
+    content.vb: Public Sub New(Symbol As String, NetQuantity As Long, WeightedAverageCostBasis As Decimal, RealizedPnl As Decimal, UnrealizedPnl As Decimal, ContributingRuns As Integer, LinkedAccounts As Integer, SecurityId As Guid? = Nothing, SecurityDisplayName As String = Nothing, AssetClass As String = Nothing, SecuritySubType As String = Nothing, PrimaryIdentifier As String = Nothing, HasSecurityCoverage As Boolean = False, CoverageLabel As String = "Unresolved", ContributingRunIds As IReadOnlyList(Of String) = Nothing, SecurityResolvedContributions As Integer = 0, SecurityMissingContributions As Integer = 0)
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.#ctor*
+  nameWithType.vb: FundPortfolioPosition.New(String, Long, Decimal, Decimal, Decimal, Integer, Integer, Guid?, String, String, String, String, Boolean, String, IReadOnlyList(Of String), Integer, Integer)
+  fullName.vb: Meridian.Contracts.Workstation.FundPortfolioPosition.New(String, Long, Decimal, Decimal, Decimal, Integer, Integer, System.Guid?, String, String, String, String, Boolean, String, System.Collections.Generic.IReadOnlyList(Of String), Integer, Integer)
+  name.vb: New(String, Long, Decimal, Decimal, Decimal, Integer, Integer, Guid?, String, String, String, String, Boolean, String, IReadOnlyList(Of String), Integer, Integer)
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.Symbol
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: FundPortfolioPosition.Symbol
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.Symbol*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.NetQuantity
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.NetQuantity
+  id: NetQuantity
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: NetQuantity
+  nameWithType: FundPortfolioPosition.NetQuantity
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.NetQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetQuantity
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public long NetQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property NetQuantity As Long
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.NetQuantity*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.WeightedAverageCostBasis
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.WeightedAverageCostBasis
+  id: WeightedAverageCostBasis
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: WeightedAverageCostBasis
+  nameWithType: FundPortfolioPosition.WeightedAverageCostBasis
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.WeightedAverageCostBasis
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WeightedAverageCostBasis
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal WeightedAverageCostBasis { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property WeightedAverageCostBasis As Decimal
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.WeightedAverageCostBasis*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.RealizedPnl
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.RealizedPnl
+  id: RealizedPnl
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnl
+  nameWithType: FundPortfolioPosition.RealizedPnl
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.RealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnl
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal RealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedPnl As Decimal
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.RealizedPnl*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.UnrealizedPnl
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.UnrealizedPnl
+  id: UnrealizedPnl
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl
+  nameWithType: FundPortfolioPosition.UnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.UnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal UnrealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnrealizedPnl As Decimal
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.UnrealizedPnl*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRuns
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRuns
+  id: ContributingRuns
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: ContributingRuns
+  nameWithType: FundPortfolioPosition.ContributingRuns
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRuns
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ContributingRuns
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int ContributingRuns { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ContributingRuns As Integer
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRuns*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.LinkedAccounts
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.LinkedAccounts
+  id: LinkedAccounts
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: LinkedAccounts
+  nameWithType: FundPortfolioPosition.LinkedAccounts
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.LinkedAccounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LinkedAccounts
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int LinkedAccounts { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property LinkedAccounts As Integer
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.LinkedAccounts*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityId
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityId
+  id: SecurityId
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: FundPortfolioPosition.SecurityId
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid? SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property SecurityId As Guid?
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityId*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityDisplayName
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityDisplayName
+  id: SecurityDisplayName
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: SecurityDisplayName
+  nameWithType: FundPortfolioPosition.SecurityDisplayName
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityDisplayName
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? SecurityDisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecurityDisplayName As String
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityDisplayName*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.AssetClass
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.AssetClass
+  id: AssetClass
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: FundPortfolioPosition.AssetClass
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? AssetClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetClass As String
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.AssetClass*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecuritySubType
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.SecuritySubType
+  id: SecuritySubType
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: SecuritySubType
+  nameWithType: FundPortfolioPosition.SecuritySubType
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecuritySubType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecuritySubType
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? SecuritySubType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecuritySubType As String
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.SecuritySubType*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.PrimaryIdentifier
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.PrimaryIdentifier
+  id: PrimaryIdentifier
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: PrimaryIdentifier
+  nameWithType: FundPortfolioPosition.PrimaryIdentifier
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.PrimaryIdentifier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryIdentifier
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? PrimaryIdentifier { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PrimaryIdentifier As String
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.PrimaryIdentifier*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.HasSecurityCoverage
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.HasSecurityCoverage
+  id: HasSecurityCoverage
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: HasSecurityCoverage
+  nameWithType: FundPortfolioPosition.HasSecurityCoverage
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.HasSecurityCoverage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasSecurityCoverage
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public bool HasSecurityCoverage { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property HasSecurityCoverage As Boolean
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.HasSecurityCoverage*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.CoverageLabel
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.CoverageLabel
+  id: CoverageLabel
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: CoverageLabel
+  nameWithType: FundPortfolioPosition.CoverageLabel
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.CoverageLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CoverageLabel
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string CoverageLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CoverageLabel As String
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.CoverageLabel*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRunIds
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRunIds
+  id: ContributingRunIds
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: ContributingRunIds
+  nameWithType: FundPortfolioPosition.ContributingRunIds
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRunIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ContributingRunIds
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<string>? ContributingRunIds { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property ContributingRunIds As IReadOnlyList(Of String)
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRunIds*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityResolvedContributions
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityResolvedContributions
+  id: SecurityResolvedContributions
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: SecurityResolvedContributions
+  nameWithType: FundPortfolioPosition.SecurityResolvedContributions
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityResolvedContributions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityResolvedContributions
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int SecurityResolvedContributions { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SecurityResolvedContributions As Integer
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityResolvedContributions*
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityMissingContributions
+  commentId: P:Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityMissingContributions
+  id: SecurityMissingContributions
+  parent: Meridian.Contracts.Workstation.FundPortfolioPosition
+  langs:
+  - csharp
+  - vb
+  name: SecurityMissingContributions
+  nameWithType: FundPortfolioPosition.SecurityMissingContributions
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityMissingContributions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMissingContributions
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int SecurityMissingContributions { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SecurityMissingContributions As Integer
+  overload: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityMissingContributions*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundPortfolioPosition}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundPortfolioPosition}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundPortfolioPosition>
+  nameWithType: IEquatable<FundPortfolioPosition>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundPortfolioPosition>
+  nameWithType.vb: IEquatable(Of FundPortfolioPosition)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundPortfolioPosition)
+  name.vb: IEquatable(Of FundPortfolioPosition)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundPortfolioPosition
+    name: FundPortfolioPosition
+    href: Meridian.Contracts.Workstation.FundPortfolioPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundPortfolioPosition
+    name: FundPortfolioPosition
+    href: Meridian.Contracts.Workstation.FundPortfolioPosition.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.#ctor
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition__ctor_System_String_System_Int64_System_Decimal_System_Decimal_System_Decimal_System_Int32_System_Int32_System_Nullable_System_Guid__System_String_System_String_System_String_System_String_System_Boolean_System_String_System_Collections_Generic_IReadOnlyList_System_String__System_Int32_System_Int32_
+  name: FundPortfolioPosition
+  nameWithType: FundPortfolioPosition.FundPortfolioPosition
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.FundPortfolioPosition
+  nameWithType.vb: FundPortfolioPosition.New
+  fullName.vb: Meridian.Contracts.Workstation.FundPortfolioPosition.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.Symbol*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.Symbol
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_Symbol
+  name: Symbol
+  nameWithType: FundPortfolioPosition.Symbol
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.Symbol
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.NetQuantity*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.NetQuantity
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_NetQuantity
+  name: NetQuantity
+  nameWithType: FundPortfolioPosition.NetQuantity
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.NetQuantity
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.WeightedAverageCostBasis*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.WeightedAverageCostBasis
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_WeightedAverageCostBasis
+  name: WeightedAverageCostBasis
+  nameWithType: FundPortfolioPosition.WeightedAverageCostBasis
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.WeightedAverageCostBasis
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.RealizedPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.RealizedPnl
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_RealizedPnl
+  name: RealizedPnl
+  nameWithType: FundPortfolioPosition.RealizedPnl
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.RealizedPnl
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.UnrealizedPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.UnrealizedPnl
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: FundPortfolioPosition.UnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.UnrealizedPnl
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRuns*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRuns
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_ContributingRuns
+  name: ContributingRuns
+  nameWithType: FundPortfolioPosition.ContributingRuns
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRuns
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.LinkedAccounts*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.LinkedAccounts
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_LinkedAccounts
+  name: LinkedAccounts
+  nameWithType: FundPortfolioPosition.LinkedAccounts
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.LinkedAccounts
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityId
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_SecurityId
+  name: SecurityId
+  nameWithType: FundPortfolioPosition.SecurityId
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityId
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityDisplayName*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityDisplayName
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_SecurityDisplayName
+  name: SecurityDisplayName
+  nameWithType: FundPortfolioPosition.SecurityDisplayName
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityDisplayName
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.AssetClass*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.AssetClass
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_AssetClass
+  name: AssetClass
+  nameWithType: FundPortfolioPosition.AssetClass
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.AssetClass
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecuritySubType*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.SecuritySubType
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_SecuritySubType
+  name: SecuritySubType
+  nameWithType: FundPortfolioPosition.SecuritySubType
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecuritySubType
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.PrimaryIdentifier*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.PrimaryIdentifier
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_PrimaryIdentifier
+  name: PrimaryIdentifier
+  nameWithType: FundPortfolioPosition.PrimaryIdentifier
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.PrimaryIdentifier
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.HasSecurityCoverage*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.HasSecurityCoverage
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_HasSecurityCoverage
+  name: HasSecurityCoverage
+  nameWithType: FundPortfolioPosition.HasSecurityCoverage
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.HasSecurityCoverage
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.CoverageLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.CoverageLabel
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_CoverageLabel
+  name: CoverageLabel
+  nameWithType: FundPortfolioPosition.CoverageLabel
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.CoverageLabel
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRunIds*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRunIds
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_ContributingRunIds
+  name: ContributingRunIds
+  nameWithType: FundPortfolioPosition.ContributingRunIds
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.ContributingRunIds
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityResolvedContributions*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityResolvedContributions
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_SecurityResolvedContributions
+  name: SecurityResolvedContributions
+  nameWithType: FundPortfolioPosition.SecurityResolvedContributions
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityResolvedContributions
+- uid: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityMissingContributions*
+  commentId: Overload:Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityMissingContributions
+  href: Meridian.Contracts.Workstation.FundPortfolioPosition.html#Meridian_Contracts_Workstation_FundPortfolioPosition_SecurityMissingContributions
+  name: SecurityMissingContributions
+  nameWithType: FundPortfolioPosition.SecurityMissingContributions
+  fullName: Meridian.Contracts.Workstation.FundPortfolioPosition.SecurityMissingContributions

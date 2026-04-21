@@ -1,0 +1,187 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.ReportFormat
+  commentId: T:Meridian.Storage.Export.ReportFormat
+  id: ReportFormat
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.ReportFormat.All
+  - Meridian.Storage.Export.ReportFormat.Csv
+  - Meridian.Storage.Export.ReportFormat.Json
+  - Meridian.Storage.Export.ReportFormat.Markdown
+  langs:
+  - csharp
+  - vb
+  name: ReportFormat
+  nameWithType: ReportFormat
+  fullName: Meridian.Storage.Export.ReportFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportFormat
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 872
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Report output formats.
+  example: []
+  syntax:
+    content: >-
+      [Flags]
+
+      public enum ReportFormat : byte
+    content.vb: >-
+      <Flags>
+
+      Public Enum ReportFormat As Byte
+  attributes:
+  - type: System.FlagsAttribute
+    ctor: System.FlagsAttribute.#ctor
+    arguments: []
+- uid: Meridian.Storage.Export.ReportFormat.Markdown
+  commentId: F:Meridian.Storage.Export.ReportFormat.Markdown
+  id: Markdown
+  parent: Meridian.Storage.Export.ReportFormat
+  langs:
+  - csharp
+  - vb
+  name: Markdown
+  nameWithType: ReportFormat.Markdown
+  fullName: Meridian.Storage.Export.ReportFormat.Markdown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Markdown
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 875
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Markdown = 1
+    return:
+      type: Meridian.Storage.Export.ReportFormat
+- uid: Meridian.Storage.Export.ReportFormat.Json
+  commentId: F:Meridian.Storage.Export.ReportFormat.Json
+  id: Json
+  parent: Meridian.Storage.Export.ReportFormat
+  langs:
+  - csharp
+  - vb
+  name: Json
+  nameWithType: ReportFormat.Json
+  fullName: Meridian.Storage.Export.ReportFormat.Json
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Json
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 876
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Json = 2
+    return:
+      type: Meridian.Storage.Export.ReportFormat
+- uid: Meridian.Storage.Export.ReportFormat.Csv
+  commentId: F:Meridian.Storage.Export.ReportFormat.Csv
+  id: Csv
+  parent: Meridian.Storage.Export.ReportFormat
+  langs:
+  - csharp
+  - vb
+  name: Csv
+  nameWithType: ReportFormat.Csv
+  fullName: Meridian.Storage.Export.ReportFormat.Csv
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Csv
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 877
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Csv = 4
+    return:
+      type: Meridian.Storage.Export.ReportFormat
+- uid: Meridian.Storage.Export.ReportFormat.All
+  commentId: F:Meridian.Storage.Export.ReportFormat.All
+  id: All
+  parent: Meridian.Storage.Export.ReportFormat
+  langs:
+  - csharp
+  - vb
+  name: All
+  nameWithType: ReportFormat.All
+  fullName: Meridian.Storage.Export.ReportFormat.All
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: All
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 878
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: All = Markdown | Json | Csv
+    return:
+      type: Meridian.Storage.Export.ReportFormat
+    content.vb: All = Markdown Or Json Or Csv
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.ReportFormat
+  commentId: T:Meridian.Storage.Export.ReportFormat
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.ReportFormat.html
+  name: ReportFormat
+  nameWithType: ReportFormat
+  fullName: Meridian.Storage.Export.ReportFormat

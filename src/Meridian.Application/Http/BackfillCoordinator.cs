@@ -72,11 +72,24 @@ public sealed class BackfillCoordinator : IDisposable
                 p.Description,
                 p.Priority,
                 p.SupportsAdjustedPrices,
-                p.SupportsDividends
+                p.SupportsDividends,
+                p.SupportsIntraday,
+                SupportedGranularities = GetSupportedGranularityValues(p)
             });
     }
 
+    public void ValidateRequest(BackfillRequest request)
+    {
+        var service = CreateService();
+        service.ValidateRequest(request);
+    }
+
     public BackfillResult? TryReadLast() => _lastRun ?? _store.TryLoadBackfillStatus();
+
+    /// <summary>
+    /// Returns whether a backfill run is currently active.
+    /// </summary>
+    public bool IsActive => _gate.CurrentCount == 0;
 
     /// <summary>
     /// Returns the per-symbol checkpoint map saved during the last backfill run,
@@ -110,7 +123,7 @@ public sealed class BackfillCoordinator : IDisposable
         return new
         {
             lastRun = _lastRun,
-            isActive = _gate.CurrentCount == 0,
+            isActive = IsActive,
             timestamp = DateTimeOffset.UtcNow
         };
     }
@@ -175,8 +188,10 @@ public sealed class BackfillCoordinator : IDisposable
         {
             var cfg = _store.Load();
             var compressionEnabled = cfg.Compress ?? false;
-            var storageOpt = cfg.Storage?.ToStorageOptions(cfg.DataRoot, compressionEnabled)
-                ?? StorageProfilePresets.CreateFromProfile(null, cfg.DataRoot, compressionEnabled);
+            var dataRoot = _store.GetDataRoot(cfg);
+            var baseStorageOptions = cfg.Storage?.ToStorageOptions(dataRoot, compressionEnabled)
+                ?? StorageProfilePresets.CreateFromProfile(null, dataRoot, compressionEnabled);
+            var storageOpt = CreateStorageOptionsForRequest(baseStorageOptions, request);
 
             var policy = new JsonlStoragePolicy(storageOpt);
             await using var sink = new JsonlStorageSink(storageOpt, policy);
@@ -328,6 +343,54 @@ public sealed class BackfillCoordinator : IDisposable
 
         return new HistoricalBackfillService(providers, _log, checkpointStore: checkpointStore);
     }
+
+    private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)
+    {
+        var values = new List<string> { DataGranularity.Daily.ToUiValue() };
+        if (provider is IHistoricalAggregateBarProvider aggregateProvider)
+        {
+            values.AddRange(aggregateProvider.SupportedGranularities
+                .Where(g => g != DataGranularity.Daily)
+                .Select(g => g.ToUiValue()));
+        }
+
+        return values
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+    }
+
+    private static StorageOptions CreateStorageOptionsForRequest(StorageOptions baseOptions, BackfillRequest request)
+    {
+        if (!request.Granularity.IsIntraday())
+            return baseOptions;
+
+        return new StorageOptions
+        {
+            RootPath = baseOptions.RootPath,
+            Compress = baseOptions.Compress,
+            CompressionCodec = baseOptions.CompressionCodec,
+            NamingConvention = baseOptions.NamingConvention,
+            DatePartition = baseOptions.DatePartition,
+            IncludeProvider = baseOptions.IncludeProvider,
+            FilePrefix = AppendFilePrefix(baseOptions.FilePrefix, request.Granularity.ToStorageFilePrefix()),
+            RetentionDays = baseOptions.RetentionDays,
+            MaxTotalBytes = baseOptions.MaxTotalBytes,
+            Tiering = baseOptions.Tiering,
+            Quotas = baseOptions.Quotas,
+            Policies = baseOptions.Policies,
+            GenerateManifests = baseOptions.GenerateManifests,
+            EmbedChecksum = baseOptions.EmbedChecksum,
+            VerifyOnRead = baseOptions.VerifyOnRead,
+            EnableParquetSink = baseOptions.EnableParquetSink,
+            ActiveSinks = baseOptions.ActiveSinks,
+            PartitionStrategy = baseOptions.PartitionStrategy
+        };
+    }
+
+    private static string AppendFilePrefix(string? existingPrefix, string granularityPrefix)
+        => string.IsNullOrWhiteSpace(existingPrefix)
+            ? granularityPrefix
+            : $"{existingPrefix}_{granularityPrefix}";
 
     public void Dispose()
     {

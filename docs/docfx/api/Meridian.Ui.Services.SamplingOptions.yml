@@ -1,0 +1,1061 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SamplingOptions
+  commentId: T:Meridian.Ui.Services.SamplingOptions
+  id: SamplingOptions
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SamplingOptions.EventTypes
+  - Meridian.Ui.Services.SamplingOptions.FromDate
+  - Meridian.Ui.Services.SamplingOptions.IncludeStatistics
+  - Meridian.Ui.Services.SamplingOptions.IntervalSeconds
+  - Meridian.Ui.Services.SamplingOptions.MaintainDistribution
+  - Meridian.Ui.Services.SamplingOptions.Name
+  - Meridian.Ui.Services.SamplingOptions.OutputFormat
+  - Meridian.Ui.Services.SamplingOptions.OutputPath
+  - Meridian.Ui.Services.SamplingOptions.SamplePercent
+  - Meridian.Ui.Services.SamplingOptions.SampleSize
+  - Meridian.Ui.Services.SamplingOptions.Seed
+  - Meridian.Ui.Services.SamplingOptions.Strategy
+  - Meridian.Ui.Services.SamplingOptions.Symbols
+  - Meridian.Ui.Services.SamplingOptions.ToDate
+  langs:
+  - csharp
+  - vb
+  name: SamplingOptions
+  nameWithType: SamplingOptions
+  fullName: Meridian.Ui.Services.SamplingOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SamplingOptions
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class SamplingOptions
+    content.vb: Public NotInheritable Class SamplingOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SamplingOptions.Name
+  commentId: P:Meridian.Ui.Services.SamplingOptions.Name
+  id: Name
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: SamplingOptions.Name
+  fullName: Meridian.Ui.Services.SamplingOptions.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Ui.Services.SamplingOptions.Name*
+- uid: Meridian.Ui.Services.SamplingOptions.Symbols
+  commentId: P:Meridian.Ui.Services.SamplingOptions.Symbols
+  id: Symbols
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: SamplingOptions.Symbols
+  fullName: Meridian.Ui.Services.SamplingOptions.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 405
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<string>? Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Symbols As List(Of String)
+  overload: Meridian.Ui.Services.SamplingOptions.Symbols*
+- uid: Meridian.Ui.Services.SamplingOptions.FromDate
+  commentId: P:Meridian.Ui.Services.SamplingOptions.FromDate
+  id: FromDate
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: FromDate
+  nameWithType: SamplingOptions.FromDate
+  fullName: Meridian.Ui.Services.SamplingOptions.FromDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromDate
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 406
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly? FromDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property FromDate As DateOnly?
+  overload: Meridian.Ui.Services.SamplingOptions.FromDate*
+- uid: Meridian.Ui.Services.SamplingOptions.ToDate
+  commentId: P:Meridian.Ui.Services.SamplingOptions.ToDate
+  id: ToDate
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: ToDate
+  nameWithType: SamplingOptions.ToDate
+  fullName: Meridian.Ui.Services.SamplingOptions.ToDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDate
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 407
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly? ToDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property ToDate As DateOnly?
+  overload: Meridian.Ui.Services.SamplingOptions.ToDate*
+- uid: Meridian.Ui.Services.SamplingOptions.Strategy
+  commentId: P:Meridian.Ui.Services.SamplingOptions.Strategy
+  id: Strategy
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: Strategy
+  nameWithType: SamplingOptions.Strategy
+  fullName: Meridian.Ui.Services.SamplingOptions.Strategy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strategy
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 408
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public SamplingStrategyType Strategy { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.SamplingStrategyType
+    content.vb: Public Property Strategy As SamplingStrategyType
+  overload: Meridian.Ui.Services.SamplingOptions.Strategy*
+- uid: Meridian.Ui.Services.SamplingOptions.SampleSize
+  commentId: P:Meridian.Ui.Services.SamplingOptions.SampleSize
+  id: SampleSize
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: SampleSize
+  nameWithType: SamplingOptions.SampleSize
+  fullName: Meridian.Ui.Services.SamplingOptions.SampleSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SampleSize
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 409
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long? SampleSize { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property SampleSize As Long?
+  overload: Meridian.Ui.Services.SamplingOptions.SampleSize*
+- uid: Meridian.Ui.Services.SamplingOptions.SamplePercent
+  commentId: P:Meridian.Ui.Services.SamplingOptions.SamplePercent
+  id: SamplePercent
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: SamplePercent
+  nameWithType: SamplingOptions.SamplePercent
+  fullName: Meridian.Ui.Services.SamplingOptions.SamplePercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SamplePercent
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 410
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double? SamplePercent { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: Public Property SamplePercent As Double?
+  overload: Meridian.Ui.Services.SamplingOptions.SamplePercent*
+- uid: Meridian.Ui.Services.SamplingOptions.IntervalSeconds
+  commentId: P:Meridian.Ui.Services.SamplingOptions.IntervalSeconds
+  id: IntervalSeconds
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: IntervalSeconds
+  nameWithType: SamplingOptions.IntervalSeconds
+  fullName: Meridian.Ui.Services.SamplingOptions.IntervalSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntervalSeconds
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 411
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int? IntervalSeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property IntervalSeconds As Integer?
+  overload: Meridian.Ui.Services.SamplingOptions.IntervalSeconds*
+- uid: Meridian.Ui.Services.SamplingOptions.MaintainDistribution
+  commentId: P:Meridian.Ui.Services.SamplingOptions.MaintainDistribution
+  id: MaintainDistribution
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: MaintainDistribution
+  nameWithType: SamplingOptions.MaintainDistribution
+  fullName: Meridian.Ui.Services.SamplingOptions.MaintainDistribution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintainDistribution
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 412
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool MaintainDistribution { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property MaintainDistribution As Boolean
+  overload: Meridian.Ui.Services.SamplingOptions.MaintainDistribution*
+- uid: Meridian.Ui.Services.SamplingOptions.Seed
+  commentId: P:Meridian.Ui.Services.SamplingOptions.Seed
+  id: Seed
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: Seed
+  nameWithType: SamplingOptions.Seed
+  fullName: Meridian.Ui.Services.SamplingOptions.Seed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Seed
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 413
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int? Seed { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property Seed As Integer?
+  overload: Meridian.Ui.Services.SamplingOptions.Seed*
+- uid: Meridian.Ui.Services.SamplingOptions.EventTypes
+  commentId: P:Meridian.Ui.Services.SamplingOptions.EventTypes
+  id: EventTypes
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: EventTypes
+  nameWithType: SamplingOptions.EventTypes
+  fullName: Meridian.Ui.Services.SamplingOptions.EventTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypes
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 414
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string[]? EventTypes { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property EventTypes As String()
+  overload: Meridian.Ui.Services.SamplingOptions.EventTypes*
+- uid: Meridian.Ui.Services.SamplingOptions.OutputPath
+  commentId: P:Meridian.Ui.Services.SamplingOptions.OutputPath
+  id: OutputPath
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: OutputPath
+  nameWithType: SamplingOptions.OutputPath
+  fullName: Meridian.Ui.Services.SamplingOptions.OutputPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutputPath
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 415
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? OutputPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OutputPath As String
+  overload: Meridian.Ui.Services.SamplingOptions.OutputPath*
+- uid: Meridian.Ui.Services.SamplingOptions.OutputFormat
+  commentId: P:Meridian.Ui.Services.SamplingOptions.OutputFormat
+  id: OutputFormat
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: OutputFormat
+  nameWithType: SamplingOptions.OutputFormat
+  fullName: Meridian.Ui.Services.SamplingOptions.OutputFormat
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutputFormat
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 416
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public ExportFormat OutputFormat { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ExportFormat
+    content.vb: Public Property OutputFormat As ExportFormat
+  overload: Meridian.Ui.Services.SamplingOptions.OutputFormat*
+- uid: Meridian.Ui.Services.SamplingOptions.IncludeStatistics
+  commentId: P:Meridian.Ui.Services.SamplingOptions.IncludeStatistics
+  id: IncludeStatistics
+  parent: Meridian.Ui.Services.SamplingOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeStatistics
+  nameWithType: SamplingOptions.IncludeStatistics
+  fullName: Meridian.Ui.Services.SamplingOptions.IncludeStatistics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataSamplingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeStatistics
+    path: ../../src/Meridian.Ui.Services/Services/DataSamplingService.cs
+    startLine: 417
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IncludeStatistics { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeStatistics As Boolean
+  overload: Meridian.Ui.Services.SamplingOptions.IncludeStatistics*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SamplingOptions.Name*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.Name
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_Name
+  name: Name
+  nameWithType: SamplingOptions.Name
+  fullName: Meridian.Ui.Services.SamplingOptions.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SamplingOptions.Symbols*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.Symbols
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_Symbols
+  name: Symbols
+  nameWithType: SamplingOptions.Symbols
+  fullName: Meridian.Ui.Services.SamplingOptions.Symbols
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.SamplingOptions.FromDate*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.FromDate
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_FromDate
+  name: FromDate
+  nameWithType: SamplingOptions.FromDate
+  fullName: Meridian.Ui.Services.SamplingOptions.FromDate
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.SamplingOptions.ToDate*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.ToDate
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_ToDate
+  name: ToDate
+  nameWithType: SamplingOptions.ToDate
+  fullName: Meridian.Ui.Services.SamplingOptions.ToDate
+- uid: Meridian.Ui.Services.SamplingOptions.Strategy*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.Strategy
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_Strategy
+  name: Strategy
+  nameWithType: SamplingOptions.Strategy
+  fullName: Meridian.Ui.Services.SamplingOptions.Strategy
+- uid: Meridian.Ui.Services.SamplingStrategyType
+  commentId: T:Meridian.Ui.Services.SamplingStrategyType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SamplingStrategyType.html
+  name: SamplingStrategyType
+  nameWithType: SamplingStrategyType
+  fullName: Meridian.Ui.Services.SamplingStrategyType
+- uid: Meridian.Ui.Services.SamplingOptions.SampleSize*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.SampleSize
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_SampleSize
+  name: SampleSize
+  nameWithType: SamplingOptions.SampleSize
+  fullName: Meridian.Ui.Services.SamplingOptions.SampleSize
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Ui.Services.SamplingOptions.SamplePercent*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.SamplePercent
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_SamplePercent
+  name: SamplePercent
+  nameWithType: SamplingOptions.SamplePercent
+  fullName: Meridian.Ui.Services.SamplingOptions.SamplePercent
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: Meridian.Ui.Services.SamplingOptions.IntervalSeconds*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.IntervalSeconds
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_IntervalSeconds
+  name: IntervalSeconds
+  nameWithType: SamplingOptions.IntervalSeconds
+  fullName: Meridian.Ui.Services.SamplingOptions.IntervalSeconds
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: Meridian.Ui.Services.SamplingOptions.MaintainDistribution*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.MaintainDistribution
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_MaintainDistribution
+  name: MaintainDistribution
+  nameWithType: SamplingOptions.MaintainDistribution
+  fullName: Meridian.Ui.Services.SamplingOptions.MaintainDistribution
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.SamplingOptions.Seed*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.Seed
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_Seed
+  name: Seed
+  nameWithType: SamplingOptions.Seed
+  fullName: Meridian.Ui.Services.SamplingOptions.Seed
+- uid: Meridian.Ui.Services.SamplingOptions.EventTypes*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.EventTypes
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_EventTypes
+  name: EventTypes
+  nameWithType: SamplingOptions.EventTypes
+  fullName: Meridian.Ui.Services.SamplingOptions.EventTypes
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.SamplingOptions.OutputPath*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.OutputPath
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_OutputPath
+  name: OutputPath
+  nameWithType: SamplingOptions.OutputPath
+  fullName: Meridian.Ui.Services.SamplingOptions.OutputPath
+- uid: Meridian.Ui.Services.SamplingOptions.OutputFormat*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.OutputFormat
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_OutputFormat
+  name: OutputFormat
+  nameWithType: SamplingOptions.OutputFormat
+  fullName: Meridian.Ui.Services.SamplingOptions.OutputFormat
+- uid: Meridian.Ui.Services.ExportFormat
+  commentId: T:Meridian.Ui.Services.ExportFormat
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportFormat.html
+  name: ExportFormat
+  nameWithType: ExportFormat
+  fullName: Meridian.Ui.Services.ExportFormat
+- uid: Meridian.Ui.Services.SamplingOptions.IncludeStatistics*
+  commentId: Overload:Meridian.Ui.Services.SamplingOptions.IncludeStatistics
+  href: Meridian.Ui.Services.SamplingOptions.html#Meridian_Ui_Services_SamplingOptions_IncludeStatistics
+  name: IncludeStatistics
+  nameWithType: SamplingOptions.IncludeStatistics
+  fullName: Meridian.Ui.Services.SamplingOptions.IncludeStatistics

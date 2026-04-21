@@ -1,6 +1,7 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="clr-namespace:Meridian.Wpf.Views">
 
     <!-- Premium cards: white/off-white bg, 8px radius, hairline border, subtle elevation shadow -->
     <Style x:Key="CardStyle" TargetType="Border">
@@ -18,6 +19,77 @@
 
     <Style x:Key="SectionCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
         <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+
+    <!-- Shared deep-page shell cleanup: let legacy pages hide duplicate hero chrome when
+         they are already hosted inside the workspace shell. -->
+    <Style x:Key="EmbeddedShellHeroCardStyle"
+           TargetType="Border"
+           BasedOn="{StaticResource SectionCardStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                         Value="True">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="EmbeddedShellCompactHeaderCardStyle"
+           TargetType="Border"
+           BasedOn="{StaticResource SectionCardStyle}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                         Value="True">
+                <Setter Property="Padding" Value="16,14" />
+                <Setter Property="Margin" Value="0,0,0,16" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="EmbeddedShellHeaderGridStyle" TargetType="Grid">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                         Value="True">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="EmbeddedShellHeaderStackPanelStyle" TargetType="StackPanel">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                         Value="True">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="EmbeddedShellHeaderIdentityStackPanelStyle" TargetType="StackPanel">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                         Value="True">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="EmbeddedShellHostedOnlyTextBlockStyle" TargetType="TextBlock">
+        <Setter Property="Visibility" Value="Collapsed" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                         Value="True">
+                <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type views:PageActionBarControl}">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Page}, Path=(views:WorkspaceShellChromeState.IsHostedInWorkspaceShell)}"
+                         Value="True">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <Style x:Key="CompactCardStyle" TargetType="Border">
@@ -109,5 +181,67 @@
         <Setter Property="Height" Value="1" />
         <Setter Property="Fill" Value="{StaticResource ConsoleBorderBrush}" />
         <Setter Property="Opacity" Value="0.8" />
+    </Style>
+
+    <Style x:Key="WorkspaceContextStripStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Padding" Value="20,18" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+
+    <Style x:Key="WorkspaceContextBadgeStyle" TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
+        <Setter Property="Margin" Value="8,0,0,8" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundHoverBrush}" />
+    </Style>
+
+    <Style x:Key="WorkspaceCommandBarSurfaceStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Padding" Value="18,16,10,8" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="Margin" Value="0,0,0,16" />
+    </Style>
+
+    <Style x:Key="WorkspaceKpiTileStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="MinWidth" Value="112" />
+        <Setter Property="Padding" Value="18,14" />
+        <Setter Property="CornerRadius" Value="12" />
+    </Style>
+
+    <Style x:Key="WorkspaceWorkbenchCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="CornerRadius" Value="14" />
+    </Style>
+
+    <Style x:Key="WorkspaceInspectorCardStyle" TargetType="Border" BasedOn="{StaticResource CompactCardStyle}">
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Margin" Value="0,0,0,12" />
+    </Style>
+
+    <Style x:Key="WorkspaceQueueCardStyle" TargetType="Border" BasedOn="{StaticResource CompactCardStyle}">
+        <Setter Property="Padding" Value="14" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Margin" Value="0,0,0,10" />
+    </Style>
+
+    <Style x:Key="WorkspaceQueueItemCardStyle" TargetType="Border" BasedOn="{StaticResource WorkspaceQueueCardStyle}">
+        <Setter Property="Background" Value="{StaticResource ConsoleBackgroundLightBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource ConsoleBorderBrush}" />
+    </Style>
+
+    <Style x:Key="WorkspaceEmptyStateCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Padding" Value="32" />
+        <Setter Property="CornerRadius" Value="16" />
+    </Style>
+
+    <Style x:Key="WorkspaceDockHostStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="CornerRadius" Value="14" />
+    </Style>
+
+    <Style x:Key="StudioPanelStyle" TargetType="Border" BasedOn="{StaticResource CompactCardStyle}">
+        <Setter Property="Padding" Value="18" />
+        <Setter Property="CornerRadius" Value="14" />
     </Style>
 </ResourceDictionary>

@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.Features.IServiceFeatureRegistration
+  commentId: T:Meridian.Application.Composition.Features.IServiceFeatureRegistration
+  id: IServiceFeatureRegistration
+  parent: Meridian.Application.Composition.Features
+  children:
+  - Meridian.Application.Composition.Features.IServiceFeatureRegistration.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Application.Composition.CompositionOptions)
+  langs:
+  - csharp
+  - vb
+  name: IServiceFeatureRegistration
+  nameWithType: IServiceFeatureRegistration
+  fullName: Meridian.Application.Composition.Features.IServiceFeatureRegistration
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Features/IServiceFeatureRegistration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IServiceFeatureRegistration
+    path: ../../src/Meridian.Application/Composition/Features/IServiceFeatureRegistration.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Features
+  summary: >-
+    Contract for a feature-oriented service registration module.
+
+    Each implementation registers a cohesive set of services into the DI container,
+
+    gated by the corresponding <xref href="Meridian.Application.Composition.CompositionOptions" data-throw-if-not-resolved="false"></xref> flags.
+  remarks: >-
+    Implementations are consumed by <xref href="Meridian.Application.Composition.ServiceCompositionRoot.AddMarketDataServices(Microsoft.Extensions.DependencyInjection.IServiceCollection%2cMeridian.Application.Composition.CompositionOptions)" data-throw-if-not-resolved="false"></xref>
+
+    which delegates to each feature module in dependency order.
+  example: []
+  syntax:
+    content: public interface IServiceFeatureRegistration
+    content.vb: Public Interface IServiceFeatureRegistration
+- uid: Meridian.Application.Composition.Features.IServiceFeatureRegistration.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Application.Composition.CompositionOptions)
+  commentId: M:Meridian.Application.Composition.Features.IServiceFeatureRegistration.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Application.Composition.CompositionOptions)
+  id: Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Application.Composition.CompositionOptions)
+  parent: Meridian.Application.Composition.Features.IServiceFeatureRegistration
+  langs:
+  - csharp
+  - vb
+  name: Register(IServiceCollection, CompositionOptions)
+  nameWithType: IServiceFeatureRegistration.Register(IServiceCollection, CompositionOptions)
+  fullName: Meridian.Application.Composition.Features.IServiceFeatureRegistration.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection, Meridian.Application.Composition.CompositionOptions)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Features/IServiceFeatureRegistration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Register
+    path: ../../src/Meridian.Application/Composition/Features/IServiceFeatureRegistration.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Features
+  summary: Registers services for this feature into the service collection.
+  example: []
+  syntax:
+    content: IServiceCollection Register(IServiceCollection services, CompositionOptions options)
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+      description: The service collection to configure.
+    - id: options
+      type: Meridian.Application.Composition.CompositionOptions
+      description: Composition options controlling which services to register.
+    return:
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+      description: The configured service collection for chaining.
+    content.vb: Function Register(services As IServiceCollection, options As CompositionOptions) As IServiceCollection
+  overload: Meridian.Application.Composition.Features.IServiceFeatureRegistration.Register*
+references:
+- uid: Meridian.Application.Composition.CompositionOptions
+  commentId: T:Meridian.Application.Composition.CompositionOptions
+  parent: Meridian.Application.Composition
+  href: Meridian.Application.Composition.CompositionOptions.html
+  name: CompositionOptions
+  nameWithType: CompositionOptions
+  fullName: Meridian.Application.Composition.CompositionOptions
+- uid: Meridian.Application.Composition.ServiceCompositionRoot.AddMarketDataServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Application.Composition.CompositionOptions)
+  commentId: M:Meridian.Application.Composition.ServiceCompositionRoot.AddMarketDataServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Application.Composition.CompositionOptions)
+  isExternal: true
+  href: Meridian.Application.Composition.ServiceCompositionRoot.html#Meridian_Application_Composition_ServiceCompositionRoot_AddMarketDataServices_Microsoft_Extensions_DependencyInjection_IServiceCollection_Meridian_Application_Composition_CompositionOptions_
+  name: AddMarketDataServices(IServiceCollection, CompositionOptions)
+  nameWithType: ServiceCompositionRoot.AddMarketDataServices(IServiceCollection, CompositionOptions)
+  fullName: Meridian.Application.Composition.ServiceCompositionRoot.AddMarketDataServices(Microsoft.Extensions.DependencyInjection.IServiceCollection, Meridian.Application.Composition.CompositionOptions)
+  spec.csharp:
+  - uid: Meridian.Application.Composition.ServiceCompositionRoot.AddMarketDataServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Application.Composition.CompositionOptions)
+    name: AddMarketDataServices
+    href: Meridian.Application.Composition.ServiceCompositionRoot.html#Meridian_Application_Composition_ServiceCompositionRoot_AddMarketDataServices_Microsoft_Extensions_DependencyInjection_IServiceCollection_Meridian_Application_Composition_CompositionOptions_
+  - name: (
+  - uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    name: IServiceCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Composition.CompositionOptions
+    name: CompositionOptions
+    href: Meridian.Application.Composition.CompositionOptions.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Composition.ServiceCompositionRoot.AddMarketDataServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Application.Composition.CompositionOptions)
+    name: AddMarketDataServices
+    href: Meridian.Application.Composition.ServiceCompositionRoot.html#Meridian_Application_Composition_ServiceCompositionRoot_AddMarketDataServices_Microsoft_Extensions_DependencyInjection_IServiceCollection_Meridian_Application_Composition_CompositionOptions_
+  - name: (
+  - uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    name: IServiceCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Composition.CompositionOptions
+    name: CompositionOptions
+    href: Meridian.Application.Composition.CompositionOptions.html
+  - name: )
+- uid: Meridian.Application.Composition.Features
+  commentId: N:Meridian.Application.Composition.Features
+  href: Meridian.html
+  name: Meridian.Application.Composition.Features
+  nameWithType: Meridian.Application.Composition.Features
+  fullName: Meridian.Application.Composition.Features
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Features
+    name: Features
+    href: Meridian.Application.Composition.Features.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Features
+    name: Features
+    href: Meridian.Application.Composition.Features.html
+- uid: Meridian.Application.Composition
+  commentId: N:Meridian.Application.Composition
+  href: Meridian.html
+  name: Meridian.Application.Composition
+  nameWithType: Meridian.Application.Composition
+  fullName: Meridian.Application.Composition
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+- uid: Meridian.Application.Composition.Features.IServiceFeatureRegistration.Register*
+  commentId: Overload:Meridian.Application.Composition.Features.IServiceFeatureRegistration.Register
+  href: Meridian.Application.Composition.Features.IServiceFeatureRegistration.html#Meridian_Application_Composition_Features_IServiceFeatureRegistration_Register_Microsoft_Extensions_DependencyInjection_IServiceCollection_Meridian_Application_Composition_CompositionOptions_
+  name: Register
+  nameWithType: IServiceFeatureRegistration.Register
+  fullName: Meridian.Application.Composition.Features.IServiceFeatureRegistration.Register
+- uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+  commentId: T:Microsoft.Extensions.DependencyInjection.IServiceCollection
+  parent: Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  name: IServiceCollection
+  nameWithType: IServiceCollection
+  fullName: Microsoft.Extensions.DependencyInjection.IServiceCollection
+- uid: Microsoft.Extensions.DependencyInjection
+  commentId: N:Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.DependencyInjection
+  nameWithType: Microsoft.Extensions.DependencyInjection
+  fullName: Microsoft.Extensions.DependencyInjection
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection

@@ -1,0 +1,250 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  commentId: T:Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  id: DepthIntegrityKind
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Gap
+  - Meridian.Contracts.Domain.Enums.DepthIntegrityKind.InvalidPosition
+  - Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Ok
+  - Meridian.Contracts.Domain.Enums.DepthIntegrityKind.OutOfOrder
+  - Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Stale
+  - Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Unknown
+  langs:
+  - csharp
+  - vb
+  name: DepthIntegrityKind
+  nameWithType: DepthIntegrityKind
+  fullName: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthIntegrityKind
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Kind of depth integrity issue detected.
+  example: []
+  syntax:
+    content: 'public enum DepthIntegrityKind : byte'
+    content.vb: Public Enum DepthIntegrityKind As Byte
+- uid: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Ok
+  commentId: F:Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Ok
+  id: Ok
+  parent: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  langs:
+  - csharp
+  - vb
+  name: Ok
+  nameWithType: DepthIntegrityKind.Ok
+  fullName: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Ok
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ok
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: No integrity issue detected.
+  example: []
+  syntax:
+    content: Ok = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+- uid: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Unknown
+  commentId: F:Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Unknown
+  id: Unknown
+  parent: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: DepthIntegrityKind.Unknown
+  fullName: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Unknown integrity issue.
+  example: []
+  syntax:
+    content: Unknown = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+- uid: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Gap
+  commentId: F:Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Gap
+  id: Gap
+  parent: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  langs:
+  - csharp
+  - vb
+  name: Gap
+  nameWithType: DepthIntegrityKind.Gap
+  fullName: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Gap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gap
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Sequence gap detected.
+  example: []
+  syntax:
+    content: Gap = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+- uid: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.OutOfOrder
+  commentId: F:Meridian.Contracts.Domain.Enums.DepthIntegrityKind.OutOfOrder
+  id: OutOfOrder
+  parent: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  langs:
+  - csharp
+  - vb
+  name: OutOfOrder
+  nameWithType: DepthIntegrityKind.OutOfOrder
+  fullName: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.OutOfOrder
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutOfOrder
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Out-of-order message received.
+  example: []
+  syntax:
+    content: OutOfOrder = 3
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+- uid: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.InvalidPosition
+  commentId: F:Meridian.Contracts.Domain.Enums.DepthIntegrityKind.InvalidPosition
+  id: InvalidPosition
+  parent: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  langs:
+  - csharp
+  - vb
+  name: InvalidPosition
+  nameWithType: DepthIntegrityKind.InvalidPosition
+  fullName: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.InvalidPosition
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidPosition
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Invalid position in order book.
+  example: []
+  syntax:
+    content: InvalidPosition = 4
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+- uid: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Stale
+  commentId: F:Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Stale
+  id: Stale
+  parent: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  langs:
+  - csharp
+  - vb
+  name: Stale
+  nameWithType: DepthIntegrityKind.Stale
+  fullName: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.Stale
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stale
+    path: ../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Stale data detected.
+  example: []
+  syntax:
+    content: Stale = 5
+    return:
+      type: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  commentId: T:Meridian.Contracts.Domain.Enums.DepthIntegrityKind
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.DepthIntegrityKind.html
+  name: DepthIntegrityKind
+  nameWithType: DepthIntegrityKind
+  fullName: Meridian.Contracts.Domain.Enums.DepthIntegrityKind

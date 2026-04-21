@@ -1,0 +1,851 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.SampleDataResult
+  commentId: T:Meridian.Application.Services.SampleDataResult
+  id: SampleDataResult
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.SampleDataResult.BarCount
+  - Meridian.Application.Services.SampleDataResult.DepthUpdateCount
+  - Meridian.Application.Services.SampleDataResult.EndTime
+  - Meridian.Application.Services.SampleDataResult.Events
+  - Meridian.Application.Services.SampleDataResult.FilesWritten
+  - Meridian.Application.Services.SampleDataResult.Message
+  - Meridian.Application.Services.SampleDataResult.QuoteCount
+  - Meridian.Application.Services.SampleDataResult.StartTime
+  - Meridian.Application.Services.SampleDataResult.Success
+  - Meridian.Application.Services.SampleDataResult.TotalEvents
+  - Meridian.Application.Services.SampleDataResult.TradeCount
+  langs:
+  - csharp
+  - vb
+  name: SampleDataResult
+  nameWithType: SampleDataResult
+  fullName: Meridian.Application.Services.SampleDataResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SampleDataResult
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 330
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Result of sample data generation.
+  example: []
+  syntax:
+    content: public sealed class SampleDataResult
+    content.vb: Public NotInheritable Class SampleDataResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.SampleDataResult.Success
+  commentId: P:Meridian.Application.Services.SampleDataResult.Success
+  id: Success
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: SampleDataResult.Success
+  fullName: Meridian.Application.Services.SampleDataResult.Success
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 332
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool Success { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Success As Boolean
+  overload: Meridian.Application.Services.SampleDataResult.Success*
+- uid: Meridian.Application.Services.SampleDataResult.Message
+  commentId: P:Meridian.Application.Services.SampleDataResult.Message
+  id: Message
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: SampleDataResult.Message
+  fullName: Meridian.Application.Services.SampleDataResult.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 333
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Message { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Services.SampleDataResult.Message*
+- uid: Meridian.Application.Services.SampleDataResult.StartTime
+  commentId: P:Meridian.Application.Services.SampleDataResult.StartTime
+  id: StartTime
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: StartTime
+  nameWithType: SampleDataResult.StartTime
+  fullName: Meridian.Application.Services.SampleDataResult.StartTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartTime
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 334
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset StartTime { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property StartTime As DateTimeOffset
+  overload: Meridian.Application.Services.SampleDataResult.StartTime*
+- uid: Meridian.Application.Services.SampleDataResult.EndTime
+  commentId: P:Meridian.Application.Services.SampleDataResult.EndTime
+  id: EndTime
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: EndTime
+  nameWithType: SampleDataResult.EndTime
+  fullName: Meridian.Application.Services.SampleDataResult.EndTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndTime
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 335
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset EndTime { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EndTime As DateTimeOffset
+  overload: Meridian.Application.Services.SampleDataResult.EndTime*
+- uid: Meridian.Application.Services.SampleDataResult.TotalEvents
+  commentId: P:Meridian.Application.Services.SampleDataResult.TotalEvents
+  id: TotalEvents
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: TotalEvents
+  nameWithType: SampleDataResult.TotalEvents
+  fullName: Meridian.Application.Services.SampleDataResult.TotalEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEvents
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 336
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int TotalEvents { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalEvents As Integer
+  overload: Meridian.Application.Services.SampleDataResult.TotalEvents*
+- uid: Meridian.Application.Services.SampleDataResult.TradeCount
+  commentId: P:Meridian.Application.Services.SampleDataResult.TradeCount
+  id: TradeCount
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: TradeCount
+  nameWithType: SampleDataResult.TradeCount
+  fullName: Meridian.Application.Services.SampleDataResult.TradeCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeCount
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 337
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int TradeCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TradeCount As Integer
+  overload: Meridian.Application.Services.SampleDataResult.TradeCount*
+- uid: Meridian.Application.Services.SampleDataResult.QuoteCount
+  commentId: P:Meridian.Application.Services.SampleDataResult.QuoteCount
+  id: QuoteCount
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: QuoteCount
+  nameWithType: SampleDataResult.QuoteCount
+  fullName: Meridian.Application.Services.SampleDataResult.QuoteCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuoteCount
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 338
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int QuoteCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property QuoteCount As Integer
+  overload: Meridian.Application.Services.SampleDataResult.QuoteCount*
+- uid: Meridian.Application.Services.SampleDataResult.DepthUpdateCount
+  commentId: P:Meridian.Application.Services.SampleDataResult.DepthUpdateCount
+  id: DepthUpdateCount
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: DepthUpdateCount
+  nameWithType: SampleDataResult.DepthUpdateCount
+  fullName: Meridian.Application.Services.SampleDataResult.DepthUpdateCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthUpdateCount
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 339
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int DepthUpdateCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DepthUpdateCount As Integer
+  overload: Meridian.Application.Services.SampleDataResult.DepthUpdateCount*
+- uid: Meridian.Application.Services.SampleDataResult.BarCount
+  commentId: P:Meridian.Application.Services.SampleDataResult.BarCount
+  id: BarCount
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: BarCount
+  nameWithType: SampleDataResult.BarCount
+  fullName: Meridian.Application.Services.SampleDataResult.BarCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BarCount
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 340
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int BarCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BarCount As Integer
+  overload: Meridian.Application.Services.SampleDataResult.BarCount*
+- uid: Meridian.Application.Services.SampleDataResult.Events
+  commentId: P:Meridian.Application.Services.SampleDataResult.Events
+  id: Events
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: Events
+  nameWithType: SampleDataResult.Events
+  fullName: Meridian.Application.Services.SampleDataResult.Events
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Events
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public List<MarketEvent>? Events { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Domain.Events.MarketEvent}
+    content.vb: Public Property Events As List(Of MarketEvent)
+  overload: Meridian.Application.Services.SampleDataResult.Events*
+- uid: Meridian.Application.Services.SampleDataResult.FilesWritten
+  commentId: P:Meridian.Application.Services.SampleDataResult.FilesWritten
+  id: FilesWritten
+  parent: Meridian.Application.Services.SampleDataResult
+  langs:
+  - csharp
+  - vb
+  name: FilesWritten
+  nameWithType: SampleDataResult.FilesWritten
+  fullName: Meridian.Application.Services.SampleDataResult.FilesWritten
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/SampleDataGenerator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesWritten
+    path: ../../src/Meridian.Application/Services/SampleDataGenerator.cs
+    startLine: 342
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public List<string>? FilesWritten { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property FilesWritten As List(Of String)
+  overload: Meridian.Application.Services.SampleDataResult.FilesWritten*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.SampleDataResult.Success*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.Success
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_Success
+  name: Success
+  nameWithType: SampleDataResult.Success
+  fullName: Meridian.Application.Services.SampleDataResult.Success
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Services.SampleDataResult.Message*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.Message
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_Message
+  name: Message
+  nameWithType: SampleDataResult.Message
+  fullName: Meridian.Application.Services.SampleDataResult.Message
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.SampleDataResult.StartTime*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.StartTime
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_StartTime
+  name: StartTime
+  nameWithType: SampleDataResult.StartTime
+  fullName: Meridian.Application.Services.SampleDataResult.StartTime
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Services.SampleDataResult.EndTime*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.EndTime
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_EndTime
+  name: EndTime
+  nameWithType: SampleDataResult.EndTime
+  fullName: Meridian.Application.Services.SampleDataResult.EndTime
+- uid: Meridian.Application.Services.SampleDataResult.TotalEvents*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.TotalEvents
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_TotalEvents
+  name: TotalEvents
+  nameWithType: SampleDataResult.TotalEvents
+  fullName: Meridian.Application.Services.SampleDataResult.TotalEvents
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Services.SampleDataResult.TradeCount*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.TradeCount
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_TradeCount
+  name: TradeCount
+  nameWithType: SampleDataResult.TradeCount
+  fullName: Meridian.Application.Services.SampleDataResult.TradeCount
+- uid: Meridian.Application.Services.SampleDataResult.QuoteCount*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.QuoteCount
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_QuoteCount
+  name: QuoteCount
+  nameWithType: SampleDataResult.QuoteCount
+  fullName: Meridian.Application.Services.SampleDataResult.QuoteCount
+- uid: Meridian.Application.Services.SampleDataResult.DepthUpdateCount*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.DepthUpdateCount
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_DepthUpdateCount
+  name: DepthUpdateCount
+  nameWithType: SampleDataResult.DepthUpdateCount
+  fullName: Meridian.Application.Services.SampleDataResult.DepthUpdateCount
+- uid: Meridian.Application.Services.SampleDataResult.BarCount*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.BarCount
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_BarCount
+  name: BarCount
+  nameWithType: SampleDataResult.BarCount
+  fullName: Meridian.Application.Services.SampleDataResult.BarCount
+- uid: Meridian.Application.Services.SampleDataResult.Events*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.Events
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_Events
+  name: Events
+  nameWithType: SampleDataResult.Events
+  fullName: Meridian.Application.Services.SampleDataResult.Events
+- uid: System.Collections.Generic.List{Meridian.Domain.Events.MarketEvent}
+  commentId: T:System.Collections.Generic.List{Meridian.Domain.Events.MarketEvent}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<MarketEvent>
+  nameWithType: List<MarketEvent>
+  fullName: System.Collections.Generic.List<Meridian.Domain.Events.MarketEvent>
+  nameWithType.vb: List(Of MarketEvent)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Domain.Events.MarketEvent)
+  name.vb: List(Of MarketEvent)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.SampleDataResult.FilesWritten*
+  commentId: Overload:Meridian.Application.Services.SampleDataResult.FilesWritten
+  href: Meridian.Application.Services.SampleDataResult.html#Meridian_Application_Services_SampleDataResult_FilesWritten
+  name: FilesWritten
+  nameWithType: SampleDataResult.FilesWritten
+  fullName: Meridian.Application.Services.SampleDataResult.FilesWritten
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )

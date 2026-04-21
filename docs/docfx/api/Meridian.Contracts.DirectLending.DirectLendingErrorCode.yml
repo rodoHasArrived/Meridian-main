@@ -1,0 +1,147 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.DirectLendingErrorCode
+  commentId: T:Meridian.Contracts.DirectLending.DirectLendingErrorCode
+  id: DirectLendingErrorCode
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.DirectLendingErrorCode.ConcurrencyConflict
+  - Meridian.Contracts.DirectLending.DirectLendingErrorCode.NotFound
+  - Meridian.Contracts.DirectLending.DirectLendingErrorCode.Validation
+  langs:
+  - csharp
+  - vb
+  name: DirectLendingErrorCode
+  nameWithType: DirectLendingErrorCode
+  fullName: Meridian.Contracts.DirectLending.DirectLendingErrorCode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DirectLendingErrorCode
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    startLine: 2
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum DirectLendingErrorCode : byte'
+    content.vb: Public Enum DirectLendingErrorCode As Byte
+- uid: Meridian.Contracts.DirectLending.DirectLendingErrorCode.Validation
+  commentId: F:Meridian.Contracts.DirectLending.DirectLendingErrorCode.Validation
+  id: Validation
+  parent: Meridian.Contracts.DirectLending.DirectLendingErrorCode
+  langs:
+  - csharp
+  - vb
+  name: Validation
+  nameWithType: DirectLendingErrorCode.Validation
+  fullName: Meridian.Contracts.DirectLending.DirectLendingErrorCode.Validation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validation
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Validation = 0
+    return:
+      type: Meridian.Contracts.DirectLending.DirectLendingErrorCode
+- uid: Meridian.Contracts.DirectLending.DirectLendingErrorCode.NotFound
+  commentId: F:Meridian.Contracts.DirectLending.DirectLendingErrorCode.NotFound
+  id: NotFound
+  parent: Meridian.Contracts.DirectLending.DirectLendingErrorCode
+  langs:
+  - csharp
+  - vb
+  name: NotFound
+  nameWithType: DirectLendingErrorCode.NotFound
+  fullName: Meridian.Contracts.DirectLending.DirectLendingErrorCode.NotFound
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotFound
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: NotFound = 1
+    return:
+      type: Meridian.Contracts.DirectLending.DirectLendingErrorCode
+- uid: Meridian.Contracts.DirectLending.DirectLendingErrorCode.ConcurrencyConflict
+  commentId: F:Meridian.Contracts.DirectLending.DirectLendingErrorCode.ConcurrencyConflict
+  id: ConcurrencyConflict
+  parent: Meridian.Contracts.DirectLending.DirectLendingErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConcurrencyConflict
+  nameWithType: DirectLendingErrorCode.ConcurrencyConflict
+  fullName: Meridian.Contracts.DirectLending.DirectLendingErrorCode.ConcurrencyConflict
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConcurrencyConflict
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingCommandResults.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: ConcurrencyConflict = 2
+    return:
+      type: Meridian.Contracts.DirectLending.DirectLendingErrorCode
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.DirectLendingErrorCode
+  commentId: T:Meridian.Contracts.DirectLending.DirectLendingErrorCode
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.DirectLendingErrorCode.html
+  name: DirectLendingErrorCode
+  nameWithType: DirectLendingErrorCode
+  fullName: Meridian.Contracts.DirectLending.DirectLendingErrorCode

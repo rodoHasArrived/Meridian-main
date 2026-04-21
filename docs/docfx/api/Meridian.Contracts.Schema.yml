@@ -1,0 +1,103 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Schema
+  commentId: N:Meridian.Contracts.Schema
+  id: Meridian.Contracts.Schema
+  children:
+  - Meridian.Contracts.Schema.DataDictionary
+  - Meridian.Contracts.Schema.EventSchema
+  - Meridian.Contracts.Schema.FieldValidRange
+  - Meridian.Contracts.Schema.ISchemaUpcaster`1
+  - Meridian.Contracts.Schema.SchemaField
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Contracts.Schema
+  nameWithType: Meridian.Contracts.Schema
+  fullName: Meridian.Contracts.Schema
+  type: Namespace
+  assemblies:
+  - Meridian.Contracts
+references:
+- uid: Meridian.Contracts.Schema.EventSchema
+  commentId: T:Meridian.Contracts.Schema.EventSchema
+  parent: Meridian.Contracts.Schema
+  href: Meridian.Contracts.Schema.EventSchema.html
+  name: EventSchema
+  nameWithType: EventSchema
+  fullName: Meridian.Contracts.Schema.EventSchema
+- uid: Meridian.Contracts.Schema.SchemaField
+  commentId: T:Meridian.Contracts.Schema.SchemaField
+  href: Meridian.Contracts.Schema.SchemaField.html
+  name: SchemaField
+  nameWithType: SchemaField
+  fullName: Meridian.Contracts.Schema.SchemaField
+- uid: Meridian.Contracts.Schema.FieldValidRange
+  commentId: T:Meridian.Contracts.Schema.FieldValidRange
+  parent: Meridian.Contracts.Schema
+  href: Meridian.Contracts.Schema.FieldValidRange.html
+  name: FieldValidRange
+  nameWithType: FieldValidRange
+  fullName: Meridian.Contracts.Schema.FieldValidRange
+- uid: Meridian.Contracts.Schema.DataDictionary
+  commentId: T:Meridian.Contracts.Schema.DataDictionary
+  parent: Meridian.Contracts.Schema
+  href: Meridian.Contracts.Schema.DataDictionary.html
+  name: DataDictionary
+  nameWithType: DataDictionary
+  fullName: Meridian.Contracts.Schema.DataDictionary
+- uid: Meridian.Contracts.Schema.ISchemaUpcaster`1
+  commentId: T:Meridian.Contracts.Schema.ISchemaUpcaster`1
+  href: Meridian.Contracts.Schema.ISchemaUpcaster-1.html
+  name: ISchemaUpcaster<T>
+  nameWithType: ISchemaUpcaster<T>
+  fullName: Meridian.Contracts.Schema.ISchemaUpcaster<T>
+  nameWithType.vb: ISchemaUpcaster(Of T)
+  fullName.vb: Meridian.Contracts.Schema.ISchemaUpcaster(Of T)
+  name.vb: ISchemaUpcaster(Of T)
+  spec.csharp:
+  - uid: Meridian.Contracts.Schema.ISchemaUpcaster`1
+    name: ISchemaUpcaster
+    href: Meridian.Contracts.Schema.ISchemaUpcaster-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Contracts.Schema.ISchemaUpcaster`1
+    name: ISchemaUpcaster
+    href: Meridian.Contracts.Schema.ISchemaUpcaster-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Schema
+  commentId: N:Meridian.Contracts.Schema
+  href: Meridian.html
+  name: Meridian.Contracts.Schema
+  nameWithType: Meridian.Contracts.Schema
+  fullName: Meridian.Contracts.Schema
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Schema
+    name: Schema
+    href: Meridian.Contracts.Schema.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Schema
+    name: Schema
+    href: Meridian.Contracts.Schema.html

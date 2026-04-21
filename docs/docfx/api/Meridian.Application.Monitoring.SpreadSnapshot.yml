@@ -1,0 +1,735 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.SpreadSnapshot
+  commentId: T:Meridian.Application.Monitoring.SpreadSnapshot
+  id: SpreadSnapshot
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.SpreadSnapshot.#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Int64,System.Int64,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.SpreadSnapshot.AverageSpreadBps
+  - Meridian.Application.Monitoring.SpreadSnapshot.CurrentSpreadBps
+  - Meridian.Application.Monitoring.SpreadSnapshot.LastUpdateTime
+  - Meridian.Application.Monitoring.SpreadSnapshot.MaxSpreadBps
+  - Meridian.Application.Monitoring.SpreadSnapshot.MinSpreadBps
+  - Meridian.Application.Monitoring.SpreadSnapshot.Symbol
+  - Meridian.Application.Monitoring.SpreadSnapshot.TotalQuotes
+  - Meridian.Application.Monitoring.SpreadSnapshot.WideSpreadCount
+  langs:
+  - csharp
+  - vb
+  name: SpreadSnapshot
+  nameWithType: SpreadSnapshot
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpreadSnapshot
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 387
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Snapshot of spread statistics for a symbol.
+  example: []
+  syntax:
+    content: 'public readonly record struct SpreadSnapshot : IEquatable<SpreadSnapshot>'
+    content.vb: Public Structure SpreadSnapshot Implements IEquatable(Of SpreadSnapshot)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.SpreadSnapshot}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Int64,System.Int64,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.SpreadSnapshot.#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Int64,System.Int64,System.DateTimeOffset)
+  id: '#ctor(System.String,System.Double,System.Double,System.Double,System.Double,System.Int64,System.Int64,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.SpreadSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SpreadSnapshot(string, double, double, double, double, long, long, DateTimeOffset)
+  nameWithType: SpreadSnapshot.SpreadSnapshot(string, double, double, double, double, long, long, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.SpreadSnapshot(string, double, double, double, double, long, long, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 387
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Snapshot of spread statistics for a symbol.
+  example: []
+  syntax:
+    content: public SpreadSnapshot(string Symbol, double CurrentSpreadBps, double AverageSpreadBps, double MinSpreadBps, double MaxSpreadBps, long TotalQuotes, long WideSpreadCount, DateTimeOffset LastUpdateTime)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: CurrentSpreadBps
+      type: System.Double
+    - id: AverageSpreadBps
+      type: System.Double
+    - id: MinSpreadBps
+      type: System.Double
+    - id: MaxSpreadBps
+      type: System.Double
+    - id: TotalQuotes
+      type: System.Int64
+    - id: WideSpreadCount
+      type: System.Int64
+    - id: LastUpdateTime
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Symbol As String, CurrentSpreadBps As Double, AverageSpreadBps As Double, MinSpreadBps As Double, MaxSpreadBps As Double, TotalQuotes As Long, WideSpreadCount As Long, LastUpdateTime As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.SpreadSnapshot.#ctor*
+  nameWithType.vb: SpreadSnapshot.New(String, Double, Double, Double, Double, Long, Long, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.SpreadSnapshot.New(String, Double, Double, Double, Double, Long, Long, System.DateTimeOffset)
+  name.vb: New(String, Double, Double, Double, Double, Long, Long, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.Symbol
+  commentId: P:Meridian.Application.Monitoring.SpreadSnapshot.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.SpreadSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SpreadSnapshot.Symbol
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 388
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.SpreadSnapshot.Symbol*
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.CurrentSpreadBps
+  commentId: P:Meridian.Application.Monitoring.SpreadSnapshot.CurrentSpreadBps
+  id: CurrentSpreadBps
+  parent: Meridian.Application.Monitoring.SpreadSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CurrentSpreadBps
+  nameWithType: SpreadSnapshot.CurrentSpreadBps
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.CurrentSpreadBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentSpreadBps
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 389
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double CurrentSpreadBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CurrentSpreadBps As Double
+  overload: Meridian.Application.Monitoring.SpreadSnapshot.CurrentSpreadBps*
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.AverageSpreadBps
+  commentId: P:Meridian.Application.Monitoring.SpreadSnapshot.AverageSpreadBps
+  id: AverageSpreadBps
+  parent: Meridian.Application.Monitoring.SpreadSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AverageSpreadBps
+  nameWithType: SpreadSnapshot.AverageSpreadBps
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.AverageSpreadBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageSpreadBps
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 390
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double AverageSpreadBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageSpreadBps As Double
+  overload: Meridian.Application.Monitoring.SpreadSnapshot.AverageSpreadBps*
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.MinSpreadBps
+  commentId: P:Meridian.Application.Monitoring.SpreadSnapshot.MinSpreadBps
+  id: MinSpreadBps
+  parent: Meridian.Application.Monitoring.SpreadSnapshot
+  langs:
+  - csharp
+  - vb
+  name: MinSpreadBps
+  nameWithType: SpreadSnapshot.MinSpreadBps
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.MinSpreadBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSpreadBps
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 391
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double MinSpreadBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MinSpreadBps As Double
+  overload: Meridian.Application.Monitoring.SpreadSnapshot.MinSpreadBps*
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.MaxSpreadBps
+  commentId: P:Meridian.Application.Monitoring.SpreadSnapshot.MaxSpreadBps
+  id: MaxSpreadBps
+  parent: Meridian.Application.Monitoring.SpreadSnapshot
+  langs:
+  - csharp
+  - vb
+  name: MaxSpreadBps
+  nameWithType: SpreadSnapshot.MaxSpreadBps
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.MaxSpreadBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxSpreadBps
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 392
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double MaxSpreadBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxSpreadBps As Double
+  overload: Meridian.Application.Monitoring.SpreadSnapshot.MaxSpreadBps*
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.TotalQuotes
+  commentId: P:Meridian.Application.Monitoring.SpreadSnapshot.TotalQuotes
+  id: TotalQuotes
+  parent: Meridian.Application.Monitoring.SpreadSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalQuotes
+  nameWithType: SpreadSnapshot.TotalQuotes
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.TotalQuotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalQuotes
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 393
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long TotalQuotes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalQuotes As Long
+  overload: Meridian.Application.Monitoring.SpreadSnapshot.TotalQuotes*
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.WideSpreadCount
+  commentId: P:Meridian.Application.Monitoring.SpreadSnapshot.WideSpreadCount
+  id: WideSpreadCount
+  parent: Meridian.Application.Monitoring.SpreadSnapshot
+  langs:
+  - csharp
+  - vb
+  name: WideSpreadCount
+  nameWithType: SpreadSnapshot.WideSpreadCount
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.WideSpreadCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WideSpreadCount
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 394
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long WideSpreadCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property WideSpreadCount As Long
+  overload: Meridian.Application.Monitoring.SpreadSnapshot.WideSpreadCount*
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.LastUpdateTime
+  commentId: P:Meridian.Application.Monitoring.SpreadSnapshot.LastUpdateTime
+  id: LastUpdateTime
+  parent: Meridian.Application.Monitoring.SpreadSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LastUpdateTime
+  nameWithType: SpreadSnapshot.LastUpdateTime
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.LastUpdateTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdateTime
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset LastUpdateTime { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastUpdateTime As DateTimeOffset
+  overload: Meridian.Application.Monitoring.SpreadSnapshot.LastUpdateTime*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.SpreadSnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.SpreadSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SpreadSnapshot>
+  nameWithType: IEquatable<SpreadSnapshot>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.SpreadSnapshot>
+  nameWithType.vb: IEquatable(Of SpreadSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.SpreadSnapshot)
+  name.vb: IEquatable(Of SpreadSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.SpreadSnapshot
+    name: SpreadSnapshot
+    href: Meridian.Application.Monitoring.SpreadSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.SpreadSnapshot
+    name: SpreadSnapshot
+    href: Meridian.Application.Monitoring.SpreadSnapshot.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadSnapshot.#ctor
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html#Meridian_Application_Monitoring_SpreadSnapshot__ctor_System_String_System_Double_System_Double_System_Double_System_Double_System_Int64_System_Int64_System_DateTimeOffset_
+  name: SpreadSnapshot
+  nameWithType: SpreadSnapshot.SpreadSnapshot
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.SpreadSnapshot
+  nameWithType.vb: SpreadSnapshot.New
+  fullName.vb: Meridian.Application.Monitoring.SpreadSnapshot.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadSnapshot.Symbol
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html#Meridian_Application_Monitoring_SpreadSnapshot_Symbol
+  name: Symbol
+  nameWithType: SpreadSnapshot.Symbol
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.Symbol
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.CurrentSpreadBps*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadSnapshot.CurrentSpreadBps
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html#Meridian_Application_Monitoring_SpreadSnapshot_CurrentSpreadBps
+  name: CurrentSpreadBps
+  nameWithType: SpreadSnapshot.CurrentSpreadBps
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.CurrentSpreadBps
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.AverageSpreadBps*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadSnapshot.AverageSpreadBps
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html#Meridian_Application_Monitoring_SpreadSnapshot_AverageSpreadBps
+  name: AverageSpreadBps
+  nameWithType: SpreadSnapshot.AverageSpreadBps
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.AverageSpreadBps
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.MinSpreadBps*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadSnapshot.MinSpreadBps
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html#Meridian_Application_Monitoring_SpreadSnapshot_MinSpreadBps
+  name: MinSpreadBps
+  nameWithType: SpreadSnapshot.MinSpreadBps
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.MinSpreadBps
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.MaxSpreadBps*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadSnapshot.MaxSpreadBps
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html#Meridian_Application_Monitoring_SpreadSnapshot_MaxSpreadBps
+  name: MaxSpreadBps
+  nameWithType: SpreadSnapshot.MaxSpreadBps
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.MaxSpreadBps
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.TotalQuotes*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadSnapshot.TotalQuotes
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html#Meridian_Application_Monitoring_SpreadSnapshot_TotalQuotes
+  name: TotalQuotes
+  nameWithType: SpreadSnapshot.TotalQuotes
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.TotalQuotes
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.WideSpreadCount*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadSnapshot.WideSpreadCount
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html#Meridian_Application_Monitoring_SpreadSnapshot_WideSpreadCount
+  name: WideSpreadCount
+  nameWithType: SpreadSnapshot.WideSpreadCount
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.WideSpreadCount
+- uid: Meridian.Application.Monitoring.SpreadSnapshot.LastUpdateTime*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadSnapshot.LastUpdateTime
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html#Meridian_Application_Monitoring_SpreadSnapshot_LastUpdateTime
+  name: LastUpdateTime
+  nameWithType: SpreadSnapshot.LastUpdateTime
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot.LastUpdateTime

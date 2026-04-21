@@ -1,0 +1,466 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.TrendDataPoint
+  commentId: T:Meridian.Ui.Services.Services.TrendDataPoint
+  id: TrendDataPoint
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.TrendDataPoint.AlertCount
+  - Meridian.Ui.Services.Services.TrendDataPoint.EventCount
+  - Meridian.Ui.Services.Services.TrendDataPoint.Score
+  - Meridian.Ui.Services.Services.TrendDataPoint.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: TrendDataPoint
+  nameWithType: TrendDataPoint
+  fullName: Meridian.Ui.Services.Services.TrendDataPoint
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrendDataPoint
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public sealed class TrendDataPoint
+    content.vb: Public NotInheritable Class TrendDataPoint
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.TrendDataPoint.Timestamp
+  commentId: P:Meridian.Ui.Services.Services.TrendDataPoint.Timestamp
+  id: Timestamp
+  parent: Meridian.Ui.Services.Services.TrendDataPoint
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: TrendDataPoint.Timestamp
+  fullName: Meridian.Ui.Services.Services.TrendDataPoint.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public DateTime Timestamp { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property Timestamp As Date
+  overload: Meridian.Ui.Services.Services.TrendDataPoint.Timestamp*
+- uid: Meridian.Ui.Services.Services.TrendDataPoint.Score
+  commentId: P:Meridian.Ui.Services.Services.TrendDataPoint.Score
+  id: Score
+  parent: Meridian.Ui.Services.Services.TrendDataPoint
+  langs:
+  - csharp
+  - vb
+  name: Score
+  nameWithType: TrendDataPoint.Score
+  fullName: Meridian.Ui.Services.Services.TrendDataPoint.Score
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Score
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public double Score { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Score As Double
+  overload: Meridian.Ui.Services.Services.TrendDataPoint.Score*
+- uid: Meridian.Ui.Services.Services.TrendDataPoint.EventCount
+  commentId: P:Meridian.Ui.Services.Services.TrendDataPoint.EventCount
+  id: EventCount
+  parent: Meridian.Ui.Services.Services.TrendDataPoint
+  langs:
+  - csharp
+  - vb
+  name: EventCount
+  nameWithType: TrendDataPoint.EventCount
+  fullName: Meridian.Ui.Services.Services.TrendDataPoint.EventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCount
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int EventCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property EventCount As Integer
+  overload: Meridian.Ui.Services.Services.TrendDataPoint.EventCount*
+- uid: Meridian.Ui.Services.Services.TrendDataPoint.AlertCount
+  commentId: P:Meridian.Ui.Services.Services.TrendDataPoint.AlertCount
+  id: AlertCount
+  parent: Meridian.Ui.Services.Services.TrendDataPoint
+  langs:
+  - csharp
+  - vb
+  name: AlertCount
+  nameWithType: TrendDataPoint.AlertCount
+  fullName: Meridian.Ui.Services.Services.TrendDataPoint.AlertCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertCount
+    path: ../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int AlertCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property AlertCount As Integer
+  overload: Meridian.Ui.Services.Services.TrendDataPoint.AlertCount*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.TrendDataPoint.Timestamp*
+  commentId: Overload:Meridian.Ui.Services.Services.TrendDataPoint.Timestamp
+  href: Meridian.Ui.Services.Services.TrendDataPoint.html#Meridian_Ui_Services_Services_TrendDataPoint_Timestamp
+  name: Timestamp
+  nameWithType: TrendDataPoint.Timestamp
+  fullName: Meridian.Ui.Services.Services.TrendDataPoint.Timestamp
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.Services.TrendDataPoint.Score*
+  commentId: Overload:Meridian.Ui.Services.Services.TrendDataPoint.Score
+  href: Meridian.Ui.Services.Services.TrendDataPoint.html#Meridian_Ui_Services_Services_TrendDataPoint_Score
+  name: Score
+  nameWithType: TrendDataPoint.Score
+  fullName: Meridian.Ui.Services.Services.TrendDataPoint.Score
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.Services.TrendDataPoint.EventCount*
+  commentId: Overload:Meridian.Ui.Services.Services.TrendDataPoint.EventCount
+  href: Meridian.Ui.Services.Services.TrendDataPoint.html#Meridian_Ui_Services_Services_TrendDataPoint_EventCount
+  name: EventCount
+  nameWithType: TrendDataPoint.EventCount
+  fullName: Meridian.Ui.Services.Services.TrendDataPoint.EventCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Services.TrendDataPoint.AlertCount*
+  commentId: Overload:Meridian.Ui.Services.Services.TrendDataPoint.AlertCount
+  href: Meridian.Ui.Services.Services.TrendDataPoint.html#Meridian_Ui_Services_Services_TrendDataPoint_AlertCount
+  name: AlertCount
+  nameWithType: TrendDataPoint.AlertCount
+  fullName: Meridian.Ui.Services.Services.TrendDataPoint.AlertCount

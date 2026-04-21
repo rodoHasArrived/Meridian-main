@@ -1,0 +1,1194 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ResultTypes.Result
+  commentId: T:Meridian.Application.ResultTypes.Result
+  id: Result
+  parent: Meridian.Application.ResultTypes
+  children:
+  - Meridian.Application.ResultTypes.Result.Combine``2(System.Collections.Generic.IEnumerable{Meridian.Application.ResultTypes.Result{``0,``1}})
+  - Meridian.Application.ResultTypes.Result.Failure``1(``0)
+  - Meridian.Application.ResultTypes.Result.Failure``2(``1)
+  - Meridian.Application.ResultTypes.Result.Success``1
+  - Meridian.Application.ResultTypes.Result.Success``2(``0)
+  - Meridian.Application.ResultTypes.Result.TryAsync``1(System.Func{System.Threading.Tasks.Task{``0}},System.Threading.CancellationToken)
+  - Meridian.Application.ResultTypes.Result.Try``1(System.Func{``0})
+  langs:
+  - csharp
+  - vb
+  name: Result
+  nameWithType: Result
+  fullName: Meridian.Application.ResultTypes.Result
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Result
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Static factory methods for Result types
+  example: []
+  syntax:
+    content: public static class Result
+    content.vb: Public Module Result
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.ResultTypes.Result.Success``2(``0)
+  commentId: M:Meridian.Application.ResultTypes.Result.Success``2(``0)
+  id: Success``2(``0)
+  parent: Meridian.Application.ResultTypes.Result
+  langs:
+  - csharp
+  - vb
+  name: Success<TValue, TError>(TValue)
+  nameWithType: Result.Success<TValue, TError>(TValue)
+  fullName: Meridian.Application.ResultTypes.Result.Success<TValue, TError>(TValue)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static Result<TValue, TError> Success<TValue, TError>(TValue value)
+    parameters:
+    - id: value
+      type: '{TValue}'
+    typeParameters:
+    - id: TValue
+    - id: TError
+    return:
+      type: Meridian.Application.ResultTypes.Result{{TValue},{TError}}
+    content.vb: Public Shared Function Success(Of TValue, TError)(value As TValue) As Result(Of TValue, TError)
+  overload: Meridian.Application.ResultTypes.Result.Success*
+  nameWithType.vb: Result.Success(Of TValue, TError)(TValue)
+  fullName.vb: Meridian.Application.ResultTypes.Result.Success(Of TValue, TError)(TValue)
+  name.vb: Success(Of TValue, TError)(TValue)
+- uid: Meridian.Application.ResultTypes.Result.Failure``2(``1)
+  commentId: M:Meridian.Application.ResultTypes.Result.Failure``2(``1)
+  id: Failure``2(``1)
+  parent: Meridian.Application.ResultTypes.Result
+  langs:
+  - csharp
+  - vb
+  name: Failure<TValue, TError>(TError)
+  nameWithType: Result.Failure<TValue, TError>(TError)
+  fullName: Meridian.Application.ResultTypes.Result.Failure<TValue, TError>(TError)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failure
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static Result<TValue, TError> Failure<TValue, TError>(TError error)
+    parameters:
+    - id: error
+      type: '{TError}'
+    typeParameters:
+    - id: TValue
+    - id: TError
+    return:
+      type: Meridian.Application.ResultTypes.Result{{TValue},{TError}}
+    content.vb: Public Shared Function Failure(Of TValue, TError)([error] As TError) As Result(Of TValue, TError)
+  overload: Meridian.Application.ResultTypes.Result.Failure*
+  nameWithType.vb: Result.Failure(Of TValue, TError)(TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result.Failure(Of TValue, TError)(TError)
+  name.vb: Failure(Of TValue, TError)(TError)
+- uid: Meridian.Application.ResultTypes.Result.Success``1
+  commentId: M:Meridian.Application.ResultTypes.Result.Success``1
+  id: Success``1
+  parent: Meridian.Application.ResultTypes.Result
+  langs:
+  - csharp
+  - vb
+  name: Success<TError>()
+  nameWithType: Result.Success<TError>()
+  fullName: Meridian.Application.ResultTypes.Result.Success<TError>()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static Result<TError> Success<TError>()
+    typeParameters:
+    - id: TError
+    return:
+      type: Meridian.Application.ResultTypes.Result{{TError}}
+    content.vb: Public Shared Function Success(Of TError)() As Result(Of TError)
+  overload: Meridian.Application.ResultTypes.Result.Success*
+  nameWithType.vb: Result.Success(Of TError)()
+  fullName.vb: Meridian.Application.ResultTypes.Result.Success(Of TError)()
+  name.vb: Success(Of TError)()
+- uid: Meridian.Application.ResultTypes.Result.Failure``1(``0)
+  commentId: M:Meridian.Application.ResultTypes.Result.Failure``1(``0)
+  id: Failure``1(``0)
+  parent: Meridian.Application.ResultTypes.Result
+  langs:
+  - csharp
+  - vb
+  name: Failure<TError>(TError)
+  nameWithType: Result.Failure<TError>(TError)
+  fullName: Meridian.Application.ResultTypes.Result.Failure<TError>(TError)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failure
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static Result<TError> Failure<TError>(TError error)
+    parameters:
+    - id: error
+      type: '{TError}'
+    typeParameters:
+    - id: TError
+    return:
+      type: Meridian.Application.ResultTypes.Result{{TError}}
+    content.vb: Public Shared Function Failure(Of TError)([error] As TError) As Result(Of TError)
+  overload: Meridian.Application.ResultTypes.Result.Failure*
+  nameWithType.vb: Result.Failure(Of TError)(TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result.Failure(Of TError)(TError)
+  name.vb: Failure(Of TError)(TError)
+- uid: Meridian.Application.ResultTypes.Result.Try``1(System.Func{``0})
+  commentId: M:Meridian.Application.ResultTypes.Result.Try``1(System.Func{``0})
+  id: Try``1(System.Func{``0})
+  parent: Meridian.Application.ResultTypes.Result
+  langs:
+  - csharp
+  - vb
+  name: Try<TValue>(Func<TValue>)
+  nameWithType: Result.Try<TValue>(Func<TValue>)
+  fullName: Meridian.Application.ResultTypes.Result.Try<TValue>(System.Func<TValue>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Try
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Executes a function and captures any exception as a Result
+  example: []
+  syntax:
+    content: public static Result<TValue, Exception> Try<TValue>(Func<TValue> func)
+    parameters:
+    - id: func
+      type: System.Func{{TValue}}
+    typeParameters:
+    - id: TValue
+    return:
+      type: Meridian.Application.ResultTypes.Result{{TValue},System.Exception}
+    content.vb: Public Shared Function [Try](Of TValue)(func As Func(Of TValue)) As Result(Of TValue, Exception)
+  overload: Meridian.Application.ResultTypes.Result.Try*
+  nameWithType.vb: Result.Try(Of TValue)(Func(Of TValue))
+  fullName.vb: Meridian.Application.ResultTypes.Result.Try(Of TValue)(System.Func(Of TValue))
+  name.vb: Try(Of TValue)(Func(Of TValue))
+- uid: Meridian.Application.ResultTypes.Result.TryAsync``1(System.Func{System.Threading.Tasks.Task{``0}},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.ResultTypes.Result.TryAsync``1(System.Func{System.Threading.Tasks.Task{``0}},System.Threading.CancellationToken)
+  id: TryAsync``1(System.Func{System.Threading.Tasks.Task{``0}},System.Threading.CancellationToken)
+  parent: Meridian.Application.ResultTypes.Result
+  langs:
+  - csharp
+  - vb
+  name: TryAsync<TValue>(Func<Task<TValue>>, CancellationToken)
+  nameWithType: Result.TryAsync<TValue>(Func<Task<TValue>>, CancellationToken)
+  fullName: Meridian.Application.ResultTypes.Result.TryAsync<TValue>(System.Func<System.Threading.Tasks.Task<TValue>>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryAsync
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Executes an async function and captures any exception as a Result
+  example: []
+  syntax:
+    content: public static Task<Result<TValue, Exception>> TryAsync<TValue>(Func<Task<TValue>> func, CancellationToken ct = default)
+    parameters:
+    - id: func
+      type: System.Func{System.Threading.Tasks.Task{{TValue}}}
+    - id: ct
+      type: System.Threading.CancellationToken
+    typeParameters:
+    - id: TValue
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.ResultTypes.Result{{TValue},System.Exception}}
+    content.vb: Public Shared Function TryAsync(Of TValue)(func As Func(Of Task(Of TValue)), ct As CancellationToken = Nothing) As Task(Of Result(Of TValue, Exception))
+  overload: Meridian.Application.ResultTypes.Result.TryAsync*
+  nameWithType.vb: Result.TryAsync(Of TValue)(Func(Of Task(Of TValue)), CancellationToken)
+  fullName.vb: Meridian.Application.ResultTypes.Result.TryAsync(Of TValue)(System.Func(Of System.Threading.Tasks.Task(Of TValue)), System.Threading.CancellationToken)
+  name.vb: TryAsync(Of TValue)(Func(Of Task(Of TValue)), CancellationToken)
+- uid: Meridian.Application.ResultTypes.Result.Combine``2(System.Collections.Generic.IEnumerable{Meridian.Application.ResultTypes.Result{``0,``1}})
+  commentId: M:Meridian.Application.ResultTypes.Result.Combine``2(System.Collections.Generic.IEnumerable{Meridian.Application.ResultTypes.Result{``0,``1}})
+  id: Combine``2(System.Collections.Generic.IEnumerable{Meridian.Application.ResultTypes.Result{``0,``1}})
+  parent: Meridian.Application.ResultTypes.Result
+  langs:
+  - csharp
+  - vb
+  name: Combine<TValue, TError>(IEnumerable<Result<TValue, TError>>)
+  nameWithType: Result.Combine<TValue, TError>(IEnumerable<Result<TValue, TError>>)
+  fullName: Meridian.Application.ResultTypes.Result.Combine<TValue, TError>(System.Collections.Generic.IEnumerable<Meridian.Application.ResultTypes.Result<TValue, TError>>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Combine
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Combines multiple results into a single result containing all values
+  example: []
+  syntax:
+    content: public static Result<IReadOnlyList<TValue>, TError> Combine<TValue, TError>(IEnumerable<Result<TValue, TError>> results)
+    parameters:
+    - id: results
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.ResultTypes.Result{{TValue},{TError}}}
+    typeParameters:
+    - id: TValue
+    - id: TError
+    return:
+      type: Meridian.Application.ResultTypes.Result{System.Collections.Generic.IReadOnlyList{{TValue}},{TError}}
+    content.vb: Public Shared Function Combine(Of TValue, TError)(results As IEnumerable(Of Result(Of TValue, TError))) As Result(Of IReadOnlyList(Of TValue), TError)
+  overload: Meridian.Application.ResultTypes.Result.Combine*
+  nameWithType.vb: Result.Combine(Of TValue, TError)(IEnumerable(Of Result(Of TValue, TError)))
+  fullName.vb: Meridian.Application.ResultTypes.Result.Combine(Of TValue, TError)(System.Collections.Generic.IEnumerable(Of Meridian.Application.ResultTypes.Result(Of TValue, TError)))
+  name.vb: Combine(Of TValue, TError)(IEnumerable(Of Result(Of TValue, TError)))
+references:
+- uid: Meridian.Application.ResultTypes
+  commentId: N:Meridian.Application.ResultTypes
+  href: Meridian.html
+  name: Meridian.Application.ResultTypes
+  nameWithType: Meridian.Application.ResultTypes
+  fullName: Meridian.Application.ResultTypes
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.ResultTypes.Result.Success*
+  commentId: Overload:Meridian.Application.ResultTypes.Result.Success
+  href: Meridian.Application.ResultTypes.Result.html#Meridian_Application_ResultTypes_Result_Success__2___0_
+  name: Success
+  nameWithType: Result.Success
+  fullName: Meridian.Application.ResultTypes.Result.Success
+- uid: '{TValue}'
+  commentId: '!:TValue'
+  definition: TValue
+  name: TValue
+  nameWithType: TValue
+  fullName: TValue
+- uid: Meridian.Application.ResultTypes.Result{{TValue},{TError}}
+  commentId: T:Meridian.Application.ResultTypes.Result{``0,``1}
+  parent: Meridian.Application.ResultTypes
+  definition: Meridian.Application.ResultTypes.Result`2
+  href: Meridian.Application.ResultTypes.Result-2.html
+  name: Result<TValue, TError>
+  nameWithType: Result<TValue, TError>
+  fullName: Meridian.Application.ResultTypes.Result<TValue, TError>
+  nameWithType.vb: Result(Of TValue, TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TValue, TError)
+  name.vb: Result(Of TValue, TError)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: <
+  - name: TValue
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValue
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: )
+- uid: TValue
+  name: TValue
+  nameWithType: TValue
+  fullName: TValue
+- uid: Meridian.Application.ResultTypes.Result`2
+  commentId: T:Meridian.Application.ResultTypes.Result`2
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.Result-2.html
+  name: Result<TValue, TError>
+  nameWithType: Result<TValue, TError>
+  fullName: Meridian.Application.ResultTypes.Result<TValue, TError>
+  nameWithType.vb: Result(Of TValue, TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TValue, TError)
+  name.vb: Result(Of TValue, TError)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: <
+  - name: TValue
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValue
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result.Failure*
+  commentId: Overload:Meridian.Application.ResultTypes.Result.Failure
+  href: Meridian.Application.ResultTypes.Result.html#Meridian_Application_ResultTypes_Result_Failure__2___1_
+  name: Failure
+  nameWithType: Result.Failure
+  fullName: Meridian.Application.ResultTypes.Result.Failure
+- uid: '{TError}'
+  commentId: '!:TError'
+  definition: TError
+  name: TError
+  nameWithType: TError
+  fullName: TError
+- uid: TError
+  name: TError
+  nameWithType: TError
+  fullName: TError
+- uid: Meridian.Application.ResultTypes.Result{{TError}}
+  commentId: T:Meridian.Application.ResultTypes.Result{``0}
+  parent: Meridian.Application.ResultTypes
+  definition: Meridian.Application.ResultTypes.Result`1
+  href: Meridian.Application.ResultTypes.Result-1.html
+  name: Result<TError>
+  nameWithType: Result<TError>
+  fullName: Meridian.Application.ResultTypes.Result<TError>
+  nameWithType.vb: Result(Of TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError)
+  name.vb: Result(Of TError)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.Result`1
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-1.html
+  - name: <
+  - name: TError
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.Result`1
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TError
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result`1
+  commentId: T:Meridian.Application.ResultTypes.Result`1
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.Result-1.html
+  name: Result<TError>
+  nameWithType: Result<TError>
+  fullName: Meridian.Application.ResultTypes.Result<TError>
+  nameWithType.vb: Result(Of TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError)
+  name.vb: Result(Of TError)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.Result`1
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-1.html
+  - name: <
+  - name: TError
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.Result`1
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TError
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result.Try*
+  commentId: Overload:Meridian.Application.ResultTypes.Result.Try
+  href: Meridian.Application.ResultTypes.Result.html#Meridian_Application_ResultTypes_Result_Try__1_System_Func___0__
+  name: Try
+  nameWithType: Result.Try
+  fullName: Meridian.Application.ResultTypes.Result.Try
+- uid: System.Func{{TValue}}
+  commentId: T:System.Func{``0}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TValue>
+  nameWithType: Func<TValue>
+  fullName: System.Func<TValue>
+  nameWithType.vb: Func(Of TValue)
+  fullName.vb: System.Func(Of TValue)
+  name.vb: Func(Of TValue)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result{{TValue},System.Exception}
+  commentId: T:Meridian.Application.ResultTypes.Result{``0,System.Exception}
+  parent: Meridian.Application.ResultTypes
+  definition: Meridian.Application.ResultTypes.Result`2
+  href: Meridian.Application.ResultTypes.Result-2.html
+  name: Result<TValue, Exception>
+  nameWithType: Result<TValue, Exception>
+  fullName: Meridian.Application.ResultTypes.Result<TValue, System.Exception>
+  nameWithType.vb: Result(Of TValue, Exception)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TValue, System.Exception)
+  name.vb: Result(Of TValue, Exception)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: <
+  - name: TValue
+  - name: ','
+  - name: " "
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValue
+  - name: ','
+  - name: " "
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: )
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result.TryAsync*
+  commentId: Overload:Meridian.Application.ResultTypes.Result.TryAsync
+  href: Meridian.Application.ResultTypes.Result.html#Meridian_Application_ResultTypes_Result_TryAsync__1_System_Func_System_Threading_Tasks_Task___0___System_Threading_CancellationToken_
+  name: TryAsync
+  nameWithType: Result.TryAsync
+  fullName: Meridian.Application.ResultTypes.Result.TryAsync
+- uid: System.Func{System.Threading.Tasks.Task{{TValue}}}
+  commentId: T:System.Func{System.Threading.Tasks.Task{``0}}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<Task<TValue>>
+  nameWithType: Func<Task<TValue>>
+  fullName: System.Func<System.Threading.Tasks.Task<TValue>>
+  nameWithType.vb: Func(Of Task(Of TValue))
+  fullName.vb: System.Func(Of System.Threading.Tasks.Task(Of TValue))
+  name.vb: Func(Of Task(Of TValue))
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TValue
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValue
+  - name: )
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.ResultTypes.Result{{TValue},System.Exception}}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.ResultTypes.Result{``0,System.Exception}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<Result<TValue, Exception>>
+  nameWithType: Task<Result<TValue, Exception>>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.ResultTypes.Result<TValue, System.Exception>>
+  nameWithType.vb: Task(Of Result(Of TValue, Exception))
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.ResultTypes.Result(Of TValue, System.Exception))
+  name.vb: Task(Of Result(Of TValue, Exception))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: <
+  - name: TValue
+  - name: ','
+  - name: " "
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValue
+  - name: ','
+  - name: " "
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.ResultTypes.Result.Combine*
+  commentId: Overload:Meridian.Application.ResultTypes.Result.Combine
+  href: Meridian.Application.ResultTypes.Result.html#Meridian_Application_ResultTypes_Result_Combine__2_System_Collections_Generic_IEnumerable_Meridian_Application_ResultTypes_Result___0___1___
+  name: Combine
+  nameWithType: Result.Combine
+  fullName: Meridian.Application.ResultTypes.Result.Combine
+- uid: System.Collections.Generic.IEnumerable{Meridian.Application.ResultTypes.Result{{TValue},{TError}}}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Application.ResultTypes.Result{``0,``1}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<Result<TValue, TError>>
+  nameWithType: IEnumerable<Result<TValue, TError>>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Application.ResultTypes.Result<TValue, TError>>
+  nameWithType.vb: IEnumerable(Of Result(Of TValue, TError))
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Application.ResultTypes.Result(Of TValue, TError))
+  name.vb: IEnumerable(Of Result(Of TValue, TError))
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: <
+  - name: TValue
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValue
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: )
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result{System.Collections.Generic.IReadOnlyList{{TValue}},{TError}}
+  commentId: T:Meridian.Application.ResultTypes.Result{System.Collections.Generic.IReadOnlyList{``0},``1}
+  parent: Meridian.Application.ResultTypes
+  definition: Meridian.Application.ResultTypes.Result`2
+  href: Meridian.Application.ResultTypes.Result-2.html
+  name: Result<IReadOnlyList<TValue>, TError>
+  nameWithType: Result<IReadOnlyList<TValue>, TError>
+  fullName: Meridian.Application.ResultTypes.Result<System.Collections.Generic.IReadOnlyList<TValue>, TError>
+  nameWithType.vb: Result(Of IReadOnlyList(Of TValue), TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of System.Collections.Generic.IReadOnlyList(Of TValue), TError)
+  name.vb: Result(Of IReadOnlyList(Of TValue), TError)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: TValue
+  - name: '>'
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.Result`2
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-2.html
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TValue
+  - name: )
+  - name: ','
+  - name: " "
+  - name: TError
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

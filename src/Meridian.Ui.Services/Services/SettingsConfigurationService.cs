@@ -132,9 +132,11 @@ public sealed class SettingsConfigurationService
             .Where(field => field.AllEnvironmentVariables.Length > 0)
             .ToArray();
 
-        var supportsStreaming = entry.ProviderType is ProviderTypeKind.Streaming or ProviderTypeKind.Hybrid;
+        var supportsStreaming = entry.Capabilities.SupportsStreaming;
         var supportsHistorical = entry.ProviderType is ProviderTypeKind.Backfill or ProviderTypeKind.Hybrid;
         var supportsSymbolSearch = entry.ProviderType is ProviderTypeKind.SymbolSearch;
+        var supportsOptions = entry.Capabilities.SupportsOptionsChain;
+        var supportsBrokerage = entry.Capabilities.SupportsBrokerage;
 
         return new ProviderCatalogEntry(
             entry.Id,
@@ -145,13 +147,16 @@ public sealed class SettingsConfigurationService
             supportsSymbolSearch,
             entry.Description,
             GetRequestsPerMinute(entry.RateLimit),
-            envCredentialFields);
+            envCredentialFields,
+            SupportsOptions: supportsOptions,
+            SupportsBrokerage: supportsBrokerage);
     }
 
     private static ProviderTier MapTier(string providerId) =>
         providerId.ToLowerInvariant() switch
         {
-            "alpaca" or "ib" or "ibkr" or "stocksharp" => ProviderTier.FreeWithAccount,
+            "alpaca" or "ib" or "ibkr" => ProviderTier.FreeWithAccount,
+            "robinhood" => ProviderTier.FreeWithAccount,
             "polygon" or "nasdaq" or "nasdaqdatalink" => ProviderTier.LimitedFree,
             "nyse" => ProviderTier.Premium,
             _ => ProviderTier.Free,
@@ -297,7 +302,9 @@ public sealed record ProviderCatalogEntry(
     bool SupportsSymbolSearch,
     string Description,
     int RateLimitPerMinute,
-    CredentialFieldInfo[] CredentialFields)
+    CredentialFieldInfo[] CredentialFields,
+    bool SupportsOptions = false,
+    bool SupportsBrokerage = false)
 {
     public string[] RequiredEnvVars => CredentialFields
         .Where(field => field.Required)

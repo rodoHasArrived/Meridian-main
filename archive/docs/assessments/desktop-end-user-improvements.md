@@ -6,7 +6,7 @@
 **Status:** Archived — superseded by active desktop evaluations and implementation guides
 **Author:** Architecture Review
 
-> **Archived:** This assessment is preserved for historical reference. For current desktop guidance, start with [Desktop Improvements Executive Summary](../evaluations/desktop-improvements-executive-summary.md), [Desktop Platform Improvements Guide](../evaluations/desktop-platform-improvements-implementation-guide.md), and [Windows Desktop Provider Configurability](../evaluations/windows-desktop-provider-configurability-assessment.md).
+> **Archived:** This assessment is preserved for historical reference. For current desktop guidance, start with [Desktop Platform Improvements Guide](../../../docs/evaluations/desktop-platform-improvements-implementation-guide.md), [Windows Desktop Provider Configurability](../../../docs/evaluations/windows-desktop-provider-configurability-assessment.md), and [Evaluations & Audits Summary](../../../docs/status/EVALUATIONS_AND_AUDITS.md#desktop-platform-improvements-guide).
 
 ---
 
@@ -3015,11 +3015,10 @@ The WPF desktop application has a comprehensive feature surface with 51 pages an
 
 ### Internal Documentation
 
-- **[Desktop Testing Guide](../development/desktop-testing-guide.md)** - Comprehensive testing and build procedures
-- **[Desktop Improvements Executive Summary](../evaluations/desktop-improvements-executive-summary.md)** - Phase 1 implementation summary
-- **[Desktop Platform Improvements Implementation Guide](../evaluations/desktop-platform-improvements-implementation-guide.md)** - Detailed implementation patterns
-- **[WPF Implementation Notes](../development/wpf-implementation-notes.md)** - WPF-specific guidance
-- **[Desktop Support Policy](../development/policies/desktop-support-policy.md)** - Platform support matrix
+- **[Desktop Testing Guide](../../../docs/development/desktop-testing-guide.md)** - Comprehensive testing and build procedures
+- **[Desktop Platform Improvements Implementation Guide](../../../docs/evaluations/desktop-platform-improvements-implementation-guide.md)** - Detailed implementation patterns and executive summary
+- **[WPF Implementation Notes](../../../docs/development/wpf-implementation-notes.md)** - WPF-specific guidance
+- **[Desktop Support Policy](../../../docs/development/policies/desktop-support-policy.md)** - Platform support matrix
 
 ### Architecture Documentation
 

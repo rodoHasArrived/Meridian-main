@@ -1,0 +1,832 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  commentId: T:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  id: CppTraderSessionDiagnostic
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics
+  children:
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.#ctor(System.String,Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.DateTimeOffset,System.Collections.Generic.IReadOnlyCollection{System.String},System.Nullable{System.DateTimeOffset},System.String)
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CreatedAt
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastFault
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastHeartbeat
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionId
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionKind
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.Symbols
+  langs:
+  - csharp
+  - vb
+  name: CppTraderSessionDiagnostic
+  nameWithType: CppTraderSessionDiagnostic
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTraderSessionDiagnostic
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: 'public sealed record CppTraderSessionDiagnostic : IEquatable<CppTraderSessionDiagnostic>'
+    content.vb: Public NotInheritable Class CppTraderSessionDiagnostic Implements IEquatable(Of CppTraderSessionDiagnostic)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.#ctor(System.String,Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.DateTimeOffset,System.Collections.Generic.IReadOnlyCollection{System.String},System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.#ctor(System.String,Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.DateTimeOffset,System.Collections.Generic.IReadOnlyCollection{System.String},System.Nullable{System.DateTimeOffset},System.String)
+  id: '#ctor(System.String,Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.DateTimeOffset,System.Collections.Generic.IReadOnlyCollection{System.String},System.Nullable{System.DateTimeOffset},System.String)'
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  langs:
+  - csharp
+  - vb
+  name: CppTraderSessionDiagnostic(string, CppTraderSessionKind, DateTimeOffset, IReadOnlyCollection<string>, DateTimeOffset?, string?)
+  nameWithType: CppTraderSessionDiagnostic.CppTraderSessionDiagnostic(string, CppTraderSessionKind, DateTimeOffset, IReadOnlyCollection<string>, DateTimeOffset?, string?)
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CppTraderSessionDiagnostic(string, Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind, System.DateTimeOffset, System.Collections.Generic.IReadOnlyCollection<string>, System.DateTimeOffset?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: public CppTraderSessionDiagnostic(string SessionId, CppTraderSessionKind SessionKind, DateTimeOffset CreatedAt, IReadOnlyCollection<string> Symbols, DateTimeOffset? LastHeartbeat, string? LastFault)
+    parameters:
+    - id: SessionId
+      type: System.String
+    - id: SessionKind
+      type: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+    - id: CreatedAt
+      type: System.DateTimeOffset
+    - id: Symbols
+      type: System.Collections.Generic.IReadOnlyCollection{System.String}
+    - id: LastHeartbeat
+      type: System.Nullable{System.DateTimeOffset}
+    - id: LastFault
+      type: System.String
+    content.vb: Public Sub New(SessionId As String, SessionKind As CppTraderSessionKind, CreatedAt As DateTimeOffset, Symbols As IReadOnlyCollection(Of String), LastHeartbeat As DateTimeOffset?, LastFault As String)
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.#ctor*
+  nameWithType.vb: CppTraderSessionDiagnostic.New(String, CppTraderSessionKind, DateTimeOffset, IReadOnlyCollection(Of String), DateTimeOffset?, String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.New(String, Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind, System.DateTimeOffset, System.Collections.Generic.IReadOnlyCollection(Of String), System.DateTimeOffset?, String)
+  name.vb: New(String, CppTraderSessionKind, DateTimeOffset, IReadOnlyCollection(Of String), DateTimeOffset?, String)
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionId
+  commentId: P:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionId
+  id: SessionId
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  langs:
+  - csharp
+  - vb
+  name: SessionId
+  nameWithType: CppTraderSessionDiagnostic.SessionId
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionId
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: public string SessionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SessionId As String
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionId*
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionKind
+  commentId: P:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionKind
+  id: SessionKind
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  langs:
+  - csharp
+  - vb
+  name: SessionKind
+  nameWithType: CppTraderSessionDiagnostic.SessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionKind
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: public CppTraderSessionKind SessionKind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+    content.vb: Public Property SessionKind As CppTraderSessionKind
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionKind*
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CreatedAt
+  commentId: P:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: CppTraderSessionDiagnostic.CreatedAt
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: public DateTimeOffset CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CreatedAt As DateTimeOffset
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CreatedAt*
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.Symbols
+  commentId: P:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.Symbols
+  id: Symbols
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: CppTraderSessionDiagnostic.Symbols
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: public IReadOnlyCollection<string> Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyCollection{System.String}
+    content.vb: Public Property Symbols As IReadOnlyCollection(Of String)
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.Symbols*
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastHeartbeat
+  commentId: P:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastHeartbeat
+  id: LastHeartbeat
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  langs:
+  - csharp
+  - vb
+  name: LastHeartbeat
+  nameWithType: CppTraderSessionDiagnostic.LastHeartbeat
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastHeartbeat
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastHeartbeat
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: public DateTimeOffset? LastHeartbeat { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastHeartbeat As DateTimeOffset?
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastHeartbeat*
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastFault
+  commentId: P:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastFault
+  id: LastFault
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+  langs:
+  - csharp
+  - vb
+  name: LastFault
+  nameWithType: CppTraderSessionDiagnostic.LastFault
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastFault
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastFault
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderSessionDiagnostic.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: public string? LastFault { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LastFault As String
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastFault*
+references:
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics
+  commentId: N:Meridian.Infrastructure.CppTrader.Diagnostics
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Diagnostics
+  nameWithType: Meridian.Infrastructure.CppTrader.Diagnostics
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics
+    name: Diagnostics
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics
+    name: Diagnostics
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CppTraderSessionDiagnostic>
+  nameWithType: IEquatable<CppTraderSessionDiagnostic>
+  fullName: System.IEquatable<Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic>
+  nameWithType.vb: IEquatable(Of CppTraderSessionDiagnostic)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic)
+  name.vb: IEquatable(Of CppTraderSessionDiagnostic)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+    name: CppTraderSessionDiagnostic
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic
+    name: CppTraderSessionDiagnostic
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.#ctor*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.#ctor
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html#Meridian_Infrastructure_CppTrader_Diagnostics_CppTraderSessionDiagnostic__ctor_System_String_Meridian_Infrastructure_CppTrader_Protocol_CppTraderSessionKind_System_DateTimeOffset_System_Collections_Generic_IReadOnlyCollection_System_String__System_Nullable_System_DateTimeOffset__System_String_
+  name: CppTraderSessionDiagnostic
+  nameWithType: CppTraderSessionDiagnostic.CppTraderSessionDiagnostic
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CppTraderSessionDiagnostic
+  nameWithType.vb: CppTraderSessionDiagnostic.New
+  fullName.vb: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.html
+  name: CppTraderSessionKind
+  nameWithType: CppTraderSessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyCollection{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyCollection{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyCollection`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<string>
+  nameWithType: IReadOnlyCollection<string>
+  fullName: System.Collections.Generic.IReadOnlyCollection<string>
+  nameWithType.vb: IReadOnlyCollection(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of String)
+  name.vb: IReadOnlyCollection(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: System.Collections.Generic.IReadOnlyCollection`1
+  commentId: T:System.Collections.Generic.IReadOnlyCollection`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<T>
+  nameWithType: IReadOnlyCollection<T>
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>
+  nameWithType.vb: IReadOnlyCollection(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T)
+  name.vb: IReadOnlyCollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionId*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionId
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html#Meridian_Infrastructure_CppTrader_Diagnostics_CppTraderSessionDiagnostic_SessionId
+  name: SessionId
+  nameWithType: CppTraderSessionDiagnostic.SessionId
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionId
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionKind*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionKind
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html#Meridian_Infrastructure_CppTrader_Diagnostics_CppTraderSessionDiagnostic_SessionKind
+  name: SessionKind
+  nameWithType: CppTraderSessionDiagnostic.SessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.SessionKind
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CreatedAt*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CreatedAt
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html#Meridian_Infrastructure_CppTrader_Diagnostics_CppTraderSessionDiagnostic_CreatedAt
+  name: CreatedAt
+  nameWithType: CppTraderSessionDiagnostic.CreatedAt
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.CreatedAt
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.Symbols*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.Symbols
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html#Meridian_Infrastructure_CppTrader_Diagnostics_CppTraderSessionDiagnostic_Symbols
+  name: Symbols
+  nameWithType: CppTraderSessionDiagnostic.Symbols
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.Symbols
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastHeartbeat*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastHeartbeat
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html#Meridian_Infrastructure_CppTrader_Diagnostics_CppTraderSessionDiagnostic_LastHeartbeat
+  name: LastHeartbeat
+  nameWithType: CppTraderSessionDiagnostic.LastHeartbeat
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastHeartbeat
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastFault*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastFault
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.html#Meridian_Infrastructure_CppTrader_Diagnostics_CppTraderSessionDiagnostic_LastFault
+  name: LastFault
+  nameWithType: CppTraderSessionDiagnostic.LastFault
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderSessionDiagnostic.LastFault

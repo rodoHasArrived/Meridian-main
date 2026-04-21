@@ -1,0 +1,211 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.HealthState
+  commentId: T:Meridian.Application.Monitoring.DataQuality.HealthState
+  id: HealthState
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.HealthState.Degraded
+  - Meridian.Application.Monitoring.DataQuality.HealthState.Healthy
+  - Meridian.Application.Monitoring.DataQuality.HealthState.Stale
+  - Meridian.Application.Monitoring.DataQuality.HealthState.Unhealthy
+  - Meridian.Application.Monitoring.DataQuality.HealthState.Unknown
+  langs:
+  - csharp
+  - vb
+  name: HealthState
+  nameWithType: HealthState
+  fullName: Meridian.Application.Monitoring.DataQuality.HealthState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthState
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 448
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Health state enumeration.
+  example: []
+  syntax:
+    content: 'public enum HealthState : byte'
+    content.vb: Public Enum HealthState As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.HealthState.Healthy
+  commentId: F:Meridian.Application.Monitoring.DataQuality.HealthState.Healthy
+  id: Healthy
+  parent: Meridian.Application.Monitoring.DataQuality.HealthState
+  langs:
+  - csharp
+  - vb
+  name: Healthy
+  nameWithType: HealthState.Healthy
+  fullName: Meridian.Application.Monitoring.DataQuality.HealthState.Healthy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 450
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Healthy = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.HealthState
+- uid: Meridian.Application.Monitoring.DataQuality.HealthState.Degraded
+  commentId: F:Meridian.Application.Monitoring.DataQuality.HealthState.Degraded
+  id: Degraded
+  parent: Meridian.Application.Monitoring.DataQuality.HealthState
+  langs:
+  - csharp
+  - vb
+  name: Degraded
+  nameWithType: HealthState.Degraded
+  fullName: Meridian.Application.Monitoring.DataQuality.HealthState.Degraded
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Degraded
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 451
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Degraded = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.HealthState
+- uid: Meridian.Application.Monitoring.DataQuality.HealthState.Unhealthy
+  commentId: F:Meridian.Application.Monitoring.DataQuality.HealthState.Unhealthy
+  id: Unhealthy
+  parent: Meridian.Application.Monitoring.DataQuality.HealthState
+  langs:
+  - csharp
+  - vb
+  name: Unhealthy
+  nameWithType: HealthState.Unhealthy
+  fullName: Meridian.Application.Monitoring.DataQuality.HealthState.Unhealthy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unhealthy
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 452
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Unhealthy = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.HealthState
+- uid: Meridian.Application.Monitoring.DataQuality.HealthState.Stale
+  commentId: F:Meridian.Application.Monitoring.DataQuality.HealthState.Stale
+  id: Stale
+  parent: Meridian.Application.Monitoring.DataQuality.HealthState
+  langs:
+  - csharp
+  - vb
+  name: Stale
+  nameWithType: HealthState.Stale
+  fullName: Meridian.Application.Monitoring.DataQuality.HealthState.Stale
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stale
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 453
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Stale = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.HealthState
+- uid: Meridian.Application.Monitoring.DataQuality.HealthState.Unknown
+  commentId: F:Meridian.Application.Monitoring.DataQuality.HealthState.Unknown
+  id: Unknown
+  parent: Meridian.Application.Monitoring.DataQuality.HealthState
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: HealthState.Unknown
+  fullName: Meridian.Application.Monitoring.DataQuality.HealthState.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 454
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Unknown = 4
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.HealthState
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.HealthState
+  commentId: T:Meridian.Application.Monitoring.DataQuality.HealthState
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.HealthState.html
+  name: HealthState
+  nameWithType: HealthState
+  fullName: Meridian.Application.Monitoring.DataQuality.HealthState

@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.PaymentFrequency
+  commentId: T:Meridian.Contracts.DirectLending.PaymentFrequency
+  id: PaymentFrequency
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.PaymentFrequency.Annual
+  - Meridian.Contracts.DirectLending.PaymentFrequency.Bullet
+  - Meridian.Contracts.DirectLending.PaymentFrequency.Monthly
+  - Meridian.Contracts.DirectLending.PaymentFrequency.Quarterly
+  - Meridian.Contracts.DirectLending.PaymentFrequency.SemiAnnual
+  langs:
+  - csharp
+  - vb
+  name: PaymentFrequency
+  nameWithType: PaymentFrequency
+  fullName: Meridian.Contracts.DirectLending.PaymentFrequency
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaymentFrequency
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum PaymentFrequency : byte'
+    content.vb: Public Enum PaymentFrequency As Byte
+- uid: Meridian.Contracts.DirectLending.PaymentFrequency.Monthly
+  commentId: F:Meridian.Contracts.DirectLending.PaymentFrequency.Monthly
+  id: Monthly
+  parent: Meridian.Contracts.DirectLending.PaymentFrequency
+  langs:
+  - csharp
+  - vb
+  name: Monthly
+  nameWithType: PaymentFrequency.Monthly
+  fullName: Meridian.Contracts.DirectLending.PaymentFrequency.Monthly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Monthly
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Monthly = 0
+    return:
+      type: Meridian.Contracts.DirectLending.PaymentFrequency
+- uid: Meridian.Contracts.DirectLending.PaymentFrequency.Quarterly
+  commentId: F:Meridian.Contracts.DirectLending.PaymentFrequency.Quarterly
+  id: Quarterly
+  parent: Meridian.Contracts.DirectLending.PaymentFrequency
+  langs:
+  - csharp
+  - vb
+  name: Quarterly
+  nameWithType: PaymentFrequency.Quarterly
+  fullName: Meridian.Contracts.DirectLending.PaymentFrequency.Quarterly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quarterly
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Quarterly = 1
+    return:
+      type: Meridian.Contracts.DirectLending.PaymentFrequency
+- uid: Meridian.Contracts.DirectLending.PaymentFrequency.SemiAnnual
+  commentId: F:Meridian.Contracts.DirectLending.PaymentFrequency.SemiAnnual
+  id: SemiAnnual
+  parent: Meridian.Contracts.DirectLending.PaymentFrequency
+  langs:
+  - csharp
+  - vb
+  name: SemiAnnual
+  nameWithType: PaymentFrequency.SemiAnnual
+  fullName: Meridian.Contracts.DirectLending.PaymentFrequency.SemiAnnual
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SemiAnnual
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: SemiAnnual = 2
+    return:
+      type: Meridian.Contracts.DirectLending.PaymentFrequency
+- uid: Meridian.Contracts.DirectLending.PaymentFrequency.Annual
+  commentId: F:Meridian.Contracts.DirectLending.PaymentFrequency.Annual
+  id: Annual
+  parent: Meridian.Contracts.DirectLending.PaymentFrequency
+  langs:
+  - csharp
+  - vb
+  name: Annual
+  nameWithType: PaymentFrequency.Annual
+  fullName: Meridian.Contracts.DirectLending.PaymentFrequency.Annual
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Annual
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Annual = 3
+    return:
+      type: Meridian.Contracts.DirectLending.PaymentFrequency
+- uid: Meridian.Contracts.DirectLending.PaymentFrequency.Bullet
+  commentId: F:Meridian.Contracts.DirectLending.PaymentFrequency.Bullet
+  id: Bullet
+  parent: Meridian.Contracts.DirectLending.PaymentFrequency
+  langs:
+  - csharp
+  - vb
+  name: Bullet
+  nameWithType: PaymentFrequency.Bullet
+  fullName: Meridian.Contracts.DirectLending.PaymentFrequency.Bullet
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bullet
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Bullet = 4
+    return:
+      type: Meridian.Contracts.DirectLending.PaymentFrequency
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.PaymentFrequency
+  commentId: T:Meridian.Contracts.DirectLending.PaymentFrequency
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.PaymentFrequency.html
+  name: PaymentFrequency
+  nameWithType: PaymentFrequency
+  fullName: Meridian.Contracts.DirectLending.PaymentFrequency

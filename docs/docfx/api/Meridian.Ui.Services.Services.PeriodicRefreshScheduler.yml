@@ -1,0 +1,724 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.PeriodicRefreshScheduler
+  commentId: T:Meridian.Ui.Services.Services.PeriodicRefreshScheduler
+  id: PeriodicRefreshScheduler
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Dispose
+  - Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Stop
+  langs:
+  - csharp
+  - vb
+  name: PeriodicRefreshScheduler
+  nameWithType: PeriodicRefreshScheduler
+  fullName: Meridian.Ui.Services.Services.PeriodicRefreshScheduler
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PeriodicRefreshScheduler
+    path: ../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Cross-platform recurring refresh scheduler backed by <xref href="System.Threading.PeriodicTimer" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public sealed class PeriodicRefreshScheduler : IRefreshScheduler, IDisposable'
+    content.vb: Public NotInheritable Class PeriodicRefreshScheduler Implements IRefreshScheduler, IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Ui.Services.Contracts.IRefreshScheduler
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  id: Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.PeriodicRefreshScheduler
+  langs:
+  - csharp
+  - vb
+  name: Start(TimeSpan, Func<CancellationToken, Task>, CancellationToken)
+  nameWithType: PeriodicRefreshScheduler.Start(TimeSpan, Func<CancellationToken, Task>, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Start(System.TimeSpan, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Starts recurring execution of the supplied callback.
+
+    Replaces any previously scheduled callback owned by this scheduler instance.
+  example: []
+  syntax:
+    content: public void Start(TimeSpan interval, Func<CancellationToken, Task> callback, CancellationToken cancellationToken = default)
+    parameters:
+    - id: interval
+      type: System.TimeSpan
+    - id: callback
+      type: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    content.vb: Public Sub Start(interval As TimeSpan, callback As Func(Of CancellationToken, Task), cancellationToken As CancellationToken = Nothing)
+  overload: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Start*
+  implements:
+  - Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  nameWithType.vb: PeriodicRefreshScheduler.Start(TimeSpan, Func(Of CancellationToken, Task), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Start(System.TimeSpan, System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task), System.Threading.CancellationToken)
+  name.vb: Start(TimeSpan, Func(Of CancellationToken, Task), CancellationToken)
+- uid: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Stop
+  commentId: M:Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Stop
+  id: Stop
+  parent: Meridian.Ui.Services.Services.PeriodicRefreshScheduler
+  langs:
+  - csharp
+  - vb
+  name: Stop()
+  nameWithType: PeriodicRefreshScheduler.Stop()
+  fullName: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Stop()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stop
+    path: ../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Stops the active recurring callback, if any.
+  example: []
+  syntax:
+    content: public void Stop()
+    content.vb: Public Sub [Stop]()
+  overload: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Stop*
+  implements:
+  - Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop
+- uid: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Dispose
+  commentId: M:Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Dispose
+  id: Dispose
+  parent: Meridian.Ui.Services.Services.PeriodicRefreshScheduler
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: PeriodicRefreshScheduler.Dispose()
+  fullName: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Ui.Services/Services/PeriodicRefreshScheduler.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: System.Threading.PeriodicTimer
+  commentId: T:System.Threading.PeriodicTimer
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.periodictimer
+  name: PeriodicTimer
+  nameWithType: PeriodicTimer
+  fullName: System.Threading.PeriodicTimer
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Ui.Services.Contracts.IRefreshScheduler
+  commentId: T:Meridian.Ui.Services.Contracts.IRefreshScheduler
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.IRefreshScheduler.html
+  name: IRefreshScheduler
+  nameWithType: IRefreshScheduler
+  fullName: Meridian.Ui.Services.Contracts.IRefreshScheduler
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Start*
+  commentId: Overload:Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Start
+  href: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.html#Meridian_Ui_Services_Services_PeriodicRefreshScheduler_Start_System_TimeSpan_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  name: Start
+  nameWithType: PeriodicRefreshScheduler.Start
+  fullName: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Start
+- uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IRefreshScheduler
+  isExternal: true
+  href: Meridian.Ui.Services.Contracts.IRefreshScheduler.html#Meridian_Ui_Services_Contracts_IRefreshScheduler_Start_System_TimeSpan_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  name: Start(TimeSpan, Func<CancellationToken, Task>, CancellationToken)
+  nameWithType: IRefreshScheduler.Start(TimeSpan, Func<CancellationToken, Task>, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan, System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task>, System.Threading.CancellationToken)
+  nameWithType.vb: IRefreshScheduler.Start(TimeSpan, Func(Of CancellationToken, Task), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan, System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task), System.Threading.CancellationToken)
+  name.vb: Start(TimeSpan, Func(Of CancellationToken, Task), CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+    name: Start
+    href: Meridian.Ui.Services.Contracts.IRefreshScheduler.html#Meridian_Ui_Services_Contracts_IRefreshScheduler_Start_System_TimeSpan_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Start(System.TimeSpan,System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+    name: Start
+    href: Meridian.Ui.Services.Contracts.IRefreshScheduler.html#Meridian_Ui_Services_Contracts_IRefreshScheduler_Start_System_TimeSpan_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: ','
+  - name: " "
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+  commentId: T:System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<CancellationToken, Task>
+  nameWithType: Func<CancellationToken, Task>
+  fullName: System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task>
+  nameWithType.vb: Func(Of CancellationToken, Task)
+  fullName.vb: System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task)
+  name.vb: Func(Of CancellationToken, Task)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Stop*
+  commentId: Overload:Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Stop
+  href: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.html#Meridian_Ui_Services_Services_PeriodicRefreshScheduler_Stop
+  name: Stop
+  nameWithType: PeriodicRefreshScheduler.Stop
+  fullName: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Stop
+- uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop
+  commentId: M:Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop
+  parent: Meridian.Ui.Services.Contracts.IRefreshScheduler
+  href: Meridian.Ui.Services.Contracts.IRefreshScheduler.html#Meridian_Ui_Services_Contracts_IRefreshScheduler_Stop
+  name: Stop()
+  nameWithType: IRefreshScheduler.Stop()
+  fullName: Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop()
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop
+    name: Stop
+    href: Meridian.Ui.Services.Contracts.IRefreshScheduler.html#Meridian_Ui_Services_Contracts_IRefreshScheduler_Stop
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ui.Services.Contracts.IRefreshScheduler.Stop
+    name: Stop
+    href: Meridian.Ui.Services.Contracts.IRefreshScheduler.html#Meridian_Ui_Services_Contracts_IRefreshScheduler_Stop
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Dispose*
+  commentId: Overload:Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Dispose
+  href: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.html#Meridian_Ui_Services_Services_PeriodicRefreshScheduler_Dispose
+  name: Dispose
+  nameWithType: PeriodicRefreshScheduler.Dispose
+  fullName: Meridian.Ui.Services.Services.PeriodicRefreshScheduler.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

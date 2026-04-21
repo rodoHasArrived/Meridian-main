@@ -1,0 +1,421 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  commentId: T:Meridian.Execution.Interfaces.ILiveFeedAdapter
+  id: ILiveFeedAdapter
+  parent: Meridian.Execution.Interfaces
+  children:
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(System.String)
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(System.String)
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(System.String)
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+  langs:
+  - csharp
+  - vb
+  name: ILiveFeedAdapter
+  nameWithType: ILiveFeedAdapter
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ILiveFeedAdapter
+    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Live market data surface exposed to strategy code at execution time.
+
+    Wraps <code>IMarketDataClient</code> to provide a feed-agnostic view of real-time
+
+    prices that does not expose any provider-specific type.
+  example: []
+  syntax:
+    content: public interface ILiveFeedAdapter
+    content.vb: Public Interface ILiveFeedAdapter
+  derivedClasses:
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+  commentId: P:Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+  id: SubscribedSymbols
+  parent: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: SubscribedSymbols
+  nameWithType: ILiveFeedAdapter.SubscribedSymbols
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedSymbols
+    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: All symbols currently subscribed in this execution session.
+  example: []
+  syntax:
+    content: IReadOnlySet<string> SubscribedSymbols { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+    content.vb: ReadOnly Property SubscribedSymbols As IReadOnlySet(Of String)
+  overload: Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols*
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(System.String)
+  commentId: M:Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(System.String)
+  id: GetLastTrade(System.String)
+  parent: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: GetLastTrade(string)
+  nameWithType: ILiveFeedAdapter.GetLastTrade(string)
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLastTrade
+    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Returns the most recent trade for <code class="paramref">symbol</code>,
+
+    or <code>null</code> if no tick has been received yet.
+  example: []
+  syntax:
+    content: Trade? GetLastTrade(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Models.Trade
+    content.vb: Function GetLastTrade(symbol As String) As Trade
+  overload: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade*
+  nameWithType.vb: ILiveFeedAdapter.GetLastTrade(String)
+  fullName.vb: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(String)
+  name.vb: GetLastTrade(String)
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(System.String)
+  commentId: M:Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(System.String)
+  id: GetLastQuote(System.String)
+  parent: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: GetLastQuote(string)
+  nameWithType: ILiveFeedAdapter.GetLastQuote(string)
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLastQuote
+    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Returns the most recent best-bid/offer quote for <code class="paramref">symbol</code>,
+
+    or <code>null</code> if no quote has been received yet.
+  example: []
+  syntax:
+    content: BboQuotePayload? GetLastQuote(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Models.BboQuotePayload
+    content.vb: Function GetLastQuote(symbol As String) As BboQuotePayload
+  overload: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote*
+  nameWithType.vb: ILiveFeedAdapter.GetLastQuote(String)
+  fullName.vb: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(String)
+  name.vb: GetLastQuote(String)
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(System.String)
+  commentId: M:Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(System.String)
+  id: GetLastOrderBook(System.String)
+  parent: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: GetLastOrderBook(string)
+  nameWithType: ILiveFeedAdapter.GetLastOrderBook(string)
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLastOrderBook
+    path: ../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Interfaces
+  summary: >-
+    Returns the most recent Level-2 order book snapshot for <code class="paramref">symbol</code>,
+
+    or <code>null</code> if no snapshot has been received yet.
+  example: []
+  syntax:
+    content: LOBSnapshot? GetLastOrderBook(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Models.LOBSnapshot
+    content.vb: Function GetLastOrderBook(symbol As String) As LOBSnapshot
+  overload: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook*
+  nameWithType.vb: ILiveFeedAdapter.GetLastOrderBook(String)
+  fullName.vb: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(String)
+  name.vb: GetLastOrderBook(String)
+references:
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols*
+  commentId: Overload:Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_SubscribedSymbols
+  name: SubscribedSymbols
+  nameWithType: ILiveFeedAdapter.SubscribedSymbols
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+- uid: System.Collections.Generic.IReadOnlySet{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<string>
+  nameWithType: IReadOnlySet<string>
+  fullName: System.Collections.Generic.IReadOnlySet<string>
+  nameWithType.vb: IReadOnlySet(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of String)
+  name.vb: IReadOnlySet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade*
+  commentId: Overload:Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastTrade_System_String_
+  name: GetLastTrade
+  nameWithType: ILiveFeedAdapter.GetLastTrade
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Models.Trade
+  commentId: T:Meridian.Contracts.Domain.Models.Trade
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.Trade.html
+  name: Trade
+  nameWithType: Trade
+  fullName: Meridian.Contracts.Domain.Models.Trade
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote*
+  commentId: Overload:Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastQuote_System_String_
+  name: GetLastQuote
+  nameWithType: ILiveFeedAdapter.GetLastQuote
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote
+- uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+  commentId: T:Meridian.Contracts.Domain.Models.BboQuotePayload
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.BboQuotePayload.html
+  name: BboQuotePayload
+  nameWithType: BboQuotePayload
+  fullName: Meridian.Contracts.Domain.Models.BboQuotePayload
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook*
+  commentId: Overload:Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastOrderBook_System_String_
+  name: GetLastOrderBook
+  nameWithType: ILiveFeedAdapter.GetLastOrderBook
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook
+- uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.LOBSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.LOBSnapshot.html
+  name: LOBSnapshot
+  nameWithType: LOBSnapshot
+  fullName: Meridian.Contracts.Domain.Models.LOBSnapshot

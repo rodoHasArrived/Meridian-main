@@ -1,0 +1,844 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  id: FailoverRuleSnapshot
+  parent: Meridian.Infrastructure.Adapters.Failover
+  children:
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.#ctor(System.String,System.String,System.String[],System.String,System.Boolean,System.Nullable{System.DateTimeOffset},System.Int32,System.Int32,System.Int32)
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.BackupProviderIds
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.CurrentActiveProviderId
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverCount
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverThreshold
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.IsInFailoverState
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.LastFailoverTime
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.PrimaryProviderId
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RecoveryThreshold
+  - Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RuleId
+  langs:
+  - csharp
+  - vb
+  name: FailoverRuleSnapshot
+  nameWithType: FailoverRuleSnapshot
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverRuleSnapshot
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 496
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Point-in-time snapshot of a failover rule's state.
+  example: []
+  syntax:
+    content: 'public readonly record struct FailoverRuleSnapshot : IEquatable<FailoverRuleSnapshot>'
+    content.vb: Public Structure FailoverRuleSnapshot Implements IEquatable(Of FailoverRuleSnapshot)
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.#ctor(System.String,System.String,System.String[],System.String,System.Boolean,System.Nullable{System.DateTimeOffset},System.Int32,System.Int32,System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.#ctor(System.String,System.String,System.String[],System.String,System.Boolean,System.Nullable{System.DateTimeOffset},System.Int32,System.Int32,System.Int32)
+  id: '#ctor(System.String,System.String,System.String[],System.String,System.Boolean,System.Nullable{System.DateTimeOffset},System.Int32,System.Int32,System.Int32)'
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: FailoverRuleSnapshot(string, string, string[], string, bool, DateTimeOffset?, int, int, int)
+  nameWithType: FailoverRuleSnapshot.FailoverRuleSnapshot(string, string, string[], string, bool, DateTimeOffset?, int, int, int)
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverRuleSnapshot(string, string, string[], string, bool, System.DateTimeOffset?, int, int, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 496
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Point-in-time snapshot of a failover rule's state.
+  example: []
+  syntax:
+    content: public FailoverRuleSnapshot(string RuleId, string PrimaryProviderId, string[] BackupProviderIds, string CurrentActiveProviderId, bool IsInFailoverState, DateTimeOffset? LastFailoverTime, int FailoverCount, int FailoverThreshold, int RecoveryThreshold)
+    parameters:
+    - id: RuleId
+      type: System.String
+    - id: PrimaryProviderId
+      type: System.String
+    - id: BackupProviderIds
+      type: System.String[]
+    - id: CurrentActiveProviderId
+      type: System.String
+    - id: IsInFailoverState
+      type: System.Boolean
+    - id: LastFailoverTime
+      type: System.Nullable{System.DateTimeOffset}
+    - id: FailoverCount
+      type: System.Int32
+    - id: FailoverThreshold
+      type: System.Int32
+    - id: RecoveryThreshold
+      type: System.Int32
+    content.vb: Public Sub New(RuleId As String, PrimaryProviderId As String, BackupProviderIds As String(), CurrentActiveProviderId As String, IsInFailoverState As Boolean, LastFailoverTime As DateTimeOffset?, FailoverCount As Integer, FailoverThreshold As Integer, RecoveryThreshold As Integer)
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.#ctor*
+  nameWithType.vb: FailoverRuleSnapshot.New(String, String, String(), String, Boolean, DateTimeOffset?, Integer, Integer, Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.New(String, String, String(), String, Boolean, System.DateTimeOffset?, Integer, Integer, Integer)
+  name.vb: New(String, String, String(), String, Boolean, DateTimeOffset?, Integer, Integer, Integer)
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RuleId
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RuleId
+  id: RuleId
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: RuleId
+  nameWithType: FailoverRuleSnapshot.RuleId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RuleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RuleId
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 497
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string RuleId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RuleId As String
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RuleId*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.PrimaryProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.PrimaryProviderId
+  id: PrimaryProviderId
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: PrimaryProviderId
+  nameWithType: FailoverRuleSnapshot.PrimaryProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.PrimaryProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 498
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string PrimaryProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PrimaryProviderId As String
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.PrimaryProviderId*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.BackupProviderIds
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.BackupProviderIds
+  id: BackupProviderIds
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: BackupProviderIds
+  nameWithType: FailoverRuleSnapshot.BackupProviderIds
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.BackupProviderIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackupProviderIds
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 499
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string[] BackupProviderIds { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property BackupProviderIds As String()
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.BackupProviderIds*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.CurrentActiveProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.CurrentActiveProviderId
+  id: CurrentActiveProviderId
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CurrentActiveProviderId
+  nameWithType: FailoverRuleSnapshot.CurrentActiveProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.CurrentActiveProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentActiveProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 500
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string CurrentActiveProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CurrentActiveProviderId As String
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.CurrentActiveProviderId*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.IsInFailoverState
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.IsInFailoverState
+  id: IsInFailoverState
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: IsInFailoverState
+  nameWithType: FailoverRuleSnapshot.IsInFailoverState
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.IsInFailoverState
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsInFailoverState
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 501
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public bool IsInFailoverState { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsInFailoverState As Boolean
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.IsInFailoverState*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.LastFailoverTime
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.LastFailoverTime
+  id: LastFailoverTime
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LastFailoverTime
+  nameWithType: FailoverRuleSnapshot.LastFailoverTime
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.LastFailoverTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastFailoverTime
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 502
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public DateTimeOffset? LastFailoverTime { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastFailoverTime As DateTimeOffset?
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.LastFailoverTime*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverCount
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverCount
+  id: FailoverCount
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: FailoverCount
+  nameWithType: FailoverRuleSnapshot.FailoverCount
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverCount
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 503
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public int FailoverCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailoverCount As Integer
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverCount*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverThreshold
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverThreshold
+  id: FailoverThreshold
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: FailoverThreshold
+  nameWithType: FailoverRuleSnapshot.FailoverThreshold
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverThreshold
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 504
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public int FailoverThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailoverThreshold As Integer
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverThreshold*
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RecoveryThreshold
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RecoveryThreshold
+  id: RecoveryThreshold
+  parent: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+  langs:
+  - csharp
+  - vb
+  name: RecoveryThreshold
+  nameWithType: FailoverRuleSnapshot.RecoveryThreshold
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RecoveryThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecoveryThreshold
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 505
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public int RecoveryThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RecoveryThreshold As Integer
+  overload: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RecoveryThreshold*
+references:
+- uid: Meridian.Infrastructure.Adapters.Failover
+  commentId: N:Meridian.Infrastructure.Adapters.Failover
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Failover
+  nameWithType: Meridian.Infrastructure.Adapters.Failover
+  fullName: Meridian.Infrastructure.Adapters.Failover
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FailoverRuleSnapshot>
+  nameWithType: IEquatable<FailoverRuleSnapshot>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot>
+  nameWithType.vb: IEquatable(Of FailoverRuleSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot)
+  name.vb: IEquatable(Of FailoverRuleSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+    name: FailoverRuleSnapshot
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+    name: FailoverRuleSnapshot
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.#ctor
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot__ctor_System_String_System_String_System_String___System_String_System_Boolean_System_Nullable_System_DateTimeOffset__System_Int32_System_Int32_System_Int32_
+  name: FailoverRuleSnapshot
+  nameWithType: FailoverRuleSnapshot.FailoverRuleSnapshot
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverRuleSnapshot
+  nameWithType.vb: FailoverRuleSnapshot.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RuleId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RuleId
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot_RuleId
+  name: RuleId
+  nameWithType: FailoverRuleSnapshot.RuleId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RuleId
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.PrimaryProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.PrimaryProviderId
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot_PrimaryProviderId
+  name: PrimaryProviderId
+  nameWithType: FailoverRuleSnapshot.PrimaryProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.PrimaryProviderId
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.BackupProviderIds*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.BackupProviderIds
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot_BackupProviderIds
+  name: BackupProviderIds
+  nameWithType: FailoverRuleSnapshot.BackupProviderIds
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.BackupProviderIds
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.CurrentActiveProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.CurrentActiveProviderId
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot_CurrentActiveProviderId
+  name: CurrentActiveProviderId
+  nameWithType: FailoverRuleSnapshot.CurrentActiveProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.CurrentActiveProviderId
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.IsInFailoverState*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.IsInFailoverState
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot_IsInFailoverState
+  name: IsInFailoverState
+  nameWithType: FailoverRuleSnapshot.IsInFailoverState
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.IsInFailoverState
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.LastFailoverTime*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.LastFailoverTime
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot_LastFailoverTime
+  name: LastFailoverTime
+  nameWithType: FailoverRuleSnapshot.LastFailoverTime
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.LastFailoverTime
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverCount*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverCount
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot_FailoverCount
+  name: FailoverCount
+  nameWithType: FailoverRuleSnapshot.FailoverCount
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverCount
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverThreshold*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverThreshold
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot_FailoverThreshold
+  name: FailoverThreshold
+  nameWithType: FailoverRuleSnapshot.FailoverThreshold
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.FailoverThreshold
+- uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RecoveryThreshold*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RecoveryThreshold
+  href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html#Meridian_Infrastructure_Adapters_Failover_FailoverRuleSnapshot_RecoveryThreshold
+  name: RecoveryThreshold
+  nameWithType: FailoverRuleSnapshot.RecoveryThreshold
+  fullName: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.RecoveryThreshold

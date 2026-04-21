@@ -1,0 +1,643 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ResponseResult
+  id: ResponseResult
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ResponseResult.#ctor(System.Boolean,System.Boolean,System.Net.HttpStatusCode,System.String,System.String)
+  - Meridian.Infrastructure.Adapters.Core.ResponseResult.ErrorContent
+  - Meridian.Infrastructure.Adapters.Core.ResponseResult.IsNotFound
+  - Meridian.Infrastructure.Adapters.Core.ResponseResult.IsSuccess
+  - Meridian.Infrastructure.Adapters.Core.ResponseResult.ReasonPhrase
+  - Meridian.Infrastructure.Adapters.Core.ResponseResult.StatusCode
+  langs:
+  - csharp
+  - vb
+  name: ResponseResult
+  nameWithType: ResponseResult
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResponseResult
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Result of HTTP response handling.
+  example: []
+  syntax:
+    content: 'public sealed record ResponseResult : IEquatable<ResponseResult>'
+    content.vb: Public NotInheritable Class ResponseResult Implements IEquatable(Of ResponseResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.ResponseResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.#ctor(System.Boolean,System.Boolean,System.Net.HttpStatusCode,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ResponseResult.#ctor(System.Boolean,System.Boolean,System.Net.HttpStatusCode,System.String,System.String)
+  id: '#ctor(System.Boolean,System.Boolean,System.Net.HttpStatusCode,System.String,System.String)'
+  parent: Meridian.Infrastructure.Adapters.Core.ResponseResult
+  langs:
+  - csharp
+  - vb
+  name: ResponseResult(bool, bool, HttpStatusCode, string, string?)
+  nameWithType: ResponseResult.ResponseResult(bool, bool, HttpStatusCode, string, string?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.ResponseResult(bool, bool, System.Net.HttpStatusCode, string, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Result of HTTP response handling.
+  example: []
+  syntax:
+    content: public ResponseResult(bool IsSuccess, bool IsNotFound, HttpStatusCode StatusCode, string ReasonPhrase, string? ErrorContent = null)
+    parameters:
+    - id: IsSuccess
+      type: System.Boolean
+    - id: IsNotFound
+      type: System.Boolean
+    - id: StatusCode
+      type: System.Net.HttpStatusCode
+    - id: ReasonPhrase
+      type: System.String
+    - id: ErrorContent
+      type: System.String
+    content.vb: Public Sub New(IsSuccess As Boolean, IsNotFound As Boolean, StatusCode As HttpStatusCode, ReasonPhrase As String, ErrorContent As String = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.ResponseResult.#ctor*
+  nameWithType.vb: ResponseResult.New(Boolean, Boolean, HttpStatusCode, String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ResponseResult.New(Boolean, Boolean, System.Net.HttpStatusCode, String, String)
+  name.vb: New(Boolean, Boolean, HttpStatusCode, String, String)
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsSuccess
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ResponseResult.IsSuccess
+  id: IsSuccess
+  parent: Meridian.Infrastructure.Adapters.Core.ResponseResult
+  langs:
+  - csharp
+  - vb
+  name: IsSuccess
+  nameWithType: ResponseResult.IsSuccess
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsSuccess
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSuccess
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public bool IsSuccess { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsSuccess As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsSuccess*
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsNotFound
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ResponseResult.IsNotFound
+  id: IsNotFound
+  parent: Meridian.Infrastructure.Adapters.Core.ResponseResult
+  langs:
+  - csharp
+  - vb
+  name: IsNotFound
+  nameWithType: ResponseResult.IsNotFound
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsNotFound
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsNotFound
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public bool IsNotFound { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsNotFound As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsNotFound*
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.StatusCode
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ResponseResult.StatusCode
+  id: StatusCode
+  parent: Meridian.Infrastructure.Adapters.Core.ResponseResult
+  langs:
+  - csharp
+  - vb
+  name: StatusCode
+  nameWithType: ResponseResult.StatusCode
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.StatusCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StatusCode
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public HttpStatusCode StatusCode { get; init; }
+    parameters: []
+    return:
+      type: System.Net.HttpStatusCode
+    content.vb: Public Property StatusCode As HttpStatusCode
+  overload: Meridian.Infrastructure.Adapters.Core.ResponseResult.StatusCode*
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.ReasonPhrase
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ResponseResult.ReasonPhrase
+  id: ReasonPhrase
+  parent: Meridian.Infrastructure.Adapters.Core.ResponseResult
+  langs:
+  - csharp
+  - vb
+  name: ReasonPhrase
+  nameWithType: ResponseResult.ReasonPhrase
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.ReasonPhrase
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReasonPhrase
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string ReasonPhrase { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReasonPhrase As String
+  overload: Meridian.Infrastructure.Adapters.Core.ResponseResult.ReasonPhrase*
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.ErrorContent
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ResponseResult.ErrorContent
+  id: ErrorContent
+  parent: Meridian.Infrastructure.Adapters.Core.ResponseResult
+  langs:
+  - csharp
+  - vb
+  name: ErrorContent
+  nameWithType: ResponseResult.ErrorContent
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.ErrorContent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorContent
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ResponseHandler.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string? ErrorContent { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorContent As String
+  overload: Meridian.Infrastructure.Adapters.Core.ResponseResult.ErrorContent*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.ResponseResult}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.ResponseResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ResponseResult>
+  nameWithType: IEquatable<ResponseResult>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.ResponseResult>
+  nameWithType.vb: IEquatable(Of ResponseResult)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.ResponseResult)
+  name.vb: IEquatable(Of ResponseResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ResponseResult
+    name: ResponseResult
+    href: Meridian.Infrastructure.Adapters.Core.ResponseResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ResponseResult
+    name: ResponseResult
+    href: Meridian.Infrastructure.Adapters.Core.ResponseResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ResponseResult.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.ResponseResult.html#Meridian_Infrastructure_Adapters_Core_ResponseResult__ctor_System_Boolean_System_Boolean_System_Net_HttpStatusCode_System_String_System_String_
+  name: ResponseResult
+  nameWithType: ResponseResult.ResponseResult
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.ResponseResult
+  nameWithType.vb: ResponseResult.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ResponseResult.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Net.HttpStatusCode
+  commentId: T:System.Net.HttpStatusCode
+  parent: System.Net
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.httpstatuscode
+  name: HttpStatusCode
+  nameWithType: HttpStatusCode
+  fullName: System.Net.HttpStatusCode
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Net
+  commentId: N:System.Net
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net
+  nameWithType: System.Net
+  fullName: System.Net
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsSuccess*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ResponseResult.IsSuccess
+  href: Meridian.Infrastructure.Adapters.Core.ResponseResult.html#Meridian_Infrastructure_Adapters_Core_ResponseResult_IsSuccess
+  name: IsSuccess
+  nameWithType: ResponseResult.IsSuccess
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsSuccess
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsNotFound*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ResponseResult.IsNotFound
+  href: Meridian.Infrastructure.Adapters.Core.ResponseResult.html#Meridian_Infrastructure_Adapters_Core_ResponseResult_IsNotFound
+  name: IsNotFound
+  nameWithType: ResponseResult.IsNotFound
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.IsNotFound
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.StatusCode*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ResponseResult.StatusCode
+  href: Meridian.Infrastructure.Adapters.Core.ResponseResult.html#Meridian_Infrastructure_Adapters_Core_ResponseResult_StatusCode
+  name: StatusCode
+  nameWithType: ResponseResult.StatusCode
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.StatusCode
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.ReasonPhrase*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ResponseResult.ReasonPhrase
+  href: Meridian.Infrastructure.Adapters.Core.ResponseResult.html#Meridian_Infrastructure_Adapters_Core_ResponseResult_ReasonPhrase
+  name: ReasonPhrase
+  nameWithType: ResponseResult.ReasonPhrase
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.ReasonPhrase
+- uid: Meridian.Infrastructure.Adapters.Core.ResponseResult.ErrorContent*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ResponseResult.ErrorContent
+  href: Meridian.Infrastructure.Adapters.Core.ResponseResult.html#Meridian_Infrastructure_Adapters_Core_ResponseResult_ErrorContent
+  name: ErrorContent
+  nameWithType: ResponseResult.ErrorContent
+  fullName: Meridian.Infrastructure.Adapters.Core.ResponseResult.ErrorContent

@@ -7,6 +7,7 @@ using Meridian.Application.Logging;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Domain.Events;
+using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Serilog;
 
@@ -39,12 +40,10 @@ public sealed class HistoricalBackfillService
 
     public IReadOnlyCollection<IHistoricalDataProvider> Providers => _providers.Values.ToList();
 
-    public async Task<BackfillResult> RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default)
+    public void ValidateRequest(BackfillRequest request)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentNullException.ThrowIfNull(pipeline);
 
-        var started = DateTimeOffset.UtcNow;
         var symbols = request.Symbols?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToArray() ?? Array.Empty<string>();
         if (symbols.Length == 0)
             throw new InvalidOperationException("At least one symbol is required for backfill.");
@@ -52,18 +51,52 @@ public sealed class HistoricalBackfillService
         if (!_providers.TryGetValue(request.Provider.ToLowerInvariant(), out var provider))
             throw new InvalidOperationException($"Unknown backfill provider '{request.Provider}'.");
 
+        if (!request.Granularity.IsIntraday())
+            return;
+
+        if (provider is not IHistoricalAggregateBarProvider aggregateProvider)
+        {
+            throw new InvalidOperationException(
+                $"Provider '{provider.DisplayName}' does not support {request.Granularity.ToDisplayName()} intraday backfill.");
+        }
+
+        if (!aggregateProvider.SupportedGranularities.Contains(request.Granularity))
+        {
+            var supported = string.Join(", ", aggregateProvider.SupportedGranularities.Select(g => g.ToDisplayName()));
+            throw new InvalidOperationException(
+                $"Provider '{provider.DisplayName}' does not support {request.Granularity.ToDisplayName()} backfill. " +
+                $"Supported granularities: {supported}.");
+        }
+    }
+
+    public async Task<BackfillResult> RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(pipeline);
+
+        var started = DateTimeOffset.UtcNow;
+        var symbols = request.Symbols?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToArray() ?? Array.Empty<string>();
+        ValidateRequest(request);
+        var provider = _providers[request.Provider.ToLowerInvariant()];
+        var aggregateProvider = provider as IHistoricalAggregateBarProvider;
+
         // Load per-symbol checkpoints when the caller opts into resume mode.
         IReadOnlyDictionary<string, DateOnly>? symbolCheckpoints = null;
         if (request.ResumeFromCheckpoint && _checkpointStore is not null)
         {
-            symbolCheckpoints = _checkpointStore.TryReadSymbolCheckpoints();
+            symbolCheckpoints = _checkpointStore.TryReadSymbolCheckpoints(request.Granularity);
             if (symbolCheckpoints is { Count: > 0 })
-                _log.Information("Resume mode: {Count} symbol checkpoints loaded", symbolCheckpoints.Count);
+            {
+                _log.Information(
+                    "Resume mode: {Count} symbol checkpoints loaded for {Granularity}",
+                    symbolCheckpoints.Count,
+                    request.Granularity.ToDisplayName());
+            }
         }
         else if (!request.ResumeFromCheckpoint && _checkpointStore is not null)
         {
-            // Fresh run — clear any stale checkpoints so a subsequent resume starts clean.
-            await _checkpointStore.ClearSymbolCheckpointsAsync(ct).ConfigureAwait(false);
+            // Fresh runs clear only the matching granularity lane so other resume paths survive.
+            await _checkpointStore.ClearSymbolCheckpointsAsync(request.Granularity, ct).ConfigureAwait(false);
         }
 
         // Determine concurrency: per-request override → config default (floor: 1)
@@ -95,7 +128,7 @@ public sealed class HistoricalBackfillService
         // Pre-load bar counts from checkpoint sidecar for skip reconciliation.
         IReadOnlyDictionary<string, long>? checkpointBarCounts = null;
         if (request.ResumeFromCheckpoint && _checkpointStore is not null)
-            checkpointBarCounts = _checkpointStore.TryReadSymbolBarCounts();
+            checkpointBarCounts = _checkpointStore.TryReadSymbolBarCounts(request.Granularity);
 
         // Adaptive concurrency gate: starts at maxConcurrent, decrements by 1 on RateLimitException
         int currentConcurrency = maxConcurrent;
@@ -134,18 +167,43 @@ public sealed class HistoricalBackfillService
                     _log.Information("Starting backfill for {Symbol} via {Provider}", symbol, provider.DisplayName);
                 }
 
-                var bars = await provider.GetDailyBarsAsync(symbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
                 DateOnly? lastBarDate = null;
                 long symbolBars = 0;
-                foreach (var bar in bars)
+                if (request.Granularity.IsIntraday())
                 {
-                    var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);
-                    await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
-                    _metrics.IncHistoricalBars();
-                    Interlocked.Increment(ref barsWritten);
-                    symbolBars++;
-                    if (lastBarDate is null || bar.SessionDate > lastBarDate.Value)
-                        lastBarDate = bar.SessionDate;
+                    if (aggregateProvider is null)
+                    {
+                        throw new InvalidOperationException(
+                            $"Provider '{provider.DisplayName}' does not support {request.Granularity.ToDisplayName()} intraday backfill.");
+                    }
+
+                    var bars = await aggregateProvider.GetAggregateBarsAsync(symbol, request.Granularity, effectiveFrom, request.To, ct).ConfigureAwait(false);
+                    foreach (var bar in bars)
+                    {
+                        var evt = MarketEvent.AggregateBar(bar.EndTime, bar.Symbol, bar, bar.SequenceNumber, provider.Name);
+                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
+                        _metrics.IncHistoricalBars();
+                        Interlocked.Increment(ref barsWritten);
+                        symbolBars++;
+
+                        var barDate = DateOnly.FromDateTime(bar.EndTime.UtcDateTime);
+                        if (lastBarDate is null || barDate > lastBarDate.Value)
+                            lastBarDate = barDate;
+                    }
+                }
+                else
+                {
+                    var bars = await provider.GetDailyBarsAsync(symbol, effectiveFrom, request.To, ct).ConfigureAwait(false);
+                    foreach (var bar in bars)
+                    {
+                        var evt = MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.SequenceNumber, provider.Name);
+                        await pipeline.PublishAsync(evt, ct).ConfigureAwait(false);
+                        _metrics.IncHistoricalBars();
+                        Interlocked.Increment(ref barsWritten);
+                        symbolBars++;
+                        if (lastBarDate is null || bar.SessionDate > lastBarDate.Value)
+                            lastBarDate = bar.SessionDate;
+                    }
                 }
 
                 perSymbolBars[symbol] = symbolBars;
@@ -153,7 +211,12 @@ public sealed class HistoricalBackfillService
                 // Persist per-symbol checkpoint after successful completion.
                 if (_checkpointStore is not null && lastBarDate.HasValue)
                 {
-                    await _checkpointStore.WriteSymbolCheckpointAsync(symbol, lastBarDate.Value, symbolBars, ct).ConfigureAwait(false);
+                    await _checkpointStore.WriteSymbolCheckpointAsync(
+                        symbol,
+                        request.Granularity,
+                        lastBarDate.Value,
+                        symbolBars,
+                        ct).ConfigureAwait(false);
                 }
 
                 // Emit validation signal.

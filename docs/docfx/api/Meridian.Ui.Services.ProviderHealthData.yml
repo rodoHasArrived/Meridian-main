@@ -1,0 +1,591 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ProviderHealthData
+  commentId: T:Meridian.Ui.Services.ProviderHealthData
+  id: ProviderHealthData
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ProviderHealthData.Breakdown
+  - Meridian.Ui.Services.ProviderHealthData.IsConnected
+  - Meridian.Ui.Services.ProviderHealthData.LastUpdated
+  - Meridian.Ui.Services.ProviderHealthData.Metrics
+  - Meridian.Ui.Services.ProviderHealthData.OverallScore
+  - Meridian.Ui.Services.ProviderHealthData.ProviderId
+  - Meridian.Ui.Services.ProviderHealthData.ProviderName
+  langs:
+  - csharp
+  - vb
+  name: ProviderHealthData
+  nameWithType: ProviderHealthData
+  fullName: Meridian.Ui.Services.ProviderHealthData
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderHealthData
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 456
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class ProviderHealthData
+    content.vb: Public NotInheritable Class ProviderHealthData
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ProviderHealthData.ProviderId
+  commentId: P:Meridian.Ui.Services.ProviderHealthData.ProviderId
+  id: ProviderId
+  parent: Meridian.Ui.Services.ProviderHealthData
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: ProviderHealthData.ProviderId
+  fullName: Meridian.Ui.Services.ProviderHealthData.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 458
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string ProviderId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderId As String
+  overload: Meridian.Ui.Services.ProviderHealthData.ProviderId*
+- uid: Meridian.Ui.Services.ProviderHealthData.ProviderName
+  commentId: P:Meridian.Ui.Services.ProviderHealthData.ProviderName
+  id: ProviderName
+  parent: Meridian.Ui.Services.ProviderHealthData
+  langs:
+  - csharp
+  - vb
+  name: ProviderName
+  nameWithType: ProviderHealthData.ProviderName
+  fullName: Meridian.Ui.Services.ProviderHealthData.ProviderName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderName
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 459
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string ProviderName { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderName As String
+  overload: Meridian.Ui.Services.ProviderHealthData.ProviderName*
+- uid: Meridian.Ui.Services.ProviderHealthData.IsConnected
+  commentId: P:Meridian.Ui.Services.ProviderHealthData.IsConnected
+  id: IsConnected
+  parent: Meridian.Ui.Services.ProviderHealthData
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: ProviderHealthData.IsConnected
+  fullName: Meridian.Ui.Services.ProviderHealthData.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 460
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsConnected { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsConnected As Boolean
+  overload: Meridian.Ui.Services.ProviderHealthData.IsConnected*
+- uid: Meridian.Ui.Services.ProviderHealthData.LastUpdated
+  commentId: P:Meridian.Ui.Services.ProviderHealthData.LastUpdated
+  id: LastUpdated
+  parent: Meridian.Ui.Services.ProviderHealthData
+  langs:
+  - csharp
+  - vb
+  name: LastUpdated
+  nameWithType: ProviderHealthData.LastUpdated
+  fullName: Meridian.Ui.Services.ProviderHealthData.LastUpdated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdated
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 461
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime LastUpdated { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property LastUpdated As Date
+  overload: Meridian.Ui.Services.ProviderHealthData.LastUpdated*
+- uid: Meridian.Ui.Services.ProviderHealthData.OverallScore
+  commentId: P:Meridian.Ui.Services.ProviderHealthData.OverallScore
+  id: OverallScore
+  parent: Meridian.Ui.Services.ProviderHealthData
+  langs:
+  - csharp
+  - vb
+  name: OverallScore
+  nameWithType: ProviderHealthData.OverallScore
+  fullName: Meridian.Ui.Services.ProviderHealthData.OverallScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallScore
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 462
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double OverallScore { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property OverallScore As Double
+  overload: Meridian.Ui.Services.ProviderHealthData.OverallScore*
+- uid: Meridian.Ui.Services.ProviderHealthData.Metrics
+  commentId: P:Meridian.Ui.Services.ProviderHealthData.Metrics
+  id: Metrics
+  parent: Meridian.Ui.Services.ProviderHealthData
+  langs:
+  - csharp
+  - vb
+  name: Metrics
+  nameWithType: ProviderHealthData.Metrics
+  fullName: Meridian.Ui.Services.ProviderHealthData.Metrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metrics
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 463
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public HealthMetrics Metrics { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.HealthMetrics
+    content.vb: Public Property Metrics As HealthMetrics
+  overload: Meridian.Ui.Services.ProviderHealthData.Metrics*
+- uid: Meridian.Ui.Services.ProviderHealthData.Breakdown
+  commentId: P:Meridian.Ui.Services.ProviderHealthData.Breakdown
+  id: Breakdown
+  parent: Meridian.Ui.Services.ProviderHealthData
+  langs:
+  - csharp
+  - vb
+  name: Breakdown
+  nameWithType: ProviderHealthData.Breakdown
+  fullName: Meridian.Ui.Services.ProviderHealthData.Breakdown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Breakdown
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 464
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public HealthScoreBreakdown Breakdown { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.HealthScoreBreakdown
+    content.vb: Public Property Breakdown As HealthScoreBreakdown
+  overload: Meridian.Ui.Services.ProviderHealthData.Breakdown*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ProviderHealthData.ProviderId*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthData.ProviderId
+  href: Meridian.Ui.Services.ProviderHealthData.html#Meridian_Ui_Services_ProviderHealthData_ProviderId
+  name: ProviderId
+  nameWithType: ProviderHealthData.ProviderId
+  fullName: Meridian.Ui.Services.ProviderHealthData.ProviderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ProviderHealthData.ProviderName*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthData.ProviderName
+  href: Meridian.Ui.Services.ProviderHealthData.html#Meridian_Ui_Services_ProviderHealthData_ProviderName
+  name: ProviderName
+  nameWithType: ProviderHealthData.ProviderName
+  fullName: Meridian.Ui.Services.ProviderHealthData.ProviderName
+- uid: Meridian.Ui.Services.ProviderHealthData.IsConnected*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthData.IsConnected
+  href: Meridian.Ui.Services.ProviderHealthData.html#Meridian_Ui_Services_ProviderHealthData_IsConnected
+  name: IsConnected
+  nameWithType: ProviderHealthData.IsConnected
+  fullName: Meridian.Ui.Services.ProviderHealthData.IsConnected
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.ProviderHealthData.LastUpdated*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthData.LastUpdated
+  href: Meridian.Ui.Services.ProviderHealthData.html#Meridian_Ui_Services_ProviderHealthData_LastUpdated
+  name: LastUpdated
+  nameWithType: ProviderHealthData.LastUpdated
+  fullName: Meridian.Ui.Services.ProviderHealthData.LastUpdated
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.ProviderHealthData.OverallScore*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthData.OverallScore
+  href: Meridian.Ui.Services.ProviderHealthData.html#Meridian_Ui_Services_ProviderHealthData_OverallScore
+  name: OverallScore
+  nameWithType: ProviderHealthData.OverallScore
+  fullName: Meridian.Ui.Services.ProviderHealthData.OverallScore
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.ProviderHealthData.Metrics*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthData.Metrics
+  href: Meridian.Ui.Services.ProviderHealthData.html#Meridian_Ui_Services_ProviderHealthData_Metrics
+  name: Metrics
+  nameWithType: ProviderHealthData.Metrics
+  fullName: Meridian.Ui.Services.ProviderHealthData.Metrics
+- uid: Meridian.Ui.Services.HealthMetrics
+  commentId: T:Meridian.Ui.Services.HealthMetrics
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.HealthMetrics.html
+  name: HealthMetrics
+  nameWithType: HealthMetrics
+  fullName: Meridian.Ui.Services.HealthMetrics
+- uid: Meridian.Ui.Services.ProviderHealthData.Breakdown*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthData.Breakdown
+  href: Meridian.Ui.Services.ProviderHealthData.html#Meridian_Ui_Services_ProviderHealthData_Breakdown
+  name: Breakdown
+  nameWithType: ProviderHealthData.Breakdown
+  fullName: Meridian.Ui.Services.ProviderHealthData.Breakdown
+- uid: Meridian.Ui.Services.HealthScoreBreakdown
+  commentId: T:Meridian.Ui.Services.HealthScoreBreakdown
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.HealthScoreBreakdown.html
+  name: HealthScoreBreakdown
+  nameWithType: HealthScoreBreakdown
+  fullName: Meridian.Ui.Services.HealthScoreBreakdown

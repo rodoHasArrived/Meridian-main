@@ -1,0 +1,487 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+  commentId: T:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+  id: CppTraderStatusService
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics
+  children:
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager)
+  - Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.GetStatus
+  langs:
+  - csharp
+  - vb
+  name: CppTraderStatusService
+  nameWithType: CppTraderStatusService
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTraderStatusService
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: 'public sealed class CppTraderStatusService : ICppTraderStatusService'
+    content.vb: Public NotInheritable Class CppTraderStatusService Implements ICppTraderStatusService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager)
+  commentId: M:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager)
+  id: '#ctor(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager)'
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+  langs:
+  - csharp
+  - vb
+  name: CppTraderStatusService(ICppTraderHostManager)
+  nameWithType: CppTraderStatusService.CppTraderStatusService(ICppTraderHostManager)
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.CppTraderStatusService(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  syntax:
+    content: public CppTraderStatusService(ICppTraderHostManager hostManager)
+    parameters:
+    - id: hostManager
+      type: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+    content.vb: Public Sub New(hostManager As ICppTraderHostManager)
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.#ctor*
+  nameWithType.vb: CppTraderStatusService.New(ICppTraderHostManager)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.New(Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager)
+  name.vb: New(ICppTraderHostManager)
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.GetStatus
+  commentId: M:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.GetStatus
+  id: GetStatus
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService
+  langs:
+  - csharp
+  - vb
+  name: GetStatus()
+  nameWithType: CppTraderStatusService.GetStatus()
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.GetStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatus
+    path: ../../src/Meridian.Infrastructure.CppTrader/Diagnostics/CppTraderStatusService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Diagnostics
+  example: []
+  syntax:
+    content: public HostHealthSnapshot GetStatus()
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+    content.vb: Public Function GetStatus() As HostHealthSnapshot
+  overload: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.GetStatus*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+references:
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics
+  commentId: N:Meridian.Infrastructure.CppTrader.Diagnostics
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Diagnostics
+  nameWithType: Meridian.Infrastructure.CppTrader.Diagnostics
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics
+    name: Diagnostics
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics
+    name: Diagnostics
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  commentId: T:Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.html
+  name: ICppTraderStatusService
+  nameWithType: ICppTraderStatusService
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.#ctor*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.#ctor
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.html#Meridian_Infrastructure_CppTrader_Diagnostics_CppTraderStatusService__ctor_Meridian_Infrastructure_CppTrader_Host_ICppTraderHostManager_
+  name: CppTraderStatusService
+  nameWithType: CppTraderStatusService.CppTraderStatusService
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.CppTraderStatusService
+  nameWithType.vb: CppTraderStatusService.New
+  fullName.vb: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.New
+  name.vb: New
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  commentId: T:Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+  parent: Meridian.Infrastructure.CppTrader.Host
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager.html
+  name: ICppTraderHostManager
+  nameWithType: ICppTraderHostManager
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderHostManager
+- uid: Meridian.Infrastructure.CppTrader.Host
+  commentId: N:Meridian.Infrastructure.CppTrader.Host
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Host
+  nameWithType: Meridian.Infrastructure.CppTrader.Host
+  fullName: Meridian.Infrastructure.CppTrader.Host
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.GetStatus*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.GetStatus
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.html#Meridian_Infrastructure_CppTrader_Diagnostics_CppTraderStatusService_GetStatus
+  name: GetStatus
+  nameWithType: CppTraderStatusService.GetStatus
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.CppTraderStatusService.GetStatus
+- uid: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+  commentId: M:Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+  parent: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService
+  href: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.html#Meridian_Infrastructure_CppTrader_Diagnostics_ICppTraderStatusService_GetStatus
+  name: GetStatus()
+  nameWithType: ICppTraderStatusService.GetStatus()
+  fullName: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+    name: GetStatus
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.html#Meridian_Infrastructure_CppTrader_Diagnostics_ICppTraderStatusService_GetStatus
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.GetStatus
+    name: GetStatus
+    href: Meridian.Infrastructure.CppTrader.Diagnostics.ICppTraderStatusService.html#Meridian_Infrastructure_CppTrader_Diagnostics_ICppTraderStatusService_GetStatus
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot.html
+  name: HostHealthSnapshot
+  nameWithType: HostHealthSnapshot
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.HostHealthSnapshot
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html

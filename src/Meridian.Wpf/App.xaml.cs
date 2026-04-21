@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -6,16 +7,29 @@ using System.Windows.Threading;
 using System.Windows.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Meridian.Application.Services;
+using Meridian.Application.EnvironmentDesign;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.FundAccounts;
+using Meridian.Application.FundStructure;
 using Meridian.Backtesting;
 using Meridian.Contracts.Domain.Enums;
+using Meridian.Execution.Sdk;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Infrastructure.Adapters.Polygon;
+using Meridian.QuantScript;
+using Meridian.QuantScript.Api;
+using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Plotting;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Storage.Store;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Ui.Shared.Services;
+using Meridian.Wpf.Services;
 using Meridian.Wpf.Contracts;
 using Meridian.Wpf.ViewModels;
 using WpfServices = Meridian.Wpf.Services;
@@ -100,6 +114,10 @@ public partial class App : System.Windows.Application
         // Windows shell (taskbar, JumpList, toast activations) maps all
         // notifications back to this process identity.
         WpfServices.ToastNotificationService.SetAppUserModelId();
+        Meridian.Ui.Services.ConfigService.DefaultPathResolver =
+            () => WpfServices.FirstRunService.Instance.ConfigFilePath;
+        Meridian.Application.UI.ConfigStore.DefaultPathResolver =
+            () => WpfServices.FirstRunService.Instance.ConfigFilePath;
 
         // Enforce single instance: if another Meridian window is already running,
         // forward the launch args to it via named pipe and exit cleanly.
@@ -142,6 +160,7 @@ public partial class App : System.Windows.Application
         var mainWindow = Services.GetRequiredService<MainWindow>();
         Current.MainWindow = mainWindow;
         mainWindow.Show();
+        mainWindow.ForceStartupWindowRecovery();
 
         // Register taskbar jump list tasks (Start Collector, Open Dashboard, etc.).
         WpfServices.JumpListService.Instance.Register();
@@ -155,6 +174,8 @@ public partial class App : System.Windows.Application
 
         // Fire-and-forget async initialization with proper exception handling
         await SafeOnStartupAsync();
+        EnsureMainWindowVisible(mainWindow);
+        _ = RestoreMainWindowVisibilityAsync(mainWindow);
     }
 
     /// <summary>
@@ -209,45 +230,87 @@ public partial class App : System.Windows.Application
         // Register shared desktop HttpClient configurations
         services.AddDesktopHttpClients();
 
+        // ILogger<T> infrastructure — must be first so all services can resolve loggers
+        services.AddLogging();
+
         // Shared API infrastructure
-        services.AddSingleton(_ => ApiClientService.Instance);
+        services.AddSingleton<ApiClientService>(_ => ApiClientService.Instance);
 
         // ── Fixture mode service (offline mock data) ────────────────────────
-        services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.Services.FixtureModeDetector.Instance);
+        services.AddSingleton<Meridian.Ui.Services.Services.FixtureDataService>(_ => Meridian.Ui.Services.Services.FixtureDataService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.Services.FixtureModeDetector>(_ => Meridian.Ui.Services.Services.FixtureModeDetector.Instance);
 
         // ── Core services (by interface + concrete type) ────────────────────
         services.AddSingleton<IConnectionService>(_ => WpfServices.ConnectionService.Instance);
-        services.AddSingleton(_ => WpfServices.ConnectionService.Instance);
+        services.AddSingleton<WpfServices.ConnectionService>(_ => WpfServices.ConnectionService.Instance);
 
         services.AddSingleton<INavigationService>(_ => WpfServices.NavigationService.Instance);
-        services.AddSingleton(_ => WpfServices.NavigationService.Instance);
+        services.AddSingleton<WpfServices.NavigationService>(_ => WpfServices.NavigationService.Instance);
 
         services.AddSingleton<Meridian.Ui.Services.Contracts.ILoggingService>(_ => WpfServices.LoggingService.Instance);
-        services.AddSingleton(_ => WpfServices.LoggingService.Instance);
+        services.AddSingleton<WpfServices.LoggingService>(_ => WpfServices.LoggingService.Instance);
 
-        services.AddSingleton(_ => WpfServices.ConfigService.Instance);
-        services.AddSingleton(_ => WpfServices.ThemeService.Instance);
-        services.AddSingleton(_ => WpfServices.NotificationService.Instance);
-        services.AddSingleton(_ => WpfServices.KeyboardShortcutService.Instance);
-        services.AddSingleton(_ => WpfServices.MessagingService.Instance);
-        services.AddSingleton(_ => WpfServices.StatusService.Instance);
-        services.AddSingleton(_ => WpfServices.FirstRunService.Instance);
+        services.AddSingleton<WpfServices.ConfigService>(_ => WpfServices.ConfigService.Instance);
+        services.AddSingleton<WpfServices.ThemeService>(_ => WpfServices.ThemeService.Instance);
+        services.AddSingleton<WpfServices.NotificationService>(_ => WpfServices.NotificationService.Instance);
+        services.AddSingleton<WpfServices.KeyboardShortcutService>(_ => WpfServices.KeyboardShortcutService.Instance);
+        services.AddSingleton<WpfServices.MessagingService>(_ => WpfServices.MessagingService.Instance);
+        services.AddSingleton<WpfServices.ApiStatusService>();
+        services.AddSingleton<IStatusService>(sp => sp.GetRequiredService<WpfServices.ApiStatusService>());
+        services.AddSingleton<WpfServices.StatusService>(_ => WpfServices.StatusService.Instance);
+        services.AddSingleton<WpfServices.FirstRunService>(_ => WpfServices.FirstRunService.Instance);
 
         // ── Onboarding / workspace services ──────────────────────────────────
-        services.AddSingleton(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
-        services.AddSingleton(_ => WpfServices.WorkspaceService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.AlertService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.OnboardingTourService>(_ => Meridian.Ui.Services.OnboardingTourService.Instance);
+        services.AddSingleton<WpfServices.WorkspaceService>(_ => WpfServices.WorkspaceService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.AlertService>(_ => Meridian.Ui.Services.AlertService.Instance);
+        services.AddSingleton<WpfServices.FundContextService>(_ => WpfServices.FundContextService.Instance);
+        services.AddSingleton<WpfServices.IFundProfileCatalog>(sp => sp.GetRequiredService<WpfServices.FundContextService>());
+        services.AddSingleton(sp => new InMemoryFundAccountService(
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "fund-accounts.json")));
+        services.AddSingleton<IFundAccountService>(sp => sp.GetRequiredService<InMemoryFundAccountService>());
+        services.AddSingleton<IFundStructureService>(sp => new InMemoryFundStructureService(
+            sp.GetRequiredService<IFundAccountService>(),
+            sharedDataAccessService: null,
+            securityMasterQueryService: sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(),
+            persistencePath: Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "fund-structure.json")));
+        services.AddSingleton<EnvironmentDesignerService>(_ => new EnvironmentDesignerService(
+            Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "Meridian",
+                "environment-designer.json")));
+        services.AddSingleton<IEnvironmentDesignService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<IEnvironmentValidationService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<IEnvironmentPublishService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<IEnvironmentRuntimeProjectionService>(sp => sp.GetRequiredService<EnvironmentDesignerService>());
+        services.AddSingleton<WpfServices.WorkstationOperatingContextService>();
+        services.AddSingleton<WpfServices.WorkspaceShellContextService>();
 
         // ── Domain / feature services ───────────────────────────────────────
-        services.AddSingleton(_ => WpfServices.BackendServiceManager.Instance);
-        services.AddSingleton(_ => WpfServices.WatchlistService.Instance);
-        services.AddSingleton(_ => WpfServices.ArchiveHealthService.Instance);
-        services.AddSingleton(_ => WpfServices.SchemaService.Instance);
-        services.AddSingleton(_ => WpfServices.RunMatService.Instance);
+        services.AddSingleton<WpfServices.BackendServiceManager>(_ => WpfServices.BackendServiceManager.Instance);
+        services.AddSingleton<WpfServices.WatchlistService>(_ => WpfServices.WatchlistService.Instance);
+        services.AddSingleton<WpfServices.IWatchlistReader>(sp => sp.GetRequiredService<WpfServices.WatchlistService>());
+        services.AddSingleton<WpfServices.ArchiveHealthService>(_ => WpfServices.ArchiveHealthService.Instance);
+        services.AddSingleton<WpfServices.SchemaService>(_ => WpfServices.SchemaService.Instance);
+        services.AddSingleton<WpfServices.RunMatService>(_ => WpfServices.RunMatService.Instance);
+        services.AddSingleton<ProviderManagementService>(_ => ProviderManagementService.Instance);
         services.AddSingleton<AdminMaintenanceServiceBase>(_ => AdminMaintenanceServiceBase.Instance);
         services.AddSingleton<AdvancedAnalyticsServiceBase>(_ => new AdvancedAnalyticsServiceBase());
-        services.AddSingleton(_ => SearchService.Instance);
+        services.AddSingleton<SearchService>(_ => SearchService.Instance);
+        services.AddSingleton<WpfServices.FundAccountReadService>();
+        services.AddSingleton<WpfServices.FundLedgerReadService>();
+        services.AddSingleton<WpfServices.ReconciliationReadService>();
+        services.AddSingleton<WpfServices.CashFinancingReadService>();
+        services.AddSingleton<WpfServices.IWorkstationReconciliationApiClient, WpfServices.WorkstationReconciliationApiClient>();
+        services.AddSingleton<WpfServices.IWorkstationResearchBriefingApiClient, WpfServices.WorkstationResearchBriefingApiClient>();
+        services.AddSingleton<WpfServices.IResearchBriefingWorkspaceService, WpfServices.ResearchBriefingWorkspaceService>();
+        services.AddSingleton<WpfServices.IFundReconciliationWorkbenchService, WpfServices.FundReconciliationWorkbenchService>();
 
         // ── AI Agent service (local Ollama) ──────────────────────────────────
         services.AddSingleton<WpfServices.IAgentLoopService, WpfServices.AgentLoopService>();
@@ -259,10 +322,10 @@ public partial class App : System.Windows.Application
         RegisterStrategyWorkspaceServices(services);
 
         // ── Background / infrastructure services ────────────────────────────
-        services.AddSingleton(_ => WpfServices.BackgroundTaskSchedulerService.Instance);
-        services.AddSingleton(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
-        services.AddSingleton(_ => WpfServices.PendingOperationsQueueService.Instance);
-        services.AddSingleton(_ => WpfServices.ToastNotificationService.Instance);
+        services.AddSingleton<WpfServices.BackgroundTaskSchedulerService>(_ => WpfServices.BackgroundTaskSchedulerService.Instance);
+        services.AddSingleton<WpfServices.OfflineTrackingPersistenceService>(_ => WpfServices.OfflineTrackingPersistenceService.Instance);
+        services.AddSingleton<WpfServices.PendingOperationsQueueService>(_ => WpfServices.PendingOperationsQueueService.Instance);
+        services.AddSingleton<WpfServices.ToastNotificationService>(_ => WpfServices.ToastNotificationService.Instance);
         // C1 fix: register a single SystemTrayService instance under the interface contract;
         //         the concrete type is resolved via the same singleton.
         services.AddSingleton<WpfServices.SystemTrayService>();
@@ -272,89 +335,45 @@ public partial class App : System.Windows.Application
         services.AddSingleton<Meridian.Wpf.ViewModels.MainWindowViewModel>();
         services.AddSingleton<MainWindow>();
 
-        // ── Pages (transient — created per navigation) ──────────────────────
-        services.AddTransient<Meridian.Wpf.ViewModels.MainPageViewModel>();
-        services.AddTransient<MainPage>();
-        services.AddTransient<DashboardPage>();
-        services.AddTransient<WatchlistPage>();
-        services.AddTransient<ProviderPage>();
-        services.AddTransient<ProviderHealthPage>();
-        services.AddTransient<DataSourcesPage>();
-        services.AddTransient<LiveDataViewerPage>();
-        services.AddTransient<SymbolsPage>();
-        services.AddTransient<SymbolMappingPage>();
-        services.AddTransient<SymbolStoragePage>();
-        services.AddTransient<StoragePage>();
-        services.AddTransient<BackfillPage>();
-        services.AddTransient<PortfolioImportPage>();
-        services.AddTransient<IndexSubscriptionPage>();
-        services.AddTransient<ScheduleManagerPage>();
-        services.AddTransient<DataQualityPage>();
-        services.AddTransient<CollectionSessionPage>();
-        services.AddTransient<ArchiveHealthPage>();
-        services.AddTransient<ServiceManagerPage>();
-        services.AddTransient<SystemHealthPage>();
-        services.AddTransient<DiagnosticsPage>();
-        services.AddTransient<DataExportPage>();
-        services.AddTransient<DataSamplingPage>();
-        services.AddTransient<TimeSeriesAlignmentPage>();
-        services.AddTransient<ExportPresetsPage>();
-        services.AddTransient<AnalysisExportPage>();
-        services.AddTransient<AnalysisExportWizardPage>();
-        services.AddTransient<EventReplayPage>();
-        services.AddTransient<PackageManagerPage>();
-        services.AddTransient<TradingHoursPage>();
-        services.AddTransient<AdvancedAnalyticsPage>();
-        services.AddTransient<ChartingPage>();
-        services.AddTransient<OrderBookPage>();
+        // ── Catalog-driven WPF shell pages and shell services ───────────────
+        services.AddMeridianWpfShell();
+
+        // ── Additional pages not yet catalog-backed ─────────────────────────
+        services.AddTransient<FundProfileSelectionPage>();
         services.AddTransient<Meridian.Ui.Services.DataCalendarService>();
-        services.AddTransient<DataCalendarPage>();
-        services.AddTransient<StorageOptimizationPage>();
-        services.AddTransient<RetentionAssurancePage>();
-        services.AddTransient<AdminMaintenancePage>();
-        services.AddTransient<LeanIntegrationPage>();
-        services.AddTransient<MessagingHubPage>();
-        services.AddTransient<Meridian.Wpf.Views.WorkspacePage>();
-        services.AddTransient<NotificationCenterPage>();
-        services.AddTransient<HelpPage>();
-        services.AddTransient<WelcomePage>();
-        services.AddTransient<SettingsPage>();
-        services.AddTransient<KeyboardShortcutsPage>();
-        services.AddTransient<SetupWizardPage>();
-        services.AddTransient<AddProviderWizardPage>();
-        services.AddTransient<ActivityLogPage>();
-        services.AddTransient<DataBrowserPage>();
-        services.AddTransient<BacktestPage>();
-        services.AddTransient<RunMatPage>();
-        services.AddTransient<StrategyRunsPage>();
-        services.AddTransient<RunDetailPage>();
-        services.AddTransient<RunPortfolioPage>();
-        services.AddTransient<RunLedgerPage>();
-        services.AddTransient<SecurityMasterPage>();
         services.AddTransient<Meridian.Wpf.ViewModels.SecurityMasterViewModel>();
         services.AddTransient<PluginManagementPage>();
         services.AddTransient<AgentPage>();
-        services.AddTransient<DashboardWebPage>();
+        services.AddTransient<QualityArchivePage>();
+
+        services.AddTransient<ClusterStatusPage>();
 
         // ── Backtesting service ──────────────────────────────────────────────
         // Registered in RegisterStrategyWorkspaceServices so optional Security Master
         // collaborators can be attached when that feature is enabled.
 
         // ── Ui.Services singletons accessed via DI (no static .Instance in pages) ──
-        services.AddSingleton(_ => BackfillProviderConfigService.Instance);
-        services.AddSingleton(_ => BackfillCheckpointService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.SymbolManagementService.Instance);
-        services.AddSingleton(_ => Meridian.Ui.Services.BackfillService.Instance);
-        services.AddSingleton(_ => WpfServices.TaskbarProgressService.Instance);
-        services.AddSingleton(_ => WpfServices.TearOffPanelService.Instance);
-        services.AddSingleton(_ => WpfServices.StrategyRunWorkspaceService.Instance);
+        services.AddSingleton<BackfillProviderConfigService>(_ => BackfillProviderConfigService.Instance);
+        services.AddSingleton<BackfillCheckpointService>(_ => BackfillCheckpointService.Instance);
+        services.AddSingleton<BackfillApiService>();
+        services.AddSingleton<Meridian.Ui.Services.CollectionSessionService>(_ => Meridian.Ui.Services.CollectionSessionService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.ScheduleManagerService>(_ => Meridian.Ui.Services.ScheduleManagerService.Instance);
+        services.AddSingleton<WpfServices.StorageService>(_ => WpfServices.StorageService.Instance);
+        services.AddSingleton<BatchExportSchedulerService>();
+        services.AddSingleton<Meridian.Ui.Services.ActivityFeedService>(_ => Meridian.Ui.Services.ActivityFeedService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.CommandPaletteService>(_ => Meridian.Ui.Services.CommandPaletteService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.SymbolManagementService>(_ => Meridian.Ui.Services.SymbolManagementService.Instance);
+        services.AddSingleton<Meridian.Ui.Services.BackfillService>(_ => Meridian.Ui.Services.BackfillService.Instance);
+        services.AddSingleton<WpfServices.TaskbarProgressService>(_ => WpfServices.TaskbarProgressService.Instance);
+        services.AddSingleton<WpfServices.TearOffPanelService>(_ => WpfServices.TearOffPanelService.Instance);
 
         // ── ViewModels (transient — new instance per page navigation) ────────
         services.AddTransient<Meridian.Wpf.ViewModels.BackfillViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ProviderViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.DataQualityViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundProfileSelectionViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundAccountsViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.FundLedgerViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.RunMatViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunBrowserViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.StrategyRunDetailViewModel>();
@@ -363,12 +382,44 @@ public partial class App : System.Windows.Application
         services.AddTransient<Meridian.Wpf.ViewModels.RunRiskViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.PluginManagementViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.AgentViewModel>();
+        services.AddSingleton<Meridian.Wpf.Services.BacktestDataAvailabilityService>();
         services.AddTransient<Meridian.Wpf.ViewModels.BacktestViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.ChartingPageViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.TickerStripViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.WatchlistViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.SettingsViewModel>();
         services.AddTransient<Meridian.Wpf.ViewModels.CollectionSessionViewModel>();
+
+        // ── Credential management ────────────────────────────────────────────
+        services.AddSingleton<WpfServices.CredentialService>();
+        services.AddTransient<Meridian.Wpf.ViewModels.CredentialManagementViewModel>();
+        services.AddTransient<Meridian.Wpf.ViewModels.AccountPortfolioViewModel>();
+
+        // ── Quality archive ──────────────────────────────────────────────────
+        services.AddSingleton<Meridian.Ui.Services.Services.IQualityArchiveStore,
+                              Meridian.Ui.Services.Services.QualityArchiveStore>();
+        services.AddTransient<Meridian.Wpf.ViewModels.QualityArchiveViewModel>();
+
+        // ── QuantScript services ─────────────────────────────────────────────
+        services.Configure<Meridian.QuantScript.QuantScriptOptions>(_ => { });
+        services.AddSingleton(sp =>
+        {
+            var dataRoot = Environment.GetEnvironmentVariable("MDC_DATA_PATH") ?? "data";
+            return new Meridian.Storage.Store.JsonlMarketDataStore(dataRoot);
+        });
+        services.AddSingleton<Meridian.QuantScript.Api.IQuantDataContext,
+                              Meridian.QuantScript.Api.QuantDataContext>();
+        services.AddSingleton<Meridian.QuantScript.Plotting.PlotQueue>();
+        services.AddSingleton<Meridian.QuantScript.Compilation.IQuantScriptCompiler,
+                              Meridian.QuantScript.Compilation.RoslynScriptCompiler>();
+        services.AddSingleton<Meridian.QuantScript.Compilation.IScriptRunner,
+                              Meridian.QuantScript.Compilation.ScriptRunner>();
+        services.AddSingleton<Meridian.QuantScript.Documents.IQuantScriptNotebookStore>(sp =>
+            new Meridian.QuantScript.Documents.QuantScriptNotebookStore(
+                sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Meridian.QuantScript.QuantScriptOptions>>().Value));
+        services.AddSingleton<WpfServices.IQuantScriptLayoutService,
+                              WpfServices.QuantScriptLayoutService>();
+        services.AddTransient<Meridian.Wpf.ViewModels.QuantScriptViewModel>();
 
         // ── Plugin loader service ────────────────────────────────────────────
         services.AddSingleton<Meridian.Infrastructure.DataSources.DataSourceRegistry>();
@@ -394,10 +445,15 @@ public partial class App : System.Windows.Application
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             services.AddSingleton<SecurityMasterAggregateRebuilder>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, SecurityMasterService>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterAmender>(sp =>
+                (Meridian.Contracts.SecurityMaster.ISecurityMasterAmender)sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterService>());
             services.AddSingleton<SecurityMasterQueryService>();
             services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
             services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp => sp.GetRequiredService<SecurityMasterQueryService>());
-            services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
+            services.AddSingleton<ISecurityMasterRuntimeStatus>(_ => new WpfServices.SecurityMasterRuntimeStatusService(
+                isAvailable: true,
+                availabilityDescription: "Security Master runtime is configured for workstation workflows."));
 
             // Security Master bulk import services
             services.AddSingleton<SecurityMasterCsvParser>();
@@ -410,7 +466,25 @@ public partial class App : System.Windows.Application
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
             services.AddSingleton<Meridian.Application.SecurityMaster.ILivePositionCorporateActionAdjuster>(
                 sp => sp.GetRequiredService<Meridian.Backtesting.CorporateActionAdjustmentService>());
+            services.AddSingleton<ITradingParametersBackfillService, TradingParametersBackfillService>();
         }
+        else
+        {
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterService, NullSecurityMasterService>();
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterAmender>(sp =>
+                (Meridian.Contracts.SecurityMaster.ISecurityMasterAmender)sp.GetRequiredService<Meridian.Contracts.SecurityMaster.ISecurityMasterService>());
+            services.AddSingleton<NullSecurityMasterQueryService>();
+            services.AddSingleton<Meridian.Application.SecurityMaster.ISecurityMasterQueryService>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
+            services.AddSingleton<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
+            services.AddSingleton<ISecurityMasterRuntimeStatus>(sp =>
+                sp.GetRequiredService<NullSecurityMasterQueryService>());
+            services.AddSingleton<ISecurityMasterImportService, NullSecurityMasterImportService>();
+            services.AddSingleton<ITradingParametersBackfillService, NullTradingParametersBackfillService>();
+        }
+
+        services.AddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
 
         // Wire optional Security Master collaborators into the BacktestService singleton when available.
         services.AddSingleton(sp =>
@@ -425,11 +499,16 @@ public partial class App : System.Windows.Application
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
-        services.AddSingleton(sp =>
+        services.AddSingleton<NavAttributionService>();
+        services.AddSingleton<ReportGenerationService>();
+        services.AddSingleton<FundOperationsWorkspaceReadService>();
+        services.AddSingleton<ISecurityMasterOperatorWorkflowClient, SecurityMasterOperatorWorkflowClient>();
+        services.AddSingleton<WpfServices.StrategyRunWorkspaceService>(sp =>
         {
             var service = new WpfServices.StrategyRunWorkspaceService(
                 sp.GetRequiredService<IStrategyRepository>(),
-                sp.GetRequiredService<StrategyRunReadService>());
+                sp.GetRequiredService<StrategyRunReadService>(),
+                sp.GetService<BrokerageConfiguration>());
             WpfServices.StrategyRunWorkspaceService.SetInstance(service);
             return service;
         });
@@ -448,9 +527,6 @@ public partial class App : System.Windows.Application
     {
         try
         {
-            // Probe WebView2 Evergreen runtime availability (non-blocking, logs warning if absent).
-            CheckWebView2Runtime();
-
             // Run first-time setup before showing window
             await InitializeFirstRunAsync();
 
@@ -616,20 +692,68 @@ public partial class App : System.Windows.Application
                 SavedAt = DateTime.UtcNow
             };
 
-            await workspaceService.SaveSessionStateAsync(session);
+            await workspaceService.SaveSessionStateAsync(session, ct: ct).ConfigureAwait(false);
         }
         catch (Exception)
         {
         }
     }
 
+    private static void EnsureMainWindowVisible(Window window)
+    {
+        if (window is MainWindow mainWindow)
+        {
+            mainWindow.ForceStartupWindowRecovery();
+            return;
+        }
+
+        if (window.WindowState == WindowState.Minimized)
+        {
+            window.WindowState = WindowState.Normal;
+        }
+
+        if (!window.ShowInTaskbar)
+        {
+            window.ShowInTaskbar = true;
+        }
+
+        if (!window.IsVisible)
+        {
+            window.Show();
+        }
+
+        window.Activate();
+    }
+
+    private static async Task RestoreMainWindowVisibilityAsync(Window window)
+    {
+        var delays = new[]
+        {
+            TimeSpan.FromMilliseconds(250),
+            TimeSpan.FromSeconds(1),
+            TimeSpan.FromSeconds(3)
+        };
+
+        foreach (var delay in delays)
+        {
+            await Task.Delay(delay).ConfigureAwait(true);
+
+            if (Current is null || Current.Dispatcher.HasShutdownStarted)
+            {
+                return;
+            }
+
+            await Current.Dispatcher.InvokeAsync(() => EnsureMainWindowVisible(window), DispatcherPriority.ApplicationIdle);
+        }
+    }
+
     /// <summary>
     /// Handles app exit for clean shutdown of background services with timeout.
     /// </summary>
-    private async void OnExit(object sender, ExitEventArgs e)
+    private void OnExit(object sender, ExitEventArgs e)
     {
-        await SafeOnExitAsync();
-        _host?.Dispose();
+        SafeOnExitAsync().GetAwaiter().GetResult();
+        StopHostSafely();
         WpfServices.SingleInstanceService.Instance.Dispose();
     }
 
@@ -649,7 +773,7 @@ public partial class App : System.Windows.Application
             using var cts = new CancellationTokenSource(ShutdownTimeoutMs);
 
             // Save workspace session before shutting down services
-            await SaveWorkspaceSessionAsync();
+            await SaveWorkspaceSessionAsync(cts.Token).ConfigureAwait(false);
 
             // Shutdown services in parallel with timeout for better performance
             var shutdownTasks = new[]
@@ -657,10 +781,11 @@ public partial class App : System.Windows.Application
                 ShutdownServiceAsync(() => WpfServices.BackgroundTaskSchedulerService.Instance.StopAsync(), "BackgroundTaskScheduler", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.PendingOperationsQueueService.Instance.ShutdownAsync(), "PendingOperationsQueue", cts.Token),
                 ShutdownServiceAsync(() => WpfServices.OfflineTrackingPersistenceService.Instance.ShutdownAsync(), "OfflineTrackingPersistence", cts.Token),
-                ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token)
+                ShutdownServiceAsync(() => WpfServices.ConnectionService.Instance.StopMonitoring(), "ConnectionService", cts.Token),
+                ShutdownServiceAsync(() => StopManagedBackendAsync(cts.Token), "BackendServiceManager", cts.Token)
             };
 
-            await Task.WhenAll(shutdownTasks);
+            await Task.WhenAll(shutdownTasks).ConfigureAwait(false);
 
             // Dispose the NotifyIcon so the system-tray icon is removed cleanly.
             try
@@ -683,6 +808,55 @@ public partial class App : System.Windows.Application
         }
     }
 
+    private void StopHostSafely()
+    {
+        var host = _host;
+        _host = null;
+        if (host is null)
+        {
+            return;
+        }
+
+        const int HostShutdownTimeoutMs = 5000;
+        try
+        {
+            using var cts = new CancellationTokenSource(HostShutdownTimeoutMs);
+            host.StopAsync(cts.Token).ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (Exception)
+        {
+        }
+
+        try
+        {
+            if (host is IAsyncDisposable asyncHost)
+            {
+                asyncHost.DisposeAsync().AsTask().ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            else
+            {
+                host.Dispose();
+            }
+        }
+        catch (Exception)
+        {
+        }
+    }
+
+    private static async Task StopManagedBackendAsync(CancellationToken ct)
+    {
+        var result = await WpfServices.BackendServiceManager.Instance.StopAsync(ct).ConfigureAwait(false);
+        if (!result.Success)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Backend service manager reported a shutdown failure",
+                ("Message", result.Message));
+        }
+    }
+
     /// <summary>
     /// Helper method to shutdown a service with proper error handling.
     /// </summary>
@@ -690,7 +864,7 @@ public partial class App : System.Windows.Application
     {
         try
         {
-            await shutdownAction().WaitAsync(ct);
+            await shutdownAction().WaitAsync(ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -718,7 +892,7 @@ public partial class App : System.Windows.Application
             catch (Exception)
             {
             }
-        }, ct);
+        }, ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -896,26 +1070,4 @@ public partial class App : System.Windows.Application
         systemTrayService.UpdateHealthStatus(initialStatus);
     }
 
-    // ── WebView2 runtime availability check ───────────────────────────────
-
-    /// <summary>
-    /// Probes whether the WebView2 Evergreen Runtime is installed on this machine
-    /// without requiring a WebView2 control to be instantiated.
-    /// Logs a warning if the runtime is absent (the embedded dashboard degrades gracefully).
-    /// </summary>
-    private static void CheckWebView2Runtime()
-    {
-        try
-        {
-            var version = Microsoft.Web.WebView2.Core.CoreWebView2Environment.GetAvailableBrowserVersionString();
-            WpfServices.LoggingService.Instance.LogInformation(
-                $"[WebView2] Runtime available — version {version}");
-        }
-        catch
-        {
-            WpfServices.LoggingService.Instance.LogWarning(
-                "[WebView2] Runtime not installed. The 'Web Dashboard' page will show an installation prompt. " +
-                "Download from https://developer.microsoft.com/en-us/microsoft-edge/webview2/");
-        }
-    }
 }

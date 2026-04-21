@@ -1,0 +1,70 @@
+[
+  {
+    "provider": "Robinhood",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "auth-session",
+    "environment": {
+      "mode": "manual-runtime-bounded",
+      "host": "developer workstation",
+      "notes": "Unofficial broker session and personal access tokens are not committed to the repo."
+    },
+    "result": "bounded",
+    "boundedBy": "Robinhood access tokens and broker-session state must be supplied manually; repo evidence covers token failure and gateway seams but not a committed live session capture.",
+    "repoEvidence": [
+      "tests/Meridian.Tests/Infrastructure/Providers/RobinhoodBrokerageGatewayTests.cs",
+      "tests/Meridian.Tests/Infrastructure/Providers/RobinhoodMarketDataClientTests.cs"
+    ],
+    "externalReferences": []
+  },
+  {
+    "provider": "Robinhood",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "quote-polling",
+    "environment": {
+      "mode": "manual-runtime-bounded",
+      "host": "developer workstation",
+      "notes": "Quote readiness is polling-based rather than websocket-based for this adapter set."
+    },
+    "result": "bounded",
+    "boundedBy": "Robinhood does not expose a public websocket feed for this adapter; Wave 1 relies on offline polling-path tests plus a future sanitized runtime note.",
+    "repoEvidence": [
+      "tests/Meridian.Tests/Infrastructure/Providers/RobinhoodMarketDataClientTests.cs",
+      "tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs"
+    ],
+    "externalReferences": []
+  },
+  {
+    "provider": "Robinhood",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "order-submit-cancel",
+    "environment": {
+      "mode": "manual-runtime-bounded",
+      "host": "developer workstation",
+      "notes": "Brokerage submit and cancellation still require a real Robinhood session outside CI."
+    },
+    "result": "bounded",
+    "boundedBy": "The unofficial brokerage surface can be stubbed in repo, but a sanitized live broker capture has not yet been committed.",
+    "repoEvidence": [
+      "tests/Meridian.Tests/Infrastructure/Providers/RobinhoodBrokerageGatewayTests.cs",
+      "tests/Meridian.Tests/Ui/ExecutionGovernanceEndpointsTests.cs"
+    ],
+    "externalReferences": []
+  },
+  {
+    "provider": "Robinhood",
+    "capturedAtUtc": "2026-04-09T00:00:00Z",
+    "scenario": "throttling-reconnect",
+    "environment": {
+      "mode": "manual-runtime-bounded",
+      "host": "developer workstation",
+      "notes": "The adapter is polling-oriented and rate-limit behavior is stubbed rather than transcript-backed."
+    },
+    "result": "bounded",
+    "boundedBy": "Wave 1 has repo-backed throttling and cancellation tests, but no committed sanitized runtime reconnect note from a real broker session yet.",
+    "repoEvidence": [
+      "tests/Meridian.Tests/Infrastructure/Providers/RobinhoodMarketDataClientTests.cs",
+      "docs/providers/provider-confidence-baseline.md"
+    ],
+    "externalReferences": []
+  }
+]

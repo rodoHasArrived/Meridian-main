@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.RetentionStatus
+  commentId: T:Meridian.Storage.Services.RetentionStatus
+  id: RetentionStatus
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.RetentionStatus.Archived
+  - Meridian.Storage.Services.RetentionStatus.Compliant
+  - Meridian.Storage.Services.RetentionStatus.ExceedsPolicy
+  - Meridian.Storage.Services.RetentionStatus.PendingDeletion
+  langs:
+  - csharp
+  - vb
+  name: RetentionStatus
+  nameWithType: RetentionStatus
+  fullName: Meridian.Storage.Services.RetentionStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetentionStatus
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Retention status for a file.
+  example: []
+  syntax:
+    content: 'public enum RetentionStatus : byte'
+    content.vb: Public Enum RetentionStatus As Byte
+- uid: Meridian.Storage.Services.RetentionStatus.Compliant
+  commentId: F:Meridian.Storage.Services.RetentionStatus.Compliant
+  id: Compliant
+  parent: Meridian.Storage.Services.RetentionStatus
+  langs:
+  - csharp
+  - vb
+  name: Compliant
+  nameWithType: RetentionStatus.Compliant
+  fullName: Meridian.Storage.Services.RetentionStatus.Compliant
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compliant
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Compliant = 0
+    return:
+      type: Meridian.Storage.Services.RetentionStatus
+- uid: Meridian.Storage.Services.RetentionStatus.ExceedsPolicy
+  commentId: F:Meridian.Storage.Services.RetentionStatus.ExceedsPolicy
+  id: ExceedsPolicy
+  parent: Meridian.Storage.Services.RetentionStatus
+  langs:
+  - csharp
+  - vb
+  name: ExceedsPolicy
+  nameWithType: RetentionStatus.ExceedsPolicy
+  fullName: Meridian.Storage.Services.RetentionStatus.ExceedsPolicy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExceedsPolicy
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: ExceedsPolicy = 1
+    return:
+      type: Meridian.Storage.Services.RetentionStatus
+- uid: Meridian.Storage.Services.RetentionStatus.Archived
+  commentId: F:Meridian.Storage.Services.RetentionStatus.Archived
+  id: Archived
+  parent: Meridian.Storage.Services.RetentionStatus
+  langs:
+  - csharp
+  - vb
+  name: Archived
+  nameWithType: RetentionStatus.Archived
+  fullName: Meridian.Storage.Services.RetentionStatus.Archived
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Archived
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Archived = 2
+    return:
+      type: Meridian.Storage.Services.RetentionStatus
+- uid: Meridian.Storage.Services.RetentionStatus.PendingDeletion
+  commentId: F:Meridian.Storage.Services.RetentionStatus.PendingDeletion
+  id: PendingDeletion
+  parent: Meridian.Storage.Services.RetentionStatus
+  langs:
+  - csharp
+  - vb
+  name: PendingDeletion
+  nameWithType: RetentionStatus.PendingDeletion
+  fullName: Meridian.Storage.Services.RetentionStatus.PendingDeletion
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingDeletion
+    path: ../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: PendingDeletion = 3
+    return:
+      type: Meridian.Storage.Services.RetentionStatus
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.RetentionStatus
+  commentId: T:Meridian.Storage.Services.RetentionStatus
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.RetentionStatus.html
+  name: RetentionStatus
+  nameWithType: RetentionStatus
+  fullName: Meridian.Storage.Services.RetentionStatus

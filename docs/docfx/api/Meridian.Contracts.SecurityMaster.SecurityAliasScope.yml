@@ -1,0 +1,186 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  id: SecurityAliasScope
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.SecurityAliasScope.Collector
+  - Meridian.Contracts.SecurityMaster.SecurityAliasScope.Execution
+  - Meridian.Contracts.SecurityMaster.SecurityAliasScope.Migration
+  - Meridian.Contracts.SecurityMaster.SecurityAliasScope.Operations
+  langs:
+  - csharp
+  - vb
+  name: SecurityAliasScope
+  nameWithType: SecurityAliasScope
+  fullName: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityAliasScope
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<SecurityAliasScope>))]
+
+      public enum SecurityAliasScope
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of SecurityAliasScope)))>
+
+      Public Enum SecurityAliasScope
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.SecurityMaster.SecurityAliasScope}
+- uid: Meridian.Contracts.SecurityMaster.SecurityAliasScope.Operations
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityAliasScope.Operations
+  id: Operations
+  parent: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  langs:
+  - csharp
+  - vb
+  name: Operations
+  nameWithType: SecurityAliasScope.Operations
+  fullName: Meridian.Contracts.SecurityMaster.SecurityAliasScope.Operations
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Operations
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Operations = 0
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+- uid: Meridian.Contracts.SecurityMaster.SecurityAliasScope.Collector
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityAliasScope.Collector
+  id: Collector
+  parent: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  langs:
+  - csharp
+  - vb
+  name: Collector
+  nameWithType: SecurityAliasScope.Collector
+  fullName: Meridian.Contracts.SecurityMaster.SecurityAliasScope.Collector
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Collector
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Collector = 1
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+- uid: Meridian.Contracts.SecurityMaster.SecurityAliasScope.Execution
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityAliasScope.Execution
+  id: Execution
+  parent: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  langs:
+  - csharp
+  - vb
+  name: Execution
+  nameWithType: SecurityAliasScope.Execution
+  fullName: Meridian.Contracts.SecurityMaster.SecurityAliasScope.Execution
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Execution
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Execution = 2
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+- uid: Meridian.Contracts.SecurityMaster.SecurityAliasScope.Migration
+  commentId: F:Meridian.Contracts.SecurityMaster.SecurityAliasScope.Migration
+  id: Migration
+  parent: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  langs:
+  - csharp
+  - vb
+  name: Migration
+  nameWithType: SecurityAliasScope.Migration
+  fullName: Meridian.Contracts.SecurityMaster.SecurityAliasScope.Migration
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Migration
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityIdentifiers.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Migration = 3
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityAliasScope.html
+  name: SecurityAliasScope
+  nameWithType: SecurityAliasScope
+  fullName: Meridian.Contracts.SecurityMaster.SecurityAliasScope

@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundLedgerScope
+  commentId: T:Meridian.Contracts.Workstation.FundLedgerScope
+  id: FundLedgerScope
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundLedgerScope.Consolidated
+  - Meridian.Contracts.Workstation.FundLedgerScope.Entity
+  - Meridian.Contracts.Workstation.FundLedgerScope.Sleeve
+  - Meridian.Contracts.Workstation.FundLedgerScope.Vehicle
+  langs:
+  - csharp
+  - vb
+  name: FundLedgerScope
+  nameWithType: FundLedgerScope
+  fullName: Meridian.Contracts.Workstation.FundLedgerScope
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundLedgerScope
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Fund-level ledger drill-in scope.
+  example: []
+  syntax:
+    content: 'public enum FundLedgerScope : byte'
+    content.vb: Public Enum FundLedgerScope As Byte
+- uid: Meridian.Contracts.Workstation.FundLedgerScope.Consolidated
+  commentId: F:Meridian.Contracts.Workstation.FundLedgerScope.Consolidated
+  id: Consolidated
+  parent: Meridian.Contracts.Workstation.FundLedgerScope
+  langs:
+  - csharp
+  - vb
+  name: Consolidated
+  nameWithType: FundLedgerScope.Consolidated
+  fullName: Meridian.Contracts.Workstation.FundLedgerScope.Consolidated
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Consolidated
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Consolidated = 0
+    return:
+      type: Meridian.Contracts.Workstation.FundLedgerScope
+- uid: Meridian.Contracts.Workstation.FundLedgerScope.Entity
+  commentId: F:Meridian.Contracts.Workstation.FundLedgerScope.Entity
+  id: Entity
+  parent: Meridian.Contracts.Workstation.FundLedgerScope
+  langs:
+  - csharp
+  - vb
+  name: Entity
+  nameWithType: FundLedgerScope.Entity
+  fullName: Meridian.Contracts.Workstation.FundLedgerScope.Entity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Entity
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Entity = 1
+    return:
+      type: Meridian.Contracts.Workstation.FundLedgerScope
+- uid: Meridian.Contracts.Workstation.FundLedgerScope.Sleeve
+  commentId: F:Meridian.Contracts.Workstation.FundLedgerScope.Sleeve
+  id: Sleeve
+  parent: Meridian.Contracts.Workstation.FundLedgerScope
+  langs:
+  - csharp
+  - vb
+  name: Sleeve
+  nameWithType: FundLedgerScope.Sleeve
+  fullName: Meridian.Contracts.Workstation.FundLedgerScope.Sleeve
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sleeve
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Sleeve = 2
+    return:
+      type: Meridian.Contracts.Workstation.FundLedgerScope
+- uid: Meridian.Contracts.Workstation.FundLedgerScope.Vehicle
+  commentId: F:Meridian.Contracts.Workstation.FundLedgerScope.Vehicle
+  id: Vehicle
+  parent: Meridian.Contracts.Workstation.FundLedgerScope
+  langs:
+  - csharp
+  - vb
+  name: Vehicle
+  nameWithType: FundLedgerScope.Vehicle
+  fullName: Meridian.Contracts.Workstation.FundLedgerScope.Vehicle
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vehicle
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Vehicle = 3
+    return:
+      type: Meridian.Contracts.Workstation.FundLedgerScope
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.FundLedgerScope
+  commentId: T:Meridian.Contracts.Workstation.FundLedgerScope
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundLedgerScope.html
+  name: FundLedgerScope
+  nameWithType: FundLedgerScope
+  fullName: Meridian.Contracts.Workstation.FundLedgerScope

@@ -1,0 +1,192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  id: NYSEFeedTier
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  children:
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Basic
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Enhanced
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Premium
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Professional
+  langs:
+  - csharp
+  - vb
+  name: NYSEFeedTier
+  nameWithType: NYSEFeedTier
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NYSEFeedTier
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: NYSE data feed subscription tiers.
+  example: []
+  syntax:
+    content: 'public enum NYSEFeedTier : byte'
+    content.vb: Public Enum NYSEFeedTier As Byte
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Basic
+  commentId: F:Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Basic
+  id: Basic
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  langs:
+  - csharp
+  - vb
+  name: Basic
+  nameWithType: NYSEFeedTier.Basic
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Basic
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Basic
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Basic NYSE feed - trades and BBO quotes (15-min delayed for non-pro).
+  example: []
+  syntax:
+    content: Basic = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Enhanced
+  commentId: F:Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Enhanced
+  id: Enhanced
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  langs:
+  - csharp
+  - vb
+  name: Enhanced
+  nameWithType: NYSEFeedTier.Enhanced
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Enhanced
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enhanced
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Enhanced feed - real-time trades and quotes.
+  example: []
+  syntax:
+    content: Enhanced = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Premium
+  commentId: F:Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Premium
+  id: Premium
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  langs:
+  - csharp
+  - vb
+  name: Premium
+  nameWithType: NYSEFeedTier.Premium
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Premium
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Premium
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Premium feed - includes Level 2 depth, trade conditions.
+  example: []
+  syntax:
+    content: Premium = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Professional
+  commentId: F:Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Professional
+  id: Professional
+  parent: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  langs:
+  - csharp
+  - vb
+  name: Professional
+  nameWithType: NYSEFeedTier.Professional
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.Professional
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Professional
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NYSEOptions.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Professional/Full feed - full depth, tick-by-tick, all participant IDs.
+  example: []
+  syntax:
+    content: Professional = 3
+    return:
+      type: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+references:
+- uid: Meridian.Infrastructure.Adapters.NYSE
+  commentId: N:Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.NYSE
+  nameWithType: Meridian.Infrastructure.Adapters.NYSE
+  fullName: Meridian.Infrastructure.Adapters.NYSE
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier.html
+  name: NYSEFeedTier
+  nameWithType: NYSEFeedTier
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEFeedTier

@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Fred
+  commentId: N:Meridian.Infrastructure.Adapters.Fred
+  id: Meridian.Infrastructure.Adapters.Fred
+  children:
+  - Meridian.Infrastructure.Adapters.Fred.FredHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Fred
+  nameWithType: Meridian.Infrastructure.Adapters.Fred
+  fullName: Meridian.Infrastructure.Adapters.Fred
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Fred.FredHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Fred.FredHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Fred.FredHistoricalDataProvider.html
+  name: FredHistoricalDataProvider
+  nameWithType: FredHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Fred.FredHistoricalDataProvider

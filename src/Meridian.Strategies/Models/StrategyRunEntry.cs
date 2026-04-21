@@ -23,7 +23,9 @@ public sealed record StrategyRunEntry(
     string? Engine = null,
     IReadOnlyDictionary<string, string>? ParameterSet = null,
     StrategyRunStatus? TerminalStatus = null,
-    string? ParentRunId = null)
+    string? ParentRunId = null,
+    string? FundProfileId = null,
+    string? FundDisplayName = null)
 {
     /// <summary>Creates a new run entry with a generated run ID and current timestamp.</summary>
     public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType) =>
@@ -44,6 +46,31 @@ public sealed record StrategyRunEntry(
                 RunType.Live => "BrokerLive",
                 _ => "Unknown"
             });
+
+    /// <summary>Creates a new run entry with an explicit run ID and optional metadata fields.</summary>
+    public static StrategyRunEntry Start(
+        string strategyId,
+        string strategyName,
+        RunType runType,
+        string runId,
+        string? datasetReference = null,
+        string? feedReference = null,
+        string? engine = null,
+        IReadOnlyDictionary<string, string>? parameterSet = null) =>
+        new(
+            RunId: runId,
+            StrategyId: strategyId,
+            StrategyName: strategyName,
+            RunType: runType,
+            StartedAt: DateTimeOffset.UtcNow,
+            EndedAt: null,
+            Metrics: null,
+            DatasetReference: datasetReference,
+            FeedReference: feedReference,
+            PortfolioId: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-portfolio",
+            LedgerReference: $"{strategyId}-{runType.ToString().ToLowerInvariant()}-ledger",
+            Engine: engine,
+            ParameterSet: parameterSet);
 
     /// <summary>Returns a copy of this entry marked as ended with the provided metrics.</summary>
     public StrategyRunEntry Complete(BacktestResult? metrics) =>

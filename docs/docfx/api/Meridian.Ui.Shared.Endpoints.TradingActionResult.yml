@@ -1,0 +1,611 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult
+  commentId: T:Meridian.Ui.Shared.Endpoints.TradingActionResult
+  id: TradingActionResult
+  parent: Meridian.Ui.Shared.Endpoints
+  children:
+  - Meridian.Ui.Shared.Endpoints.TradingActionResult.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.String)
+  - Meridian.Ui.Shared.Endpoints.TradingActionResult.ActionId
+  - Meridian.Ui.Shared.Endpoints.TradingActionResult.AuditId
+  - Meridian.Ui.Shared.Endpoints.TradingActionResult.Message
+  - Meridian.Ui.Shared.Endpoints.TradingActionResult.OccurredAt
+  - Meridian.Ui.Shared.Endpoints.TradingActionResult.Status
+  langs:
+  - csharp
+  - vb
+  name: TradingActionResult
+  nameWithType: TradingActionResult
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingActionResult
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1013
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: >-
+    Structured result returned by every Trading write action (cancel, close, pause, etc.).
+
+    Carries a correlation ID so UI and backend audit logs can be cross-referenced.
+  example: []
+  syntax:
+    content: 'public sealed record TradingActionResult : IEquatable<TradingActionResult>'
+    content.vb: Public NotInheritable Class TradingActionResult Implements IEquatable(Of TradingActionResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Shared.Endpoints.TradingActionResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Ui.Shared.Endpoints.TradingActionResult.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.String)'
+  parent: Meridian.Ui.Shared.Endpoints.TradingActionResult
+  langs:
+  - csharp
+  - vb
+  name: TradingActionResult(string, string, string, DateTimeOffset, string?)
+  nameWithType: TradingActionResult.TradingActionResult(string, string, string, DateTimeOffset, string?)
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.TradingActionResult(string, string, string, System.DateTimeOffset, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1013
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: >-
+    Structured result returned by every Trading write action (cancel, close, pause, etc.).
+
+    Carries a correlation ID so UI and backend audit logs can be cross-referenced.
+  example: []
+  syntax:
+    content: public TradingActionResult(string ActionId, string Status, string Message, DateTimeOffset OccurredAt, string? AuditId = null)
+    parameters:
+    - id: ActionId
+      type: System.String
+    - id: Status
+      type: System.String
+    - id: Message
+      type: System.String
+    - id: OccurredAt
+      type: System.DateTimeOffset
+    - id: AuditId
+      type: System.String
+    content.vb: Public Sub New(ActionId As String, Status As String, Message As String, OccurredAt As DateTimeOffset, AuditId As String = Nothing)
+  overload: Meridian.Ui.Shared.Endpoints.TradingActionResult.#ctor*
+  nameWithType.vb: TradingActionResult.New(String, String, String, DateTimeOffset, String)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.TradingActionResult.New(String, String, String, System.DateTimeOffset, String)
+  name.vb: New(String, String, String, DateTimeOffset, String)
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.ActionId
+  commentId: P:Meridian.Ui.Shared.Endpoints.TradingActionResult.ActionId
+  id: ActionId
+  parent: Meridian.Ui.Shared.Endpoints.TradingActionResult
+  langs:
+  - csharp
+  - vb
+  name: ActionId
+  nameWithType: TradingActionResult.ActionId
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.ActionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActionId
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1014
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string ActionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ActionId As String
+  overload: Meridian.Ui.Shared.Endpoints.TradingActionResult.ActionId*
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.Status
+  commentId: P:Meridian.Ui.Shared.Endpoints.TradingActionResult.Status
+  id: Status
+  parent: Meridian.Ui.Shared.Endpoints.TradingActionResult
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: TradingActionResult.Status
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1015
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string Status { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Status As String
+  overload: Meridian.Ui.Shared.Endpoints.TradingActionResult.Status*
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.Message
+  commentId: P:Meridian.Ui.Shared.Endpoints.TradingActionResult.Message
+  id: Message
+  parent: Meridian.Ui.Shared.Endpoints.TradingActionResult
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: TradingActionResult.Message
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1016
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Ui.Shared.Endpoints.TradingActionResult.Message*
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.OccurredAt
+  commentId: P:Meridian.Ui.Shared.Endpoints.TradingActionResult.OccurredAt
+  id: OccurredAt
+  parent: Meridian.Ui.Shared.Endpoints.TradingActionResult
+  langs:
+  - csharp
+  - vb
+  name: OccurredAt
+  nameWithType: TradingActionResult.OccurredAt
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.OccurredAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OccurredAt
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1017
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public DateTimeOffset OccurredAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property OccurredAt As DateTimeOffset
+  overload: Meridian.Ui.Shared.Endpoints.TradingActionResult.OccurredAt*
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.AuditId
+  commentId: P:Meridian.Ui.Shared.Endpoints.TradingActionResult.AuditId
+  id: AuditId
+  parent: Meridian.Ui.Shared.Endpoints.TradingActionResult
+  langs:
+  - csharp
+  - vb
+  name: AuditId
+  nameWithType: TradingActionResult.AuditId
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.AuditId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditId
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 1018
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string? AuditId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AuditId As String
+  overload: Meridian.Ui.Shared.Endpoints.TradingActionResult.AuditId*
+references:
+- uid: Meridian.Ui.Shared.Endpoints
+  commentId: N:Meridian.Ui.Shared.Endpoints
+  href: Meridian.html
+  name: Meridian.Ui.Shared.Endpoints
+  nameWithType: Meridian.Ui.Shared.Endpoints
+  fullName: Meridian.Ui.Shared.Endpoints
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Shared.Endpoints.TradingActionResult}
+  commentId: T:System.IEquatable{Meridian.Ui.Shared.Endpoints.TradingActionResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TradingActionResult>
+  nameWithType: IEquatable<TradingActionResult>
+  fullName: System.IEquatable<Meridian.Ui.Shared.Endpoints.TradingActionResult>
+  nameWithType.vb: IEquatable(Of TradingActionResult)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Shared.Endpoints.TradingActionResult)
+  name.vb: IEquatable(Of TradingActionResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Shared.Endpoints.TradingActionResult
+    name: TradingActionResult
+    href: Meridian.Ui.Shared.Endpoints.TradingActionResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Shared.Endpoints.TradingActionResult
+    name: TradingActionResult
+    href: Meridian.Ui.Shared.Endpoints.TradingActionResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.TradingActionResult.#ctor
+  href: Meridian.Ui.Shared.Endpoints.TradingActionResult.html#Meridian_Ui_Shared_Endpoints_TradingActionResult__ctor_System_String_System_String_System_String_System_DateTimeOffset_System_String_
+  name: TradingActionResult
+  nameWithType: TradingActionResult.TradingActionResult
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.TradingActionResult
+  nameWithType.vb: TradingActionResult.New
+  fullName.vb: Meridian.Ui.Shared.Endpoints.TradingActionResult.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.ActionId*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.TradingActionResult.ActionId
+  href: Meridian.Ui.Shared.Endpoints.TradingActionResult.html#Meridian_Ui_Shared_Endpoints_TradingActionResult_ActionId
+  name: ActionId
+  nameWithType: TradingActionResult.ActionId
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.ActionId
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.Status*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.TradingActionResult.Status
+  href: Meridian.Ui.Shared.Endpoints.TradingActionResult.html#Meridian_Ui_Shared_Endpoints_TradingActionResult_Status
+  name: Status
+  nameWithType: TradingActionResult.Status
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.Status
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.Message*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.TradingActionResult.Message
+  href: Meridian.Ui.Shared.Endpoints.TradingActionResult.html#Meridian_Ui_Shared_Endpoints_TradingActionResult_Message
+  name: Message
+  nameWithType: TradingActionResult.Message
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.Message
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.OccurredAt*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.TradingActionResult.OccurredAt
+  href: Meridian.Ui.Shared.Endpoints.TradingActionResult.html#Meridian_Ui_Shared_Endpoints_TradingActionResult_OccurredAt
+  name: OccurredAt
+  nameWithType: TradingActionResult.OccurredAt
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.OccurredAt
+- uid: Meridian.Ui.Shared.Endpoints.TradingActionResult.AuditId*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.TradingActionResult.AuditId
+  href: Meridian.Ui.Shared.Endpoints.TradingActionResult.html#Meridian_Ui_Shared_Endpoints_TradingActionResult_AuditId
+  name: AuditId
+  nameWithType: TradingActionResult.AuditId
+  fullName: Meridian.Ui.Shared.Endpoints.TradingActionResult.AuditId

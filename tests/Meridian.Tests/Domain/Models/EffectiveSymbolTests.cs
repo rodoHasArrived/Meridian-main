@@ -70,7 +70,7 @@ public sealed class EffectiveSymbolTests
     [Fact]
     public void ContractsMarketEvent_EffectiveSymbol_WorksToo()
     {
-        var evt = new Contracts.Domain.Events.MarketEventDto(
+        var evt = new Meridian.Contracts.Domain.Events.MarketEventDto(
             Timestamp: DateTimeOffset.UtcNow,
             Symbol: "MSFT.US",
             Type: MarketEventType.Trade,
@@ -83,7 +83,7 @@ public sealed class EffectiveSymbolTests
     [Fact]
     public void ContractsMarketEvent_EffectiveSymbol_FallsBackToSymbol()
     {
-        var evt = new Contracts.Domain.Events.MarketEventDto(
+        var evt = new Meridian.Contracts.Domain.Events.MarketEventDto(
             Timestamp: DateTimeOffset.UtcNow,
             Symbol: "MSFT.US",
             Type: MarketEventType.Trade,

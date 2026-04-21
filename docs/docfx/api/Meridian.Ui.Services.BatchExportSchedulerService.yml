@@ -1,0 +1,1494 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.BatchExportSchedulerService
+  commentId: T:Meridian.Ui.Services.BatchExportSchedulerService
+  id: BatchExportSchedulerService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.BatchExportSchedulerService.#ctor(System.Int32,System.String)
+  - Meridian.Ui.Services.BatchExportSchedulerService.CancelJob(System.String)
+  - Meridian.Ui.Services.BatchExportSchedulerService.CreateJob(Meridian.Ui.Services.ExportJobRequest)
+  - Meridian.Ui.Services.BatchExportSchedulerService.Dispose
+  - Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync
+  - Meridian.Ui.Services.BatchExportSchedulerService.GetJob(System.String)
+  - Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory(System.String,System.Int32)
+  - Meridian.Ui.Services.BatchExportSchedulerService.JobCompleted
+  - Meridian.Ui.Services.BatchExportSchedulerService.JobFailed
+  - Meridian.Ui.Services.BatchExportSchedulerService.JobProgress
+  - Meridian.Ui.Services.BatchExportSchedulerService.JobStarted
+  - Meridian.Ui.Services.BatchExportSchedulerService.Jobs
+  - Meridian.Ui.Services.BatchExportSchedulerService.QueueJob(System.String)
+  - Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob(System.String)
+  - Meridian.Ui.Services.BatchExportSchedulerService.StartAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BatchExportSchedulerService.StopAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BatchExportSchedulerService
+  nameWithType: BatchExportSchedulerService
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BatchExportSchedulerService
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for scheduling and managing batch export jobs.
+
+    Implements Feature #40: Batch Export Scheduler
+  example: []
+  syntax:
+    content: 'public sealed class BatchExportSchedulerService : IAsyncDisposable, IDisposable'
+    content.vb: Public NotInheritable Class BatchExportSchedulerService Implements IAsyncDisposable, IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.#ctor(System.Int32,System.String)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.#ctor(System.Int32,System.String)
+  id: '#ctor(System.Int32,System.String)'
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: BatchExportSchedulerService(int, string?)
+  nameWithType: BatchExportSchedulerService.BatchExportSchedulerService(int, string?)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.BatchExportSchedulerService(int, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public BatchExportSchedulerService(int maxConcurrentJobs = 4, string? jobStorePath = null)
+    parameters:
+    - id: maxConcurrentJobs
+      type: System.Int32
+    - id: jobStorePath
+      type: System.String
+    content.vb: Public Sub New(maxConcurrentJobs As Integer = 4, jobStorePath As String = Nothing)
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.#ctor*
+  nameWithType.vb: BatchExportSchedulerService.New(Integer, String)
+  fullName.vb: Meridian.Ui.Services.BatchExportSchedulerService.New(Integer, String)
+  name.vb: New(Integer, String)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.JobStarted
+  commentId: E:Meridian.Ui.Services.BatchExportSchedulerService.JobStarted
+  id: JobStarted
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: JobStarted
+  nameWithType: BatchExportSchedulerService.JobStarted
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.JobStarted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobStarted
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a job starts.
+  example: []
+  syntax:
+    content: public event EventHandler<ExportJobEventArgs>? JobStarted
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.ExportJobEventArgs}
+    content.vb: Public Event JobStarted As EventHandler(Of ExportJobEventArgs)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.JobCompleted
+  commentId: E:Meridian.Ui.Services.BatchExportSchedulerService.JobCompleted
+  id: JobCompleted
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: JobCompleted
+  nameWithType: BatchExportSchedulerService.JobCompleted
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.JobCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobCompleted
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a job completes.
+  example: []
+  syntax:
+    content: public event EventHandler<ExportJobEventArgs>? JobCompleted
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.ExportJobEventArgs}
+    content.vb: Public Event JobCompleted As EventHandler(Of ExportJobEventArgs)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.JobFailed
+  commentId: E:Meridian.Ui.Services.BatchExportSchedulerService.JobFailed
+  id: JobFailed
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: JobFailed
+  nameWithType: BatchExportSchedulerService.JobFailed
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.JobFailed
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobFailed
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a job fails.
+  example: []
+  syntax:
+    content: public event EventHandler<ExportJobEventArgs>? JobFailed
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.ExportJobEventArgs}
+    content.vb: Public Event JobFailed As EventHandler(Of ExportJobEventArgs)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.JobProgress
+  commentId: E:Meridian.Ui.Services.BatchExportSchedulerService.JobProgress
+  id: JobProgress
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: JobProgress
+  nameWithType: BatchExportSchedulerService.JobProgress
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.JobProgress
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobProgress
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when job progress updates.
+  example: []
+  syntax:
+    content: public event EventHandler<ExportJobProgressEventArgs>? JobProgress
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.ExportJobProgressEventArgs}
+    content.vb: Public Event JobProgress As EventHandler(Of ExportJobProgressEventArgs)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.Jobs
+  commentId: P:Meridian.Ui.Services.BatchExportSchedulerService.Jobs
+  id: Jobs
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: Jobs
+  nameWithType: BatchExportSchedulerService.Jobs
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.Jobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Jobs
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all jobs.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, ExportJob> Jobs { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Ui.Services.ExportJob}
+    content.vb: Public ReadOnly Property Jobs As IReadOnlyDictionary(Of String, ExportJob)
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.Jobs*
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.StartAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.StartAsync(System.Threading.CancellationToken)
+  id: StartAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: StartAsync(CancellationToken)
+  nameWithType: BatchExportSchedulerService.StartAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.StartAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartAsync
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Starts the scheduler.
+  example: []
+  syntax:
+    content: public Task StartAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StartAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.StartAsync*
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.StopAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.StopAsync(System.Threading.CancellationToken)
+  id: StopAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: StopAsync(CancellationToken)
+  nameWithType: BatchExportSchedulerService.StopAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.StopAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopAsync
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Stops the scheduler.
+  example: []
+  syntax:
+    content: public Task StopAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StopAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.StopAsync*
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.CreateJob(Meridian.Ui.Services.ExportJobRequest)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.CreateJob(Meridian.Ui.Services.ExportJobRequest)
+  id: CreateJob(Meridian.Ui.Services.ExportJobRequest)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: CreateJob(ExportJobRequest)
+  nameWithType: BatchExportSchedulerService.CreateJob(ExportJobRequest)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.CreateJob(Meridian.Ui.Services.ExportJobRequest)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateJob
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a new export job.
+  example: []
+  syntax:
+    content: public ExportJob CreateJob(ExportJobRequest request)
+    parameters:
+    - id: request
+      type: Meridian.Ui.Services.ExportJobRequest
+    return:
+      type: Meridian.Ui.Services.ExportJob
+    content.vb: Public Function CreateJob(request As ExportJobRequest) As ExportJob
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.CreateJob*
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.QueueJob(System.String)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.QueueJob(System.String)
+  id: QueueJob(System.String)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: QueueJob(string)
+  nameWithType: BatchExportSchedulerService.QueueJob(string)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.QueueJob(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueJob
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Queues a job for immediate execution.
+  example: []
+  syntax:
+    content: public bool QueueJob(string jobId)
+    parameters:
+    - id: jobId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function QueueJob(jobId As String) As Boolean
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.QueueJob*
+  nameWithType.vb: BatchExportSchedulerService.QueueJob(String)
+  fullName.vb: Meridian.Ui.Services.BatchExportSchedulerService.QueueJob(String)
+  name.vb: QueueJob(String)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.CancelJob(System.String)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.CancelJob(System.String)
+  id: CancelJob(System.String)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: CancelJob(string)
+  nameWithType: BatchExportSchedulerService.CancelJob(string)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.CancelJob(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelJob
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Cancels a running or queued job.
+  example: []
+  syntax:
+    content: public bool CancelJob(string jobId)
+    parameters:
+    - id: jobId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function CancelJob(jobId As String) As Boolean
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.CancelJob*
+  nameWithType.vb: BatchExportSchedulerService.CancelJob(String)
+  fullName.vb: Meridian.Ui.Services.BatchExportSchedulerService.CancelJob(String)
+  name.vb: CancelJob(String)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob(System.String)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob(System.String)
+  id: RemoveJob(System.String)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: RemoveJob(string)
+  nameWithType: BatchExportSchedulerService.RemoveJob(string)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveJob
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Removes a job from the system.
+  example: []
+  syntax:
+    content: public bool RemoveJob(string jobId)
+    parameters:
+    - id: jobId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function RemoveJob(jobId As String) As Boolean
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob*
+  nameWithType.vb: BatchExportSchedulerService.RemoveJob(String)
+  fullName.vb: Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob(String)
+  name.vb: RemoveJob(String)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.GetJob(System.String)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.GetJob(System.String)
+  id: GetJob(System.String)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: GetJob(string)
+  nameWithType: BatchExportSchedulerService.GetJob(string)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.GetJob(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJob
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the status of a job.
+  example: []
+  syntax:
+    content: public ExportJob? GetJob(string jobId)
+    parameters:
+    - id: jobId
+      type: System.String
+    return:
+      type: Meridian.Ui.Services.ExportJob
+    content.vb: Public Function GetJob(jobId As String) As ExportJob
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.GetJob*
+  nameWithType.vb: BatchExportSchedulerService.GetJob(String)
+  fullName.vb: Meridian.Ui.Services.BatchExportSchedulerService.GetJob(String)
+  name.vb: GetJob(String)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory(System.String,System.Int32)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory(System.String,System.Int32)
+  id: GetJobHistory(System.String,System.Int32)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: GetJobHistory(string, int)
+  nameWithType: BatchExportSchedulerService.GetJobHistory(string, int)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJobHistory
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets job history.
+  example: []
+  syntax:
+    content: public List<ExportJobRun> GetJobHistory(string jobId, int limit = 10)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: limit
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.ExportJobRun}
+    content.vb: Public Function GetJobHistory(jobId As String, limit As Integer = 10) As List(Of ExportJobRun)
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory*
+  nameWithType.vb: BatchExportSchedulerService.GetJobHistory(String, Integer)
+  fullName.vb: Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory(String, Integer)
+  name.vb: GetJobHistory(String, Integer)
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync(System.Threading.CancellationToken)
+  id: ReadPersistedJobsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: ReadPersistedJobsAsync(CancellationToken)
+  nameWithType: BatchExportSchedulerService.ReadPersistedJobsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReadPersistedJobsAsync
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 569
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Reads the persisted export jobs without starting the scheduler workers.
+
+    This is used by shell surfaces that need job visibility but do not own
+
+    export execution.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<ExportJob>> ReadPersistedJobsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.ExportJob}}
+    content.vb: Public Function ReadPersistedJobsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ExportJob))
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync*
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.Dispose
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.Dispose
+  id: Dispose
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: BatchExportSchedulerService.Dispose()
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 616
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync
+  commentId: M:Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Ui.Services.BatchExportSchedulerService
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: BatchExportSchedulerService.DisposeAsync()
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 622
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.#ctor*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.#ctor
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService__ctor_System_Int32_System_String_
+  name: BatchExportSchedulerService
+  nameWithType: BatchExportSchedulerService.BatchExportSchedulerService
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.BatchExportSchedulerService
+  nameWithType.vb: BatchExportSchedulerService.New
+  fullName.vb: Meridian.Ui.Services.BatchExportSchedulerService.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.EventHandler{Meridian.Ui.Services.ExportJobEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.ExportJobEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ExportJobEventArgs>
+  nameWithType: EventHandler<ExportJobEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.ExportJobEventArgs>
+  nameWithType.vb: EventHandler(Of ExportJobEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.ExportJobEventArgs)
+  name.vb: EventHandler(Of ExportJobEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.ExportJobEventArgs
+    name: ExportJobEventArgs
+    href: Meridian.Ui.Services.ExportJobEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ExportJobEventArgs
+    name: ExportJobEventArgs
+    href: Meridian.Ui.Services.ExportJobEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.ExportJobProgressEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.ExportJobProgressEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ExportJobProgressEventArgs>
+  nameWithType: EventHandler<ExportJobProgressEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.ExportJobProgressEventArgs>
+  nameWithType.vb: EventHandler(Of ExportJobProgressEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.ExportJobProgressEventArgs)
+  name.vb: EventHandler(Of ExportJobProgressEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.ExportJobProgressEventArgs
+    name: ExportJobProgressEventArgs
+    href: Meridian.Ui.Services.ExportJobProgressEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ExportJobProgressEventArgs
+    name: ExportJobProgressEventArgs
+    href: Meridian.Ui.Services.ExportJobProgressEventArgs.html
+  - name: )
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.Jobs*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.Jobs
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_Jobs
+  name: Jobs
+  nameWithType: BatchExportSchedulerService.Jobs
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.Jobs
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Ui.Services.ExportJob}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Ui.Services.ExportJob}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, ExportJob>
+  nameWithType: IReadOnlyDictionary<string, ExportJob>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Ui.Services.ExportJob>
+  nameWithType.vb: IReadOnlyDictionary(Of String, ExportJob)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Ui.Services.ExportJob)
+  name.vb: IReadOnlyDictionary(Of String, ExportJob)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ui.Services.ExportJob
+    name: ExportJob
+    href: Meridian.Ui.Services.ExportJob.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ui.Services.ExportJob
+    name: ExportJob
+    href: Meridian.Ui.Services.ExportJob.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.StartAsync*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.StartAsync
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_StartAsync_System_Threading_CancellationToken_
+  name: StartAsync
+  nameWithType: BatchExportSchedulerService.StartAsync
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.StartAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.StopAsync*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.StopAsync
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_StopAsync_System_Threading_CancellationToken_
+  name: StopAsync
+  nameWithType: BatchExportSchedulerService.StopAsync
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.StopAsync
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.CreateJob*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.CreateJob
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_CreateJob_Meridian_Ui_Services_ExportJobRequest_
+  name: CreateJob
+  nameWithType: BatchExportSchedulerService.CreateJob
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.CreateJob
+- uid: Meridian.Ui.Services.ExportJobRequest
+  commentId: T:Meridian.Ui.Services.ExportJobRequest
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportJobRequest.html
+  name: ExportJobRequest
+  nameWithType: ExportJobRequest
+  fullName: Meridian.Ui.Services.ExportJobRequest
+- uid: Meridian.Ui.Services.ExportJob
+  commentId: T:Meridian.Ui.Services.ExportJob
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportJob.html
+  name: ExportJob
+  nameWithType: ExportJob
+  fullName: Meridian.Ui.Services.ExportJob
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.QueueJob*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.QueueJob
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_QueueJob_System_String_
+  name: QueueJob
+  nameWithType: BatchExportSchedulerService.QueueJob
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.QueueJob
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.CancelJob*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.CancelJob
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_CancelJob_System_String_
+  name: CancelJob
+  nameWithType: BatchExportSchedulerService.CancelJob
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.CancelJob
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_RemoveJob_System_String_
+  name: RemoveJob
+  nameWithType: BatchExportSchedulerService.RemoveJob
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.RemoveJob
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.GetJob*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.GetJob
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_GetJob_System_String_
+  name: GetJob
+  nameWithType: BatchExportSchedulerService.GetJob
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.GetJob
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_GetJobHistory_System_String_System_Int32_
+  name: GetJobHistory
+  nameWithType: BatchExportSchedulerService.GetJobHistory
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.GetJobHistory
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.ExportJobRun}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.ExportJobRun}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<ExportJobRun>
+  nameWithType: List<ExportJobRun>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.ExportJobRun>
+  nameWithType.vb: List(Of ExportJobRun)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.ExportJobRun)
+  name.vb: List(Of ExportJobRun)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.ExportJobRun
+    name: ExportJobRun
+    href: Meridian.Ui.Services.ExportJobRun.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ExportJobRun
+    name: ExportJobRun
+    href: Meridian.Ui.Services.ExportJobRun.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_ReadPersistedJobsAsync_System_Threading_CancellationToken_
+  name: ReadPersistedJobsAsync
+  nameWithType: BatchExportSchedulerService.ReadPersistedJobsAsync
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.ReadPersistedJobsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.ExportJob}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.ExportJob}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ExportJob>>
+  nameWithType: Task<IReadOnlyList<ExportJob>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.ExportJob>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ExportJob))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.ExportJob))
+  name.vb: Task(Of IReadOnlyList(Of ExportJob))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.ExportJob
+    name: ExportJob
+    href: Meridian.Ui.Services.ExportJob.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ExportJob
+    name: ExportJob
+    href: Meridian.Ui.Services.ExportJob.html
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.Dispose*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.Dispose
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_Dispose
+  name: Dispose
+  nameWithType: BatchExportSchedulerService.Dispose
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync*
+  commentId: Overload:Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync
+  href: Meridian.Ui.Services.BatchExportSchedulerService.html#Meridian_Ui_Services_BatchExportSchedulerService_DisposeAsync
+  name: DisposeAsync
+  nameWithType: BatchExportSchedulerService.DisposeAsync
+  fullName: Meridian.Ui.Services.BatchExportSchedulerService.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

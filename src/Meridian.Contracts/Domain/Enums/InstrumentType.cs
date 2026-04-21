@@ -69,5 +69,25 @@ public enum InstrumentType : byte
     /// <summary>
     /// Equity or structured warrant. Maps to IB SecType "WAR".
     /// </summary>
-    Warrant = 12
+    Warrant = 12,
+
+    /// <summary>
+    /// Over-the-counter or listed interest rate / credit / equity swap.
+    /// </summary>
+    Swap = 13,
+
+    /// <summary>
+    /// Direct lending / private credit loan instrument.
+    /// </summary>
+    DirectLoan = 14,
+
+    /// <summary>
+    /// Repo or reverse repo financing instrument.
+    /// </summary>
+    Repo = 15,
+
+    /// <summary>
+    /// Bank deposit, time deposit, or demand deposit.
+    /// </summary>
+    Deposit = 16
 }

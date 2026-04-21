@@ -1,0 +1,203 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.BusinessImpact
+  commentId: T:Meridian.Ui.Services.BusinessImpact
+  id: BusinessImpact
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.BusinessImpact.Critical
+  - Meridian.Ui.Services.BusinessImpact.High
+  - Meridian.Ui.Services.BusinessImpact.Low
+  - Meridian.Ui.Services.BusinessImpact.Medium
+  - Meridian.Ui.Services.BusinessImpact.None
+  langs:
+  - csharp
+  - vb
+  name: BusinessImpact
+  nameWithType: BusinessImpact
+  fullName: Meridian.Ui.Services.BusinessImpact
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BusinessImpact
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 475
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Business impact of an alert.
+  example: []
+  syntax:
+    content: 'public enum BusinessImpact : byte'
+    content.vb: Public Enum BusinessImpact As Byte
+- uid: Meridian.Ui.Services.BusinessImpact.None
+  commentId: F:Meridian.Ui.Services.BusinessImpact.None
+  id: None
+  parent: Meridian.Ui.Services.BusinessImpact
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: BusinessImpact.None
+  fullName: Meridian.Ui.Services.BusinessImpact.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 477
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Ui.Services.BusinessImpact
+- uid: Meridian.Ui.Services.BusinessImpact.Low
+  commentId: F:Meridian.Ui.Services.BusinessImpact.Low
+  id: Low
+  parent: Meridian.Ui.Services.BusinessImpact
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: BusinessImpact.Low
+  fullName: Meridian.Ui.Services.BusinessImpact.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 478
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Low = 1
+    return:
+      type: Meridian.Ui.Services.BusinessImpact
+- uid: Meridian.Ui.Services.BusinessImpact.Medium
+  commentId: F:Meridian.Ui.Services.BusinessImpact.Medium
+  id: Medium
+  parent: Meridian.Ui.Services.BusinessImpact
+  langs:
+  - csharp
+  - vb
+  name: Medium
+  nameWithType: BusinessImpact.Medium
+  fullName: Meridian.Ui.Services.BusinessImpact.Medium
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Medium
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 479
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Medium = 2
+    return:
+      type: Meridian.Ui.Services.BusinessImpact
+- uid: Meridian.Ui.Services.BusinessImpact.High
+  commentId: F:Meridian.Ui.Services.BusinessImpact.High
+  id: High
+  parent: Meridian.Ui.Services.BusinessImpact
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: BusinessImpact.High
+  fullName: Meridian.Ui.Services.BusinessImpact.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 480
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: High = 3
+    return:
+      type: Meridian.Ui.Services.BusinessImpact
+- uid: Meridian.Ui.Services.BusinessImpact.Critical
+  commentId: F:Meridian.Ui.Services.BusinessImpact.Critical
+  id: Critical
+  parent: Meridian.Ui.Services.BusinessImpact
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: BusinessImpact.Critical
+  fullName: Meridian.Ui.Services.BusinessImpact.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Ui.Services/Services/AlertService.cs
+    startLine: 481
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Critical = 4
+    return:
+      type: Meridian.Ui.Services.BusinessImpact
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.BusinessImpact
+  commentId: T:Meridian.Ui.Services.BusinessImpact
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BusinessImpact.html
+  name: BusinessImpact
+  nameWithType: BusinessImpact
+  fullName: Meridian.Ui.Services.BusinessImpact

@@ -27,14 +27,13 @@ public sealed class StartupSummary
         var sb = new StringBuilder();
 
         // Determine mode
-        var mode = "Real-time Collection";
-        var port = "8080";
-        if (args.Any(a => a.Equals("--ui", StringComparison.OrdinalIgnoreCase)))
-        {
-            port = GetArgValue(args, "--http-port") ?? "8080";
-            mode = $"Web | Port: {port}";
-        }
-        else if (args.Any(a => a.Equals("--backfill", StringComparison.OrdinalIgnoreCase)) || config.Backfill?.Enabled == true)
+        var resolvedMode = CliModeResolver.Resolve(args);
+        var port = GetArgValue(args, "--http-port") ?? "8080";
+        var mode = resolvedMode == CliModeResolver.RunMode.Desktop
+            ? $"Desktop | Port: {port}"
+            : "Headless";
+
+        if (args.Any(a => a.Equals("--backfill", StringComparison.OrdinalIgnoreCase)) || config.Backfill?.Enabled == true)
         {
             mode = "Backfill";
         }
@@ -51,7 +50,6 @@ public sealed class StartupSummary
         AppendProviderStatus(sb, "Alpaca", config.DataSource == DataSourceKind.Alpaca, HasAlpacaCredentials(config));
         AppendProviderStatus(sb, "Polygon", config.DataSource == DataSourceKind.Polygon, HasPolygonCredentials(config));
         AppendProviderStatus(sb, "IB", config.DataSource == DataSourceKind.IB, HasIBConfig(config));
-        AppendProviderStatus(sb, "StockSharp", config.DataSource == DataSourceKind.StockSharp, config.StockSharp?.Enabled == true);
         AppendProviderStatus(sb, "NYSE", config.DataSource == DataSourceKind.NYSE, HasNYSECredentials());
         AppendProviderStatus(sb, "Synthetic", config.DataSource == DataSourceKind.Synthetic, config.Synthetic?.Enabled == true);
 
@@ -177,9 +175,9 @@ public sealed class StartupSummary
         sb.AppendLine("  Tips:");
         sb.AppendLine("    - Press Ctrl+C to stop gracefully");
         sb.AppendLine("    - Check logs in: logs/ directory");
-        if (!args.Any(a => a.Equals("--ui", StringComparison.OrdinalIgnoreCase)))
+        if (resolvedMode != CliModeResolver.RunMode.Desktop)
         {
-            sb.AppendLine("    - Add --ui for real-time monitoring dashboard");
+            sb.AppendLine("    - Add --mode desktop to start the desktop-local API host");
         }
         sb.AppendLine();
 
@@ -388,7 +386,6 @@ public sealed class StartupSummary
             DataSourceKind.IB => "Interactive Brokers",
             DataSourceKind.Alpaca => "Alpaca Markets",
             DataSourceKind.Polygon => "Polygon.io",
-            DataSourceKind.StockSharp => "StockSharp",
             DataSourceKind.NYSE => "NYSE",
             DataSourceKind.Synthetic => "Synthetic Offline Dataset",
             _ => kind.ToString()

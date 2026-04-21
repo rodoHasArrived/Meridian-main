@@ -1,0 +1,885 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse
+  commentId: T:Meridian.Contracts.Api.OptionsSummaryResponse
+  id: OptionsSummaryResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.OptionsSummaryResponse.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.DateTimeOffset,System.String,System.String,System.String,System.Boolean,System.String)
+  - Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithGreeks
+  - Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithOpenInterest
+  - Meridian.Contracts.Api.OptionsSummaryResponse.IsFallbackProvider
+  - Meridian.Contracts.Api.OptionsSummaryResponse.ProviderAvailable
+  - Meridian.Contracts.Api.OptionsSummaryResponse.ProviderDisplayName
+  - Meridian.Contracts.Api.OptionsSummaryResponse.ProviderId
+  - Meridian.Contracts.Api.OptionsSummaryResponse.ProviderMode
+  - Meridian.Contracts.Api.OptionsSummaryResponse.ProviderStatusMessage
+  - Meridian.Contracts.Api.OptionsSummaryResponse.Timestamp
+  - Meridian.Contracts.Api.OptionsSummaryResponse.TrackedChains
+  - Meridian.Contracts.Api.OptionsSummaryResponse.TrackedContracts
+  - Meridian.Contracts.Api.OptionsSummaryResponse.TrackedUnderlyings
+  langs:
+  - csharp
+  - vb
+  name: OptionsSummaryResponse
+  nameWithType: OptionsSummaryResponse
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionsSummaryResponse
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for the options data summary.
+  example: []
+  syntax:
+    content: 'public sealed record OptionsSummaryResponse : IEquatable<OptionsSummaryResponse>'
+    content.vb: Public NotInheritable Class OptionsSummaryResponse Implements IEquatable(Of OptionsSummaryResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.OptionsSummaryResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.DateTimeOffset,System.String,System.String,System.String,System.Boolean,System.String)
+  commentId: M:Meridian.Contracts.Api.OptionsSummaryResponse.#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.DateTimeOffset,System.String,System.String,System.String,System.Boolean,System.String)
+  id: '#ctor(System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.DateTimeOffset,System.String,System.String,System.String,System.Boolean,System.String)'
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: OptionsSummaryResponse(int, int, int, int, int, bool, DateTimeOffset, string?, string?, string, bool, string?)
+  nameWithType: OptionsSummaryResponse.OptionsSummaryResponse(int, int, int, int, int, bool, DateTimeOffset, string?, string?, string, bool, string?)
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.OptionsSummaryResponse(int, int, int, int, int, bool, System.DateTimeOffset, string?, string?, string, bool, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for the options data summary.
+  example: []
+  syntax:
+    content: public OptionsSummaryResponse(int TrackedContracts, int TrackedChains, int TrackedUnderlyings, int ContractsWithGreeks, int ContractsWithOpenInterest, bool ProviderAvailable, DateTimeOffset Timestamp, string? ProviderId = null, string? ProviderDisplayName = null, string ProviderMode = "Unavailable", bool IsFallbackProvider = false, string? ProviderStatusMessage = null)
+    parameters:
+    - id: TrackedContracts
+      type: System.Int32
+    - id: TrackedChains
+      type: System.Int32
+    - id: TrackedUnderlyings
+      type: System.Int32
+    - id: ContractsWithGreeks
+      type: System.Int32
+    - id: ContractsWithOpenInterest
+      type: System.Int32
+    - id: ProviderAvailable
+      type: System.Boolean
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: ProviderId
+      type: System.String
+    - id: ProviderDisplayName
+      type: System.String
+    - id: ProviderMode
+      type: System.String
+    - id: IsFallbackProvider
+      type: System.Boolean
+    - id: ProviderStatusMessage
+      type: System.String
+    content.vb: Public Sub New(TrackedContracts As Integer, TrackedChains As Integer, TrackedUnderlyings As Integer, ContractsWithGreeks As Integer, ContractsWithOpenInterest As Integer, ProviderAvailable As Boolean, Timestamp As DateTimeOffset, ProviderId As String = Nothing, ProviderDisplayName As String = Nothing, ProviderMode As String = "Unavailable", IsFallbackProvider As Boolean = False, ProviderStatusMessage As String = Nothing)
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.#ctor*
+  nameWithType.vb: OptionsSummaryResponse.New(Integer, Integer, Integer, Integer, Integer, Boolean, DateTimeOffset, String, String, String, Boolean, String)
+  fullName.vb: Meridian.Contracts.Api.OptionsSummaryResponse.New(Integer, Integer, Integer, Integer, Integer, Boolean, System.DateTimeOffset, String, String, String, Boolean, String)
+  name.vb: New(Integer, Integer, Integer, Integer, Integer, Boolean, DateTimeOffset, String, String, String, Boolean, String)
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedContracts
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.TrackedContracts
+  id: TrackedContracts
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: TrackedContracts
+  nameWithType: OptionsSummaryResponse.TrackedContracts
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedContracts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrackedContracts
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int TrackedContracts { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TrackedContracts As Integer
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedContracts*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedChains
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.TrackedChains
+  id: TrackedChains
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: TrackedChains
+  nameWithType: OptionsSummaryResponse.TrackedChains
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedChains
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrackedChains
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int TrackedChains { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TrackedChains As Integer
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedChains*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedUnderlyings
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.TrackedUnderlyings
+  id: TrackedUnderlyings
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: TrackedUnderlyings
+  nameWithType: OptionsSummaryResponse.TrackedUnderlyings
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedUnderlyings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrackedUnderlyings
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int TrackedUnderlyings { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TrackedUnderlyings As Integer
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedUnderlyings*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithGreeks
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithGreeks
+  id: ContractsWithGreeks
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: ContractsWithGreeks
+  nameWithType: OptionsSummaryResponse.ContractsWithGreeks
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithGreeks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ContractsWithGreeks
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int ContractsWithGreeks { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ContractsWithGreeks As Integer
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithGreeks*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithOpenInterest
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithOpenInterest
+  id: ContractsWithOpenInterest
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: ContractsWithOpenInterest
+  nameWithType: OptionsSummaryResponse.ContractsWithOpenInterest
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithOpenInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ContractsWithOpenInterest
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int ContractsWithOpenInterest { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ContractsWithOpenInterest As Integer
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithOpenInterest*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderAvailable
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderAvailable
+  id: ProviderAvailable
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderAvailable
+  nameWithType: OptionsSummaryResponse.ProviderAvailable
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderAvailable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderAvailable
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public bool ProviderAvailable { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property ProviderAvailable As Boolean
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderAvailable*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.Timestamp
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: OptionsSummaryResponse.Timestamp
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.Timestamp*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderId
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderId
+  id: ProviderId
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: OptionsSummaryResponse.ProviderId
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? ProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderId As String
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderId*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderDisplayName
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderDisplayName
+  id: ProviderDisplayName
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderDisplayName
+  nameWithType: OptionsSummaryResponse.ProviderDisplayName
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDisplayName
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? ProviderDisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderDisplayName As String
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderDisplayName*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderMode
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderMode
+  id: ProviderMode
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderMode
+  nameWithType: OptionsSummaryResponse.ProviderMode
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderMode
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string ProviderMode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderMode As String
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderMode*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.IsFallbackProvider
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.IsFallbackProvider
+  id: IsFallbackProvider
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: IsFallbackProvider
+  nameWithType: OptionsSummaryResponse.IsFallbackProvider
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.IsFallbackProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsFallbackProvider
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public bool IsFallbackProvider { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsFallbackProvider As Boolean
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.IsFallbackProvider*
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderStatusMessage
+  commentId: P:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderStatusMessage
+  id: ProviderStatusMessage
+  parent: Meridian.Contracts.Api.OptionsSummaryResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderStatusMessage
+  nameWithType: OptionsSummaryResponse.ProviderStatusMessage
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderStatusMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/OptionsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderStatusMessage
+    path: ../../src/Meridian.Contracts/Api/OptionsModels.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? ProviderStatusMessage { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderStatusMessage As String
+  overload: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderStatusMessage*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.OptionsSummaryResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.OptionsSummaryResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OptionsSummaryResponse>
+  nameWithType: IEquatable<OptionsSummaryResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.OptionsSummaryResponse>
+  nameWithType.vb: IEquatable(Of OptionsSummaryResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.OptionsSummaryResponse)
+  name.vb: IEquatable(Of OptionsSummaryResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.OptionsSummaryResponse
+    name: OptionsSummaryResponse
+    href: Meridian.Contracts.Api.OptionsSummaryResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.OptionsSummaryResponse
+    name: OptionsSummaryResponse
+    href: Meridian.Contracts.Api.OptionsSummaryResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.#ctor
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse__ctor_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32_System_Boolean_System_DateTimeOffset_System_String_System_String_System_String_System_Boolean_System_String_
+  name: OptionsSummaryResponse
+  nameWithType: OptionsSummaryResponse.OptionsSummaryResponse
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.OptionsSummaryResponse
+  nameWithType.vb: OptionsSummaryResponse.New
+  fullName.vb: Meridian.Contracts.Api.OptionsSummaryResponse.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedContracts*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.TrackedContracts
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_TrackedContracts
+  name: TrackedContracts
+  nameWithType: OptionsSummaryResponse.TrackedContracts
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedContracts
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedChains*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.TrackedChains
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_TrackedChains
+  name: TrackedChains
+  nameWithType: OptionsSummaryResponse.TrackedChains
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedChains
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedUnderlyings*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.TrackedUnderlyings
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_TrackedUnderlyings
+  name: TrackedUnderlyings
+  nameWithType: OptionsSummaryResponse.TrackedUnderlyings
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.TrackedUnderlyings
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithGreeks*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithGreeks
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_ContractsWithGreeks
+  name: ContractsWithGreeks
+  nameWithType: OptionsSummaryResponse.ContractsWithGreeks
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithGreeks
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithOpenInterest*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithOpenInterest
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_ContractsWithOpenInterest
+  name: ContractsWithOpenInterest
+  nameWithType: OptionsSummaryResponse.ContractsWithOpenInterest
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ContractsWithOpenInterest
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderAvailable*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderAvailable
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_ProviderAvailable
+  name: ProviderAvailable
+  nameWithType: OptionsSummaryResponse.ProviderAvailable
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderAvailable
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.Timestamp*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.Timestamp
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_Timestamp
+  name: Timestamp
+  nameWithType: OptionsSummaryResponse.Timestamp
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.Timestamp
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderId*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderId
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_ProviderId
+  name: ProviderId
+  nameWithType: OptionsSummaryResponse.ProviderId
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderId
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderDisplayName*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderDisplayName
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: OptionsSummaryResponse.ProviderDisplayName
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderDisplayName
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderMode*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderMode
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_ProviderMode
+  name: ProviderMode
+  nameWithType: OptionsSummaryResponse.ProviderMode
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderMode
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.IsFallbackProvider*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.IsFallbackProvider
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_IsFallbackProvider
+  name: IsFallbackProvider
+  nameWithType: OptionsSummaryResponse.IsFallbackProvider
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.IsFallbackProvider
+- uid: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderStatusMessage*
+  commentId: Overload:Meridian.Contracts.Api.OptionsSummaryResponse.ProviderStatusMessage
+  href: Meridian.Contracts.Api.OptionsSummaryResponse.html#Meridian_Contracts_Api_OptionsSummaryResponse_ProviderStatusMessage
+  name: ProviderStatusMessage
+  nameWithType: OptionsSummaryResponse.ProviderStatusMessage
+  fullName: Meridian.Contracts.Api.OptionsSummaryResponse.ProviderStatusMessage

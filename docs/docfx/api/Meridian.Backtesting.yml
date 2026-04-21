@@ -1,0 +1,111 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting
+  commentId: N:Meridian.Backtesting
+  id: Meridian.Backtesting
+  children:
+  - Meridian.Backtesting.BacktestStudioRunOrchestrator
+  - Meridian.Backtesting.BatchBacktestProgress
+  - Meridian.Backtesting.BatchBacktestRequest
+  - Meridian.Backtesting.BatchBacktestRun
+  - Meridian.Backtesting.BatchBacktestService
+  - Meridian.Backtesting.BatchBacktestSummary
+  - Meridian.Backtesting.CorporateActionAdjustmentService
+  - Meridian.Backtesting.IBatchBacktestService
+  - Meridian.Backtesting.ICorporateActionAdjustmentService
+  - Meridian.Backtesting.MeridianNativeBacktestStudioEngine
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Backtesting
+  nameWithType: Meridian.Backtesting
+  fullName: Meridian.Backtesting
+  type: Namespace
+  assemblies:
+  - Meridian.Backtesting
+references:
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator
+  commentId: T:Meridian.Backtesting.BacktestStudioRunOrchestrator
+  href: Meridian.Backtesting.BacktestStudioRunOrchestrator.html
+  name: BacktestStudioRunOrchestrator
+  nameWithType: BacktestStudioRunOrchestrator
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator
+- uid: Meridian.Backtesting.IBatchBacktestService
+  commentId: T:Meridian.Backtesting.IBatchBacktestService
+  parent: Meridian.Backtesting
+  href: Meridian.Backtesting.IBatchBacktestService.html
+  name: IBatchBacktestService
+  nameWithType: IBatchBacktestService
+  fullName: Meridian.Backtesting.IBatchBacktestService
+- uid: Meridian.Backtesting.BatchBacktestRun
+  commentId: T:Meridian.Backtesting.BatchBacktestRun
+  href: Meridian.Backtesting.BatchBacktestRun.html
+  name: BatchBacktestRun
+  nameWithType: BatchBacktestRun
+  fullName: Meridian.Backtesting.BatchBacktestRun
+- uid: Meridian.Backtesting.BatchBacktestSummary
+  commentId: T:Meridian.Backtesting.BatchBacktestSummary
+  href: Meridian.Backtesting.BatchBacktestSummary.html
+  name: BatchBacktestSummary
+  nameWithType: BatchBacktestSummary
+  fullName: Meridian.Backtesting.BatchBacktestSummary
+- uid: Meridian.Backtesting.BatchBacktestProgress
+  commentId: T:Meridian.Backtesting.BatchBacktestProgress
+  href: Meridian.Backtesting.BatchBacktestProgress.html
+  name: BatchBacktestProgress
+  nameWithType: BatchBacktestProgress
+  fullName: Meridian.Backtesting.BatchBacktestProgress
+- uid: Meridian.Backtesting.BatchBacktestRequest
+  commentId: T:Meridian.Backtesting.BatchBacktestRequest
+  parent: Meridian.Backtesting
+  href: Meridian.Backtesting.BatchBacktestRequest.html
+  name: BatchBacktestRequest
+  nameWithType: BatchBacktestRequest
+  fullName: Meridian.Backtesting.BatchBacktestRequest
+- uid: Meridian.Backtesting.BatchBacktestService
+  commentId: T:Meridian.Backtesting.BatchBacktestService
+  href: Meridian.Backtesting.BatchBacktestService.html
+  name: BatchBacktestService
+  nameWithType: BatchBacktestService
+  fullName: Meridian.Backtesting.BatchBacktestService
+- uid: Meridian.Backtesting.CorporateActionAdjustmentService
+  commentId: T:Meridian.Backtesting.CorporateActionAdjustmentService
+  href: Meridian.Backtesting.CorporateActionAdjustmentService.html
+  name: CorporateActionAdjustmentService
+  nameWithType: CorporateActionAdjustmentService
+  fullName: Meridian.Backtesting.CorporateActionAdjustmentService
+- uid: Meridian.Backtesting.ICorporateActionAdjustmentService
+  commentId: T:Meridian.Backtesting.ICorporateActionAdjustmentService
+  parent: Meridian.Backtesting
+  href: Meridian.Backtesting.ICorporateActionAdjustmentService.html
+  name: ICorporateActionAdjustmentService
+  nameWithType: ICorporateActionAdjustmentService
+  fullName: Meridian.Backtesting.ICorporateActionAdjustmentService
+- uid: Meridian.Backtesting.MeridianNativeBacktestStudioEngine
+  commentId: T:Meridian.Backtesting.MeridianNativeBacktestStudioEngine
+  href: Meridian.Backtesting.MeridianNativeBacktestStudioEngine.html
+  name: MeridianNativeBacktestStudioEngine
+  nameWithType: MeridianNativeBacktestStudioEngine
+  fullName: Meridian.Backtesting.MeridianNativeBacktestStudioEngine
+- uid: Meridian.Backtesting
+  commentId: N:Meridian.Backtesting
+  href: Meridian.html
+  name: Meridian.Backtesting
+  nameWithType: Meridian.Backtesting
+  fullName: Meridian.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html

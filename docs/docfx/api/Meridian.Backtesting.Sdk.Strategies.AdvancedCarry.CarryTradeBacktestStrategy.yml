@@ -1,0 +1,1331 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  id: CarryTradeBacktestStrategy
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.#ctor(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode,System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double},System.Double,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Name
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  langs:
+  - csharp
+  - vb
+  name: CarryTradeBacktestStrategy
+  nameWithType: CarryTradeBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CarryTradeBacktestStrategy
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: >-
+    A carry-trade backtest strategy that supports three carry signal modes:
+
+
+    <ul><li><xref href="Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.ClassicCarry" data-throw-if-not-resolved="false"></xref> — price-momentum carry (original behaviour).</li><li><xref href="Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldSpread" data-throw-if-not-resolved="false"></xref> — long assets whose yield exceeds the risk-free rate;
+            underweight or exclude low-spread assets.  The carry signal is entirely driven by
+            <code>assetYield − riskFreeRate</code>.</li><li><xref href="Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldRotation" data-throw-if-not-resolved="false"></xref> — ranks assets by current yield each period and
+            rotates into the top-50 % yielders.  Applies an additional momentum tilt when an
+            asset's implied yield has risen vs its 20-day average.</li></ul>
+
+    Per-symbol yields can be provided explicitly (dividend yield, bond coupon rate, FX carry rate).
+
+    When not provided the strategy estimates a proxy yield from rolling price history.
+  example: []
+  syntax:
+    content: 'public sealed class CarryTradeBacktestStrategy : IBacktestStrategy'
+    content.vb: Public NotInheritable Class CarryTradeBacktestStrategy Implements IBacktestStrategy
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Name
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Name
+  id: Name
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: CarryTradeBacktestStrategy.Name
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Human-readable strategy identifier.
+  example: []
+  syntax:
+    content: public string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Name As String
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Name*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.#ctor(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode,System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double},System.Double,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.#ctor(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode,System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double},System.Double,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay)
+  id: '#ctor(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode,System.Int32,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double},System.Double,Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay)'
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: CarryTradeBacktestStrategy(AdvancedCarryConfiguration?, YieldCarryMode, int, IReadOnlyDictionary<string, double>?, double, ICarryForecastOverlay?)
+  nameWithType: CarryTradeBacktestStrategy.CarryTradeBacktestStrategy(AdvancedCarryConfiguration?, YieldCarryMode, int, IReadOnlyDictionary<string, double>?, double, ICarryForecastOverlay?)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.CarryTradeBacktestStrategy(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration?, Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode, int, System.Collections.Generic.IReadOnlyDictionary<string, double>?, double, Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Creates a new carry trade strategy.
+  example: []
+  syntax:
+    content: public CarryTradeBacktestStrategy(AdvancedCarryConfiguration? configuration = null, YieldCarryMode yieldCarryMode = YieldCarryMode.YieldSpread, int rebalanceFrequencyDays = 5, IReadOnlyDictionary<string, double>? explicitYields = null, double minYieldSpreadToLong = 0, ICarryForecastOverlay? forecastOverlay = null)
+    parameters:
+    - id: configuration
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration
+      description: Optimisation and risk parameters.
+    - id: yieldCarryMode
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+      description: Carry signal mode.
+    - id: rebalanceFrequencyDays
+      type: System.Int32
+      description: Trading days between rebalances (default 5 = weekly).
+    - id: explicitYields
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double}
+      description: >-
+        Optional per-symbol annual yield overrides (e.g. 0.035 for 3.5 % dividend yield,
+
+        0.045 for a bond coupon).  Symbol keys are case-insensitive.
+    - id: minYieldSpreadToLong
+      type: System.Double
+      description: >-
+        Minimum net yield spread (assetYield − riskFreeRate) required to include an asset.
+
+        Assets below this threshold are excluded in YieldSpread mode.  Default 0.
+    - id: forecastOverlay
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+      description: Optional carry forecast overlay.
+    content.vb: Public Sub New(configuration As AdvancedCarryConfiguration = Nothing, yieldCarryMode As YieldCarryMode = YieldCarryMode.YieldSpread, rebalanceFrequencyDays As Integer = 5, explicitYields As IReadOnlyDictionary(Of String, Double) = Nothing, minYieldSpreadToLong As Double = 0, forecastOverlay As ICarryForecastOverlay = Nothing)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.#ctor*
+  nameWithType.vb: CarryTradeBacktestStrategy.New(AdvancedCarryConfiguration, YieldCarryMode, Integer, IReadOnlyDictionary(Of String, Double), Double, ICarryForecastOverlay)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.New(Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration, Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode, Integer, System.Collections.Generic.IReadOnlyDictionary(Of String, Double), Double, Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay)
+  name.vb: New(AdvancedCarryConfiguration, YieldCarryMode, Integer, IReadOnlyDictionary(Of String, Double), Double, ICarryForecastOverlay)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  id: Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: Initialize(IBacktestContext)
+  nameWithType: CarryTradeBacktestStrategy.Initialize(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Initialize
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Called once before replay begins. Use to initialise indicators, state, or log parameters.
+  example: []
+  syntax:
+    content: public void Initialize(IBacktestContext ctx)
+    parameters:
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub Initialize(ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Initialize*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnBar(HistoricalBar, IBacktestContext)
+  nameWithType: CarryTradeBacktestStrategy.OnBar(HistoricalBar, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnBar
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Called for every <code>HistoricalBar</code> (OHLCV) event.
+  example: []
+  syntax:
+    content: public void OnBar(HistoricalBar bar, IBacktestContext ctx)
+    parameters:
+    - id: bar
+      type: Meridian.Contracts.Domain.Models.HistoricalBar
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnBar(bar As HistoricalBar, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnBar*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnTrade(Trade, IBacktestContext)
+  nameWithType: CarryTradeBacktestStrategy.OnTrade(Trade, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnTrade
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Called for every <code>Trade</code> event in the replay stream.
+  example: []
+  syntax:
+    content: public void OnTrade(Trade trade, IBacktestContext ctx)
+    parameters:
+    - id: trade
+      type: Meridian.Contracts.Domain.Models.Trade
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnTrade(trade As Trade, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnTrade*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnQuote(BboQuotePayload, IBacktestContext)
+  nameWithType: CarryTradeBacktestStrategy.OnQuote(BboQuotePayload, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnQuote
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Called for every <code>BboQuotePayload</code> (best bid/offer) event.
+  example: []
+  syntax:
+    content: public void OnQuote(BboQuotePayload quote, IBacktestContext ctx)
+    parameters:
+    - id: quote
+      type: Meridian.Contracts.Domain.Models.BboQuotePayload
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnQuote(quote As BboQuotePayload, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnQuote*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnOrderBook(LOBSnapshot, IBacktestContext)
+  nameWithType: CarryTradeBacktestStrategy.OnOrderBook(LOBSnapshot, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnOrderBook
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Called for every <code>LOBSnapshot</code> (Level-2 order book) event.
+  example: []
+  syntax:
+    content: public void OnOrderBook(LOBSnapshot snapshot, IBacktestContext ctx)
+    parameters:
+    - id: snapshot
+      type: Meridian.Contracts.Domain.Models.LOBSnapshot
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnOrderBook(snapshot As LOBSnapshot, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderBook*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnOrderFill(FillEvent, IBacktestContext)
+  nameWithType: CarryTradeBacktestStrategy.OnOrderFill(FillEvent, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnOrderFill
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Called immediately after each fill so the strategy can react.
+  example: []
+  syntax:
+    content: public void OnOrderFill(FillEvent fill, IBacktestContext ctx)
+    parameters:
+    - id: fill
+      type: Meridian.Backtesting.Sdk.FillEvent
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnOrderFill(fill As FillEvent, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderFill*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnDayEnd(DateOnly, IBacktestContext)
+  nameWithType: CarryTradeBacktestStrategy.OnDayEnd(DateOnly, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnDayEnd(System.DateOnly, Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnDayEnd
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: >-
+    Called once per simulated trading day after all events for that date have been processed
+
+    and interest/rebate accruals have been applied. Use for end-of-day rebalancing logic.
+  example: []
+  syntax:
+    content: public void OnDayEnd(DateOnly date, IBacktestContext ctx)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnDayEnd([date] As DateOnly, ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnDayEnd*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  id: OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy
+  langs:
+  - csharp
+  - vb
+  name: OnFinished(IBacktestContext)
+  nameWithType: CarryTradeBacktestStrategy.OnFinished(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnFinished
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/CarryTradeBacktestStrategy.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  summary: Called once after the last event has been replayed. Use to finalise state.
+  example: []
+  syntax:
+    content: public void OnFinished(IBacktestContext ctx)
+    parameters:
+    - id: ctx
+      type: Meridian.Backtesting.Sdk.IBacktestContext
+    content.vb: Public Sub OnFinished(ctx As IBacktestContext)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnFinished*
+  implements:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.ClassicCarry
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.ClassicCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_YieldCarryMode_ClassicCarry
+  name: ClassicCarry
+  nameWithType: YieldCarryMode.ClassicCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.ClassicCarry
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldSpread
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldSpread
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_YieldCarryMode_YieldSpread
+  name: YieldSpread
+  nameWithType: YieldCarryMode.YieldSpread
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldSpread
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldRotation
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldRotation
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_YieldCarryMode_YieldRotation
+  name: YieldRotation
+  nameWithType: YieldCarryMode.YieldRotation
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.YieldRotation
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy
+  commentId: T:Meridian.Backtesting.Sdk.IBacktestStrategy
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html
+  name: IBacktestStrategy
+  nameWithType: IBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Name*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Name
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy_Name
+  name: Name
+  nameWithType: CarryTradeBacktestStrategy.Name
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Name
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Name
+  name: Name
+  nameWithType: IBacktestStrategy.Name
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy__ctor_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryConfiguration_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_YieldCarryMode_System_Int32_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Double__System_Double_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_ICarryForecastOverlay_
+  name: CarryTradeBacktestStrategy
+  nameWithType: CarryTradeBacktestStrategy.CarryTradeBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.CarryTradeBacktestStrategy
+  nameWithType.vb: CarryTradeBacktestStrategy.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.New
+  name.vb: New
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration.html
+  name: AdvancedCarryConfiguration
+  nameWithType: AdvancedCarryConfiguration
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryConfiguration
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode.html
+  name: YieldCarryMode
+  nameWithType: YieldCarryMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.YieldCarryMode
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Double}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, double>
+  nameWithType: IReadOnlyDictionary<string, double>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, double>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Double)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Double)
+  name.vb: IReadOnlyDictionary(Of String, Double)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay.html
+  name: ICarryForecastOverlay
+  nameWithType: ICarryForecastOverlay
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ICarryForecastOverlay
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Initialize*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Initialize
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: Initialize
+  nameWithType: CarryTradeBacktestStrategy.Initialize
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.Initialize
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: Initialize(IBacktestContext)
+  nameWithType: IBacktestStrategy.Initialize(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: Initialize
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: Initialize
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestContext
+  commentId: T:Meridian.Backtesting.Sdk.IBacktestContext
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  name: IBacktestContext
+  nameWithType: IBacktestContext
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnBar*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnBar
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnBar
+  nameWithType: CarryTradeBacktestStrategy.OnBar
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnBar
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnBar(HistoricalBar, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnBar(HistoricalBar, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnBar
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnBar
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.HistoricalBar
+  commentId: T:Meridian.Contracts.Domain.Models.HistoricalBar
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.HistoricalBar.html
+  name: HistoricalBar
+  nameWithType: HistoricalBar
+  fullName: Meridian.Contracts.Domain.Models.HistoricalBar
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnTrade*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnTrade
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnTrade
+  nameWithType: CarryTradeBacktestStrategy.OnTrade
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnTrade
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnTrade(Trade, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnTrade(Trade, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnTrade
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.Trade
+    name: Trade
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnTrade
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.Trade
+    name: Trade
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.Trade
+  commentId: T:Meridian.Contracts.Domain.Models.Trade
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.Trade.html
+  name: Trade
+  nameWithType: Trade
+  fullName: Meridian.Contracts.Domain.Models.Trade
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnQuote*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnQuote
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnQuote
+  nameWithType: CarryTradeBacktestStrategy.OnQuote
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnQuote
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnQuote(BboQuotePayload, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnQuote(BboQuotePayload, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnQuote
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnQuote
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+  commentId: T:Meridian.Contracts.Domain.Models.BboQuotePayload
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.BboQuotePayload.html
+  name: BboQuotePayload
+  nameWithType: BboQuotePayload
+  fullName: Meridian.Contracts.Domain.Models.BboQuotePayload
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderBook*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderBook
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderBook
+  nameWithType: CarryTradeBacktestStrategy.OnOrderBook
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderBook
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderBook(LOBSnapshot, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnOrderBook(LOBSnapshot, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderBook
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+    name: LOBSnapshot
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderBook
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+    name: LOBSnapshot
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.LOBSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.LOBSnapshot.html
+  name: LOBSnapshot
+  nameWithType: LOBSnapshot
+  fullName: Meridian.Contracts.Domain.Models.LOBSnapshot
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderFill*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderFill
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderFill
+  nameWithType: CarryTradeBacktestStrategy.OnOrderFill
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnOrderFill
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderFill(FillEvent, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnOrderFill(FillEvent, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderFill
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderFill
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.FillEvent
+  commentId: T:Meridian.Backtesting.Sdk.FillEvent
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.FillEvent.html
+  name: FillEvent
+  nameWithType: FillEvent
+  fullName: Meridian.Backtesting.Sdk.FillEvent
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnDayEnd*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnDayEnd
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnDayEnd
+  nameWithType: CarryTradeBacktestStrategy.OnDayEnd
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnDayEnd
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  isExternal: true
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnDayEnd(DateOnly, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnDayEnd(DateOnly, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnDayEnd
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnDayEnd
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnFinished*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnFinished
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryTradeBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnFinished
+  nameWithType: CarryTradeBacktestStrategy.OnFinished
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryTradeBacktestStrategy.OnFinished
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnFinished(IBacktestContext)
+  nameWithType: IBacktestStrategy.OnFinished(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnFinished
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnFinished
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )

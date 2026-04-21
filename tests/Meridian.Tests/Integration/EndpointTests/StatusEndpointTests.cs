@@ -176,15 +176,41 @@ public sealed class StatusEndpointTests
 
     #endregion
 
-    #region Dashboard Endpoint
+    #region Event Stream Endpoint
 
     [Fact]
-    public async Task Dashboard_ReturnsHtml()
+    public async Task EventsStream_ReturnsSsePayloadWithStatusData()
+    {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/api/events/stream");
+        using var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cts.Token);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("text/event-stream");
+
+        await using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
+        using var reader = new StreamReader(stream);
+        var dataLine = await ReadFirstDataLineAsync(reader, cts.Token);
+
+        dataLine.Should().StartWith("data: ");
+
+        using var document = JsonDocument.Parse(dataLine["data: ".Length..]);
+        document.RootElement.TryGetProperty("status", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("backpressure", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("providerLatency", out _).Should().BeTrue();
+        document.RootElement.TryGetProperty("recentErrors", out _).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Root Endpoint
+
+    [Fact]
+    public async Task Root_ReturnsNotFound()
     {
         var response = await _client.GetAsync("/");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-        response.Content.Headers.ContentType!.MediaType.Should().Be("text/html");
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     #endregion
@@ -193,5 +219,21 @@ public sealed class StatusEndpointTests
     {
         var content = await response.Content.ReadAsStringAsync();
         return JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content)!;
+    }
+
+    private static async Task<string> ReadFirstDataLineAsync(StreamReader reader, CancellationToken ct)
+    {
+        while (!reader.EndOfStream)
+        {
+            ct.ThrowIfCancellationRequested();
+
+            var line = await reader.ReadLineAsync(ct);
+            if (line is not null && line.StartsWith("data: ", StringComparison.Ordinal))
+            {
+                return line;
+            }
+        }
+
+        throw new InvalidOperationException("Did not receive a server-sent event data payload.");
     }
 }

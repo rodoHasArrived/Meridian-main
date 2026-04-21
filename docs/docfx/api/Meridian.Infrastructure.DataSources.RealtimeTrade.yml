@@ -1,0 +1,867 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+  commentId: T:Meridian.Infrastructure.DataSources.RealtimeTrade
+  id: RealtimeTrade
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.#ctor(System.String,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.String,System.Nullable{System.Int64},Meridian.Contracts.Domain.Enums.AggressorSide)
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.Conditions
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.Exchange
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.Price
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.SequenceNumber
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.Side
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.Size
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.SourceId
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.Symbol
+  - Meridian.Infrastructure.DataSources.RealtimeTrade.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: RealtimeTrade
+  nameWithType: RealtimeTrade
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeTrade
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 177
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time trade event from a data source.
+  example: []
+  syntax:
+    content: 'public sealed record RealtimeTrade : IEquatable<RealtimeTrade>'
+    content.vb: Public NotInheritable Class RealtimeTrade Implements IEquatable(Of RealtimeTrade)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.#ctor(System.String,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.String,System.Nullable{System.Int64},Meridian.Contracts.Domain.Enums.AggressorSide)
+  commentId: M:Meridian.Infrastructure.DataSources.RealtimeTrade.#ctor(System.String,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.String,System.Nullable{System.Int64},Meridian.Contracts.Domain.Enums.AggressorSide)
+  id: '#ctor(System.String,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.String,System.Nullable{System.Int64},Meridian.Contracts.Domain.Enums.AggressorSide)'
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: RealtimeTrade(string, decimal, long, DateTimeOffset, string, string?, string?, long?, AggressorSide)
+  nameWithType: RealtimeTrade.RealtimeTrade(string, decimal, long, DateTimeOffset, string, string?, string?, long?, AggressorSide)
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.RealtimeTrade(string, decimal, long, System.DateTimeOffset, string, string?, string?, long?, Meridian.Contracts.Domain.Enums.AggressorSide)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 177
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time trade event from a data source.
+  example: []
+  syntax:
+    content: public RealtimeTrade(string Symbol, decimal Price, long Size, DateTimeOffset Timestamp, string SourceId, string? Exchange = null, string? Conditions = null, long? SequenceNumber = null, AggressorSide Side = AggressorSide.Unknown)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Price
+      type: System.Decimal
+    - id: Size
+      type: System.Int64
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: SourceId
+      type: System.String
+    - id: Exchange
+      type: System.String
+    - id: Conditions
+      type: System.String
+    - id: SequenceNumber
+      type: System.Nullable{System.Int64}
+    - id: Side
+      type: Meridian.Contracts.Domain.Enums.AggressorSide
+    content.vb: Public Sub New(Symbol As String, Price As Decimal, Size As Long, Timestamp As DateTimeOffset, SourceId As String, Exchange As String = Nothing, Conditions As String = Nothing, SequenceNumber As Long? = Nothing, Side As AggressorSide = AggressorSide.Unknown)
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.#ctor*
+  nameWithType.vb: RealtimeTrade.New(String, Decimal, Long, DateTimeOffset, String, String, String, Long?, AggressorSide)
+  fullName.vb: Meridian.Infrastructure.DataSources.RealtimeTrade.New(String, Decimal, Long, System.DateTimeOffset, String, String, String, Long?, Meridian.Contracts.Domain.Enums.AggressorSide)
+  name.vb: New(String, Decimal, Long, DateTimeOffset, String, String, String, Long?, AggressorSide)
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Symbol
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeTrade.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: RealtimeTrade.Symbol
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 178
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.Symbol*
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Price
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeTrade.Price
+  id: Price
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: RealtimeTrade.Price
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 179
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public decimal Price { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.Price*
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Size
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeTrade.Size
+  id: Size
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: RealtimeTrade.Size
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Size
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 180
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public long Size { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Size As Long
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.Size*
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Timestamp
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeTrade.Timestamp
+  id: Timestamp
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: RealtimeTrade.Timestamp
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 181
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.Timestamp*
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.SourceId
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeTrade.SourceId
+  id: SourceId
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: SourceId
+  nameWithType: RealtimeTrade.SourceId
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.SourceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceId
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 182
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string SourceId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceId As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.SourceId*
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Exchange
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeTrade.Exchange
+  id: Exchange
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: RealtimeTrade.Exchange
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 183
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string? Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.Exchange*
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Conditions
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeTrade.Conditions
+  id: Conditions
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: Conditions
+  nameWithType: RealtimeTrade.Conditions
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Conditions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Conditions
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 184
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string? Conditions { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Conditions As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.Conditions*
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.SequenceNumber
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeTrade.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: RealtimeTrade.SequenceNumber
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 185
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public long? SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property SequenceNumber As Long?
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.SequenceNumber*
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Side
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeTrade.Side
+  id: Side
+  parent: Meridian.Infrastructure.DataSources.RealtimeTrade
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: RealtimeTrade.Side
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 186
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public AggressorSide Side { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.AggressorSide
+    content.vb: Public Property Side As AggressorSide
+  overload: Meridian.Infrastructure.DataSources.RealtimeTrade.Side*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RealtimeTrade>
+  nameWithType: IEquatable<RealtimeTrade>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.RealtimeTrade>
+  nameWithType.vb: IEquatable(Of RealtimeTrade)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.RealtimeTrade)
+  name.vb: IEquatable(Of RealtimeTrade)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+    name: RealtimeTrade
+    href: Meridian.Infrastructure.DataSources.RealtimeTrade.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+    name: RealtimeTrade
+    href: Meridian.Infrastructure.DataSources.RealtimeTrade.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.#ctor*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.#ctor
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade__ctor_System_String_System_Decimal_System_Int64_System_DateTimeOffset_System_String_System_String_System_String_System_Nullable_System_Int64__Meridian_Contracts_Domain_Enums_AggressorSide_
+  name: RealtimeTrade
+  nameWithType: RealtimeTrade.RealtimeTrade
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.RealtimeTrade
+  nameWithType.vb: RealtimeTrade.New
+  fullName.vb: Meridian.Infrastructure.DataSources.RealtimeTrade.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Contracts.Domain.Enums.AggressorSide
+  commentId: T:Meridian.Contracts.Domain.Enums.AggressorSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.AggressorSide.html
+  name: AggressorSide
+  nameWithType: AggressorSide
+  fullName: Meridian.Contracts.Domain.Enums.AggressorSide
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Symbol*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.Symbol
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade_Symbol
+  name: Symbol
+  nameWithType: RealtimeTrade.Symbol
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Symbol
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Price*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.Price
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade_Price
+  name: Price
+  nameWithType: RealtimeTrade.Price
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Price
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Size*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.Size
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade_Size
+  name: Size
+  nameWithType: RealtimeTrade.Size
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Size
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Timestamp*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.Timestamp
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade_Timestamp
+  name: Timestamp
+  nameWithType: RealtimeTrade.Timestamp
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Timestamp
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.SourceId*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.SourceId
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade_SourceId
+  name: SourceId
+  nameWithType: RealtimeTrade.SourceId
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.SourceId
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Exchange*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.Exchange
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade_Exchange
+  name: Exchange
+  nameWithType: RealtimeTrade.Exchange
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Exchange
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Conditions*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.Conditions
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade_Conditions
+  name: Conditions
+  nameWithType: RealtimeTrade.Conditions
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Conditions
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.SequenceNumber*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.SequenceNumber
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade_SequenceNumber
+  name: SequenceNumber
+  nameWithType: RealtimeTrade.SequenceNumber
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.SequenceNumber
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade.Side*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeTrade.Side
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html#Meridian_Infrastructure_DataSources_RealtimeTrade_Side
+  name: Side
+  nameWithType: RealtimeTrade.Side
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade.Side

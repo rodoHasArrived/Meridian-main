@@ -1,0 +1,516 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions
+  commentId: T:Meridian.Execution.Services.ExecutionOperatorControlOptions
+  id: ExecutionOperatorControlOptions
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.ExecutionOperatorControlOptions.#ctor(System.String)
+  - Meridian.Execution.Services.ExecutionOperatorControlOptions.Default
+  - Meridian.Execution.Services.ExecutionOperatorControlOptions.RootDirectory
+  - Meridian.Execution.Services.ExecutionOperatorControlOptions.SnapshotPath
+  langs:
+  - csharp
+  - vb
+  name: ExecutionOperatorControlOptions
+  nameWithType: ExecutionOperatorControlOptions
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionOperatorControlOptions
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Configuration for persisted execution operator controls.
+  example: []
+  syntax:
+    content: 'public sealed record ExecutionOperatorControlOptions : IEquatable<ExecutionOperatorControlOptions>'
+    content.vb: Public NotInheritable Class ExecutionOperatorControlOptions Implements IEquatable(Of ExecutionOperatorControlOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Services.ExecutionOperatorControlOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions.#ctor(System.String)
+  commentId: M:Meridian.Execution.Services.ExecutionOperatorControlOptions.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Execution.Services.ExecutionOperatorControlOptions
+  langs:
+  - csharp
+  - vb
+  name: ExecutionOperatorControlOptions(string)
+  nameWithType: ExecutionOperatorControlOptions.ExecutionOperatorControlOptions(string)
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions.ExecutionOperatorControlOptions(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Configuration for persisted execution operator controls.
+  example: []
+  syntax:
+    content: public ExecutionOperatorControlOptions(string RootDirectory)
+    parameters:
+    - id: RootDirectory
+      type: System.String
+    content.vb: Public Sub New(RootDirectory As String)
+  overload: Meridian.Execution.Services.ExecutionOperatorControlOptions.#ctor*
+  nameWithType.vb: ExecutionOperatorControlOptions.New(String)
+  fullName.vb: Meridian.Execution.Services.ExecutionOperatorControlOptions.New(String)
+  name.vb: New(String)
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions.RootDirectory
+  commentId: P:Meridian.Execution.Services.ExecutionOperatorControlOptions.RootDirectory
+  id: RootDirectory
+  parent: Meridian.Execution.Services.ExecutionOperatorControlOptions
+  langs:
+  - csharp
+  - vb
+  name: RootDirectory
+  nameWithType: ExecutionOperatorControlOptions.RootDirectory
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions.RootDirectory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RootDirectory
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string RootDirectory { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RootDirectory As String
+  overload: Meridian.Execution.Services.ExecutionOperatorControlOptions.RootDirectory*
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions.Default
+  commentId: P:Meridian.Execution.Services.ExecutionOperatorControlOptions.Default
+  id: Default
+  parent: Meridian.Execution.Services.ExecutionOperatorControlOptions
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: ExecutionOperatorControlOptions.Default
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public static ExecutionOperatorControlOptions Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Services.ExecutionOperatorControlOptions
+    content.vb: Public Shared ReadOnly Property [Default] As ExecutionOperatorControlOptions
+  overload: Meridian.Execution.Services.ExecutionOperatorControlOptions.Default*
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions.SnapshotPath
+  commentId: P:Meridian.Execution.Services.ExecutionOperatorControlOptions.SnapshotPath
+  id: SnapshotPath
+  parent: Meridian.Execution.Services.ExecutionOperatorControlOptions
+  langs:
+  - csharp
+  - vb
+  name: SnapshotPath
+  nameWithType: ExecutionOperatorControlOptions.SnapshotPath
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions.SnapshotPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SnapshotPath
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string SnapshotPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property SnapshotPath As String
+  overload: Meridian.Execution.Services.ExecutionOperatorControlOptions.SnapshotPath*
+references:
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Services.ExecutionOperatorControlOptions}
+  commentId: T:System.IEquatable{Meridian.Execution.Services.ExecutionOperatorControlOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExecutionOperatorControlOptions>
+  nameWithType: IEquatable<ExecutionOperatorControlOptions>
+  fullName: System.IEquatable<Meridian.Execution.Services.ExecutionOperatorControlOptions>
+  nameWithType.vb: IEquatable(Of ExecutionOperatorControlOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Services.ExecutionOperatorControlOptions)
+  name.vb: IEquatable(Of ExecutionOperatorControlOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionOperatorControlOptions
+    name: ExecutionOperatorControlOptions
+    href: Meridian.Execution.Services.ExecutionOperatorControlOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionOperatorControlOptions
+    name: ExecutionOperatorControlOptions
+    href: Meridian.Execution.Services.ExecutionOperatorControlOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions.#ctor*
+  commentId: Overload:Meridian.Execution.Services.ExecutionOperatorControlOptions.#ctor
+  href: Meridian.Execution.Services.ExecutionOperatorControlOptions.html#Meridian_Execution_Services_ExecutionOperatorControlOptions__ctor_System_String_
+  name: ExecutionOperatorControlOptions
+  nameWithType: ExecutionOperatorControlOptions.ExecutionOperatorControlOptions
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions.ExecutionOperatorControlOptions
+  nameWithType.vb: ExecutionOperatorControlOptions.New
+  fullName.vb: Meridian.Execution.Services.ExecutionOperatorControlOptions.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions.RootDirectory*
+  commentId: Overload:Meridian.Execution.Services.ExecutionOperatorControlOptions.RootDirectory
+  href: Meridian.Execution.Services.ExecutionOperatorControlOptions.html#Meridian_Execution_Services_ExecutionOperatorControlOptions_RootDirectory
+  name: RootDirectory
+  nameWithType: ExecutionOperatorControlOptions.RootDirectory
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions.RootDirectory
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions.Default*
+  commentId: Overload:Meridian.Execution.Services.ExecutionOperatorControlOptions.Default
+  href: Meridian.Execution.Services.ExecutionOperatorControlOptions.html#Meridian_Execution_Services_ExecutionOperatorControlOptions_Default
+  name: Default
+  nameWithType: ExecutionOperatorControlOptions.Default
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions.Default
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions
+  commentId: T:Meridian.Execution.Services.ExecutionOperatorControlOptions
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.ExecutionOperatorControlOptions.html
+  name: ExecutionOperatorControlOptions
+  nameWithType: ExecutionOperatorControlOptions
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions
+- uid: Meridian.Execution.Services.ExecutionOperatorControlOptions.SnapshotPath*
+  commentId: Overload:Meridian.Execution.Services.ExecutionOperatorControlOptions.SnapshotPath
+  href: Meridian.Execution.Services.ExecutionOperatorControlOptions.html#Meridian_Execution_Services_ExecutionOperatorControlOptions_SnapshotPath
+  name: SnapshotPath
+  nameWithType: ExecutionOperatorControlOptions.SnapshotPath
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlOptions.SnapshotPath

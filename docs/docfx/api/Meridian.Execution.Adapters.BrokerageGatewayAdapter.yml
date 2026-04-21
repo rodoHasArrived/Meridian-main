@@ -1,0 +1,1434 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  commentId: T:Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  id: BrokerageGatewayAdapter
+  parent: Meridian.Execution.Adapters
+  children:
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter.#ctor(Meridian.Execution.Sdk.IBrokerageGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Adapters.BrokerageGatewayAdapter})
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerName
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter.CancelAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter.Capabilities
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter.DisposeAsync
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter.Mode
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  - Meridian.Execution.Adapters.BrokerageGatewayAdapter.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BrokerageGatewayAdapter
+  nameWithType: BrokerageGatewayAdapter
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerageGatewayAdapter
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  summary: >-
+    Bridges an <xref href="Meridian.Execution.Sdk.IBrokerageGateway" data-throw-if-not-resolved="false"></xref> (from Execution.Sdk) to the
+
+    <xref href="Meridian.Execution.Interfaces.IOrderGateway" data-throw-if-not-resolved="false"></xref> contract used by <xref href="Meridian.Execution.Interfaces.IExecutionContext" data-throw-if-not-resolved="false"></xref>.
+
+    This allows any brokerage provider to plug into the existing execution framework
+
+    without modifying the strategy-facing interfaces.
+  example: []
+  syntax:
+    content: 'public sealed class BrokerageGatewayAdapter : IOrderGateway, IAsyncDisposable'
+    content.vb: Public NotInheritable Class BrokerageGatewayAdapter Implements IOrderGateway, IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Execution.Interfaces.IOrderGateway
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.#ctor(Meridian.Execution.Sdk.IBrokerageGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Adapters.BrokerageGatewayAdapter})
+  commentId: M:Meridian.Execution.Adapters.BrokerageGatewayAdapter.#ctor(Meridian.Execution.Sdk.IBrokerageGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Adapters.BrokerageGatewayAdapter})
+  id: '#ctor(Meridian.Execution.Sdk.IBrokerageGateway,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Adapters.BrokerageGatewayAdapter})'
+  parent: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  langs:
+  - csharp
+  - vb
+  name: BrokerageGatewayAdapter(IBrokerageGateway, ILogger<BrokerageGatewayAdapter>)
+  nameWithType: BrokerageGatewayAdapter.BrokerageGatewayAdapter(IBrokerageGateway, ILogger<BrokerageGatewayAdapter>)
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerageGatewayAdapter(Meridian.Execution.Sdk.IBrokerageGateway, Microsoft.Extensions.Logging.ILogger<Meridian.Execution.Adapters.BrokerageGatewayAdapter>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  syntax:
+    content: public BrokerageGatewayAdapter(IBrokerageGateway inner, ILogger<BrokerageGatewayAdapter> logger)
+    parameters:
+    - id: inner
+      type: Meridian.Execution.Sdk.IBrokerageGateway
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Adapters.BrokerageGatewayAdapter}
+    content.vb: Public Sub New(inner As IBrokerageGateway, logger As ILogger(Of BrokerageGatewayAdapter))
+  overload: Meridian.Execution.Adapters.BrokerageGatewayAdapter.#ctor*
+  nameWithType.vb: BrokerageGatewayAdapter.New(IBrokerageGateway, ILogger(Of BrokerageGatewayAdapter))
+  fullName.vb: Meridian.Execution.Adapters.BrokerageGatewayAdapter.New(Meridian.Execution.Sdk.IBrokerageGateway, Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.Adapters.BrokerageGatewayAdapter))
+  name.vb: New(IBrokerageGateway, ILogger(Of BrokerageGatewayAdapter))
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerName
+  commentId: P:Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerName
+  id: BrokerName
+  parent: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  langs:
+  - csharp
+  - vb
+  name: BrokerName
+  nameWithType: BrokerageGatewayAdapter.BrokerName
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerName
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  summary: Human-readable name of the broker or simulator (e.g., "Paper", "Alpaca").
+  example: []
+  syntax:
+    content: public string BrokerName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property BrokerName As String
+  overload: Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerName*
+  implements:
+  - Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Mode
+  commentId: P:Meridian.Execution.Adapters.BrokerageGatewayAdapter.Mode
+  id: Mode
+  parent: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  langs:
+  - csharp
+  - vb
+  name: Mode
+  nameWithType: BrokerageGatewayAdapter.Mode
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Mode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mode
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  summary: Indicates whether this gateway routes paper or live orders.
+  example: []
+  syntax:
+    content: public ExecutionMode Mode { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Models.ExecutionMode
+    content.vb: Public ReadOnly Property Mode As ExecutionMode
+  overload: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Mode*
+  implements:
+  - Meridian.Execution.Interfaces.IOrderGateway.Mode
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Capabilities
+  commentId: P:Meridian.Execution.Adapters.BrokerageGatewayAdapter.Capabilities
+  id: Capabilities
+  parent: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: BrokerageGatewayAdapter.Capabilities
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  summary: >-
+    Provider-independent capability matrix for this gateway. Provider-specific
+
+    nuances can be exposed via metadata without leaking provider types.
+  example: []
+  syntax:
+    content: public OrderGatewayCapabilities Capabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Models.OrderGatewayCapabilities
+    content.vb: Public ReadOnly Property Capabilities As OrderGatewayCapabilities
+  overload: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Capabilities*
+  implements:
+  - Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Adapters.BrokerageGatewayAdapter.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  id: ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  langs:
+  - csharp
+  - vb
+  name: ValidateOrderAsync(OrderRequest, CancellationToken)
+  nameWithType: BrokerageGatewayAdapter.ValidateOrderAsync(OrderRequest, CancellationToken)
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateOrderAsync
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  summary: >-
+    Validates a request against provider-independent constraints and any provider-specific
+
+    implementation rules published through <xref href="Meridian.Execution.Models.OrderGatewayCapabilities" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public Task<OrderValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Execution.Sdk.OrderRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.Models.OrderValidationResult}
+    content.vb: Public Function ValidateOrderAsync(request As OrderRequest, ct As CancellationToken = Nothing) As Task(Of OrderValidationResult)
+  overload: Meridian.Execution.Adapters.BrokerageGatewayAdapter.ValidateOrderAsync*
+  implements:
+  - Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Adapters.BrokerageGatewayAdapter.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  id: SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  langs:
+  - csharp
+  - vb
+  name: SubmitAsync(OrderRequest, CancellationToken)
+  nameWithType: BrokerageGatewayAdapter.SubmitAsync(OrderRequest, CancellationToken)
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.SubmitAsync(Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubmitAsync
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  summary: >-
+    Submits an order to the gateway. Returns an acknowledgement immediately; fills
+
+    arrive asynchronously via <xref href="Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public Task<OrderAcknowledgement> SubmitAsync(OrderRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Execution.Sdk.OrderRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.Models.OrderAcknowledgement}
+    content.vb: Public Function SubmitAsync(request As OrderRequest, ct As CancellationToken = Nothing) As Task(Of OrderAcknowledgement)
+  overload: Meridian.Execution.Adapters.BrokerageGatewayAdapter.SubmitAsync*
+  implements:
+  - Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.CancelAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Adapters.BrokerageGatewayAdapter.CancelAsync(System.String,System.Threading.CancellationToken)
+  id: CancelAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  langs:
+  - csharp
+  - vb
+  name: CancelAsync(string, CancellationToken)
+  nameWithType: BrokerageGatewayAdapter.CancelAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.CancelAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelAsync
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  summary: >-
+    Requests cancellation of a working order. Returns <code>true</code> if the cancellation
+
+    was accepted, <code>false</code> if the order was already terminal.
+  example: []
+  syntax:
+    content: public Task<bool> CancelAsync(string orderId, CancellationToken ct = default)
+    parameters:
+    - id: orderId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function CancelAsync(orderId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Execution.Adapters.BrokerageGatewayAdapter.CancelAsync*
+  implements:
+  - Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: BrokerageGatewayAdapter.CancelAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Adapters.BrokerageGatewayAdapter.CancelAsync(String, System.Threading.CancellationToken)
+  name.vb: CancelAsync(String, CancellationToken)
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Adapters.BrokerageGatewayAdapter.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  id: StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  langs:
+  - csharp
+  - vb
+  name: StreamOrderUpdatesAsync(CancellationToken)
+  nameWithType: BrokerageGatewayAdapter.StreamOrderUpdatesAsync(CancellationToken)
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamOrderUpdatesAsync
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  summary: >-
+    Streams all order lifecycle events (fills, partial fills, cancellations, rejections)
+
+    for this session. Callers should consume this stream on a dedicated background task.
+  example: []
+  syntax:
+    content: public IAsyncEnumerable<OrderStatusUpdate> StreamOrderUpdatesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Execution.Models.OrderStatusUpdate}
+    content.vb: Public Function StreamOrderUpdatesAsync(ct As CancellationToken = Nothing) As IAsyncEnumerable(Of OrderStatusUpdate)
+  overload: Meridian.Execution.Adapters.BrokerageGatewayAdapter.StreamOrderUpdatesAsync*
+  implements:
+  - Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.DisposeAsync
+  commentId: M:Meridian.Execution.Adapters.BrokerageGatewayAdapter.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: BrokerageGatewayAdapter.DisposeAsync()
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Execution/Adapters/BrokerageGatewayAdapter.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Adapters
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Execution.Adapters.BrokerageGatewayAdapter.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Execution.Sdk.IBrokerageGateway
+  commentId: T:Meridian.Execution.Sdk.IBrokerageGateway
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IBrokerageGateway.html
+  name: IBrokerageGateway
+  nameWithType: IBrokerageGateway
+  fullName: Meridian.Execution.Sdk.IBrokerageGateway
+- uid: Meridian.Execution.Interfaces.IOrderGateway
+  commentId: T:Meridian.Execution.Interfaces.IOrderGateway
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IOrderGateway.html
+  name: IOrderGateway
+  nameWithType: IOrderGateway
+  fullName: Meridian.Execution.Interfaces.IOrderGateway
+- uid: Meridian.Execution.Interfaces.IExecutionContext
+  commentId: T:Meridian.Execution.Interfaces.IExecutionContext
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IExecutionContext.html
+  name: IExecutionContext
+  nameWithType: IExecutionContext
+  fullName: Meridian.Execution.Interfaces.IExecutionContext
+- uid: Meridian.Execution.Adapters
+  commentId: N:Meridian.Execution.Adapters
+  href: Meridian.html
+  name: Meridian.Execution.Adapters
+  nameWithType: Meridian.Execution.Adapters
+  fullName: Meridian.Execution.Adapters
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Adapters
+    name: Adapters
+    href: Meridian.Execution.Adapters.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Adapters
+    name: Adapters
+    href: Meridian.Execution.Adapters.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.#ctor*
+  commentId: Overload:Meridian.Execution.Adapters.BrokerageGatewayAdapter.#ctor
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html#Meridian_Execution_Adapters_BrokerageGatewayAdapter__ctor_Meridian_Execution_Sdk_IBrokerageGateway_Microsoft_Extensions_Logging_ILogger_Meridian_Execution_Adapters_BrokerageGatewayAdapter__
+  name: BrokerageGatewayAdapter
+  nameWithType: BrokerageGatewayAdapter.BrokerageGatewayAdapter
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerageGatewayAdapter
+  nameWithType.vb: BrokerageGatewayAdapter.New
+  fullName.vb: Meridian.Execution.Adapters.BrokerageGatewayAdapter.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Adapters.BrokerageGatewayAdapter}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Adapters.BrokerageGatewayAdapter}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<BrokerageGatewayAdapter>
+  nameWithType: ILogger<BrokerageGatewayAdapter>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Execution.Adapters.BrokerageGatewayAdapter>
+  nameWithType.vb: ILogger(Of BrokerageGatewayAdapter)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.Adapters.BrokerageGatewayAdapter)
+  name.vb: ILogger(Of BrokerageGatewayAdapter)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+    name: BrokerageGatewayAdapter
+    href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter
+    name: BrokerageGatewayAdapter
+    href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerName*
+  commentId: Overload:Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerName
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html#Meridian_Execution_Adapters_BrokerageGatewayAdapter_BrokerName
+  name: BrokerName
+  nameWithType: BrokerageGatewayAdapter.BrokerName
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.BrokerName
+- uid: Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+  commentId: P:Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_BrokerName
+  name: BrokerName
+  nameWithType: IOrderGateway.BrokerName
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.BrokerName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Mode*
+  commentId: Overload:Meridian.Execution.Adapters.BrokerageGatewayAdapter.Mode
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html#Meridian_Execution_Adapters_BrokerageGatewayAdapter_Mode
+  name: Mode
+  nameWithType: BrokerageGatewayAdapter.Mode
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Mode
+- uid: Meridian.Execution.Interfaces.IOrderGateway.Mode
+  commentId: P:Meridian.Execution.Interfaces.IOrderGateway.Mode
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_Mode
+  name: Mode
+  nameWithType: IOrderGateway.Mode
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.Mode
+- uid: Meridian.Execution.Models.ExecutionMode
+  commentId: T:Meridian.Execution.Models.ExecutionMode
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionMode.html
+  name: ExecutionMode
+  nameWithType: ExecutionMode
+  fullName: Meridian.Execution.Models.ExecutionMode
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Capabilities*
+  commentId: Overload:Meridian.Execution.Adapters.BrokerageGatewayAdapter.Capabilities
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html#Meridian_Execution_Adapters_BrokerageGatewayAdapter_Capabilities
+  name: Capabilities
+  nameWithType: BrokerageGatewayAdapter.Capabilities
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.Capabilities
+- uid: Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+  commentId: P:Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_Capabilities
+  name: Capabilities
+  nameWithType: IOrderGateway.Capabilities
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.Capabilities
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities
+  commentId: T:Meridian.Execution.Models.OrderGatewayCapabilities
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html
+  name: OrderGatewayCapabilities
+  nameWithType: OrderGatewayCapabilities
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.ValidateOrderAsync*
+  commentId: Overload:Meridian.Execution.Adapters.BrokerageGatewayAdapter.ValidateOrderAsync
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html#Meridian_Execution_Adapters_BrokerageGatewayAdapter_ValidateOrderAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: ValidateOrderAsync
+  nameWithType: BrokerageGatewayAdapter.ValidateOrderAsync
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.ValidateOrderAsync
+- uid: Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  isExternal: true
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_ValidateOrderAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: ValidateOrderAsync(OrderRequest, CancellationToken)
+  nameWithType: IOrderGateway.ValidateOrderAsync(OrderRequest, CancellationToken)
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+    name: ValidateOrderAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_ValidateOrderAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Sdk.OrderRequest
+    name: OrderRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.ValidateOrderAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+    name: ValidateOrderAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_ValidateOrderAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Sdk.OrderRequest
+    name: OrderRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Execution.Sdk.OrderRequest
+  commentId: T:Meridian.Execution.Sdk.OrderRequest
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderRequest.html
+  name: OrderRequest
+  nameWithType: OrderRequest
+  fullName: Meridian.Execution.Sdk.OrderRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Execution.Models.OrderValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.Models.OrderValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OrderValidationResult>
+  nameWithType: Task<OrderValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.Models.OrderValidationResult>
+  nameWithType.vb: Task(Of OrderValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.Models.OrderValidationResult)
+  name.vb: Task(Of OrderValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.Models.OrderValidationResult
+    name: OrderValidationResult
+    href: Meridian.Execution.Models.OrderValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.OrderValidationResult
+    name: OrderValidationResult
+    href: Meridian.Execution.Models.OrderValidationResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  isExternal: true
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_StreamOrderUpdatesAsync_System_Threading_CancellationToken_
+  name: StreamOrderUpdatesAsync(CancellationToken)
+  nameWithType: IOrderGateway.StreamOrderUpdatesAsync(CancellationToken)
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+    name: StreamOrderUpdatesAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_StreamOrderUpdatesAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.StreamOrderUpdatesAsync(System.Threading.CancellationToken)
+    name: StreamOrderUpdatesAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_StreamOrderUpdatesAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.SubmitAsync*
+  commentId: Overload:Meridian.Execution.Adapters.BrokerageGatewayAdapter.SubmitAsync
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html#Meridian_Execution_Adapters_BrokerageGatewayAdapter_SubmitAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: SubmitAsync
+  nameWithType: BrokerageGatewayAdapter.SubmitAsync
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.SubmitAsync
+- uid: Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  isExternal: true
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_SubmitAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  name: SubmitAsync(OrderRequest, CancellationToken)
+  nameWithType: IOrderGateway.SubmitAsync(OrderRequest, CancellationToken)
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+    name: SubmitAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_SubmitAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Sdk.OrderRequest
+    name: OrderRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.SubmitAsync(Meridian.Execution.Sdk.OrderRequest,System.Threading.CancellationToken)
+    name: SubmitAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_SubmitAsync_Meridian_Execution_Sdk_OrderRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Sdk.OrderRequest
+    name: OrderRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Execution.Models.OrderAcknowledgement}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.Models.OrderAcknowledgement}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OrderAcknowledgement>
+  nameWithType: Task<OrderAcknowledgement>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.Models.OrderAcknowledgement>
+  nameWithType.vb: Task(Of OrderAcknowledgement)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.Models.OrderAcknowledgement)
+  name.vb: Task(Of OrderAcknowledgement)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.Models.OrderAcknowledgement
+    name: OrderAcknowledgement
+    href: Meridian.Execution.Models.OrderAcknowledgement.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.OrderAcknowledgement
+    name: OrderAcknowledgement
+    href: Meridian.Execution.Models.OrderAcknowledgement.html
+  - name: )
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.CancelAsync*
+  commentId: Overload:Meridian.Execution.Adapters.BrokerageGatewayAdapter.CancelAsync
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html#Meridian_Execution_Adapters_BrokerageGatewayAdapter_CancelAsync_System_String_System_Threading_CancellationToken_
+  name: CancelAsync
+  nameWithType: BrokerageGatewayAdapter.CancelAsync
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.CancelAsync
+- uid: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Interfaces.IOrderGateway
+  isExternal: true
+  href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_CancelAsync_System_String_System_Threading_CancellationToken_
+  name: CancelAsync(string, CancellationToken)
+  nameWithType: IOrderGateway.CancelAsync(string, CancellationToken)
+  fullName: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: IOrderGateway.CancelAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(String, System.Threading.CancellationToken)
+  name.vb: CancelAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(System.String,System.Threading.CancellationToken)
+    name: CancelAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_CancelAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Interfaces.IOrderGateway.CancelAsync(System.String,System.Threading.CancellationToken)
+    name: CancelAsync
+    href: Meridian.Execution.Interfaces.IOrderGateway.html#Meridian_Execution_Interfaces_IOrderGateway_CancelAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.StreamOrderUpdatesAsync*
+  commentId: Overload:Meridian.Execution.Adapters.BrokerageGatewayAdapter.StreamOrderUpdatesAsync
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html#Meridian_Execution_Adapters_BrokerageGatewayAdapter_StreamOrderUpdatesAsync_System_Threading_CancellationToken_
+  name: StreamOrderUpdatesAsync
+  nameWithType: BrokerageGatewayAdapter.StreamOrderUpdatesAsync
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.StreamOrderUpdatesAsync
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Execution.Models.OrderStatusUpdate}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Execution.Models.OrderStatusUpdate}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<OrderStatusUpdate>
+  nameWithType: IAsyncEnumerable<OrderStatusUpdate>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Execution.Models.OrderStatusUpdate>
+  nameWithType.vb: IAsyncEnumerable(Of OrderStatusUpdate)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Execution.Models.OrderStatusUpdate)
+  name.vb: IAsyncEnumerable(Of OrderStatusUpdate)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Execution.Models.OrderStatusUpdate
+    name: OrderStatusUpdate
+    href: Meridian.Execution.Models.OrderStatusUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.OrderStatusUpdate
+    name: OrderStatusUpdate
+    href: Meridian.Execution.Models.OrderStatusUpdate.html
+  - name: )
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Adapters.BrokerageGatewayAdapter.DisposeAsync*
+  commentId: Overload:Meridian.Execution.Adapters.BrokerageGatewayAdapter.DisposeAsync
+  href: Meridian.Execution.Adapters.BrokerageGatewayAdapter.html#Meridian_Execution_Adapters_BrokerageGatewayAdapter_DisposeAsync
+  name: DisposeAsync
+  nameWithType: BrokerageGatewayAdapter.DisposeAsync
+  fullName: Meridian.Execution.Adapters.BrokerageGatewayAdapter.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

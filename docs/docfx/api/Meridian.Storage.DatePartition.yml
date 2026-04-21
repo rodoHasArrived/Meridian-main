@@ -1,0 +1,185 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.DatePartition
+  commentId: T:Meridian.Storage.DatePartition
+  id: DatePartition
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.DatePartition.Daily
+  - Meridian.Storage.DatePartition.Hourly
+  - Meridian.Storage.DatePartition.Monthly
+  - Meridian.Storage.DatePartition.None
+  langs:
+  - csharp
+  - vb
+  name: DatePartition
+  nameWithType: DatePartition
+  fullName: Meridian.Storage.DatePartition
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DatePartition
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Date-based file partitioning strategy.
+  example: []
+  syntax:
+    content: 'public enum DatePartition : byte'
+    content.vb: Public Enum DatePartition As Byte
+- uid: Meridian.Storage.DatePartition.None
+  commentId: F:Meridian.Storage.DatePartition.None
+  id: None
+  parent: Meridian.Storage.DatePartition
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: DatePartition.None
+  fullName: Meridian.Storage.DatePartition.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    No date partitioning - all data in single file per symbol/type.
+
+    File name: {symbol}_{type}.jsonl
+  example: []
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Storage.DatePartition
+- uid: Meridian.Storage.DatePartition.Daily
+  commentId: F:Meridian.Storage.DatePartition.Daily
+  id: Daily
+  parent: Meridian.Storage.DatePartition
+  langs:
+  - csharp
+  - vb
+  name: Daily
+  nameWithType: DatePartition.Daily
+  fullName: Meridian.Storage.DatePartition.Daily
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Daily
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: 'Partition by day: {date:yyyy-MM-dd}'
+  example: []
+  syntax:
+    content: Daily = 1
+    return:
+      type: Meridian.Storage.DatePartition
+- uid: Meridian.Storage.DatePartition.Hourly
+  commentId: F:Meridian.Storage.DatePartition.Hourly
+  id: Hourly
+  parent: Meridian.Storage.DatePartition
+  langs:
+  - csharp
+  - vb
+  name: Hourly
+  nameWithType: DatePartition.Hourly
+  fullName: Meridian.Storage.DatePartition.Hourly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hourly
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Partition by hour: {date:yyyy-MM-dd_HH}
+
+    Good for high-volume data.
+  example: []
+  syntax:
+    content: Hourly = 2
+    return:
+      type: Meridian.Storage.DatePartition
+- uid: Meridian.Storage.DatePartition.Monthly
+  commentId: F:Meridian.Storage.DatePartition.Monthly
+  id: Monthly
+  parent: Meridian.Storage.DatePartition
+  langs:
+  - csharp
+  - vb
+  name: Monthly
+  nameWithType: DatePartition.Monthly
+  fullName: Meridian.Storage.DatePartition.Monthly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Monthly
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Partition by month: {date:yyyy-MM}
+
+    Good for long-term storage with less granularity.
+  example: []
+  syntax:
+    content: Monthly = 3
+    return:
+      type: Meridian.Storage.DatePartition
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.DatePartition
+  commentId: T:Meridian.Storage.DatePartition
+  parent: Meridian.Storage
+  href: Meridian.Storage.DatePartition.html
+  name: DatePartition
+  nameWithType: DatePartition
+  fullName: Meridian.Storage.DatePartition

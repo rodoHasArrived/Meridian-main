@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Monitoring;
 using Meridian.Application.Pipeline;
 using Meridian.Application.UI;
+using Meridian.Ui.Shared;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Hosting;
@@ -24,6 +25,8 @@ public sealed class EndpointTestFixture : IAsyncLifetime
     private string? _originalDisableRateLimit;
 
     public HttpClient Client { get; private set; } = null!;
+    public string DataRoot { get; private set; } = null!;
+    public IServiceProvider Services => _app!.Services;
 
     /// <summary>
     /// Creates an <see cref="HttpClient"/> backed by the in-memory TestServer that does NOT
@@ -47,6 +50,7 @@ public sealed class EndpointTestFixture : IAsyncLifetime
 
         _tempConfigDir = Path.Combine(Path.GetTempPath(), $"mdc-endpoint-tests-{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempConfigDir);
+        DataRoot = Path.Combine(_tempConfigDir, "data");
 
         var configPath = Path.Combine(_tempConfigDir, "appsettings.json");
         File.WriteAllText(configPath, GetMinimalConfig());
@@ -61,11 +65,16 @@ public sealed class EndpointTestFixture : IAsyncLifetime
         // Register the Ui.Shared ConfigStore wrapper (endpoints resolve this type).
         // The core ConfigStore (Application.UI.ConfigStore) is registered separately by AddMarketDataServices.
         builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(configPath));
+        builder.Services.AddUiSharedServices(statusHandlers, configPath);
 
-        _app = builder.BuildUiHost(statusHandlers, configPath);
+        _app = builder.Build();
+        _app.UseApiKeyAuthentication();
+        _app.UseLoginSessionAuthentication();
 
-        // Map the dashboard HTML endpoint (not included in BuildUiHost with status handlers)
-        _app.MapDashboard();
+        var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
+        _app.MapPackagingEndpoints(config.DataRoot);
+        _app.MapArchiveMaintenanceEndpoints();
+        _app.MapUiEndpointsWithStatus(statusHandlers);
 
         await _app.StartAsync();
         Client = _app.GetTestClient();

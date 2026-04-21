@@ -1,0 +1,174 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.GapType
+  commentId: T:Meridian.Ui.Services.GapType
+  id: GapType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.GapType.Consecutive
+  - Meridian.Ui.Services.GapType.EndOfRange
+  - Meridian.Ui.Services.GapType.Single
+  - Meridian.Ui.Services.GapType.StartOfRange
+  langs:
+  - csharp
+  - vb
+  name: GapType
+  nameWithType: GapType
+  fullName: Meridian.Ui.Services.GapType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapType
+    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    startLine: 772
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum GapType : byte'
+    content.vb: Public Enum GapType As Byte
+- uid: Meridian.Ui.Services.GapType.Single
+  commentId: F:Meridian.Ui.Services.GapType.Single
+  id: Single
+  parent: Meridian.Ui.Services.GapType
+  langs:
+  - csharp
+  - vb
+  name: Single
+  nameWithType: GapType.Single
+  fullName: Meridian.Ui.Services.GapType.Single
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Single
+    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    startLine: 774
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Single = 0
+    return:
+      type: Meridian.Ui.Services.GapType
+- uid: Meridian.Ui.Services.GapType.Consecutive
+  commentId: F:Meridian.Ui.Services.GapType.Consecutive
+  id: Consecutive
+  parent: Meridian.Ui.Services.GapType
+  langs:
+  - csharp
+  - vb
+  name: Consecutive
+  nameWithType: GapType.Consecutive
+  fullName: Meridian.Ui.Services.GapType.Consecutive
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Consecutive
+    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    startLine: 775
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Consecutive = 1
+    return:
+      type: Meridian.Ui.Services.GapType
+- uid: Meridian.Ui.Services.GapType.StartOfRange
+  commentId: F:Meridian.Ui.Services.GapType.StartOfRange
+  id: StartOfRange
+  parent: Meridian.Ui.Services.GapType
+  langs:
+  - csharp
+  - vb
+  name: StartOfRange
+  nameWithType: GapType.StartOfRange
+  fullName: Meridian.Ui.Services.GapType.StartOfRange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartOfRange
+    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    startLine: 776
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: StartOfRange = 2
+    return:
+      type: Meridian.Ui.Services.GapType
+- uid: Meridian.Ui.Services.GapType.EndOfRange
+  commentId: F:Meridian.Ui.Services.GapType.EndOfRange
+  id: EndOfRange
+  parent: Meridian.Ui.Services.GapType
+  langs:
+  - csharp
+  - vb
+  name: EndOfRange
+  nameWithType: GapType.EndOfRange
+  fullName: Meridian.Ui.Services.GapType.EndOfRange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndOfRange
+    path: ../../src/Meridian.Ui.Services/Services/DataCompletenessService.cs
+    startLine: 777
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: EndOfRange = 3
+    return:
+      type: Meridian.Ui.Services.GapType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.GapType
+  commentId: T:Meridian.Ui.Services.GapType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.GapType.html
+  name: GapType
+  nameWithType: GapType
+  fullName: Meridian.Ui.Services.GapType

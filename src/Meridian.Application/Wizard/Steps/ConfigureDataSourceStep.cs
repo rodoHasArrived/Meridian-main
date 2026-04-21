@@ -79,7 +79,9 @@ public sealed class ConfigureDataSourceStep : IWizardStep
                 selection.Polygon = await ConfigurePolygonAsync(ct);
                 break;
             case DataSourceKind.IB:
-                selection.IB = await ConfigureIBAsync(ct);
+                var ibSelection = await ConfigureIBAsync(ct);
+                selection.IB = ibSelection.IB;
+                selection.IBClientPortal = ibSelection.ClientPortal;
                 break;
             case DataSourceKind.Synthetic:
                 _output.WriteLine("\n  Synthetic offline dataset selected. No credentials are required.");
@@ -149,20 +151,40 @@ public sealed class ConfigureDataSourceStep : IWizardStep
         return new PolygonOptions(ApiKey: apiKey!, SubscribeTrades: subscribeTrades, SubscribeQuotes: subscribeQuotes);
     }
 
-    private async Task<IBOptions?> ConfigureIBAsync(CancellationToken ct)
+    private async Task<(IBOptions? IB, IBClientPortalOptions? ClientPortal)> ConfigureIBAsync(CancellationToken ct)
     {
         _output.WriteLine("\n  Interactive Brokers Configuration:");
         _output.WriteLine("  Note: IB requires TWS or IB Gateway to be running.\n");
 
         var host = await PromptStringAsync("  TWS/Gateway Host", defaultValue: "127.0.0.1", ct: ct);
-        var portStr = await PromptStringAsync("  Port (7496=live, 7497=paper)", defaultValue: "7497", ct: ct);
+        var portStr = await PromptStringAsync("  Port (7497=paper, 7496=live)", defaultValue: "7497", ct: ct);
         var port = int.TryParse(portStr, out var p) ? p : 7497;
-        var clientIdStr = await PromptStringAsync("  Client ID", defaultValue: "0", ct: ct);
-        var clientId = int.TryParse(clientIdStr, out var c) ? c : 0;
+        var clientIdStr = await PromptStringAsync("  Client ID", defaultValue: "1", ct: ct);
+        var clientId = int.TryParse(clientIdStr, out var c) ? c : 1;
         var subscribeDepth = await PromptYesNoAsync("  Subscribe to market depth (Level 2)", defaultValue: true, ct: ct);
+        var tickByTick = await PromptYesNoAsync("  Prefer tick-by-tick trade data", defaultValue: true, ct: ct);
+        var enableClientPortal = await PromptYesNoAsync("  Configure Client Portal for portfolio import", defaultValue: false, ct: ct);
 
-        return new IBOptions(Host: host ?? "127.0.0.1", Port: port, ClientId: clientId,
-            UsePaperTrading: port == 7497, SubscribeDepth: subscribeDepth);
+        IBClientPortalOptions? clientPortal = null;
+        if (enableClientPortal)
+        {
+            var baseUrl = await PromptStringAsync("  Client Portal Base URL", defaultValue: "https://localhost:5000", ct: ct);
+            var allowSelfSigned = await PromptYesNoAsync("  Allow self-signed Client Portal certificate", defaultValue: true, ct: ct);
+            clientPortal = new IBClientPortalOptions(
+                Enabled: true,
+                BaseUrl: baseUrl ?? "https://localhost:5000",
+                AllowSelfSignedCertificates: allowSelfSigned);
+        }
+
+        return (
+            new IBOptions(
+                Host: host ?? "127.0.0.1",
+                Port: port,
+                ClientId: clientId,
+                UsePaperTrading: port == 7497,
+                SubscribeDepth: subscribeDepth,
+                TickByTick: tickByTick),
+            clientPortal);
     }
 
     // ── Shared prompt helpers ────────────────────────────────────────────────

@@ -10,7 +10,6 @@ namespace Meridian.Application.Config;
 /// <para><b>Supported Deployment Modes:</b></para>
 /// <list type="bullet">
 /// <item><description><b>Headless</b> - Console application, no UI, suitable for servers/containers</description></item>
-/// <item><description><b>Web</b> - HTTP server with web dashboard on configurable port</description></item>
 /// <item><description><b>Desktop</b> - Native desktop app with embedded HTTP server for local UI</description></item>
 /// </list>
 /// <para>The context is immutable once created and provides all deployment-related decisions
@@ -44,6 +43,11 @@ public sealed record DeploymentContext
     public string? EnvironmentName { get; init; }
 
     /// <summary>
+    /// Error emitted while resolving the requested deployment mode, if any.
+    /// </summary>
+    public string? ModeResolutionError { get; init; }
+
+    /// <summary>
     /// Whether running in Docker container.
     /// </summary>
     public bool IsDocker { get; init; }
@@ -62,7 +66,7 @@ public sealed record DeploymentContext
     /// <summary>
     /// Whether the deployment requires an HTTP server.
     /// </summary>
-    public bool RequiresHttpServer => Mode is DeploymentMode.Web or DeploymentMode.Desktop;
+    public bool RequiresHttpServer => Mode == DeploymentMode.Desktop;
 
     /// <summary>
     /// Whether the deployment runs the data collector.
@@ -72,7 +76,7 @@ public sealed record DeploymentContext
     /// <summary>
     /// Whether the deployment should display startup summary.
     /// </summary>
-    public bool ShowStartupSummary => !IsOneShotCommand && Mode != DeploymentMode.Web;
+    public bool ShowStartupSummary => !IsOneShotCommand;
 
     /// <summary>
     /// Whether graceful shutdown handling is required.
@@ -85,7 +89,6 @@ public sealed record DeploymentContext
     public string ModeDescription => Mode switch
     {
         DeploymentMode.Headless => "Headless (console only)",
-        DeploymentMode.Web => $"Web dashboard on port {HttpPort}",
         DeploymentMode.Desktop => $"Desktop mode with UI server on port {HttpPort}",
         _ => "Unknown mode"
     };
@@ -97,7 +100,7 @@ public sealed record DeploymentContext
     /// </summary>
     public static DeploymentContext FromArgs(string[] args, string configPath)
     {
-        var (mode, _) = CliModeResolver.ResolveWithError(args);
+        var (mode, error) = CliModeResolver.ResolveWithError(args);
         var deploymentMode = MapRunMode(mode);
 
         return new DeploymentContext
@@ -107,6 +110,7 @@ public sealed record DeploymentContext
             HotReloadEnabled = HasFlag(args, "--watch-config"),
             ConfigPath = configPath,
             EnvironmentName = GetEnvironmentName(),
+            ModeResolutionError = error,
             IsDocker = IsRunningInDocker(),
             IsOneShotCommand = DetermineIsOneShot(args),
             Command = DetermineCommand(args)
@@ -126,22 +130,6 @@ public sealed record DeploymentContext
             IsDocker = IsRunningInDocker(),
             IsOneShotCommand = true,
             Command = command
-        };
-    }
-
-    /// <summary>
-    /// Creates a context for running in web dashboard mode.
-    /// </summary>
-    public static DeploymentContext ForWeb(string configPath, int port = 8080)
-    {
-        return new DeploymentContext
-        {
-            Mode = DeploymentMode.Web,
-            HttpPort = port,
-            ConfigPath = configPath,
-            EnvironmentName = GetEnvironmentName(),
-            IsDocker = IsRunningInDocker(),
-            IsOneShotCommand = false
         };
     }
 
@@ -166,7 +154,6 @@ public sealed record DeploymentContext
 
     private static DeploymentMode MapRunMode(CliModeResolver.RunMode mode) => mode switch
     {
-        CliModeResolver.RunMode.Web => DeploymentMode.Web,
         CliModeResolver.RunMode.Desktop => DeploymentMode.Desktop,
         _ => DeploymentMode.Headless
     };
@@ -281,12 +268,6 @@ public enum DeploymentMode : byte
     /// Suitable for servers, containers, and background services.
     /// </summary>
     Headless,
-
-    /// <summary>
-    /// Web mode - HTTP server with web dashboard.
-    /// Runs only the UI server without the data collector.
-    /// </summary>
-    Web,
 
     /// <summary>
     /// Desktop mode - native application with embedded HTTP server.

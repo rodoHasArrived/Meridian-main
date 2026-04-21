@@ -1,0 +1,663 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.FailoverConfigResponse
+  commentId: T:Meridian.Ui.Services.FailoverConfigResponse
+  id: FailoverConfigResponse
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.FailoverConfigResponse.CurrentPrimary
+  - Meridian.Ui.Services.FailoverConfigResponse.Enabled
+  - Meridian.Ui.Services.FailoverConfigResponse.FailoverHistory
+  - Meridian.Ui.Services.FailoverConfigResponse.MaxRetries
+  - Meridian.Ui.Services.FailoverConfigResponse.ProviderPriority
+  - Meridian.Ui.Services.FailoverConfigResponse.TimeoutSeconds
+  langs:
+  - csharp
+  - vb
+  name: FailoverConfigResponse
+  nameWithType: FailoverConfigResponse
+  fullName: Meridian.Ui.Services.FailoverConfigResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverConfigResponse
+    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    startLine: 494
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class FailoverConfigResponse
+    content.vb: Public NotInheritable Class FailoverConfigResponse
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.FailoverConfigResponse.Enabled
+  commentId: P:Meridian.Ui.Services.FailoverConfigResponse.Enabled
+  id: Enabled
+  parent: Meridian.Ui.Services.FailoverConfigResponse
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: FailoverConfigResponse.Enabled
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    startLine: 496
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool Enabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Ui.Services.FailoverConfigResponse.Enabled*
+- uid: Meridian.Ui.Services.FailoverConfigResponse.TimeoutSeconds
+  commentId: P:Meridian.Ui.Services.FailoverConfigResponse.TimeoutSeconds
+  id: TimeoutSeconds
+  parent: Meridian.Ui.Services.FailoverConfigResponse
+  langs:
+  - csharp
+  - vb
+  name: TimeoutSeconds
+  nameWithType: FailoverConfigResponse.TimeoutSeconds
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.TimeoutSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeoutSeconds
+    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    startLine: 497
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TimeoutSeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TimeoutSeconds As Integer
+  overload: Meridian.Ui.Services.FailoverConfigResponse.TimeoutSeconds*
+- uid: Meridian.Ui.Services.FailoverConfigResponse.MaxRetries
+  commentId: P:Meridian.Ui.Services.FailoverConfigResponse.MaxRetries
+  id: MaxRetries
+  parent: Meridian.Ui.Services.FailoverConfigResponse
+  langs:
+  - csharp
+  - vb
+  name: MaxRetries
+  nameWithType: FailoverConfigResponse.MaxRetries
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.MaxRetries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRetries
+    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    startLine: 498
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int MaxRetries { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxRetries As Integer
+  overload: Meridian.Ui.Services.FailoverConfigResponse.MaxRetries*
+- uid: Meridian.Ui.Services.FailoverConfigResponse.ProviderPriority
+  commentId: P:Meridian.Ui.Services.FailoverConfigResponse.ProviderPriority
+  id: ProviderPriority
+  parent: Meridian.Ui.Services.FailoverConfigResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderPriority
+  nameWithType: FailoverConfigResponse.ProviderPriority
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.ProviderPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderPriority
+    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    startLine: 499
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<string>? ProviderPriority { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property ProviderPriority As List(Of String)
+  overload: Meridian.Ui.Services.FailoverConfigResponse.ProviderPriority*
+- uid: Meridian.Ui.Services.FailoverConfigResponse.CurrentPrimary
+  commentId: P:Meridian.Ui.Services.FailoverConfigResponse.CurrentPrimary
+  id: CurrentPrimary
+  parent: Meridian.Ui.Services.FailoverConfigResponse
+  langs:
+  - csharp
+  - vb
+  name: CurrentPrimary
+  nameWithType: FailoverConfigResponse.CurrentPrimary
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.CurrentPrimary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentPrimary
+    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    startLine: 500
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? CurrentPrimary { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CurrentPrimary As String
+  overload: Meridian.Ui.Services.FailoverConfigResponse.CurrentPrimary*
+- uid: Meridian.Ui.Services.FailoverConfigResponse.FailoverHistory
+  commentId: P:Meridian.Ui.Services.FailoverConfigResponse.FailoverHistory
+  id: FailoverHistory
+  parent: Meridian.Ui.Services.FailoverConfigResponse
+  langs:
+  - csharp
+  - vb
+  name: FailoverHistory
+  nameWithType: FailoverConfigResponse.FailoverHistory
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.FailoverHistory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverHistory
+    path: ../../src/Meridian.Ui.Services/Services/ProviderManagementService.cs
+    startLine: 501
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<FailoverEvent>? FailoverHistory { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.FailoverEvent}
+    content.vb: Public Property FailoverHistory As List(Of FailoverEvent)
+  overload: Meridian.Ui.Services.FailoverConfigResponse.FailoverHistory*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.FailoverConfigResponse.Enabled*
+  commentId: Overload:Meridian.Ui.Services.FailoverConfigResponse.Enabled
+  href: Meridian.Ui.Services.FailoverConfigResponse.html#Meridian_Ui_Services_FailoverConfigResponse_Enabled
+  name: Enabled
+  nameWithType: FailoverConfigResponse.Enabled
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.FailoverConfigResponse.TimeoutSeconds*
+  commentId: Overload:Meridian.Ui.Services.FailoverConfigResponse.TimeoutSeconds
+  href: Meridian.Ui.Services.FailoverConfigResponse.html#Meridian_Ui_Services_FailoverConfigResponse_TimeoutSeconds
+  name: TimeoutSeconds
+  nameWithType: FailoverConfigResponse.TimeoutSeconds
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.TimeoutSeconds
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.FailoverConfigResponse.MaxRetries*
+  commentId: Overload:Meridian.Ui.Services.FailoverConfigResponse.MaxRetries
+  href: Meridian.Ui.Services.FailoverConfigResponse.html#Meridian_Ui_Services_FailoverConfigResponse_MaxRetries
+  name: MaxRetries
+  nameWithType: FailoverConfigResponse.MaxRetries
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.MaxRetries
+- uid: Meridian.Ui.Services.FailoverConfigResponse.ProviderPriority*
+  commentId: Overload:Meridian.Ui.Services.FailoverConfigResponse.ProviderPriority
+  href: Meridian.Ui.Services.FailoverConfigResponse.html#Meridian_Ui_Services_FailoverConfigResponse_ProviderPriority
+  name: ProviderPriority
+  nameWithType: FailoverConfigResponse.ProviderPriority
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.ProviderPriority
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.FailoverConfigResponse.CurrentPrimary*
+  commentId: Overload:Meridian.Ui.Services.FailoverConfigResponse.CurrentPrimary
+  href: Meridian.Ui.Services.FailoverConfigResponse.html#Meridian_Ui_Services_FailoverConfigResponse_CurrentPrimary
+  name: CurrentPrimary
+  nameWithType: FailoverConfigResponse.CurrentPrimary
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.CurrentPrimary
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.FailoverConfigResponse.FailoverHistory*
+  commentId: Overload:Meridian.Ui.Services.FailoverConfigResponse.FailoverHistory
+  href: Meridian.Ui.Services.FailoverConfigResponse.html#Meridian_Ui_Services_FailoverConfigResponse_FailoverHistory
+  name: FailoverHistory
+  nameWithType: FailoverConfigResponse.FailoverHistory
+  fullName: Meridian.Ui.Services.FailoverConfigResponse.FailoverHistory
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.FailoverEvent}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.FailoverEvent}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<FailoverEvent>
+  nameWithType: List<FailoverEvent>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.FailoverEvent>
+  nameWithType.vb: List(Of FailoverEvent)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.FailoverEvent)
+  name.vb: List(Of FailoverEvent)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.FailoverEvent
+    name: FailoverEvent
+    href: Meridian.Ui.Services.FailoverEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.FailoverEvent
+    name: FailoverEvent
+    href: Meridian.Ui.Services.FailoverEvent.html
+  - name: )

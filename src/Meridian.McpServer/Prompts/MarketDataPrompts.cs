@@ -84,49 +84,49 @@ public sealed class MarketDataPrompts
         yield return new ChatMessage(ChatRole.User,
             $"How do I configure the {provider} provider in Meridian?");
 
-        yield return new ChatMessage(ChatRole.Assistant, $"""
-            Here is how to configure the **{provider}** provider:
+        yield return new ChatMessage(ChatRole.Assistant, $@"
+Here is how to configure the **{provider}** provider:
 
-            ## Step 1 — Obtain API credentials
-            Visit the {provider} developer portal and create an API key.
-            Store the key in an **environment variable** — never hard-code it:
-            ```bash
-            export {provider.ToUpperInvariant()}_API_KEY=your-key-here
-            # Some providers also need a secret:
-            export {provider.ToUpperInvariant()}_SECRET_KEY=your-secret-here
-            ```
+## Step 1 — Obtain API credentials
+Visit the {provider} developer portal and create an API key.
+Store the key in an **environment variable** — never hard-code it:
+```bash
+export {provider.ToUpperInvariant()}_API_KEY=your-key-here
+# Some providers also need a secret:
+export {provider.ToUpperInvariant()}_SECRET_KEY=your-secret-here
+```
 
-            ## Step 2 — Update appsettings.json
-            Open `config/appsettings.json` and set the active data source:
-            ```json
-            {{
-              "DataSource": "{provider}",
-              "{provider}": {{
-                "Enabled": true,
-                "ApiKey": "${{env:{provider.ToUpperInvariant()}_API_KEY}}"
-              }}
-            }}
-            ```
+## Step 2 — Update appsettings.json
+Open `config/appsettings.json` and set the active data source:
+```json
+{{
+  ""DataSource"": ""{provider}"",
+  ""{provider}"": {{
+    ""Enabled"": true,
+    ""ApiKey"": ""${{env:{provider.ToUpperInvariant()}_API_KEY}}""
+  }}
+}}
+```
 
-            ## Step 3 — Add symbols to collect
-            Use the `add_symbol` tool to register the ticker symbols you want,
-            or edit the `Symbols` array in `config/appsettings.json` directly.
+## Step 3 — Add symbols to collect
+Use the `add_symbol` tool to register the ticker symbols you want,
+or edit the `Symbols` array in `config/appsettings.json` directly.
 
-            ## Step 4 — Verify connectivity
-            Run the application with `--quick-check` to validate credentials:
-            ```bash
-            dotnet run --project src/Meridian -- --quick-check
-            ```
+## Step 4 — Verify connectivity
+Run the application with `--quick-check` to validate credentials:
+```bash
+dotnet run --project src/Meridian -- --quick-check
+```
 
-            ## Step 5 — Start collection
-            ```bash
-            dotnet run --project src/Meridian
-            ```
+## Step 5 — Start collection
+```bash
+dotnet run --project src/Meridian
+```
 
-            ## Notes
-            - Call `list_backfill_providers` to see which providers support historical data.
-            - Call `list_configured_symbols` to verify your symbol list.
-            - Refer to `docs/providers/` for provider-specific setup guides.
-            """);
+## Notes
+- Call `list_backfill_providers` to see which providers support historical data.
+- Call `list_configured_symbols` to verify your symbol list.
+- Refer to `docs/providers/` for provider-specific setup guides.
+");
     }
 }

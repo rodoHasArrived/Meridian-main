@@ -1,0 +1,868 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+  id: PolygonSecurityMasterIngestProvider
+  parent: Meridian.Infrastructure.Adapters.Polygon
+  children:
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider},System.Net.Http.HttpClient)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.Dispose
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.FetchAllAsync(System.String,System.String,System.IProgress{System.Int32},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: PolygonSecurityMasterIngestProvider
+  nameWithType: PolygonSecurityMasterIngestProvider
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PolygonSecurityMasterIngestProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: >-
+    Pages through the Polygon /v3/reference/tickers endpoint and yields
+
+    <xref href="Meridian.Contracts.SecurityMaster.CreateSecurityRequest" data-throw-if-not-resolved="false"></xref> objects for bulk Security Master ingest.
+
+    Supports filtering by exchange (MIC code) and asset type.
+  example: []
+  syntax:
+    content: 'public sealed class PolygonSecurityMasterIngestProvider : IDisposable'
+    content.vb: Public NotInheritable Class PolygonSecurityMasterIngestProvider Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider},System.Net.Http.HttpClient)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider},System.Net.Http.HttpClient)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider},System.Net.Http.HttpClient)'
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+  langs:
+  - csharp
+  - vb
+  name: PolygonSecurityMasterIngestProvider(ILogger<PolygonSecurityMasterIngestProvider>, HttpClient?)
+  nameWithType: PolygonSecurityMasterIngestProvider.PolygonSecurityMasterIngestProvider(ILogger<PolygonSecurityMasterIngestProvider>, HttpClient?)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.PolygonSecurityMasterIngestProvider(Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider>, System.Net.Http.HttpClient?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  syntax:
+    content: public PolygonSecurityMasterIngestProvider(ILogger<PolygonSecurityMasterIngestProvider> logger, HttpClient? httpClient = null)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider}
+    - id: httpClient
+      type: System.Net.Http.HttpClient
+    content.vb: Public Sub New(logger As ILogger(Of PolygonSecurityMasterIngestProvider), httpClient As HttpClient = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.#ctor*
+  nameWithType.vb: PolygonSecurityMasterIngestProvider.New(ILogger(Of PolygonSecurityMasterIngestProvider), HttpClient)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.New(Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider), System.Net.Http.HttpClient)
+  name.vb: New(ILogger(Of PolygonSecurityMasterIngestProvider), HttpClient)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.FetchAllAsync(System.String,System.String,System.IProgress{System.Int32},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.FetchAllAsync(System.String,System.String,System.IProgress{System.Int32},System.Threading.CancellationToken)
+  id: FetchAllAsync(System.String,System.String,System.IProgress{System.Int32},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+  langs:
+  - csharp
+  - vb
+  name: FetchAllAsync(string?, string?, IProgress<int>?, CancellationToken)
+  nameWithType: PolygonSecurityMasterIngestProvider.FetchAllAsync(string?, string?, IProgress<int>?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.FetchAllAsync(string?, string?, System.IProgress<int>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FetchAllAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: >-
+    Returns all active tickers for the given exchange / asset-type filter as
+
+    <xref href="Meridian.Contracts.SecurityMaster.CreateSecurityRequest" data-throw-if-not-resolved="false"></xref> objects ready for Security Master bulk import.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<CreateSecurityRequest>> FetchAllAsync(string? exchange = null, string? assetType = null, IProgress<int>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: exchange
+      type: System.String
+      description: Optional MIC code (e.g. "XNAS", "XNYS"). When null all exchanges are included.
+    - id: assetType
+      type: System.String
+      description: >-
+        Optional Polygon asset type code (e.g. "CS" for common stock, "ETF").
+
+        When null all asset types are included.
+    - id: progress
+      type: System.IProgress{System.Int32}
+      description: Optional progress callback invoked after each fetched page.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CreateSecurityRequest}}
+      description: All matching tickers as create-security requests.
+    content.vb: Public Function FetchAllAsync(exchange As String = Nothing, assetType As String = Nothing, progress As IProgress(Of Integer) = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CreateSecurityRequest))
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.FetchAllAsync*
+  nameWithType.vb: PolygonSecurityMasterIngestProvider.FetchAllAsync(String, String, IProgress(Of Integer), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.FetchAllAsync(String, String, System.IProgress(Of Integer), System.Threading.CancellationToken)
+  name.vb: FetchAllAsync(String, String, IProgress(Of Integer), CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: PolygonSecurityMasterIngestProvider.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSecurityMasterIngestProvider.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.CreateSecurityRequest.html
+  name: CreateSecurityRequest
+  nameWithType: CreateSecurityRequest
+  fullName: Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+- uid: Meridian.Infrastructure.Adapters.Polygon
+  commentId: N:Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Polygon
+  nameWithType: Meridian.Infrastructure.Adapters.Polygon
+  fullName: Meridian.Infrastructure.Adapters.Polygon
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.#ctor
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSecurityMasterIngestProvider__ctor_Microsoft_Extensions_Logging_ILogger_Meridian_Infrastructure_Adapters_Polygon_PolygonSecurityMasterIngestProvider__System_Net_Http_HttpClient_
+  name: PolygonSecurityMasterIngestProvider
+  nameWithType: PolygonSecurityMasterIngestProvider.PolygonSecurityMasterIngestProvider
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.PolygonSecurityMasterIngestProvider
+  nameWithType.vb: PolygonSecurityMasterIngestProvider.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<PolygonSecurityMasterIngestProvider>
+  nameWithType: ILogger<PolygonSecurityMasterIngestProvider>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider>
+  nameWithType.vb: ILogger(Of PolygonSecurityMasterIngestProvider)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider)
+  name.vb: ILogger(Of PolygonSecurityMasterIngestProvider)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+    name: PolygonSecurityMasterIngestProvider
+    href: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+    name: PolygonSecurityMasterIngestProvider
+    href: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.html
+  - name: )
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.FetchAllAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.FetchAllAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSecurityMasterIngestProvider_FetchAllAsync_System_String_System_String_System_IProgress_System_Int32__System_Threading_CancellationToken_
+  name: FetchAllAsync
+  nameWithType: PolygonSecurityMasterIngestProvider.FetchAllAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.FetchAllAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.IProgress{System.Int32}
+  commentId: T:System.IProgress{System.Int32}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<int>
+  nameWithType: IProgress<int>
+  fullName: System.IProgress<int>
+  nameWithType.vb: IProgress(Of Integer)
+  fullName.vb: System.IProgress(Of Integer)
+  name.vb: IProgress(Of Integer)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CreateSecurityRequest}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CreateSecurityRequest}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CreateSecurityRequest>>
+  nameWithType: Task<IReadOnlyList<CreateSecurityRequest>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.CreateSecurityRequest>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CreateSecurityRequest))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.CreateSecurityRequest))
+  name.vb: Task(Of IReadOnlyList(Of CreateSecurityRequest))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+    name: CreateSecurityRequest
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+    name: CreateSecurityRequest
+  - name: )
+  - name: )
+- uid: System.IProgress`1
+  commentId: T:System.IProgress`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<T>
+  nameWithType: IProgress<T>
+  fullName: System.IProgress<T>
+  nameWithType.vb: IProgress(Of T)
+  fullName.vb: System.IProgress(Of T)
+  name.vb: IProgress(Of T)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.Dispose
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSecurityMasterIngestProvider_Dispose
+  name: Dispose
+  nameWithType: PolygonSecurityMasterIngestProvider.Dispose
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

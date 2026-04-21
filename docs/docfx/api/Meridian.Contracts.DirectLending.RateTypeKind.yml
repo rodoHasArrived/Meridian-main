@@ -1,0 +1,120 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.RateTypeKind
+  commentId: T:Meridian.Contracts.DirectLending.RateTypeKind
+  id: RateTypeKind
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.RateTypeKind.Fixed
+  - Meridian.Contracts.DirectLending.RateTypeKind.Floating
+  langs:
+  - csharp
+  - vb
+  name: RateTypeKind
+  nameWithType: RateTypeKind
+  fullName: Meridian.Contracts.DirectLending.RateTypeKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateTypeKind
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum RateTypeKind : byte'
+    content.vb: Public Enum RateTypeKind As Byte
+- uid: Meridian.Contracts.DirectLending.RateTypeKind.Fixed
+  commentId: F:Meridian.Contracts.DirectLending.RateTypeKind.Fixed
+  id: Fixed
+  parent: Meridian.Contracts.DirectLending.RateTypeKind
+  langs:
+  - csharp
+  - vb
+  name: Fixed
+  nameWithType: RateTypeKind.Fixed
+  fullName: Meridian.Contracts.DirectLending.RateTypeKind.Fixed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fixed
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Fixed = 0
+    return:
+      type: Meridian.Contracts.DirectLending.RateTypeKind
+- uid: Meridian.Contracts.DirectLending.RateTypeKind.Floating
+  commentId: F:Meridian.Contracts.DirectLending.RateTypeKind.Floating
+  id: Floating
+  parent: Meridian.Contracts.DirectLending.RateTypeKind
+  langs:
+  - csharp
+  - vb
+  name: Floating
+  nameWithType: RateTypeKind.Floating
+  fullName: Meridian.Contracts.DirectLending.RateTypeKind.Floating
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Floating
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Floating = 1
+    return:
+      type: Meridian.Contracts.DirectLending.RateTypeKind
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.RateTypeKind
+  commentId: T:Meridian.Contracts.DirectLending.RateTypeKind
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.RateTypeKind.html
+  name: RateTypeKind
+  nameWithType: RateTypeKind
+  fullName: Meridian.Contracts.DirectLending.RateTypeKind

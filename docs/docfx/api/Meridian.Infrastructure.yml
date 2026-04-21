@@ -1,0 +1,53 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  id: Meridian.Infrastructure
+  children:
+  - Meridian.Infrastructure.IMarketDataClient
+  - Meridian.Infrastructure.NoOpMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.NoOpMarketDataClient
+  commentId: T:Meridian.Infrastructure.NoOpMarketDataClient
+  href: Meridian.Infrastructure.NoOpMarketDataClient.html
+  name: NoOpMarketDataClient
+  nameWithType: NoOpMarketDataClient
+  fullName: Meridian.Infrastructure.NoOpMarketDataClient
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html

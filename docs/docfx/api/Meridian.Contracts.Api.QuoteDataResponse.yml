@@ -1,0 +1,898 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.QuoteDataResponse
+  commentId: T:Meridian.Contracts.Api.QuoteDataResponse
+  id: QuoteDataResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.QuoteDataResponse.#ctor(System.String,System.DateTimeOffset,System.Decimal,System.Int64,System.Decimal,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int64,System.String,System.String)
+  - Meridian.Contracts.Api.QuoteDataResponse.AskPrice
+  - Meridian.Contracts.Api.QuoteDataResponse.AskSize
+  - Meridian.Contracts.Api.QuoteDataResponse.BidPrice
+  - Meridian.Contracts.Api.QuoteDataResponse.BidSize
+  - Meridian.Contracts.Api.QuoteDataResponse.MidPrice
+  - Meridian.Contracts.Api.QuoteDataResponse.SequenceNumber
+  - Meridian.Contracts.Api.QuoteDataResponse.Spread
+  - Meridian.Contracts.Api.QuoteDataResponse.StreamId
+  - Meridian.Contracts.Api.QuoteDataResponse.Symbol
+  - Meridian.Contracts.Api.QuoteDataResponse.Timestamp
+  - Meridian.Contracts.Api.QuoteDataResponse.Venue
+  langs:
+  - csharp
+  - vb
+  name: QuoteDataResponse
+  nameWithType: QuoteDataResponse
+  fullName: Meridian.Contracts.Api.QuoteDataResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuoteDataResponse
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for a single quote snapshot.
+  example: []
+  syntax:
+    content: 'public sealed record QuoteDataResponse : IEquatable<QuoteDataResponse>'
+    content.vb: Public NotInheritable Class QuoteDataResponse Implements IEquatable(Of QuoteDataResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.QuoteDataResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.QuoteDataResponse.#ctor(System.String,System.DateTimeOffset,System.Decimal,System.Int64,System.Decimal,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int64,System.String,System.String)
+  commentId: M:Meridian.Contracts.Api.QuoteDataResponse.#ctor(System.String,System.DateTimeOffset,System.Decimal,System.Int64,System.Decimal,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int64,System.String,System.String)
+  id: '#ctor(System.String,System.DateTimeOffset,System.Decimal,System.Int64,System.Decimal,System.Int64,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Int64,System.String,System.String)'
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: QuoteDataResponse(string, DateTimeOffset, decimal, long, decimal, long, decimal?, decimal?, long, string?, string?)
+  nameWithType: QuoteDataResponse.QuoteDataResponse(string, DateTimeOffset, decimal, long, decimal, long, decimal?, decimal?, long, string?, string?)
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.QuoteDataResponse(string, System.DateTimeOffset, decimal, long, decimal, long, decimal?, decimal?, long, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response DTO for a single quote snapshot.
+  example: []
+  syntax:
+    content: public QuoteDataResponse(string Symbol, DateTimeOffset Timestamp, decimal BidPrice, long BidSize, decimal AskPrice, long AskSize, decimal? MidPrice, decimal? Spread, long SequenceNumber, string? StreamId, string? Venue)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: BidPrice
+      type: System.Decimal
+    - id: BidSize
+      type: System.Int64
+    - id: AskPrice
+      type: System.Decimal
+    - id: AskSize
+      type: System.Int64
+    - id: MidPrice
+      type: System.Nullable{System.Decimal}
+    - id: Spread
+      type: System.Nullable{System.Decimal}
+    - id: SequenceNumber
+      type: System.Int64
+    - id: StreamId
+      type: System.String
+    - id: Venue
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, Timestamp As DateTimeOffset, BidPrice As Decimal, BidSize As Long, AskPrice As Decimal, AskSize As Long, MidPrice As Decimal?, Spread As Decimal?, SequenceNumber As Long, StreamId As String, Venue As String)
+  overload: Meridian.Contracts.Api.QuoteDataResponse.#ctor*
+  nameWithType.vb: QuoteDataResponse.New(String, DateTimeOffset, Decimal, Long, Decimal, Long, Decimal?, Decimal?, Long, String, String)
+  fullName.vb: Meridian.Contracts.Api.QuoteDataResponse.New(String, System.DateTimeOffset, Decimal, Long, Decimal, Long, Decimal?, Decimal?, Long, String, String)
+  name.vb: New(String, DateTimeOffset, Decimal, Long, Decimal, Long, Decimal?, Decimal?, Long, String, String)
+- uid: Meridian.Contracts.Api.QuoteDataResponse.Symbol
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: QuoteDataResponse.Symbol
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Api.QuoteDataResponse.Symbol*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.Timestamp
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: QuoteDataResponse.Timestamp
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Api.QuoteDataResponse.Timestamp*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.BidPrice
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.BidPrice
+  id: BidPrice
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: BidPrice
+  nameWithType: QuoteDataResponse.BidPrice
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.BidPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidPrice
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal BidPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property BidPrice As Decimal
+  overload: Meridian.Contracts.Api.QuoteDataResponse.BidPrice*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.BidSize
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.BidSize
+  id: BidSize
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: BidSize
+  nameWithType: QuoteDataResponse.BidSize
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.BidSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidSize
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long BidSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BidSize As Long
+  overload: Meridian.Contracts.Api.QuoteDataResponse.BidSize*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.AskPrice
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.AskPrice
+  id: AskPrice
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: AskPrice
+  nameWithType: QuoteDataResponse.AskPrice
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.AskPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskPrice
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal AskPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AskPrice As Decimal
+  overload: Meridian.Contracts.Api.QuoteDataResponse.AskPrice*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.AskSize
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.AskSize
+  id: AskSize
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: AskSize
+  nameWithType: QuoteDataResponse.AskSize
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.AskSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskSize
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long AskSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property AskSize As Long
+  overload: Meridian.Contracts.Api.QuoteDataResponse.AskSize*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.MidPrice
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.MidPrice
+  id: MidPrice
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: MidPrice
+  nameWithType: QuoteDataResponse.MidPrice
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.MidPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MidPrice
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal? MidPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property MidPrice As Decimal?
+  overload: Meridian.Contracts.Api.QuoteDataResponse.MidPrice*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.Spread
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.Spread
+  id: Spread
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Spread
+  nameWithType: QuoteDataResponse.Spread
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.Spread
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Spread
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public decimal? Spread { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property Spread As Decimal?
+  overload: Meridian.Contracts.Api.QuoteDataResponse.Spread*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.SequenceNumber
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: QuoteDataResponse.SequenceNumber
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public long SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SequenceNumber As Long
+  overload: Meridian.Contracts.Api.QuoteDataResponse.SequenceNumber*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.StreamId
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.StreamId
+  id: StreamId
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: StreamId
+  nameWithType: QuoteDataResponse.StreamId
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.StreamId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamId
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? StreamId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StreamId As String
+  overload: Meridian.Contracts.Api.QuoteDataResponse.StreamId*
+- uid: Meridian.Contracts.Api.QuoteDataResponse.Venue
+  commentId: P:Meridian.Contracts.Api.QuoteDataResponse.Venue
+  id: Venue
+  parent: Meridian.Contracts.Api.QuoteDataResponse
+  langs:
+  - csharp
+  - vb
+  name: Venue
+  nameWithType: QuoteDataResponse.Venue
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.Venue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/LiveDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Venue
+    path: ../../src/Meridian.Contracts/Api/LiveDataModels.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? Venue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Venue As String
+  overload: Meridian.Contracts.Api.QuoteDataResponse.Venue*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.QuoteDataResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.QuoteDataResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QuoteDataResponse>
+  nameWithType: IEquatable<QuoteDataResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.QuoteDataResponse>
+  nameWithType.vb: IEquatable(Of QuoteDataResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.QuoteDataResponse)
+  name.vb: IEquatable(Of QuoteDataResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.QuoteDataResponse
+    name: QuoteDataResponse
+    href: Meridian.Contracts.Api.QuoteDataResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.QuoteDataResponse
+    name: QuoteDataResponse
+    href: Meridian.Contracts.Api.QuoteDataResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.QuoteDataResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.#ctor
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse__ctor_System_String_System_DateTimeOffset_System_Decimal_System_Int64_System_Decimal_System_Int64_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Int64_System_String_System_String_
+  name: QuoteDataResponse
+  nameWithType: QuoteDataResponse.QuoteDataResponse
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.QuoteDataResponse
+  nameWithType.vb: QuoteDataResponse.New
+  fullName.vb: Meridian.Contracts.Api.QuoteDataResponse.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.QuoteDataResponse.Symbol*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.Symbol
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_Symbol
+  name: Symbol
+  nameWithType: QuoteDataResponse.Symbol
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.Symbol
+- uid: Meridian.Contracts.Api.QuoteDataResponse.Timestamp*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.Timestamp
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_Timestamp
+  name: Timestamp
+  nameWithType: QuoteDataResponse.Timestamp
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.Timestamp
+- uid: Meridian.Contracts.Api.QuoteDataResponse.BidPrice*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.BidPrice
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_BidPrice
+  name: BidPrice
+  nameWithType: QuoteDataResponse.BidPrice
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.BidPrice
+- uid: Meridian.Contracts.Api.QuoteDataResponse.BidSize*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.BidSize
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_BidSize
+  name: BidSize
+  nameWithType: QuoteDataResponse.BidSize
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.BidSize
+- uid: Meridian.Contracts.Api.QuoteDataResponse.AskPrice*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.AskPrice
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_AskPrice
+  name: AskPrice
+  nameWithType: QuoteDataResponse.AskPrice
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.AskPrice
+- uid: Meridian.Contracts.Api.QuoteDataResponse.AskSize*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.AskSize
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_AskSize
+  name: AskSize
+  nameWithType: QuoteDataResponse.AskSize
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.AskSize
+- uid: Meridian.Contracts.Api.QuoteDataResponse.MidPrice*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.MidPrice
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_MidPrice
+  name: MidPrice
+  nameWithType: QuoteDataResponse.MidPrice
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.MidPrice
+- uid: Meridian.Contracts.Api.QuoteDataResponse.Spread*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.Spread
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_Spread
+  name: Spread
+  nameWithType: QuoteDataResponse.Spread
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.Spread
+- uid: Meridian.Contracts.Api.QuoteDataResponse.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.SequenceNumber
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_SequenceNumber
+  name: SequenceNumber
+  nameWithType: QuoteDataResponse.SequenceNumber
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.SequenceNumber
+- uid: Meridian.Contracts.Api.QuoteDataResponse.StreamId*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.StreamId
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_StreamId
+  name: StreamId
+  nameWithType: QuoteDataResponse.StreamId
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.StreamId
+- uid: Meridian.Contracts.Api.QuoteDataResponse.Venue*
+  commentId: Overload:Meridian.Contracts.Api.QuoteDataResponse.Venue
+  href: Meridian.Contracts.Api.QuoteDataResponse.html#Meridian_Contracts_Api_QuoteDataResponse_Venue
+  name: Venue
+  nameWithType: QuoteDataResponse.Venue
+  fullName: Meridian.Contracts.Api.QuoteDataResponse.Venue

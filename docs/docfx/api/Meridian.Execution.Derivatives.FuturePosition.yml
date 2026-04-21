@@ -1,0 +1,967 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Derivatives.FuturePosition
+  commentId: T:Meridian.Execution.Derivatives.FuturePosition
+  id: FuturePosition
+  parent: Meridian.Execution.Derivatives
+  children:
+  - Meridian.Execution.Derivatives.FuturePosition.#ctor(System.String,System.Int64,System.Decimal,System.Decimal,System.Decimal,Meridian.Execution.Sdk.Derivatives.FutureDetails)
+  - Meridian.Execution.Derivatives.FuturePosition.AverageCostBasis
+  - Meridian.Execution.Derivatives.FuturePosition.Contracts
+  - Meridian.Execution.Derivatives.FuturePosition.Details
+  - Meridian.Execution.Derivatives.FuturePosition.Kind
+  - Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice
+  - Meridian.Execution.Derivatives.FuturePosition.MarkPrice
+  - Meridian.Execution.Derivatives.FuturePosition.RealizedPnl
+  - Meridian.Execution.Derivatives.FuturePosition.SettleDaily(System.Decimal)
+  - Meridian.Execution.Derivatives.FuturePosition.Symbol
+  - Meridian.Execution.Derivatives.FuturePosition.UnrealizedPnl
+  - Meridian.Execution.Derivatives.FuturePosition.WithSettlement(System.Decimal)
+  langs:
+  - csharp
+  - vb
+  name: FuturePosition
+  nameWithType: FuturePosition
+  fullName: Meridian.Execution.Derivatives.FuturePosition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FuturePosition
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: A futures contract position that tracks daily mark-to-market (MTM) cash settlements.
+  remarks: >-
+    Unlike equity positions where unrealized P&amp;L accumulates until the position is closed,
+
+    futures use daily cash settlement: each trading day the difference between the settlement
+
+    price and the previous day's settlement price is either debited from or credited to the
+
+    account's cash balance. This resets the cost basis to the daily settlement price.
+  example: []
+  syntax:
+    content: 'public sealed class FuturePosition : IDerivativePosition'
+    content.vb: Public NotInheritable Class FuturePosition Implements IDerivativePosition
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Execution.Derivatives.IDerivativePosition
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Derivatives.FuturePosition.#ctor(System.String,System.Int64,System.Decimal,System.Decimal,System.Decimal,Meridian.Execution.Sdk.Derivatives.FutureDetails)
+  commentId: M:Meridian.Execution.Derivatives.FuturePosition.#ctor(System.String,System.Int64,System.Decimal,System.Decimal,System.Decimal,Meridian.Execution.Sdk.Derivatives.FutureDetails)
+  id: '#ctor(System.String,System.Int64,System.Decimal,System.Decimal,System.Decimal,Meridian.Execution.Sdk.Derivatives.FutureDetails)'
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: FuturePosition(string, long, decimal, decimal, decimal, FutureDetails)
+  nameWithType: FuturePosition.FuturePosition(string, long, decimal, decimal, decimal, FutureDetails)
+  fullName: Meridian.Execution.Derivatives.FuturePosition.FuturePosition(string, long, decimal, decimal, decimal, Meridian.Execution.Sdk.Derivatives.FutureDetails)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Initialises a new futures position.
+  example: []
+  syntax:
+    content: public FuturePosition(string symbol, long contracts, decimal entryPrice, decimal lastSettlementPrice, decimal realizedPnl, FutureDetails details)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Contract symbol.
+    - id: contracts
+      type: System.Int64
+      description: Number of contracts (positive = long, negative = short).
+    - id: entryPrice
+      type: System.Decimal
+      description: Price at which the position was entered.
+    - id: lastSettlementPrice
+      type: System.Decimal
+      description: Most recent daily settlement price.
+    - id: realizedPnl
+      type: System.Decimal
+      description: Cumulative daily MTM cash flows that have already settled.
+    - id: details
+      type: Meridian.Execution.Sdk.Derivatives.FutureDetails
+      description: Contract specification.
+    content.vb: Public Sub New(symbol As String, contracts As Long, entryPrice As Decimal, lastSettlementPrice As Decimal, realizedPnl As Decimal, details As FutureDetails)
+  overload: Meridian.Execution.Derivatives.FuturePosition.#ctor*
+  nameWithType.vb: FuturePosition.New(String, Long, Decimal, Decimal, Decimal, FutureDetails)
+  fullName.vb: Meridian.Execution.Derivatives.FuturePosition.New(String, Long, Decimal, Decimal, Decimal, Meridian.Execution.Sdk.Derivatives.FutureDetails)
+  name.vb: New(String, Long, Decimal, Decimal, Decimal, FutureDetails)
+- uid: Meridian.Execution.Derivatives.FuturePosition.Symbol
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: FuturePosition.Symbol
+  fullName: Meridian.Execution.Derivatives.FuturePosition.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Ticker symbol of the derivative contract (e.g., "AAPL240119C00150000").
+  example: []
+  syntax:
+    content: public string Symbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Symbol As String
+  overload: Meridian.Execution.Derivatives.FuturePosition.Symbol*
+  implements:
+  - Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+- uid: Meridian.Execution.Derivatives.FuturePosition.Contracts
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.Contracts
+  id: Contracts
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: Contracts
+  nameWithType: FuturePosition.Contracts
+  fullName: Meridian.Execution.Derivatives.FuturePosition.Contracts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contracts
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Number of contracts held (positive = long, negative = short).
+  example: []
+  syntax:
+    content: public long Contracts { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property Contracts As Long
+  overload: Meridian.Execution.Derivatives.FuturePosition.Contracts*
+  implements:
+  - Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+- uid: Meridian.Execution.Derivatives.FuturePosition.AverageCostBasis
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.AverageCostBasis
+  id: AverageCostBasis
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: AverageCostBasis
+  nameWithType: FuturePosition.AverageCostBasis
+  fullName: Meridian.Execution.Derivatives.FuturePosition.AverageCostBasis
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageCostBasis
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Average cost basis per contract (in premium points or price units).
+  example: []
+  syntax:
+    content: public decimal AverageCostBasis { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property AverageCostBasis As Decimal
+  overload: Meridian.Execution.Derivatives.FuturePosition.AverageCostBasis*
+  implements:
+  - Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+- uid: Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice
+  id: LastSettlementPrice
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: LastSettlementPrice
+  nameWithType: FuturePosition.LastSettlementPrice
+  fullName: Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastSettlementPrice
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Most recent daily settlement price for this contract.
+  example: []
+  syntax:
+    content: public decimal LastSettlementPrice { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property LastSettlementPrice As Decimal
+  overload: Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice*
+- uid: Meridian.Execution.Derivatives.FuturePosition.MarkPrice
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.MarkPrice
+  id: MarkPrice
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: MarkPrice
+  nameWithType: FuturePosition.MarkPrice
+  fullName: Meridian.Execution.Derivatives.FuturePosition.MarkPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkPrice
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Current mark-to-market price of the contract.
+  example: []
+  syntax:
+    content: public decimal MarkPrice { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property MarkPrice As Decimal
+  overload: Meridian.Execution.Derivatives.FuturePosition.MarkPrice*
+  implements:
+  - Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+- uid: Meridian.Execution.Derivatives.FuturePosition.UnrealizedPnl
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.UnrealizedPnl
+  id: UnrealizedPnl
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl
+  nameWithType: FuturePosition.UnrealizedPnl
+  fullName: Meridian.Execution.Derivatives.FuturePosition.UnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Unrealized P&amp;L at the current mark price.
+  example: []
+  syntax:
+    content: public decimal UnrealizedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property UnrealizedPnl As Decimal
+  overload: Meridian.Execution.Derivatives.FuturePosition.UnrealizedPnl*
+  implements:
+  - Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+- uid: Meridian.Execution.Derivatives.FuturePosition.RealizedPnl
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.RealizedPnl
+  id: RealizedPnl
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnl
+  nameWithType: FuturePosition.RealizedPnl
+  fullName: Meridian.Execution.Derivatives.FuturePosition.RealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnl
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Cumulative realized P&amp;L from partial or full closes on this position.
+  example: []
+  syntax:
+    content: public decimal RealizedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedPnl As Decimal
+  overload: Meridian.Execution.Derivatives.FuturePosition.RealizedPnl*
+  implements:
+  - Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+- uid: Meridian.Execution.Derivatives.FuturePosition.Kind
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.Kind
+  id: Kind
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: Kind
+  nameWithType: FuturePosition.Kind
+  fullName: Meridian.Execution.Derivatives.FuturePosition.Kind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Kind
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Classification of the derivative contract type.
+  example: []
+  syntax:
+    content: public DerivativeKind Kind { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Derivatives.DerivativeKind
+    content.vb: Public ReadOnly Property Kind As DerivativeKind
+  overload: Meridian.Execution.Derivatives.FuturePosition.Kind*
+  implements:
+  - Meridian.Execution.Derivatives.IDerivativePosition.Kind
+- uid: Meridian.Execution.Derivatives.FuturePosition.Details
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.Details
+  id: Details
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: Details
+  nameWithType: FuturePosition.Details
+  fullName: Meridian.Execution.Derivatives.FuturePosition.Details
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Details
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Contract specification (tick size, value, multiplier, etc.).
+  example: []
+  syntax:
+    content: public FutureDetails Details { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Sdk.Derivatives.FutureDetails
+    content.vb: Public ReadOnly Property Details As FutureDetails
+  overload: Meridian.Execution.Derivatives.FuturePosition.Details*
+- uid: Meridian.Execution.Derivatives.FuturePosition.SettleDaily(System.Decimal)
+  commentId: M:Meridian.Execution.Derivatives.FuturePosition.SettleDaily(System.Decimal)
+  id: SettleDaily(System.Decimal)
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: SettleDaily(decimal)
+  nameWithType: FuturePosition.SettleDaily(decimal)
+  fullName: Meridian.Execution.Derivatives.FuturePosition.SettleDaily(decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SettleDaily
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: >-
+    Performs an end-of-day mark-to-market cash settlement.
+
+    Returns the cash flow for this settlement (positive = credit to account).
+
+    The <xref href="Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice" data-throw-if-not-resolved="false"></xref> is updated and the cumulative
+
+    <xref href="Meridian.Execution.Derivatives.FuturePosition.RealizedPnl" data-throw-if-not-resolved="false"></xref> is increased by the settlement amount.
+  example: []
+  syntax:
+    content: public decimal SettleDaily(decimal newSettlementPrice)
+    parameters:
+    - id: newSettlementPrice
+      type: System.Decimal
+      description: Today's official settlement price.
+    return:
+      type: System.Decimal
+      description: Cash amount to credit (or debit if negative) to the portfolio's cash balance.
+    content.vb: Public Function SettleDaily(newSettlementPrice As Decimal) As Decimal
+  overload: Meridian.Execution.Derivatives.FuturePosition.SettleDaily*
+  nameWithType.vb: FuturePosition.SettleDaily(Decimal)
+  fullName.vb: Meridian.Execution.Derivatives.FuturePosition.SettleDaily(Decimal)
+  name.vb: SettleDaily(Decimal)
+- uid: Meridian.Execution.Derivatives.FuturePosition.WithSettlement(System.Decimal)
+  commentId: M:Meridian.Execution.Derivatives.FuturePosition.WithSettlement(System.Decimal)
+  id: WithSettlement(System.Decimal)
+  parent: Meridian.Execution.Derivatives.FuturePosition
+  langs:
+  - csharp
+  - vb
+  name: WithSettlement(decimal)
+  nameWithType: FuturePosition.WithSettlement(decimal)
+  fullName: Meridian.Execution.Derivatives.FuturePosition.WithSettlement(decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/FuturePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithSettlement
+    path: ../../src/Meridian.Execution/Derivatives/FuturePosition.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: >-
+    Returns a new <xref href="Meridian.Execution.Derivatives.FuturePosition" data-throw-if-not-resolved="false"></xref> with the updated settlement price applied.
+
+    Does NOT mutate this instance.
+  example: []
+  syntax:
+    content: public FuturePosition WithSettlement(decimal newSettlementPrice)
+    parameters:
+    - id: newSettlementPrice
+      type: System.Decimal
+    return:
+      type: Meridian.Execution.Derivatives.FuturePosition
+    content.vb: Public Function WithSettlement(newSettlementPrice As Decimal) As FuturePosition
+  overload: Meridian.Execution.Derivatives.FuturePosition.WithSettlement*
+  nameWithType.vb: FuturePosition.WithSettlement(Decimal)
+  fullName.vb: Meridian.Execution.Derivatives.FuturePosition.WithSettlement(Decimal)
+  name.vb: WithSettlement(Decimal)
+references:
+- uid: Meridian.Execution.Derivatives
+  commentId: N:Meridian.Execution.Derivatives
+  href: Meridian.html
+  name: Meridian.Execution.Derivatives
+  nameWithType: Meridian.Execution.Derivatives
+  fullName: Meridian.Execution.Derivatives
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Derivatives.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Derivatives.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Execution.Derivatives.IDerivativePosition
+  commentId: T:Meridian.Execution.Derivatives.IDerivativePosition
+  parent: Meridian.Execution.Derivatives
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html
+  name: IDerivativePosition
+  nameWithType: IDerivativePosition
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Derivatives.FuturePosition.#ctor*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.#ctor
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition__ctor_System_String_System_Int64_System_Decimal_System_Decimal_System_Decimal_Meridian_Execution_Sdk_Derivatives_FutureDetails_
+  name: FuturePosition
+  nameWithType: FuturePosition.FuturePosition
+  fullName: Meridian.Execution.Derivatives.FuturePosition.FuturePosition
+  nameWithType.vb: FuturePosition.New
+  fullName.vb: Meridian.Execution.Derivatives.FuturePosition.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  commentId: T:Meridian.Execution.Sdk.Derivatives.FutureDetails
+  parent: Meridian.Execution.Sdk.Derivatives
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html
+  name: FutureDetails
+  nameWithType: FutureDetails
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails
+- uid: Meridian.Execution.Sdk.Derivatives
+  commentId: N:Meridian.Execution.Sdk.Derivatives
+  href: Meridian.html
+  name: Meridian.Execution.Sdk.Derivatives
+  nameWithType: Meridian.Execution.Sdk.Derivatives
+  fullName: Meridian.Execution.Sdk.Derivatives
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html
+- uid: Meridian.Execution.Derivatives.FuturePosition.Symbol*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.Symbol
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_Symbol
+  name: Symbol
+  nameWithType: FuturePosition.Symbol
+  fullName: Meridian.Execution.Derivatives.FuturePosition.Symbol
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_Symbol
+  name: Symbol
+  nameWithType: IDerivativePosition.Symbol
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+- uid: Meridian.Execution.Derivatives.FuturePosition.Contracts*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.Contracts
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_Contracts
+  name: Contracts
+  nameWithType: FuturePosition.Contracts
+  fullName: Meridian.Execution.Derivatives.FuturePosition.Contracts
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_Contracts
+  name: Contracts
+  nameWithType: IDerivativePosition.Contracts
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+- uid: Meridian.Execution.Derivatives.FuturePosition.AverageCostBasis*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.AverageCostBasis
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_AverageCostBasis
+  name: AverageCostBasis
+  nameWithType: FuturePosition.AverageCostBasis
+  fullName: Meridian.Execution.Derivatives.FuturePosition.AverageCostBasis
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_AverageCostBasis
+  name: AverageCostBasis
+  nameWithType: IDerivativePosition.AverageCostBasis
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+- uid: Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_LastSettlementPrice
+  name: LastSettlementPrice
+  nameWithType: FuturePosition.LastSettlementPrice
+  fullName: Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice
+- uid: Meridian.Execution.Derivatives.FuturePosition.MarkPrice*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.MarkPrice
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_MarkPrice
+  name: MarkPrice
+  nameWithType: FuturePosition.MarkPrice
+  fullName: Meridian.Execution.Derivatives.FuturePosition.MarkPrice
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_MarkPrice
+  name: MarkPrice
+  nameWithType: IDerivativePosition.MarkPrice
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+- uid: Meridian.Execution.Derivatives.FuturePosition.UnrealizedPnl*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.UnrealizedPnl
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: FuturePosition.UnrealizedPnl
+  fullName: Meridian.Execution.Derivatives.FuturePosition.UnrealizedPnl
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: IDerivativePosition.UnrealizedPnl
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+- uid: Meridian.Execution.Derivatives.FuturePosition.RealizedPnl*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.RealizedPnl
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_RealizedPnl
+  name: RealizedPnl
+  nameWithType: FuturePosition.RealizedPnl
+  fullName: Meridian.Execution.Derivatives.FuturePosition.RealizedPnl
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_RealizedPnl
+  name: RealizedPnl
+  nameWithType: IDerivativePosition.RealizedPnl
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+- uid: Meridian.Execution.Derivatives.FuturePosition.Kind*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.Kind
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_Kind
+  name: Kind
+  nameWithType: FuturePosition.Kind
+  fullName: Meridian.Execution.Derivatives.FuturePosition.Kind
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.Kind
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.Kind
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_Kind
+  name: Kind
+  nameWithType: IDerivativePosition.Kind
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.Kind
+- uid: Meridian.Execution.Derivatives.DerivativeKind
+  commentId: T:Meridian.Execution.Derivatives.DerivativeKind
+  parent: Meridian.Execution.Derivatives
+  href: Meridian.Execution.Derivatives.DerivativeKind.html
+  name: DerivativeKind
+  nameWithType: DerivativeKind
+  fullName: Meridian.Execution.Derivatives.DerivativeKind
+- uid: Meridian.Execution.Derivatives.FuturePosition.Details*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.Details
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_Details
+  name: Details
+  nameWithType: FuturePosition.Details
+  fullName: Meridian.Execution.Derivatives.FuturePosition.Details
+- uid: Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_LastSettlementPrice
+  name: LastSettlementPrice
+  nameWithType: FuturePosition.LastSettlementPrice
+  fullName: Meridian.Execution.Derivatives.FuturePosition.LastSettlementPrice
+- uid: Meridian.Execution.Derivatives.FuturePosition.RealizedPnl
+  commentId: P:Meridian.Execution.Derivatives.FuturePosition.RealizedPnl
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_RealizedPnl
+  name: RealizedPnl
+  nameWithType: FuturePosition.RealizedPnl
+  fullName: Meridian.Execution.Derivatives.FuturePosition.RealizedPnl
+- uid: Meridian.Execution.Derivatives.FuturePosition.SettleDaily*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.SettleDaily
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_SettleDaily_System_Decimal_
+  name: SettleDaily
+  nameWithType: FuturePosition.SettleDaily
+  fullName: Meridian.Execution.Derivatives.FuturePosition.SettleDaily
+- uid: Meridian.Execution.Derivatives.FuturePosition
+  commentId: T:Meridian.Execution.Derivatives.FuturePosition
+  parent: Meridian.Execution.Derivatives
+  href: Meridian.Execution.Derivatives.FuturePosition.html
+  name: FuturePosition
+  nameWithType: FuturePosition
+  fullName: Meridian.Execution.Derivatives.FuturePosition
+- uid: Meridian.Execution.Derivatives.FuturePosition.WithSettlement*
+  commentId: Overload:Meridian.Execution.Derivatives.FuturePosition.WithSettlement
+  href: Meridian.Execution.Derivatives.FuturePosition.html#Meridian_Execution_Derivatives_FuturePosition_WithSettlement_System_Decimal_
+  name: WithSettlement
+  nameWithType: FuturePosition.WithSettlement
+  fullName: Meridian.Execution.Derivatives.FuturePosition.WithSettlement

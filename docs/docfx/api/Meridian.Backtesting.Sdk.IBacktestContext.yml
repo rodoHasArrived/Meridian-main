@@ -1,0 +1,1381 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.IBacktestContext
+  commentId: T:Meridian.Backtesting.Sdk.IBacktestContext
+  id: IBacktestContext
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.IBacktestContext.Accounts
+  - Meridian.Backtesting.Sdk.IBacktestContext.CancelContingentOrders(System.Guid)
+  - Meridian.Backtesting.Sdk.IBacktestContext.CancelOrder(System.Guid)
+  - Meridian.Backtesting.Sdk.IBacktestContext.Cash
+  - Meridian.Backtesting.Sdk.IBacktestContext.CurrentDate
+  - Meridian.Backtesting.Sdk.IBacktestContext.CurrentTime
+  - Meridian.Backtesting.Sdk.IBacktestContext.GetLastPrice(System.String)
+  - Meridian.Backtesting.Sdk.IBacktestContext.Ledger
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceBracketOrder(Meridian.Backtesting.Sdk.BracketOrderRequest)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(System.String,System.Int64,System.Decimal)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(System.String,System.Int64,System.Decimal,System.String)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64,System.String)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceOrder(Meridian.Backtesting.Sdk.OrderRequest)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(System.String,System.Int64,System.Decimal,System.Decimal)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(System.String,System.Int64,System.Decimal,System.Decimal,System.String)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(System.String,System.Int64,System.Decimal)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(System.String,System.Int64,System.Decimal,System.String)
+  - Meridian.Backtesting.Sdk.IBacktestContext.PortfolioValue
+  - Meridian.Backtesting.Sdk.IBacktestContext.Positions
+  - Meridian.Backtesting.Sdk.IBacktestContext.Universe
+  langs:
+  - csharp
+  - vb
+  name: IBacktestContext
+  nameWithType: IBacktestContext
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBacktestContext
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Context object passed to every strategy callback. Provides read-only portfolio state
+
+    and order submission methods. All order methods are fire-and-forget within the same
+
+    simulated tick; fills are delivered via <xref href="Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent%2cMeridian.Backtesting.Sdk.IBacktestContext)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public interface IBacktestContext
+    content.vb: Public Interface IBacktestContext
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Universe
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestContext.Universe
+  id: Universe
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: Universe
+  nameWithType: IBacktestContext.Universe
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Universe
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Universe
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: All symbols for which data is available in the requested date range.
+  example: []
+  syntax:
+    content: IReadOnlySet<string> Universe { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+    content.vb: ReadOnly Property Universe As IReadOnlySet(Of String)
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.Universe*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.CurrentTime
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestContext.CurrentTime
+  id: CurrentTime
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: CurrentTime
+  nameWithType: IBacktestContext.CurrentTime
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.CurrentTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentTime
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Wall-clock timestamp of the current market event being processed.
+  example: []
+  syntax:
+    content: DateTimeOffset CurrentTime { get; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: ReadOnly Property CurrentTime As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.CurrentTime*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.CurrentDate
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestContext.CurrentDate
+  id: CurrentDate
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: CurrentDate
+  nameWithType: IBacktestContext.CurrentDate
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.CurrentDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentDate
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Current simulated date.
+  example: []
+  syntax:
+    content: DateOnly CurrentDate { get; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: ReadOnly Property CurrentDate As DateOnly
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.CurrentDate*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Cash
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestContext.Cash
+  id: Cash
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: IBacktestContext.Cash
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Cash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Available cash across all configured accounts.
+  example: []
+  syntax:
+    content: decimal Cash { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property Cash As Decimal
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.Cash*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PortfolioValue
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestContext.PortfolioValue
+  id: PortfolioValue
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PortfolioValue
+  nameWithType: IBacktestContext.PortfolioValue
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PortfolioValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioValue
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: 'Gross portfolio value: cash + long market value + short market value.'
+  example: []
+  syntax:
+    content: decimal PortfolioValue { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property PortfolioValue As Decimal
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PortfolioValue*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Positions
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestContext.Positions
+  id: Positions
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: Positions
+  nameWithType: IBacktestContext.Positions
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Positions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Positions
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Current open positions aggregated across all brokerage accounts.
+  example: []
+  syntax:
+    content: IReadOnlyDictionary<string, Position> Positions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position}
+    content.vb: ReadOnly Property Positions As IReadOnlyDictionary(Of String, Position)
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.Positions*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Accounts
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestContext.Accounts
+  id: Accounts
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: Accounts
+  nameWithType: IBacktestContext.Accounts
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Accounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounts
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Point-in-time per-account balances and positions.
+  example: []
+  syntax:
+    content: IReadOnlyDictionary<string, FinancialAccountSnapshot> Accounts { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.FinancialAccountSnapshot}
+    content.vb: ReadOnly Property Accounts As IReadOnlyDictionary(Of String, FinancialAccountSnapshot)
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.Accounts*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.GetLastPrice(System.String)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.GetLastPrice(System.String)
+  id: GetLastPrice(System.String)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: GetLastPrice(string)
+  nameWithType: IBacktestContext.GetLastPrice(string)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.GetLastPrice(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLastPrice
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Returns the last known price for <code class="paramref">symbol</code>, or <code>null</code> if unseen.
+  example: []
+  syntax:
+    content: decimal? GetLastPrice(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Function GetLastPrice(symbol As String) As Decimal?
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.GetLastPrice*
+  nameWithType.vb: IBacktestContext.GetLastPrice(String)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.GetLastPrice(String)
+  name.vb: GetLastPrice(String)
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceOrder(Meridian.Backtesting.Sdk.OrderRequest)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceOrder(Meridian.Backtesting.Sdk.OrderRequest)
+  id: PlaceOrder(Meridian.Backtesting.Sdk.OrderRequest)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceOrder(OrderRequest)
+  nameWithType: IBacktestContext.PlaceOrder(OrderRequest)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceOrder(Meridian.Backtesting.Sdk.OrderRequest)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Submit an order using the provider-independent order request surface.
+
+    Provider-specific extensions can be attached via <xref href="Meridian.Backtesting.Sdk.OrderRequest.ProviderParameters" data-throw-if-not-resolved="false"></xref>.
+
+    If <xref href="Meridian.Backtesting.Sdk.OrderRequest.AccountId" data-throw-if-not-resolved="false"></xref> is omitted, the request is routed to the default brokerage account.
+  example: []
+  syntax:
+    content: Guid PlaceOrder(OrderRequest request)
+    parameters:
+    - id: request
+      type: Meridian.Backtesting.Sdk.OrderRequest
+    return:
+      type: System.Guid
+    content.vb: Function PlaceOrder(request As OrderRequest) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceOrder*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceBracketOrder(Meridian.Backtesting.Sdk.BracketOrderRequest)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceBracketOrder(Meridian.Backtesting.Sdk.BracketOrderRequest)
+  id: PlaceBracketOrder(Meridian.Backtesting.Sdk.BracketOrderRequest)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceBracketOrder(BracketOrderRequest)
+  nameWithType: IBacktestContext.PlaceBracketOrder(BracketOrderRequest)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceBracketOrder(Meridian.Backtesting.Sdk.BracketOrderRequest)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceBracketOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Submit an entry order that automatically creates contingent exit orders after the
+
+    entry fills. Exits are linked OCO-style when both a take-profit and stop-loss are set.
+  example: []
+  syntax:
+    content: Guid PlaceBracketOrder(BracketOrderRequest request)
+    parameters:
+    - id: request
+      type: Meridian.Backtesting.Sdk.BracketOrderRequest
+    return:
+      type: System.Guid
+    content.vb: Function PlaceBracketOrder(request As BracketOrderRequest) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceBracketOrder*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64)
+  id: PlaceMarketOrder(System.String,System.Int64)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceMarketOrder(string, long)
+  nameWithType: IBacktestContext.PlaceMarketOrder(string, long)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(string, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceMarketOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Submit a market order. Returns the assigned order ID.
+  example: []
+  syntax:
+    content: Guid PlaceMarketOrder(string symbol, long quantity)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    return:
+      type: System.Guid
+    content.vb: Function PlaceMarketOrder(symbol As String, quantity As Long) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder*
+  nameWithType.vb: IBacktestContext.PlaceMarketOrder(String, Long)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(String, Long)
+  name.vb: PlaceMarketOrder(String, Long)
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64,System.String)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(System.String,System.Int64,System.String)
+  id: PlaceMarketOrder(System.String,System.Int64,System.String)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceMarketOrder(string, long, string)
+  nameWithType: IBacktestContext.PlaceMarketOrder(string, long, string)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(string, long, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceMarketOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Submit a market order routed to a specific brokerage account.
+  example: []
+  syntax:
+    content: Guid PlaceMarketOrder(string symbol, long quantity, string accountId)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    - id: accountId
+      type: System.String
+    return:
+      type: System.Guid
+    content.vb: Function PlaceMarketOrder(symbol As String, quantity As Long, accountId As String) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder*
+  nameWithType.vb: IBacktestContext.PlaceMarketOrder(String, Long, String)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder(String, Long, String)
+  name.vb: PlaceMarketOrder(String, Long, String)
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(System.String,System.Int64,System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(System.String,System.Int64,System.Decimal)
+  id: PlaceLimitOrder(System.String,System.Int64,System.Decimal)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceLimitOrder(string, long, decimal)
+  nameWithType: IBacktestContext.PlaceLimitOrder(string, long, decimal)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(string, long, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceLimitOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Submit a limit order. Returns the assigned order ID.
+  example: []
+  syntax:
+    content: Guid PlaceLimitOrder(string symbol, long quantity, decimal limitPrice)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    - id: limitPrice
+      type: System.Decimal
+    return:
+      type: System.Guid
+    content.vb: Function PlaceLimitOrder(symbol As String, quantity As Long, limitPrice As Decimal) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder*
+  nameWithType.vb: IBacktestContext.PlaceLimitOrder(String, Long, Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(String, Long, Decimal)
+  name.vb: PlaceLimitOrder(String, Long, Decimal)
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(System.String,System.Int64,System.Decimal,System.String)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(System.String,System.Int64,System.Decimal,System.String)
+  id: PlaceLimitOrder(System.String,System.Int64,System.Decimal,System.String)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceLimitOrder(string, long, decimal, string)
+  nameWithType: IBacktestContext.PlaceLimitOrder(string, long, decimal, string)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(string, long, decimal, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceLimitOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Submit a limit order routed to a specific brokerage account. Returns the assigned order ID.
+  example: []
+  syntax:
+    content: Guid PlaceLimitOrder(string symbol, long quantity, decimal limitPrice, string accountId)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    - id: limitPrice
+      type: System.Decimal
+    - id: accountId
+      type: System.String
+    return:
+      type: System.Guid
+    content.vb: Function PlaceLimitOrder(symbol As String, quantity As Long, limitPrice As Decimal, accountId As String) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder*
+  nameWithType.vb: IBacktestContext.PlaceLimitOrder(String, Long, Decimal, String)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder(String, Long, Decimal, String)
+  name.vb: PlaceLimitOrder(String, Long, Decimal, String)
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(System.String,System.Int64,System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(System.String,System.Int64,System.Decimal)
+  id: PlaceStopMarketOrder(System.String,System.Int64,System.Decimal)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceStopMarketOrder(string, long, decimal)
+  nameWithType: IBacktestContext.PlaceStopMarketOrder(string, long, decimal)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(string, long, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceStopMarketOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Submit a stop-market order. Returns the assigned order ID.
+  example: []
+  syntax:
+    content: Guid PlaceStopMarketOrder(string symbol, long quantity, decimal stopPrice)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    - id: stopPrice
+      type: System.Decimal
+    return:
+      type: System.Guid
+    content.vb: Function PlaceStopMarketOrder(symbol As String, quantity As Long, stopPrice As Decimal) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder*
+  nameWithType.vb: IBacktestContext.PlaceStopMarketOrder(String, Long, Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(String, Long, Decimal)
+  name.vb: PlaceStopMarketOrder(String, Long, Decimal)
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(System.String,System.Int64,System.Decimal,System.String)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(System.String,System.Int64,System.Decimal,System.String)
+  id: PlaceStopMarketOrder(System.String,System.Int64,System.Decimal,System.String)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceStopMarketOrder(string, long, decimal, string)
+  nameWithType: IBacktestContext.PlaceStopMarketOrder(string, long, decimal, string)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(string, long, decimal, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceStopMarketOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Submit a stop-market order routed to a specific brokerage account.
+  example: []
+  syntax:
+    content: Guid PlaceStopMarketOrder(string symbol, long quantity, decimal stopPrice, string accountId)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    - id: stopPrice
+      type: System.Decimal
+    - id: accountId
+      type: System.String
+    return:
+      type: System.Guid
+    content.vb: Function PlaceStopMarketOrder(symbol As String, quantity As Long, stopPrice As Decimal, accountId As String) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder*
+  nameWithType.vb: IBacktestContext.PlaceStopMarketOrder(String, Long, Decimal, String)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder(String, Long, Decimal, String)
+  name.vb: PlaceStopMarketOrder(String, Long, Decimal, String)
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(System.String,System.Int64,System.Decimal,System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(System.String,System.Int64,System.Decimal,System.Decimal)
+  id: PlaceStopLimitOrder(System.String,System.Int64,System.Decimal,System.Decimal)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceStopLimitOrder(string, long, decimal, decimal)
+  nameWithType: IBacktestContext.PlaceStopLimitOrder(string, long, decimal, decimal)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(string, long, decimal, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceStopLimitOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Submit a stop-limit order. Returns the assigned order ID.
+  example: []
+  syntax:
+    content: Guid PlaceStopLimitOrder(string symbol, long quantity, decimal stopPrice, decimal limitPrice)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    - id: stopPrice
+      type: System.Decimal
+    - id: limitPrice
+      type: System.Decimal
+    return:
+      type: System.Guid
+    content.vb: Function PlaceStopLimitOrder(symbol As String, quantity As Long, stopPrice As Decimal, limitPrice As Decimal) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder*
+  nameWithType.vb: IBacktestContext.PlaceStopLimitOrder(String, Long, Decimal, Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(String, Long, Decimal, Decimal)
+  name.vb: PlaceStopLimitOrder(String, Long, Decimal, Decimal)
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(System.String,System.Int64,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(System.String,System.Int64,System.Decimal,System.Decimal,System.String)
+  id: PlaceStopLimitOrder(System.String,System.Int64,System.Decimal,System.Decimal,System.String)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: PlaceStopLimitOrder(string, long, decimal, decimal, string)
+  nameWithType: IBacktestContext.PlaceStopLimitOrder(string, long, decimal, decimal, string)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(string, long, decimal, decimal, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceStopLimitOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Submit a stop-limit order routed to a specific brokerage account.
+  example: []
+  syntax:
+    content: Guid PlaceStopLimitOrder(string symbol, long quantity, decimal stopPrice, decimal limitPrice, string accountId)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Int64
+    - id: stopPrice
+      type: System.Decimal
+    - id: limitPrice
+      type: System.Decimal
+    - id: accountId
+      type: System.String
+    return:
+      type: System.Guid
+    content.vb: Function PlaceStopLimitOrder(symbol As String, quantity As Long, stopPrice As Decimal, limitPrice As Decimal, accountId As String) As Guid
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder*
+  nameWithType.vb: IBacktestContext.PlaceStopLimitOrder(String, Long, Decimal, Decimal, String)
+  fullName.vb: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder(String, Long, Decimal, Decimal, String)
+  name.vb: PlaceStopLimitOrder(String, Long, Decimal, Decimal, String)
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.CancelOrder(System.Guid)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.CancelOrder(System.Guid)
+  id: CancelOrder(System.Guid)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: CancelOrder(Guid)
+  nameWithType: IBacktestContext.CancelOrder(Guid)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.CancelOrder(System.Guid)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelOrder
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Cancel a pending order.
+  example: []
+  syntax:
+    content: void CancelOrder(Guid orderId)
+    parameters:
+    - id: orderId
+      type: System.Guid
+    content.vb: Sub CancelOrder(orderId As Guid)
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.CancelOrder*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.CancelContingentOrders(System.Guid)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestContext.CancelContingentOrders(System.Guid)
+  id: CancelContingentOrders(System.Guid)
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: CancelContingentOrders(Guid)
+  nameWithType: IBacktestContext.CancelContingentOrders(Guid)
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.CancelContingentOrders(System.Guid)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelContingentOrders
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Cancel any working contingent exit orders generated from the specified parent order.
+
+    Useful when a strategy wants to replace or remove an attached bracket after entry.
+  example: []
+  syntax:
+    content: void CancelContingentOrders(Guid parentOrderId)
+    parameters:
+    - id: parentOrderId
+      type: System.Guid
+    content.vb: Sub CancelContingentOrders(parentOrderId As Guid)
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.CancelContingentOrders*
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Ledger
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestContext.Ledger
+  id: Ledger
+  parent: Meridian.Backtesting.Sdk.IBacktestContext
+  langs:
+  - csharp
+  - vb
+  name: Ledger
+  nameWithType: IBacktestContext.Ledger
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Ledger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ledger
+    path: ../../src/Meridian.Backtesting.Sdk/IBacktestContext.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    The double-entry accounting ledger for this backtest run.
+
+    Strategies can query account balances and journal entries to audit or report on costs.
+
+    The ledger is read-only to prevent strategy code from corrupting the audit trail.
+  example: []
+  syntax:
+    content: IReadOnlyLedger Ledger { get; }
+    parameters: []
+    return:
+      type: Meridian.Ledger.IReadOnlyLedger
+    content.vb: ReadOnly Property Ledger As IReadOnlyLedger
+  overload: Meridian.Backtesting.Sdk.IBacktestContext.Ledger*
+references:
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderFill(FillEvent, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnOrderFill(FillEvent, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderFill
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderFill
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy
+  commentId: T:Meridian.Backtesting.Sdk.IBacktestStrategy
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html
+  name: IBacktestStrategy
+  nameWithType: IBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Universe*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.Universe
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_Universe
+  name: Universe
+  nameWithType: IBacktestContext.Universe
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Universe
+- uid: System.Collections.Generic.IReadOnlySet{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<string>
+  nameWithType: IReadOnlySet<string>
+  fullName: System.Collections.Generic.IReadOnlySet<string>
+  nameWithType.vb: IReadOnlySet(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of String)
+  name.vb: IReadOnlySet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.CurrentTime*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.CurrentTime
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_CurrentTime
+  name: CurrentTime
+  nameWithType: IBacktestContext.CurrentTime
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.CurrentTime
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.CurrentDate*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.CurrentDate
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_CurrentDate
+  name: CurrentDate
+  nameWithType: IBacktestContext.CurrentDate
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.CurrentDate
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Cash*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.Cash
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_Cash
+  name: Cash
+  nameWithType: IBacktestContext.Cash
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Cash
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PortfolioValue*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.PortfolioValue
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PortfolioValue
+  name: PortfolioValue
+  nameWithType: IBacktestContext.PortfolioValue
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PortfolioValue
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Positions*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.Positions
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_Positions
+  name: Positions
+  nameWithType: IBacktestContext.Positions
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Positions
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, Position>
+  nameWithType: IReadOnlyDictionary<string, Position>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Backtesting.Sdk.Position>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Position)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Backtesting.Sdk.Position)
+  name.vb: IReadOnlyDictionary(Of String, Position)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Position
+    name: Position
+    href: Meridian.Backtesting.Sdk.Position.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Position
+    name: Position
+    href: Meridian.Backtesting.Sdk.Position.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Accounts*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.Accounts
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_Accounts
+  name: Accounts
+  nameWithType: IBacktestContext.Accounts
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Accounts
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.FinancialAccountSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.FinancialAccountSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, FinancialAccountSnapshot>
+  nameWithType: IReadOnlyDictionary<string, FinancialAccountSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Backtesting.Sdk.FinancialAccountSnapshot>
+  nameWithType.vb: IReadOnlyDictionary(Of String, FinancialAccountSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Backtesting.Sdk.FinancialAccountSnapshot)
+  name.vb: IReadOnlyDictionary(Of String, FinancialAccountSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+    name: FinancialAccountSnapshot
+    href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+    name: FinancialAccountSnapshot
+    href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.GetLastPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.GetLastPrice
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_GetLastPrice_System_String_
+  name: GetLastPrice
+  nameWithType: IBacktestContext.GetLastPrice
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.GetLastPrice
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.OrderRequest.ProviderParameters
+  commentId: P:Meridian.Backtesting.Sdk.OrderRequest.ProviderParameters
+  href: Meridian.Backtesting.Sdk.OrderRequest.html#Meridian_Backtesting_Sdk_OrderRequest_ProviderParameters
+  name: ProviderParameters
+  nameWithType: OrderRequest.ProviderParameters
+  fullName: Meridian.Backtesting.Sdk.OrderRequest.ProviderParameters
+- uid: Meridian.Backtesting.Sdk.OrderRequest.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.OrderRequest.AccountId
+  href: Meridian.Backtesting.Sdk.OrderRequest.html#Meridian_Backtesting_Sdk_OrderRequest_AccountId
+  name: AccountId
+  nameWithType: OrderRequest.AccountId
+  fullName: Meridian.Backtesting.Sdk.OrderRequest.AccountId
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceOrder*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.PlaceOrder
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PlaceOrder_Meridian_Backtesting_Sdk_OrderRequest_
+  name: PlaceOrder
+  nameWithType: IBacktestContext.PlaceOrder
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceOrder
+- uid: Meridian.Backtesting.Sdk.OrderRequest
+  commentId: T:Meridian.Backtesting.Sdk.OrderRequest
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.OrderRequest.html
+  name: OrderRequest
+  nameWithType: OrderRequest
+  fullName: Meridian.Backtesting.Sdk.OrderRequest
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceBracketOrder*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.PlaceBracketOrder
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PlaceBracketOrder_Meridian_Backtesting_Sdk_BracketOrderRequest_
+  name: PlaceBracketOrder
+  nameWithType: IBacktestContext.PlaceBracketOrder
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceBracketOrder
+- uid: Meridian.Backtesting.Sdk.BracketOrderRequest
+  commentId: T:Meridian.Backtesting.Sdk.BracketOrderRequest
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BracketOrderRequest.html
+  name: BracketOrderRequest
+  nameWithType: BracketOrderRequest
+  fullName: Meridian.Backtesting.Sdk.BracketOrderRequest
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PlaceMarketOrder_System_String_System_Int64_
+  name: PlaceMarketOrder
+  nameWithType: IBacktestContext.PlaceMarketOrder
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceMarketOrder
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PlaceLimitOrder_System_String_System_Int64_System_Decimal_
+  name: PlaceLimitOrder
+  nameWithType: IBacktestContext.PlaceLimitOrder
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceLimitOrder
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PlaceStopMarketOrder_System_String_System_Int64_System_Decimal_
+  name: PlaceStopMarketOrder
+  nameWithType: IBacktestContext.PlaceStopMarketOrder
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopMarketOrder
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_PlaceStopLimitOrder_System_String_System_Int64_System_Decimal_System_Decimal_
+  name: PlaceStopLimitOrder
+  nameWithType: IBacktestContext.PlaceStopLimitOrder
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.PlaceStopLimitOrder
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.CancelOrder*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.CancelOrder
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_CancelOrder_System_Guid_
+  name: CancelOrder
+  nameWithType: IBacktestContext.CancelOrder
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.CancelOrder
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.CancelContingentOrders*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.CancelContingentOrders
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_CancelContingentOrders_System_Guid_
+  name: CancelContingentOrders
+  nameWithType: IBacktestContext.CancelContingentOrders
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.CancelContingentOrders
+- uid: Meridian.Backtesting.Sdk.IBacktestContext.Ledger*
+  commentId: Overload:Meridian.Backtesting.Sdk.IBacktestContext.Ledger
+  href: Meridian.Backtesting.Sdk.IBacktestContext.html#Meridian_Backtesting_Sdk_IBacktestContext_Ledger
+  name: Ledger
+  nameWithType: IBacktestContext.Ledger
+  fullName: Meridian.Backtesting.Sdk.IBacktestContext.Ledger
+- uid: Meridian.Ledger.IReadOnlyLedger
+  commentId: T:Meridian.Ledger.IReadOnlyLedger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.IReadOnlyLedger.html
+  name: IReadOnlyLedger
+  nameWithType: IReadOnlyLedger
+  fullName: Meridian.Ledger.IReadOnlyLedger
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html

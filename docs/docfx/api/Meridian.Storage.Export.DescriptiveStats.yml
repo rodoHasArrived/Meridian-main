@@ -1,0 +1,665 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.DescriptiveStats
+  commentId: T:Meridian.Storage.Export.DescriptiveStats
+  id: DescriptiveStats
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.DescriptiveStats.Count
+  - Meridian.Storage.Export.DescriptiveStats.Max
+  - Meridian.Storage.Export.DescriptiveStats.Mean
+  - Meridian.Storage.Export.DescriptiveStats.Median
+  - Meridian.Storage.Export.DescriptiveStats.Min
+  - Meridian.Storage.Export.DescriptiveStats.Percentile25
+  - Meridian.Storage.Export.DescriptiveStats.Percentile75
+  - Meridian.Storage.Export.DescriptiveStats.Percentile95
+  - Meridian.Storage.Export.DescriptiveStats.Percentile99
+  - Meridian.Storage.Export.DescriptiveStats.StdDev
+  langs:
+  - csharp
+  - vb
+  name: DescriptiveStats
+  nameWithType: DescriptiveStats
+  fullName: Meridian.Storage.Export.DescriptiveStats
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DescriptiveStats
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 774
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Descriptive statistics for a numeric field.
+  example: []
+  syntax:
+    content: public sealed class DescriptiveStats
+    content.vb: Public NotInheritable Class DescriptiveStats
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Export.DescriptiveStats.Count
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.Count
+  id: Count
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: DescriptiveStats.Count
+  fullName: Meridian.Storage.Export.DescriptiveStats.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 776
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public long Count { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Count As Long
+  overload: Meridian.Storage.Export.DescriptiveStats.Count*
+- uid: Meridian.Storage.Export.DescriptiveStats.Mean
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.Mean
+  id: Mean
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: Mean
+  nameWithType: DescriptiveStats.Mean
+  fullName: Meridian.Storage.Export.DescriptiveStats.Mean
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mean
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 777
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public double Mean { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Mean As Double
+  overload: Meridian.Storage.Export.DescriptiveStats.Mean*
+- uid: Meridian.Storage.Export.DescriptiveStats.Median
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.Median
+  id: Median
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: Median
+  nameWithType: DescriptiveStats.Median
+  fullName: Meridian.Storage.Export.DescriptiveStats.Median
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Median
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 778
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public double Median { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Median As Double
+  overload: Meridian.Storage.Export.DescriptiveStats.Median*
+- uid: Meridian.Storage.Export.DescriptiveStats.Min
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.Min
+  id: Min
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: Min
+  nameWithType: DescriptiveStats.Min
+  fullName: Meridian.Storage.Export.DescriptiveStats.Min
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Min
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 779
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public double Min { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Min As Double
+  overload: Meridian.Storage.Export.DescriptiveStats.Min*
+- uid: Meridian.Storage.Export.DescriptiveStats.Max
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.Max
+  id: Max
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: Max
+  nameWithType: DescriptiveStats.Max
+  fullName: Meridian.Storage.Export.DescriptiveStats.Max
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Max
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 780
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public double Max { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Max As Double
+  overload: Meridian.Storage.Export.DescriptiveStats.Max*
+- uid: Meridian.Storage.Export.DescriptiveStats.StdDev
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.StdDev
+  id: StdDev
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: StdDev
+  nameWithType: DescriptiveStats.StdDev
+  fullName: Meridian.Storage.Export.DescriptiveStats.StdDev
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StdDev
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 781
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public double StdDev { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property StdDev As Double
+  overload: Meridian.Storage.Export.DescriptiveStats.StdDev*
+- uid: Meridian.Storage.Export.DescriptiveStats.Percentile25
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.Percentile25
+  id: Percentile25
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: Percentile25
+  nameWithType: DescriptiveStats.Percentile25
+  fullName: Meridian.Storage.Export.DescriptiveStats.Percentile25
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Percentile25
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 782
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public double Percentile25 { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Percentile25 As Double
+  overload: Meridian.Storage.Export.DescriptiveStats.Percentile25*
+- uid: Meridian.Storage.Export.DescriptiveStats.Percentile75
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.Percentile75
+  id: Percentile75
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: Percentile75
+  nameWithType: DescriptiveStats.Percentile75
+  fullName: Meridian.Storage.Export.DescriptiveStats.Percentile75
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Percentile75
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 783
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public double Percentile75 { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Percentile75 As Double
+  overload: Meridian.Storage.Export.DescriptiveStats.Percentile75*
+- uid: Meridian.Storage.Export.DescriptiveStats.Percentile95
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.Percentile95
+  id: Percentile95
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: Percentile95
+  nameWithType: DescriptiveStats.Percentile95
+  fullName: Meridian.Storage.Export.DescriptiveStats.Percentile95
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Percentile95
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 784
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public double Percentile95 { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Percentile95 As Double
+  overload: Meridian.Storage.Export.DescriptiveStats.Percentile95*
+- uid: Meridian.Storage.Export.DescriptiveStats.Percentile99
+  commentId: P:Meridian.Storage.Export.DescriptiveStats.Percentile99
+  id: Percentile99
+  parent: Meridian.Storage.Export.DescriptiveStats
+  langs:
+  - csharp
+  - vb
+  name: Percentile99
+  nameWithType: DescriptiveStats.Percentile99
+  fullName: Meridian.Storage.Export.DescriptiveStats.Percentile99
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Percentile99
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 785
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public double Percentile99 { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Percentile99 As Double
+  overload: Meridian.Storage.Export.DescriptiveStats.Percentile99*
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Export.DescriptiveStats.Count*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.Count
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_Count
+  name: Count
+  nameWithType: DescriptiveStats.Count
+  fullName: Meridian.Storage.Export.DescriptiveStats.Count
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Export.DescriptiveStats.Mean*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.Mean
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_Mean
+  name: Mean
+  nameWithType: DescriptiveStats.Mean
+  fullName: Meridian.Storage.Export.DescriptiveStats.Mean
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Storage.Export.DescriptiveStats.Median*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.Median
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_Median
+  name: Median
+  nameWithType: DescriptiveStats.Median
+  fullName: Meridian.Storage.Export.DescriptiveStats.Median
+- uid: Meridian.Storage.Export.DescriptiveStats.Min*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.Min
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_Min
+  name: Min
+  nameWithType: DescriptiveStats.Min
+  fullName: Meridian.Storage.Export.DescriptiveStats.Min
+- uid: Meridian.Storage.Export.DescriptiveStats.Max*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.Max
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_Max
+  name: Max
+  nameWithType: DescriptiveStats.Max
+  fullName: Meridian.Storage.Export.DescriptiveStats.Max
+- uid: Meridian.Storage.Export.DescriptiveStats.StdDev*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.StdDev
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_StdDev
+  name: StdDev
+  nameWithType: DescriptiveStats.StdDev
+  fullName: Meridian.Storage.Export.DescriptiveStats.StdDev
+- uid: Meridian.Storage.Export.DescriptiveStats.Percentile25*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.Percentile25
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_Percentile25
+  name: Percentile25
+  nameWithType: DescriptiveStats.Percentile25
+  fullName: Meridian.Storage.Export.DescriptiveStats.Percentile25
+- uid: Meridian.Storage.Export.DescriptiveStats.Percentile75*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.Percentile75
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_Percentile75
+  name: Percentile75
+  nameWithType: DescriptiveStats.Percentile75
+  fullName: Meridian.Storage.Export.DescriptiveStats.Percentile75
+- uid: Meridian.Storage.Export.DescriptiveStats.Percentile95*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.Percentile95
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_Percentile95
+  name: Percentile95
+  nameWithType: DescriptiveStats.Percentile95
+  fullName: Meridian.Storage.Export.DescriptiveStats.Percentile95
+- uid: Meridian.Storage.Export.DescriptiveStats.Percentile99*
+  commentId: Overload:Meridian.Storage.Export.DescriptiveStats.Percentile99
+  href: Meridian.Storage.Export.DescriptiveStats.html#Meridian_Storage_Export_DescriptiveStats_Percentile99
+  name: Percentile99
+  nameWithType: DescriptiveStats.Percentile99
+  fullName: Meridian.Storage.Export.DescriptiveStats.Percentile99

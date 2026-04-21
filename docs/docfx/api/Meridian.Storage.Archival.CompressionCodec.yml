@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.CompressionCodec
+  commentId: T:Meridian.Storage.Archival.CompressionCodec
+  id: CompressionCodec
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.CompressionCodec.Brotli
+  - Meridian.Storage.Archival.CompressionCodec.Deflate
+  - Meridian.Storage.Archival.CompressionCodec.Gzip
+  - Meridian.Storage.Archival.CompressionCodec.Lz4
+  - Meridian.Storage.Archival.CompressionCodec.None
+  - Meridian.Storage.Archival.CompressionCodec.Zstd
+  langs:
+  - csharp
+  - vb
+  name: CompressionCodec
+  nameWithType: CompressionCodec
+  fullName: Meridian.Storage.Archival.CompressionCodec
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionCodec
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 354
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Supported compression codecs.
+  example: []
+  syntax:
+    content: 'public enum CompressionCodec : byte'
+    content.vb: Public Enum CompressionCodec As Byte
+- uid: Meridian.Storage.Archival.CompressionCodec.None
+  commentId: F:Meridian.Storage.Archival.CompressionCodec.None
+  id: None
+  parent: Meridian.Storage.Archival.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: CompressionCodec.None
+  fullName: Meridian.Storage.Archival.CompressionCodec.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: No compression.
+  example: []
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Storage.Archival.CompressionCodec
+- uid: Meridian.Storage.Archival.CompressionCodec.Gzip
+  commentId: F:Meridian.Storage.Archival.CompressionCodec.Gzip
+  id: Gzip
+  parent: Meridian.Storage.Archival.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: Gzip
+  nameWithType: CompressionCodec.Gzip
+  fullName: Meridian.Storage.Archival.CompressionCodec.Gzip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gzip
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 359
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Standard gzip - widely compatible.
+  example: []
+  syntax:
+    content: Gzip = 1
+    return:
+      type: Meridian.Storage.Archival.CompressionCodec
+- uid: Meridian.Storage.Archival.CompressionCodec.Deflate
+  commentId: F:Meridian.Storage.Archival.CompressionCodec.Deflate
+  id: Deflate
+  parent: Meridian.Storage.Archival.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: Deflate
+  nameWithType: CompressionCodec.Deflate
+  fullName: Meridian.Storage.Archival.CompressionCodec.Deflate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Deflate
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 361
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Deflate compression.
+  example: []
+  syntax:
+    content: Deflate = 2
+    return:
+      type: Meridian.Storage.Archival.CompressionCodec
+- uid: Meridian.Storage.Archival.CompressionCodec.Lz4
+  commentId: F:Meridian.Storage.Archival.CompressionCodec.Lz4
+  id: Lz4
+  parent: Meridian.Storage.Archival.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: Lz4
+  nameWithType: CompressionCodec.Lz4
+  fullName: Meridian.Storage.Archival.CompressionCodec.Lz4
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lz4
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 363
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: LZ4 - extremely fast compression/decompression.
+  example: []
+  syntax:
+    content: Lz4 = 3
+    return:
+      type: Meridian.Storage.Archival.CompressionCodec
+- uid: Meridian.Storage.Archival.CompressionCodec.Zstd
+  commentId: F:Meridian.Storage.Archival.CompressionCodec.Zstd
+  id: Zstd
+  parent: Meridian.Storage.Archival.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: Zstd
+  nameWithType: CompressionCodec.Zstd
+  fullName: Meridian.Storage.Archival.CompressionCodec.Zstd
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zstd
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 365
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Zstandard - excellent balance of speed and ratio.
+  example: []
+  syntax:
+    content: Zstd = 4
+    return:
+      type: Meridian.Storage.Archival.CompressionCodec
+- uid: Meridian.Storage.Archival.CompressionCodec.Brotli
+  commentId: F:Meridian.Storage.Archival.CompressionCodec.Brotli
+  id: Brotli
+  parent: Meridian.Storage.Archival.CompressionCodec
+  langs:
+  - csharp
+  - vb
+  name: Brotli
+  nameWithType: CompressionCodec.Brotli
+  fullName: Meridian.Storage.Archival.CompressionCodec.Brotli
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Brotli
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 367
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Brotli - good for web/text content.
+  example: []
+  syntax:
+    content: Brotli = 5
+    return:
+      type: Meridian.Storage.Archival.CompressionCodec
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: Meridian.Storage.Archival.CompressionCodec
+  commentId: T:Meridian.Storage.Archival.CompressionCodec
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.CompressionCodec.html
+  name: CompressionCodec
+  nameWithType: CompressionCodec
+  fullName: Meridian.Storage.Archival.CompressionCodec

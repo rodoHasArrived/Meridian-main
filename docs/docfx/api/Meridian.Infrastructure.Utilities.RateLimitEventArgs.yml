@@ -1,0 +1,598 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  commentId: T:Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  id: RateLimitEventArgs
+  parent: Meridian.Infrastructure.Utilities
+  children:
+  - Meridian.Infrastructure.Utilities.RateLimitEventArgs.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.TimeSpan})
+  - Meridian.Infrastructure.Utilities.RateLimitEventArgs.DataType
+  - Meridian.Infrastructure.Utilities.RateLimitEventArgs.ProviderName
+  - Meridian.Infrastructure.Utilities.RateLimitEventArgs.ResetsAt
+  - Meridian.Infrastructure.Utilities.RateLimitEventArgs.RetryAfter
+  - Meridian.Infrastructure.Utilities.RateLimitEventArgs.Symbol
+  langs:
+  - csharp
+  - vb
+  name: RateLimitEventArgs
+  nameWithType: RateLimitEventArgs
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitEventArgs
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Event arguments for rate limit events.
+  example: []
+  syntax:
+    content: 'public sealed class RateLimitEventArgs : EventArgs'
+    content.vb: Public NotInheritable Class RateLimitEventArgs Inherits EventArgs
+  inheritance:
+  - System.Object
+  - System.EventArgs
+  inheritedMembers:
+  - System.EventArgs.Empty
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ProviderName
+  commentId: P:Meridian.Infrastructure.Utilities.RateLimitEventArgs.ProviderName
+  id: ProviderName
+  parent: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  langs:
+  - csharp
+  - vb
+  name: ProviderName
+  nameWithType: RateLimitEventArgs.ProviderName
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ProviderName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderName
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  syntax:
+    content: public string ProviderName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderName As String
+  overload: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ProviderName*
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.Symbol
+  commentId: P:Meridian.Infrastructure.Utilities.RateLimitEventArgs.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: RateLimitEventArgs.Symbol
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  syntax:
+    content: public string Symbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Symbol As String
+  overload: Meridian.Infrastructure.Utilities.RateLimitEventArgs.Symbol*
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.DataType
+  commentId: P:Meridian.Infrastructure.Utilities.RateLimitEventArgs.DataType
+  id: DataType
+  parent: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  langs:
+  - csharp
+  - vb
+  name: DataType
+  nameWithType: RateLimitEventArgs.DataType
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.DataType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataType
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  syntax:
+    content: public string DataType { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property DataType As String
+  overload: Meridian.Infrastructure.Utilities.RateLimitEventArgs.DataType*
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ResetsAt
+  commentId: P:Meridian.Infrastructure.Utilities.RateLimitEventArgs.ResetsAt
+  id: ResetsAt
+  parent: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  langs:
+  - csharp
+  - vb
+  name: ResetsAt
+  nameWithType: RateLimitEventArgs.ResetsAt
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ResetsAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetsAt
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 255
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  syntax:
+    content: public DateTimeOffset ResetsAt { get; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public ReadOnly Property ResetsAt As DateTimeOffset
+  overload: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ResetsAt*
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.RetryAfter
+  commentId: P:Meridian.Infrastructure.Utilities.RateLimitEventArgs.RetryAfter
+  id: RetryAfter
+  parent: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  langs:
+  - csharp
+  - vb
+  name: RetryAfter
+  nameWithType: RateLimitEventArgs.RetryAfter
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.RetryAfter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetryAfter
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  syntax:
+    content: public TimeSpan? RetryAfter { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public ReadOnly Property RetryAfter As TimeSpan?
+  overload: Meridian.Infrastructure.Utilities.RateLimitEventArgs.RetryAfter*
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Infrastructure.Utilities.RateLimitEventArgs.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.TimeSpan})
+  id: '#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.TimeSpan})'
+  parent: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+  langs:
+  - csharp
+  - vb
+  name: RateLimitEventArgs(string, string, string, DateTimeOffset, TimeSpan?)
+  nameWithType: RateLimitEventArgs.RateLimitEventArgs(string, string, string, DateTimeOffset, TimeSpan?)
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.RateLimitEventArgs(string, string, string, System.DateTimeOffset, System.TimeSpan?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 258
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  syntax:
+    content: public RateLimitEventArgs(string providerName, string symbol, string dataType, DateTimeOffset resetsAt, TimeSpan? retryAfter)
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: dataType
+      type: System.String
+    - id: resetsAt
+      type: System.DateTimeOffset
+    - id: retryAfter
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Sub New(providerName As String, symbol As String, dataType As String, resetsAt As DateTimeOffset, retryAfter As TimeSpan?)
+  overload: Meridian.Infrastructure.Utilities.RateLimitEventArgs.#ctor*
+  nameWithType.vb: RateLimitEventArgs.New(String, String, String, DateTimeOffset, TimeSpan?)
+  fullName.vb: Meridian.Infrastructure.Utilities.RateLimitEventArgs.New(String, String, String, System.DateTimeOffset, System.TimeSpan?)
+  name.vb: New(String, String, String, DateTimeOffset, TimeSpan?)
+references:
+- uid: Meridian.Infrastructure.Utilities
+  commentId: N:Meridian.Infrastructure.Utilities
+  href: Meridian.html
+  name: Meridian.Infrastructure.Utilities
+  nameWithType: Meridian.Infrastructure.Utilities
+  fullName: Meridian.Infrastructure.Utilities
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.EventArgs
+  commentId: T:System.EventArgs
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs
+  name: EventArgs
+  nameWithType: EventArgs
+  fullName: System.EventArgs
+- uid: System.EventArgs.Empty
+  commentId: F:System.EventArgs.Empty
+  parent: System.EventArgs
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs.empty
+  name: Empty
+  nameWithType: EventArgs.Empty
+  fullName: System.EventArgs.Empty
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ProviderName*
+  commentId: Overload:Meridian.Infrastructure.Utilities.RateLimitEventArgs.ProviderName
+  href: Meridian.Infrastructure.Utilities.RateLimitEventArgs.html#Meridian_Infrastructure_Utilities_RateLimitEventArgs_ProviderName
+  name: ProviderName
+  nameWithType: RateLimitEventArgs.ProviderName
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ProviderName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.Symbol*
+  commentId: Overload:Meridian.Infrastructure.Utilities.RateLimitEventArgs.Symbol
+  href: Meridian.Infrastructure.Utilities.RateLimitEventArgs.html#Meridian_Infrastructure_Utilities_RateLimitEventArgs_Symbol
+  name: Symbol
+  nameWithType: RateLimitEventArgs.Symbol
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.Symbol
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.DataType*
+  commentId: Overload:Meridian.Infrastructure.Utilities.RateLimitEventArgs.DataType
+  href: Meridian.Infrastructure.Utilities.RateLimitEventArgs.html#Meridian_Infrastructure_Utilities_RateLimitEventArgs_DataType
+  name: DataType
+  nameWithType: RateLimitEventArgs.DataType
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.DataType
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ResetsAt*
+  commentId: Overload:Meridian.Infrastructure.Utilities.RateLimitEventArgs.ResetsAt
+  href: Meridian.Infrastructure.Utilities.RateLimitEventArgs.html#Meridian_Infrastructure_Utilities_RateLimitEventArgs_ResetsAt
+  name: ResetsAt
+  nameWithType: RateLimitEventArgs.ResetsAt
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.ResetsAt
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.RetryAfter*
+  commentId: Overload:Meridian.Infrastructure.Utilities.RateLimitEventArgs.RetryAfter
+  href: Meridian.Infrastructure.Utilities.RateLimitEventArgs.html#Meridian_Infrastructure_Utilities_RateLimitEventArgs_RetryAfter
+  name: RetryAfter
+  nameWithType: RateLimitEventArgs.RetryAfter
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.RetryAfter
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Utilities.RateLimitEventArgs.#ctor
+  href: Meridian.Infrastructure.Utilities.RateLimitEventArgs.html#Meridian_Infrastructure_Utilities_RateLimitEventArgs__ctor_System_String_System_String_System_String_System_DateTimeOffset_System_Nullable_System_TimeSpan__
+  name: RateLimitEventArgs
+  nameWithType: RateLimitEventArgs.RateLimitEventArgs
+  fullName: Meridian.Infrastructure.Utilities.RateLimitEventArgs.RateLimitEventArgs
+  nameWithType.vb: RateLimitEventArgs.New
+  fullName.vb: Meridian.Infrastructure.Utilities.RateLimitEventArgs.New
+  name.vb: New

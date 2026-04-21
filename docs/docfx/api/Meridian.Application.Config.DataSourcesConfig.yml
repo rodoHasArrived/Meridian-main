@@ -1,0 +1,812 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.DataSourcesConfig
+  commentId: T:Meridian.Application.Config.DataSourcesConfig
+  id: DataSourcesConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.DataSourcesConfig.#ctor(Meridian.Application.Config.DataSourceConfig[],System.String,System.String,System.Boolean,System.Int32,System.Int32,System.Boolean,Meridian.Application.Config.FailoverRuleConfig[],Meridian.Application.Config.SymbolMappingsConfig)
+  - Meridian.Application.Config.DataSourcesConfig.AutoRecover
+  - Meridian.Application.Config.DataSourcesConfig.DefaultHistoricalSourceId
+  - Meridian.Application.Config.DataSourcesConfig.DefaultRealTimeSourceId
+  - Meridian.Application.Config.DataSourcesConfig.EnableFailover
+  - Meridian.Application.Config.DataSourcesConfig.FailoverRules
+  - Meridian.Application.Config.DataSourcesConfig.FailoverTimeoutSeconds
+  - Meridian.Application.Config.DataSourcesConfig.HealthCheckIntervalSeconds
+  - Meridian.Application.Config.DataSourcesConfig.Sources
+  - Meridian.Application.Config.DataSourcesConfig.SymbolMappings
+  langs:
+  - csharp
+  - vb
+  name: DataSourcesConfig
+  nameWithType: DataSourcesConfig
+  fullName: Meridian.Application.Config.DataSourcesConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourcesConfig
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Collection of data source configurations.
+  example: []
+  syntax:
+    content: 'public sealed record DataSourcesConfig : IEquatable<DataSourcesConfig>'
+    content.vb: Public NotInheritable Class DataSourcesConfig Implements IEquatable(Of DataSourcesConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.DataSourcesConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.DataSourcesConfig.#ctor(Meridian.Application.Config.DataSourceConfig[],System.String,System.String,System.Boolean,System.Int32,System.Int32,System.Boolean,Meridian.Application.Config.FailoverRuleConfig[],Meridian.Application.Config.SymbolMappingsConfig)
+  commentId: M:Meridian.Application.Config.DataSourcesConfig.#ctor(Meridian.Application.Config.DataSourceConfig[],System.String,System.String,System.Boolean,System.Int32,System.Int32,System.Boolean,Meridian.Application.Config.FailoverRuleConfig[],Meridian.Application.Config.SymbolMappingsConfig)
+  id: '#ctor(Meridian.Application.Config.DataSourceConfig[],System.String,System.String,System.Boolean,System.Int32,System.Int32,System.Boolean,Meridian.Application.Config.FailoverRuleConfig[],Meridian.Application.Config.SymbolMappingsConfig)'
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: DataSourcesConfig(DataSourceConfig[]?, string?, string?, bool, int, int, bool, FailoverRuleConfig[]?, SymbolMappingsConfig?)
+  nameWithType: DataSourcesConfig.DataSourcesConfig(DataSourceConfig[]?, string?, string?, bool, int, int, bool, FailoverRuleConfig[]?, SymbolMappingsConfig?)
+  fullName: Meridian.Application.Config.DataSourcesConfig.DataSourcesConfig(Meridian.Application.Config.DataSourceConfig[]?, string?, string?, bool, int, int, bool, Meridian.Application.Config.FailoverRuleConfig[]?, Meridian.Application.Config.SymbolMappingsConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Collection of data source configurations.
+  example: []
+  syntax:
+    content: public DataSourcesConfig(DataSourceConfig[]? Sources = null, string? DefaultRealTimeSourceId = null, string? DefaultHistoricalSourceId = null, bool EnableFailover = true, int FailoverTimeoutSeconds = 30, int HealthCheckIntervalSeconds = 10, bool AutoRecover = true, FailoverRuleConfig[]? FailoverRules = null, SymbolMappingsConfig? SymbolMappings = null)
+    parameters:
+    - id: Sources
+      type: Meridian.Application.Config.DataSourceConfig[]
+    - id: DefaultRealTimeSourceId
+      type: System.String
+    - id: DefaultHistoricalSourceId
+      type: System.String
+    - id: EnableFailover
+      type: System.Boolean
+    - id: FailoverTimeoutSeconds
+      type: System.Int32
+    - id: HealthCheckIntervalSeconds
+      type: System.Int32
+    - id: AutoRecover
+      type: System.Boolean
+    - id: FailoverRules
+      type: Meridian.Application.Config.FailoverRuleConfig[]
+    - id: SymbolMappings
+      type: Meridian.Application.Config.SymbolMappingsConfig
+    content.vb: Public Sub New(Sources As DataSourceConfig() = Nothing, DefaultRealTimeSourceId As String = Nothing, DefaultHistoricalSourceId As String = Nothing, EnableFailover As Boolean = True, FailoverTimeoutSeconds As Integer = 30, HealthCheckIntervalSeconds As Integer = 10, AutoRecover As Boolean = True, FailoverRules As FailoverRuleConfig() = Nothing, SymbolMappings As SymbolMappingsConfig = Nothing)
+  overload: Meridian.Application.Config.DataSourcesConfig.#ctor*
+  nameWithType.vb: DataSourcesConfig.New(DataSourceConfig(), String, String, Boolean, Integer, Integer, Boolean, FailoverRuleConfig(), SymbolMappingsConfig)
+  fullName.vb: Meridian.Application.Config.DataSourcesConfig.New(Meridian.Application.Config.DataSourceConfig(), String, String, Boolean, Integer, Integer, Boolean, Meridian.Application.Config.FailoverRuleConfig(), Meridian.Application.Config.SymbolMappingsConfig)
+  name.vb: New(DataSourceConfig(), String, String, Boolean, Integer, Integer, Boolean, FailoverRuleConfig(), SymbolMappingsConfig)
+- uid: Meridian.Application.Config.DataSourcesConfig.Sources
+  commentId: P:Meridian.Application.Config.DataSourcesConfig.Sources
+  id: Sources
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: DataSourcesConfig.Sources
+  fullName: Meridian.Application.Config.DataSourcesConfig.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public DataSourceConfig[]? Sources { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.DataSourceConfig[]
+    content.vb: Public Property Sources As DataSourceConfig()
+  overload: Meridian.Application.Config.DataSourcesConfig.Sources*
+- uid: Meridian.Application.Config.DataSourcesConfig.DefaultRealTimeSourceId
+  commentId: P:Meridian.Application.Config.DataSourcesConfig.DefaultRealTimeSourceId
+  id: DefaultRealTimeSourceId
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: DefaultRealTimeSourceId
+  nameWithType: DataSourcesConfig.DefaultRealTimeSourceId
+  fullName: Meridian.Application.Config.DataSourcesConfig.DefaultRealTimeSourceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultRealTimeSourceId
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? DefaultRealTimeSourceId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DefaultRealTimeSourceId As String
+  overload: Meridian.Application.Config.DataSourcesConfig.DefaultRealTimeSourceId*
+- uid: Meridian.Application.Config.DataSourcesConfig.DefaultHistoricalSourceId
+  commentId: P:Meridian.Application.Config.DataSourcesConfig.DefaultHistoricalSourceId
+  id: DefaultHistoricalSourceId
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: DefaultHistoricalSourceId
+  nameWithType: DataSourcesConfig.DefaultHistoricalSourceId
+  fullName: Meridian.Application.Config.DataSourcesConfig.DefaultHistoricalSourceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultHistoricalSourceId
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? DefaultHistoricalSourceId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DefaultHistoricalSourceId As String
+  overload: Meridian.Application.Config.DataSourcesConfig.DefaultHistoricalSourceId*
+- uid: Meridian.Application.Config.DataSourcesConfig.EnableFailover
+  commentId: P:Meridian.Application.Config.DataSourcesConfig.EnableFailover
+  id: EnableFailover
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: EnableFailover
+  nameWithType: DataSourcesConfig.EnableFailover
+  fullName: Meridian.Application.Config.DataSourcesConfig.EnableFailover
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableFailover
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public bool EnableFailover { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableFailover As Boolean
+  overload: Meridian.Application.Config.DataSourcesConfig.EnableFailover*
+- uid: Meridian.Application.Config.DataSourcesConfig.FailoverTimeoutSeconds
+  commentId: P:Meridian.Application.Config.DataSourcesConfig.FailoverTimeoutSeconds
+  id: FailoverTimeoutSeconds
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: FailoverTimeoutSeconds
+  nameWithType: DataSourcesConfig.FailoverTimeoutSeconds
+  fullName: Meridian.Application.Config.DataSourcesConfig.FailoverTimeoutSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverTimeoutSeconds
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public int FailoverTimeoutSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailoverTimeoutSeconds As Integer
+  overload: Meridian.Application.Config.DataSourcesConfig.FailoverTimeoutSeconds*
+- uid: Meridian.Application.Config.DataSourcesConfig.HealthCheckIntervalSeconds
+  commentId: P:Meridian.Application.Config.DataSourcesConfig.HealthCheckIntervalSeconds
+  id: HealthCheckIntervalSeconds
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: HealthCheckIntervalSeconds
+  nameWithType: DataSourcesConfig.HealthCheckIntervalSeconds
+  fullName: Meridian.Application.Config.DataSourcesConfig.HealthCheckIntervalSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheckIntervalSeconds
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public int HealthCheckIntervalSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HealthCheckIntervalSeconds As Integer
+  overload: Meridian.Application.Config.DataSourcesConfig.HealthCheckIntervalSeconds*
+- uid: Meridian.Application.Config.DataSourcesConfig.AutoRecover
+  commentId: P:Meridian.Application.Config.DataSourcesConfig.AutoRecover
+  id: AutoRecover
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: AutoRecover
+  nameWithType: DataSourcesConfig.AutoRecover
+  fullName: Meridian.Application.Config.DataSourcesConfig.AutoRecover
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AutoRecover
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public bool AutoRecover { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property AutoRecover As Boolean
+  overload: Meridian.Application.Config.DataSourcesConfig.AutoRecover*
+- uid: Meridian.Application.Config.DataSourcesConfig.FailoverRules
+  commentId: P:Meridian.Application.Config.DataSourcesConfig.FailoverRules
+  id: FailoverRules
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: FailoverRules
+  nameWithType: DataSourcesConfig.FailoverRules
+  fullName: Meridian.Application.Config.DataSourcesConfig.FailoverRules
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverRules
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 230
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public FailoverRuleConfig[]? FailoverRules { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.FailoverRuleConfig[]
+    content.vb: Public Property FailoverRules As FailoverRuleConfig()
+  overload: Meridian.Application.Config.DataSourcesConfig.FailoverRules*
+- uid: Meridian.Application.Config.DataSourcesConfig.SymbolMappings
+  commentId: P:Meridian.Application.Config.DataSourcesConfig.SymbolMappings
+  id: SymbolMappings
+  parent: Meridian.Application.Config.DataSourcesConfig
+  langs:
+  - csharp
+  - vb
+  name: SymbolMappings
+  nameWithType: DataSourcesConfig.SymbolMappings
+  fullName: Meridian.Application.Config.DataSourcesConfig.SymbolMappings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolMappings
+    path: ../../src/Meridian.Core/Config/DataSourceConfig.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public SymbolMappingsConfig? SymbolMappings { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.SymbolMappingsConfig
+    content.vb: Public Property SymbolMappings As SymbolMappingsConfig
+  overload: Meridian.Application.Config.DataSourcesConfig.SymbolMappings*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.DataSourcesConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.DataSourcesConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataSourcesConfig>
+  nameWithType: IEquatable<DataSourcesConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.DataSourcesConfig>
+  nameWithType.vb: IEquatable(Of DataSourcesConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.DataSourcesConfig)
+  name.vb: IEquatable(Of DataSourcesConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.DataSourcesConfig
+    name: DataSourcesConfig
+    href: Meridian.Application.Config.DataSourcesConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.DataSourcesConfig
+    name: DataSourcesConfig
+    href: Meridian.Application.Config.DataSourcesConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.DataSourcesConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.#ctor
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig__ctor_Meridian_Application_Config_DataSourceConfig___System_String_System_String_System_Boolean_System_Int32_System_Int32_System_Boolean_Meridian_Application_Config_FailoverRuleConfig___Meridian_Application_Config_SymbolMappingsConfig_
+  name: DataSourcesConfig
+  nameWithType: DataSourcesConfig.DataSourcesConfig
+  fullName: Meridian.Application.Config.DataSourcesConfig.DataSourcesConfig
+  nameWithType.vb: DataSourcesConfig.New
+  fullName.vb: Meridian.Application.Config.DataSourcesConfig.New
+  name.vb: New
+- uid: Meridian.Application.Config.DataSourceConfig[]
+  isExternal: true
+  href: Meridian.Application.Config.DataSourceConfig.html
+  name: DataSourceConfig[]
+  nameWithType: DataSourceConfig[]
+  fullName: Meridian.Application.Config.DataSourceConfig[]
+  nameWithType.vb: DataSourceConfig()
+  fullName.vb: Meridian.Application.Config.DataSourceConfig()
+  name.vb: DataSourceConfig()
+  spec.csharp:
+  - uid: Meridian.Application.Config.DataSourceConfig
+    name: DataSourceConfig
+    href: Meridian.Application.Config.DataSourceConfig.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Application.Config.DataSourceConfig
+    name: DataSourceConfig
+    href: Meridian.Application.Config.DataSourceConfig.html
+  - name: (
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Config.FailoverRuleConfig[]
+  isExternal: true
+  href: Meridian.Application.Config.FailoverRuleConfig.html
+  name: FailoverRuleConfig[]
+  nameWithType: FailoverRuleConfig[]
+  fullName: Meridian.Application.Config.FailoverRuleConfig[]
+  nameWithType.vb: FailoverRuleConfig()
+  fullName.vb: Meridian.Application.Config.FailoverRuleConfig()
+  name.vb: FailoverRuleConfig()
+  spec.csharp:
+  - uid: Meridian.Application.Config.FailoverRuleConfig
+    name: FailoverRuleConfig
+    href: Meridian.Application.Config.FailoverRuleConfig.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Application.Config.FailoverRuleConfig
+    name: FailoverRuleConfig
+    href: Meridian.Application.Config.FailoverRuleConfig.html
+  - name: (
+  - name: )
+- uid: Meridian.Application.Config.SymbolMappingsConfig
+  commentId: T:Meridian.Application.Config.SymbolMappingsConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.SymbolMappingsConfig.html
+  name: SymbolMappingsConfig
+  nameWithType: SymbolMappingsConfig
+  fullName: Meridian.Application.Config.SymbolMappingsConfig
+- uid: Meridian.Application.Config.DataSourcesConfig.Sources*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.Sources
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig_Sources
+  name: Sources
+  nameWithType: DataSourcesConfig.Sources
+  fullName: Meridian.Application.Config.DataSourcesConfig.Sources
+- uid: Meridian.Application.Config.DataSourcesConfig.DefaultRealTimeSourceId*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.DefaultRealTimeSourceId
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig_DefaultRealTimeSourceId
+  name: DefaultRealTimeSourceId
+  nameWithType: DataSourcesConfig.DefaultRealTimeSourceId
+  fullName: Meridian.Application.Config.DataSourcesConfig.DefaultRealTimeSourceId
+- uid: Meridian.Application.Config.DataSourcesConfig.DefaultHistoricalSourceId*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.DefaultHistoricalSourceId
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig_DefaultHistoricalSourceId
+  name: DefaultHistoricalSourceId
+  nameWithType: DataSourcesConfig.DefaultHistoricalSourceId
+  fullName: Meridian.Application.Config.DataSourcesConfig.DefaultHistoricalSourceId
+- uid: Meridian.Application.Config.DataSourcesConfig.EnableFailover*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.EnableFailover
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig_EnableFailover
+  name: EnableFailover
+  nameWithType: DataSourcesConfig.EnableFailover
+  fullName: Meridian.Application.Config.DataSourcesConfig.EnableFailover
+- uid: Meridian.Application.Config.DataSourcesConfig.FailoverTimeoutSeconds*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.FailoverTimeoutSeconds
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig_FailoverTimeoutSeconds
+  name: FailoverTimeoutSeconds
+  nameWithType: DataSourcesConfig.FailoverTimeoutSeconds
+  fullName: Meridian.Application.Config.DataSourcesConfig.FailoverTimeoutSeconds
+- uid: Meridian.Application.Config.DataSourcesConfig.HealthCheckIntervalSeconds*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.HealthCheckIntervalSeconds
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig_HealthCheckIntervalSeconds
+  name: HealthCheckIntervalSeconds
+  nameWithType: DataSourcesConfig.HealthCheckIntervalSeconds
+  fullName: Meridian.Application.Config.DataSourcesConfig.HealthCheckIntervalSeconds
+- uid: Meridian.Application.Config.DataSourcesConfig.AutoRecover*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.AutoRecover
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig_AutoRecover
+  name: AutoRecover
+  nameWithType: DataSourcesConfig.AutoRecover
+  fullName: Meridian.Application.Config.DataSourcesConfig.AutoRecover
+- uid: Meridian.Application.Config.DataSourcesConfig.FailoverRules*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.FailoverRules
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig_FailoverRules
+  name: FailoverRules
+  nameWithType: DataSourcesConfig.FailoverRules
+  fullName: Meridian.Application.Config.DataSourcesConfig.FailoverRules
+- uid: Meridian.Application.Config.DataSourcesConfig.SymbolMappings*
+  commentId: Overload:Meridian.Application.Config.DataSourcesConfig.SymbolMappings
+  href: Meridian.Application.Config.DataSourcesConfig.html#Meridian_Application_Config_DataSourcesConfig_SymbolMappings
+  name: SymbolMappings
+  nameWithType: DataSourcesConfig.SymbolMappings
+  fullName: Meridian.Application.Config.DataSourcesConfig.SymbolMappings

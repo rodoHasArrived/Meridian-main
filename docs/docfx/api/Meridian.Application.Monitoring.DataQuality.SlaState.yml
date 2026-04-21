@@ -1,0 +1,221 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.SlaState
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SlaState
+  id: SlaState
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.SlaState.Healthy
+  - Meridian.Application.Monitoring.DataQuality.SlaState.NoData
+  - Meridian.Application.Monitoring.DataQuality.SlaState.OutsideMarketHours
+  - Meridian.Application.Monitoring.DataQuality.SlaState.Violation
+  - Meridian.Application.Monitoring.DataQuality.SlaState.Warning
+  langs:
+  - csharp
+  - vb
+  name: SlaState
+  nameWithType: SlaState
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SlaState
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: SLA state enumeration.
+  example: []
+  syntax:
+    content: 'public enum SlaState : byte'
+    content.vb: Public Enum SlaState As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.SlaState.Healthy
+  commentId: F:Meridian.Application.Monitoring.DataQuality.SlaState.Healthy
+  id: Healthy
+  parent: Meridian.Application.Monitoring.DataQuality.SlaState
+  langs:
+  - csharp
+  - vb
+  name: Healthy
+  nameWithType: SlaState.Healthy
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaState.Healthy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Data is fresh and within SLA.
+  example: []
+  syntax:
+    content: Healthy = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SlaState
+- uid: Meridian.Application.Monitoring.DataQuality.SlaState.Warning
+  commentId: F:Meridian.Application.Monitoring.DataQuality.SlaState.Warning
+  id: Warning
+  parent: Meridian.Application.Monitoring.DataQuality.SlaState
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: SlaState.Warning
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaState.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Data is approaching staleness threshold.
+  example: []
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SlaState
+- uid: Meridian.Application.Monitoring.DataQuality.SlaState.Violation
+  commentId: F:Meridian.Application.Monitoring.DataQuality.SlaState.Violation
+  id: Violation
+  parent: Meridian.Application.Monitoring.DataQuality.SlaState
+  langs:
+  - csharp
+  - vb
+  name: Violation
+  nameWithType: SlaState.Violation
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaState.Violation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Violation
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Data has exceeded the freshness threshold - SLA violation.
+  example: []
+  syntax:
+    content: Violation = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SlaState
+- uid: Meridian.Application.Monitoring.DataQuality.SlaState.NoData
+  commentId: F:Meridian.Application.Monitoring.DataQuality.SlaState.NoData
+  id: NoData
+  parent: Meridian.Application.Monitoring.DataQuality.SlaState
+  langs:
+  - csharp
+  - vb
+  name: NoData
+  nameWithType: SlaState.NoData
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaState.NoData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NoData
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: No data has been received yet.
+  example: []
+  syntax:
+    content: NoData = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SlaState
+- uid: Meridian.Application.Monitoring.DataQuality.SlaState.OutsideMarketHours
+  commentId: F:Meridian.Application.Monitoring.DataQuality.SlaState.OutsideMarketHours
+  id: OutsideMarketHours
+  parent: Meridian.Application.Monitoring.DataQuality.SlaState
+  langs:
+  - csharp
+  - vb
+  name: OutsideMarketHours
+  nameWithType: SlaState.OutsideMarketHours
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaState.OutsideMarketHours
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutsideMarketHours
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataFreshnessSlaMonitor.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Outside market hours, SLA not applicable.
+  example: []
+  syntax:
+    content: OutsideMarketHours = 4
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SlaState
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.SlaState
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SlaState
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.SlaState.html
+  name: SlaState
+  nameWithType: SlaState
+  fullName: Meridian.Application.Monitoring.DataQuality.SlaState

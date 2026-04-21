@@ -1,0 +1,888 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary
+  commentId: T:Meridian.Contracts.Workstation.RunCashFlowSummary
+  id: RunCashFlowSummary
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.#ctor(System.String,System.DateTimeOffset,System.String,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto},Meridian.Contracts.Workstation.RunCashLadder)
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.AsOf
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.Currency
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.Entries
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.Ladder
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.NetCashFlow
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.RunId
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.TotalEntries
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.TotalInflows
+  - Meridian.Contracts.Workstation.RunCashFlowSummary.TotalOutflows
+  langs:
+  - csharp
+  - vb
+  name: RunCashFlowSummary
+  nameWithType: RunCashFlowSummary
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunCashFlowSummary
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 425
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: >-
+    Cash-flow projection summary for a strategy run.
+
+
+    <p>Includes both the raw historical entries and a time-bucketed cash ladder
+
+    computed by the F# <code>CashLadder.build</code> module.</p>
+  example: []
+  syntax:
+    content: 'public sealed record RunCashFlowSummary : IEquatable<RunCashFlowSummary>'
+    content.vb: Public NotInheritable Class RunCashFlowSummary Implements IEquatable(Of RunCashFlowSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.RunCashFlowSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.#ctor(System.String,System.DateTimeOffset,System.String,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto},Meridian.Contracts.Workstation.RunCashLadder)
+  commentId: M:Meridian.Contracts.Workstation.RunCashFlowSummary.#ctor(System.String,System.DateTimeOffset,System.String,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto},Meridian.Contracts.Workstation.RunCashLadder)
+  id: '#ctor(System.String,System.DateTimeOffset,System.String,System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto},Meridian.Contracts.Workstation.RunCashLadder)'
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: RunCashFlowSummary(string, DateTimeOffset, string, int, decimal, decimal, decimal, IReadOnlyList<CashFlowEntryDto>, RunCashLadder)
+  nameWithType: RunCashFlowSummary.RunCashFlowSummary(string, DateTimeOffset, string, int, decimal, decimal, decimal, IReadOnlyList<CashFlowEntryDto>, RunCashLadder)
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.RunCashFlowSummary(string, System.DateTimeOffset, string, int, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.CashFlowEntryDto>, Meridian.Contracts.Workstation.RunCashLadder)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 425
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: >-
+    Cash-flow projection summary for a strategy run.
+
+
+    <p>Includes both the raw historical entries and a time-bucketed cash ladder
+
+    computed by the F# <code>CashLadder.build</code> module.</p>
+  example: []
+  syntax:
+    content: public RunCashFlowSummary(string RunId, DateTimeOffset AsOf, string Currency, int TotalEntries, decimal TotalInflows, decimal TotalOutflows, decimal NetCashFlow, IReadOnlyList<CashFlowEntryDto> Entries, RunCashLadder Ladder)
+    parameters:
+    - id: RunId
+      type: System.String
+    - id: AsOf
+      type: System.DateTimeOffset
+    - id: Currency
+      type: System.String
+    - id: TotalEntries
+      type: System.Int32
+    - id: TotalInflows
+      type: System.Decimal
+    - id: TotalOutflows
+      type: System.Decimal
+    - id: NetCashFlow
+      type: System.Decimal
+    - id: Entries
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto}
+    - id: Ladder
+      type: Meridian.Contracts.Workstation.RunCashLadder
+    content.vb: Public Sub New(RunId As String, AsOf As DateTimeOffset, Currency As String, TotalEntries As Integer, TotalInflows As Decimal, TotalOutflows As Decimal, NetCashFlow As Decimal, Entries As IReadOnlyList(Of CashFlowEntryDto), Ladder As RunCashLadder)
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.#ctor*
+  nameWithType.vb: RunCashFlowSummary.New(String, DateTimeOffset, String, Integer, Decimal, Decimal, Decimal, IReadOnlyList(Of CashFlowEntryDto), RunCashLadder)
+  fullName.vb: Meridian.Contracts.Workstation.RunCashFlowSummary.New(String, System.DateTimeOffset, String, Integer, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.CashFlowEntryDto), Meridian.Contracts.Workstation.RunCashLadder)
+  name.vb: New(String, DateTimeOffset, String, Integer, Decimal, Decimal, Decimal, IReadOnlyList(Of CashFlowEntryDto), RunCashLadder)
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.RunId
+  commentId: P:Meridian.Contracts.Workstation.RunCashFlowSummary.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: RunCashFlowSummary.RunId
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 426
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.RunId*
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.AsOf
+  commentId: P:Meridian.Contracts.Workstation.RunCashFlowSummary.AsOf
+  id: AsOf
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: RunCashFlowSummary.AsOf
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 427
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.AsOf*
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.Currency
+  commentId: P:Meridian.Contracts.Workstation.RunCashFlowSummary.Currency
+  id: Currency
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: RunCashFlowSummary.Currency
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.Currency*
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalEntries
+  commentId: P:Meridian.Contracts.Workstation.RunCashFlowSummary.TotalEntries
+  id: TotalEntries
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalEntries
+  nameWithType: RunCashFlowSummary.TotalEntries
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalEntries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEntries
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 429
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int TotalEntries { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalEntries As Integer
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalEntries*
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalInflows
+  commentId: P:Meridian.Contracts.Workstation.RunCashFlowSummary.TotalInflows
+  id: TotalInflows
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalInflows
+  nameWithType: RunCashFlowSummary.TotalInflows
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalInflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalInflows
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 430
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalInflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalInflows As Decimal
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalInflows*
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalOutflows
+  commentId: P:Meridian.Contracts.Workstation.RunCashFlowSummary.TotalOutflows
+  id: TotalOutflows
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalOutflows
+  nameWithType: RunCashFlowSummary.TotalOutflows
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalOutflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalOutflows
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 431
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalOutflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalOutflows As Decimal
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalOutflows*
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.NetCashFlow
+  commentId: P:Meridian.Contracts.Workstation.RunCashFlowSummary.NetCashFlow
+  id: NetCashFlow
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: NetCashFlow
+  nameWithType: RunCashFlowSummary.NetCashFlow
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.NetCashFlow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetCashFlow
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 432
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal NetCashFlow { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetCashFlow As Decimal
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.NetCashFlow*
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.Entries
+  commentId: P:Meridian.Contracts.Workstation.RunCashFlowSummary.Entries
+  id: Entries
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: Entries
+  nameWithType: RunCashFlowSummary.Entries
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.Entries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Entries
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 433
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<CashFlowEntryDto> Entries { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto}
+    content.vb: Public Property Entries As IReadOnlyList(Of CashFlowEntryDto)
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.Entries*
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.Ladder
+  commentId: P:Meridian.Contracts.Workstation.RunCashFlowSummary.Ladder
+  id: Ladder
+  parent: Meridian.Contracts.Workstation.RunCashFlowSummary
+  langs:
+  - csharp
+  - vb
+  name: Ladder
+  nameWithType: RunCashFlowSummary.Ladder
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.Ladder
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ladder
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 434
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public RunCashLadder Ladder { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.RunCashLadder
+    content.vb: Public Property Ladder As RunCashLadder
+  overload: Meridian.Contracts.Workstation.RunCashFlowSummary.Ladder*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.RunCashFlowSummary}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.RunCashFlowSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RunCashFlowSummary>
+  nameWithType: IEquatable<RunCashFlowSummary>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.RunCashFlowSummary>
+  nameWithType.vb: IEquatable(Of RunCashFlowSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.RunCashFlowSummary)
+  name.vb: IEquatable(Of RunCashFlowSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.RunCashFlowSummary
+    name: RunCashFlowSummary
+    href: Meridian.Contracts.Workstation.RunCashFlowSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.RunCashFlowSummary
+    name: RunCashFlowSummary
+    href: Meridian.Contracts.Workstation.RunCashFlowSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.#ctor
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary__ctor_System_String_System_DateTimeOffset_System_String_System_Int32_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_CashFlowEntryDto__Meridian_Contracts_Workstation_RunCashLadder_
+  name: RunCashFlowSummary
+  nameWithType: RunCashFlowSummary.RunCashFlowSummary
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.RunCashFlowSummary
+  nameWithType.vb: RunCashFlowSummary.New
+  fullName.vb: Meridian.Contracts.Workstation.RunCashFlowSummary.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<CashFlowEntryDto>
+  nameWithType: IReadOnlyList<CashFlowEntryDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.CashFlowEntryDto>
+  nameWithType.vb: IReadOnlyList(Of CashFlowEntryDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.CashFlowEntryDto)
+  name.vb: IReadOnlyList(Of CashFlowEntryDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.CashFlowEntryDto
+    name: CashFlowEntryDto
+    href: Meridian.Contracts.Workstation.CashFlowEntryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.CashFlowEntryDto
+    name: CashFlowEntryDto
+    href: Meridian.Contracts.Workstation.CashFlowEntryDto.html
+  - name: )
+- uid: Meridian.Contracts.Workstation.RunCashLadder
+  commentId: T:Meridian.Contracts.Workstation.RunCashLadder
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.RunCashLadder.html
+  name: RunCashLadder
+  nameWithType: RunCashLadder
+  fullName: Meridian.Contracts.Workstation.RunCashLadder
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.RunId
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary_RunId
+  name: RunId
+  nameWithType: RunCashFlowSummary.RunId
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.RunId
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.AsOf*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.AsOf
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary_AsOf
+  name: AsOf
+  nameWithType: RunCashFlowSummary.AsOf
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.AsOf
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.Currency*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.Currency
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary_Currency
+  name: Currency
+  nameWithType: RunCashFlowSummary.Currency
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.Currency
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalEntries*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.TotalEntries
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary_TotalEntries
+  name: TotalEntries
+  nameWithType: RunCashFlowSummary.TotalEntries
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalEntries
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalInflows*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.TotalInflows
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary_TotalInflows
+  name: TotalInflows
+  nameWithType: RunCashFlowSummary.TotalInflows
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalInflows
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalOutflows*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.TotalOutflows
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary_TotalOutflows
+  name: TotalOutflows
+  nameWithType: RunCashFlowSummary.TotalOutflows
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.TotalOutflows
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.NetCashFlow*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.NetCashFlow
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary_NetCashFlow
+  name: NetCashFlow
+  nameWithType: RunCashFlowSummary.NetCashFlow
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.NetCashFlow
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.Entries*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.Entries
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary_Entries
+  name: Entries
+  nameWithType: RunCashFlowSummary.Entries
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.Entries
+- uid: Meridian.Contracts.Workstation.RunCashFlowSummary.Ladder*
+  commentId: Overload:Meridian.Contracts.Workstation.RunCashFlowSummary.Ladder
+  href: Meridian.Contracts.Workstation.RunCashFlowSummary.html#Meridian_Contracts_Workstation_RunCashFlowSummary_Ladder
+  name: Ladder
+  nameWithType: RunCashFlowSummary.Ladder
+  fullName: Meridian.Contracts.Workstation.RunCashFlowSummary.Ladder

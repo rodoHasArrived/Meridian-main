@@ -1,0 +1,779 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  id: QualityProviderDiscrepancyResponse
+  parent: Meridian.Contracts.Api.Quality
+  children:
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.#ctor(System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.Double,System.Byte)
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Difference
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.DiscrepancyType
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Field
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider1
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider2
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Severity
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Timestamp
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value1
+  - Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value2
+  langs:
+  - csharp
+  - vb
+  name: QualityProviderDiscrepancyResponse
+  nameWithType: QualityProviderDiscrepancyResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityProviderDiscrepancyResponse
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  summary: Discrepancy row inside the comparison payload.
+  example: []
+  syntax:
+    content: 'public sealed record QualityProviderDiscrepancyResponse : IEquatable<QualityProviderDiscrepancyResponse>'
+    content.vb: Public NotInheritable Class QualityProviderDiscrepancyResponse Implements IEquatable(Of QualityProviderDiscrepancyResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.#ctor(System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.Double,System.Byte)
+  commentId: M:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.#ctor(System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.Double,System.Byte)
+  id: '#ctor(System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.Double,System.Byte)'
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: QualityProviderDiscrepancyResponse(DateTimeOffset, string, string, string, string, string, string, double, byte)
+  nameWithType: QualityProviderDiscrepancyResponse.QualityProviderDiscrepancyResponse(DateTimeOffset, string, string, string, string, string, string, double, byte)
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.QualityProviderDiscrepancyResponse(System.DateTimeOffset, string, string, string, string, string, string, double, byte)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  summary: Discrepancy row inside the comparison payload.
+  example: []
+  syntax:
+    content: public QualityProviderDiscrepancyResponse(DateTimeOffset Timestamp, string DiscrepancyType, string Provider1, string Provider2, string Field, string Value1, string Value2, double Difference, byte Severity)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: DiscrepancyType
+      type: System.String
+    - id: Provider1
+      type: System.String
+    - id: Provider2
+      type: System.String
+    - id: Field
+      type: System.String
+    - id: Value1
+      type: System.String
+    - id: Value2
+      type: System.String
+    - id: Difference
+      type: System.Double
+    - id: Severity
+      type: System.Byte
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, DiscrepancyType As String, Provider1 As String, Provider2 As String, Field As String, Value1 As String, Value2 As String, Difference As Double, Severity As Byte)
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.#ctor*
+  nameWithType.vb: QualityProviderDiscrepancyResponse.New(DateTimeOffset, String, String, String, String, String, String, Double, Byte)
+  fullName.vb: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.New(System.DateTimeOffset, String, String, String, String, String, String, Double, Byte)
+  name.vb: New(DateTimeOffset, String, String, String, String, String, String, Double, Byte)
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Timestamp
+  commentId: P:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: QualityProviderDiscrepancyResponse.Timestamp
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Timestamp*
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.DiscrepancyType
+  commentId: P:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.DiscrepancyType
+  id: DiscrepancyType
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: DiscrepancyType
+  nameWithType: QualityProviderDiscrepancyResponse.DiscrepancyType
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.DiscrepancyType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiscrepancyType
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string DiscrepancyType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DiscrepancyType As String
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.DiscrepancyType*
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider1
+  commentId: P:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider1
+  id: Provider1
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: Provider1
+  nameWithType: QualityProviderDiscrepancyResponse.Provider1
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider1
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider1
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string Provider1 { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider1 As String
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider1*
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider2
+  commentId: P:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider2
+  id: Provider2
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: Provider2
+  nameWithType: QualityProviderDiscrepancyResponse.Provider2
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider2
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider2
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string Provider2 { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider2 As String
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider2*
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Field
+  commentId: P:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Field
+  id: Field
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: Field
+  nameWithType: QualityProviderDiscrepancyResponse.Field
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Field
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Field
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string Field { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Field As String
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Field*
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value1
+  commentId: P:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value1
+  id: Value1
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: Value1
+  nameWithType: QualityProviderDiscrepancyResponse.Value1
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value1
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Value1
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string Value1 { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Value1 As String
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value1*
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value2
+  commentId: P:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value2
+  id: Value2
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: Value2
+  nameWithType: QualityProviderDiscrepancyResponse.Value2
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value2
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Value2
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public string Value2 { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Value2 As String
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value2*
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Difference
+  commentId: P:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Difference
+  id: Difference
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: Difference
+  nameWithType: QualityProviderDiscrepancyResponse.Difference
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Difference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Difference
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public double Difference { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Difference As Double
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Difference*
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Severity
+  commentId: P:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Severity
+  id: Severity
+  parent: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: QualityProviderDiscrepancyResponse.Severity
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public byte Severity { get; init; }
+    parameters: []
+    return:
+      type: System.Byte
+    content.vb: Public Property Severity As Byte
+  overload: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Severity*
+references:
+- uid: Meridian.Contracts.Api.Quality
+  commentId: N:Meridian.Contracts.Api.Quality
+  href: Meridian.html
+  name: Meridian.Contracts.Api.Quality
+  nameWithType: Meridian.Contracts.Api.Quality
+  fullName: Meridian.Contracts.Api.Quality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QualityProviderDiscrepancyResponse>
+  nameWithType: IEquatable<QualityProviderDiscrepancyResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse>
+  nameWithType.vb: IEquatable(Of QualityProviderDiscrepancyResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse)
+  name.vb: IEquatable(Of QualityProviderDiscrepancyResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+    name: QualityProviderDiscrepancyResponse
+    href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse
+    name: QualityProviderDiscrepancyResponse
+    href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.#ctor
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse__ctor_System_DateTimeOffset_System_String_System_String_System_String_System_String_System_String_System_String_System_Double_System_Byte_
+  name: QualityProviderDiscrepancyResponse
+  nameWithType: QualityProviderDiscrepancyResponse.QualityProviderDiscrepancyResponse
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.QualityProviderDiscrepancyResponse
+  nameWithType.vb: QualityProviderDiscrepancyResponse.New
+  fullName.vb: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Timestamp*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Timestamp
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse_Timestamp
+  name: Timestamp
+  nameWithType: QualityProviderDiscrepancyResponse.Timestamp
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Timestamp
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.DiscrepancyType*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.DiscrepancyType
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse_DiscrepancyType
+  name: DiscrepancyType
+  nameWithType: QualityProviderDiscrepancyResponse.DiscrepancyType
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.DiscrepancyType
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider1*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider1
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse_Provider1
+  name: Provider1
+  nameWithType: QualityProviderDiscrepancyResponse.Provider1
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider1
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider2*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider2
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse_Provider2
+  name: Provider2
+  nameWithType: QualityProviderDiscrepancyResponse.Provider2
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Provider2
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Field*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Field
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse_Field
+  name: Field
+  nameWithType: QualityProviderDiscrepancyResponse.Field
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Field
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value1*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value1
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse_Value1
+  name: Value1
+  nameWithType: QualityProviderDiscrepancyResponse.Value1
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value1
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value2*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value2
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse_Value2
+  name: Value2
+  nameWithType: QualityProviderDiscrepancyResponse.Value2
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Value2
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Difference*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Difference
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse_Difference
+  name: Difference
+  nameWithType: QualityProviderDiscrepancyResponse.Difference
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Difference
+- uid: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Severity*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Severity
+  href: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.html#Meridian_Contracts_Api_Quality_QualityProviderDiscrepancyResponse_Severity
+  name: Severity
+  nameWithType: QualityProviderDiscrepancyResponse.Severity
+  fullName: Meridian.Contracts.Api.Quality.QualityProviderDiscrepancyResponse.Severity

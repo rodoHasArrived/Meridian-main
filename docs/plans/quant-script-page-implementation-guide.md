@@ -2,8 +2,8 @@
 
 **Owner:** Desktop / Research Engineering
 **Audience:** Implementers, architects, and product contributors
-**Last Updated:** 2026-03-28
-**Status:** Implemented — QuantScript page, ViewModel, compiler/runner, tests, and sample script delivered
+**Last Updated:** 2026-04-16
+**Status:** Implemented — QuantScript page, ViewModel, compiler/runner, notebook document flow, checkpointed cell execution, tests, and sample script delivered
 **Supersedes / extends:** `docs/plans/quant-script-environment-blueprint.md` (v1 blueprint, 2026-03-18)
 
 ---
@@ -28,7 +28,7 @@ Read the [v1 blueprint](quant-script-environment-blueprint.md) first for the fou
 
 ### 2.1 Core Purpose
 
-QuantScript gives Meridian users a C# scripting surface that is directly connected to locally-collected market data, the backtesting engine, and the statistical analysis layer — all in a single window without leaving the desktop application.
+QuantScript gives Meridian users a C# scripting surface that is directly connected to locally-collected market data, the backtesting engine, and the statistical analysis layer — all in a single window without leaving the desktop application. The current implementation supports both legacy single-file `.csx` scripts and notebook-style documents with multiple cells, replaying only the stale prefix needed to reach the selected cell.
 
 The primary user journeys are:
 

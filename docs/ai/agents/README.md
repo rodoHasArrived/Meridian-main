@@ -1,8 +1,13 @@
 # AI Agent Definitions
 
-This directory indexes AI agent definitions used in the Meridian project. Copilot agent files live in `.github/agents/`; Claude agent files live in `.claude/agents/`.
+This directory indexes AI agent definitions used in the Meridian project. GitHub Copilot agent
+files live in `.github/agents/`; Claude agent files live in `.claude/agents/`. Repo-local Codex
+skills live in `.codex/skills/` and provide the primary current project-scoped workflow surface.
 
-Both sets should stay aligned around a common routing model: use the generated repo-navigation artifacts first, then hand off to specialist agents.
+All three surfaces should stay aligned around the same current product framing: Meridian is a
+desktop-first fund-management and trading workstation with shared `Research`, `Trading`,
+`Data Operations`, and `Governance` workflows on top of strong provider, storage, execution,
+ledger, and MCP foundations.
 
 ---
 
@@ -10,8 +15,8 @@ Both sets should stay aligned around a common routing model: use the generated r
 
 ### Repo Navigation Agent
 
-**Copilot file:** [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian/blob/main/.github/agents/repo-navigation-agent.md)  
-**Claude file:** [`.claude/agents/meridian-navigation.md`](../../../.claude/agents/meridian-navigation.md)
+**Copilot file:** [`.github/agents/repo-navigation-agent.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.github/agents/repo-navigation-agent.md)  
+**Claude file:** [`.claude/agents/meridian-navigation.md`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/agents/meridian-navigation.md)
 
 Routes large-repo work to the right subsystem, docs, entrypoints, and downstream specialist agents before implementation starts. It owns four roles:
 
@@ -25,6 +30,7 @@ Primary inputs:
 - [`docs/ai/generated/repo-navigation.md`](../generated/repo-navigation.md)
 - [`docs/ai/generated/repo-navigation.json`](../generated/repo-navigation.json)
 - [`docs/ai/navigation/README.md`](../navigation/README.md)
+- [`../../../.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md)
 
 ---
 
@@ -43,6 +49,7 @@ Primary inputs:
 | `performance-agent.md` | Optimize measured bottlenecks |
 | `provider-builder-agent.md` | Build and extend providers |
 | `repo-navigation-agent.md` | Orient large-repo tasks before deeper work |
+| `simulated-user-panel-agent.md` | Run manifest-driven owner-minded user panels across design-partner, release-gate, and usability-lab modes |
 | `test-writer-agent.md` | Generate Meridian-style tests |
 
 ---
@@ -55,6 +62,7 @@ Primary inputs:
 | `meridian-cleanup.md` | Cleanup specialist |
 | `meridian-docs.md` | Documentation specialist |
 | `meridian-navigation.md` | Repo navigation and routing specialist |
+| `meridian-user-panel.md` | Manifest-driven user-panel specialist for design-partner, release-gate, and usability-lab reviews |
 
 ---
 
@@ -77,8 +85,9 @@ Use repo navigation first whenever the main problem is â€œwhere should I start?â
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../navigation/README.md`](../navigation/README.md) | Navigation workflow guide |
 | [`../generated/repo-navigation.md`](../generated/repo-navigation.md) | Generated routing digest |
-| [`../skills/README.md`](../skills/README.md) | Portable skill catalog |
+| [`../skills/README.md`](../skills/README.md) | Skill catalog across Codex and portable packages |
+| [`../../../.codex/skills/README.md`](../../../.codex/skills/README.md) | Current repo-local Codex skills |
 
 ---
 
-*Last Updated: 2026-03-31*
+*Last Updated: 2026-04-14*

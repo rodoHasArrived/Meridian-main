@@ -1,0 +1,1083 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ValidatedConfig
+  commentId: T:Meridian.Application.Config.ValidatedConfig
+  id: ValidatedConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ValidatedConfig.AppliedFixes
+  - Meridian.Application.Config.ValidatedConfig.BlockedFixes
+  - Meridian.Application.Config.ValidatedConfig.Config
+  - Meridian.Application.Config.ValidatedConfig.Default
+  - Meridian.Application.Config.ValidatedConfig.EnvironmentName
+  - Meridian.Application.Config.ValidatedConfig.Failed(Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.String,Meridian.Application.Config.ConfigurationOrigin)
+  - Meridian.Application.Config.ValidatedConfig.FromConfig(Meridian.Application.Config.AppConfig,System.Boolean,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String,Meridian.Application.Config.ConfigurationOrigin,System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Application.Config.ValidatedConfig.IsValid
+  - Meridian.Application.Config.ValidatedConfig.Source
+  - Meridian.Application.Config.ValidatedConfig.SourcePath
+  - Meridian.Application.Config.ValidatedConfig.Timestamp
+  - Meridian.Application.Config.ValidatedConfig.ValidationErrors
+  - Meridian.Application.Config.ValidatedConfig.Warnings
+  - Meridian.Application.Config.ValidatedConfig.op_Implicit(Meridian.Application.Config.ValidatedConfig)~Meridian.Application.Config.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: ValidatedConfig
+  nameWithType: ValidatedConfig
+  fullName: Meridian.Application.Config.ValidatedConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidatedConfig
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: >-
+    Represents a validated, normalized configuration that has passed through the full configuration pipeline.
+
+    This is the single output type from all configuration entry points (wizard, auto-config, file load, hot reload).
+  remarks: >-
+    <p>The configuration pipeline ensures that:</p>
+
+    <ul><li>Environment overlays have been applied</li><li>Environment variable overrides have been applied</li><li>Credentials have been resolved from all sources</li><li>Self-healing fixes have been applied (if enabled)</li><li>Validation has been performed</li></ul>
+  example: []
+  syntax:
+    content: 'public sealed record ValidatedConfig : IEquatable<ValidatedConfig>'
+    content.vb: Public NotInheritable Class ValidatedConfig Implements IEquatable(Of ValidatedConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.ValidatedConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.ValidatedConfig.Config
+  commentId: P:Meridian.Application.Config.ValidatedConfig.Config
+  id: Config
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: Config
+  nameWithType: ValidatedConfig.Config
+  fullName: Meridian.Application.Config.ValidatedConfig.Config
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Config
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: The normalized and validated configuration.
+  example: []
+  syntax:
+    content: public required AppConfig Config { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Property Config As AppConfig
+  overload: Meridian.Application.Config.ValidatedConfig.Config*
+- uid: Meridian.Application.Config.ValidatedConfig.IsValid
+  commentId: P:Meridian.Application.Config.ValidatedConfig.IsValid
+  id: IsValid
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: IsValid
+  nameWithType: ValidatedConfig.IsValid
+  fullName: Meridian.Application.Config.ValidatedConfig.IsValid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValid
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Whether the configuration passed validation.
+  example: []
+  syntax:
+    content: public required bool IsValid { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsValid As Boolean
+  overload: Meridian.Application.Config.ValidatedConfig.IsValid*
+- uid: Meridian.Application.Config.ValidatedConfig.SourcePath
+  commentId: P:Meridian.Application.Config.ValidatedConfig.SourcePath
+  id: SourcePath
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: SourcePath
+  nameWithType: ValidatedConfig.SourcePath
+  fullName: Meridian.Application.Config.ValidatedConfig.SourcePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourcePath
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: The source path of the configuration file (if loaded from file).
+  example: []
+  syntax:
+    content: public string? SourcePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourcePath As String
+  overload: Meridian.Application.Config.ValidatedConfig.SourcePath*
+- uid: Meridian.Application.Config.ValidatedConfig.ValidationErrors
+  commentId: P:Meridian.Application.Config.ValidatedConfig.ValidationErrors
+  id: ValidationErrors
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: ValidationErrors
+  nameWithType: ValidatedConfig.ValidationErrors
+  fullName: Meridian.Application.Config.ValidatedConfig.ValidationErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidationErrors
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Validation errors, if any.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> ValidationErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property ValidationErrors As IReadOnlyList(Of String)
+  overload: Meridian.Application.Config.ValidatedConfig.ValidationErrors*
+- uid: Meridian.Application.Config.ValidatedConfig.AppliedFixes
+  commentId: P:Meridian.Application.Config.ValidatedConfig.AppliedFixes
+  id: AppliedFixes
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: AppliedFixes
+  nameWithType: ValidatedConfig.AppliedFixes
+  fullName: Meridian.Application.Config.ValidatedConfig.AppliedFixes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppliedFixes
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Self-healing fixes that were applied to the configuration.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> AppliedFixes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property AppliedFixes As IReadOnlyList(Of String)
+  overload: Meridian.Application.Config.ValidatedConfig.AppliedFixes*
+- uid: Meridian.Application.Config.ValidatedConfig.BlockedFixes
+  commentId: P:Meridian.Application.Config.ValidatedConfig.BlockedFixes
+  id: BlockedFixes
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: BlockedFixes
+  nameWithType: ValidatedConfig.BlockedFixes
+  fullName: Meridian.Application.Config.ValidatedConfig.BlockedFixes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BlockedFixes
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: >-
+    Self-healing fixes that were <b>not</b> applied because production-strictness mode
+
+    refused them (<code>MDC_CONFIG_STRICTNESS=production</code>).
+
+    Each entry is an actionable description of the required manual correction.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> BlockedFixes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property BlockedFixes As IReadOnlyList(Of String)
+  overload: Meridian.Application.Config.ValidatedConfig.BlockedFixes*
+- uid: Meridian.Application.Config.ValidatedConfig.Warnings
+  commentId: P:Meridian.Application.Config.ValidatedConfig.Warnings
+  id: Warnings
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: Warnings
+  nameWithType: ValidatedConfig.Warnings
+  fullName: Meridian.Application.Config.ValidatedConfig.Warnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warnings
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Warnings that should be surfaced to the user but don't prevent operation.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> Warnings { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Warnings As IReadOnlyList(Of String)
+  overload: Meridian.Application.Config.ValidatedConfig.Warnings*
+- uid: Meridian.Application.Config.ValidatedConfig.EnvironmentName
+  commentId: P:Meridian.Application.Config.ValidatedConfig.EnvironmentName
+  id: EnvironmentName
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentName
+  nameWithType: ValidatedConfig.EnvironmentName
+  fullName: Meridian.Application.Config.ValidatedConfig.EnvironmentName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentName
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: The environment name used for overlays (e.g., "Production", "Development").
+  example: []
+  syntax:
+    content: public string? EnvironmentName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EnvironmentName As String
+  overload: Meridian.Application.Config.ValidatedConfig.EnvironmentName*
+- uid: Meridian.Application.Config.ValidatedConfig.Timestamp
+  commentId: P:Meridian.Application.Config.ValidatedConfig.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ValidatedConfig.Timestamp
+  fullName: Meridian.Application.Config.ValidatedConfig.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: When the configuration was loaded/validated.
+  example: []
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Config.ValidatedConfig.Timestamp*
+- uid: Meridian.Application.Config.ValidatedConfig.Source
+  commentId: P:Meridian.Application.Config.ValidatedConfig.Source
+  id: Source
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: ValidatedConfig.Source
+  fullName: Meridian.Application.Config.ValidatedConfig.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: How the configuration was sourced.
+  example: []
+  syntax:
+    content: public ConfigurationOrigin Source { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.ConfigurationOrigin
+    content.vb: Public Property Source As ConfigurationOrigin
+  overload: Meridian.Application.Config.ValidatedConfig.Source*
+- uid: Meridian.Application.Config.ValidatedConfig.FromConfig(Meridian.Application.Config.AppConfig,System.Boolean,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String,Meridian.Application.Config.ConfigurationOrigin,System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Application.Config.ValidatedConfig.FromConfig(Meridian.Application.Config.AppConfig,System.Boolean,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String,Meridian.Application.Config.ConfigurationOrigin,System.Collections.Generic.IReadOnlyList{System.String})
+  id: FromConfig(Meridian.Application.Config.AppConfig,System.Boolean,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String},System.String,Meridian.Application.Config.ConfigurationOrigin,System.Collections.Generic.IReadOnlyList{System.String})
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: FromConfig(AppConfig, bool, string?, IReadOnlyList<string>?, IReadOnlyList<string>?, IReadOnlyList<string>?, string?, ConfigurationOrigin, IReadOnlyList<string>?)
+  nameWithType: ValidatedConfig.FromConfig(AppConfig, bool, string?, IReadOnlyList<string>?, IReadOnlyList<string>?, IReadOnlyList<string>?, string?, ConfigurationOrigin, IReadOnlyList<string>?)
+  fullName: Meridian.Application.Config.ValidatedConfig.FromConfig(Meridian.Application.Config.AppConfig, bool, string?, System.Collections.Generic.IReadOnlyList<string>?, System.Collections.Generic.IReadOnlyList<string>?, System.Collections.Generic.IReadOnlyList<string>?, string?, Meridian.Application.Config.ConfigurationOrigin, System.Collections.Generic.IReadOnlyList<string>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromConfig
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Creates a validated config from a raw AppConfig after running it through validation.
+  example: []
+  syntax:
+    content: public static ValidatedConfig FromConfig(AppConfig config, bool isValid, string? sourcePath = null, IReadOnlyList<string>? validationErrors = null, IReadOnlyList<string>? appliedFixes = null, IReadOnlyList<string>? warnings = null, string? environmentName = null, ConfigurationOrigin source = ConfigurationOrigin.File, IReadOnlyList<string>? blockedFixes = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: isValid
+      type: System.Boolean
+    - id: sourcePath
+      type: System.String
+    - id: validationErrors
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: appliedFixes
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: warnings
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: environmentName
+      type: System.String
+    - id: source
+      type: Meridian.Application.Config.ConfigurationOrigin
+    - id: blockedFixes
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    return:
+      type: Meridian.Application.Config.ValidatedConfig
+    content.vb: Public Shared Function FromConfig(config As AppConfig, isValid As Boolean, sourcePath As String = Nothing, validationErrors As IReadOnlyList(Of String) = Nothing, appliedFixes As IReadOnlyList(Of String) = Nothing, warnings As IReadOnlyList(Of String) = Nothing, environmentName As String = Nothing, source As ConfigurationOrigin = ConfigurationOrigin.File, blockedFixes As IReadOnlyList(Of String) = Nothing) As ValidatedConfig
+  overload: Meridian.Application.Config.ValidatedConfig.FromConfig*
+  nameWithType.vb: ValidatedConfig.FromConfig(AppConfig, Boolean, String, IReadOnlyList(Of String), IReadOnlyList(Of String), IReadOnlyList(Of String), String, ConfigurationOrigin, IReadOnlyList(Of String))
+  fullName.vb: Meridian.Application.Config.ValidatedConfig.FromConfig(Meridian.Application.Config.AppConfig, Boolean, String, System.Collections.Generic.IReadOnlyList(Of String), System.Collections.Generic.IReadOnlyList(Of String), System.Collections.Generic.IReadOnlyList(Of String), String, Meridian.Application.Config.ConfigurationOrigin, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: FromConfig(AppConfig, Boolean, String, IReadOnlyList(Of String), IReadOnlyList(Of String), IReadOnlyList(Of String), String, ConfigurationOrigin, IReadOnlyList(Of String))
+- uid: Meridian.Application.Config.ValidatedConfig.Failed(Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.String,Meridian.Application.Config.ConfigurationOrigin)
+  commentId: M:Meridian.Application.Config.ValidatedConfig.Failed(Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.String,Meridian.Application.Config.ConfigurationOrigin)
+  id: Failed(Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.String,Meridian.Application.Config.ConfigurationOrigin)
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: Failed(AppConfig?, IReadOnlyList<string>, string?, ConfigurationOrigin)
+  nameWithType: ValidatedConfig.Failed(AppConfig?, IReadOnlyList<string>, string?, ConfigurationOrigin)
+  fullName: Meridian.Application.Config.ValidatedConfig.Failed(Meridian.Application.Config.AppConfig?, System.Collections.Generic.IReadOnlyList<string>, string?, Meridian.Application.Config.ConfigurationOrigin)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Creates a ValidatedConfig representing a failure state.
+  example: []
+  syntax:
+    content: public static ValidatedConfig Failed(AppConfig? config, IReadOnlyList<string> errors, string? sourcePath = null, ConfigurationOrigin source = ConfigurationOrigin.File)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: errors
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: sourcePath
+      type: System.String
+    - id: source
+      type: Meridian.Application.Config.ConfigurationOrigin
+    return:
+      type: Meridian.Application.Config.ValidatedConfig
+    content.vb: Public Shared Function Failed(config As AppConfig, errors As IReadOnlyList(Of String), sourcePath As String = Nothing, source As ConfigurationOrigin = ConfigurationOrigin.File) As ValidatedConfig
+  overload: Meridian.Application.Config.ValidatedConfig.Failed*
+  nameWithType.vb: ValidatedConfig.Failed(AppConfig, IReadOnlyList(Of String), String, ConfigurationOrigin)
+  fullName.vb: Meridian.Application.Config.ValidatedConfig.Failed(Meridian.Application.Config.AppConfig, System.Collections.Generic.IReadOnlyList(Of String), String, Meridian.Application.Config.ConfigurationOrigin)
+  name.vb: Failed(AppConfig, IReadOnlyList(Of String), String, ConfigurationOrigin)
+- uid: Meridian.Application.Config.ValidatedConfig.Default
+  commentId: M:Meridian.Application.Config.ValidatedConfig.Default
+  id: Default
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: Default()
+  nameWithType: ValidatedConfig.Default()
+  fullName: Meridian.Application.Config.ValidatedConfig.Default()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Creates a ValidatedConfig with default/empty configuration.
+  example: []
+  syntax:
+    content: public static ValidatedConfig Default()
+    return:
+      type: Meridian.Application.Config.ValidatedConfig
+    content.vb: Public Shared Function [Default]() As ValidatedConfig
+  overload: Meridian.Application.Config.ValidatedConfig.Default*
+- uid: Meridian.Application.Config.ValidatedConfig.op_Implicit(Meridian.Application.Config.ValidatedConfig)~Meridian.Application.Config.AppConfig
+  commentId: M:Meridian.Application.Config.ValidatedConfig.op_Implicit(Meridian.Application.Config.ValidatedConfig)~Meridian.Application.Config.AppConfig
+  id: op_Implicit(Meridian.Application.Config.ValidatedConfig)~Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config.ValidatedConfig
+  langs:
+  - csharp
+  - vb
+  name: implicit operator AppConfig(ValidatedConfig)
+  nameWithType: ValidatedConfig.implicit operator AppConfig(ValidatedConfig)
+  fullName: Meridian.Application.Config.ValidatedConfig.implicit operator Meridian.Application.Config.AppConfig(Meridian.Application.Config.ValidatedConfig)
+  type: Operator
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ValidatedConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: op_Implicit
+    path: ../../src/Meridian.Core/Config/ValidatedConfig.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Implicit conversion to AppConfig for backwards compatibility.
+  example: []
+  syntax:
+    content: public static implicit operator AppConfig(ValidatedConfig validated)
+    parameters:
+    - id: validated
+      type: Meridian.Application.Config.ValidatedConfig
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Shared Widening Operator CType(validated As ValidatedConfig) As AppConfig
+  overload: Meridian.Application.Config.ValidatedConfig.op_Implicit*
+  nameWithType.vb: ValidatedConfig.CType(ValidatedConfig)
+  fullName.vb: Meridian.Application.Config.ValidatedConfig.CType(Meridian.Application.Config.ValidatedConfig)
+  name.vb: CType(ValidatedConfig)
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.ValidatedConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.ValidatedConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ValidatedConfig>
+  nameWithType: IEquatable<ValidatedConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.ValidatedConfig>
+  nameWithType.vb: IEquatable(Of ValidatedConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.ValidatedConfig)
+  name.vb: IEquatable(Of ValidatedConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.ValidatedConfig
+    name: ValidatedConfig
+    href: Meridian.Application.Config.ValidatedConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ValidatedConfig
+    name: ValidatedConfig
+    href: Meridian.Application.Config.ValidatedConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.ValidatedConfig.Config*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.Config
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_Config
+  name: Config
+  nameWithType: ValidatedConfig.Config
+  fullName: Meridian.Application.Config.ValidatedConfig.Config
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Application.Config.ValidatedConfig.IsValid*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.IsValid
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_IsValid
+  name: IsValid
+  nameWithType: ValidatedConfig.IsValid
+  fullName: Meridian.Application.Config.ValidatedConfig.IsValid
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Config.ValidatedConfig.SourcePath*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.SourcePath
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_SourcePath
+  name: SourcePath
+  nameWithType: ValidatedConfig.SourcePath
+  fullName: Meridian.Application.Config.ValidatedConfig.SourcePath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Config.ValidatedConfig.ValidationErrors*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.ValidationErrors
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_ValidationErrors
+  name: ValidationErrors
+  nameWithType: ValidatedConfig.ValidationErrors
+  fullName: Meridian.Application.Config.ValidatedConfig.ValidationErrors
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Config.ValidatedConfig.AppliedFixes*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.AppliedFixes
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_AppliedFixes
+  name: AppliedFixes
+  nameWithType: ValidatedConfig.AppliedFixes
+  fullName: Meridian.Application.Config.ValidatedConfig.AppliedFixes
+- uid: Meridian.Application.Config.ValidatedConfig.BlockedFixes*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.BlockedFixes
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_BlockedFixes
+  name: BlockedFixes
+  nameWithType: ValidatedConfig.BlockedFixes
+  fullName: Meridian.Application.Config.ValidatedConfig.BlockedFixes
+- uid: Meridian.Application.Config.ValidatedConfig.Warnings*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.Warnings
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_Warnings
+  name: Warnings
+  nameWithType: ValidatedConfig.Warnings
+  fullName: Meridian.Application.Config.ValidatedConfig.Warnings
+- uid: Meridian.Application.Config.ValidatedConfig.EnvironmentName*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.EnvironmentName
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_EnvironmentName
+  name: EnvironmentName
+  nameWithType: ValidatedConfig.EnvironmentName
+  fullName: Meridian.Application.Config.ValidatedConfig.EnvironmentName
+- uid: Meridian.Application.Config.ValidatedConfig.Timestamp*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.Timestamp
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_Timestamp
+  name: Timestamp
+  nameWithType: ValidatedConfig.Timestamp
+  fullName: Meridian.Application.Config.ValidatedConfig.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Config.ValidatedConfig.Source*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.Source
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_Source
+  name: Source
+  nameWithType: ValidatedConfig.Source
+  fullName: Meridian.Application.Config.ValidatedConfig.Source
+- uid: Meridian.Application.Config.ConfigurationOrigin
+  commentId: T:Meridian.Application.Config.ConfigurationOrigin
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationOrigin.html
+  name: ConfigurationOrigin
+  nameWithType: ConfigurationOrigin
+  fullName: Meridian.Application.Config.ConfigurationOrigin
+- uid: Meridian.Application.Config.ValidatedConfig.FromConfig*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.FromConfig
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_FromConfig_Meridian_Application_Config_AppConfig_System_Boolean_System_String_System_Collections_Generic_IReadOnlyList_System_String__System_Collections_Generic_IReadOnlyList_System_String__System_Collections_Generic_IReadOnlyList_System_String__System_String_Meridian_Application_Config_ConfigurationOrigin_System_Collections_Generic_IReadOnlyList_System_String__
+  name: FromConfig
+  nameWithType: ValidatedConfig.FromConfig
+  fullName: Meridian.Application.Config.ValidatedConfig.FromConfig
+- uid: Meridian.Application.Config.ValidatedConfig
+  commentId: T:Meridian.Application.Config.ValidatedConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ValidatedConfig.html
+  name: ValidatedConfig
+  nameWithType: ValidatedConfig
+  fullName: Meridian.Application.Config.ValidatedConfig
+- uid: Meridian.Application.Config.ValidatedConfig.Failed*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.Failed
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_Failed_Meridian_Application_Config_AppConfig_System_Collections_Generic_IReadOnlyList_System_String__System_String_Meridian_Application_Config_ConfigurationOrigin_
+  name: Failed
+  nameWithType: ValidatedConfig.Failed
+  fullName: Meridian.Application.Config.ValidatedConfig.Failed
+- uid: Meridian.Application.Config.ValidatedConfig.Default*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.Default
+  href: Meridian.Application.Config.ValidatedConfig.html#Meridian_Application_Config_ValidatedConfig_Default
+  name: Default
+  nameWithType: ValidatedConfig.Default
+  fullName: Meridian.Application.Config.ValidatedConfig.Default
+- uid: Meridian.Application.Config.ValidatedConfig.op_Implicit*
+  commentId: Overload:Meridian.Application.Config.ValidatedConfig.op_Implicit
+  name: implicit operator
+  nameWithType: ValidatedConfig.implicit operator
+  fullName: Meridian.Application.Config.ValidatedConfig.implicit operator
+  nameWithType.vb: ValidatedConfig.CType
+  fullName.vb: Meridian.Application.Config.ValidatedConfig.CType
+  name.vb: CType
+  spec.csharp:
+  - name: implicit
+  - name: " "
+  - name: operator

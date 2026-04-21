@@ -1,0 +1,1190 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry
+  commentId: T:Meridian.Contracts.Manifest.ManifestFileEntry
+  id: ManifestFileEntry
+  parent: Meridian.Contracts.Manifest
+  children:
+  - Meridian.Contracts.Manifest.ManifestFileEntry.ChecksumSha256
+  - Meridian.Contracts.Manifest.ManifestFileEntry.CompressedSizeBytes
+  - Meridian.Contracts.Manifest.ManifestFileEntry.CompressionType
+  - Meridian.Contracts.Manifest.ManifestFileEntry.Date
+  - Meridian.Contracts.Manifest.ManifestFileEntry.EventCount
+  - Meridian.Contracts.Manifest.ManifestFileEntry.EventType
+  - Meridian.Contracts.Manifest.ManifestFileEntry.FirstTimestamp
+  - Meridian.Contracts.Manifest.ManifestFileEntry.IsCompressed
+  - Meridian.Contracts.Manifest.ManifestFileEntry.LastTimestamp
+  - Meridian.Contracts.Manifest.ManifestFileEntry.LastVerifiedAt
+  - Meridian.Contracts.Manifest.ManifestFileEntry.Path
+  - Meridian.Contracts.Manifest.ManifestFileEntry.RelativePath
+  - Meridian.Contracts.Manifest.ManifestFileEntry.SchemaVersion
+  - Meridian.Contracts.Manifest.ManifestFileEntry.SizeBytes
+  - Meridian.Contracts.Manifest.ManifestFileEntry.Symbol
+  - Meridian.Contracts.Manifest.ManifestFileEntry.VerificationStatus
+  langs:
+  - csharp
+  - vb
+  name: ManifestFileEntry
+  nameWithType: ManifestFileEntry
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManifestFileEntry
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Individual file entry in a manifest.
+  example: []
+  syntax:
+    content: public sealed class ManifestFileEntry
+    content.vb: Public NotInheritable Class ManifestFileEntry
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.Path
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.Path
+  id: Path
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: Path
+  nameWithType: ManifestFileEntry.Path
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.Path
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Path
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the absolute file path.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("path")]
+
+      public string Path { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("path")>
+
+      Public Property Path As String
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.Path*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: path
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.RelativePath
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.RelativePath
+  id: RelativePath
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: RelativePath
+  nameWithType: ManifestFileEntry.RelativePath
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.RelativePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RelativePath
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the relative file path within the archive.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("relativePath")]
+
+      public string RelativePath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("relativePath")>
+
+      Public Property RelativePath As String
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.RelativePath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: relativePath
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.Symbol
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: ManifestFileEntry.Symbol
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the ticker symbol for this file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbol")]
+
+      public string? Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("symbol")>
+
+      Public Property Symbol As String
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.Symbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbol
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.EventType
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.EventType
+  id: EventType
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: ManifestFileEntry.EventType
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the event type contained in this file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("eventType")]
+
+      public string? EventType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("eventType")>
+
+      Public Property EventType As String
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.EventType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventType
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.Date
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.Date
+  id: Date
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: Date
+  nameWithType: ManifestFileEntry.Date
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.Date
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Date
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the date of the data in this file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("date")]
+
+      public DateTime? Date { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("date")>
+
+      Public Property [Date] As Date?
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.Date*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: date
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.ChecksumSha256
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.ChecksumSha256
+  id: ChecksumSha256
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: ChecksumSha256
+  nameWithType: ManifestFileEntry.ChecksumSha256
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.ChecksumSha256
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChecksumSha256
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the SHA-256 checksum for file integrity.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("checksumSha256")]
+
+      public string ChecksumSha256 { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("checksumSha256")>
+
+      Public Property ChecksumSha256 As String
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.ChecksumSha256*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: checksumSha256
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.SizeBytes
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.SizeBytes
+  id: SizeBytes
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: SizeBytes
+  nameWithType: ManifestFileEntry.SizeBytes
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.SizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SizeBytes
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the uncompressed file size in bytes.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sizeBytes")]
+
+      public long SizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("sizeBytes")>
+
+      Public Property SizeBytes As Long
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.SizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sizeBytes
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.CompressedSizeBytes
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.CompressedSizeBytes
+  id: CompressedSizeBytes
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: CompressedSizeBytes
+  nameWithType: ManifestFileEntry.CompressedSizeBytes
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.CompressedSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressedSizeBytes
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the compressed file size in bytes.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("compressedSizeBytes")]
+
+      public long? CompressedSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: >-
+      <JsonPropertyName("compressedSizeBytes")>
+
+      Public Property CompressedSizeBytes As Long?
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.CompressedSizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: compressedSizeBytes
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.EventCount
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.EventCount
+  id: EventCount
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: EventCount
+  nameWithType: ManifestFileEntry.EventCount
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.EventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCount
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the number of events in the file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("eventCount")]
+
+      public long EventCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("eventCount")>
+
+      Public Property EventCount As Long
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.EventCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventCount
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.FirstTimestamp
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.FirstTimestamp
+  id: FirstTimestamp
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: FirstTimestamp
+  nameWithType: ManifestFileEntry.FirstTimestamp
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.FirstTimestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstTimestamp
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the timestamp of the first event in the file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("firstTimestamp")]
+
+      public DateTime? FirstTimestamp { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("firstTimestamp")>
+
+      Public Property FirstTimestamp As Date?
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.FirstTimestamp*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: firstTimestamp
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.LastTimestamp
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.LastTimestamp
+  id: LastTimestamp
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: LastTimestamp
+  nameWithType: ManifestFileEntry.LastTimestamp
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.LastTimestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastTimestamp
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the timestamp of the last event in the file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastTimestamp")]
+
+      public DateTime? LastTimestamp { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("lastTimestamp")>
+
+      Public Property LastTimestamp As Date?
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.LastTimestamp*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastTimestamp
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.SchemaVersion
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.SchemaVersion
+  id: SchemaVersion
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: SchemaVersion
+  nameWithType: ManifestFileEntry.SchemaVersion
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.SchemaVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaVersion
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the schema version used for the data.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("schemaVersion")]
+
+      public string? SchemaVersion { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("schemaVersion")>
+
+      Public Property SchemaVersion As String
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.SchemaVersion*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: schemaVersion
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.IsCompressed
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.IsCompressed
+  id: IsCompressed
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: IsCompressed
+  nameWithType: ManifestFileEntry.IsCompressed
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.IsCompressed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsCompressed
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets a value indicating whether the file is compressed.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("isCompressed")]
+
+      public bool IsCompressed { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isCompressed")>
+
+      Public Property IsCompressed As Boolean
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.IsCompressed*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isCompressed
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.CompressionType
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.CompressionType
+  id: CompressionType
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: CompressionType
+  nameWithType: ManifestFileEntry.CompressionType
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.CompressionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionType
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the compression algorithm used (e.g., "gzip", "lz4").
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("compressionType")]
+
+      public string? CompressionType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("compressionType")>
+
+      Public Property CompressionType As String
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.CompressionType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: compressionType
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.VerificationStatus
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.VerificationStatus
+  id: VerificationStatus
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: VerificationStatus
+  nameWithType: ManifestFileEntry.VerificationStatus
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.VerificationStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerificationStatus
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the verification status of the file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("verificationStatus")]
+
+      public string VerificationStatus { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("verificationStatus")>
+
+      Public Property VerificationStatus As String
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.VerificationStatus*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: verificationStatus
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.LastVerifiedAt
+  commentId: P:Meridian.Contracts.Manifest.ManifestFileEntry.LastVerifiedAt
+  id: LastVerifiedAt
+  parent: Meridian.Contracts.Manifest.ManifestFileEntry
+  langs:
+  - csharp
+  - vb
+  name: LastVerifiedAt
+  nameWithType: ManifestFileEntry.LastVerifiedAt
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.LastVerifiedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastVerifiedAt
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the timestamp of the last verification.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("lastVerifiedAt")]
+
+      public DateTime? LastVerifiedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("lastVerifiedAt")>
+
+      Public Property LastVerifiedAt As Date?
+  overload: Meridian.Contracts.Manifest.ManifestFileEntry.LastVerifiedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastVerifiedAt
+references:
+- uid: Meridian.Contracts.Manifest
+  commentId: N:Meridian.Contracts.Manifest
+  href: Meridian.html
+  name: Meridian.Contracts.Manifest
+  nameWithType: Meridian.Contracts.Manifest
+  fullName: Meridian.Contracts.Manifest
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.Path*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.Path
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_Path
+  name: Path
+  nameWithType: ManifestFileEntry.Path
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.Path
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.RelativePath*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.RelativePath
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_RelativePath
+  name: RelativePath
+  nameWithType: ManifestFileEntry.RelativePath
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.RelativePath
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.Symbol*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.Symbol
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_Symbol
+  name: Symbol
+  nameWithType: ManifestFileEntry.Symbol
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.Symbol
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.EventType*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.EventType
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_EventType
+  name: EventType
+  nameWithType: ManifestFileEntry.EventType
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.EventType
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.Date*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.Date
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_Date
+  name: Date
+  nameWithType: ManifestFileEntry.Date
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.Date
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.ChecksumSha256*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.ChecksumSha256
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_ChecksumSha256
+  name: ChecksumSha256
+  nameWithType: ManifestFileEntry.ChecksumSha256
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.ChecksumSha256
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.SizeBytes*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.SizeBytes
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_SizeBytes
+  name: SizeBytes
+  nameWithType: ManifestFileEntry.SizeBytes
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.SizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.CompressedSizeBytes*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.CompressedSizeBytes
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_CompressedSizeBytes
+  name: CompressedSizeBytes
+  nameWithType: ManifestFileEntry.CompressedSizeBytes
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.CompressedSizeBytes
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.EventCount*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.EventCount
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_EventCount
+  name: EventCount
+  nameWithType: ManifestFileEntry.EventCount
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.EventCount
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.FirstTimestamp*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.FirstTimestamp
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_FirstTimestamp
+  name: FirstTimestamp
+  nameWithType: ManifestFileEntry.FirstTimestamp
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.FirstTimestamp
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.LastTimestamp*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.LastTimestamp
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_LastTimestamp
+  name: LastTimestamp
+  nameWithType: ManifestFileEntry.LastTimestamp
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.LastTimestamp
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.SchemaVersion*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.SchemaVersion
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_SchemaVersion
+  name: SchemaVersion
+  nameWithType: ManifestFileEntry.SchemaVersion
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.SchemaVersion
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.IsCompressed*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.IsCompressed
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_IsCompressed
+  name: IsCompressed
+  nameWithType: ManifestFileEntry.IsCompressed
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.IsCompressed
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.CompressionType*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.CompressionType
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_CompressionType
+  name: CompressionType
+  nameWithType: ManifestFileEntry.CompressionType
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.CompressionType
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.VerificationStatus*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.VerificationStatus
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_VerificationStatus
+  name: VerificationStatus
+  nameWithType: ManifestFileEntry.VerificationStatus
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.VerificationStatus
+- uid: Meridian.Contracts.Manifest.ManifestFileEntry.LastVerifiedAt*
+  commentId: Overload:Meridian.Contracts.Manifest.ManifestFileEntry.LastVerifiedAt
+  href: Meridian.Contracts.Manifest.ManifestFileEntry.html#Meridian_Contracts_Manifest_ManifestFileEntry_LastVerifiedAt
+  name: LastVerifiedAt
+  nameWithType: ManifestFileEntry.LastVerifiedAt
+  fullName: Meridian.Contracts.Manifest.ManifestFileEntry.LastVerifiedAt

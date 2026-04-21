@@ -1,0 +1,2351 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase
+  commentId: T:Meridian.Ui.Services.Services.ConnectionServiceBase
+  id: ConnectionServiceBase
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.ConfigureServiceUrl(System.String,System.Int32)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectionHealthUpdated
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectionStateChanged
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.CurrentProvider
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose(System.Boolean)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.DisposePlatformResources
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.GetReconnectDelayMs(System.Int32)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.GetSettings
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.IsAutoReconnectPaused
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.IsMonitoring
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.LastLatencyMs
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.LatencyUpdated
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.LogOperation(System.String,System.ValueTuple{System.String,System.String}[])
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.LogWarning(System.String,System.ValueTuple{System.String,System.String}[])
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.OnMonitoringTimerFired(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.OnReconnectTimerFired(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.OnSettingsUpdated(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.PauseAutoReconnect
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.PerformHealthCheckCoreAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectAttempting
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectFailed
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectSucceeded
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.ResumeAutoReconnect
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.ServiceUrl
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoring
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoringTimer(System.Int32)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.StartReconnectTimer(System.Int32)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.State
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.StateChanged
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.StopAutoReconnect
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoring
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoringTimer
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.TotalReconnects
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.UpdateSettings(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  - Meridian.Ui.Services.Services.ConnectionServiceBase.Uptime
+  langs:
+  - csharp
+  - vb
+  name: ConnectionServiceBase
+  nameWithType: ConnectionServiceBase
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionServiceBase
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Abstract base class for connection management shared across desktop applications.
+
+    Provides shared state machine, monitoring orchestration, auto-reconnect logic, and event raising.
+
+    Platform-specific HTTP calls and timer implementations are delegated to derived classes.
+
+    Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
+  example: []
+  syntax:
+    content: 'public abstract class ConnectionServiceBase : IDisposable'
+    content.vb: Public MustInherit Class ConnectionServiceBase Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ServiceUrl
+  commentId: P:Meridian.Ui.Services.Services.ConnectionServiceBase.ServiceUrl
+  id: ServiceUrl
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ServiceUrl
+  nameWithType: ConnectionServiceBase.ServiceUrl
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ServiceUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceUrl
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the current service URL being used for connections.
+  example: []
+  syntax:
+    content: public string ServiceUrl { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ServiceUrl As String
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.ServiceUrl*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.State
+  commentId: P:Meridian.Ui.Services.Services.ConnectionServiceBase.State
+  id: State
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: ConnectionServiceBase.State
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the current connection state.
+  example: []
+  syntax:
+    content: public ConnectionState State { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionState
+    content.vb: Public ReadOnly Property State As ConnectionState
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.State*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.CurrentProvider
+  commentId: P:Meridian.Ui.Services.Services.ConnectionServiceBase.CurrentProvider
+  id: CurrentProvider
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CurrentProvider
+  nameWithType: ConnectionServiceBase.CurrentProvider
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.CurrentProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentProvider
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the current provider name.
+  example: []
+  syntax:
+    content: public string CurrentProvider { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property CurrentProvider As String
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.CurrentProvider*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.Uptime
+  commentId: P:Meridian.Ui.Services.Services.ConnectionServiceBase.Uptime
+  id: Uptime
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: Uptime
+  nameWithType: ConnectionServiceBase.Uptime
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.Uptime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Uptime
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the connection uptime.
+  example: []
+  syntax:
+    content: public TimeSpan? Uptime { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public ReadOnly Property Uptime As TimeSpan?
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.Uptime*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.LastLatencyMs
+  commentId: P:Meridian.Ui.Services.Services.ConnectionServiceBase.LastLatencyMs
+  id: LastLatencyMs
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: LastLatencyMs
+  nameWithType: ConnectionServiceBase.LastLatencyMs
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.LastLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastLatencyMs
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the last measured latency in milliseconds.
+  example: []
+  syntax:
+    content: public double LastLatencyMs { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property LastLatencyMs As Double
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.LastLatencyMs*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.TotalReconnects
+  commentId: P:Meridian.Ui.Services.Services.ConnectionServiceBase.TotalReconnects
+  id: TotalReconnects
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: TotalReconnects
+  nameWithType: ConnectionServiceBase.TotalReconnects
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.TotalReconnects
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalReconnects
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the total number of reconnections.
+  example: []
+  syntax:
+    content: public int TotalReconnects { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalReconnects As Integer
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.TotalReconnects*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.IsMonitoring
+  commentId: P:Meridian.Ui.Services.Services.ConnectionServiceBase.IsMonitoring
+  id: IsMonitoring
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: IsMonitoring
+  nameWithType: ConnectionServiceBase.IsMonitoring
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.IsMonitoring
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsMonitoring
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets whether monitoring is currently active.
+  example: []
+  syntax:
+    content: public bool IsMonitoring { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsMonitoring As Boolean
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.IsMonitoring*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.IsAutoReconnectPaused
+  commentId: P:Meridian.Ui.Services.Services.ConnectionServiceBase.IsAutoReconnectPaused
+  id: IsAutoReconnectPaused
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: IsAutoReconnectPaused
+  nameWithType: ConnectionServiceBase.IsAutoReconnectPaused
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.IsAutoReconnectPaused
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAutoReconnectPaused
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets whether auto-reconnect is currently paused.
+  example: []
+  syntax:
+    content: public bool IsAutoReconnectPaused { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsAutoReconnectPaused As Boolean
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.IsAutoReconnectPaused*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StateChanged
+  commentId: E:Meridian.Ui.Services.Services.ConnectionServiceBase.StateChanged
+  id: StateChanged
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StateChanged
+  nameWithType: ConnectionServiceBase.StateChanged
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StateChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StateChanged
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event raised when connection state changes.
+  example: []
+  syntax:
+    content: public event EventHandler<ConnectionStateChangedEventArgs>? StateChanged
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs}
+    content.vb: Public Event StateChanged As EventHandler(Of ConnectionStateChangedEventArgs)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectionStateChanged
+  commentId: E:Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectionStateChanged
+  id: ConnectionStateChanged
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ConnectionStateChanged
+  nameWithType: ConnectionServiceBase.ConnectionStateChanged
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectionStateChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionStateChanged
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event raised when connection state changes (ViewModel binding).
+  example: []
+  syntax:
+    content: public event EventHandler<ConnectionStateEventArgs>? ConnectionStateChanged
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.Contracts.ConnectionStateEventArgs}
+    content.vb: Public Event ConnectionStateChanged As EventHandler(Of ConnectionStateEventArgs)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.LatencyUpdated
+  commentId: E:Meridian.Ui.Services.Services.ConnectionServiceBase.LatencyUpdated
+  id: LatencyUpdated
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: LatencyUpdated
+  nameWithType: ConnectionServiceBase.LatencyUpdated
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.LatencyUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyUpdated
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event raised when latency measurement is updated.
+  example: []
+  syntax:
+    content: public event EventHandler<int>? LatencyUpdated
+    return:
+      type: System.EventHandler{System.Int32}
+    content.vb: Public Event LatencyUpdated As EventHandler(Of Integer)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectAttempting
+  commentId: E:Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectAttempting
+  id: ReconnectAttempting
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ReconnectAttempting
+  nameWithType: ConnectionServiceBase.ReconnectAttempting
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectAttempting
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectAttempting
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event raised when a reconnection attempt is starting.
+  example: []
+  syntax:
+    content: public event EventHandler<ReconnectEventArgs>? ReconnectAttempting
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.Contracts.ReconnectEventArgs}
+    content.vb: Public Event ReconnectAttempting As EventHandler(Of ReconnectEventArgs)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectSucceeded
+  commentId: E:Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectSucceeded
+  id: ReconnectSucceeded
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ReconnectSucceeded
+  nameWithType: ConnectionServiceBase.ReconnectSucceeded
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectSucceeded
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectSucceeded
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event raised when reconnection succeeds.
+  example: []
+  syntax:
+    content: public event EventHandler? ReconnectSucceeded
+    return:
+      type: System.EventHandler
+    content.vb: Public Event ReconnectSucceeded As EventHandler
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectFailed
+  commentId: E:Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectFailed
+  id: ReconnectFailed
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ReconnectFailed
+  nameWithType: ConnectionServiceBase.ReconnectFailed
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ReconnectFailed
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectFailed
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event raised when a reconnection attempt fails.
+  example: []
+  syntax:
+    content: public event EventHandler<ReconnectFailedEventArgs>? ReconnectFailed
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.Contracts.ReconnectFailedEventArgs}
+    content.vb: Public Event ReconnectFailed As EventHandler(Of ReconnectFailedEventArgs)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectionHealthUpdated
+  commentId: E:Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectionHealthUpdated
+  id: ConnectionHealthUpdated
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ConnectionHealthUpdated
+  nameWithType: ConnectionServiceBase.ConnectionHealthUpdated
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectionHealthUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionHealthUpdated
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event raised when connection health is updated.
+  example: []
+  syntax:
+    content: public event EventHandler<ConnectionHealthEventArgs>? ConnectionHealthUpdated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.Contracts.ConnectionHealthEventArgs}
+    content.vb: Public Event ConnectionHealthUpdated As EventHandler(Of ConnectionHealthEventArgs)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.UpdateSettings(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.UpdateSettings(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  id: UpdateSettings(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: UpdateSettings(ConnectionSettings)
+  nameWithType: ConnectionServiceBase.UpdateSettings(ConnectionSettings)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.UpdateSettings(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateSettings
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Updates connection settings and reconfigures the underlying client.
+  example: []
+  syntax:
+    content: public void UpdateSettings(ConnectionSettings settings)
+    parameters:
+    - id: settings
+      type: Meridian.Ui.Services.Contracts.ConnectionSettings
+    content.vb: Public Sub UpdateSettings(settings As ConnectionSettings)
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.UpdateSettings*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ConfigureServiceUrl(System.String,System.Int32)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.ConfigureServiceUrl(System.String,System.Int32)
+  id: ConfigureServiceUrl(System.String,System.Int32)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ConfigureServiceUrl(string, int)
+  nameWithType: ConnectionServiceBase.ConfigureServiceUrl(string, int)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ConfigureServiceUrl(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureServiceUrl
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Configures the service URL directly.
+  example: []
+  syntax:
+    content: public void ConfigureServiceUrl(string serviceUrl, int timeoutSeconds = 30)
+    parameters:
+    - id: serviceUrl
+      type: System.String
+    - id: timeoutSeconds
+      type: System.Int32
+    content.vb: Public Sub ConfigureServiceUrl(serviceUrl As String, timeoutSeconds As Integer = 30)
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.ConfigureServiceUrl*
+  nameWithType.vb: ConnectionServiceBase.ConfigureServiceUrl(String, Integer)
+  fullName.vb: Meridian.Ui.Services.Services.ConnectionServiceBase.ConfigureServiceUrl(String, Integer)
+  name.vb: ConfigureServiceUrl(String, Integer)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.GetSettings
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.GetSettings
+  id: GetSettings
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetSettings()
+  nameWithType: ConnectionServiceBase.GetSettings()
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.GetSettings()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSettings
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets current connection settings.
+  example: []
+  syntax:
+    content: public ConnectionSettings GetSettings()
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionSettings
+    content.vb: Public Function GetSettings() As ConnectionSettings
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.GetSettings*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoring
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoring
+  id: StartMonitoring
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StartMonitoring()
+  nameWithType: ConnectionServiceBase.StartMonitoring()
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoring()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartMonitoring
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Starts the connection monitoring with periodic health checks.
+  example: []
+  syntax:
+    content: public void StartMonitoring()
+    content.vb: Public Sub StartMonitoring()
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoring*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoring
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoring
+  id: StopMonitoring
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StopMonitoring()
+  nameWithType: ConnectionServiceBase.StopMonitoring()
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoring()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopMonitoring
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Stops connection monitoring.
+  example: []
+  syntax:
+    content: public void StopMonitoring()
+    content.vb: Public Sub StopMonitoring()
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoring*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectAsync(System.String,System.Threading.CancellationToken)
+  id: ConnectAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(string, CancellationToken)
+  nameWithType: ConnectionServiceBase.ConnectAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Initiates a connection to the provider.
+
+    Performs a health check first; returns false when the provider is unreachable or
+
+    the request is cancelled before the check completes.
+  example: []
+  syntax:
+    content: public Task<bool> ConnectAsync(string provider, CancellationToken ct = default)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function ConnectAsync(provider As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectAsync*
+  nameWithType.vb: ConnectionServiceBase.ConnectAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectAsync(String, System.Threading.CancellationToken)
+  name.vb: ConnectAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.DisconnectAsync(System.Threading.CancellationToken)
+  id: DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: ConnectionServiceBase.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.DisconnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Disconnects from the provider.
+  example: []
+  syntax:
+    content: public Task DisconnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DisconnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.DisconnectAsync*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.PauseAutoReconnect
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.PauseAutoReconnect
+  id: PauseAutoReconnect
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: PauseAutoReconnect()
+  nameWithType: ConnectionServiceBase.PauseAutoReconnect()
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.PauseAutoReconnect()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PauseAutoReconnect
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Pauses auto-reconnection temporarily.
+  example: []
+  syntax:
+    content: public void PauseAutoReconnect()
+    content.vb: Public Sub PauseAutoReconnect()
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.PauseAutoReconnect*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ResumeAutoReconnect
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.ResumeAutoReconnect
+  id: ResumeAutoReconnect
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ResumeAutoReconnect()
+  nameWithType: ConnectionServiceBase.ResumeAutoReconnect()
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ResumeAutoReconnect()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResumeAutoReconnect
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Resumes auto-reconnection.
+  example: []
+  syntax:
+    content: public void ResumeAutoReconnect()
+    content.vb: Public Sub ResumeAutoReconnect()
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.ResumeAutoReconnect*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.OnMonitoringTimerFired(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.OnMonitoringTimerFired(System.Threading.CancellationToken)
+  id: OnMonitoringTimerFired(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: OnMonitoringTimerFired(CancellationToken)
+  nameWithType: ConnectionServiceBase.OnMonitoringTimerFired(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.OnMonitoringTimerFired(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnMonitoringTimerFired
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Called by derived classes when the monitoring timer fires.
+  example: []
+  syntax:
+    content: protected Task OnMonitoringTimerFired(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Function OnMonitoringTimerFired(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.OnMonitoringTimerFired*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.OnReconnectTimerFired(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.OnReconnectTimerFired(System.Threading.CancellationToken)
+  id: OnReconnectTimerFired(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: OnReconnectTimerFired(CancellationToken)
+  nameWithType: ConnectionServiceBase.OnReconnectTimerFired(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.OnReconnectTimerFired(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnReconnectTimerFired
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Called by derived classes when the reconnect timer fires.
+  example: []
+  syntax:
+    content: protected Task OnReconnectTimerFired(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Function OnReconnectTimerFired(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.OnReconnectTimerFired*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.PerformHealthCheckCoreAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.PerformHealthCheckCoreAsync(System.Threading.CancellationToken)
+  id: PerformHealthCheckCoreAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: PerformHealthCheckCoreAsync(CancellationToken)
+  nameWithType: ConnectionServiceBase.PerformHealthCheckCoreAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.PerformHealthCheckCoreAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PerformHealthCheckCoreAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 488
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    When overridden, performs the actual health check HTTP call.
+
+    Returns true if the health check is successful.
+  example: []
+  syntax:
+    content: protected abstract Task<bool> PerformHealthCheckCoreAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Protected MustOverride Function PerformHealthCheckCoreAsync(ct As CancellationToken) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.PerformHealthCheckCoreAsync*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoringTimer(System.Int32)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoringTimer(System.Int32)
+  id: StartMonitoringTimer(System.Int32)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StartMonitoringTimer(int)
+  nameWithType: ConnectionServiceBase.StartMonitoringTimer(int)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoringTimer(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartMonitoringTimer
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 491
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, starts the platform-specific monitoring timer.
+  example: []
+  syntax:
+    content: protected abstract void StartMonitoringTimer(int intervalMs)
+    parameters:
+    - id: intervalMs
+      type: System.Int32
+    content.vb: Protected MustOverride Sub StartMonitoringTimer(intervalMs As Integer)
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoringTimer*
+  nameWithType.vb: ConnectionServiceBase.StartMonitoringTimer(Integer)
+  fullName.vb: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoringTimer(Integer)
+  name.vb: StartMonitoringTimer(Integer)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoringTimer
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoringTimer
+  id: StopMonitoringTimer
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StopMonitoringTimer()
+  nameWithType: ConnectionServiceBase.StopMonitoringTimer()
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoringTimer()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopMonitoringTimer
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 494
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, stops the platform-specific monitoring timer.
+  example: []
+  syntax:
+    content: protected abstract void StopMonitoringTimer()
+    content.vb: Protected MustOverride Sub StopMonitoringTimer()
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoringTimer*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StartReconnectTimer(System.Int32)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.StartReconnectTimer(System.Int32)
+  id: StartReconnectTimer(System.Int32)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StartReconnectTimer(int)
+  nameWithType: ConnectionServiceBase.StartReconnectTimer(int)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StartReconnectTimer(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartReconnectTimer
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 497
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, starts the platform-specific reconnect timer.
+  example: []
+  syntax:
+    content: protected abstract void StartReconnectTimer(int delayMs)
+    parameters:
+    - id: delayMs
+      type: System.Int32
+    content.vb: Protected MustOverride Sub StartReconnectTimer(delayMs As Integer)
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.StartReconnectTimer*
+  nameWithType.vb: ConnectionServiceBase.StartReconnectTimer(Integer)
+  fullName.vb: Meridian.Ui.Services.Services.ConnectionServiceBase.StartReconnectTimer(Integer)
+  name.vb: StartReconnectTimer(Integer)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StopAutoReconnect
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.StopAutoReconnect
+  id: StopAutoReconnect
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: StopAutoReconnect()
+  nameWithType: ConnectionServiceBase.StopAutoReconnect()
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StopAutoReconnect()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopAutoReconnect
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 500
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, stops the platform-specific reconnect timer.
+  example: []
+  syntax:
+    content: protected abstract void StopAutoReconnect()
+    content.vb: Protected MustOverride Sub StopAutoReconnect()
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.StopAutoReconnect*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.OnSettingsUpdated(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.OnSettingsUpdated(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  id: OnSettingsUpdated(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: OnSettingsUpdated(ConnectionSettings)
+  nameWithType: ConnectionServiceBase.OnSettingsUpdated(ConnectionSettings)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.OnSettingsUpdated(Meridian.Ui.Services.Contracts.ConnectionSettings)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnSettingsUpdated
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 503
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, handles settings update (e.g., reconfigure HttpClient timeout).
+  example: []
+  syntax:
+    content: protected abstract void OnSettingsUpdated(ConnectionSettings settings)
+    parameters:
+    - id: settings
+      type: Meridian.Ui.Services.Contracts.ConnectionSettings
+    content.vb: Protected MustOverride Sub OnSettingsUpdated(settings As ConnectionSettings)
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.OnSettingsUpdated*
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.GetReconnectDelayMs(System.Int32)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.GetReconnectDelayMs(System.Int32)
+  id: GetReconnectDelayMs(System.Int32)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetReconnectDelayMs(int)
+  nameWithType: ConnectionServiceBase.GetReconnectDelayMs(int)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.GetReconnectDelayMs(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetReconnectDelayMs
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 509
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Gets the reconnect delay for the given attempt number.
+
+    Default implementation uses a fixed backoff schedule.
+  example: []
+  syntax:
+    content: protected virtual int GetReconnectDelayMs(int attemptIndex)
+    parameters:
+    - id: attemptIndex
+      type: System.Int32
+    return:
+      type: System.Int32
+    content.vb: Protected Overridable Function GetReconnectDelayMs(attemptIndex As Integer) As Integer
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.GetReconnectDelayMs*
+  nameWithType.vb: ConnectionServiceBase.GetReconnectDelayMs(Integer)
+  fullName.vb: Meridian.Ui.Services.Services.ConnectionServiceBase.GetReconnectDelayMs(Integer)
+  name.vb: GetReconnectDelayMs(Integer)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.LogOperation(System.String,System.ValueTuple{System.String,System.String}[])
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.LogOperation(System.String,System.ValueTuple{System.String,System.String}[])
+  id: LogOperation(System.String,System.ValueTuple{System.String,System.String}[])
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: LogOperation(string, params (string Key, string Value)[])
+  nameWithType: ConnectionServiceBase.LogOperation(string, params (string Key, string Value)[])
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.LogOperation(string, params (string Key, string Value)[])
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogOperation
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Logs an informational operation message.
+  example: []
+  syntax:
+    content: protected abstract void LogOperation(string message, params (string Key, string Value)[] properties)
+    parameters:
+    - id: message
+      type: System.String
+    - id: properties
+      type: System.ValueTuple{System.String,System.String}[]
+    content.vb: Protected MustOverride Sub LogOperation(message As String, ParamArray properties As (Key As String, Value As String)())
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.LogOperation*
+  nameWithType.vb: ConnectionServiceBase.LogOperation(String, ParamArray (Key As String, Value As String)())
+  fullName.vb: Meridian.Ui.Services.Services.ConnectionServiceBase.LogOperation(String, ParamArray (Key As String, Value As String)())
+  name.vb: LogOperation(String, ParamArray (Key As String, Value As String)())
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.LogWarning(System.String,System.ValueTuple{System.String,System.String}[])
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.LogWarning(System.String,System.ValueTuple{System.String,System.String}[])
+  id: LogWarning(System.String,System.ValueTuple{System.String,System.String}[])
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: LogWarning(string, params (string Key, string Value)[])
+  nameWithType: ConnectionServiceBase.LogWarning(string, params (string Key, string Value)[])
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.LogWarning(string, params (string Key, string Value)[])
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogWarning
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Logs a warning message.
+  example: []
+  syntax:
+    content: protected abstract void LogWarning(string message, params (string Key, string Value)[] properties)
+    parameters:
+    - id: message
+      type: System.String
+    - id: properties
+      type: System.ValueTuple{System.String,System.String}[]
+    content.vb: Protected MustOverride Sub LogWarning(message As String, ParamArray properties As (Key As String, Value As String)())
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.LogWarning*
+  nameWithType.vb: ConnectionServiceBase.LogWarning(String, ParamArray (Key As String, Value As String)())
+  fullName.vb: Meridian.Ui.Services.Services.ConnectionServiceBase.LogWarning(String, ParamArray (Key As String, Value As String)())
+  name.vb: LogWarning(String, ParamArray (Key As String, Value As String)())
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose
+  id: Dispose
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ConnectionServiceBase.Dispose()
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 523
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose(System.Boolean)
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose(System.Boolean)
+  id: Dispose(System.Boolean)
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: Dispose(bool)
+  nameWithType: ConnectionServiceBase.Dispose(bool)
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose(bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 532
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Releases managed and unmanaged resources.
+  example: []
+  syntax:
+    content: protected virtual void Dispose(bool disposing)
+    parameters:
+    - id: disposing
+      type: System.Boolean
+    content.vb: Protected Overridable Sub Dispose(disposing As Boolean)
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose*
+  nameWithType.vb: ConnectionServiceBase.Dispose(Boolean)
+  fullName.vb: Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose(Boolean)
+  name.vb: Dispose(Boolean)
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.DisposePlatformResources
+  commentId: M:Meridian.Ui.Services.Services.ConnectionServiceBase.DisposePlatformResources
+  id: DisposePlatformResources
+  parent: Meridian.Ui.Services.Services.ConnectionServiceBase
+  langs:
+  - csharp
+  - vb
+  name: DisposePlatformResources()
+  nameWithType: ConnectionServiceBase.DisposePlatformResources()
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.DisposePlatformResources()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposePlatformResources
+    path: ../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs
+    startLine: 548
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, disposes platform-specific resources (HttpClient, timers).
+  example: []
+  syntax:
+    content: protected abstract void DisposePlatformResources()
+    content.vb: Protected MustOverride Sub DisposePlatformResources()
+  overload: Meridian.Ui.Services.Services.ConnectionServiceBase.DisposePlatformResources*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ServiceUrl*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.ServiceUrl
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_ServiceUrl
+  name: ServiceUrl
+  nameWithType: ConnectionServiceBase.ServiceUrl
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ServiceUrl
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.State*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.State
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_State
+  name: State
+  nameWithType: ConnectionServiceBase.State
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.State
+- uid: Meridian.Ui.Services.Contracts.ConnectionState
+  commentId: T:Meridian.Ui.Services.Contracts.ConnectionState
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.ConnectionState.html
+  name: ConnectionState
+  nameWithType: ConnectionState
+  fullName: Meridian.Ui.Services.Contracts.ConnectionState
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.CurrentProvider*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.CurrentProvider
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_CurrentProvider
+  name: CurrentProvider
+  nameWithType: ConnectionServiceBase.CurrentProvider
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.CurrentProvider
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.Uptime*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.Uptime
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_Uptime
+  name: Uptime
+  nameWithType: ConnectionServiceBase.Uptime
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.Uptime
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.LastLatencyMs*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.LastLatencyMs
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_LastLatencyMs
+  name: LastLatencyMs
+  nameWithType: ConnectionServiceBase.LastLatencyMs
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.LastLatencyMs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.TotalReconnects*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.TotalReconnects
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_TotalReconnects
+  name: TotalReconnects
+  nameWithType: ConnectionServiceBase.TotalReconnects
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.TotalReconnects
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.IsMonitoring*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.IsMonitoring
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_IsMonitoring
+  name: IsMonitoring
+  nameWithType: ConnectionServiceBase.IsMonitoring
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.IsMonitoring
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.IsAutoReconnectPaused*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.IsAutoReconnectPaused
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_IsAutoReconnectPaused
+  name: IsAutoReconnectPaused
+  nameWithType: ConnectionServiceBase.IsAutoReconnectPaused
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.IsAutoReconnectPaused
+- uid: System.EventHandler{Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ConnectionStateChangedEventArgs>
+  nameWithType: EventHandler<ConnectionStateChangedEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs>
+  nameWithType.vb: EventHandler(Of ConnectionStateChangedEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs)
+  name.vb: EventHandler(Of ConnectionStateChangedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs
+    name: ConnectionStateChangedEventArgs
+    href: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs
+    name: ConnectionStateChangedEventArgs
+    href: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.Contracts.ConnectionStateEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.Contracts.ConnectionStateEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ConnectionStateEventArgs>
+  nameWithType: EventHandler<ConnectionStateEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.Contracts.ConnectionStateEventArgs>
+  nameWithType.vb: EventHandler(Of ConnectionStateEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.Contracts.ConnectionStateEventArgs)
+  name.vb: EventHandler(Of ConnectionStateEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.Contracts.ConnectionStateEventArgs
+    name: ConnectionStateEventArgs
+    href: Meridian.Ui.Services.Contracts.ConnectionStateEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Contracts.ConnectionStateEventArgs
+    name: ConnectionStateEventArgs
+    href: Meridian.Ui.Services.Contracts.ConnectionStateEventArgs.html
+  - name: )
+- uid: System.EventHandler{System.Int32}
+  commentId: T:System.EventHandler{System.Int32}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<int>
+  nameWithType: EventHandler<int>
+  fullName: System.EventHandler<int>
+  nameWithType.vb: EventHandler(Of Integer)
+  fullName.vb: System.EventHandler(Of Integer)
+  name.vb: EventHandler(Of Integer)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.Contracts.ReconnectEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.Contracts.ReconnectEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ReconnectEventArgs>
+  nameWithType: EventHandler<ReconnectEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.Contracts.ReconnectEventArgs>
+  nameWithType.vb: EventHandler(Of ReconnectEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.Contracts.ReconnectEventArgs)
+  name.vb: EventHandler(Of ReconnectEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.Contracts.ReconnectEventArgs
+    name: ReconnectEventArgs
+    href: Meridian.Ui.Services.Contracts.ReconnectEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Contracts.ReconnectEventArgs
+    name: ReconnectEventArgs
+    href: Meridian.Ui.Services.Contracts.ReconnectEventArgs.html
+  - name: )
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler
+- uid: System.EventHandler{Meridian.Ui.Services.Contracts.ReconnectFailedEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.Contracts.ReconnectFailedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ReconnectFailedEventArgs>
+  nameWithType: EventHandler<ReconnectFailedEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.Contracts.ReconnectFailedEventArgs>
+  nameWithType.vb: EventHandler(Of ReconnectFailedEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.Contracts.ReconnectFailedEventArgs)
+  name.vb: EventHandler(Of ReconnectFailedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.Contracts.ReconnectFailedEventArgs
+    name: ReconnectFailedEventArgs
+    href: Meridian.Ui.Services.Contracts.ReconnectFailedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Contracts.ReconnectFailedEventArgs
+    name: ReconnectFailedEventArgs
+    href: Meridian.Ui.Services.Contracts.ReconnectFailedEventArgs.html
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.Contracts.ConnectionHealthEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.Contracts.ConnectionHealthEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ConnectionHealthEventArgs>
+  nameWithType: EventHandler<ConnectionHealthEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.Contracts.ConnectionHealthEventArgs>
+  nameWithType.vb: EventHandler(Of ConnectionHealthEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.Contracts.ConnectionHealthEventArgs)
+  name.vb: EventHandler(Of ConnectionHealthEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.Contracts.ConnectionHealthEventArgs
+    name: ConnectionHealthEventArgs
+    href: Meridian.Ui.Services.Contracts.ConnectionHealthEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Contracts.ConnectionHealthEventArgs
+    name: ConnectionHealthEventArgs
+    href: Meridian.Ui.Services.Contracts.ConnectionHealthEventArgs.html
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.UpdateSettings*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.UpdateSettings
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_UpdateSettings_Meridian_Ui_Services_Contracts_ConnectionSettings_
+  name: UpdateSettings
+  nameWithType: ConnectionServiceBase.UpdateSettings
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.UpdateSettings
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings
+  commentId: T:Meridian.Ui.Services.Contracts.ConnectionSettings
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.ConnectionSettings.html
+  name: ConnectionSettings
+  nameWithType: ConnectionSettings
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ConfigureServiceUrl*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.ConfigureServiceUrl
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_ConfigureServiceUrl_System_String_System_Int32_
+  name: ConfigureServiceUrl
+  nameWithType: ConnectionServiceBase.ConfigureServiceUrl
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ConfigureServiceUrl
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.GetSettings*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.GetSettings
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_GetSettings
+  name: GetSettings
+  nameWithType: ConnectionServiceBase.GetSettings
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.GetSettings
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoring*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoring
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_StartMonitoring
+  name: StartMonitoring
+  nameWithType: ConnectionServiceBase.StartMonitoring
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoring
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoring*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoring
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_StopMonitoring
+  name: StopMonitoring
+  nameWithType: ConnectionServiceBase.StopMonitoring
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoring
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectAsync
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_ConnectAsync_System_String_System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: ConnectionServiceBase.ConnectAsync
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ConnectAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.DisconnectAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.DisconnectAsync
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync
+  nameWithType: ConnectionServiceBase.DisconnectAsync
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.DisconnectAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.PauseAutoReconnect*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.PauseAutoReconnect
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_PauseAutoReconnect
+  name: PauseAutoReconnect
+  nameWithType: ConnectionServiceBase.PauseAutoReconnect
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.PauseAutoReconnect
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.ResumeAutoReconnect*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.ResumeAutoReconnect
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_ResumeAutoReconnect
+  name: ResumeAutoReconnect
+  nameWithType: ConnectionServiceBase.ResumeAutoReconnect
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.ResumeAutoReconnect
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.OnMonitoringTimerFired*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.OnMonitoringTimerFired
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_OnMonitoringTimerFired_System_Threading_CancellationToken_
+  name: OnMonitoringTimerFired
+  nameWithType: ConnectionServiceBase.OnMonitoringTimerFired
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.OnMonitoringTimerFired
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.OnReconnectTimerFired*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.OnReconnectTimerFired
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_OnReconnectTimerFired_System_Threading_CancellationToken_
+  name: OnReconnectTimerFired
+  nameWithType: ConnectionServiceBase.OnReconnectTimerFired
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.OnReconnectTimerFired
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.PerformHealthCheckCoreAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.PerformHealthCheckCoreAsync
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_PerformHealthCheckCoreAsync_System_Threading_CancellationToken_
+  name: PerformHealthCheckCoreAsync
+  nameWithType: ConnectionServiceBase.PerformHealthCheckCoreAsync
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.PerformHealthCheckCoreAsync
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoringTimer*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoringTimer
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_StartMonitoringTimer_System_Int32_
+  name: StartMonitoringTimer
+  nameWithType: ConnectionServiceBase.StartMonitoringTimer
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StartMonitoringTimer
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoringTimer*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoringTimer
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_StopMonitoringTimer
+  name: StopMonitoringTimer
+  nameWithType: ConnectionServiceBase.StopMonitoringTimer
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StopMonitoringTimer
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StartReconnectTimer*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.StartReconnectTimer
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_StartReconnectTimer_System_Int32_
+  name: StartReconnectTimer
+  nameWithType: ConnectionServiceBase.StartReconnectTimer
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StartReconnectTimer
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.StopAutoReconnect*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.StopAutoReconnect
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_StopAutoReconnect
+  name: StopAutoReconnect
+  nameWithType: ConnectionServiceBase.StopAutoReconnect
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.StopAutoReconnect
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.OnSettingsUpdated*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.OnSettingsUpdated
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_OnSettingsUpdated_Meridian_Ui_Services_Contracts_ConnectionSettings_
+  name: OnSettingsUpdated
+  nameWithType: ConnectionServiceBase.OnSettingsUpdated
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.OnSettingsUpdated
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.GetReconnectDelayMs*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.GetReconnectDelayMs
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_GetReconnectDelayMs_System_Int32_
+  name: GetReconnectDelayMs
+  nameWithType: ConnectionServiceBase.GetReconnectDelayMs
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.GetReconnectDelayMs
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.LogOperation*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.LogOperation
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_LogOperation_System_String_System_ValueTuple_System_String_System_String____
+  name: LogOperation
+  nameWithType: ConnectionServiceBase.LogOperation
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.LogOperation
+- uid: System.ValueTuple{System.String,System.String}[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: (string key, string value)[]
+  nameWithType: (string key, string value)[]
+  fullName: (string key, string value)[]
+  nameWithType.vb: (key As String, value As String)()
+  fullName.vb: (key As String, value As String)()
+  name.vb: (key As String, value As String)()
+  spec.csharp:
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.key
+    name: key
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.key
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.value
+    name: value
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.value
+  - name: )
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.key
+    name: key
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.key
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.value
+    name: value
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.value
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.LogWarning*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.LogWarning
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_LogWarning_System_String_System_ValueTuple_System_String_System_String____
+  name: LogWarning
+  nameWithType: ConnectionServiceBase.LogWarning
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.LogWarning
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_Dispose
+  name: Dispose
+  nameWithType: ConnectionServiceBase.Dispose
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConnectionServiceBase.DisposePlatformResources*
+  commentId: Overload:Meridian.Ui.Services.Services.ConnectionServiceBase.DisposePlatformResources
+  href: Meridian.Ui.Services.Services.ConnectionServiceBase.html#Meridian_Ui_Services_Services_ConnectionServiceBase_DisposePlatformResources
+  name: DisposePlatformResources
+  nameWithType: ConnectionServiceBase.DisposePlatformResources
+  fullName: Meridian.Ui.Services.Services.ConnectionServiceBase.DisposePlatformResources

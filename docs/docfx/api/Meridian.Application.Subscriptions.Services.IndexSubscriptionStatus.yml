@@ -1,0 +1,669 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  commentId: T:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  id: IndexSubscriptionStatus
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.#ctor(System.String,System.String,System.Int32,System.Int32,System.String[],System.String[])
+  - Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexId
+  - Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexName
+  - Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.NotSubscribedSymbols
+  - Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedCount
+  - Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedSymbols
+  - Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.TotalComponents
+  langs:
+  - csharp
+  - vb
+  name: IndexSubscriptionStatus
+  nameWithType: IndexSubscriptionStatus
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexSubscriptionStatus
+    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    startLine: 412
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Status of index subscription coverage.
+  example: []
+  syntax:
+    content: 'public sealed record IndexSubscriptionStatus : IEquatable<IndexSubscriptionStatus>'
+    content.vb: Public NotInheritable Class IndexSubscriptionStatus Implements IEquatable(Of IndexSubscriptionStatus)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.#ctor(System.String,System.String,System.Int32,System.Int32,System.String[],System.String[])
+  commentId: M:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.#ctor(System.String,System.String,System.Int32,System.Int32,System.String[],System.String[])
+  id: '#ctor(System.String,System.String,System.Int32,System.Int32,System.String[],System.String[])'
+  parent: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  langs:
+  - csharp
+  - vb
+  name: IndexSubscriptionStatus(string, string?, int, int, string[], string[])
+  nameWithType: IndexSubscriptionStatus.IndexSubscriptionStatus(string, string?, int, int, string[], string[])
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexSubscriptionStatus(string, string?, int, int, string[], string[])
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    startLine: 412
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Status of index subscription coverage.
+  example: []
+  syntax:
+    content: public IndexSubscriptionStatus(string IndexId, string? IndexName, int TotalComponents, int SubscribedCount, string[] SubscribedSymbols, string[] NotSubscribedSymbols)
+    parameters:
+    - id: IndexId
+      type: System.String
+    - id: IndexName
+      type: System.String
+    - id: TotalComponents
+      type: System.Int32
+    - id: SubscribedCount
+      type: System.Int32
+    - id: SubscribedSymbols
+      type: System.String[]
+    - id: NotSubscribedSymbols
+      type: System.String[]
+    content.vb: Public Sub New(IndexId As String, IndexName As String, TotalComponents As Integer, SubscribedCount As Integer, SubscribedSymbols As String(), NotSubscribedSymbols As String())
+  overload: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.#ctor*
+  nameWithType.vb: IndexSubscriptionStatus.New(String, String, Integer, Integer, String(), String())
+  fullName.vb: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.New(String, String, Integer, Integer, String(), String())
+  name.vb: New(String, String, Integer, Integer, String(), String())
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexId
+  commentId: P:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexId
+  id: IndexId
+  parent: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  langs:
+  - csharp
+  - vb
+  name: IndexId
+  nameWithType: IndexSubscriptionStatus.IndexId
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexId
+    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    startLine: 413
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public string IndexId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IndexId As String
+  overload: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexId*
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexName
+  commentId: P:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexName
+  id: IndexName
+  parent: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  langs:
+  - csharp
+  - vb
+  name: IndexName
+  nameWithType: IndexSubscriptionStatus.IndexName
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexName
+    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    startLine: 414
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public string? IndexName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IndexName As String
+  overload: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexName*
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.TotalComponents
+  commentId: P:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.TotalComponents
+  id: TotalComponents
+  parent: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  langs:
+  - csharp
+  - vb
+  name: TotalComponents
+  nameWithType: IndexSubscriptionStatus.TotalComponents
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.TotalComponents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalComponents
+    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    startLine: 415
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public int TotalComponents { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalComponents As Integer
+  overload: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.TotalComponents*
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedCount
+  commentId: P:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedCount
+  id: SubscribedCount
+  parent: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  langs:
+  - csharp
+  - vb
+  name: SubscribedCount
+  nameWithType: IndexSubscriptionStatus.SubscribedCount
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedCount
+    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    startLine: 416
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public int SubscribedCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SubscribedCount As Integer
+  overload: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedCount*
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedSymbols
+  commentId: P:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedSymbols
+  id: SubscribedSymbols
+  parent: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  langs:
+  - csharp
+  - vb
+  name: SubscribedSymbols
+  nameWithType: IndexSubscriptionStatus.SubscribedSymbols
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedSymbols
+    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    startLine: 417
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public string[] SubscribedSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property SubscribedSymbols As String()
+  overload: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedSymbols*
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.NotSubscribedSymbols
+  commentId: P:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.NotSubscribedSymbols
+  id: NotSubscribedSymbols
+  parent: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+  langs:
+  - csharp
+  - vb
+  name: NotSubscribedSymbols
+  nameWithType: IndexSubscriptionStatus.NotSubscribedSymbols
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.NotSubscribedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotSubscribedSymbols
+    path: ../../src/Meridian.Application/Subscriptions/Services/IndexSubscriptionService.cs
+    startLine: 418
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public string[] NotSubscribedSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property NotSubscribedSymbols As String()
+  overload: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.NotSubscribedSymbols*
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<IndexSubscriptionStatus>
+  nameWithType: IEquatable<IndexSubscriptionStatus>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus>
+  nameWithType.vb: IEquatable(Of IndexSubscriptionStatus)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus)
+  name.vb: IEquatable(Of IndexSubscriptionStatus)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+    name: IndexSubscriptionStatus
+    href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus
+    name: IndexSubscriptionStatus
+    href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.#ctor
+  href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html#Meridian_Application_Subscriptions_Services_IndexSubscriptionStatus__ctor_System_String_System_String_System_Int32_System_Int32_System_String___System_String___
+  name: IndexSubscriptionStatus
+  nameWithType: IndexSubscriptionStatus.IndexSubscriptionStatus
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexSubscriptionStatus
+  nameWithType.vb: IndexSubscriptionStatus.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexId*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexId
+  href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html#Meridian_Application_Subscriptions_Services_IndexSubscriptionStatus_IndexId
+  name: IndexId
+  nameWithType: IndexSubscriptionStatus.IndexId
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexId
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexName*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexName
+  href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html#Meridian_Application_Subscriptions_Services_IndexSubscriptionStatus_IndexName
+  name: IndexName
+  nameWithType: IndexSubscriptionStatus.IndexName
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.IndexName
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.TotalComponents*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.TotalComponents
+  href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html#Meridian_Application_Subscriptions_Services_IndexSubscriptionStatus_TotalComponents
+  name: TotalComponents
+  nameWithType: IndexSubscriptionStatus.TotalComponents
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.TotalComponents
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedCount*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedCount
+  href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html#Meridian_Application_Subscriptions_Services_IndexSubscriptionStatus_SubscribedCount
+  name: SubscribedCount
+  nameWithType: IndexSubscriptionStatus.SubscribedCount
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedCount
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedSymbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedSymbols
+  href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html#Meridian_Application_Subscriptions_Services_IndexSubscriptionStatus_SubscribedSymbols
+  name: SubscribedSymbols
+  nameWithType: IndexSubscriptionStatus.SubscribedSymbols
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.SubscribedSymbols
+- uid: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.NotSubscribedSymbols*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.NotSubscribedSymbols
+  href: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.html#Meridian_Application_Subscriptions_Services_IndexSubscriptionStatus_NotSubscribedSymbols
+  name: NotSubscribedSymbols
+  nameWithType: IndexSubscriptionStatus.NotSubscribedSymbols
+  fullName: Meridian.Application.Subscriptions.Services.IndexSubscriptionStatus.NotSubscribedSymbols

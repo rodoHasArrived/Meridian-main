@@ -1,0 +1,211 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  id: DiscontinuityType
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.DiscontinuityType.GapDown
+  - Meridian.Application.Monitoring.DataQuality.DiscontinuityType.GapUp
+  - Meridian.Application.Monitoring.DataQuality.DiscontinuityType.InvalidBar
+  - Meridian.Application.Monitoring.DataQuality.DiscontinuityType.LargeGapDown
+  - Meridian.Application.Monitoring.DataQuality.DiscontinuityType.LargeGapUp
+  langs:
+  - csharp
+  - vb
+  name: DiscontinuityType
+  nameWithType: DiscontinuityType
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiscontinuityType
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 440
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Type of price discontinuity.
+  example: []
+  syntax:
+    content: 'public enum DiscontinuityType : byte'
+    content.vb: Public Enum DiscontinuityType As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.GapUp
+  commentId: F:Meridian.Application.Monitoring.DataQuality.DiscontinuityType.GapUp
+  id: GapUp
+  parent: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  langs:
+  - csharp
+  - vb
+  name: GapUp
+  nameWithType: DiscontinuityType.GapUp
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.GapUp
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapUp
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: GapUp = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+- uid: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.GapDown
+  commentId: F:Meridian.Application.Monitoring.DataQuality.DiscontinuityType.GapDown
+  id: GapDown
+  parent: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  langs:
+  - csharp
+  - vb
+  name: GapDown
+  nameWithType: DiscontinuityType.GapDown
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.GapDown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapDown
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 443
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: GapDown = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+- uid: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.LargeGapUp
+  commentId: F:Meridian.Application.Monitoring.DataQuality.DiscontinuityType.LargeGapUp
+  id: LargeGapUp
+  parent: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  langs:
+  - csharp
+  - vb
+  name: LargeGapUp
+  nameWithType: DiscontinuityType.LargeGapUp
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.LargeGapUp
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LargeGapUp
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 444
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: LargeGapUp = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+- uid: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.LargeGapDown
+  commentId: F:Meridian.Application.Monitoring.DataQuality.DiscontinuityType.LargeGapDown
+  id: LargeGapDown
+  parent: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  langs:
+  - csharp
+  - vb
+  name: LargeGapDown
+  nameWithType: DiscontinuityType.LargeGapDown
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.LargeGapDown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LargeGapDown
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: LargeGapDown = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+- uid: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.InvalidBar
+  commentId: F:Meridian.Application.Monitoring.DataQuality.DiscontinuityType.InvalidBar
+  id: InvalidBar
+  parent: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  langs:
+  - csharp
+  - vb
+  name: InvalidBar
+  nameWithType: DiscontinuityType.InvalidBar
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.InvalidBar
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidBar
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 446
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: InvalidBar = 4
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.html
+  name: DiscontinuityType
+  nameWithType: DiscontinuityType
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscontinuityType

@@ -1,0 +1,271 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  id: MaintenanceExecutionStatus
+  parent: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Cancelled
+  - Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Completed
+  - Meridian.Storage.Maintenance.MaintenanceExecutionStatus.CompletedWithWarnings
+  - Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Failed
+  - Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Pending
+  - Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Running
+  - Meridian.Storage.Maintenance.MaintenanceExecutionStatus.TimedOut
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceExecutionStatus
+  nameWithType: MaintenanceExecutionStatus
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceExecutionStatus
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 368
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Status of a maintenance execution.
+  example: []
+  syntax:
+    content: 'public enum MaintenanceExecutionStatus : byte'
+    content.vb: Public Enum MaintenanceExecutionStatus As Byte
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Pending
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Pending
+  id: Pending
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: MaintenanceExecutionStatus.Pending
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 371
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Execution is pending (queued).
+  example: []
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Running
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Running
+  id: Running
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Running
+  nameWithType: MaintenanceExecutionStatus.Running
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Running
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Running
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 374
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Execution is currently running.
+  example: []
+  syntax:
+    content: Running = 1
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Completed
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Completed
+  id: Completed
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: MaintenanceExecutionStatus.Completed
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Execution completed successfully.
+  example: []
+  syntax:
+    content: Completed = 2
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.CompletedWithWarnings
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceExecutionStatus.CompletedWithWarnings
+  id: CompletedWithWarnings
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: CompletedWithWarnings
+  nameWithType: MaintenanceExecutionStatus.CompletedWithWarnings
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.CompletedWithWarnings
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedWithWarnings
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Execution completed with warnings.
+  example: []
+  syntax:
+    content: CompletedWithWarnings = 3
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Failed
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Failed
+  id: Failed
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: MaintenanceExecutionStatus.Failed
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 383
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Execution failed.
+  example: []
+  syntax:
+    content: Failed = 4
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Cancelled
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: MaintenanceExecutionStatus.Cancelled
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Execution was cancelled.
+  example: []
+  syntax:
+    content: Cancelled = 5
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.TimedOut
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceExecutionStatus.TimedOut
+  id: TimedOut
+  parent: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: TimedOut
+  nameWithType: MaintenanceExecutionStatus.TimedOut
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.TimedOut
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimedOut
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 389
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Execution timed out.
+  example: []
+  syntax:
+    content: TimedOut = 6
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+references:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+- uid: Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceExecutionStatus
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceExecutionStatus.html
+  name: MaintenanceExecutionStatus
+  nameWithType: MaintenanceExecutionStatus
+  fullName: Meridian.Storage.Maintenance.MaintenanceExecutionStatus

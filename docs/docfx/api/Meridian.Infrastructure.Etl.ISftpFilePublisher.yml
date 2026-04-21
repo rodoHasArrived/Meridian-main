@@ -1,0 +1,241 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Etl.ISftpFilePublisher
+  commentId: T:Meridian.Infrastructure.Etl.ISftpFilePublisher
+  id: ISftpFilePublisher
+  parent: Meridian.Infrastructure.Etl
+  children:
+  - Meridian.Infrastructure.Etl.ISftpFilePublisher.PublishAsync(Meridian.Contracts.Etl.EtlDestinationDefinition,System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISftpFilePublisher
+  nameWithType: ISftpFilePublisher
+  fullName: Meridian.Infrastructure.Etl.ISftpFilePublisher
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/ISftpFilePublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISftpFilePublisher
+    path: ../../src/Meridian.Infrastructure/Etl/ISftpFilePublisher.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl
+  syntax:
+    content: public interface ISftpFilePublisher
+    content.vb: Public Interface ISftpFilePublisher
+  derivedClasses:
+  - Meridian.Infrastructure.Etl.SftpFilePublisher
+- uid: Meridian.Infrastructure.Etl.ISftpFilePublisher.PublishAsync(Meridian.Contracts.Etl.EtlDestinationDefinition,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Etl.ISftpFilePublisher.PublishAsync(Meridian.Contracts.Etl.EtlDestinationDefinition,System.String,System.Threading.CancellationToken)
+  id: PublishAsync(Meridian.Contracts.Etl.EtlDestinationDefinition,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Etl.ISftpFilePublisher
+  langs:
+  - csharp
+  - vb
+  name: PublishAsync(EtlDestinationDefinition, string, CancellationToken)
+  nameWithType: ISftpFilePublisher.PublishAsync(EtlDestinationDefinition, string, CancellationToken)
+  fullName: Meridian.Infrastructure.Etl.ISftpFilePublisher.PublishAsync(Meridian.Contracts.Etl.EtlDestinationDefinition, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/ISftpFilePublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishAsync
+    path: ../../src/Meridian.Infrastructure/Etl/ISftpFilePublisher.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl
+  syntax:
+    content: Task PublishAsync(EtlDestinationDefinition destination, string localPath, CancellationToken ct = default)
+    parameters:
+    - id: destination
+      type: Meridian.Contracts.Etl.EtlDestinationDefinition
+    - id: localPath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function PublishAsync(destination As EtlDestinationDefinition, localPath As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Etl.ISftpFilePublisher.PublishAsync*
+  nameWithType.vb: ISftpFilePublisher.PublishAsync(EtlDestinationDefinition, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Etl.ISftpFilePublisher.PublishAsync(Meridian.Contracts.Etl.EtlDestinationDefinition, String, System.Threading.CancellationToken)
+  name.vb: PublishAsync(EtlDestinationDefinition, String, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.Etl
+  commentId: N:Meridian.Infrastructure.Etl
+  href: Meridian.html
+  name: Meridian.Infrastructure.Etl
+  nameWithType: Meridian.Infrastructure.Etl
+  fullName: Meridian.Infrastructure.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+- uid: Meridian.Infrastructure.Etl.ISftpFilePublisher.PublishAsync*
+  commentId: Overload:Meridian.Infrastructure.Etl.ISftpFilePublisher.PublishAsync
+  href: Meridian.Infrastructure.Etl.ISftpFilePublisher.html#Meridian_Infrastructure_Etl_ISftpFilePublisher_PublishAsync_Meridian_Contracts_Etl_EtlDestinationDefinition_System_String_System_Threading_CancellationToken_
+  name: PublishAsync
+  nameWithType: ISftpFilePublisher.PublishAsync
+  fullName: Meridian.Infrastructure.Etl.ISftpFilePublisher.PublishAsync
+- uid: Meridian.Contracts.Etl.EtlDestinationDefinition
+  commentId: T:Meridian.Contracts.Etl.EtlDestinationDefinition
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlDestinationDefinition.html
+  name: EtlDestinationDefinition
+  nameWithType: EtlDestinationDefinition
+  fullName: Meridian.Contracts.Etl.EtlDestinationDefinition
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

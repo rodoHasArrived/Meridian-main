@@ -1,0 +1,182 @@
+<Page x:Class="Meridian.Wpf.Views.FundProfileSelectionPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      d:DesignHeight="900"
+      d:DesignWidth="1400"
+      Background="{DynamicResource ShellWindowBackgroundBrush}"
+      Loaded="OnPageLoaded"
+      AutomationProperties.Name="Operating Context Selection">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="28,20,28,32" MaxWidth="1200">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <Border Width="44" Height="44" CornerRadius="14"
+                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
+                                    BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1" Margin="0,0,12,0">
+                                <TextBlock Text="&#xE8B7;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Choose Operating Context" Style="{StaticResource PageTitleStyle}" />
+                                <TextBlock Text="{Binding StatusText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Button Content="Manage Fund Profiles"
+                                Command="{Binding ToggleManageProfilesCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="0,0,8,0" />
+                        <Button Content="Seed Sample Contexts"
+                                Command="{Binding SeedProfilesCommand}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,8,0" />
+                        <Button Content="Enter Workstation"
+                                AutomationProperties.Name="Enter Workstation"
+                                AutomationProperties.AutomationId="EnterWorkstationButton"
+                                Command="{Binding EnterFundCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                IsDefault="True"
+                                />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.4*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Available Contexts" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                        <ListBox ItemsSource="{Binding OperatingContexts}"
+                                 SelectedItem="{Binding SelectedOperatingContext, Mode=TwoWay}"
+                                 BorderThickness="0"
+                                 Background="Transparent">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="{StaticResource ConsoleBackgroundLightBrush}"
+                                            BorderBrush="{StaticResource ConsoleBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="14,12"
+                                            Margin="0,0,0,8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding DisplayName}" FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                            <TextBlock Text="{Binding Subtitle}" FontSize="12"
+                                                       Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,0" />
+                                            <TextBlock Text="{Binding DefaultWorkspaceId}" FontSize="11"
+                                                       Foreground="{StaticResource InfoColorBrush}" Margin="0,6,0,0" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource CardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Context Details" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                        <TextBlock Text="{Binding SelectedOperatingContext.DisplayName, TargetNullValue=No context selected}"
+                                   Style="{StaticResource PageTitleStyle}" />
+                        <TextBlock Text="{Binding SelectedOperatingContext.Subtitle}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
+                        <TextBlock Text="{Binding SelectedContextLastOpenedText}" Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,16" />
+
+                        <UniformGrid Columns="2" Margin="0,0,0,16">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Scope" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding SelectedContextScopeText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Business Kind" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding SelectedContextBusinessKindText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <UniformGrid Columns="2" Margin="0,0,0,16">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Compatibility" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding SelectedContextCompatibilityText}" Style="{StaticResource CardHeaderStyle}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Default Route" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding SelectedContextDefaultWorkspaceText}" Style="{StaticResource CardHeaderStyle}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <UniformGrid Columns="3" Margin="0,0,0,16">
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Entities" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding SelectedContextEntityCountText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}" Margin="0,0,12,0">
+                                <StackPanel>
+                                    <TextBlock Text="Portfolios" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding SelectedContextPortfolioCountText}" Style="{StaticResource CardHeaderStyle}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource CardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="Ledger Scope" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                    <TextBlock Text="{Binding SelectedContextLedgerScopeText}" Style="{StaticResource CardHeaderStyle}" TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <StackPanel Visibility="{Binding ManageProfilesVisible, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="Manage Profiles" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
+                            <TextBlock Text="Display Name" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBox Text="{Binding NewProfileName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" />
+
+                            <TextBlock Text="Legal Entity" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBox Text="{Binding NewLegalEntityName, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,10" />
+
+                            <TextBlock Text="Base Currency" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBox Text="{Binding NewBaseCurrency, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,4,0,12" />
+
+                            <WrapPanel>
+                                <Button Content="Create Profile"
+                                        Command="{Binding CreateProfileCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Margin="0,0,8,8" />
+                                <Button Content="Delete Selected"
+                                        Command="{Binding DeleteSelectedProfileCommand}"
+                                        Style="{StaticResource GhostButtonStyle}"
+                                        Margin="0,0,8,8" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,509 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto
+  commentId: T:Meridian.Contracts.Configuration.BackfillSymbolPlanDto
+  id: BackfillSymbolPlanDto
+  parent: Meridian.Contracts.Configuration
+  children:
+  - Meridian.Contracts.Configuration.BackfillSymbolPlanDto.ProviderSequence
+  - Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Reason
+  - Meridian.Contracts.Configuration.BackfillSymbolPlanDto.SelectedProvider
+  - Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Symbol
+  langs:
+  - csharp
+  - vb
+  name: BackfillSymbolPlanDto
+  nameWithType: BackfillSymbolPlanDto
+  fullName: Meridian.Contracts.Configuration.BackfillSymbolPlanDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillSymbolPlanDto
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Per-symbol plan entry showing the provider fallback sequence.
+  example: []
+  syntax:
+    content: public sealed class BackfillSymbolPlanDto
+    content.vb: Public NotInheritable Class BackfillSymbolPlanDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Symbol
+  commentId: P:Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Configuration.BackfillSymbolPlanDto
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: BackfillSymbolPlanDto.Symbol
+  fullName: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("symbol")]
+
+      public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("symbol")>
+
+      Public Property Symbol As String
+  overload: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Symbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbol
+- uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.ProviderSequence
+  commentId: P:Meridian.Contracts.Configuration.BackfillSymbolPlanDto.ProviderSequence
+  id: ProviderSequence
+  parent: Meridian.Contracts.Configuration.BackfillSymbolPlanDto
+  langs:
+  - csharp
+  - vb
+  name: ProviderSequence
+  nameWithType: BackfillSymbolPlanDto.ProviderSequence
+  fullName: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.ProviderSequence
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderSequence
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 349
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("providerSequence")]
+
+      public string[] ProviderSequence { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("providerSequence")>
+
+      Public Property ProviderSequence As String()
+  overload: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.ProviderSequence*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: providerSequence
+- uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.SelectedProvider
+  commentId: P:Meridian.Contracts.Configuration.BackfillSymbolPlanDto.SelectedProvider
+  id: SelectedProvider
+  parent: Meridian.Contracts.Configuration.BackfillSymbolPlanDto
+  langs:
+  - csharp
+  - vb
+  name: SelectedProvider
+  nameWithType: BackfillSymbolPlanDto.SelectedProvider
+  fullName: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.SelectedProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SelectedProvider
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 352
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("selectedProvider")]
+
+      public string? SelectedProvider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("selectedProvider")>
+
+      Public Property SelectedProvider As String
+  overload: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.SelectedProvider*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: selectedProvider
+- uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Reason
+  commentId: P:Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Reason
+  id: Reason
+  parent: Meridian.Contracts.Configuration.BackfillSymbolPlanDto
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: BackfillSymbolPlanDto.Reason
+  fullName: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("reason")]
+
+      public string? Reason { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("reason")>
+
+      Public Property Reason As String
+  overload: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Reason*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: reason
+references:
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Symbol*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Symbol
+  href: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.html#Meridian_Contracts_Configuration_BackfillSymbolPlanDto_Symbol
+  name: Symbol
+  nameWithType: BackfillSymbolPlanDto.Symbol
+  fullName: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.ProviderSequence*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillSymbolPlanDto.ProviderSequence
+  href: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.html#Meridian_Contracts_Configuration_BackfillSymbolPlanDto_ProviderSequence
+  name: ProviderSequence
+  nameWithType: BackfillSymbolPlanDto.ProviderSequence
+  fullName: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.ProviderSequence
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.SelectedProvider*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillSymbolPlanDto.SelectedProvider
+  href: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.html#Meridian_Contracts_Configuration_BackfillSymbolPlanDto_SelectedProvider
+  name: SelectedProvider
+  nameWithType: BackfillSymbolPlanDto.SelectedProvider
+  fullName: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.SelectedProvider
+- uid: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Reason*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Reason
+  href: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.html#Meridian_Contracts_Configuration_BackfillSymbolPlanDto_Reason
+  name: Reason
+  nameWithType: BackfillSymbolPlanDto.Reason
+  fullName: Meridian.Contracts.Configuration.BackfillSymbolPlanDto.Reason

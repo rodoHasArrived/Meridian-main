@@ -1,10 +1,49 @@
 # QuantScriptEnvironment Blueprint — Brainstorm & Critical Evaluation
 
-**Date:** 2026-03-18 | **Mode:** Problem-Focused + UX/Information Design
+**Date:** 2026-03-18 (updated 2026-04-16) | **Mode:** Problem-Focused + UX/Information Design
 **Input:** `docs/plans/quant-script-environment-blueprint.md` (v1 blueprint)
 **Focus:** (1) Design improvements, (2) Usefulness audit, (3) Interface maximisation
 
 > **Previous sessions covered:** L3 inference, Python SDK, DuckDB, symbol health, VWAP/TWAP algorithms, provider SLA. **This session:** First deep evaluation of the QuantScript blueprint — covering gaps in the design, honest usefulness scoring, and interface-level rethinking to maximise versatility and ease of use across all three personas.
+
+---
+
+## 2026-04-16 Update — Blueprint Decisions for Implementation Readiness
+
+This update converts the brainstorm into explicit go/no-go decisions so implementation can begin without re-litigating scope during execution.
+
+### Locked for MVP (ship in first implementation wave)
+
+1. **Async-native script surface (`await` first).**
+   - Keep synchronous helpers only as thin convenience wrappers.
+   - All templates should demonstrate `await` by default.
+2. **Fluent `BacktestBuilder` path.**
+   - Keep `IBacktestStrategy` as an advanced escape hatch.
+   - MVP must support `.OnBar(...).From(...).To(...).WithCash(...).RunAsync()`.
+3. **Flattened series-first DSL.**
+   - `PriceSeries`, `NumericSeries`, and `ReturnSeries` methods should handle the most common analysis flow directly.
+   - `Stats` remains for multi-series and niche calculations.
+4. **Template gallery with beginner-first scripts.**
+   - “Hello SPY” and one backtest template are mandatory acceptance items.
+5. **Run history persistence with side-by-side comparison of key metrics.**
+   - MVP stores metrics + equity curve and supports at least two-run comparisons.
+
+### Deferred (explicitly out of MVP)
+
+- **Cell-based execution model** (high value, but treated as Phase 2 UI re-architecture).
+- **Full `AlignedSeries` outer-join + advanced alignment semantics** (inner-join-first only).
+- **2D optimization heatmap UX polish** (basic parameter sweep table is acceptable in MVP).
+
+### Acceptance checks added for blueprint handoff
+
+- A first-time user can load and plot SPY in under **2 minutes** using a template.
+- A user can run and compare two SMA backtests without writing an `IBacktestStrategy` class.
+- At least one long-running script shows progressive log output before completion.
+- Persisted run records survive app restart and can be re-opened in the comparison view.
+
+### Why this update
+
+The original brainstorm intentionally explored a wide option space. This addendum narrows scope to a deliverable baseline while preserving the highest-leverage interaction improvements (async flow, low-boilerplate backtests, and reusable run analysis).
 
 ---
 

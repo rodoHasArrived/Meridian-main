@@ -1,0 +1,453 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  commentId: T:Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  id: QualityIssueType
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.Anomaly
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.CloseOutOfRange
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.DuplicateData
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.FutureTimestamp
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.InvalidHighLow
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.InvalidVolume
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.MissingData
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.OpenOutOfRange
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.OutOfOrder
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.PriceDiscrepancy
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.SequenceGap
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.StaleData
+  - Meridian.Infrastructure.Adapters.Core.QualityIssueType.SuspiciousPriceMove
+  langs:
+  - csharp
+  - vb
+  name: QualityIssueType
+  nameWithType: QualityIssueType
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityIssueType
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Type of quality issue detected.
+  example: []
+  syntax:
+    content: 'public enum QualityIssueType : byte'
+    content.vb: Public Enum QualityIssueType As Byte
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.InvalidHighLow
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.InvalidHighLow
+  id: InvalidHighLow
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: InvalidHighLow
+  nameWithType: QualityIssueType.InvalidHighLow
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.InvalidHighLow
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidHighLow
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: High price is less than low price.
+  example: []
+  syntax:
+    content: InvalidHighLow = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.CloseOutOfRange
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.CloseOutOfRange
+  id: CloseOutOfRange
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: CloseOutOfRange
+  nameWithType: QualityIssueType.CloseOutOfRange
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.CloseOutOfRange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CloseOutOfRange
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Close price outside of high-low range.
+  example: []
+  syntax:
+    content: CloseOutOfRange = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.OpenOutOfRange
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.OpenOutOfRange
+  id: OpenOutOfRange
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: OpenOutOfRange
+  nameWithType: QualityIssueType.OpenOutOfRange
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.OpenOutOfRange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenOutOfRange
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Open price outside of high-low range.
+  example: []
+  syntax:
+    content: OpenOutOfRange = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.SuspiciousPriceMove
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.SuspiciousPriceMove
+  id: SuspiciousPriceMove
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: SuspiciousPriceMove
+  nameWithType: QualityIssueType.SuspiciousPriceMove
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.SuspiciousPriceMove
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuspiciousPriceMove
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Price changed more than threshold in one day.
+  example: []
+  syntax:
+    content: SuspiciousPriceMove = 3
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.InvalidVolume
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.InvalidVolume
+  id: InvalidVolume
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: InvalidVolume
+  nameWithType: QualityIssueType.InvalidVolume
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.InvalidVolume
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidVolume
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Zero or negative volume.
+  example: []
+  syntax:
+    content: InvalidVolume = 4
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.MissingData
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.MissingData
+  id: MissingData
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: MissingData
+  nameWithType: QualityIssueType.MissingData
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.MissingData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingData
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Missing expected data.
+  example: []
+  syntax:
+    content: MissingData = 5
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.DuplicateData
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.DuplicateData
+  id: DuplicateData
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: DuplicateData
+  nameWithType: QualityIssueType.DuplicateData
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.DuplicateData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DuplicateData
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Duplicate data detected.
+  example: []
+  syntax:
+    content: DuplicateData = 6
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.PriceDiscrepancy
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.PriceDiscrepancy
+  id: PriceDiscrepancy
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: PriceDiscrepancy
+  nameWithType: QualityIssueType.PriceDiscrepancy
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.PriceDiscrepancy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceDiscrepancy
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Price significantly different from other sources.
+  example: []
+  syntax:
+    content: PriceDiscrepancy = 7
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.StaleData
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.StaleData
+  id: StaleData
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: StaleData
+  nameWithType: QualityIssueType.StaleData
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.StaleData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StaleData
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Data older than expected.
+  example: []
+  syntax:
+    content: StaleData = 8
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.SequenceGap
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.SequenceGap
+  id: SequenceGap
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: SequenceGap
+  nameWithType: QualityIssueType.SequenceGap
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.SequenceGap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceGap
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gap in sequence numbers.
+  example: []
+  syntax:
+    content: SequenceGap = 9
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.OutOfOrder
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.OutOfOrder
+  id: OutOfOrder
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: OutOfOrder
+  nameWithType: QualityIssueType.OutOfOrder
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.OutOfOrder
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutOfOrder
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Data arrives out of order.
+  example: []
+  syntax:
+    content: OutOfOrder = 10
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.FutureTimestamp
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.FutureTimestamp
+  id: FutureTimestamp
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: FutureTimestamp
+  nameWithType: QualityIssueType.FutureTimestamp
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.FutureTimestamp
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FutureTimestamp
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Timestamp in the future.
+  example: []
+  syntax:
+    content: FutureTimestamp = 11
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType.Anomaly
+  commentId: F:Meridian.Infrastructure.Adapters.Core.QualityIssueType.Anomaly
+  id: Anomaly
+  parent: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  langs:
+  - csharp
+  - vb
+  name: Anomaly
+  nameWithType: QualityIssueType.Anomaly
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType.Anomaly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Anomaly
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Generic anomaly detected.
+  example: []
+  syntax:
+    content: Anomaly = 12
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  commentId: T:Meridian.Infrastructure.Adapters.Core.QualityIssueType
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.QualityIssueType.html
+  name: QualityIssueType
+  nameWithType: QualityIssueType
+  fullName: Meridian.Infrastructure.Adapters.Core.QualityIssueType

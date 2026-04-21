@@ -34,6 +34,7 @@ public partial class DiagnosticsPage : Page
         _notificationService = notificationService;
         _viewModel = new DiagnosticsPageViewModel(connectivityProbe, coLocationProfileActivator, latencyService);
         DataContext = _viewModel;
+        Unloaded += OnPageUnloaded;
     }
 
     private void OnPageLoaded(object sender, RoutedEventArgs e)
@@ -47,7 +48,15 @@ public partial class DiagnosticsPage : Page
 
         UpdateConnectivityStatusDot();
 
+        _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         _viewModel.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    private void OnPageUnloaded(object sender, RoutedEventArgs e)
+    {
+        _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        _viewModel.Dispose();
+        Unloaded -= OnPageUnloaded;
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs eventArgs)

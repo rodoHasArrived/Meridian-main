@@ -1,0 +1,132 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Etl.EtlPackageFormat
+  commentId: T:Meridian.Contracts.Etl.EtlPackageFormat
+  id: EtlPackageFormat
+  parent: Meridian.Contracts.Etl
+  children:
+  - Meridian.Contracts.Etl.EtlPackageFormat.TarGz
+  - Meridian.Contracts.Etl.EtlPackageFormat.Zip
+  langs:
+  - csharp
+  - vb
+  name: EtlPackageFormat
+  nameWithType: EtlPackageFormat
+  fullName: Meridian.Contracts.Etl.EtlPackageFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EtlPackageFormat
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter))]
+
+      public enum EtlPackageFormat : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter))>
+
+      Public Enum EtlPackageFormat As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter
+- uid: Meridian.Contracts.Etl.EtlPackageFormat.Zip
+  commentId: F:Meridian.Contracts.Etl.EtlPackageFormat.Zip
+  id: Zip
+  parent: Meridian.Contracts.Etl.EtlPackageFormat
+  langs:
+  - csharp
+  - vb
+  name: Zip
+  nameWithType: EtlPackageFormat.Zip
+  fullName: Meridian.Contracts.Etl.EtlPackageFormat.Zip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zip
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: Zip = 0
+    return:
+      type: Meridian.Contracts.Etl.EtlPackageFormat
+- uid: Meridian.Contracts.Etl.EtlPackageFormat.TarGz
+  commentId: F:Meridian.Contracts.Etl.EtlPackageFormat.TarGz
+  id: TarGz
+  parent: Meridian.Contracts.Etl.EtlPackageFormat
+  langs:
+  - csharp
+  - vb
+  name: TarGz
+  nameWithType: EtlPackageFormat.TarGz
+  fullName: Meridian.Contracts.Etl.EtlPackageFormat.TarGz
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TarGz
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: TarGz = 1
+    return:
+      type: Meridian.Contracts.Etl.EtlPackageFormat
+references:
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Contracts.Etl.EtlPackageFormat
+  commentId: T:Meridian.Contracts.Etl.EtlPackageFormat
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlPackageFormat.html
+  name: EtlPackageFormat
+  nameWithType: EtlPackageFormat
+  fullName: Meridian.Contracts.Etl.EtlPackageFormat

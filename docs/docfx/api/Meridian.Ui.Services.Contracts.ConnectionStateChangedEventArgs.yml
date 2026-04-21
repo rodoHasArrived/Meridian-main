@@ -1,0 +1,435 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs
+  commentId: T:Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs
+  id: ConnectionStateChangedEventArgs
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.NewState
+  - Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.OldState
+  - Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.Provider
+  langs:
+  - csharp
+  - vb
+  name: ConnectionStateChangedEventArgs
+  nameWithType: ConnectionStateChangedEventArgs
+  fullName: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionStateChangedEventArgs
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Connection state change event args.
+  example: []
+  syntax:
+    content: 'public sealed class ConnectionStateChangedEventArgs : EventArgs'
+    content.vb: Public NotInheritable Class ConnectionStateChangedEventArgs Inherits EventArgs
+  inheritance:
+  - System.Object
+  - System.EventArgs
+  inheritedMembers:
+  - System.EventArgs.Empty
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.OldState
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.OldState
+  id: OldState
+  parent: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: OldState
+  nameWithType: ConnectionStateChangedEventArgs.OldState
+  fullName: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.OldState
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OldState
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public ConnectionState OldState { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionState
+    content.vb: Public Property OldState As ConnectionState
+  overload: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.OldState*
+- uid: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.NewState
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.NewState
+  id: NewState
+  parent: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: NewState
+  nameWithType: ConnectionStateChangedEventArgs.NewState
+  fullName: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.NewState
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NewState
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public ConnectionState NewState { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionState
+    content.vb: Public Property NewState As ConnectionState
+  overload: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.NewState*
+- uid: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.Provider
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.Provider
+  id: Provider
+  parent: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: ConnectionStateChangedEventArgs.Provider
+  fullName: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public string Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.Provider*
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.EventArgs
+  commentId: T:System.EventArgs
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs
+  name: EventArgs
+  nameWithType: EventArgs
+  fullName: System.EventArgs
+- uid: System.EventArgs.Empty
+  commentId: F:System.EventArgs.Empty
+  parent: System.EventArgs
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs.empty
+  name: Empty
+  nameWithType: EventArgs.Empty
+  fullName: System.EventArgs.Empty
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.OldState*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.OldState
+  href: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.html#Meridian_Ui_Services_Contracts_ConnectionStateChangedEventArgs_OldState
+  name: OldState
+  nameWithType: ConnectionStateChangedEventArgs.OldState
+  fullName: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.OldState
+- uid: Meridian.Ui.Services.Contracts.ConnectionState
+  commentId: T:Meridian.Ui.Services.Contracts.ConnectionState
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.ConnectionState.html
+  name: ConnectionState
+  nameWithType: ConnectionState
+  fullName: Meridian.Ui.Services.Contracts.ConnectionState
+- uid: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.NewState*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.NewState
+  href: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.html#Meridian_Ui_Services_Contracts_ConnectionStateChangedEventArgs_NewState
+  name: NewState
+  nameWithType: ConnectionStateChangedEventArgs.NewState
+  fullName: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.NewState
+- uid: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.Provider*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.Provider
+  href: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.html#Meridian_Ui_Services_Contracts_ConnectionStateChangedEventArgs_Provider
+  name: Provider
+  nameWithType: ConnectionStateChangedEventArgs.Provider
+  fullName: Meridian.Ui.Services.Contracts.ConnectionStateChangedEventArgs.Provider
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

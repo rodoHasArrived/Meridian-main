@@ -1,0 +1,441 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Models.IPortfolioState
+  commentId: T:Meridian.Execution.Models.IPortfolioState
+  id: IPortfolioState
+  parent: Meridian.Execution.Models
+  children:
+  - Meridian.Execution.Models.IPortfolioState.Cash
+  - Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  - Meridian.Execution.Models.IPortfolioState.Positions
+  - Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  - Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  langs:
+  - csharp
+  - vb
+  name: IPortfolioState
+  nameWithType: IPortfolioState
+  fullName: Meridian.Execution.Models.IPortfolioState
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IPortfolioState.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPortfolioState
+    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    A read-only view of the current portfolio state as seen by a live strategy.
+
+    Updated after each fill acknowledgement.
+  example: []
+  syntax:
+    content: public interface IPortfolioState
+    content.vb: Public Interface IPortfolioState
+  derivedClasses:
+  - Meridian.Execution.Services.PaperTradingPortfolio
+- uid: Meridian.Execution.Models.IPortfolioState.Cash
+  commentId: P:Meridian.Execution.Models.IPortfolioState.Cash
+  id: Cash
+  parent: Meridian.Execution.Models.IPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: IPortfolioState.Cash
+  fullName: Meridian.Execution.Models.IPortfolioState.Cash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IPortfolioState.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Available cash (not including unrealised margin).
+  example: []
+  syntax:
+    content: decimal Cash { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property Cash As Decimal
+  overload: Meridian.Execution.Models.IPortfolioState.Cash*
+- uid: Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  commentId: P:Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  id: PortfolioValue
+  parent: Meridian.Execution.Models.IPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: PortfolioValue
+  nameWithType: IPortfolioState.PortfolioValue
+  fullName: Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IPortfolioState.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioValue
+    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: 'Gross portfolio value: cash + long market value + short market value.'
+  example: []
+  syntax:
+    content: decimal PortfolioValue { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property PortfolioValue As Decimal
+  overload: Meridian.Execution.Models.IPortfolioState.PortfolioValue*
+- uid: Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  commentId: P:Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  id: UnrealisedPnl
+  parent: Meridian.Execution.Models.IPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: UnrealisedPnl
+  nameWithType: IPortfolioState.UnrealisedPnl
+  fullName: Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IPortfolioState.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealisedPnl
+    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Unrealised P&amp;L across all open positions.
+  example: []
+  syntax:
+    content: decimal UnrealisedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property UnrealisedPnl As Decimal
+  overload: Meridian.Execution.Models.IPortfolioState.UnrealisedPnl*
+- uid: Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  commentId: P:Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  id: RealisedPnl
+  parent: Meridian.Execution.Models.IPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: RealisedPnl
+  nameWithType: IPortfolioState.RealisedPnl
+  fullName: Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IPortfolioState.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealisedPnl
+    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Realised P&amp;L since the session began.
+  example: []
+  syntax:
+    content: decimal RealisedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property RealisedPnl As Decimal
+  overload: Meridian.Execution.Models.IPortfolioState.RealisedPnl*
+- uid: Meridian.Execution.Models.IPortfolioState.Positions
+  commentId: P:Meridian.Execution.Models.IPortfolioState.Positions
+  id: Positions
+  parent: Meridian.Execution.Models.IPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: Positions
+  nameWithType: IPortfolioState.Positions
+  fullName: Meridian.Execution.Models.IPortfolioState.Positions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/IPortfolioState.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Positions
+    path: ../../src/Meridian.Execution/Models/IPortfolioState.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    Open positions keyed by symbol, typed against the cross-pillar <xref href="Meridian.Execution.Sdk.IPosition" data-throw-if-not-resolved="false"></xref> interface.
+
+    Replaces the former <code>IReadOnlyDictionary&lt;string, ExecutionPosition&gt;</code> surface.
+
+    Callers that require the concrete <xref href="Meridian.Execution.Models.ExecutionPosition" data-throw-if-not-resolved="false"></xref> type (e.g. serialisation
+
+    boundaries) should cast individual values: <code>portfolio.Positions.Values.Cast&lt;ExecutionPosition&gt;()</code>.
+  example: []
+  syntax:
+    content: IReadOnlyDictionary<string, IPosition> Positions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.IPosition}
+    content.vb: ReadOnly Property Positions As IReadOnlyDictionary(Of String, IPosition)
+  overload: Meridian.Execution.Models.IPortfolioState.Positions*
+references:
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Models.IPortfolioState.Cash*
+  commentId: Overload:Meridian.Execution.Models.IPortfolioState.Cash
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_Cash
+  name: Cash
+  nameWithType: IPortfolioState.Cash
+  fullName: Meridian.Execution.Models.IPortfolioState.Cash
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Models.IPortfolioState.PortfolioValue*
+  commentId: Overload:Meridian.Execution.Models.IPortfolioState.PortfolioValue
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_PortfolioValue
+  name: PortfolioValue
+  nameWithType: IPortfolioState.PortfolioValue
+  fullName: Meridian.Execution.Models.IPortfolioState.PortfolioValue
+- uid: Meridian.Execution.Models.IPortfolioState.UnrealisedPnl*
+  commentId: Overload:Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_UnrealisedPnl
+  name: UnrealisedPnl
+  nameWithType: IPortfolioState.UnrealisedPnl
+  fullName: Meridian.Execution.Models.IPortfolioState.UnrealisedPnl
+- uid: Meridian.Execution.Models.IPortfolioState.RealisedPnl*
+  commentId: Overload:Meridian.Execution.Models.IPortfolioState.RealisedPnl
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_RealisedPnl
+  name: RealisedPnl
+  nameWithType: IPortfolioState.RealisedPnl
+  fullName: Meridian.Execution.Models.IPortfolioState.RealisedPnl
+- uid: Meridian.Execution.Sdk.IPosition
+  commentId: T:Meridian.Execution.Sdk.IPosition
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IPosition.html
+  name: IPosition
+  nameWithType: IPosition
+  fullName: Meridian.Execution.Sdk.IPosition
+- uid: Meridian.Execution.Models.ExecutionPosition
+  commentId: T:Meridian.Execution.Models.ExecutionPosition
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionPosition.html
+  name: ExecutionPosition
+  nameWithType: ExecutionPosition
+  fullName: Meridian.Execution.Models.ExecutionPosition
+- uid: Meridian.Execution.Models.IPortfolioState.Positions*
+  commentId: Overload:Meridian.Execution.Models.IPortfolioState.Positions
+  href: Meridian.Execution.Models.IPortfolioState.html#Meridian_Execution_Models_IPortfolioState_Positions
+  name: Positions
+  nameWithType: IPortfolioState.Positions
+  fullName: Meridian.Execution.Models.IPortfolioState.Positions
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.IPosition}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.IPosition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, IPosition>
+  nameWithType: IReadOnlyDictionary<string, IPosition>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Sdk.IPosition>
+  nameWithType.vb: IReadOnlyDictionary(Of String, IPosition)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Sdk.IPosition)
+  name.vb: IReadOnlyDictionary(Of String, IPosition)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Sdk.IPosition
+    name: IPosition
+    href: Meridian.Execution.Sdk.IPosition.html
+  - name: )
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

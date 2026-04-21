@@ -1,0 +1,586 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.UserAccountConfig
+  commentId: T:Meridian.Ui.Shared.UserAccountConfig
+  id: UserAccountConfig
+  parent: Meridian.Ui.Shared
+  children:
+  - Meridian.Ui.Shared.UserAccountConfig.#ctor(System.String,System.String,Meridian.Contracts.Auth.UserRole)
+  - Meridian.Ui.Shared.UserAccountConfig.Password
+  - Meridian.Ui.Shared.UserAccountConfig.Role
+  - Meridian.Ui.Shared.UserAccountConfig.Username
+  langs:
+  - csharp
+  - vb
+  name: UserAccountConfig
+  nameWithType: UserAccountConfig
+  fullName: Meridian.Ui.Shared.UserAccountConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UserAccountConfig
+    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Configuration shape for a single user account loaded from the <code>MDC_USERS</code> environment variable.
+  example: []
+  syntax:
+    content: 'public sealed record UserAccountConfig : IEquatable<UserAccountConfig>'
+    content.vb: Public NotInheritable Class UserAccountConfig Implements IEquatable(Of UserAccountConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Shared.UserAccountConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.UserAccountConfig.#ctor(System.String,System.String,Meridian.Contracts.Auth.UserRole)
+  commentId: M:Meridian.Ui.Shared.UserAccountConfig.#ctor(System.String,System.String,Meridian.Contracts.Auth.UserRole)
+  id: '#ctor(System.String,System.String,Meridian.Contracts.Auth.UserRole)'
+  parent: Meridian.Ui.Shared.UserAccountConfig
+  langs:
+  - csharp
+  - vb
+  name: UserAccountConfig(string, string, UserRole)
+  nameWithType: UserAccountConfig.UserAccountConfig(string, string, UserRole)
+  fullName: Meridian.Ui.Shared.UserAccountConfig.UserAccountConfig(string, string, Meridian.Contracts.Auth.UserRole)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Configuration shape for a single user account loaded from the <code>MDC_USERS</code> environment variable.
+  example: []
+  syntax:
+    content: public UserAccountConfig(string Username, string Password, UserRole Role)
+    parameters:
+    - id: Username
+      type: System.String
+    - id: Password
+      type: System.String
+    - id: Role
+      type: Meridian.Contracts.Auth.UserRole
+    content.vb: Public Sub New(Username As String, Password As String, Role As UserRole)
+  overload: Meridian.Ui.Shared.UserAccountConfig.#ctor*
+  nameWithType.vb: UserAccountConfig.New(String, String, UserRole)
+  fullName.vb: Meridian.Ui.Shared.UserAccountConfig.New(String, String, Meridian.Contracts.Auth.UserRole)
+  name.vb: New(String, String, UserRole)
+- uid: Meridian.Ui.Shared.UserAccountConfig.Username
+  commentId: P:Meridian.Ui.Shared.UserAccountConfig.Username
+  id: Username
+  parent: Meridian.Ui.Shared.UserAccountConfig
+  langs:
+  - csharp
+  - vb
+  name: Username
+  nameWithType: UserAccountConfig.Username
+  fullName: Meridian.Ui.Shared.UserAccountConfig.Username
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Username
+    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  syntax:
+    content: >-
+      [JsonPropertyName("username")]
+
+      public string Username { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("username")>
+
+      Public Property Username As String
+  overload: Meridian.Ui.Shared.UserAccountConfig.Username*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: username
+- uid: Meridian.Ui.Shared.UserAccountConfig.Password
+  commentId: P:Meridian.Ui.Shared.UserAccountConfig.Password
+  id: Password
+  parent: Meridian.Ui.Shared.UserAccountConfig
+  langs:
+  - csharp
+  - vb
+  name: Password
+  nameWithType: UserAccountConfig.Password
+  fullName: Meridian.Ui.Shared.UserAccountConfig.Password
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Password
+    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  syntax:
+    content: >-
+      [JsonPropertyName("password")]
+
+      public string Password { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("password")>
+
+      Public Property Password As String
+  overload: Meridian.Ui.Shared.UserAccountConfig.Password*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: password
+- uid: Meridian.Ui.Shared.UserAccountConfig.Role
+  commentId: P:Meridian.Ui.Shared.UserAccountConfig.Role
+  id: Role
+  parent: Meridian.Ui.Shared.UserAccountConfig
+  langs:
+  - csharp
+  - vb
+  name: Role
+  nameWithType: UserAccountConfig.Role
+  fullName: Meridian.Ui.Shared.UserAccountConfig.Role
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/UserProfileRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Role
+    path: ../../src/Meridian.Ui.Shared/UserProfileRegistry.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  syntax:
+    content: >-
+      [JsonPropertyName("role")]
+
+      public UserRole Role { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Auth.UserRole
+    content.vb: >-
+      <JsonPropertyName("role")>
+
+      Public Property Role As UserRole
+  overload: Meridian.Ui.Shared.UserAccountConfig.Role*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: role
+references:
+- uid: Meridian.Ui.Shared
+  commentId: N:Meridian.Ui.Shared
+  href: Meridian.html
+  name: Meridian.Ui.Shared
+  nameWithType: Meridian.Ui.Shared
+  fullName: Meridian.Ui.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Shared.UserAccountConfig}
+  commentId: T:System.IEquatable{Meridian.Ui.Shared.UserAccountConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<UserAccountConfig>
+  nameWithType: IEquatable<UserAccountConfig>
+  fullName: System.IEquatable<Meridian.Ui.Shared.UserAccountConfig>
+  nameWithType.vb: IEquatable(Of UserAccountConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Shared.UserAccountConfig)
+  name.vb: IEquatable(Of UserAccountConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Shared.UserAccountConfig
+    name: UserAccountConfig
+    href: Meridian.Ui.Shared.UserAccountConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Shared.UserAccountConfig
+    name: UserAccountConfig
+    href: Meridian.Ui.Shared.UserAccountConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.UserAccountConfig.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.UserAccountConfig.#ctor
+  href: Meridian.Ui.Shared.UserAccountConfig.html#Meridian_Ui_Shared_UserAccountConfig__ctor_System_String_System_String_Meridian_Contracts_Auth_UserRole_
+  name: UserAccountConfig
+  nameWithType: UserAccountConfig.UserAccountConfig
+  fullName: Meridian.Ui.Shared.UserAccountConfig.UserAccountConfig
+  nameWithType.vb: UserAccountConfig.New
+  fullName.vb: Meridian.Ui.Shared.UserAccountConfig.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Auth.UserRole
+  commentId: T:Meridian.Contracts.Auth.UserRole
+  parent: Meridian.Contracts.Auth
+  href: Meridian.Contracts.Auth.UserRole.html
+  name: UserRole
+  nameWithType: UserRole
+  fullName: Meridian.Contracts.Auth.UserRole
+- uid: Meridian.Contracts.Auth
+  commentId: N:Meridian.Contracts.Auth
+  href: Meridian.html
+  name: Meridian.Contracts.Auth
+  nameWithType: Meridian.Contracts.Auth
+  fullName: Meridian.Contracts.Auth
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Auth
+    name: Auth
+    href: Meridian.Contracts.Auth.html
+- uid: Meridian.Ui.Shared.UserAccountConfig.Username*
+  commentId: Overload:Meridian.Ui.Shared.UserAccountConfig.Username
+  href: Meridian.Ui.Shared.UserAccountConfig.html#Meridian_Ui_Shared_UserAccountConfig_Username
+  name: Username
+  nameWithType: UserAccountConfig.Username
+  fullName: Meridian.Ui.Shared.UserAccountConfig.Username
+- uid: Meridian.Ui.Shared.UserAccountConfig.Password*
+  commentId: Overload:Meridian.Ui.Shared.UserAccountConfig.Password
+  href: Meridian.Ui.Shared.UserAccountConfig.html#Meridian_Ui_Shared_UserAccountConfig_Password
+  name: Password
+  nameWithType: UserAccountConfig.Password
+  fullName: Meridian.Ui.Shared.UserAccountConfig.Password
+- uid: Meridian.Ui.Shared.UserAccountConfig.Role*
+  commentId: Overload:Meridian.Ui.Shared.UserAccountConfig.Role
+  href: Meridian.Ui.Shared.UserAccountConfig.html#Meridian_Ui_Shared_UserAccountConfig_Role
+  name: Role
+  nameWithType: UserAccountConfig.Role
+  fullName: Meridian.Ui.Shared.UserAccountConfig.Role

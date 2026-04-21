@@ -1,0 +1,667 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto
+  commentId: T:Meridian.Contracts.Domain.OrderBookLevelDto
+  id: OrderBookLevelDto
+  parent: Meridian.Contracts.Domain
+  children:
+  - Meridian.Contracts.Domain.OrderBookLevelDto.Level
+  - Meridian.Contracts.Domain.OrderBookLevelDto.MarketMaker
+  - Meridian.Contracts.Domain.OrderBookLevelDto.OrderCount
+  - Meridian.Contracts.Domain.OrderBookLevelDto.Price
+  - Meridian.Contracts.Domain.OrderBookLevelDto.Side
+  - Meridian.Contracts.Domain.OrderBookLevelDto.Size
+  langs:
+  - csharp
+  - vb
+  name: OrderBookLevelDto
+  nameWithType: OrderBookLevelDto
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderBookLevelDto
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Order book level data transfer object.
+  example: []
+  syntax:
+    content: public sealed class OrderBookLevelDto
+    content.vb: Public NotInheritable Class OrderBookLevelDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.Side
+  commentId: P:Meridian.Contracts.Domain.OrderBookLevelDto.Side
+  id: Side
+  parent: Meridian.Contracts.Domain.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: OrderBookLevelDto.Side
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the order book side.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("side")]
+
+      public string Side { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("side")>
+
+      Public Property Side As String
+  overload: Meridian.Contracts.Domain.OrderBookLevelDto.Side*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: side
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.Level
+  commentId: P:Meridian.Contracts.Domain.OrderBookLevelDto.Level
+  id: Level
+  parent: Meridian.Contracts.Domain.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: Level
+  nameWithType: OrderBookLevelDto.Level
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.Level
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Level
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the depth level.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("level")]
+
+      public int Level { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("level")>
+
+      Public Property Level As Integer
+  overload: Meridian.Contracts.Domain.OrderBookLevelDto.Level*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: level
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.Price
+  commentId: P:Meridian.Contracts.Domain.OrderBookLevelDto.Price
+  id: Price
+  parent: Meridian.Contracts.Domain.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: OrderBookLevelDto.Price
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the price at this level.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("price")]
+
+      public decimal Price { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("price")>
+
+      Public Property Price As Decimal
+  overload: Meridian.Contracts.Domain.OrderBookLevelDto.Price*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: price
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.Size
+  commentId: P:Meridian.Contracts.Domain.OrderBookLevelDto.Size
+  id: Size
+  parent: Meridian.Contracts.Domain.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: OrderBookLevelDto.Size
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.Size
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the size at this level.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("size")]
+
+      public decimal Size { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("size")>
+
+      Public Property Size As Decimal
+  overload: Meridian.Contracts.Domain.OrderBookLevelDto.Size*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: size
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.MarketMaker
+  commentId: P:Meridian.Contracts.Domain.OrderBookLevelDto.MarketMaker
+  id: MarketMaker
+  parent: Meridian.Contracts.Domain.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: MarketMaker
+  nameWithType: OrderBookLevelDto.MarketMaker
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.MarketMaker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketMaker
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the market maker identifier, if available.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("marketMaker")]
+
+      public string? MarketMaker { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("marketMaker")>
+
+      Public Property MarketMaker As String
+  overload: Meridian.Contracts.Domain.OrderBookLevelDto.MarketMaker*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: marketMaker
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.OrderCount
+  commentId: P:Meridian.Contracts.Domain.OrderBookLevelDto.OrderCount
+  id: OrderCount
+  parent: Meridian.Contracts.Domain.OrderBookLevelDto
+  langs:
+  - csharp
+  - vb
+  name: OrderCount
+  nameWithType: OrderBookLevelDto.OrderCount
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.OrderCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderCount
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the order count at this level, if available.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("orderCount")]
+
+      public int? OrderCount { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: >-
+      <JsonPropertyName("orderCount")>
+
+      Public Property OrderCount As Integer?
+  overload: Meridian.Contracts.Domain.OrderBookLevelDto.OrderCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: orderCount
+references:
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.Side*
+  commentId: Overload:Meridian.Contracts.Domain.OrderBookLevelDto.Side
+  href: Meridian.Contracts.Domain.OrderBookLevelDto.html#Meridian_Contracts_Domain_OrderBookLevelDto_Side
+  name: Side
+  nameWithType: OrderBookLevelDto.Side
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.Side
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.Level*
+  commentId: Overload:Meridian.Contracts.Domain.OrderBookLevelDto.Level
+  href: Meridian.Contracts.Domain.OrderBookLevelDto.html#Meridian_Contracts_Domain_OrderBookLevelDto_Level
+  name: Level
+  nameWithType: OrderBookLevelDto.Level
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.Level
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.Price*
+  commentId: Overload:Meridian.Contracts.Domain.OrderBookLevelDto.Price
+  href: Meridian.Contracts.Domain.OrderBookLevelDto.html#Meridian_Contracts_Domain_OrderBookLevelDto_Price
+  name: Price
+  nameWithType: OrderBookLevelDto.Price
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.Price
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.Size*
+  commentId: Overload:Meridian.Contracts.Domain.OrderBookLevelDto.Size
+  href: Meridian.Contracts.Domain.OrderBookLevelDto.html#Meridian_Contracts_Domain_OrderBookLevelDto_Size
+  name: Size
+  nameWithType: OrderBookLevelDto.Size
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.Size
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.MarketMaker*
+  commentId: Overload:Meridian.Contracts.Domain.OrderBookLevelDto.MarketMaker
+  href: Meridian.Contracts.Domain.OrderBookLevelDto.html#Meridian_Contracts_Domain_OrderBookLevelDto_MarketMaker
+  name: MarketMaker
+  nameWithType: OrderBookLevelDto.MarketMaker
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.MarketMaker
+- uid: Meridian.Contracts.Domain.OrderBookLevelDto.OrderCount*
+  commentId: Overload:Meridian.Contracts.Domain.OrderBookLevelDto.OrderCount
+  href: Meridian.Contracts.Domain.OrderBookLevelDto.html#Meridian_Contracts_Domain_OrderBookLevelDto_OrderCount
+  name: OrderCount
+  nameWithType: OrderBookLevelDto.OrderCount
+  fullName: Meridian.Contracts.Domain.OrderBookLevelDto.OrderCount
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

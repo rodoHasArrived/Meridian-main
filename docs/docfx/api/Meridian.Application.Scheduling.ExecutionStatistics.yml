@@ -1,0 +1,894 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.ExecutionStatistics
+  commentId: T:Meridian.Application.Scheduling.ExecutionStatistics
+  id: ExecutionStatistics
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.ExecutionStatistics.AverageRequestDurationMs
+  - Meridian.Application.Scheduling.ExecutionStatistics.FailedRequests
+  - Meridian.Application.Scheduling.ExecutionStatistics.FailedSymbols
+  - Meridian.Application.Scheduling.ExecutionStatistics.GapsDetected
+  - Meridian.Application.Scheduling.ExecutionStatistics.GapsFilled
+  - Meridian.Application.Scheduling.ExecutionStatistics.GapsRemaining
+  - Meridian.Application.Scheduling.ExecutionStatistics.MaxRequestDurationMs
+  - Meridian.Application.Scheduling.ExecutionStatistics.RateLimitedRequests
+  - Meridian.Application.Scheduling.ExecutionStatistics.SkippedSymbols
+  - Meridian.Application.Scheduling.ExecutionStatistics.SuccessRate
+  - Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulRequests
+  - Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulSymbols
+  - Meridian.Application.Scheduling.ExecutionStatistics.TotalBarsRetrieved
+  - Meridian.Application.Scheduling.ExecutionStatistics.TotalBytesDownloaded
+  - Meridian.Application.Scheduling.ExecutionStatistics.TotalRequests
+  - Meridian.Application.Scheduling.ExecutionStatistics.TotalSymbols
+  langs:
+  - csharp
+  - vb
+  name: ExecutionStatistics
+  nameWithType: ExecutionStatistics
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionStatistics
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Statistics from a scheduled execution.
+  example: []
+  syntax:
+    content: public sealed class ExecutionStatistics
+    content.vb: Public NotInheritable Class ExecutionStatistics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.TotalSymbols
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.TotalSymbols
+  id: TotalSymbols
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalSymbols
+  nameWithType: ExecutionStatistics.TotalSymbols
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.TotalSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSymbols
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int TotalSymbols { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalSymbols As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.TotalSymbols*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulSymbols
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulSymbols
+  id: SuccessfulSymbols
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: SuccessfulSymbols
+  nameWithType: ExecutionStatistics.SuccessfulSymbols
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessfulSymbols
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int SuccessfulSymbols { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SuccessfulSymbols As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulSymbols*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.FailedSymbols
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.FailedSymbols
+  id: FailedSymbols
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: FailedSymbols
+  nameWithType: ExecutionStatistics.FailedSymbols
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.FailedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedSymbols
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int FailedSymbols { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailedSymbols As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.FailedSymbols*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.SkippedSymbols
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.SkippedSymbols
+  id: SkippedSymbols
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: SkippedSymbols
+  nameWithType: ExecutionStatistics.SkippedSymbols
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.SkippedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkippedSymbols
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int SkippedSymbols { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SkippedSymbols As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.SkippedSymbols*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.GapsDetected
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.GapsDetected
+  id: GapsDetected
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: GapsDetected
+  nameWithType: ExecutionStatistics.GapsDetected
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.GapsDetected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsDetected
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int GapsDetected { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapsDetected As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.GapsDetected*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.GapsFilled
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.GapsFilled
+  id: GapsFilled
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: GapsFilled
+  nameWithType: ExecutionStatistics.GapsFilled
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.GapsFilled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsFilled
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int GapsFilled { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapsFilled As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.GapsFilled*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.GapsRemaining
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.GapsRemaining
+  id: GapsRemaining
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: GapsRemaining
+  nameWithType: ExecutionStatistics.GapsRemaining
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.GapsRemaining
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsRemaining
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int GapsRemaining { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property GapsRemaining As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.GapsRemaining*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.TotalBarsRetrieved
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.TotalBarsRetrieved
+  id: TotalBarsRetrieved
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalBarsRetrieved
+  nameWithType: ExecutionStatistics.TotalBarsRetrieved
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.TotalBarsRetrieved
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBarsRetrieved
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public long TotalBarsRetrieved { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalBarsRetrieved As Long
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.TotalBarsRetrieved*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.TotalBytesDownloaded
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.TotalBytesDownloaded
+  id: TotalBytesDownloaded
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalBytesDownloaded
+  nameWithType: ExecutionStatistics.TotalBytesDownloaded
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.TotalBytesDownloaded
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytesDownloaded
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public long TotalBytesDownloaded { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalBytesDownloaded As Long
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.TotalBytesDownloaded*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.TotalRequests
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.TotalRequests
+  id: TotalRequests
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalRequests
+  nameWithType: ExecutionStatistics.TotalRequests
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.TotalRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRequests
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int TotalRequests { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalRequests As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.TotalRequests*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulRequests
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulRequests
+  id: SuccessfulRequests
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: SuccessfulRequests
+  nameWithType: ExecutionStatistics.SuccessfulRequests
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessfulRequests
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int SuccessfulRequests { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SuccessfulRequests As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulRequests*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.FailedRequests
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.FailedRequests
+  id: FailedRequests
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: FailedRequests
+  nameWithType: ExecutionStatistics.FailedRequests
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.FailedRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedRequests
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int FailedRequests { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailedRequests As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.FailedRequests*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.RateLimitedRequests
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.RateLimitedRequests
+  id: RateLimitedRequests
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: RateLimitedRequests
+  nameWithType: ExecutionStatistics.RateLimitedRequests
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.RateLimitedRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitedRequests
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public int RateLimitedRequests { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RateLimitedRequests As Integer
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.RateLimitedRequests*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.AverageRequestDurationMs
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.AverageRequestDurationMs
+  id: AverageRequestDurationMs
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: AverageRequestDurationMs
+  nameWithType: ExecutionStatistics.AverageRequestDurationMs
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.AverageRequestDurationMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageRequestDurationMs
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public double AverageRequestDurationMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageRequestDurationMs As Double
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.AverageRequestDurationMs*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.MaxRequestDurationMs
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.MaxRequestDurationMs
+  id: MaxRequestDurationMs
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestDurationMs
+  nameWithType: ExecutionStatistics.MaxRequestDurationMs
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.MaxRequestDurationMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestDurationMs
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public double MaxRequestDurationMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxRequestDurationMs As Double
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.MaxRequestDurationMs*
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.SuccessRate
+  commentId: P:Meridian.Application.Scheduling.ExecutionStatistics.SuccessRate
+  id: SuccessRate
+  parent: Meridian.Application.Scheduling.ExecutionStatistics
+  langs:
+  - csharp
+  - vb
+  name: SuccessRate
+  nameWithType: ExecutionStatistics.SuccessRate
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.SuccessRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessRate
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Success rate (0.0 - 1.0).
+  example: []
+  syntax:
+    content: public double SuccessRate { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property SuccessRate As Double
+  overload: Meridian.Application.Scheduling.ExecutionStatistics.SuccessRate*
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.TotalSymbols*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.TotalSymbols
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_TotalSymbols
+  name: TotalSymbols
+  nameWithType: ExecutionStatistics.TotalSymbols
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.TotalSymbols
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulSymbols*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulSymbols
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_SuccessfulSymbols
+  name: SuccessfulSymbols
+  nameWithType: ExecutionStatistics.SuccessfulSymbols
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulSymbols
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.FailedSymbols*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.FailedSymbols
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_FailedSymbols
+  name: FailedSymbols
+  nameWithType: ExecutionStatistics.FailedSymbols
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.FailedSymbols
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.SkippedSymbols*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.SkippedSymbols
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_SkippedSymbols
+  name: SkippedSymbols
+  nameWithType: ExecutionStatistics.SkippedSymbols
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.SkippedSymbols
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.GapsDetected*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.GapsDetected
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_GapsDetected
+  name: GapsDetected
+  nameWithType: ExecutionStatistics.GapsDetected
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.GapsDetected
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.GapsFilled*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.GapsFilled
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_GapsFilled
+  name: GapsFilled
+  nameWithType: ExecutionStatistics.GapsFilled
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.GapsFilled
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.GapsRemaining*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.GapsRemaining
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_GapsRemaining
+  name: GapsRemaining
+  nameWithType: ExecutionStatistics.GapsRemaining
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.GapsRemaining
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.TotalBarsRetrieved*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.TotalBarsRetrieved
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_TotalBarsRetrieved
+  name: TotalBarsRetrieved
+  nameWithType: ExecutionStatistics.TotalBarsRetrieved
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.TotalBarsRetrieved
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.TotalBytesDownloaded*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.TotalBytesDownloaded
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_TotalBytesDownloaded
+  name: TotalBytesDownloaded
+  nameWithType: ExecutionStatistics.TotalBytesDownloaded
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.TotalBytesDownloaded
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.TotalRequests*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.TotalRequests
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_TotalRequests
+  name: TotalRequests
+  nameWithType: ExecutionStatistics.TotalRequests
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.TotalRequests
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulRequests*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulRequests
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_SuccessfulRequests
+  name: SuccessfulRequests
+  nameWithType: ExecutionStatistics.SuccessfulRequests
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.SuccessfulRequests
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.FailedRequests*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.FailedRequests
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_FailedRequests
+  name: FailedRequests
+  nameWithType: ExecutionStatistics.FailedRequests
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.FailedRequests
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.RateLimitedRequests*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.RateLimitedRequests
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_RateLimitedRequests
+  name: RateLimitedRequests
+  nameWithType: ExecutionStatistics.RateLimitedRequests
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.RateLimitedRequests
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.AverageRequestDurationMs*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.AverageRequestDurationMs
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_AverageRequestDurationMs
+  name: AverageRequestDurationMs
+  nameWithType: ExecutionStatistics.AverageRequestDurationMs
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.AverageRequestDurationMs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.MaxRequestDurationMs*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.MaxRequestDurationMs
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_MaxRequestDurationMs
+  name: MaxRequestDurationMs
+  nameWithType: ExecutionStatistics.MaxRequestDurationMs
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.MaxRequestDurationMs
+- uid: Meridian.Application.Scheduling.ExecutionStatistics.SuccessRate*
+  commentId: Overload:Meridian.Application.Scheduling.ExecutionStatistics.SuccessRate
+  href: Meridian.Application.Scheduling.ExecutionStatistics.html#Meridian_Application_Scheduling_ExecutionStatistics_SuccessRate
+  name: SuccessRate
+  nameWithType: ExecutionStatistics.SuccessRate
+  fullName: Meridian.Application.Scheduling.ExecutionStatistics.SuccessRate

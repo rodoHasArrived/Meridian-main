@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
 
-public sealed class SecurityMasterService : ISecurityMasterService
+public sealed class SecurityMasterService : ISecurityMasterService, ISecurityMasterAmender
 {
     private readonly ISecurityMasterEventStore _eventStore;
     private readonly ISecurityMasterSnapshotStore _snapshotStore;
@@ -46,7 +46,13 @@ public sealed class SecurityMasterService : ISecurityMasterService
     public Task<SecurityDetailDto> CreateAsync(CreateSecurityRequest request, CancellationToken ct = default)
         => ExecuteCreateAsync(request, ct);
 
-    public async Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+    public Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+        => AmendTermsInternalAsync(request, eventType: "TermsAmended", ct);
+
+    private async Task<SecurityDetailDto> AmendTermsInternalAsync(
+        AmendSecurityTermsRequest request,
+        string eventType,
+        CancellationToken ct)
     {
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
         var current = await _rebuilder.RebuildEconomicDefinitionAsync(request.SecurityId, aliasProjection, ct).ConfigureAwait(false)
@@ -59,7 +65,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
         var envelope = SecurityMasterMapping.ToEventEnvelope(
             economic,
-            "TermsAmended",
+            eventType,
             request.UpdatedBy,
             request.SourceSystem,
             request.Reason,
@@ -97,6 +103,48 @@ public sealed class SecurityMasterService : ISecurityMasterService
         TryReseedRegistryInBackground();
 
         return SecurityMasterMapping.ToDetail(projection);
+    }
+
+    public async Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)
+    {
+        var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+
+        var amendRequest = new AmendSecurityTermsRequest(
+            SecurityId: securityId,
+            ExpectedVersion: request.ExpectedVersion,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: SecurityMasterMapping.BuildPreferredEquityTermsPatch(currentProjection, request),
+            IdentifiersToAdd: Array.Empty<SecurityIdentifierDto>(),
+            IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
+            EffectiveFrom: request.EffectiveFrom,
+            SourceSystem: request.SourceSystem,
+            UpdatedBy: request.UpdatedBy,
+            SourceRecordId: request.SourceRecordId,
+            Reason: request.Reason);
+
+        return await AmendTermsInternalAsync(amendRequest, eventType: "PreferredTermsAmended", ct).ConfigureAwait(false);
+    }
+
+    public async Task<SecurityDetailDto> AmendConvertibleEquityTermsAsync(Guid securityId, AmendConvertibleEquityTermsRequest request, CancellationToken ct = default)
+    {
+        var currentProjection = await _store.GetProjectionAsync(securityId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Security '{securityId}' was not found.");
+
+        var amendRequest = new AmendSecurityTermsRequest(
+            SecurityId: securityId,
+            ExpectedVersion: request.ExpectedVersion,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: SecurityMasterMapping.BuildConvertibleEquityTermsPatch(currentProjection, request),
+            IdentifiersToAdd: Array.Empty<SecurityIdentifierDto>(),
+            IdentifiersToExpire: Array.Empty<SecurityIdentifierDto>(),
+            EffectiveFrom: request.EffectiveFrom,
+            SourceSystem: request.SourceSystem,
+            UpdatedBy: request.UpdatedBy,
+            SourceRecordId: request.SourceRecordId,
+            Reason: request.Reason);
+
+        return await AmendTermsInternalAsync(amendRequest, eventType: "ConvertibleTermsAmended", ct).ConfigureAwait(false);
     }
 
     public async Task DeactivateAsync(DeactivateSecurityRequest request, CancellationToken ct = default)
@@ -159,18 +207,7 @@ public sealed class SecurityMasterService : ISecurityMasterService
         await _store.UpsertProjectionAsync(projection, ct).ConfigureAwait(false);
         await SaveSnapshotIfNeededAsync(economic, ct).ConfigureAwait(false);
 
-        // Ingest-time conflict detection — best-effort, never blocks the create
-        if (_conflictService is not null)
-        {
-            try
-            {
-                await _conflictService.RecordConflictsForProjectionAsync(projection, ct).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Conflict detection failed for new security {SecurityId}", request.SecurityId);
-            }
-        }
+        await TryRecordConflictsAsync(projection, request.SecurityId, ct).ConfigureAwait(false);
 
         // Enqueue a best-effort corporate action backfill for the newly-created security so
         // that historical corp action data is available immediately for backtesting.

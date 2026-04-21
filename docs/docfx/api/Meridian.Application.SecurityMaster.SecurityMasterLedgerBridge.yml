@@ -1,0 +1,705 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
+  id: SecurityMasterLedgerBridge
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.#ctor(Meridian.Application.SecurityMaster.ISecurityMasterQueryService,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge})
+  - Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterLedgerBridge
+  nameWithType: SecurityMasterLedgerBridge
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterLedgerBridge
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: Default implementation of <xref href="Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public sealed class SecurityMasterLedgerBridge : ISecurityMasterLedgerBridge'
+    content.vb: Public NotInheritable Class SecurityMasterLedgerBridge Implements ISecurityMasterLedgerBridge
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.#ctor(Meridian.Application.SecurityMaster.ISecurityMasterQueryService,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge})
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.#ctor(Meridian.Application.SecurityMaster.ISecurityMasterQueryService,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge})
+  id: '#ctor(Meridian.Application.SecurityMaster.ISecurityMasterQueryService,Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge})'
+  parent: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterLedgerBridge(ISecurityMasterQueryService, ILogger<SecurityMasterLedgerBridge>)
+  nameWithType: SecurityMasterLedgerBridge.SecurityMasterLedgerBridge(ISecurityMasterQueryService, ILogger<SecurityMasterLedgerBridge>)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.SecurityMasterLedgerBridge(Meridian.Application.SecurityMaster.ISecurityMasterQueryService, Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public SecurityMasterLedgerBridge(ISecurityMasterQueryService queryService, ILogger<SecurityMasterLedgerBridge> logger)
+    parameters:
+    - id: queryService
+      type: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge}
+    content.vb: Public Sub New(queryService As ISecurityMasterQueryService, logger As ILogger(Of SecurityMasterLedgerBridge))
+  overload: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.#ctor*
+  nameWithType.vb: SecurityMasterLedgerBridge.New(ISecurityMasterQueryService, ILogger(Of SecurityMasterLedgerBridge))
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.New(Meridian.Application.SecurityMaster.ISecurityMasterQueryService, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge))
+  name.vb: New(ISecurityMasterQueryService, ILogger(Of SecurityMasterLedgerBridge))
+- uid: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  id: PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
+  langs:
+  - csharp
+  - vb
+  name: PostCorporateActionsAsync(Guid, string, Ledger, CancellationToken)
+  nameWithType: SecurityMasterLedgerBridge.PostCorporateActionsAsync(Guid, string, Ledger, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid, string, Meridian.Ledger.Ledger, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostCorporateActionsAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Posts contractual corporate action flows for <code class="paramref">securityId</code> into
+
+    <code class="paramref">ledger</code> using <xref href="Meridian.Ledger.LedgerViewKind.SecurityMaster" data-throw-if-not-resolved="false"></xref>.
+
+    Idempotent: entries whose <xref href="Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId" data-throw-if-not-resolved="false"></xref> already appear
+
+    as a <xref href="Meridian.Ledger.JournalEntry.JournalEntryId" data-throw-if-not-resolved="false"></xref> in the ledger are skipped.
+  example: []
+  syntax:
+    content: public Task PostCorporateActionsAsync(Guid securityId, string ticker, Ledger ledger, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ticker
+      type: System.String
+    - id: ledger
+      type: Meridian.Ledger.Ledger
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function PostCorporateActionsAsync(securityId As Guid, ticker As String, ledger As Ledger, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.PostCorporateActionsAsync*
+  implements:
+  - Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  nameWithType.vb: SecurityMasterLedgerBridge.PostCorporateActionsAsync(Guid, String, Ledger, CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid, String, Meridian.Ledger.Ledger, System.Threading.CancellationToken)
+  name.vb: PostCorporateActionsAsync(Guid, String, Ledger, CancellationToken)
+references:
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.html
+  name: ISecurityMasterLedgerBridge
+  nameWithType: ISecurityMasterLedgerBridge
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.#ctor*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.#ctor
+  href: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.html#Meridian_Application_SecurityMaster_SecurityMasterLedgerBridge__ctor_Meridian_Application_SecurityMaster_ISecurityMasterQueryService_Microsoft_Extensions_Logging_ILogger_Meridian_Application_SecurityMaster_SecurityMasterLedgerBridge__
+  name: SecurityMasterLedgerBridge
+  nameWithType: SecurityMasterLedgerBridge.SecurityMasterLedgerBridge
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.SecurityMasterLedgerBridge
+  nameWithType.vb: SecurityMasterLedgerBridge.New
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.New
+  name.vb: New
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityMasterQueryService.html
+  name: ISecurityMasterQueryService
+  nameWithType: ISecurityMasterQueryService
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterQueryService
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<SecurityMasterLedgerBridge>
+  nameWithType: ILogger<SecurityMasterLedgerBridge>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge>
+  nameWithType.vb: ILogger(Of SecurityMasterLedgerBridge)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge)
+  name.vb: ILogger(Of SecurityMasterLedgerBridge)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
+    name: SecurityMasterLedgerBridge
+    href: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
+    name: SecurityMasterLedgerBridge
+    href: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Ledger.LedgerViewKind.SecurityMaster
+  commentId: F:Meridian.Ledger.LedgerViewKind.SecurityMaster
+  name: SecurityMaster
+  nameWithType: LedgerViewKind.SecurityMaster
+  fullName: Meridian.Ledger.LedgerViewKind.SecurityMaster
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+  name: CorpActId
+  nameWithType: CorporateActionDto.CorpActId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+- uid: Meridian.Ledger.JournalEntry.JournalEntryId
+  commentId: P:Meridian.Ledger.JournalEntry.JournalEntryId
+  name: JournalEntryId
+  nameWithType: JournalEntry.JournalEntryId
+  fullName: Meridian.Ledger.JournalEntry.JournalEntryId
+- uid: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.PostCorporateActionsAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.PostCorporateActionsAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.html#Meridian_Application_SecurityMaster_SecurityMasterLedgerBridge_PostCorporateActionsAsync_System_Guid_System_String_Meridian_Ledger_Ledger_System_Threading_CancellationToken_
+  name: PostCorporateActionsAsync
+  nameWithType: SecurityMasterLedgerBridge.PostCorporateActionsAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge.PostCorporateActionsAsync
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
+  isExternal: true
+  href: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.html#Meridian_Application_SecurityMaster_ISecurityMasterLedgerBridge_PostCorporateActionsAsync_System_Guid_System_String_Meridian_Ledger_Ledger_System_Threading_CancellationToken_
+  name: PostCorporateActionsAsync(Guid, string, Ledger, CancellationToken)
+  nameWithType: ISecurityMasterLedgerBridge.PostCorporateActionsAsync(Guid, string, Ledger, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid, string, Meridian.Ledger.Ledger, System.Threading.CancellationToken)
+  nameWithType.vb: ISecurityMasterLedgerBridge.PostCorporateActionsAsync(Guid, String, Ledger, CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid, String, Meridian.Ledger.Ledger, System.Threading.CancellationToken)
+  name.vb: PostCorporateActionsAsync(Guid, String, Ledger, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+    name: PostCorporateActionsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.html#Meridian_Application_SecurityMaster_ISecurityMasterLedgerBridge_PostCorporateActionsAsync_System_Guid_System_String_Meridian_Ledger_Ledger_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ledger.Ledger
+    name: Ledger
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+    name: PostCorporateActionsAsync
+    href: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.html#Meridian_Application_SecurityMaster_ISecurityMasterLedgerBridge_PostCorporateActionsAsync_System_Guid_System_String_Meridian_Ledger_Ledger_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ledger.Ledger
+    name: Ledger
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ledger.Ledger
+  commentId: T:Meridian.Ledger.Ledger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.Ledger.html
+  name: Ledger
+  nameWithType: Ledger
+  fullName: Meridian.Ledger.Ledger
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

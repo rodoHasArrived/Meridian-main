@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DataSourceType
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceType
+  id: DataSourceType
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DataSourceType.Historical
+  - Meridian.Infrastructure.DataSources.DataSourceType.Hybrid
+  - Meridian.Infrastructure.DataSources.DataSourceType.Realtime
+  langs:
+  - csharp
+  - vb
+  name: DataSourceType
+  nameWithType: DataSourceType
+  fullName: Meridian.Infrastructure.DataSources.DataSourceType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceType
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 112
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Type of data provided by a data source.
+  example: []
+  syntax:
+    content: 'public enum DataSourceType : byte'
+    content.vb: Public Enum DataSourceType As Byte
+- uid: Meridian.Infrastructure.DataSources.DataSourceType.Realtime
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceType.Realtime
+  id: Realtime
+  parent: Meridian.Infrastructure.DataSources.DataSourceType
+  langs:
+  - csharp
+  - vb
+  name: Realtime
+  nameWithType: DataSourceType.Realtime
+  fullName: Meridian.Infrastructure.DataSources.DataSourceType.Realtime
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Realtime
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 115
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time streaming data (trades, quotes, market depth).
+  example: []
+  syntax:
+    content: Realtime = 0
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceType
+- uid: Meridian.Infrastructure.DataSources.DataSourceType.Historical
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceType.Historical
+  id: Historical
+  parent: Meridian.Infrastructure.DataSources.DataSourceType
+  langs:
+  - csharp
+  - vb
+  name: Historical
+  nameWithType: DataSourceType.Historical
+  fullName: Meridian.Infrastructure.DataSources.DataSourceType.Historical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Historical
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 118
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Historical data (daily bars, minute bars, etc.).
+  example: []
+  syntax:
+    content: Historical = 1
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceType
+- uid: Meridian.Infrastructure.DataSources.DataSourceType.Hybrid
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceType.Hybrid
+  id: Hybrid
+  parent: Meridian.Infrastructure.DataSources.DataSourceType
+  langs:
+  - csharp
+  - vb
+  name: Hybrid
+  nameWithType: DataSourceType.Hybrid
+  fullName: Meridian.Infrastructure.DataSources.DataSourceType.Hybrid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hybrid
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 121
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Both real-time and historical data.
+  example: []
+  syntax:
+    content: Hybrid = 2
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceType
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.DataSourceType
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceType
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceType.html
+  name: DataSourceType
+  nameWithType: DataSourceType
+  fullName: Meridian.Infrastructure.DataSources.DataSourceType

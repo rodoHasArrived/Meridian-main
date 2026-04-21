@@ -1,0 +1,874 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ResultTypes.Result`1
+  commentId: T:Meridian.Application.ResultTypes.Result`1
+  id: Result`1
+  parent: Meridian.Application.ResultTypes
+  children:
+  - Meridian.Application.ResultTypes.Result`1.Error
+  - Meridian.Application.ResultTypes.Result`1.Failure(`0)
+  - Meridian.Application.ResultTypes.Result`1.IsFailure
+  - Meridian.Application.ResultTypes.Result`1.IsSuccess
+  - Meridian.Application.ResultTypes.Result`1.Match(System.Action,System.Action{`0})
+  - Meridian.Application.ResultTypes.Result`1.Match``1(System.Func{``0},System.Func{`0,``0})
+  - Meridian.Application.ResultTypes.Result`1.Success
+  - Meridian.Application.ResultTypes.Result`1.ToString
+  langs:
+  - csharp
+  - vb
+  name: Result<TError>
+  nameWithType: Result<TError>
+  fullName: Meridian.Application.ResultTypes.Result<TError>
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Result
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Non-generic Result for operations that don't return a value
+  example: []
+  syntax:
+    content: public readonly struct Result<TError>
+    typeParameters:
+    - id: TError
+    content.vb: Public Structure Result(Of TError)
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  nameWithType.vb: Result(Of TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError)
+  name.vb: Result(Of TError)
+- uid: Meridian.Application.ResultTypes.Result`1.IsSuccess
+  commentId: P:Meridian.Application.ResultTypes.Result`1.IsSuccess
+  id: IsSuccess
+  parent: Meridian.Application.ResultTypes.Result`1
+  langs:
+  - csharp
+  - vb
+  name: IsSuccess
+  nameWithType: Result<TError>.IsSuccess
+  fullName: Meridian.Application.ResultTypes.Result<TError>.IsSuccess
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsSuccess
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public bool IsSuccess { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsSuccess As Boolean
+  overload: Meridian.Application.ResultTypes.Result`1.IsSuccess*
+  nameWithType.vb: Result(Of TError).IsSuccess
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).IsSuccess
+- uid: Meridian.Application.ResultTypes.Result`1.IsFailure
+  commentId: P:Meridian.Application.ResultTypes.Result`1.IsFailure
+  id: IsFailure
+  parent: Meridian.Application.ResultTypes.Result`1
+  langs:
+  - csharp
+  - vb
+  name: IsFailure
+  nameWithType: Result<TError>.IsFailure
+  fullName: Meridian.Application.ResultTypes.Result<TError>.IsFailure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsFailure
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public bool IsFailure { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsFailure As Boolean
+  overload: Meridian.Application.ResultTypes.Result`1.IsFailure*
+  nameWithType.vb: Result(Of TError).IsFailure
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).IsFailure
+- uid: Meridian.Application.ResultTypes.Result`1.Error
+  commentId: P:Meridian.Application.ResultTypes.Result`1.Error
+  id: Error
+  parent: Meridian.Application.ResultTypes.Result`1
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: Result<TError>.Error
+  fullName: Meridian.Application.ResultTypes.Result<TError>.Error
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public TError Error { get; }
+    parameters: []
+    return:
+      type: '{TError}'
+    content.vb: Public ReadOnly Property [Error] As TError
+  overload: Meridian.Application.ResultTypes.Result`1.Error*
+  nameWithType.vb: Result(Of TError).Error
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).Error
+- uid: Meridian.Application.ResultTypes.Result`1.Success
+  commentId: M:Meridian.Application.ResultTypes.Result`1.Success
+  id: Success
+  parent: Meridian.Application.ResultTypes.Result`1
+  langs:
+  - csharp
+  - vb
+  name: Success()
+  nameWithType: Result<TError>.Success()
+  fullName: Meridian.Application.ResultTypes.Result<TError>.Success()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static Result<TError> Success()
+    return:
+      type: Meridian.Application.ResultTypes.Result`1
+    content.vb: Public Shared Function Success() As Result(Of TError)
+  overload: Meridian.Application.ResultTypes.Result`1.Success*
+  nameWithType.vb: Result(Of TError).Success()
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).Success()
+- uid: Meridian.Application.ResultTypes.Result`1.Failure(`0)
+  commentId: M:Meridian.Application.ResultTypes.Result`1.Failure(`0)
+  id: Failure(`0)
+  parent: Meridian.Application.ResultTypes.Result`1
+  langs:
+  - csharp
+  - vb
+  name: Failure(TError)
+  nameWithType: Result<TError>.Failure(TError)
+  fullName: Meridian.Application.ResultTypes.Result<TError>.Failure(TError)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failure
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static Result<TError> Failure(TError error)
+    parameters:
+    - id: error
+      type: '{TError}'
+    return:
+      type: Meridian.Application.ResultTypes.Result`1
+    content.vb: Public Shared Function Failure([error] As TError) As Result(Of TError)
+  overload: Meridian.Application.ResultTypes.Result`1.Failure*
+  nameWithType.vb: Result(Of TError).Failure(TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).Failure(TError)
+- uid: Meridian.Application.ResultTypes.Result`1.Match``1(System.Func{``0},System.Func{`0,``0})
+  commentId: M:Meridian.Application.ResultTypes.Result`1.Match``1(System.Func{``0},System.Func{`0,``0})
+  id: Match``1(System.Func{``0},System.Func{`0,``0})
+  parent: Meridian.Application.ResultTypes.Result`1
+  langs:
+  - csharp
+  - vb
+  name: Match<TResult>(Func<TResult>, Func<TError, TResult>)
+  nameWithType: Result<TError>.Match<TResult>(Func<TResult>, Func<TError, TResult>)
+  fullName: Meridian.Application.ResultTypes.Result<TError>.Match<TResult>(System.Func<TResult>, System.Func<TError, TResult>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Match
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public TResult Match<TResult>(Func<TResult> onSuccess, Func<TError, TResult> onFailure)
+    parameters:
+    - id: onSuccess
+      type: System.Func{{TResult}}
+    - id: onFailure
+      type: System.Func{{TError},{TResult}}
+    typeParameters:
+    - id: TResult
+    return:
+      type: '{TResult}'
+    content.vb: Public Function Match(Of TResult)(onSuccess As Func(Of TResult), onFailure As Func(Of TError, TResult)) As TResult
+  overload: Meridian.Application.ResultTypes.Result`1.Match*
+  nameWithType.vb: Result(Of TError).Match(Of TResult)(Func(Of TResult), Func(Of TError, TResult))
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).Match(Of TResult)(System.Func(Of TResult), System.Func(Of TError, TResult))
+  name.vb: Match(Of TResult)(Func(Of TResult), Func(Of TError, TResult))
+- uid: Meridian.Application.ResultTypes.Result`1.Match(System.Action,System.Action{`0})
+  commentId: M:Meridian.Application.ResultTypes.Result`1.Match(System.Action,System.Action{`0})
+  id: Match(System.Action,System.Action{`0})
+  parent: Meridian.Application.ResultTypes.Result`1
+  langs:
+  - csharp
+  - vb
+  name: Match(Action, Action<TError>)
+  nameWithType: Result<TError>.Match(Action, Action<TError>)
+  fullName: Meridian.Application.ResultTypes.Result<TError>.Match(System.Action, System.Action<TError>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Match
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public void Match(Action onSuccess, Action<TError> onFailure)
+    parameters:
+    - id: onSuccess
+      type: System.Action
+    - id: onFailure
+      type: System.Action{{TError}}
+    content.vb: Public Sub Match(onSuccess As Action, onFailure As Action(Of TError))
+  overload: Meridian.Application.ResultTypes.Result`1.Match*
+  nameWithType.vb: Result(Of TError).Match(Action, Action(Of TError))
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).Match(System.Action, System.Action(Of TError))
+  name.vb: Match(Action, Action(Of TError))
+- uid: Meridian.Application.ResultTypes.Result`1.ToString
+  commentId: M:Meridian.Application.ResultTypes.Result`1.ToString
+  id: ToString
+  parent: Meridian.Application.ResultTypes.Result`1
+  langs:
+  - csharp
+  - vb
+  name: ToString()
+  nameWithType: Result<TError>.ToString()
+  fullName: Meridian.Application.ResultTypes.Result<TError>.ToString()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/Result.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToString
+    path: ../../src/Meridian.Application/Results/Result.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Returns the fully qualified type name of this instance.
+  example: []
+  syntax:
+    content: public override string ToString()
+    return:
+      type: System.String
+      description: The fully qualified type name.
+    content.vb: Public Overrides Function ToString() As String
+  overridden: System.ValueType.ToString
+  overload: Meridian.Application.ResultTypes.Result`1.ToString*
+  nameWithType.vb: Result(Of TError).ToString()
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).ToString()
+references:
+- uid: Meridian.Application.ResultTypes
+  commentId: N:Meridian.Application.ResultTypes
+  href: Meridian.html
+  name: Meridian.Application.ResultTypes
+  nameWithType: Meridian.Application.ResultTypes
+  fullName: Meridian.Application.ResultTypes
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.ResultTypes.Result`1.IsSuccess*
+  commentId: Overload:Meridian.Application.ResultTypes.Result`1.IsSuccess
+  href: Meridian.Application.ResultTypes.Result-1.html#Meridian_Application_ResultTypes_Result_1_IsSuccess
+  name: IsSuccess
+  nameWithType: Result<TError>.IsSuccess
+  fullName: Meridian.Application.ResultTypes.Result<TError>.IsSuccess
+  nameWithType.vb: Result(Of TError).IsSuccess
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).IsSuccess
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.ResultTypes.Result`1.IsFailure*
+  commentId: Overload:Meridian.Application.ResultTypes.Result`1.IsFailure
+  href: Meridian.Application.ResultTypes.Result-1.html#Meridian_Application_ResultTypes_Result_1_IsFailure
+  name: IsFailure
+  nameWithType: Result<TError>.IsFailure
+  fullName: Meridian.Application.ResultTypes.Result<TError>.IsFailure
+  nameWithType.vb: Result(Of TError).IsFailure
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).IsFailure
+- uid: Meridian.Application.ResultTypes.Result`1.Error*
+  commentId: Overload:Meridian.Application.ResultTypes.Result`1.Error
+  href: Meridian.Application.ResultTypes.Result-1.html#Meridian_Application_ResultTypes_Result_1_Error
+  name: Error
+  nameWithType: Result<TError>.Error
+  fullName: Meridian.Application.ResultTypes.Result<TError>.Error
+  nameWithType.vb: Result(Of TError).Error
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).Error
+- uid: '{TError}'
+  commentId: '!:TError'
+  definition: TError
+  name: TError
+  nameWithType: TError
+  fullName: TError
+- uid: TError
+  name: TError
+  nameWithType: TError
+  fullName: TError
+- uid: Meridian.Application.ResultTypes.Result`1.Success*
+  commentId: Overload:Meridian.Application.ResultTypes.Result`1.Success
+  href: Meridian.Application.ResultTypes.Result-1.html#Meridian_Application_ResultTypes_Result_1_Success
+  name: Success
+  nameWithType: Result<TError>.Success
+  fullName: Meridian.Application.ResultTypes.Result<TError>.Success
+  nameWithType.vb: Result(Of TError).Success
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).Success
+- uid: Meridian.Application.ResultTypes.Result`1
+  commentId: T:Meridian.Application.ResultTypes.Result`1
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.Result-1.html
+  name: Result<TError>
+  nameWithType: Result<TError>
+  fullName: Meridian.Application.ResultTypes.Result<TError>
+  nameWithType.vb: Result(Of TError)
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError)
+  name.vb: Result(Of TError)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.Result`1
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-1.html
+  - name: <
+  - name: TError
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.Result`1
+    name: Result
+    href: Meridian.Application.ResultTypes.Result-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TError
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result`1.Failure*
+  commentId: Overload:Meridian.Application.ResultTypes.Result`1.Failure
+  href: Meridian.Application.ResultTypes.Result-1.html#Meridian_Application_ResultTypes_Result_1_Failure__0_
+  name: Failure
+  nameWithType: Result<TError>.Failure
+  fullName: Meridian.Application.ResultTypes.Result<TError>.Failure
+  nameWithType.vb: Result(Of TError).Failure
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).Failure
+- uid: Meridian.Application.ResultTypes.Result`1.Match*
+  commentId: Overload:Meridian.Application.ResultTypes.Result`1.Match
+  href: Meridian.Application.ResultTypes.Result-1.html#Meridian_Application_ResultTypes_Result_1_Match__1_System_Func___0__System_Func__0___0__
+  name: Match
+  nameWithType: Result<TError>.Match
+  fullName: Meridian.Application.ResultTypes.Result<TError>.Match
+  nameWithType.vb: Result(Of TError).Match
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).Match
+- uid: System.Func{{TResult}}
+  commentId: T:System.Func{``0}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Func{{TError},{TResult}}
+  commentId: T:System.Func{`1,``0}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<TError, TResult>
+  nameWithType: Func<TError, TResult>
+  fullName: System.Func<TError, TResult>
+  nameWithType.vb: Func(Of TError, TResult)
+  fullName.vb: System.Func(Of TError, TResult)
+  name.vb: Func(Of TError, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: TError
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TError
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: '{TResult}'
+  commentId: '!:TResult'
+  definition: TResult
+  name: TResult
+  nameWithType: TResult
+  fullName: TResult
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: TResult
+  name: TResult
+  nameWithType: TResult
+  fullName: TResult
+- uid: System.Action
+  commentId: T:System.Action
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action
+  name: Action
+  nameWithType: Action
+  fullName: System.Action
+- uid: System.Action{{TError}}
+  commentId: T:System.Action{`1}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<TError>
+  nameWithType: Action<TError>
+  fullName: System.Action<TError>
+  nameWithType.vb: Action(Of TError)
+  fullName.vb: System.Action(Of TError)
+  name.vb: Action(Of TError)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: TError
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TError
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Application.ResultTypes.Result`1.ToString*
+  commentId: Overload:Meridian.Application.ResultTypes.Result`1.ToString
+  href: Meridian.Application.ResultTypes.Result-1.html#Meridian_Application_ResultTypes_Result_1_ToString
+  name: ToString
+  nameWithType: Result<TError>.ToString
+  fullName: Meridian.Application.ResultTypes.Result<TError>.ToString
+  nameWithType.vb: Result(Of TError).ToString
+  fullName.vb: Meridian.Application.ResultTypes.Result(Of TError).ToString
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

@@ -1,0 +1,1923 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase
+  commentId: T:Meridian.Ui.Services.Services.ConfigServiceBase
+  id: ConfigServiceBase
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.ConfigServiceBase.AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.ConfigPath
+  - Meridian.Ui.Services.Services.ConfigServiceBase.DeleteDataSourceAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.EnumerateProviders(Meridian.Contracts.Configuration.BackfillProvidersConfigDto)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProviderOptionsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProvidersConfigAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.GetConfiguredSymbolsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.GetDataSourcesConfigDtoAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.LoadConfigCoreAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.LogError(System.String,System.Exception)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.NormalizeProviderId(System.String)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.RemoveSymbolAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.ResetBackfillProviderOptionsAsync(System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.SaveConfigCoreAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.SaveSymbolsAsync(Meridian.Contracts.Configuration.SymbolConfigDto[],System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.SetBackfillProviderOptionsAsync(System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.SetDefaultDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.SharedJsonOptions
+  - Meridian.Ui.Services.Services.ConfigServiceBase.UpdateFailoverSettingsAsync(System.Boolean,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ConfigServiceBase.ValidateConfigDetailAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ConfigServiceBase
+  nameWithType: ConfigServiceBase
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigServiceBase
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Abstract base class for configuration management shared between platforms.
+
+    Provides platform-agnostic config validation, backfill provider management,
+
+    data source management, and symbol management.
+
+    Platform-specific config file I/O is delegated to derived classes.
+
+    Part of Phase 2 service extraction.
+  example: []
+  syntax:
+    content: public abstract class ConfigServiceBase
+    content.vb: Public MustInherit Class ConfigServiceBase
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.SharedJsonOptions
+  commentId: F:Meridian.Ui.Services.Services.ConfigServiceBase.SharedJsonOptions
+  id: SharedJsonOptions
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: SharedJsonOptions
+  nameWithType: ConfigServiceBase.SharedJsonOptions
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.SharedJsonOptions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SharedJsonOptions
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: protected static readonly JsonSerializerOptions SharedJsonOptions
+    return:
+      type: System.Text.Json.JsonSerializerOptions
+    content.vb: Protected Shared ReadOnly SharedJsonOptions As JsonSerializerOptions
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.ConfigPath
+  commentId: P:Meridian.Ui.Services.Services.ConfigServiceBase.ConfigPath
+  id: ConfigPath
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ConfigPath
+  nameWithType: ConfigServiceBase.ConfigPath
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.ConfigPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigPath
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the path to the configuration file.
+  example: []
+  syntax:
+    content: public abstract string ConfigPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public MustOverride ReadOnly Property ConfigPath As String
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.ConfigPath*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.LoadConfigCoreAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.LoadConfigCoreAsync(System.Threading.CancellationToken)
+  id: LoadConfigCoreAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: LoadConfigCoreAsync(CancellationToken)
+  nameWithType: ConfigServiceBase.LoadConfigCoreAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.LoadConfigCoreAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadConfigCoreAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Loads the application configuration DTO from persistent storage.
+  example: []
+  syntax:
+    content: protected abstract Task<AppConfigDto?> LoadConfigCoreAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.AppConfigDto}
+    content.vb: Protected MustOverride Function LoadConfigCoreAsync(ct As CancellationToken = Nothing) As Task(Of AppConfigDto)
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.LoadConfigCoreAsync*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.SaveConfigCoreAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.SaveConfigCoreAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
+  id: SaveConfigCoreAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: SaveConfigCoreAsync(AppConfigDto, CancellationToken)
+  nameWithType: ConfigServiceBase.SaveConfigCoreAsync(AppConfigDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.SaveConfigCoreAsync(Meridian.Contracts.Configuration.AppConfigDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveConfigCoreAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Saves the application configuration DTO to persistent storage.
+  example: []
+  syntax:
+    content: protected abstract Task SaveConfigCoreAsync(AppConfigDto config, CancellationToken ct = default)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.AppConfigDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected MustOverride Function SaveConfigCoreAsync(config As AppConfigDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.SaveConfigCoreAsync*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.LogError(System.String,System.Exception)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.LogError(System.String,System.Exception)
+  id: LogError(System.String,System.Exception)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: LogError(string, Exception?)
+  nameWithType: ConfigServiceBase.LogError(string, Exception?)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.LogError(string, System.Exception?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogError
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Logs an error message. Delegated to platform-specific logging.
+  example: []
+  syntax:
+    content: protected abstract void LogError(string message, Exception? exception = null)
+    parameters:
+    - id: message
+      type: System.String
+    - id: exception
+      type: System.Exception
+    content.vb: Protected MustOverride Sub LogError(message As String, exception As Exception = Nothing)
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.LogError*
+  nameWithType.vb: ConfigServiceBase.LogError(String, Exception)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.LogError(String, System.Exception)
+  name.vb: LogError(String, Exception)
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.ValidateConfigDetailAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.ValidateConfigDetailAsync(System.Threading.CancellationToken)
+  id: ValidateConfigDetailAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ValidateConfigDetailAsync(CancellationToken)
+  nameWithType: ConfigServiceBase.ValidateConfigDetailAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.ValidateConfigDetailAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateConfigDetailAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Validates the current configuration.
+  example: []
+  syntax:
+    content: public Task<ConfigValidationResultDetail> ValidateConfigDetailAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.Services.ConfigValidationResultDetail}
+    content.vb: Public Function ValidateConfigDetailAsync(ct As CancellationToken = Nothing) As Task(Of ConfigValidationResultDetail)
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.ValidateConfigDetailAsync*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.GetDataSourcesConfigDtoAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.GetDataSourcesConfigDtoAsync(System.Threading.CancellationToken)
+  id: GetDataSourcesConfigDtoAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetDataSourcesConfigDtoAsync(CancellationToken)
+  nameWithType: ConfigServiceBase.GetDataSourcesConfigDtoAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.GetDataSourcesConfigDtoAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDataSourcesConfigDtoAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the data sources configuration.
+  example: []
+  syntax:
+    content: public Task<DataSourcesConfigDto> GetDataSourcesConfigDtoAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.DataSourcesConfigDto}
+    content.vb: Public Function GetDataSourcesConfigDtoAsync(ct As CancellationToken = Nothing) As Task(Of DataSourcesConfigDto)
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.GetDataSourcesConfigDtoAsync*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto,System.Threading.CancellationToken)
+  id: AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: AddOrUpdateDataSourceAsync(DataSourceConfigDto, CancellationToken)
+  nameWithType: ConfigServiceBase.AddOrUpdateDataSourceAsync(DataSourceConfigDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddOrUpdateDataSourceAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Adds or updates a data source configuration.
+  example: []
+  syntax:
+    content: public Task AddOrUpdateDataSourceAsync(DataSourceConfigDto dataSource, CancellationToken ct = default)
+    parameters:
+    - id: dataSource
+      type: Meridian.Contracts.Configuration.DataSourceConfigDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function AddOrUpdateDataSourceAsync(dataSource As DataSourceConfigDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.AddOrUpdateDataSourceAsync*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.DeleteDataSourceAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.DeleteDataSourceAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteDataSourceAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: DeleteDataSourceAsync(string, CancellationToken)
+  nameWithType: ConfigServiceBase.DeleteDataSourceAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.DeleteDataSourceAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteDataSourceAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Deletes a data source by ID.
+  example: []
+  syntax:
+    content: public Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
+    parameters:
+    - id: id
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DeleteDataSourceAsync(id As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.DeleteDataSourceAsync*
+  nameWithType.vb: ConfigServiceBase.DeleteDataSourceAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.DeleteDataSourceAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteDataSourceAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.SetDefaultDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.SetDefaultDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: SetDefaultDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: SetDefaultDataSourceAsync(string, bool, CancellationToken)
+  nameWithType: ConfigServiceBase.SetDefaultDataSourceAsync(string, bool, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.SetDefaultDataSourceAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetDefaultDataSourceAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Sets the default data source for real-time or historical data.
+  example: []
+  syntax:
+    content: public Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
+    parameters:
+    - id: id
+      type: System.String
+    - id: isHistorical
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SetDefaultDataSourceAsync(id As String, isHistorical As Boolean, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.SetDefaultDataSourceAsync*
+  nameWithType.vb: ConfigServiceBase.SetDefaultDataSourceAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.SetDefaultDataSourceAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: SetDefaultDataSourceAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.UpdateFailoverSettingsAsync(System.Boolean,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.UpdateFailoverSettingsAsync(System.Boolean,System.Int32,System.Threading.CancellationToken)
+  id: UpdateFailoverSettingsAsync(System.Boolean,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: UpdateFailoverSettingsAsync(bool, int, CancellationToken)
+  nameWithType: ConfigServiceBase.UpdateFailoverSettingsAsync(bool, int, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.UpdateFailoverSettingsAsync(bool, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateFailoverSettingsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Updates failover settings for data sources.
+  example: []
+  syntax:
+    content: public Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default)
+    parameters:
+    - id: enableFailover
+      type: System.Boolean
+    - id: failoverTimeoutSeconds
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateFailoverSettingsAsync(enableFailover As Boolean, failoverTimeoutSeconds As Integer, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.UpdateFailoverSettingsAsync*
+  nameWithType.vb: ConfigServiceBase.UpdateFailoverSettingsAsync(Boolean, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.UpdateFailoverSettingsAsync(Boolean, Integer, System.Threading.CancellationToken)
+  name.vb: UpdateFailoverSettingsAsync(Boolean, Integer, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProvidersConfigAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProvidersConfigAsync(System.Threading.CancellationToken)
+  id: GetBackfillProvidersConfigAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillProvidersConfigAsync(CancellationToken)
+  nameWithType: ConfigServiceBase.GetBackfillProvidersConfigAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProvidersConfigAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillProvidersConfigAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets backfill provider configuration, creating defaults when missing.
+  example: []
+  syntax:
+    content: public Task<BackfillProvidersConfigDto> GetBackfillProvidersConfigAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.BackfillProvidersConfigDto}
+    content.vb: Public Function GetBackfillProvidersConfigAsync(ct As CancellationToken = Nothing) As Task(Of BackfillProvidersConfigDto)
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProvidersConfigAsync*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProviderOptionsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProviderOptionsAsync(System.String,System.Threading.CancellationToken)
+  id: GetBackfillProviderOptionsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillProviderOptionsAsync(string, CancellationToken)
+  nameWithType: ConfigServiceBase.GetBackfillProviderOptionsAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProviderOptionsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillProviderOptionsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 236
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets options for a single historical backfill provider.
+  example: []
+  syntax:
+    content: public Task<BackfillProviderOptionsDto?> GetBackfillProviderOptionsAsync(string providerId, CancellationToken ct = default)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.BackfillProviderOptionsDto}
+    content.vb: Public Function GetBackfillProviderOptionsAsync(providerId As String, ct As CancellationToken = Nothing) As Task(Of BackfillProviderOptionsDto)
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProviderOptionsAsync*
+  nameWithType.vb: ConfigServiceBase.GetBackfillProviderOptionsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProviderOptionsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetBackfillProviderOptionsAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.SetBackfillProviderOptionsAsync(System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.SetBackfillProviderOptionsAsync(System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto,System.Threading.CancellationToken)
+  id: SetBackfillProviderOptionsAsync(System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: SetBackfillProviderOptionsAsync(string, BackfillProviderOptionsDto, CancellationToken)
+  nameWithType: ConfigServiceBase.SetBackfillProviderOptionsAsync(string, BackfillProviderOptionsDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.SetBackfillProviderOptionsAsync(string, Meridian.Contracts.Configuration.BackfillProviderOptionsDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetBackfillProviderOptionsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Sets backfill provider options.
+
+    Returns the previous and new JSON for audit trail purposes.
+  example: []
+  syntax:
+    content: public Task<(string? PreviousJson, string NewJson)> SetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: options
+      type: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.String}}
+    content.vb: Public Function SetBackfillProviderOptionsAsync(providerId As String, options As BackfillProviderOptionsDto, ct As CancellationToken = Nothing) As Task(Of (PreviousJson As String, NewJson As String))
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.SetBackfillProviderOptionsAsync*
+  nameWithType.vb: ConfigServiceBase.SetBackfillProviderOptionsAsync(String, BackfillProviderOptionsDto, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.SetBackfillProviderOptionsAsync(String, Meridian.Contracts.Configuration.BackfillProviderOptionsDto, System.Threading.CancellationToken)
+  name.vb: SetBackfillProviderOptionsAsync(String, BackfillProviderOptionsDto, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.ResetBackfillProviderOptionsAsync(System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.ResetBackfillProviderOptionsAsync(System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto,System.Threading.CancellationToken)
+  id: ResetBackfillProviderOptionsAsync(System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ResetBackfillProviderOptionsAsync(string, BackfillProviderOptionsDto, CancellationToken)
+  nameWithType: ConfigServiceBase.ResetBackfillProviderOptionsAsync(string, BackfillProviderOptionsDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.ResetBackfillProviderOptionsAsync(string, Meridian.Contracts.Configuration.BackfillProviderOptionsDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetBackfillProviderOptionsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 284
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Resets a provider's configuration back to defaults.
+
+    Returns the previous JSON for audit trail purposes.
+  example: []
+  syntax:
+    content: public Task<string?> ResetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto defaultOptions, CancellationToken ct = default)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: defaultOptions
+      type: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Function ResetBackfillProviderOptionsAsync(providerId As String, defaultOptions As BackfillProviderOptionsDto, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.ResetBackfillProviderOptionsAsync*
+  nameWithType.vb: ConfigServiceBase.ResetBackfillProviderOptionsAsync(String, BackfillProviderOptionsDto, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.ResetBackfillProviderOptionsAsync(String, Meridian.Contracts.Configuration.BackfillProviderOptionsDto, System.Threading.CancellationToken)
+  name.vb: ResetBackfillProviderOptionsAsync(String, BackfillProviderOptionsDto, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.GetConfiguredSymbolsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.GetConfiguredSymbolsAsync(System.Threading.CancellationToken)
+  id: GetConfiguredSymbolsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetConfiguredSymbolsAsync(CancellationToken)
+  nameWithType: ConfigServiceBase.GetConfiguredSymbolsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.GetConfiguredSymbolsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetConfiguredSymbolsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the configured symbols from configuration.
+  example: []
+  syntax:
+    content: public Task<SymbolConfigDto[]> GetConfiguredSymbolsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolConfigDto[]}
+    content.vb: Public Function GetConfiguredSymbolsAsync(ct As CancellationToken = Nothing) As Task(Of SymbolConfigDto())
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.GetConfiguredSymbolsAsync*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.SaveSymbolsAsync(Meridian.Contracts.Configuration.SymbolConfigDto[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.SaveSymbolsAsync(Meridian.Contracts.Configuration.SymbolConfigDto[],System.Threading.CancellationToken)
+  id: SaveSymbolsAsync(Meridian.Contracts.Configuration.SymbolConfigDto[],System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: SaveSymbolsAsync(SymbolConfigDto[], CancellationToken)
+  nameWithType: ConfigServiceBase.SaveSymbolsAsync(SymbolConfigDto[], CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.SaveSymbolsAsync(Meridian.Contracts.Configuration.SymbolConfigDto[], System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveSymbolsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Saves symbols to the configuration.
+  example: []
+  syntax:
+    content: public Task SaveSymbolsAsync(SymbolConfigDto[] symbols, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: Meridian.Contracts.Configuration.SymbolConfigDto[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SaveSymbolsAsync(symbols As SymbolConfigDto(), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.SaveSymbolsAsync*
+  nameWithType.vb: ConfigServiceBase.SaveSymbolsAsync(SymbolConfigDto(), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.SaveSymbolsAsync(Meridian.Contracts.Configuration.SymbolConfigDto(), System.Threading.CancellationToken)
+  name.vb: SaveSymbolsAsync(SymbolConfigDto(), CancellationToken)
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  id: AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: AddSymbolAsync(SymbolConfigDto, CancellationToken)
+  nameWithType: ConfigServiceBase.AddSymbolAsync(SymbolConfigDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddSymbolAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 331
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Adds a symbol to the configuration.
+  example: []
+  syntax:
+    content: public Task AddSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: Meridian.Contracts.Configuration.SymbolConfigDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function AddSymbolAsync(symbol As SymbolConfigDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.AddSymbolAsync*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.RemoveSymbolAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.RemoveSymbolAsync(System.String,System.Threading.CancellationToken)
+  id: RemoveSymbolAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: RemoveSymbolAsync(string, CancellationToken)
+  nameWithType: ConfigServiceBase.RemoveSymbolAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.RemoveSymbolAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveSymbolAsync
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Removes a symbol from the configuration.
+  example: []
+  syntax:
+    content: public Task RemoveSymbolAsync(string symbolName, CancellationToken ct = default)
+    parameters:
+    - id: symbolName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RemoveSymbolAsync(symbolName As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.RemoveSymbolAsync*
+  nameWithType.vb: ConfigServiceBase.RemoveSymbolAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.RemoveSymbolAsync(String, System.Threading.CancellationToken)
+  name.vb: RemoveSymbolAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.EnumerateProviders(Meridian.Contracts.Configuration.BackfillProvidersConfigDto)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.EnumerateProviders(Meridian.Contracts.Configuration.BackfillProvidersConfigDto)
+  id: EnumerateProviders(Meridian.Contracts.Configuration.BackfillProvidersConfigDto)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: EnumerateProviders(BackfillProvidersConfigDto)
+  nameWithType: ConfigServiceBase.EnumerateProviders(BackfillProvidersConfigDto)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.EnumerateProviders(Meridian.Contracts.Configuration.BackfillProvidersConfigDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnumerateProviders
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: protected static IEnumerable<(string ProviderId, BackfillProviderOptionsDto? Options)> EnumerateProviders(BackfillProvidersConfigDto providers)
+    parameters:
+    - id: providers
+      type: Meridian.Contracts.Configuration.BackfillProvidersConfigDto
+    return:
+      type: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto}}
+    content.vb: Protected Shared Function EnumerateProviders(providers As BackfillProvidersConfigDto) As IEnumerable(Of (ProviderId As String, Options As BackfillProviderOptionsDto))
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.EnumerateProviders*
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.NormalizeProviderId(System.String)
+  commentId: M:Meridian.Ui.Services.Services.ConfigServiceBase.NormalizeProviderId(System.String)
+  id: NormalizeProviderId(System.String)
+  parent: Meridian.Ui.Services.Services.ConfigServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NormalizeProviderId(string)
+  nameWithType: ConfigServiceBase.NormalizeProviderId(string)
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.NormalizeProviderId(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizeProviderId
+    path: ../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs
+    startLine: 417
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public static string NormalizeProviderId(string providerId)
+    parameters:
+    - id: providerId
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function NormalizeProviderId(providerId As String) As String
+  overload: Meridian.Ui.Services.Services.ConfigServiceBase.NormalizeProviderId*
+  nameWithType.vb: ConfigServiceBase.NormalizeProviderId(String)
+  fullName.vb: Meridian.Ui.Services.Services.ConfigServiceBase.NormalizeProviderId(String)
+  name.vb: NormalizeProviderId(String)
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Text.Json.JsonSerializerOptions
+  commentId: T:System.Text.Json.JsonSerializerOptions
+  parent: System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.jsonserializeroptions
+  name: JsonSerializerOptions
+  nameWithType: JsonSerializerOptions
+  fullName: System.Text.Json.JsonSerializerOptions
+- uid: System.Text.Json
+  commentId: N:System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.Json
+  nameWithType: System.Text.Json
+  fullName: System.Text.Json
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.ConfigPath*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.ConfigPath
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_ConfigPath
+  name: ConfigPath
+  nameWithType: ConfigServiceBase.ConfigPath
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.ConfigPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.LoadConfigCoreAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.LoadConfigCoreAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_LoadConfigCoreAsync_System_Threading_CancellationToken_
+  name: LoadConfigCoreAsync
+  nameWithType: ConfigServiceBase.LoadConfigCoreAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.LoadConfigCoreAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.AppConfigDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.AppConfigDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AppConfigDto>
+  nameWithType: Task<AppConfigDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.AppConfigDto>
+  nameWithType.vb: Task(Of AppConfigDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.AppConfigDto)
+  name.vb: Task(Of AppConfigDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.AppConfigDto
+    name: AppConfigDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.AppConfigDto
+    name: AppConfigDto
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.SaveConfigCoreAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.SaveConfigCoreAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_SaveConfigCoreAsync_Meridian_Contracts_Configuration_AppConfigDto_System_Threading_CancellationToken_
+  name: SaveConfigCoreAsync
+  nameWithType: ConfigServiceBase.SaveConfigCoreAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.SaveConfigCoreAsync
+- uid: Meridian.Contracts.Configuration.AppConfigDto
+  commentId: T:Meridian.Contracts.Configuration.AppConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.AppConfigDto.html
+  name: AppConfigDto
+  nameWithType: AppConfigDto
+  fullName: Meridian.Contracts.Configuration.AppConfigDto
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.LogError*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.LogError
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_LogError_System_String_System_Exception_
+  name: LogError
+  nameWithType: ConfigServiceBase.LogError
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.LogError
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.ValidateConfigDetailAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.ValidateConfigDetailAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_ValidateConfigDetailAsync_System_Threading_CancellationToken_
+  name: ValidateConfigDetailAsync
+  nameWithType: ConfigServiceBase.ValidateConfigDetailAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.ValidateConfigDetailAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.Services.ConfigValidationResultDetail}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.Services.ConfigValidationResultDetail}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ConfigValidationResultDetail>
+  nameWithType: Task<ConfigValidationResultDetail>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.Services.ConfigValidationResultDetail>
+  nameWithType.vb: Task(Of ConfigValidationResultDetail)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.Services.ConfigValidationResultDetail)
+  name.vb: Task(Of ConfigValidationResultDetail)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.Services.ConfigValidationResultDetail
+    name: ConfigValidationResultDetail
+    href: Meridian.Ui.Services.Services.ConfigValidationResultDetail.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Services.ConfigValidationResultDetail
+    name: ConfigValidationResultDetail
+    href: Meridian.Ui.Services.Services.ConfigValidationResultDetail.html
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.GetDataSourcesConfigDtoAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.GetDataSourcesConfigDtoAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_GetDataSourcesConfigDtoAsync_System_Threading_CancellationToken_
+  name: GetDataSourcesConfigDtoAsync
+  nameWithType: ConfigServiceBase.GetDataSourcesConfigDtoAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.GetDataSourcesConfigDtoAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.DataSourcesConfigDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.DataSourcesConfigDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataSourcesConfigDto>
+  nameWithType: Task<DataSourcesConfigDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.DataSourcesConfigDto>
+  nameWithType.vb: Task(Of DataSourcesConfigDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.DataSourcesConfigDto)
+  name.vb: Task(Of DataSourcesConfigDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.DataSourcesConfigDto
+    name: DataSourcesConfigDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.DataSourcesConfigDto
+    name: DataSourcesConfigDto
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.AddOrUpdateDataSourceAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.AddOrUpdateDataSourceAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_AddOrUpdateDataSourceAsync_Meridian_Contracts_Configuration_DataSourceConfigDto_System_Threading_CancellationToken_
+  name: AddOrUpdateDataSourceAsync
+  nameWithType: ConfigServiceBase.AddOrUpdateDataSourceAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.AddOrUpdateDataSourceAsync
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto
+  commentId: T:Meridian.Contracts.Configuration.DataSourceConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html
+  name: DataSourceConfigDto
+  nameWithType: DataSourceConfigDto
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.DeleteDataSourceAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.DeleteDataSourceAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_DeleteDataSourceAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteDataSourceAsync
+  nameWithType: ConfigServiceBase.DeleteDataSourceAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.DeleteDataSourceAsync
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.SetDefaultDataSourceAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.SetDefaultDataSourceAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_SetDefaultDataSourceAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: SetDefaultDataSourceAsync
+  nameWithType: ConfigServiceBase.SetDefaultDataSourceAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.SetDefaultDataSourceAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.UpdateFailoverSettingsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.UpdateFailoverSettingsAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_UpdateFailoverSettingsAsync_System_Boolean_System_Int32_System_Threading_CancellationToken_
+  name: UpdateFailoverSettingsAsync
+  nameWithType: ConfigServiceBase.UpdateFailoverSettingsAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.UpdateFailoverSettingsAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProvidersConfigAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProvidersConfigAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_GetBackfillProvidersConfigAsync_System_Threading_CancellationToken_
+  name: GetBackfillProvidersConfigAsync
+  nameWithType: ConfigServiceBase.GetBackfillProvidersConfigAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProvidersConfigAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.BackfillProvidersConfigDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.BackfillProvidersConfigDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillProvidersConfigDto>
+  nameWithType: Task<BackfillProvidersConfigDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.BackfillProvidersConfigDto>
+  nameWithType.vb: Task(Of BackfillProvidersConfigDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.BackfillProvidersConfigDto)
+  name.vb: Task(Of BackfillProvidersConfigDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.BackfillProvidersConfigDto
+    name: BackfillProvidersConfigDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.BackfillProvidersConfigDto
+    name: BackfillProvidersConfigDto
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProviderOptionsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProviderOptionsAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_GetBackfillProviderOptionsAsync_System_String_System_Threading_CancellationToken_
+  name: GetBackfillProviderOptionsAsync
+  nameWithType: ConfigServiceBase.GetBackfillProviderOptionsAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.GetBackfillProviderOptionsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.BackfillProviderOptionsDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.BackfillProviderOptionsDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillProviderOptionsDto>
+  nameWithType: Task<BackfillProviderOptionsDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.BackfillProviderOptionsDto>
+  nameWithType.vb: Task(Of BackfillProviderOptionsDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.BackfillProviderOptionsDto)
+  name.vb: Task(Of BackfillProviderOptionsDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+    name: BackfillProviderOptionsDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+    name: BackfillProviderOptionsDto
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.SetBackfillProviderOptionsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.SetBackfillProviderOptionsAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_SetBackfillProviderOptionsAsync_System_String_Meridian_Contracts_Configuration_BackfillProviderOptionsDto_System_Threading_CancellationToken_
+  name: SetBackfillProviderOptionsAsync
+  nameWithType: ConfigServiceBase.SetBackfillProviderOptionsAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.SetBackfillProviderOptionsAsync
+- uid: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.BackfillProviderOptionsDto.html
+  name: BackfillProviderOptionsDto
+  nameWithType: BackfillProviderOptionsDto
+  fullName: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+- uid: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.ValueTuple{System.String,System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<(string KeyId, string SecretKey)>
+  nameWithType: Task<(string KeyId, string SecretKey)>
+  fullName: System.Threading.Tasks.Task<(string KeyId, string SecretKey)>
+  nameWithType.vb: Task(Of (KeyId As String, SecretKey As String))
+  fullName.vb: System.Threading.Tasks.Task(Of (KeyId As String, SecretKey As String))
+  name.vb: Task(Of (KeyId As String, SecretKey As String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.KeyId
+    name: KeyId
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.keyid
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.SecretKey
+    name: SecretKey
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.secretkey
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.KeyId
+    name: KeyId
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.keyid
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.SecretKey
+    name: SecretKey
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.secretkey
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.ResetBackfillProviderOptionsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.ResetBackfillProviderOptionsAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_ResetBackfillProviderOptionsAsync_System_String_Meridian_Contracts_Configuration_BackfillProviderOptionsDto_System_Threading_CancellationToken_
+  name: ResetBackfillProviderOptionsAsync
+  nameWithType: ConfigServiceBase.ResetBackfillProviderOptionsAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.ResetBackfillProviderOptionsAsync
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.GetConfiguredSymbolsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.GetConfiguredSymbolsAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_GetConfiguredSymbolsAsync_System_Threading_CancellationToken_
+  name: GetConfiguredSymbolsAsync
+  nameWithType: ConfigServiceBase.GetConfiguredSymbolsAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.GetConfiguredSymbolsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolConfigDto[]}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.SymbolConfigDto[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolConfigDto[]>
+  nameWithType: Task<SymbolConfigDto[]>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.SymbolConfigDto[]>
+  nameWithType.vb: Task(Of SymbolConfigDto())
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.SymbolConfigDto())
+  name.vb: Task(Of SymbolConfigDto())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.SymbolConfigDto
+    name: SymbolConfigDto
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.SymbolConfigDto
+    name: SymbolConfigDto
+  - name: (
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.SaveSymbolsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.SaveSymbolsAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_SaveSymbolsAsync_Meridian_Contracts_Configuration_SymbolConfigDto___System_Threading_CancellationToken_
+  name: SaveSymbolsAsync
+  nameWithType: ConfigServiceBase.SaveSymbolsAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.SaveSymbolsAsync
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto[]
+  isExternal: true
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html
+  name: SymbolConfigDto[]
+  nameWithType: SymbolConfigDto[]
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto[]
+  nameWithType.vb: SymbolConfigDto()
+  fullName.vb: Meridian.Contracts.Configuration.SymbolConfigDto()
+  name.vb: SymbolConfigDto()
+  spec.csharp:
+  - uid: Meridian.Contracts.Configuration.SymbolConfigDto
+    name: SymbolConfigDto
+    href: Meridian.Contracts.Configuration.SymbolConfigDto.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Configuration.SymbolConfigDto
+    name: SymbolConfigDto
+    href: Meridian.Contracts.Configuration.SymbolConfigDto.html
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.AddSymbolAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.AddSymbolAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_AddSymbolAsync_Meridian_Contracts_Configuration_SymbolConfigDto_System_Threading_CancellationToken_
+  name: AddSymbolAsync
+  nameWithType: ConfigServiceBase.AddSymbolAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.AddSymbolAsync
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html
+  name: SymbolConfigDto
+  nameWithType: SymbolConfigDto
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.RemoveSymbolAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.RemoveSymbolAsync
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_RemoveSymbolAsync_System_String_System_Threading_CancellationToken_
+  name: RemoveSymbolAsync
+  nameWithType: ConfigServiceBase.RemoveSymbolAsync
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.RemoveSymbolAsync
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.EnumerateProviders*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.EnumerateProviders
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_EnumerateProviders_Meridian_Contracts_Configuration_BackfillProvidersConfigDto_
+  name: EnumerateProviders
+  nameWithType: ConfigServiceBase.EnumerateProviders
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.EnumerateProviders
+- uid: Meridian.Contracts.Configuration.BackfillProvidersConfigDto
+  commentId: T:Meridian.Contracts.Configuration.BackfillProvidersConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.BackfillProvidersConfigDto.html
+  name: BackfillProvidersConfigDto
+  nameWithType: BackfillProvidersConfigDto
+  fullName: Meridian.Contracts.Configuration.BackfillProvidersConfigDto
+- uid: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto}}
+  commentId: T:System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<(string ProviderId, BackfillProviderOptionsDto Options)>
+  nameWithType: IEnumerable<(string ProviderId, BackfillProviderOptionsDto Options)>
+  fullName: System.Collections.Generic.IEnumerable<(string ProviderId, Meridian.Contracts.Configuration.BackfillProviderOptionsDto Options)>
+  nameWithType.vb: IEnumerable(Of (ProviderId As String, Options As BackfillProviderOptionsDto))
+  fullName.vb: System.Collections.Generic.IEnumerable(Of (ProviderId As String, Options As Meridian.Contracts.Configuration.BackfillProviderOptionsDto))
+  name.vb: IEnumerable(Of (ProviderId As String, Options As BackfillProviderOptionsDto))
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto}.ProviderId
+    name: ProviderId
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,meridian.contracts.configuration.backfillprovideroptionsdto-.providerid
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+    name: BackfillProviderOptionsDto
+  - name: " "
+  - uid: System.ValueTuple{System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto}.Options
+    name: Options
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,meridian.contracts.configuration.backfillprovideroptionsdto-.options
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto}.ProviderId
+    name: ProviderId
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,meridian.contracts.configuration.backfillprovideroptionsdto-.providerid
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,Meridian.Contracts.Configuration.BackfillProviderOptionsDto}.Options
+    name: Options
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,meridian.contracts.configuration.backfillprovideroptionsdto-.options
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+    name: BackfillProviderOptionsDto
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.Services.ConfigServiceBase.NormalizeProviderId*
+  commentId: Overload:Meridian.Ui.Services.Services.ConfigServiceBase.NormalizeProviderId
+  href: Meridian.Ui.Services.Services.ConfigServiceBase.html#Meridian_Ui_Services_Services_ConfigServiceBase_NormalizeProviderId_System_String_
+  name: NormalizeProviderId
+  nameWithType: ConfigServiceBase.NormalizeProviderId
+  fullName: Meridian.Ui.Services.Services.ConfigServiceBase.NormalizeProviderId

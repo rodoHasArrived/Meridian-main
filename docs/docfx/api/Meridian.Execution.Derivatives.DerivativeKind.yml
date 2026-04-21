@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Derivatives.DerivativeKind
+  commentId: T:Meridian.Execution.Derivatives.DerivativeKind
+  id: DerivativeKind
+  parent: Meridian.Execution.Derivatives
+  children:
+  - Meridian.Execution.Derivatives.DerivativeKind.Future
+  - Meridian.Execution.Derivatives.DerivativeKind.Option
+  - Meridian.Execution.Derivatives.DerivativeKind.Other
+  langs:
+  - csharp
+  - vb
+  name: DerivativeKind
+  nameWithType: DerivativeKind
+  fullName: Meridian.Execution.Derivatives.DerivativeKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DerivativeKind
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Classifies the type of derivative contract held in a position.
+  example: []
+  syntax:
+    content: public enum DerivativeKind
+    content.vb: Public Enum DerivativeKind
+- uid: Meridian.Execution.Derivatives.DerivativeKind.Option
+  commentId: F:Meridian.Execution.Derivatives.DerivativeKind.Option
+  id: Option
+  parent: Meridian.Execution.Derivatives.DerivativeKind
+  langs:
+  - csharp
+  - vb
+  name: Option
+  nameWithType: DerivativeKind.Option
+  fullName: Meridian.Execution.Derivatives.DerivativeKind.Option
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Option
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Equity or index option (call or put).
+  example: []
+  syntax:
+    content: Option = 0
+    return:
+      type: Meridian.Execution.Derivatives.DerivativeKind
+- uid: Meridian.Execution.Derivatives.DerivativeKind.Future
+  commentId: F:Meridian.Execution.Derivatives.DerivativeKind.Future
+  id: Future
+  parent: Meridian.Execution.Derivatives.DerivativeKind
+  langs:
+  - csharp
+  - vb
+  name: Future
+  nameWithType: DerivativeKind.Future
+  fullName: Meridian.Execution.Derivatives.DerivativeKind.Future
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Future
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Exchange-traded futures contract.
+  example: []
+  syntax:
+    content: Future = 1
+    return:
+      type: Meridian.Execution.Derivatives.DerivativeKind
+- uid: Meridian.Execution.Derivatives.DerivativeKind.Other
+  commentId: F:Meridian.Execution.Derivatives.DerivativeKind.Other
+  id: Other
+  parent: Meridian.Execution.Derivatives.DerivativeKind
+  langs:
+  - csharp
+  - vb
+  name: Other
+  nameWithType: DerivativeKind.Other
+  fullName: Meridian.Execution.Derivatives.DerivativeKind.Other
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Other
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Any other derivative instrument.
+  example: []
+  syntax:
+    content: Other = 2
+    return:
+      type: Meridian.Execution.Derivatives.DerivativeKind
+references:
+- uid: Meridian.Execution.Derivatives
+  commentId: N:Meridian.Execution.Derivatives
+  href: Meridian.html
+  name: Meridian.Execution.Derivatives
+  nameWithType: Meridian.Execution.Derivatives
+  fullName: Meridian.Execution.Derivatives
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Derivatives.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Derivatives.html
+- uid: Meridian.Execution.Derivatives.DerivativeKind
+  commentId: T:Meridian.Execution.Derivatives.DerivativeKind
+  parent: Meridian.Execution.Derivatives
+  href: Meridian.Execution.Derivatives.DerivativeKind.html
+  name: DerivativeKind
+  nameWithType: DerivativeKind
+  fullName: Meridian.Execution.Derivatives.DerivativeKind

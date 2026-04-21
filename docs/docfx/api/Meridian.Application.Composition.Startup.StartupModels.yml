@@ -1,0 +1,100 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.Startup.StartupModels
+  commentId: N:Meridian.Application.Composition.Startup.StartupModels
+  id: Meridian.Application.Composition.Startup.StartupModels
+  children:
+  - Meridian.Application.Composition.Startup.StartupModels.HostMode
+  - Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  - Meridian.Application.Composition.Startup.StartupModels.StartupPlan
+  - Meridian.Application.Composition.Startup.StartupModels.StartupRequest
+  - Meridian.Application.Composition.Startup.StartupModels.StartupValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Composition.Startup.StartupModels
+  nameWithType: Meridian.Application.Composition.Startup.StartupModels
+  fullName: Meridian.Application.Composition.Startup.StartupModels
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Composition.Startup.StartupModels.HostMode
+  commentId: T:Meridian.Application.Composition.Startup.StartupModels.HostMode
+  parent: Meridian.Application.Composition.Startup.StartupModels
+  href: Meridian.Application.Composition.Startup.StartupModels.HostMode.html
+  name: HostMode
+  nameWithType: HostMode
+  fullName: Meridian.Application.Composition.Startup.StartupModels.HostMode
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  commentId: T:Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  parent: Meridian.Application.Composition.Startup.StartupModels
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html
+  name: StartupContext
+  nameWithType: StartupContext
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupPlan
+  commentId: T:Meridian.Application.Composition.Startup.StartupModels.StartupPlan
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupPlan.html
+  name: StartupPlan
+  nameWithType: StartupPlan
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupPlan
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupRequest
+  commentId: T:Meridian.Application.Composition.Startup.StartupModels.StartupRequest
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupRequest.html
+  name: StartupRequest
+  nameWithType: StartupRequest
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupRequest
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupValidationResult
+  commentId: T:Meridian.Application.Composition.Startup.StartupModels.StartupValidationResult
+  parent: Meridian.Application.Composition.Startup.StartupModels
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupValidationResult.html
+  name: StartupValidationResult
+  nameWithType: StartupValidationResult
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupValidationResult
+- uid: Meridian.Application.Composition.Startup.StartupModels
+  commentId: N:Meridian.Application.Composition.Startup.StartupModels
+  href: Meridian.html
+  name: Meridian.Application.Composition.Startup.StartupModels
+  nameWithType: Meridian.Application.Composition.Startup.StartupModels
+  fullName: Meridian.Application.Composition.Startup.StartupModels
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.StartupModels
+    name: StartupModels
+    href: Meridian.Application.Composition.Startup.StartupModels.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.StartupModels
+    name: StartupModels
+    href: Meridian.Application.Composition.Startup.StartupModels.html

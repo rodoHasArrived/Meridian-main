@@ -8,7 +8,7 @@ namespace Meridian.Infrastructure.Shared;
 /// <summary>
 /// Standardized reconnection helper for WebSocket-based providers.
 /// Eliminates duplicated reconnection logic across Polygon (~40 LOC),
-/// NYSE (~30 LOC), and StockSharp (~35 LOC) providers by providing
+/// and NYSE (~30 LOC) providers by providing
 /// a single gated exponential-backoff-with-jitter reconnection algorithm.
 /// </summary>
 /// <remarks>
@@ -16,7 +16,6 @@ namespace Meridian.Infrastructure.Shared;
 /// This helper consolidates the divergent reconnection algorithms used by:
 /// - <c>PolygonMarketDataClient</c>: Manual exponential + jitter
 /// - <c>NYSEDataSource</c>: Linear multiply backoff
-/// - <c>StockSharpMarketDataClient</c>: Exponential + jitter with connector recreation
 /// </para>
 /// </remarks>
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]

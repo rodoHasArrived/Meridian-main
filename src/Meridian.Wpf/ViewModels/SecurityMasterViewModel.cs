@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Infrastructure.Adapters.Polygon;
 using Meridian.Ui.Services;
+using ISmQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
+using ISmService = Meridian.Contracts.SecurityMaster.ISecurityMasterService;
 using WpfServices = Meridian.Wpf.Services;
 
 namespace Meridian.Wpf.ViewModels;
@@ -25,11 +29,21 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private readonly WpfServices.NotificationService _notificationService;
     private readonly ITradingParametersBackfillService _backfillService;
     private readonly ISecurityMasterImportService _importService;
+    private readonly ISecurityMasterRuntimeStatus _securityMasterRuntimeStatus;
+    private readonly WpfServices.ISecurityMasterOperatorWorkflowClient _workflowClient;
+    private readonly WpfServices.NavigationService _navigationService;
+    private readonly ISmQueryService _queryService;
+    private readonly ISmService _service;
+    private readonly bool _hasPolygonApiKey;
     private CancellationTokenSource? _cts;
+    private CancellationTokenSource? _workflowCts;
+    private Task? _workflowPollingTask;
 
     // ── Public collections ──────────────────────────────────────────────────
     public ObservableCollection<SecurityMasterWorkstationDto> Results { get; } = new();
     public ObservableCollection<CorporateActionDto> CorporateActions { get; } = new();
+    public ObservableCollection<SecurityMasterConflict> OpenConflicts { get; } = new();
+    public ObservableCollection<SecurityConflictLaneGroup> ConflictGroups { get; } = new();
 
     /// <summary>
     /// Static list of corporate action types available for recording.
@@ -41,14 +55,26 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public string SearchQuery
     {
         get => _searchQuery;
-        set => SetProperty(ref _searchQuery, value);
+        set
+        {
+            if (SetProperty(ref _searchQuery, value))
+            {
+                RaiseSearchDerivedStateChanged();
+            }
+        }
     }
 
     private bool _activeOnly = true;
     public bool ActiveOnly
     {
         get => _activeOnly;
-        set => SetProperty(ref _activeOnly, value);
+        set
+        {
+            if (SetProperty(ref _activeOnly, value))
+            {
+                RaiseSearchDerivedStateChanged();
+            }
+        }
     }
 
     private bool _isLoading;
@@ -71,13 +97,21 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         get => _selectedSecurity;
         set
         {
+            var previousSecurityId = _selectedSecurity?.SecurityId;
             if (SetProperty(ref _selectedSecurity, value))
             {
-                RaisePropertyChanged(nameof(HasSelectedSecurity));
-                RaisePropertyChanged(nameof(SelectedAssetClass));
-                RaisePropertyChanged(nameof(SelectedCurrency));
-                RaisePropertyChanged(nameof(SelectedStatusBadge));
-                RaisePropertyChanged(nameof(SelectedIdentifier));
+                if (value is null || previousSecurityId != value.SecurityId)
+                {
+                    ClearSelectedSecurityAssuranceState();
+                }
+
+                if (value is not null)
+                {
+                    _conflictSecurityContextCache[value.SecurityId] = ToSecurityContext(value);
+                }
+
+                RaiseSelectionDerivedStateChanged();
+                RebuildConflictLaneGroups();
             }
         }
     }
@@ -86,7 +120,13 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public string HistoryText
     {
         get => _historyText;
-        private set => SetProperty(ref _historyText, value);
+        private set
+        {
+            if (SetProperty(ref _historyText, value))
+            {
+                RaisePropertyChanged(nameof(LatestHistoryEventText));
+            }
+        }
     }
 
     private bool _isEditPanelVisible;
@@ -163,14 +203,26 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public bool IsBackfillingTradingParams
     {
         get => _isBackfillingTradingParams;
-        private set => SetProperty(ref _isBackfillingTradingParams, value);
+        private set
+        {
+            if (SetProperty(ref _isBackfillingTradingParams, value))
+            {
+                RaisePropertyChanged(nameof(RuntimeStatusDetail));
+            }
+        }
     }
 
     private string _backfillStatus = string.Empty;
     public string BackfillStatus
     {
         get => _backfillStatus;
-        private set => SetProperty(ref _backfillStatus, value);
+        private set
+        {
+            if (SetProperty(ref _backfillStatus, value))
+            {
+                RaisePropertyChanged(nameof(RuntimeStatusDetail));
+            }
+        }
     }
 
     // ── Import properties ───────────────────────────────────────────────────────
@@ -178,35 +230,68 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public int ImportTotal
     {
         get => _importTotal;
-        private set => SetProperty(ref _importTotal, value);
+        private set
+        {
+            if (SetProperty(ref _importTotal, value))
+            {
+                RaisePropertyChanged(nameof(ImportStatus));
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private int _importProcessed;
     public int ImportProcessed
     {
         get => _importProcessed;
-        private set => SetProperty(ref _importProcessed, value);
+        private set
+        {
+            if (SetProperty(ref _importProcessed, value))
+            {
+                RaisePropertyChanged(nameof(ImportStatus));
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private int _importImported;
     public int ImportImported
     {
         get => _importImported;
-        private set => SetProperty(ref _importImported, value);
+        private set
+        {
+            if (SetProperty(ref _importImported, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private int _importFailed;
     public int ImportFailed
     {
         get => _importFailed;
-        private set => SetProperty(ref _importFailed, value);
+        private set
+        {
+            if (SetProperty(ref _importFailed, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private bool _isImporting;
     public bool IsImporting
     {
         get => _isImporting;
-        private set => SetProperty(ref _isImporting, value);
+        private set
+        {
+            if (SetProperty(ref _isImporting, value))
+            {
+                ImportFromFileCommand.NotifyCanExecuteChanged();
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     public string ImportStatus
@@ -223,18 +308,161 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public bool IsImportResultVisible
     {
         get => _isImportResultVisible;
-        private set => SetProperty(ref _isImportResultVisible, value);
+        private set
+        {
+            if (SetProperty(ref _isImportResultVisible, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
 
     private string _importResultSummary = string.Empty;
     public string ImportResultSummary
     {
         get => _importResultSummary;
-        private set => SetProperty(ref _importResultSummary, value);
+        private set
+        {
+            if (SetProperty(ref _importResultSummary, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
     }
+
+    private string _importSessionSummary = "No import activity recorded by the workstation service.";
+    public string ImportSessionSummary
+    {
+        get => _importSessionSummary;
+        private set
+        {
+            if (SetProperty(ref _importSessionSummary, value))
+            {
+                RaisePropertyChanged(nameof(ImportSessionText));
+            }
+        }
+    }
+
+    private string _workflowStatusText = "Polling Security Master ingest and conflict posture.";
+    public string WorkflowStatusText
+    {
+        get => _workflowStatusText;
+        private set
+        {
+            if (SetProperty(ref _workflowStatusText, value))
+            {
+                RaisePropertyChanged(nameof(RuntimeStatusDetail));
+            }
+        }
+    }
+
+    private string _workflowRetrievedAtText = "-";
+    public string WorkflowRetrievedAtText
+    {
+        get => _workflowRetrievedAtText;
+        private set => SetProperty(ref _workflowRetrievedAtText, value);
+    }
+
+    private string _conflictOperatorText = "desktop-user";
+    public string ConflictOperatorText
+    {
+        get => _conflictOperatorText;
+        set
+        {
+            if (SetProperty(ref _conflictOperatorText, value))
+            {
+                NotifyConflictWorkflowCommandsChanged();
+            }
+        }
+    }
+
+    private string _conflictNoteText = string.Empty;
+    public string ConflictNoteText
+    {
+        get => _conflictNoteText;
+        set => SetProperty(ref _conflictNoteText, value);
+    }
+
+    private SecurityMasterConflict? _selectedConflict;
+    public SecurityMasterConflict? SelectedConflict
+    {
+        get => _selectedConflict;
+        set
+        {
+            if (SetProperty(ref _selectedConflict, value))
+            {
+                NotifyConflictWorkflowCommandsChanged();
+            }
+        }
+    }
+
+    private SecurityConflictLaneGroup? _selectedConflictGroup;
+    public SecurityConflictLaneGroup? SelectedConflictGroup
+    {
+        get => _selectedConflictGroup;
+        set
+        {
+            if (SetProperty(ref _selectedConflictGroup, value))
+            {
+                if (!_suppressConflictLaneSelectionSync &&
+                    value is not null &&
+                    (SelectedConflictEntry is null || value.SecurityId != SelectedConflictEntry.Conflict.SecurityId))
+                {
+                    SelectedConflictEntry = value.Conflicts.FirstOrDefault();
+                }
+
+                NotifyConflictWorkflowCommandsChanged();
+            }
+        }
+    }
+
+    private SecurityConflictLaneEntry? _selectedConflictEntry;
+    public SecurityConflictLaneEntry? SelectedConflictEntry
+    {
+        get => _selectedConflictEntry;
+        set
+        {
+            if (SetProperty(ref _selectedConflictEntry, value))
+            {
+                SelectedConflict = value?.Conflict;
+
+                if (!_suppressConflictLaneSelectionSync &&
+                    value is not null &&
+                    SelectedConflictGroup?.SecurityId != value.Conflict.SecurityId)
+                {
+                    SelectedConflictGroup = ConflictGroups.FirstOrDefault(group => group.SecurityId == value.Conflict.SecurityId);
+                }
+
+                if (!_suppressConflictDrivenSelectionLoad &&
+                    value is not null &&
+                    HasSelectedSecurity &&
+                    SelectedSecurity?.SecurityId != value.Conflict.SecurityId)
+                {
+                    _ = LoadDetailAsync(value.Conflict.SecurityId);
+                }
+
+                NotifyConflictWorkflowCommandsChanged();
+            }
+        }
+    }
+
+    private SecurityEconomicDefinitionRecord? _selectedEconomicDefinition;
+    private TradingParametersDto? _selectedTradingParameters;
+    private SecurityMasterEventEnvelope? _latestHistoryEvent;
+    private readonly Dictionary<Guid, SecurityConflictSecurityContext> _conflictSecurityContextCache = new();
+    private bool _suppressConflictLaneSelectionSync;
+    private bool _suppressConflictDrivenSelectionLoad;
 
     // ── Derived display helpers ─────────────────────────────────────────────
     public bool HasSelectedSecurity => SelectedSecurity is not null;
+
+    public int ResultCount => Results.Count;
+
+    public string SearchScopeText => string.IsNullOrWhiteSpace(SearchQuery)
+        ? ActiveOnly
+            ? "Active-only scope ready. Enter a symbol, name, or identifier."
+            : "All-status scope ready. Enter a symbol, name, or identifier."
+        : $"{(ActiveOnly ? "Active-only" : "All-status")} scope • query \"{SearchQuery.Trim()}\"";
 
     public string SelectedAssetClass =>
         SelectedSecurity?.Classification.AssetClass ?? string.Empty;
@@ -250,6 +478,238 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             ? $"{SelectedSecurity!.Classification.PrimaryIdentifierKind}: {v}"
             : string.Empty;
 
+    public string RuntimeStatusLabel => _hasPolygonApiKey
+        ? "Polygon enrichment available"
+        : "Manual enrichment only";
+
+    public string RuntimeStatusDetail => IsBackfillingTradingParams
+        ? BackfillStatus
+        : $"{_securityMasterRuntimeStatus.AvailabilityDescription} {WorkflowStatusText}".Trim();
+
+    public string ConflictSummaryText => HasOpenConflicts
+        ? $"{OpenConflictCount} open conflict{(OpenConflictCount == 1 ? string.Empty : "s")} across {ConflictGroupCount} securit{(ConflictGroupCount == 1 ? "y" : "ies")} require triage."
+        : "No open identifier conflicts detected.";
+
+    public string ConflictQueueSummaryText => HasOpenConflicts
+        ? $"{ConflictGroupCount} securit{(ConflictGroupCount == 1 ? "y" : "ies")} remain in the operator queue. Review the grouped impact before accepting a provider value."
+        : "Conflict queue is clear. New ingest mismatches will appear here.";
+
+    public string SelectionSummaryText => SelectedSecurity is null
+        ? "Select a security to inspect identifiers, runtime state, history, and corporate actions."
+        : $"{SelectedSecurity.DisplayName} • {SelectedAssetClass} • {SelectedCurrency}";
+
+    public string SelectionLifecycleText => SelectedSecurity is null
+        ? "No security selected."
+        : $"Status {SelectedStatusBadge} • version {SelectedSecurity.EconomicDefinition?.Version ?? 0}";
+
+    public string SelectedSecurityConflictSummaryText => SelectedSecurity is null
+        ? "Conflict posture appears after a security is selected."
+        : GetSelectedSecurityConflictCount() switch
+        {
+            0 => "No open conflicts currently affect this security.",
+            1 => "1 open conflict still affects this security.",
+            var count => $"{count} open conflicts still affect this security."
+        };
+
+    public string SelectedTrustPostureText
+    {
+        get
+        {
+            if (SelectedSecurity is null)
+            {
+                return "Select a security to determine whether the definition is ready for downstream use.";
+            }
+
+            var selectedConflictCount = GetSelectedSecurityConflictCount();
+            if (selectedConflictCount > 0)
+            {
+                return "Do not trust this instrument definition downstream yet. Resolve the open conflict queue first.";
+            }
+
+            var missingTradingFields = GetMissingTradingParameterFields();
+            if (missingTradingFields.Count > 0)
+            {
+                return "Reference data is stable, but downstream trading readiness is incomplete.";
+            }
+
+            return _selectedEconomicDefinition is null
+                ? "Reference data is usable, but provenance details are unavailable from the workstation query surface."
+                : "Definition looks ready for downstream portfolio, ledger, reconciliation, and report-pack use.";
+        }
+    }
+
+    public string SelectedProvenanceText
+    {
+        get
+        {
+            if (SelectedSecurity is null)
+            {
+                return "Identifier provenance appears after a security is selected.";
+            }
+
+            if (_selectedEconomicDefinition is null)
+            {
+                return "Identifier provenance is unavailable for the selected security.";
+            }
+
+            var provenance = _selectedEconomicDefinition.Provenance;
+            var sourceSystem = TryGetJsonString(provenance, "sourceSystem") ?? "Unknown source";
+            var updatedBy = TryGetJsonString(provenance, "updatedBy") ?? "Unknown actor";
+            var sourceRecordId = TryGetJsonString(provenance, "sourceRecordId");
+            var reason = TryGetJsonString(provenance, "reason");
+            var asOf = TryGetJsonDateTimeOffset(provenance, "asOf");
+
+            var sourceRecordText = string.IsNullOrWhiteSpace(sourceRecordId)
+                ? string.Empty
+                : $" • record {sourceRecordId}";
+            var reasonText = string.IsNullOrWhiteSpace(reason)
+                ? string.Empty
+                : $" • {reason}";
+            var asOfText = asOf.HasValue
+                ? $" • {asOf.Value.LocalDateTime:g}"
+                : string.Empty;
+
+            return $"Source {sourceSystem}{sourceRecordText} • updated by {updatedBy}{asOfText}{reasonText}";
+        }
+    }
+
+    public string SelectedTradingParameterCoverageText
+    {
+        get
+        {
+            if (SelectedSecurity is null)
+            {
+                return "Trading readiness appears after a security is selected.";
+            }
+
+            var missingTradingFields = GetMissingTradingParameterFields();
+            if (missingTradingFields.Count == 0)
+            {
+                return _selectedTradingParameters is null
+                    ? "Trading-parameter coverage could not be confirmed."
+                    : $"Trading parameters complete as of {_selectedTradingParameters.AsOf.LocalDateTime:g}.";
+            }
+
+            return $"Trading parameters incomplete: missing {string.Join(", ", missingTradingFields)}.";
+        }
+    }
+
+    public string CorporateActionSummaryText => SelectedSecurity is null
+        ? "Corporate action timeline appears after a security is selected."
+        : CorporateActions.Count == 0
+            ? "No corporate actions recorded for the selected security."
+            : $"{CorporateActions.Count} corporate action(s) loaded for the selected security.";
+
+    public string LatestHistoryEventText
+    {
+        get
+        {
+            if (_latestHistoryEvent is not null)
+            {
+                return $"{_latestHistoryEvent.EventType} • v{_latestHistoryEvent.StreamVersion} • {_latestHistoryEvent.EventTimestamp.LocalDateTime:g} by {_latestHistoryEvent.Actor}";
+            }
+
+            if (string.IsNullOrWhiteSpace(HistoryText) || HistoryText == "(no history)")
+            {
+                return "No audit history loaded.";
+            }
+
+            return HistoryText
+                       .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                       .FirstOrDefault()
+                   ?? "No audit history loaded.";
+        }
+    }
+
+    public string ImportSessionText => IsImporting
+        ? ImportStatus
+        : ImportSessionSummary;
+
+    public int ConflictGroupCount => ConflictGroups.Count;
+
+    public bool HasConflictGroups => ConflictGroups.Count > 0;
+
+    public bool HasSelectedConflictGroup => SelectedConflictGroup is not null;
+
+    public bool HasSelectedConflictEntry => SelectedConflictEntry is not null;
+
+    public string SelectedConflictSummaryText => SelectedConflictEntry is null
+        ? "Select a conflict to review the ingest-time mismatch and choose a resolution."
+        : $"{SelectedConflictEntry.FieldLabel} mismatch on {SelectedConflictEntry.SecurityLabel}";
+
+    public string SelectedConflictSeverityText => SelectedConflictEntry?.SeverityLabel ?? "Severity will appear after a conflict is selected.";
+
+    public string SelectedConflictConfidenceText => SelectedConflictEntry?.ConfidenceLabel ?? "Confidence hints appear after a conflict is selected.";
+
+    public string SelectedConflictImpactText => SelectedConflictEntry?.ImpactDetail ?? "Downstream impact appears after a conflict is selected.";
+
+    public string SelectedConflictAutoResolveText => SelectedConflictEntry?.AutoResolveHint ?? "Auto-resolve guidance appears after a conflict is selected.";
+
+    public string SelectedConflictDetectedText => SelectedConflictEntry is null
+        ? "Detection time appears after a conflict is selected."
+        : $"Detected {SelectedConflictEntry.Conflict.DetectedAt.LocalDateTime:g} • {SelectedConflictEntry.Conflict.ConflictKind}";
+
+    public string AcceptPrimaryConflictLabel => SelectedConflictEntry is null
+        ? "Accept A"
+        : $"Accept {SelectedConflictEntry.Conflict.ProviderA}";
+
+    public string AcceptSecondaryConflictLabel => SelectedConflictEntry is null
+        ? "Accept B"
+        : $"Accept {SelectedConflictEntry.Conflict.ProviderB}";
+
+    public string ActionInspectorLeadText
+    {
+        get
+        {
+            var activeConflict = GetActiveConflictContextEntry();
+            if (activeConflict is not null)
+            {
+                return activeConflict.NextStepSummary;
+            }
+
+            return HasSelectedSecurity
+                ? SelectedTrustPostureText
+                : "Select a security or open conflict to surface downstream operator paths.";
+        }
+    }
+
+    public string ActionInspectorDetailText
+    {
+        get
+        {
+            var activeConflict = GetActiveConflictContextEntry();
+            if (activeConflict is not null)
+            {
+                return activeConflict.ImpactDetail;
+            }
+
+            return HasSelectedSecurity
+                ? SelectedTradingParameterCoverageText
+                : ConflictSummaryText;
+        }
+    }
+
+    public string ActionInspectorNoActionText => HasSelectedSecurity
+        ? "No downstream fund-review, reconciliation, or report-pack jump is currently required for this selection."
+        : "No downstream jump is required until a security or conflict is selected.";
+
+    public bool ShowFundReviewActions => GetActiveConflictContextEntry()?.RoutesToFundReview == true;
+
+    public bool ShowReconciliationAction => GetActiveConflictContextEntry()?.RoutesToReconciliation == true;
+
+    public bool ShowCashFlowAction => GetActiveConflictContextEntry()?.RoutesToCashFlow == true;
+
+    public bool ShowReportPackAction => GetActiveConflictContextEntry()?.RoutesToReportPack == true;
+
+    public bool ShowBackfillTradingParamsAction => GetMissingTradingParameterFields().Count > 0;
+
+    public bool ShowAnyDownstreamAction =>
+        ShowFundReviewActions ||
+        ShowReconciliationAction ||
+        ShowCashFlowAction ||
+        ShowReportPackAction ||
+        ShowBackfillTradingParamsAction;
+
     // ── Commands ────────────────────────────────────────────────────────────
     public IRelayCommand CreateNewCommand { get; }
     public IRelayCommand EditSelectedCommand { get; }
@@ -262,6 +722,15 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     public IAsyncRelayCommand ImportFromFileCommand { get; }
     public IRelayCommand CloseImportResultCommand { get; }
     public IAsyncRelayCommand RefreshConflictCountCommand { get; }
+    public IAsyncRelayCommand RefreshWorkflowCommand { get; }
+    public IAsyncRelayCommand AcceptPrimaryConflictCommand { get; }
+    public IAsyncRelayCommand AcceptSecondaryConflictCommand { get; }
+    public IAsyncRelayCommand DismissConflictCommand { get; }
+    public IRelayCommand OpenFundPortfolioCommand { get; }
+    public IRelayCommand OpenFundLedgerCommand { get; }
+    public IRelayCommand OpenFundReconciliationCommand { get; }
+    public IRelayCommand OpenFundCashFlowCommand { get; }
+    public IRelayCommand OpenFundReportPackCommand { get; }
 
     // ── Conflict badge ───────────────────────────────────────────────────────
     private int _openConflictCount;
@@ -272,24 +741,42 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         private set
         {
             if (SetProperty(ref _openConflictCount, value))
+            {
                 RaisePropertyChanged(nameof(HasOpenConflicts));
+                RaiseConflictDerivedStateChanged();
+            }
         }
     }
 
     /// <summary>True when at least one open conflict exists. Drives badge visibility.</summary>
     public bool HasOpenConflicts => _openConflictCount > 0;
 
+    public bool CanResolveSelectedConflict =>
+        SelectedConflict is not null &&
+        !string.IsNullOrWhiteSpace(ConflictOperatorText);
+
     // ── Constructor ─────────────────────────────────────────────────────────
     public SecurityMasterViewModel(
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService,
         ITradingParametersBackfillService backfillService,
-        ISecurityMasterImportService importService)
+        ISecurityMasterImportService importService,
+        ISecurityMasterRuntimeStatus securityMasterRuntimeStatus,
+        WpfServices.ISecurityMasterOperatorWorkflowClient workflowClient,
+        WpfServices.NavigationService navigationService,
+        ISmQueryService queryService,
+        ISmService service)
     {
         _loggingService = loggingService;
         _notificationService = notificationService;
         _backfillService = backfillService;
         _importService = importService;
+        _securityMasterRuntimeStatus = securityMasterRuntimeStatus ?? throw new ArgumentNullException(nameof(securityMasterRuntimeStatus));
+        _workflowClient = workflowClient ?? throw new ArgumentNullException(nameof(workflowClient));
+        _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _queryService = queryService;
+        _service = service;
+        _hasPolygonApiKey = !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POLYGON_API_KEY"));
 
         CreateNewCommand = new RelayCommand(OnCreateNew);
         EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity);
@@ -302,14 +789,27 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         ImportFromFileCommand = new AsyncRelayCommand(OnImportFromFile, () => !IsImporting);
         CloseImportResultCommand = new RelayCommand(OnCloseImportResult);
         RefreshConflictCountCommand = new AsyncRelayCommand(RefreshConflictCountAsync);
+        RefreshWorkflowCommand = new AsyncRelayCommand(RefreshOperatorWorkflowAsync);
+        AcceptPrimaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptA", ct), () => CanResolveSelectedConflict);
+        AcceptSecondaryConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("AcceptB", ct), () => CanResolveSelectedConflict);
+        DismissConflictCommand = new AsyncRelayCommand(ct => ResolveSelectedConflictAsync("Dismiss", ct), () => CanResolveSelectedConflict);
+        OpenFundPortfolioCommand = new RelayCommand(() => _navigationService.NavigateTo("FundPortfolio"));
+        OpenFundLedgerCommand = new RelayCommand(() => _navigationService.NavigateTo("FundLedger"));
+        OpenFundReconciliationCommand = new RelayCommand(() => _navigationService.NavigateTo("FundReconciliation"));
+        OpenFundCashFlowCommand = new RelayCommand(() => _navigationService.NavigateTo("FundCashFinancing"));
+        OpenFundReportPackCommand = new RelayCommand(() => _navigationService.NavigateTo("FundReportPack"));
 
-        // Fire-and-forget initial conflict count load; failures are suppressed
-        _ = RefreshConflictCountAsync();
+        Results.CollectionChanged += (_, _) => RaiseSearchDerivedStateChanged();
+        CorporateActions.CollectionChanged += (_, _) => RaiseSelectionDerivedStateChanged();
+        OpenConflicts.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
+        ConflictGroups.CollectionChanged += (_, _) => RaiseConflictDerivedStateChanged();
+
+        StartWorkflowPolling();
     }
 
     private void OnCreateNew()
     {
-        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService);
+        EditVm = SecurityMasterEditViewModel.CreateNew(_loggingService, _notificationService, _service);
         WireEditVmEvents();
         IsEditPanelVisible = true;
     }
@@ -330,15 +830,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         try
         {
-            var detail = await ApiClientService.Instance
-                .GetAsync<SecurityDetailDto>($"/api/workstation/security-master/securities/{id}", CancellationToken.None)
+            var detail = await _queryService.GetByIdAsync(id, CancellationToken.None)
                 .ConfigureAwait(false);
 
             if (detail is not null)
             {
                 await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService);
+                    EditVm = new SecurityMasterEditViewModel(_loggingService, _notificationService, _service);
                     EditVm.LoadForEdit(detail);
                     WireEditVmEvents();
                     IsEditPanelVisible = true;
@@ -358,7 +857,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         if (SelectedSecurity is null)
             return;
 
-        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService)
+        DeactivateVm = new SecurityMasterDeactivateViewModel(_loggingService, _notificationService, _service)
         {
             SecurityName = SelectedSecurity.DisplayName,
             SecurityId = SelectedSecurity.SecurityId,
@@ -371,6 +870,141 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     private bool IsSelectedSecurityActive()
     {
         return SelectedSecurity?.Status == SecurityStatusDto.Active;
+    }
+
+    private void RaiseSearchDerivedStateChanged()
+    {
+        RaisePropertyChanged(nameof(ResultCount));
+        RaisePropertyChanged(nameof(SearchScopeText));
+    }
+
+    private void RaiseSelectionDerivedStateChanged()
+    {
+        RaisePropertyChanged(nameof(HasSelectedSecurity));
+        RaisePropertyChanged(nameof(SelectedAssetClass));
+        RaisePropertyChanged(nameof(SelectedCurrency));
+        RaisePropertyChanged(nameof(SelectedStatusBadge));
+        RaisePropertyChanged(nameof(SelectedIdentifier));
+        RaisePropertyChanged(nameof(SelectionSummaryText));
+        RaisePropertyChanged(nameof(SelectionLifecycleText));
+        RaisePropertyChanged(nameof(SelectedSecurityConflictSummaryText));
+        RaisePropertyChanged(nameof(SelectedTrustPostureText));
+        RaisePropertyChanged(nameof(SelectedProvenanceText));
+        RaisePropertyChanged(nameof(SelectedTradingParameterCoverageText));
+        RaisePropertyChanged(nameof(CorporateActionSummaryText));
+        RaisePropertyChanged(nameof(LatestHistoryEventText));
+        RaisePropertyChanged(nameof(ActionInspectorLeadText));
+        RaisePropertyChanged(nameof(ActionInspectorDetailText));
+        RaisePropertyChanged(nameof(ActionInspectorNoActionText));
+        RaisePropertyChanged(nameof(ShowBackfillTradingParamsAction));
+        RaisePropertyChanged(nameof(ShowAnyDownstreamAction));
+        AlignConflictLaneToSelectedSecurity();
+        NotifySelectionCommandsChanged();
+    }
+
+    private void NotifySelectionCommandsChanged()
+    {
+        EditSelectedCommand.NotifyCanExecuteChanged();
+        DeactivateSelectedCommand.NotifyCanExecuteChanged();
+        LoadCorporateActionsCommand.NotifyCanExecuteChanged();
+        ShowRecordCorpActionCommand.NotifyCanExecuteChanged();
+    }
+
+    private void NotifyConflictWorkflowCommandsChanged()
+    {
+        RaiseConflictDerivedStateChanged();
+        RaisePropertyChanged(nameof(SelectedConflictSummaryText));
+        RaisePropertyChanged(nameof(CanResolveSelectedConflict));
+        AcceptPrimaryConflictCommand.NotifyCanExecuteChanged();
+        AcceptSecondaryConflictCommand.NotifyCanExecuteChanged();
+        DismissConflictCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RaiseConflictDerivedStateChanged()
+    {
+        RaisePropertyChanged(nameof(ConflictSummaryText));
+        RaisePropertyChanged(nameof(ConflictQueueSummaryText));
+        RaisePropertyChanged(nameof(ConflictGroupCount));
+        RaisePropertyChanged(nameof(HasConflictGroups));
+        RaisePropertyChanged(nameof(HasSelectedConflictGroup));
+        RaisePropertyChanged(nameof(HasSelectedConflictEntry));
+        RaisePropertyChanged(nameof(SelectedConflictSummaryText));
+        RaisePropertyChanged(nameof(SelectedConflictSeverityText));
+        RaisePropertyChanged(nameof(SelectedConflictConfidenceText));
+        RaisePropertyChanged(nameof(SelectedConflictImpactText));
+        RaisePropertyChanged(nameof(SelectedConflictAutoResolveText));
+        RaisePropertyChanged(nameof(SelectedConflictDetectedText));
+        RaisePropertyChanged(nameof(AcceptPrimaryConflictLabel));
+        RaisePropertyChanged(nameof(AcceptSecondaryConflictLabel));
+        RaisePropertyChanged(nameof(SelectedSecurityConflictSummaryText));
+        RaisePropertyChanged(nameof(SelectedTrustPostureText));
+        RaisePropertyChanged(nameof(ActionInspectorLeadText));
+        RaisePropertyChanged(nameof(ActionInspectorDetailText));
+        RaisePropertyChanged(nameof(ActionInspectorNoActionText));
+        RaisePropertyChanged(nameof(ShowFundReviewActions));
+        RaisePropertyChanged(nameof(ShowReconciliationAction));
+        RaisePropertyChanged(nameof(ShowCashFlowAction));
+        RaisePropertyChanged(nameof(ShowReportPackAction));
+        RaisePropertyChanged(nameof(ShowAnyDownstreamAction));
+    }
+
+    private void ClearSelectedSecurityAssuranceState()
+    {
+        _selectedEconomicDefinition = null;
+        _selectedTradingParameters = null;
+        _latestHistoryEvent = null;
+
+        RaisePropertyChanged(nameof(SelectedTrustPostureText));
+        RaisePropertyChanged(nameof(SelectedProvenanceText));
+        RaisePropertyChanged(nameof(SelectedTradingParameterCoverageText));
+        RaisePropertyChanged(nameof(LatestHistoryEventText));
+        RaisePropertyChanged(nameof(ActionInspectorLeadText));
+        RaisePropertyChanged(nameof(ActionInspectorDetailText));
+        RaisePropertyChanged(nameof(ShowBackfillTradingParamsAction));
+        RaisePropertyChanged(nameof(ShowAnyDownstreamAction));
+    }
+
+    private void AlignConflictLaneToSelectedSecurity()
+    {
+        if (SelectedSecurity is null || ConflictGroups.Count == 0)
+        {
+            return;
+        }
+
+        var matchingGroup = ConflictGroups.FirstOrDefault(group => group.SecurityId == SelectedSecurity.SecurityId);
+        if (matchingGroup is null)
+        {
+            return;
+        }
+
+        if (SelectedConflictEntry is not null && SelectedConflictEntry.Conflict.SecurityId == matchingGroup.SecurityId)
+        {
+            if (SelectedConflictGroup != matchingGroup)
+            {
+                _suppressConflictLaneSelectionSync = true;
+                try
+                {
+                    SelectedConflictGroup = matchingGroup;
+                }
+                finally
+                {
+                    _suppressConflictLaneSelectionSync = false;
+                }
+            }
+
+            return;
+        }
+
+        _suppressConflictLaneSelectionSync = true;
+        try
+        {
+            SelectedConflictGroup = matchingGroup;
+            SelectedConflictEntry = matchingGroup.Conflicts.FirstOrDefault();
+        }
+        finally
+        {
+            _suppressConflictLaneSelectionSync = false;
+        }
     }
 
     private void WireEditVmEvents()
@@ -473,6 +1107,11 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         _cts?.Cancel();
         _cts?.Dispose();
         _cts = null;
+
+        _workflowCts?.Cancel();
+        _workflowCts?.Dispose();
+        _workflowCts = null;
+        _workflowPollingTask = null;
     }
 
     // ── Search ──────────────────────────────────────────────────────────────
@@ -485,6 +1124,20 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
             return;
         }
 
+        if (!_securityMasterRuntimeStatus.IsAvailable)
+        {
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
+
+            Results.Clear();
+            SelectedSecurity = null;
+            HistoryText = string.Empty;
+            ClearSelectedSecurityAssuranceState();
+            StatusText = _securityMasterRuntimeStatus.AvailabilityDescription;
+            return;
+        }
+
         _cts?.Cancel();
         _cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var linked = _cts.Token;
@@ -493,6 +1146,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
         Results.Clear();
         SelectedSecurity = null;
         HistoryText = string.Empty;
+        ClearSelectedSecurityAssuranceState();
         StatusText = "Searching…";
 
         try
@@ -547,21 +1201,41 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
                 .GetAsync<SecurityMasterWorkstationDto>($"/api/workstation/security-master/securities/{securityId}", ct);
             var historyTask = ApiClientService.Instance
                 .GetAsync<SecurityMasterEventEnvelope[]>($"/api/workstation/security-master/securities/{securityId}/history?take=20", ct);
+            var economicDefinitionTask = _queryService.GetEconomicDefinitionByIdAsync(securityId, ct);
+            var tradingParametersTask = _queryService.GetTradingParametersAsync(securityId, DateTimeOffset.UtcNow, ct);
 
-            await Task.WhenAll(detailTask, historyTask).ConfigureAwait(false);
+            await Task.WhenAll(detailTask, historyTask, economicDefinitionTask, tradingParametersTask).ConfigureAwait(false);
 
             var detail = await detailTask;
-            var history = await historyTask;
+            var history = (await historyTask).OrderByDescending(item => item.EventTimestamp).ToArray();
+            var economicDefinition = await economicDefinitionTask;
+            var tradingParameters = await tradingParametersTask;
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 if (detail is not null)
+                {
                     SelectedSecurity = detail;
+                    _conflictSecurityContextCache[detail.SecurityId] = ToSecurityContext(detail);
+                }
+
+                _selectedEconomicDefinition = economicDefinition;
+                _selectedTradingParameters = tradingParameters;
+                _latestHistoryEvent = history.FirstOrDefault();
 
                 HistoryText = history is { Length: > 0 }
                     ? string.Join(Environment.NewLine, history.Select(e =>
-                        $"[{e.EventTimestamp:yyyy-MM-dd HH:mm}] {e.EventType}  v{e.StreamVersion}"))
+                        $"[{e.EventTimestamp:yyyy-MM-dd HH:mm}] {e.EventType}  v{e.StreamVersion} • {e.Actor}"))
                     : "(no history)";
+
+                RaisePropertyChanged(nameof(SelectedTrustPostureText));
+                RaisePropertyChanged(nameof(SelectedProvenanceText));
+                RaisePropertyChanged(nameof(SelectedTradingParameterCoverageText));
+                RaisePropertyChanged(nameof(LatestHistoryEventText));
+                RaisePropertyChanged(nameof(ActionInspectorLeadText));
+                RaisePropertyChanged(nameof(ActionInspectorDetailText));
+                RaisePropertyChanged(nameof(ShowBackfillTradingParamsAction));
+                RaisePropertyChanged(nameof(ShowAnyDownstreamAction));
             });
 
             // Load corporate actions
@@ -624,18 +1298,14 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
         try
         {
-            var actions = await ApiClientService.Instance
-                .GetAsync<CorporateActionDto[]>($"/api/workstation/security-master/securities/{id}/corporate-actions", ct)
+            var actions = await _queryService.GetCorporateActionsAsync(id, ct)
                 .ConfigureAwait(false);
 
             await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 CorporateActions.Clear();
-                if (actions is { Length: > 0 })
-                {
-                    foreach (var action in actions.OrderByDescending(a => a.ExDate))
-                        CorporateActions.Add(action);
-                }
+                foreach (var action in actions.OrderByDescending(a => a.ExDate))
+                    CorporateActions.Add(action);
             });
         }
         catch (OperationCanceledException) { }
@@ -741,18 +1411,173 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
     // ── Conflict badge ───────────────────────────────────────────────────────
     private async Task RefreshConflictCountAsync(CancellationToken ct = default)
     {
+        await RefreshOperatorWorkflowAsync(ct).ConfigureAwait(false);
+    }
+
+    private void StartWorkflowPolling()
+    {
+        _workflowCts?.Cancel();
+        _workflowCts?.Dispose();
+        _workflowCts = new CancellationTokenSource();
+        var token = _workflowCts.Token;
+
+        _workflowPollingTask = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested)
+            {
+                await RefreshOperatorWorkflowAsync(token).ConfigureAwait(false);
+
+                try
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(5), token).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+        }, token);
+    }
+
+    private async Task RefreshOperatorWorkflowAsync(CancellationToken ct = default)
+    {
         try
         {
-            var conflicts = await ApiClientService.Instance
-                .GetAsync<SecurityMasterConflict[]>("/api/security-master/conflicts", ct)
-                .ConfigureAwait(false);
+            var statusTask = _workflowClient.GetIngestStatusAsync(ct);
+            var conflictsTask = _workflowClient.GetOpenConflictsAsync(ct);
+            await Task.WhenAll(statusTask, conflictsTask).ConfigureAwait(false);
 
-            var count = conflicts?.Length ?? 0;
-            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() => OpenConflictCount = count);
+            var status = await statusTask.ConfigureAwait(false);
+            var conflicts = (await conflictsTask.ConfigureAwait(false))
+                .OrderBy(conflict => conflict.DetectedAt)
+                .ToArray();
+            await PrimeConflictSecurityContextCacheAsync(conflicts, ct).ConfigureAwait(false);
+
+            var previousSelectedConflictId = SelectedConflict?.ConflictId;
+            var previousSelectedGroupSecurityId = SelectedConflictGroup?.SecurityId;
+            var preferredSecurityId = SelectedSecurity?.SecurityId;
+
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                _suppressConflictLaneSelectionSync = true;
+                _suppressConflictDrivenSelectionLoad = true;
+
+                OpenConflictCount = conflicts.Length;
+                OpenConflicts.Clear();
+                foreach (var conflict in conflicts)
+                {
+                    OpenConflicts.Add(conflict);
+                }
+
+                RebuildConflictLaneGroups();
+
+                var selectedGroup = ConflictGroups.FirstOrDefault(group =>
+                        previousSelectedGroupSecurityId.HasValue && group.SecurityId == previousSelectedGroupSecurityId.Value)
+                    ?? ConflictGroups.FirstOrDefault(group =>
+                        preferredSecurityId.HasValue && group.SecurityId == preferredSecurityId.Value)
+                    ?? ConflictGroups.FirstOrDefault();
+
+                SelectedConflictGroup = selectedGroup;
+                SelectedConflictEntry = selectedGroup?.Conflicts.FirstOrDefault(entry =>
+                        previousSelectedConflictId.HasValue && entry.Conflict.ConflictId == previousSelectedConflictId.Value)
+                    ?? selectedGroup?.Conflicts.FirstOrDefault();
+                SelectedConflict = SelectedConflictEntry?.Conflict;
+
+                _suppressConflictLaneSelectionSync = false;
+                _suppressConflictDrivenSelectionLoad = false;
+
+                if (SelectedSecurity is not null)
+                {
+                    AlignConflictLaneToSelectedSecurity();
+                }
+
+                ApplyIngestStatus(status);
+                NotifyConflictWorkflowCommandsChanged();
+            });
+        }
+        catch (OperationCanceledException)
+        {
         }
         catch (Exception ex)
         {
-            _loggingService.LogError("Failed to load Security Master conflict count", ex);
+            _loggingService.LogError("Failed to refresh Security Master operator workflow status", ex);
+
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+            {
+                WorkflowStatusText = "Operator workflow polling surface is unavailable.";
+                WorkflowRetrievedAtText = "-";
+            });
+        }
+    }
+
+    private void ApplyIngestStatus(SecurityMasterIngestStatusResponse? status)
+    {
+        if (status is null)
+        {
+            WorkflowStatusText = "Ingest polling surface unavailable.";
+            WorkflowRetrievedAtText = "-";
+            ImportSessionSummary = "Security Master ingest status is unavailable from the workstation service.";
+            return;
+        }
+
+        WorkflowRetrievedAtText = status.RetrievedAtUtc.LocalDateTime.ToString("g");
+        if (status.IsImportActive && status.ActiveImport is not null)
+        {
+            WorkflowStatusText = $"Active ingest {status.ActiveImport.Processed}/{status.ActiveImport.Total} via {status.ActiveImport.FileExtension}.";
+            ImportSessionSummary =
+                $"Active ingest: {status.ActiveImport.Processed}/{status.ActiveImport.Total} processed • {status.ActiveImport.Imported} imported • {status.ActiveImport.Skipped} skipped • {status.ActiveImport.Failed} failed.";
+            return;
+        }
+
+        if (status.LastCompleted is not null)
+        {
+            WorkflowStatusText = $"Last ingest completed {status.LastCompleted.CompletedAtUtc.LocalDateTime:g}.";
+            ImportSessionSummary =
+                $"Last ingest: {status.LastCompleted.Imported} imported • {status.LastCompleted.Skipped} skipped • {status.LastCompleted.Failed} failed • {status.LastCompleted.ConflictsDetected} conflicts.";
+            return;
+        }
+
+        WorkflowStatusText = "No ingest activity has been recorded yet.";
+        ImportSessionSummary = "No Security Master ingest has completed yet.";
+    }
+
+    private async Task ResolveSelectedConflictAsync(string resolution, CancellationToken ct = default)
+    {
+        if (SelectedConflict is null || string.IsNullOrWhiteSpace(ConflictOperatorText))
+        {
+            return;
+        }
+
+        try
+        {
+            var updated = await _workflowClient
+                .ResolveConflictAsync(
+                    SelectedConflict.ConflictId,
+                    resolution,
+                    ConflictOperatorText.Trim(),
+                    string.IsNullOrWhiteSpace(ConflictNoteText) ? null : ConflictNoteText.Trim(),
+                    ct)
+                .ConfigureAwait(false);
+
+            if (updated is null)
+            {
+                _notificationService.ShowNotification("Security Master", "Conflict no longer exists.", NotificationType.Warning);
+                return;
+            }
+
+            ConflictNoteText = string.Empty;
+            await RefreshOperatorWorkflowAsync(ct).ConfigureAwait(false);
+            _notificationService.ShowNotification(
+                "Security Master",
+                resolution.Equals("Dismiss", StringComparison.OrdinalIgnoreCase)
+                    ? "Conflict dismissed."
+                    : "Conflict marked resolved.",
+                NotificationType.Success);
+        }
+        catch (Exception ex)
+        {
+            _loggingService.LogError("Failed to resolve Security Master conflict", ex);
+            _notificationService.ShowNotification("Security Master", "Conflict resolution failed.", NotificationType.Error);
         }
     }
 
@@ -821,6 +1646,7 @@ public sealed class SecurityMasterViewModel : BindableBase, IDisposable
 
             // Refresh search results
             _ = SearchAsync();
+            _ = RefreshOperatorWorkflowAsync();
         }
         catch (OperationCanceledException)
         {

@@ -1,0 +1,681 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.NotificationSettings
+  commentId: T:Meridian.Ui.Services.Services.NotificationSettings
+  id: NotificationSettings
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.NotificationSettings.Enabled
+  - Meridian.Ui.Services.Services.NotificationSettings.NotifyBackfillComplete
+  - Meridian.Ui.Services.Services.NotificationSettings.NotifyConnectionStatus
+  - Meridian.Ui.Services.Services.NotificationSettings.NotifyDataGaps
+  - Meridian.Ui.Services.Services.NotificationSettings.NotifyErrors
+  - Meridian.Ui.Services.Services.NotificationSettings.NotifyStorageWarnings
+  - Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnabled
+  - Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnd
+  - Meridian.Ui.Services.Services.NotificationSettings.QuietHoursStart
+  - Meridian.Ui.Services.Services.NotificationSettings.SoundType
+  langs:
+  - csharp
+  - vb
+  name: NotificationSettings
+  nameWithType: NotificationSettings
+  fullName: Meridian.Ui.Services.Services.NotificationSettings
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotificationSettings
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Notification settings.
+  example: []
+  syntax:
+    content: public sealed class NotificationSettings
+    content.vb: Public NotInheritable Class NotificationSettings
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.NotificationSettings.Enabled
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.Enabled
+  id: Enabled
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: NotificationSettings.Enabled
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool Enabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Ui.Services.Services.NotificationSettings.Enabled*
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyConnectionStatus
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.NotifyConnectionStatus
+  id: NotifyConnectionStatus
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: NotifyConnectionStatus
+  nameWithType: NotificationSettings.NotifyConnectionStatus
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyConnectionStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyConnectionStatus
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool NotifyConnectionStatus { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property NotifyConnectionStatus As Boolean
+  overload: Meridian.Ui.Services.Services.NotificationSettings.NotifyConnectionStatus*
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyErrors
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.NotifyErrors
+  id: NotifyErrors
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: NotifyErrors
+  nameWithType: NotificationSettings.NotifyErrors
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyErrors
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool NotifyErrors { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property NotifyErrors As Boolean
+  overload: Meridian.Ui.Services.Services.NotificationSettings.NotifyErrors*
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyBackfillComplete
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.NotifyBackfillComplete
+  id: NotifyBackfillComplete
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: NotifyBackfillComplete
+  nameWithType: NotificationSettings.NotifyBackfillComplete
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyBackfillComplete
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyBackfillComplete
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool NotifyBackfillComplete { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property NotifyBackfillComplete As Boolean
+  overload: Meridian.Ui.Services.Services.NotificationSettings.NotifyBackfillComplete*
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyDataGaps
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.NotifyDataGaps
+  id: NotifyDataGaps
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: NotifyDataGaps
+  nameWithType: NotificationSettings.NotifyDataGaps
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyDataGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyDataGaps
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool NotifyDataGaps { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property NotifyDataGaps As Boolean
+  overload: Meridian.Ui.Services.Services.NotificationSettings.NotifyDataGaps*
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyStorageWarnings
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.NotifyStorageWarnings
+  id: NotifyStorageWarnings
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: NotifyStorageWarnings
+  nameWithType: NotificationSettings.NotifyStorageWarnings
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyStorageWarnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotifyStorageWarnings
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool NotifyStorageWarnings { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property NotifyStorageWarnings As Boolean
+  overload: Meridian.Ui.Services.Services.NotificationSettings.NotifyStorageWarnings*
+- uid: Meridian.Ui.Services.Services.NotificationSettings.SoundType
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.SoundType
+  id: SoundType
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: SoundType
+  nameWithType: NotificationSettings.SoundType
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.SoundType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SoundType
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string SoundType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SoundType As String
+  overload: Meridian.Ui.Services.Services.NotificationSettings.SoundType*
+- uid: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnabled
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnabled
+  id: QuietHoursEnabled
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: QuietHoursEnabled
+  nameWithType: NotificationSettings.QuietHoursEnabled
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuietHoursEnabled
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool QuietHoursEnabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property QuietHoursEnabled As Boolean
+  overload: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnabled*
+- uid: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursStart
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.QuietHoursStart
+  id: QuietHoursStart
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: QuietHoursStart
+  nameWithType: NotificationSettings.QuietHoursStart
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuietHoursStart
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public TimeSpan QuietHoursStart { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property QuietHoursStart As TimeSpan
+  overload: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursStart*
+- uid: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnd
+  commentId: P:Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnd
+  id: QuietHoursEnd
+  parent: Meridian.Ui.Services.Services.NotificationSettings
+  langs:
+  - csharp
+  - vb
+  name: QuietHoursEnd
+  nameWithType: NotificationSettings.QuietHoursEnd
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuietHoursEnd
+    path: ../../src/Meridian.Ui.Services/Services/NotificationServiceBase.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public TimeSpan QuietHoursEnd { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property QuietHoursEnd As TimeSpan
+  overload: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnd*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.NotificationSettings.Enabled*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.Enabled
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_Enabled
+  name: Enabled
+  nameWithType: NotificationSettings.Enabled
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyConnectionStatus*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.NotifyConnectionStatus
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_NotifyConnectionStatus
+  name: NotifyConnectionStatus
+  nameWithType: NotificationSettings.NotifyConnectionStatus
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyConnectionStatus
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyErrors*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.NotifyErrors
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_NotifyErrors
+  name: NotifyErrors
+  nameWithType: NotificationSettings.NotifyErrors
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyErrors
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyBackfillComplete*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.NotifyBackfillComplete
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_NotifyBackfillComplete
+  name: NotifyBackfillComplete
+  nameWithType: NotificationSettings.NotifyBackfillComplete
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyBackfillComplete
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyDataGaps*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.NotifyDataGaps
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_NotifyDataGaps
+  name: NotifyDataGaps
+  nameWithType: NotificationSettings.NotifyDataGaps
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyDataGaps
+- uid: Meridian.Ui.Services.Services.NotificationSettings.NotifyStorageWarnings*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.NotifyStorageWarnings
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_NotifyStorageWarnings
+  name: NotifyStorageWarnings
+  nameWithType: NotificationSettings.NotifyStorageWarnings
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.NotifyStorageWarnings
+- uid: Meridian.Ui.Services.Services.NotificationSettings.SoundType*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.SoundType
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_SoundType
+  name: SoundType
+  nameWithType: NotificationSettings.SoundType
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.SoundType
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnabled*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnabled
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_QuietHoursEnabled
+  name: QuietHoursEnabled
+  nameWithType: NotificationSettings.QuietHoursEnabled
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnabled
+- uid: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursStart*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.QuietHoursStart
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_QuietHoursStart
+  name: QuietHoursStart
+  nameWithType: NotificationSettings.QuietHoursStart
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursStart
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnd*
+  commentId: Overload:Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnd
+  href: Meridian.Ui.Services.Services.NotificationSettings.html#Meridian_Ui_Services_Services_NotificationSettings_QuietHoursEnd
+  name: QuietHoursEnd
+  nameWithType: NotificationSettings.QuietHoursEnd
+  fullName: Meridian.Ui.Services.Services.NotificationSettings.QuietHoursEnd

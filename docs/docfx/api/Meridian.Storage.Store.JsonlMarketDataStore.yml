@@ -1,0 +1,673 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Store.JsonlMarketDataStore
+  commentId: T:Meridian.Storage.Store.JsonlMarketDataStore
+  id: JsonlMarketDataStore
+  parent: Meridian.Storage.Store
+  children:
+  - Meridian.Storage.Store.JsonlMarketDataStore.#ctor(System.String)
+  - Meridian.Storage.Store.JsonlMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: JsonlMarketDataStore
+  nameWithType: JsonlMarketDataStore
+  fullName: Meridian.Storage.Store.JsonlMarketDataStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Store/JsonlMarketDataStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JsonlMarketDataStore
+    path: ../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Store
+  summary: >-
+    <xref href="Meridian.Storage.Interfaces.IMarketDataStore" data-throw-if-not-resolved="false"></xref> implementation backed by JSONL (optionally gzip-compressed) files.
+
+    Enumerates all <code>*.jsonl</code> and <code>*.jsonl.gz</code> files under the configured root,
+
+    deserialises each line, and applies the <xref href="Meridian.Contracts.Store.MarketDataQuery" data-throw-if-not-resolved="false"></xref> predicate in-process.
+  example: []
+  syntax:
+    content: 'public sealed class JsonlMarketDataStore : IMarketDataStore'
+    content.vb: Public NotInheritable Class JsonlMarketDataStore Implements IMarketDataStore
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Storage.Interfaces.IMarketDataStore
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Store.JsonlMarketDataStore.#ctor(System.String)
+  commentId: M:Meridian.Storage.Store.JsonlMarketDataStore.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Storage.Store.JsonlMarketDataStore
+  langs:
+  - csharp
+  - vb
+  name: JsonlMarketDataStore(string)
+  nameWithType: JsonlMarketDataStore.JsonlMarketDataStore(string)
+  fullName: Meridian.Storage.Store.JsonlMarketDataStore.JsonlMarketDataStore(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Store/JsonlMarketDataStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Store
+  syntax:
+    content: public JsonlMarketDataStore(string root)
+    parameters:
+    - id: root
+      type: System.String
+    content.vb: Public Sub New(root As String)
+  overload: Meridian.Storage.Store.JsonlMarketDataStore.#ctor*
+  nameWithType.vb: JsonlMarketDataStore.New(String)
+  fullName.vb: Meridian.Storage.Store.JsonlMarketDataStore.New(String)
+  name.vb: New(String)
+- uid: Meridian.Storage.Store.JsonlMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Store.JsonlMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  id: QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Store.JsonlMarketDataStore
+  langs:
+  - csharp
+  - vb
+  name: QueryAsync(MarketDataQuery, CancellationToken)
+  nameWithType: JsonlMarketDataStore.QueryAsync(MarketDataQuery, CancellationToken)
+  fullName: Meridian.Storage.Store.JsonlMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Store/JsonlMarketDataStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueryAsync
+    path: ../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Store
+  summary: >-
+    Streams <xref href="Meridian.Domain.Events.MarketEvent" data-throw-if-not-resolved="false"></xref> records that match <code class="paramref">query</code>,
+
+    ordered by <xref href="Meridian.Domain.Events.MarketEvent.Timestamp" data-throw-if-not-resolved="false"></xref> ascending.
+  example: []
+  syntax:
+    content: public IAsyncEnumerable<MarketEvent> QueryAsync(MarketDataQuery query, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: Meridian.Contracts.Store.MarketDataQuery
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Domain.Events.MarketEvent}
+    content.vb: Public Function QueryAsync(query As MarketDataQuery, ct As CancellationToken = Nothing) As IAsyncEnumerable(Of MarketEvent)
+  overload: Meridian.Storage.Store.JsonlMarketDataStore.QueryAsync*
+  implements:
+  - Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Storage.Interfaces.IMarketDataStore
+  commentId: T:Meridian.Storage.Interfaces.IMarketDataStore
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IMarketDataStore.html
+  name: IMarketDataStore
+  nameWithType: IMarketDataStore
+  fullName: Meridian.Storage.Interfaces.IMarketDataStore
+- uid: Meridian.Contracts.Store.MarketDataQuery
+  commentId: T:Meridian.Contracts.Store.MarketDataQuery
+  parent: Meridian.Contracts.Store
+  href: Meridian.Contracts.Store.MarketDataQuery.html
+  name: MarketDataQuery
+  nameWithType: MarketDataQuery
+  fullName: Meridian.Contracts.Store.MarketDataQuery
+- uid: Meridian.Storage.Store
+  commentId: N:Meridian.Storage.Store
+  href: Meridian.html
+  name: Meridian.Storage.Store
+  nameWithType: Meridian.Storage.Store
+  fullName: Meridian.Storage.Store
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Store
+    name: Store
+    href: Meridian.Storage.Store.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Store
+    name: Store
+    href: Meridian.Storage.Store.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Contracts.Store
+  commentId: N:Meridian.Contracts.Store
+  href: Meridian.html
+  name: Meridian.Contracts.Store
+  nameWithType: Meridian.Contracts.Store
+  fullName: Meridian.Contracts.Store
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Store
+    name: Store
+    href: Meridian.Contracts.Store.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Store
+    name: Store
+    href: Meridian.Contracts.Store.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Store.JsonlMarketDataStore.#ctor*
+  commentId: Overload:Meridian.Storage.Store.JsonlMarketDataStore.#ctor
+  href: Meridian.Storage.Store.JsonlMarketDataStore.html#Meridian_Storage_Store_JsonlMarketDataStore__ctor_System_String_
+  name: JsonlMarketDataStore
+  nameWithType: JsonlMarketDataStore.JsonlMarketDataStore
+  fullName: Meridian.Storage.Store.JsonlMarketDataStore.JsonlMarketDataStore
+  nameWithType.vb: JsonlMarketDataStore.New
+  fullName.vb: Meridian.Storage.Store.JsonlMarketDataStore.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Domain.Events.MarketEvent.Timestamp
+  commentId: P:Meridian.Domain.Events.MarketEvent.Timestamp
+  name: Timestamp
+  nameWithType: MarketEvent.Timestamp
+  fullName: Meridian.Domain.Events.MarketEvent.Timestamp
+- uid: Meridian.Storage.Store.JsonlMarketDataStore.QueryAsync*
+  commentId: Overload:Meridian.Storage.Store.JsonlMarketDataStore.QueryAsync
+  href: Meridian.Storage.Store.JsonlMarketDataStore.html#Meridian_Storage_Store_JsonlMarketDataStore_QueryAsync_Meridian_Contracts_Store_MarketDataQuery_System_Threading_CancellationToken_
+  name: QueryAsync
+  nameWithType: JsonlMarketDataStore.QueryAsync
+  fullName: Meridian.Storage.Store.JsonlMarketDataStore.QueryAsync
+- uid: Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IMarketDataStore
+  isExternal: true
+  href: Meridian.Storage.Interfaces.IMarketDataStore.html#Meridian_Storage_Interfaces_IMarketDataStore_QueryAsync_Meridian_Contracts_Store_MarketDataQuery_System_Threading_CancellationToken_
+  name: QueryAsync(MarketDataQuery, CancellationToken)
+  nameWithType: IMarketDataStore.QueryAsync(MarketDataQuery, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+    name: QueryAsync
+    href: Meridian.Storage.Interfaces.IMarketDataStore.html#Meridian_Storage_Interfaces_IMarketDataStore_QueryAsync_Meridian_Contracts_Store_MarketDataQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Store.MarketDataQuery
+    name: MarketDataQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Interfaces.IMarketDataStore.QueryAsync(Meridian.Contracts.Store.MarketDataQuery,System.Threading.CancellationToken)
+    name: QueryAsync
+    href: Meridian.Storage.Interfaces.IMarketDataStore.html#Meridian_Storage_Interfaces_IMarketDataStore_QueryAsync_Meridian_Contracts_Store_MarketDataQuery_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Store.MarketDataQuery
+    name: MarketDataQuery
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Domain.Events.MarketEvent}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Domain.Events.MarketEvent}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<MarketEvent>
+  nameWithType: IAsyncEnumerable<MarketEvent>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Domain.Events.MarketEvent>
+  nameWithType.vb: IAsyncEnumerable(Of MarketEvent)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Domain.Events.MarketEvent)
+  name.vb: IAsyncEnumerable(Of MarketEvent)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

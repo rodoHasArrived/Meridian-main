@@ -21,7 +21,7 @@ namespace Meridian.Infrastructure.Adapters.Core;
 [ImplementsAdr("ADR-001", "Composite historical data provider with failover")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
-public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, IDisposable
+public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, IHistoricalAggregateBarProvider, IDisposable
 {
     private readonly List<IHistoricalDataProvider> _providers;
     private readonly ISymbolResolver? _symbolResolver;
@@ -80,6 +80,14 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
     /// </summary>
     public IReadOnlyDictionary<string, RateLimitStatus> RateLimitStatus => _rateLimitTracker.GetAllStatus();
 
+    public IReadOnlyList<DataGranularity> SupportedGranularities =>
+        _providers
+            .OfType<IHistoricalAggregateBarProvider>()
+            .SelectMany(p => p.SupportedGranularities)
+            .Distinct()
+            .OrderBy(g => g)
+            .ToArray();
+
     public CompositeHistoricalDataProvider(
         IEnumerable<IHistoricalDataProvider> providers,
         ISymbolResolver? symbolResolver = null,
@@ -130,6 +138,14 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
     public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
         => GetDailyBarsInternalAsync(symbol, from, to, rateLimitRetries: 0, ct);
+
+    public Task<IReadOnlyList<AggregateBar>> GetAggregateBarsAsync(
+        string symbol,
+        DataGranularity granularity,
+        DateOnly? from,
+        DateOnly? to,
+        CancellationToken ct = default)
+        => GetAggregateBarsInternalAsync(symbol, granularity, from, to, rateLimitRetries: 0, ct);
 
     private async Task<IReadOnlyList<HistoricalBar>> GetDailyBarsInternalAsync(string symbol, DateOnly? from, DateOnly? to, int rateLimitRetries, CancellationToken ct = default)
     {
@@ -246,6 +262,119 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
 
         _log.Warning("No data found from any provider for {Symbol}", symbol);
         return Array.Empty<HistoricalBar>();
+    }
+
+    private async Task<IReadOnlyList<AggregateBar>> GetAggregateBarsInternalAsync(
+        string symbol,
+        DataGranularity granularity,
+        DateOnly? from,
+        DateOnly? to,
+        int rateLimitRetries,
+        CancellationToken ct = default)
+    {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (string.IsNullOrWhiteSpace(symbol))
+            throw new ArgumentException("Symbol is required", nameof(symbol));
+
+        if (!SupportedGranularities.Contains(granularity))
+            throw new InvalidOperationException($"Composite provider does not support {granularity.ToDisplayName()} backfill.");
+
+        const int maxRateLimitRetries = 3;
+        List<(string Provider, Exception Error)> errors = [];
+
+        var orderedProviders = GetOrderedProviders()
+            .Where(p => p is IHistoricalAggregateBarProvider aggregateProvider &&
+                        aggregateProvider.SupportedGranularities.Contains(granularity));
+
+        foreach (var provider in orderedProviders)
+        {
+            if (IsInBackoffPeriod(provider.Name))
+            {
+                _log.Debug("Skipping {Provider} - in backoff period", provider.Name);
+                continue;
+            }
+
+            if (_enableRateLimitRotation && _rateLimitTracker.IsRateLimited(provider.Name))
+            {
+                var resetTime = _rateLimitTracker.GetTimeUntilReset(provider.Name);
+                _log.Debug("Skipping {Provider} - rate limited, resets in {ResetTime}", provider.Name, resetTime);
+                continue;
+            }
+
+            try
+            {
+                var resolvedSymbol = await ResolveSymbolForProviderAsync(symbol, provider.Name, ct).ConfigureAwait(false);
+                _log.Information("Trying {Provider} for {Symbol} {Granularity} aggregates (resolved: {Resolved})",
+                    provider.Name, symbol, granularity.ToDisplayName(), resolvedSymbol);
+
+                var startTime = DateTimeOffset.UtcNow;
+                _rateLimitTracker.RecordRequest(provider.Name);
+
+                var aggregateProvider = (IHistoricalAggregateBarProvider)provider;
+                var bars = await aggregateProvider.GetAggregateBarsAsync(resolvedSymbol, granularity, from, to, ct).ConfigureAwait(false);
+                var elapsed = DateTimeOffset.UtcNow - startTime;
+
+                if (bars is { Count: > 0 })
+                {
+                    UpdateHealthStatus(provider.Name, true, $"Retrieved {bars.Count} aggregate bars", elapsed);
+                    ClearFailure(provider.Name);
+                    _rateLimitTracker.ClearRateLimitState(provider.Name);
+
+                    _log.Information("Successfully retrieved {Count} {Granularity} bars from {Provider} for {Symbol}",
+                        bars.Count, granularity.ToDisplayName(), provider.Name, symbol);
+                    return bars;
+                }
+
+                _log.Debug("No aggregate bars returned from {Provider} for {Symbol}, trying next", provider.Name, symbol);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                if (IsRateLimitException(ex))
+                {
+                    var retryAfter = ExtractRetryAfter(ex);
+                    _rateLimitTracker.RecordRateLimitHit(provider.Name, retryAfter);
+                    _log.Warning("Provider {Provider} hit rate limit for {Symbol} {Granularity}, rotating to next provider",
+                        provider.Name, symbol, granularity.ToDisplayName());
+                }
+                else
+                {
+                    _log.Warning(ex, "Provider {Provider} failed for {Symbol} {Granularity} aggregates",
+                        provider.Name, symbol, granularity.ToDisplayName());
+                    RecordFailure(provider.Name, ex.Message);
+                }
+
+                errors.Add((provider.Name, ex));
+            }
+        }
+
+        if (_enableRateLimitRotation && errors.All(e => IsRateLimitException(e.Error)) && rateLimitRetries < maxRateLimitRetries)
+        {
+            var shortestWait = GetShortestRateLimitWait();
+            if (shortestWait.HasValue && shortestWait.Value < TimeSpan.FromMinutes(5))
+            {
+                _log.Information(
+                    "All aggregate providers rate limited for {Granularity} (attempt {Attempt}/{MaxRetries}). Waiting {WaitTime}...",
+                    granularity.ToDisplayName(), rateLimitRetries + 1, maxRateLimitRetries, shortestWait.Value);
+                await Task.Delay(shortestWait.Value, ct).ConfigureAwait(false);
+                return await GetAggregateBarsInternalAsync(symbol, granularity, from, to, rateLimitRetries + 1, ct).ConfigureAwait(false);
+            }
+        }
+
+        if (errors.Count > 0)
+        {
+            var errorSummary = string.Join("; ", errors.Select(e => $"{e.Provider}: {e.Error.Message}"));
+            throw new AggregateException(
+                $"All aggregate-capable providers failed for {symbol} ({granularity.ToDisplayName()}): {errorSummary}",
+                errors.Select(e => e.Error));
+        }
+
+        _log.Warning("No aggregate-capable provider found for {Symbol} at {Granularity}", symbol, granularity.ToDisplayName());
+        return Array.Empty<AggregateBar>();
     }
 
     /// <summary>

@@ -1,0 +1,475 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs
+  commentId: T:Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs
+  id: JobStatusChangedEventArgs
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.CurrentStatus
+  - Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Job
+  - Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.PreviousStatus
+  - Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: JobStatusChangedEventArgs
+  nameWithType: JobStatusChangedEventArgs
+  fullName: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobStatusChangedEventArgs
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Event args for job status changes.
+  example: []
+  syntax:
+    content: 'public sealed class JobStatusChangedEventArgs : EventArgs'
+    content.vb: Public NotInheritable Class JobStatusChangedEventArgs Inherits EventArgs
+  inheritance:
+  - System.Object
+  - System.EventArgs
+  inheritedMembers:
+  - System.EventArgs.Empty
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Job
+  commentId: P:Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Job
+  id: Job
+  parent: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Job
+  nameWithType: JobStatusChangedEventArgs.Job
+  fullName: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Job
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Job
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public required BackfillJob Job { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJob
+    content.vb: Public Property Job As BackfillJob
+  overload: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Job*
+- uid: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.PreviousStatus
+  commentId: P:Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.PreviousStatus
+  id: PreviousStatus
+  parent: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: PreviousStatus
+  nameWithType: JobStatusChangedEventArgs.PreviousStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.PreviousStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviousStatus
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public required BackfillJobStatus PreviousStatus { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+    content.vb: Public Property PreviousStatus As BackfillJobStatus
+  overload: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.PreviousStatus*
+- uid: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.CurrentStatus
+  commentId: P:Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.CurrentStatus
+  id: CurrentStatus
+  parent: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: CurrentStatus
+  nameWithType: JobStatusChangedEventArgs.CurrentStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.CurrentStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentStatus
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public required BackfillJobStatus CurrentStatus { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+    content.vb: Public Property CurrentStatus As BackfillJobStatus
+  overload: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.CurrentStatus*
+- uid: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Timestamp
+  commentId: P:Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Timestamp
+  id: Timestamp
+  parent: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: JobStatusChangedEventArgs.Timestamp
+  fullName: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Timestamp*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.EventArgs
+  commentId: T:System.EventArgs
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs
+  name: EventArgs
+  nameWithType: EventArgs
+  fullName: System.EventArgs
+- uid: System.EventArgs.Empty
+  commentId: F:System.EventArgs.Empty
+  parent: System.EventArgs
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs.empty
+  name: Empty
+  nameWithType: EventArgs.Empty
+  fullName: System.EventArgs.Empty
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Job*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Job
+  href: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.html#Meridian_Infrastructure_Adapters_Core_JobStatusChangedEventArgs_Job
+  name: Job
+  nameWithType: JobStatusChangedEventArgs.Job
+  fullName: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Job
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJob
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillJob
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillJob.html
+  name: BackfillJob
+  nameWithType: BackfillJob
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJob
+- uid: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.PreviousStatus*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.PreviousStatus
+  href: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.html#Meridian_Infrastructure_Adapters_Core_JobStatusChangedEventArgs_PreviousStatus
+  name: PreviousStatus
+  nameWithType: JobStatusChangedEventArgs.PreviousStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.PreviousStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.html
+  name: BackfillJobStatus
+  nameWithType: BackfillJobStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+- uid: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.CurrentStatus*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.CurrentStatus
+  href: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.html#Meridian_Infrastructure_Adapters_Core_JobStatusChangedEventArgs_CurrentStatus
+  name: CurrentStatus
+  nameWithType: JobStatusChangedEventArgs.CurrentStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.CurrentStatus
+- uid: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Timestamp*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Timestamp
+  href: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.html#Meridian_Infrastructure_Adapters_Core_JobStatusChangedEventArgs_Timestamp
+  name: Timestamp
+  nameWithType: JobStatusChangedEventArgs.Timestamp
+  fullName: Meridian.Infrastructure.Adapters.Core.JobStatusChangedEventArgs.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset

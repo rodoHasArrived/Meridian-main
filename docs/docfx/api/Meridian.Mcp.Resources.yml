@@ -1,0 +1,37 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Mcp.Resources
+  commentId: N:Meridian.Mcp.Resources
+  id: Meridian.Mcp.Resources
+  children:
+  - Meridian.Mcp.Resources.AdrResources
+  - Meridian.Mcp.Resources.ConventionResources
+  - Meridian.Mcp.Resources.TemplateResources
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Mcp.Resources
+  nameWithType: Meridian.Mcp.Resources
+  fullName: Meridian.Mcp.Resources
+  type: Namespace
+  assemblies:
+  - mdc-mcp
+references:
+- uid: Meridian.Mcp.Resources.AdrResources
+  commentId: T:Meridian.Mcp.Resources.AdrResources
+  href: Meridian.Mcp.Resources.AdrResources.html
+  name: AdrResources
+  nameWithType: AdrResources
+  fullName: Meridian.Mcp.Resources.AdrResources
+- uid: Meridian.Mcp.Resources.ConventionResources
+  commentId: T:Meridian.Mcp.Resources.ConventionResources
+  href: Meridian.Mcp.Resources.ConventionResources.html
+  name: ConventionResources
+  nameWithType: ConventionResources
+  fullName: Meridian.Mcp.Resources.ConventionResources
+- uid: Meridian.Mcp.Resources.TemplateResources
+  commentId: T:Meridian.Mcp.Resources.TemplateResources
+  href: Meridian.Mcp.Resources.TemplateResources.html
+  name: TemplateResources
+  nameWithType: TemplateResources
+  fullName: Meridian.Mcp.Resources.TemplateResources

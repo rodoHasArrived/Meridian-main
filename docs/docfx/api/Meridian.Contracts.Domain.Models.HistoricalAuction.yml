@@ -1,0 +1,1172 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction
+  commentId: T:Meridian.Contracts.Domain.Models.HistoricalAuction
+  id: HistoricalAuction
+  parent: Meridian.Contracts.Domain.Models
+  children:
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.#ctor(System.String,System.DateOnly,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice},System.String,System.Int64)
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.ClosingAuctions
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.OpeningAuctions
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryClosePrice
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryCloseVolume
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenPrice
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenVolume
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.SequenceNumber
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.SessionDate
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.Source
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.Symbol
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.TotalClosingVolume
+  - Meridian.Contracts.Domain.Models.HistoricalAuction.TotalOpeningVolume
+  langs:
+  - csharp
+  - vb
+  name: HistoricalAuction
+  nameWithType: HistoricalAuction
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalAuction
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Historical auction data from Alpaca Markets API.
+
+    Contains opening and closing auction information for a trading session.
+
+    Useful for VWAP calculations and understanding market open/close dynamics.
+  example: []
+  syntax:
+    content: 'public sealed record HistoricalAuction : MarketEventPayload, IMarketEventPayload, IEquatable<MarketEventPayload>, IEquatable<HistoricalAuction>'
+    content.vb: Public NotInheritable Class HistoricalAuction Inherits MarketEventPayload Implements IMarketEventPayload, IEquatable(Of MarketEventPayload), IEquatable(Of HistoricalAuction)
+  inheritance:
+  - System.Object
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  implements:
+  - Meridian.Contracts.Domain.Events.IMarketEventPayload
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  - System.IEquatable{Meridian.Contracts.Domain.Models.HistoricalAuction}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.Symbol
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: HistoricalAuction.Symbol
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the ticker symbol for the security.
+  example: []
+  syntax:
+    content: public string Symbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Symbol As String
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.Symbol*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.SessionDate
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.SessionDate
+  id: SessionDate
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: SessionDate
+  nameWithType: HistoricalAuction.SessionDate
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.SessionDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionDate
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the trading session date.
+  example: []
+  syntax:
+    content: public DateOnly SessionDate { get; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public ReadOnly Property SessionDate As DateOnly
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.SessionDate*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.OpeningAuctions
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.OpeningAuctions
+  id: OpeningAuctions
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: OpeningAuctions
+  nameWithType: HistoricalAuction.OpeningAuctions
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.OpeningAuctions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpeningAuctions
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the collection of opening auction prices.
+  example: []
+  syntax:
+    content: public IReadOnlyList<AuctionPrice> OpeningAuctions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice}
+    content.vb: Public ReadOnly Property OpeningAuctions As IReadOnlyList(Of AuctionPrice)
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.OpeningAuctions*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.ClosingAuctions
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.ClosingAuctions
+  id: ClosingAuctions
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: ClosingAuctions
+  nameWithType: HistoricalAuction.ClosingAuctions
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.ClosingAuctions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClosingAuctions
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the collection of closing auction prices.
+  example: []
+  syntax:
+    content: public IReadOnlyList<AuctionPrice> ClosingAuctions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice}
+    content.vb: Public ReadOnly Property ClosingAuctions As IReadOnlyList(Of AuctionPrice)
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.ClosingAuctions*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.Source
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.Source
+  id: Source
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: HistoricalAuction.Source
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the data source identifier (e.g., "alpaca").
+  example: []
+  syntax:
+    content: public string Source { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Source As String
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.Source*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.SequenceNumber
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: HistoricalAuction.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the sequence number for ordering events.
+  example: []
+  syntax:
+    content: public long SequenceNumber { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property SequenceNumber As Long
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.SequenceNumber*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.#ctor(System.String,System.DateOnly,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice},System.String,System.Int64)
+  commentId: M:Meridian.Contracts.Domain.Models.HistoricalAuction.#ctor(System.String,System.DateOnly,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice},System.String,System.Int64)
+  id: '#ctor(System.String,System.DateOnly,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice},System.String,System.Int64)'
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: HistoricalAuction(string, DateOnly, IReadOnlyList<AuctionPrice>?, IReadOnlyList<AuctionPrice>?, string, long)
+  nameWithType: HistoricalAuction.HistoricalAuction(string, DateOnly, IReadOnlyList<AuctionPrice>?, IReadOnlyList<AuctionPrice>?, string, long)
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.HistoricalAuction(string, System.DateOnly, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.AuctionPrice>?, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.AuctionPrice>?, string, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Initializes a new instance of the <xref href="Meridian.Contracts.Domain.Models.HistoricalAuction" data-throw-if-not-resolved="false"></xref> record.
+  example: []
+  syntax:
+    content: public HistoricalAuction(string Symbol, DateOnly SessionDate, IReadOnlyList<AuctionPrice>? OpeningAuctions, IReadOnlyList<AuctionPrice>? ClosingAuctions, string Source = "alpaca", long SequenceNumber = 0)
+    parameters:
+    - id: Symbol
+      type: System.String
+      description: The ticker symbol.
+    - id: SessionDate
+      type: System.DateOnly
+      description: The trading session date.
+    - id: OpeningAuctions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice}
+      description: The opening auction prices.
+    - id: ClosingAuctions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice}
+      description: The closing auction prices.
+    - id: Source
+      type: System.String
+      description: The data source identifier.
+    - id: SequenceNumber
+      type: System.Int64
+      description: The sequence number for ordering.
+    content.vb: Public Sub New(Symbol As String, SessionDate As DateOnly, OpeningAuctions As IReadOnlyList(Of AuctionPrice), ClosingAuctions As IReadOnlyList(Of AuctionPrice), Source As String = "alpaca", SequenceNumber As Long = 0)
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.#ctor*
+  nameWithType.vb: HistoricalAuction.New(String, DateOnly, IReadOnlyList(Of AuctionPrice), IReadOnlyList(Of AuctionPrice), String, Long)
+  fullName.vb: Meridian.Contracts.Domain.Models.HistoricalAuction.New(String, System.DateOnly, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.AuctionPrice), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.AuctionPrice), String, Long)
+  name.vb: New(String, DateOnly, IReadOnlyList(Of AuctionPrice), IReadOnlyList(Of AuctionPrice), String, Long)
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenPrice
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenPrice
+  id: PrimaryOpenPrice
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: PrimaryOpenPrice
+  nameWithType: HistoricalAuction.PrimaryOpenPrice
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryOpenPrice
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the primary opening auction price (first valid opening auction).
+  example: []
+  syntax:
+    content: public decimal? PrimaryOpenPrice { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public ReadOnly Property PrimaryOpenPrice As Decimal?
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenPrice*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenVolume
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenVolume
+  id: PrimaryOpenVolume
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: PrimaryOpenVolume
+  nameWithType: HistoricalAuction.PrimaryOpenVolume
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryOpenVolume
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the primary opening auction volume.
+  example: []
+  syntax:
+    content: public long? PrimaryOpenVolume { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public ReadOnly Property PrimaryOpenVolume As Long?
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenVolume*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryClosePrice
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryClosePrice
+  id: PrimaryClosePrice
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: PrimaryClosePrice
+  nameWithType: HistoricalAuction.PrimaryClosePrice
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryClosePrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryClosePrice
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the primary closing auction price (first valid closing auction).
+  example: []
+  syntax:
+    content: public decimal? PrimaryClosePrice { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public ReadOnly Property PrimaryClosePrice As Decimal?
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryClosePrice*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryCloseVolume
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryCloseVolume
+  id: PrimaryCloseVolume
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: PrimaryCloseVolume
+  nameWithType: HistoricalAuction.PrimaryCloseVolume
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryCloseVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryCloseVolume
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the primary closing auction volume.
+  example: []
+  syntax:
+    content: public long? PrimaryCloseVolume { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public ReadOnly Property PrimaryCloseVolume As Long?
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryCloseVolume*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalOpeningVolume
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.TotalOpeningVolume
+  id: TotalOpeningVolume
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: TotalOpeningVolume
+  nameWithType: HistoricalAuction.TotalOpeningVolume
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalOpeningVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalOpeningVolume
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Total volume from all opening auctions.
+  example: []
+  syntax:
+    content: public long TotalOpeningVolume { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalOpeningVolume As Long
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalOpeningVolume*
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalClosingVolume
+  commentId: P:Meridian.Contracts.Domain.Models.HistoricalAuction.TotalClosingVolume
+  id: TotalClosingVolume
+  parent: Meridian.Contracts.Domain.Models.HistoricalAuction
+  langs:
+  - csharp
+  - vb
+  name: TotalClosingVolume
+  nameWithType: HistoricalAuction.TotalClosingVolume
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalClosingVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalClosingVolume
+    path: ../../src/Meridian.Contracts/Domain/Models/HistoricalAuction.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Total volume from all closing auctions.
+  example: []
+  syntax:
+    content: public long TotalClosingVolume { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalClosingVolume As Long
+  overload: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalClosingVolume*
+references:
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.IMarketEventPayload.html
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventPayload>
+  nameWithType: IEquatable<MarketEventPayload>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventPayload>
+  nameWithType.vb: IEquatable(Of MarketEventPayload)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventPayload)
+  name.vb: IEquatable(Of MarketEventPayload)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: )
+- uid: System.IEquatable{Meridian.Contracts.Domain.Models.HistoricalAuction}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Models.HistoricalAuction}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<HistoricalAuction>
+  nameWithType: IEquatable<HistoricalAuction>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Models.HistoricalAuction>
+  nameWithType.vb: IEquatable(Of HistoricalAuction)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Models.HistoricalAuction)
+  name.vb: IEquatable(Of HistoricalAuction)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalAuction
+    name: HistoricalAuction
+    href: Meridian.Contracts.Domain.Models.HistoricalAuction.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalAuction
+    name: HistoricalAuction
+    href: Meridian.Contracts.Domain.Models.HistoricalAuction.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.Symbol*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.Symbol
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_Symbol
+  name: Symbol
+  nameWithType: HistoricalAuction.Symbol
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.SessionDate*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.SessionDate
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_SessionDate
+  name: SessionDate
+  nameWithType: HistoricalAuction.SessionDate
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.SessionDate
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.OpeningAuctions*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.OpeningAuctions
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_OpeningAuctions
+  name: OpeningAuctions
+  nameWithType: HistoricalAuction.OpeningAuctions
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.OpeningAuctions
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AuctionPrice}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AuctionPrice>
+  nameWithType: IReadOnlyList<AuctionPrice>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.AuctionPrice>
+  nameWithType.vb: IReadOnlyList(Of AuctionPrice)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.AuctionPrice)
+  name.vb: IReadOnlyList(Of AuctionPrice)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.AuctionPrice
+    name: AuctionPrice
+    href: Meridian.Contracts.Domain.Models.AuctionPrice.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.AuctionPrice
+    name: AuctionPrice
+    href: Meridian.Contracts.Domain.Models.AuctionPrice.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.ClosingAuctions*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.ClosingAuctions
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_ClosingAuctions
+  name: ClosingAuctions
+  nameWithType: HistoricalAuction.ClosingAuctions
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.ClosingAuctions
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.Source*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.Source
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_Source
+  name: Source
+  nameWithType: HistoricalAuction.Source
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.Source
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.SequenceNumber
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_SequenceNumber
+  name: SequenceNumber
+  nameWithType: HistoricalAuction.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.SequenceNumber
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction
+  commentId: T:Meridian.Contracts.Domain.Models.HistoricalAuction
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html
+  name: HistoricalAuction
+  nameWithType: HistoricalAuction
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.#ctor
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction__ctor_System_String_System_DateOnly_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_AuctionPrice__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_AuctionPrice__System_String_System_Int64_
+  name: HistoricalAuction
+  nameWithType: HistoricalAuction.HistoricalAuction
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.HistoricalAuction
+  nameWithType.vb: HistoricalAuction.New
+  fullName.vb: Meridian.Contracts.Domain.Models.HistoricalAuction.New
+  name.vb: New
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenPrice*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenPrice
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_PrimaryOpenPrice
+  name: PrimaryOpenPrice
+  nameWithType: HistoricalAuction.PrimaryOpenPrice
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenPrice
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenVolume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenVolume
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_PrimaryOpenVolume
+  name: PrimaryOpenVolume
+  nameWithType: HistoricalAuction.PrimaryOpenVolume
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryOpenVolume
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryClosePrice*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryClosePrice
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_PrimaryClosePrice
+  name: PrimaryClosePrice
+  nameWithType: HistoricalAuction.PrimaryClosePrice
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryClosePrice
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryCloseVolume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryCloseVolume
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_PrimaryCloseVolume
+  name: PrimaryCloseVolume
+  nameWithType: HistoricalAuction.PrimaryCloseVolume
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.PrimaryCloseVolume
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalOpeningVolume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.TotalOpeningVolume
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_TotalOpeningVolume
+  name: TotalOpeningVolume
+  nameWithType: HistoricalAuction.TotalOpeningVolume
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalOpeningVolume
+- uid: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalClosingVolume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.HistoricalAuction.TotalClosingVolume
+  href: Meridian.Contracts.Domain.Models.HistoricalAuction.html#Meridian_Contracts_Domain_Models_HistoricalAuction_TotalClosingVolume
+  name: TotalClosingVolume
+  nameWithType: HistoricalAuction.TotalClosingVolume
+  fullName: Meridian.Contracts.Domain.Models.HistoricalAuction.TotalClosingVolume

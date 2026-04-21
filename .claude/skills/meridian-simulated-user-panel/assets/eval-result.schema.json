@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meridian.local/skills/meridian-simulated-user-panel/eval-result.schema.json",
+  "title": "Meridian Simulated User Panel Eval Result",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "eval_id",
+    "mode",
+    "artifact_type",
+    "required_sections",
+    "persona_scores",
+    "checks",
+    "summary",
+    "owner_priorities",
+    "repeated_complaints",
+    "benchmark"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "eval_id": {
+      "type": "integer"
+    },
+    "mode": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "type": "string"
+    },
+    "required_sections": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "boolean"
+      }
+    },
+    "persona_scores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "persona",
+          "rubric_dimensions"
+        ],
+        "properties": {
+          "persona": {
+            "type": "string"
+          },
+          "rubric_dimensions": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "boolean"
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "passed"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "passed",
+        "failed",
+        "total",
+        "pass_rate"
+      ],
+      "properties": {
+        "passed": {
+          "type": "integer"
+        },
+        "failed": {
+          "type": "integer"
+        },
+        "total": {
+          "type": "integer"
+        },
+        "pass_rate": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": true
+    },
+    "owner_priorities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "bucket",
+          "text"
+        ],
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "repeated_complaints": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "cluster",
+          "count"
+        ],
+        "properties": {
+          "cluster": {
+            "type": "string"
+          },
+          "count": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "benchmark": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

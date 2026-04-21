@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
 
 namespace Meridian.Ui.Tests.Services;
@@ -30,6 +31,57 @@ public sealed class SymbolMappingServiceTests
 
         // Assert
         instance1.Should().BeSameAs(instance2);
+    }
+
+    [Fact]
+    public void Constructor_DoesNotLoadConfigWhenBuildingService()
+    {
+        using var fixture = new PathFixture("mdc-symbol-map-constructor");
+        var configService = new ThrowingLoadConfigService(fixture.ConfigPath);
+
+        _ = new SymbolMappingService(configService);
+
+        configService.LoadConfigCallCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task LoadAsync_UsesConfiguredPersistencePathWhenPresent()
+    {
+        using var fixture = new PathFixture("mdc-symbol-map-path");
+        File.WriteAllText(
+            fixture.ConfigPath,
+            """
+            {
+              "dataRoot": "retained-data",
+              "dataSources": {
+                "symbolMappings": {
+                  "persistencePath": "state/symbol-mappings.json"
+                }
+              }
+            }
+            """);
+        var config = new AppConfigDto { DataRoot = "retained-data" };
+        var service = new SymbolMappingService(new FixedConfigService(fixture.ConfigPath, config));
+
+        await service.LoadAsync();
+
+        var path = GetPrivateField<string?>(service, "_mappingsFilePath");
+
+        path.Should().Be(Path.Combine(fixture.RootPath, "state", "symbol-mappings.json"));
+    }
+
+    [Fact]
+    public async Task LoadAsync_WhenConfigLoadFails_FallsBackToDefaultDataRoot()
+    {
+        using var fixture = new PathFixture("mdc-symbol-map-fallback");
+        var configService = new ThrowingLoadConfigService(fixture.ConfigPath);
+        var service = new SymbolMappingService(configService);
+
+        await service.LoadAsync();
+
+        var path = GetPrivateField<string?>(service, "_mappingsFilePath");
+        path.Should().Be(Path.Combine(fixture.RootPath, "data", "_config", "symbol-mappings.json"));
+        configService.LoadConfigCallCount.Should().Be(1);
     }
 
     // ── KnownProviders ───────────────────────────────────────────────
@@ -203,16 +255,6 @@ public sealed class SymbolMappingServiceTests
     {
         // Act
         var result = SymbolMappingService.ApplyReverseTransform("aapl", "Alpaca");
-
-        // Assert
-        result.Should().Be("AAPL");
-    }
-
-    [Fact]
-    public void ApplyReverseTransform_StockSharp_ShouldStripExchangeSuffix()
-    {
-        // Act
-        var result = SymbolMappingService.ApplyReverseTransform("AAPL@NASDAQ", "StockSharp");
 
         // Assert
         result.Should().Be("AAPL");
@@ -434,7 +476,6 @@ public sealed class SymbolMappingServiceTests
     [InlineData(SymbolTransform.DotsToSpaces)]
     [InlineData(SymbolTransform.DotsToDashes)]
     [InlineData(SymbolTransform.StooqFormat)]
-    [InlineData(SymbolTransform.StockSharpFormat)]
     public void SymbolTransform_AllValues_ShouldBeDefined(SymbolTransform transform)
     {
         // Assert
@@ -536,5 +577,14 @@ public sealed class SymbolMappingServiceTests
 
         // Assert
         result.Should().Be("AAPL");
+    }
+
+    private static T GetPrivateField<T>(object instance, string fieldName)
+    {
+        var field = instance.GetType().GetField(
+            fieldName,
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        field.Should().NotBeNull();
+        return (T)field!.GetValue(instance)!;
     }
 }

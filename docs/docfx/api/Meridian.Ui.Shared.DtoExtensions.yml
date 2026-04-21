@@ -1,0 +1,671 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.DtoExtensions
+  commentId: T:Meridian.Ui.Shared.DtoExtensions
+  id: DtoExtensions
+  parent: Meridian.Ui.Shared
+  children:
+  - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
+  - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  - Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  langs:
+  - csharp
+  - vb
+  name: DtoExtensions
+  nameWithType: DtoExtensions
+  fullName: Meridian.Ui.Shared.DtoExtensions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/DtoExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DtoExtensions
+    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: >-
+    Extension methods for converting DTOs to domain types.
+
+    Located in Ui.Shared since it needs references to both Contracts and core domain types.
+  example: []
+  syntax:
+    content: public static class DtoExtensions
+    content.vb: Public Module DtoExtensions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  commentId: M:Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  id: ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  isExtensionMethod: true
+  parent: Meridian.Ui.Shared.DtoExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(AlpacaOptionsDto)
+  nameWithType: DtoExtensions.ToDomain(AlpacaOptionsDto)
+  fullName: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.AlpacaOptionsDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/DtoExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Converts AlpacaOptionsDto to AlpacaOptions domain type.
+  example: []
+  syntax:
+    content: public static AlpacaOptions ToDomain(this AlpacaOptionsDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.AlpacaOptionsDto
+    return:
+      type: Meridian.Application.Config.AlpacaOptions
+    content.vb: Public Shared Function ToDomain(dto As AlpacaOptionsDto) As AlpacaOptions
+  overload: Meridian.Ui.Shared.DtoExtensions.ToDomain*
+- uid: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  commentId: M:Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  id: ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  isExtensionMethod: true
+  parent: Meridian.Ui.Shared.DtoExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(PolygonOptionsDto)
+  nameWithType: DtoExtensions.ToDomain(PolygonOptionsDto)
+  fullName: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.PolygonOptionsDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/DtoExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Converts PolygonOptionsDto to PolygonOptions domain type.
+  example: []
+  syntax:
+    content: public static PolygonOptions ToDomain(this PolygonOptionsDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.PolygonOptionsDto
+    return:
+      type: Meridian.Application.Config.PolygonOptions
+    content.vb: Public Shared Function ToDomain(dto As PolygonOptionsDto) As PolygonOptions
+  overload: Meridian.Ui.Shared.DtoExtensions.ToDomain*
+- uid: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  commentId: M:Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  id: ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  isExtensionMethod: true
+  parent: Meridian.Ui.Shared.DtoExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(IBOptionsDto)
+  nameWithType: DtoExtensions.ToDomain(IBOptionsDto)
+  fullName: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBOptionsDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/DtoExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Converts IBOptionsDto to IBOptions domain type.
+  example: []
+  syntax:
+    content: public static IBOptions ToDomain(this IBOptionsDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.IBOptionsDto
+    return:
+      type: Meridian.Application.Config.IBOptions
+    content.vb: Public Shared Function ToDomain(dto As IBOptionsDto) As IBOptions
+  overload: Meridian.Ui.Shared.DtoExtensions.ToDomain*
+- uid: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
+  commentId: M:Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
+  id: ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
+  isExtensionMethod: true
+  parent: Meridian.Ui.Shared.DtoExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(IBClientPortalOptionsDto)
+  nameWithType: DtoExtensions.ToDomain(IBClientPortalOptionsDto)
+  fullName: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IBClientPortalOptionsDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/DtoExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Converts IBClientPortalOptionsDto to IBClientPortalOptions domain type.
+  example: []
+  syntax:
+    content: public static IBClientPortalOptions ToDomain(this IBClientPortalOptionsDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+    return:
+      type: Meridian.Application.Config.IBClientPortalOptions
+    content.vb: Public Shared Function ToDomain(dto As IBClientPortalOptionsDto) As IBClientPortalOptions
+  overload: Meridian.Ui.Shared.DtoExtensions.ToDomain*
+- uid: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  commentId: M:Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Ui.Shared.DtoExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(DerivativesConfigDto)
+  nameWithType: DtoExtensions.ToDomain(DerivativesConfigDto)
+  fullName: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.DerivativesConfigDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/DtoExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Converts DerivativesConfigDto to DerivativesConfig domain type.
+  example: []
+  syntax:
+    content: public static DerivativesConfig ToDomain(this DerivativesConfigDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.DerivativesConfigDto
+    return:
+      type: Meridian.Application.Config.DerivativesConfig
+    content.vb: Public Shared Function ToDomain(dto As DerivativesConfigDto) As DerivativesConfig
+  overload: Meridian.Ui.Shared.DtoExtensions.ToDomain*
+- uid: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  commentId: M:Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  id: ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  isExtensionMethod: true
+  parent: Meridian.Ui.Shared.DtoExtensions
+  langs:
+  - csharp
+  - vb
+  name: ToDomain(IndexOptionsConfigDto)
+  nameWithType: DtoExtensions.ToDomain(IndexOptionsConfigDto)
+  fullName: Meridian.Ui.Shared.DtoExtensions.ToDomain(Meridian.Contracts.Configuration.IndexOptionsConfigDto)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/DtoExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDomain
+    path: ../../src/Meridian.Ui.Shared/DtoExtensions.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared
+  summary: Converts IndexOptionsConfigDto to IndexOptionsConfig domain type.
+  example: []
+  syntax:
+    content: public static IndexOptionsConfig ToDomain(this IndexOptionsConfigDto dto)
+    parameters:
+    - id: dto
+      type: Meridian.Contracts.Configuration.IndexOptionsConfigDto
+    return:
+      type: Meridian.Application.Config.IndexOptionsConfig
+    content.vb: Public Shared Function ToDomain(dto As IndexOptionsConfigDto) As IndexOptionsConfig
+  overload: Meridian.Ui.Shared.DtoExtensions.ToDomain*
+references:
+- uid: Meridian.Ui.Shared
+  commentId: N:Meridian.Ui.Shared
+  href: Meridian.html
+  name: Meridian.Ui.Shared
+  nameWithType: Meridian.Ui.Shared
+  fullName: Meridian.Ui.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Shared.DtoExtensions.ToDomain*
+  commentId: Overload:Meridian.Ui.Shared.DtoExtensions.ToDomain
+  href: Meridian.Ui.Shared.DtoExtensions.html#Meridian_Ui_Shared_DtoExtensions_ToDomain_Meridian_Contracts_Configuration_AlpacaOptionsDto_
+  name: ToDomain
+  nameWithType: DtoExtensions.ToDomain
+  fullName: Meridian.Ui.Shared.DtoExtensions.ToDomain
+- uid: Meridian.Contracts.Configuration.AlpacaOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.AlpacaOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.AlpacaOptionsDto.html
+  name: AlpacaOptionsDto
+  nameWithType: AlpacaOptionsDto
+  fullName: Meridian.Contracts.Configuration.AlpacaOptionsDto
+- uid: Meridian.Application.Config.AlpacaOptions
+  commentId: T:Meridian.Application.Config.AlpacaOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AlpacaOptions.html
+  name: AlpacaOptions
+  nameWithType: AlpacaOptions
+  fullName: Meridian.Application.Config.AlpacaOptions
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Contracts.Configuration.PolygonOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.PolygonOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.PolygonOptionsDto.html
+  name: PolygonOptionsDto
+  nameWithType: PolygonOptionsDto
+  fullName: Meridian.Contracts.Configuration.PolygonOptionsDto
+- uid: Meridian.Application.Config.PolygonOptions
+  commentId: T:Meridian.Application.Config.PolygonOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.PolygonOptions.html
+  name: PolygonOptions
+  nameWithType: PolygonOptions
+  fullName: Meridian.Application.Config.PolygonOptions
+- uid: Meridian.Contracts.Configuration.IBOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.IBOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IBOptionsDto.html
+  name: IBOptionsDto
+  nameWithType: IBOptionsDto
+  fullName: Meridian.Contracts.Configuration.IBOptionsDto
+- uid: Meridian.Application.Config.IBOptions
+  commentId: T:Meridian.Application.Config.IBOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBOptions.html
+  name: IBOptions
+  nameWithType: IBOptions
+  fullName: Meridian.Application.Config.IBOptions
+- uid: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IBClientPortalOptionsDto.html
+  name: IBClientPortalOptionsDto
+  nameWithType: IBClientPortalOptionsDto
+  fullName: Meridian.Contracts.Configuration.IBClientPortalOptionsDto
+- uid: Meridian.Application.Config.IBClientPortalOptions
+  commentId: T:Meridian.Application.Config.IBClientPortalOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IBClientPortalOptions.html
+  name: IBClientPortalOptions
+  nameWithType: IBClientPortalOptions
+  fullName: Meridian.Application.Config.IBClientPortalOptions
+- uid: Meridian.Contracts.Configuration.DerivativesConfigDto
+  commentId: T:Meridian.Contracts.Configuration.DerivativesConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.DerivativesConfigDto.html
+  name: DerivativesConfigDto
+  nameWithType: DerivativesConfigDto
+  fullName: Meridian.Contracts.Configuration.DerivativesConfigDto
+- uid: Meridian.Application.Config.DerivativesConfig
+  commentId: T:Meridian.Application.Config.DerivativesConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DerivativesConfig.html
+  name: DerivativesConfig
+  nameWithType: DerivativesConfig
+  fullName: Meridian.Application.Config.DerivativesConfig
+- uid: Meridian.Contracts.Configuration.IndexOptionsConfigDto
+  commentId: T:Meridian.Contracts.Configuration.IndexOptionsConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IndexOptionsConfigDto.html
+  name: IndexOptionsConfigDto
+  nameWithType: IndexOptionsConfigDto
+  fullName: Meridian.Contracts.Configuration.IndexOptionsConfigDto
+- uid: Meridian.Application.Config.IndexOptionsConfig
+  commentId: T:Meridian.Application.Config.IndexOptionsConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.IndexOptionsConfig.html
+  name: IndexOptionsConfig
+  nameWithType: IndexOptionsConfig
+  fullName: Meridian.Application.Config.IndexOptionsConfig

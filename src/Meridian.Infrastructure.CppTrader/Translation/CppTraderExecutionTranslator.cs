@@ -51,8 +51,10 @@ public sealed class CppTraderExecutionTranslator(ICppTraderSymbolMapper symbolMa
 
     public OrderStatusUpdate ToExecutionStatus(ExecutionEvent executionEvent)
     {
-        var quantity = (long)decimal.Truncate(decimal.Abs(
-            _symbolMapper.ConvertQuantityFromNanos(executionEvent.Symbol, executionEvent.CumulativeFilledQuantityNanos)));
+        var quantity = decimal.Abs(
+            _symbolMapper.ConvertQuantityFromNanos(
+                executionEvent.Symbol,
+                executionEvent.CumulativeFilledQuantityNanos));
 
         return new OrderStatusUpdate(
             executionEvent.OrderId,

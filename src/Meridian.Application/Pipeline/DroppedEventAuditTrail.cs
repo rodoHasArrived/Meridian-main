@@ -1,8 +1,9 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
-using Meridian.Application.Serialization;
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Domain;
 using Meridian.Domain.Events;
+using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -18,7 +19,6 @@ public sealed class DroppedEventAuditTrail : IAsyncDisposable
     private readonly ILogger<DroppedEventAuditTrail> _logger;
     private readonly SemaphoreSlim _writeLock = new(1, 1);
     private readonly ConcurrentDictionary<SymbolId, long> _dropCountsBySymbol = new();
-    private StreamWriter? _writer;
     private long _totalDropped;
     private bool _disposed;
 
@@ -52,25 +52,22 @@ public sealed class DroppedEventAuditTrail : IAsyncDisposable
         Interlocked.Increment(ref _totalDropped);
         _dropCountsBySymbol.AddOrUpdate(new SymbolId(evt.EffectiveSymbol), 1, (_, count) => count + 1);
 
-        var record = new
-        {
-            timestamp = DateTimeOffset.UtcNow,
-            eventTimestamp = evt.Timestamp,
-            eventType = evt.Type.ToString(),
-            symbol = evt.EffectiveSymbol,
-            sequence = evt.Sequence,
-            source = evt.Source,
-            reason
-        };
+        var record = new DroppedEventRecord(
+            Timestamp: DateTimeOffset.UtcNow,
+            EventTimestamp: evt.Timestamp,
+            EventType: evt.Type.ToString(),
+            Symbol: evt.EffectiveSymbol,
+            Sequence: evt.Sequence,
+            Source: evt.Source,
+            Reason: reason);
 
         try
         {
             await _writeLock.WaitAsync(ct).ConfigureAwait(false);
             try
             {
-                var writer = EnsureWriter();
-                var json = JsonSerializer.Serialize(record, MarketDataJsonContext.HighPerformanceOptions);
-                await writer.WriteLineAsync(json).ConfigureAwait(false);
+                var json = JsonSerializer.Serialize(record, DroppedEventAuditTrailJsonContext.Default.DroppedEventRecord);
+                await AtomicFileWriter.AppendLinesAsync(GetAuditFilePath(), [json], ct).ConfigureAwait(false);
             }
             finally
             {
@@ -91,20 +88,13 @@ public sealed class DroppedEventAuditTrail : IAsyncDisposable
         return new DroppedEventStatistics(
             TotalDropped: TotalDropped,
             DropsBySymbol: DropCountsBySymbol,
-            AuditFilePath: Path.Combine(_auditPath, "dropped_events.jsonl"),
+            AuditFilePath: GetAuditFilePath(),
             Timestamp: DateTimeOffset.UtcNow);
     }
 
-    private StreamWriter EnsureWriter()
+    private string GetAuditFilePath()
     {
-        if (_writer != null)
-            return _writer;
-
-        Directory.CreateDirectory(_auditPath);
-        var filePath = Path.Combine(_auditPath, "dropped_events.jsonl");
-        var stream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, useAsync: true);
-        _writer = new StreamWriter(stream) { AutoFlush = false };
-        return _writer;
+        return Path.Combine(_auditPath, "dropped_events.jsonl");
     }
 
     public async ValueTask DisposeAsync()
@@ -117,12 +107,7 @@ public sealed class DroppedEventAuditTrail : IAsyncDisposable
         await _writeLock.WaitAsync().ConfigureAwait(false);
         try
         {
-            if (_writer != null)
-            {
-                await _writer.FlushAsync().ConfigureAwait(false);
-                await _writer.DisposeAsync().ConfigureAwait(false);
-                _writer = null;
-            }
+            // No buffered writer state remains once AtomicFileWriter.AppendLinesAsync returns.
         }
         finally
         {
@@ -140,3 +125,20 @@ public sealed record DroppedEventStatistics(
     IReadOnlyDictionary<string, long> DropsBySymbol,
     string AuditFilePath,
     DateTimeOffset Timestamp);
+
+internal sealed record DroppedEventRecord(
+    DateTimeOffset Timestamp,
+    DateTimeOffset EventTimestamp,
+    string EventType,
+    string Symbol,
+    long Sequence,
+    string Source,
+    string Reason);
+
+[JsonSourceGenerationOptions(
+    WriteIndented = false,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    PropertyNameCaseInsensitive = true)]
+[JsonSerializable(typeof(DroppedEventRecord))]
+internal sealed partial class DroppedEventAuditTrailJsonContext : JsonSerializerContext;

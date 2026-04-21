@@ -1,0 +1,811 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  commentId: T:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  id: ExtendedSymbolConfigDto
+  parent: Meridian.Contracts.Configuration
+  children:
+  - Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.AddedAt
+  - Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.CustomColor
+  - Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.GroupIds
+  - Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.IsFavorite
+  - Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.LastModified
+  - Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Notes
+  - Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Tags
+  langs:
+  - csharp
+  - vb
+  name: ExtendedSymbolConfigDto
+  nameWithType: ExtendedSymbolConfigDto
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExtendedSymbolConfigDto
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 605
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Extended symbol configuration with group membership and status.
+  example: []
+  syntax:
+    content: 'public sealed class ExtendedSymbolConfigDto : SymbolConfigDto'
+    content.vb: Public NotInheritable Class ExtendedSymbolConfigDto Inherits SymbolConfigDto
+  inheritance:
+  - System.Object
+  - Meridian.Contracts.Configuration.SymbolConfigDto
+  inheritedMembers:
+  - Meridian.Contracts.Configuration.SymbolConfigDto.Symbol
+  - Meridian.Contracts.Configuration.SymbolConfigDto.SubscribeTrades
+  - Meridian.Contracts.Configuration.SymbolConfigDto.SubscribeDepth
+  - Meridian.Contracts.Configuration.SymbolConfigDto.DepthLevels
+  - Meridian.Contracts.Configuration.SymbolConfigDto.SecurityType
+  - Meridian.Contracts.Configuration.SymbolConfigDto.Exchange
+  - Meridian.Contracts.Configuration.SymbolConfigDto.Currency
+  - Meridian.Contracts.Configuration.SymbolConfigDto.PrimaryExchange
+  - Meridian.Contracts.Configuration.SymbolConfigDto.LocalSymbol
+  - Meridian.Contracts.Configuration.SymbolConfigDto.InstrumentType
+  - Meridian.Contracts.Configuration.SymbolConfigDto.Strike
+  - Meridian.Contracts.Configuration.SymbolConfigDto.Right
+  - Meridian.Contracts.Configuration.SymbolConfigDto.LastTradeDateOrContractMonth
+  - Meridian.Contracts.Configuration.SymbolConfigDto.OptionStyle
+  - Meridian.Contracts.Configuration.SymbolConfigDto.Multiplier
+  - Meridian.Contracts.Configuration.SymbolConfigDto.UnderlyingSymbol
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.GroupIds
+  commentId: P:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.GroupIds
+  id: GroupIds
+  parent: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  langs:
+  - csharp
+  - vb
+  name: GroupIds
+  nameWithType: ExtendedSymbolConfigDto.GroupIds
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.GroupIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GroupIds
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 607
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("groupIds")]
+
+      public string[]? GroupIds { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("groupIds")>
+
+      Public Property GroupIds As String()
+  overload: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.GroupIds*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: groupIds
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Tags
+  commentId: P:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Tags
+  id: Tags
+  parent: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: ExtendedSymbolConfigDto.Tags
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 610
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("tags")]
+
+      public string[]? Tags { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("tags")>
+
+      Public Property Tags As String()
+  overload: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Tags*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: tags
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Notes
+  commentId: P:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Notes
+  id: Notes
+  parent: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: ExtendedSymbolConfigDto.Notes
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 613
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("notes")]
+
+      public string? Notes { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("notes")>
+
+      Public Property Notes As String
+  overload: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Notes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: notes
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.AddedAt
+  commentId: P:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.AddedAt
+  id: AddedAt
+  parent: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  langs:
+  - csharp
+  - vb
+  name: AddedAt
+  nameWithType: ExtendedSymbolConfigDto.AddedAt
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.AddedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddedAt
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 616
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("addedAt")]
+
+      public DateTime AddedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("addedAt")>
+
+      Public Property AddedAt As Date
+  overload: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.AddedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: addedAt
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.LastModified
+  commentId: P:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.LastModified
+  id: LastModified
+  parent: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  langs:
+  - csharp
+  - vb
+  name: LastModified
+  nameWithType: ExtendedSymbolConfigDto.LastModified
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.LastModified
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastModified
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 619
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("lastModified")]
+
+      public DateTime LastModified { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("lastModified")>
+
+      Public Property LastModified As Date
+  overload: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.LastModified*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastModified
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.IsFavorite
+  commentId: P:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.IsFavorite
+  id: IsFavorite
+  parent: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  langs:
+  - csharp
+  - vb
+  name: IsFavorite
+  nameWithType: ExtendedSymbolConfigDto.IsFavorite
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.IsFavorite
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsFavorite
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 622
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("isFavorite")]
+
+      public bool IsFavorite { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isFavorite")>
+
+      Public Property IsFavorite As Boolean
+  overload: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.IsFavorite*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isFavorite
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.CustomColor
+  commentId: P:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.CustomColor
+  id: CustomColor
+  parent: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto
+  langs:
+  - csharp
+  - vb
+  name: CustomColor
+  nameWithType: ExtendedSymbolConfigDto.CustomColor
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.CustomColor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CustomColor
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 625
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("customColor")]
+
+      public string? CustomColor { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("customColor")>
+
+      Public Property CustomColor As String
+  overload: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.CustomColor*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: customColor
+references:
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html
+  name: SymbolConfigDto
+  nameWithType: SymbolConfigDto
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.Symbol
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.Symbol
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_Symbol
+  name: Symbol
+  nameWithType: SymbolConfigDto.Symbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.Symbol
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.SubscribeTrades
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.SubscribeTrades
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_SubscribeTrades
+  name: SubscribeTrades
+  nameWithType: SymbolConfigDto.SubscribeTrades
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.SubscribeTrades
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.SubscribeDepth
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.SubscribeDepth
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_SubscribeDepth
+  name: SubscribeDepth
+  nameWithType: SymbolConfigDto.SubscribeDepth
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.SubscribeDepth
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.DepthLevels
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.DepthLevels
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_DepthLevels
+  name: DepthLevels
+  nameWithType: SymbolConfigDto.DepthLevels
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.DepthLevels
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.SecurityType
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.SecurityType
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_SecurityType
+  name: SecurityType
+  nameWithType: SymbolConfigDto.SecurityType
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.SecurityType
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.Exchange
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.Exchange
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_Exchange
+  name: Exchange
+  nameWithType: SymbolConfigDto.Exchange
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.Exchange
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.Currency
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.Currency
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_Currency
+  name: Currency
+  nameWithType: SymbolConfigDto.Currency
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.Currency
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.PrimaryExchange
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.PrimaryExchange
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_PrimaryExchange
+  name: PrimaryExchange
+  nameWithType: SymbolConfigDto.PrimaryExchange
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.PrimaryExchange
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.LocalSymbol
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.LocalSymbol
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_LocalSymbol
+  name: LocalSymbol
+  nameWithType: SymbolConfigDto.LocalSymbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.LocalSymbol
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.InstrumentType
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.InstrumentType
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_InstrumentType
+  name: InstrumentType
+  nameWithType: SymbolConfigDto.InstrumentType
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.InstrumentType
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.Strike
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.Strike
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_Strike
+  name: Strike
+  nameWithType: SymbolConfigDto.Strike
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.Strike
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.Right
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.Right
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_Right
+  name: Right
+  nameWithType: SymbolConfigDto.Right
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.Right
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.LastTradeDateOrContractMonth
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.LastTradeDateOrContractMonth
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_LastTradeDateOrContractMonth
+  name: LastTradeDateOrContractMonth
+  nameWithType: SymbolConfigDto.LastTradeDateOrContractMonth
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.LastTradeDateOrContractMonth
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.OptionStyle
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.OptionStyle
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_OptionStyle
+  name: OptionStyle
+  nameWithType: SymbolConfigDto.OptionStyle
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.OptionStyle
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.Multiplier
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.Multiplier
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_Multiplier
+  name: Multiplier
+  nameWithType: SymbolConfigDto.Multiplier
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.Multiplier
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto.UnderlyingSymbol
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfigDto.UnderlyingSymbol
+  parent: Meridian.Contracts.Configuration.SymbolConfigDto
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html#Meridian_Contracts_Configuration_SymbolConfigDto_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: SymbolConfigDto.UnderlyingSymbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto.UnderlyingSymbol
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.GroupIds*
+  commentId: Overload:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.GroupIds
+  href: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.html#Meridian_Contracts_Configuration_ExtendedSymbolConfigDto_GroupIds
+  name: GroupIds
+  nameWithType: ExtendedSymbolConfigDto.GroupIds
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.GroupIds
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Tags*
+  commentId: Overload:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Tags
+  href: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.html#Meridian_Contracts_Configuration_ExtendedSymbolConfigDto_Tags
+  name: Tags
+  nameWithType: ExtendedSymbolConfigDto.Tags
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Tags
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Notes*
+  commentId: Overload:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Notes
+  href: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.html#Meridian_Contracts_Configuration_ExtendedSymbolConfigDto_Notes
+  name: Notes
+  nameWithType: ExtendedSymbolConfigDto.Notes
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.Notes
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.AddedAt*
+  commentId: Overload:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.AddedAt
+  href: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.html#Meridian_Contracts_Configuration_ExtendedSymbolConfigDto_AddedAt
+  name: AddedAt
+  nameWithType: ExtendedSymbolConfigDto.AddedAt
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.AddedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.LastModified*
+  commentId: Overload:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.LastModified
+  href: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.html#Meridian_Contracts_Configuration_ExtendedSymbolConfigDto_LastModified
+  name: LastModified
+  nameWithType: ExtendedSymbolConfigDto.LastModified
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.LastModified
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.IsFavorite*
+  commentId: Overload:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.IsFavorite
+  href: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.html#Meridian_Contracts_Configuration_ExtendedSymbolConfigDto_IsFavorite
+  name: IsFavorite
+  nameWithType: ExtendedSymbolConfigDto.IsFavorite
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.IsFavorite
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.CustomColor*
+  commentId: Overload:Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.CustomColor
+  href: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.html#Meridian_Contracts_Configuration_ExtendedSymbolConfigDto_CustomColor
+  name: CustomColor
+  nameWithType: ExtendedSymbolConfigDto.CustomColor
+  fullName: Meridian.Contracts.Configuration.ExtendedSymbolConfigDto.CustomColor

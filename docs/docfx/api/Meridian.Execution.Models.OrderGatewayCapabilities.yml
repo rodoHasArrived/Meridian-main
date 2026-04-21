@@ -1,0 +1,888 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities
+  commentId: T:Meridian.Execution.Models.OrderGatewayCapabilities
+  id: OrderGatewayCapabilities
+  parent: Meridian.Execution.Models
+  children:
+  - Meridian.Execution.Models.OrderGatewayCapabilities.#ctor(System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType},System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce},System.Collections.Generic.IReadOnlySet{Meridian.Execution.Models.ExecutionMode},System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  - Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions
+  - Meridian.Execution.Models.OrderGatewayCapabilities.SupportedExecutionModes
+  - Meridian.Execution.Models.OrderGatewayCapabilities.SupportedOrderTypes
+  - Meridian.Execution.Models.OrderGatewayCapabilities.SupportedTimeInForce
+  - Meridian.Execution.Models.OrderGatewayCapabilities.SupportsOrderModification
+  - Meridian.Execution.Models.OrderGatewayCapabilities.SupportsPartialFills
+  langs:
+  - csharp
+  - vb
+  name: OrderGatewayCapabilities
+  nameWithType: OrderGatewayCapabilities
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderGatewayCapabilities
+    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    Describes the provider-independent capabilities exposed by an order gateway.
+
+    Concrete brokers can publish additional implementation-specific hints through
+
+    <xref href="Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions" data-throw-if-not-resolved="false"></xref> without leaking provider types into strategies.
+  example: []
+  syntax:
+    content: 'public sealed record OrderGatewayCapabilities : IEquatable<OrderGatewayCapabilities>'
+    content.vb: Public NotInheritable Class OrderGatewayCapabilities Implements IEquatable(Of OrderGatewayCapabilities)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Models.OrderGatewayCapabilities}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.#ctor(System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType},System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce},System.Collections.Generic.IReadOnlySet{Meridian.Execution.Models.ExecutionMode},System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Execution.Models.OrderGatewayCapabilities.#ctor(System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType},System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce},System.Collections.Generic.IReadOnlySet{Meridian.Execution.Models.ExecutionMode},System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: '#ctor(System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType},System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce},System.Collections.Generic.IReadOnlySet{Meridian.Execution.Models.ExecutionMode},System.Boolean,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})'
+  parent: Meridian.Execution.Models.OrderGatewayCapabilities
+  langs:
+  - csharp
+  - vb
+  name: OrderGatewayCapabilities(IReadOnlySet<OrderType>, IReadOnlySet<TimeInForce>, IReadOnlySet<ExecutionMode>, bool, bool, IReadOnlyDictionary<string, string>?)
+  nameWithType: OrderGatewayCapabilities.OrderGatewayCapabilities(IReadOnlySet<OrderType>, IReadOnlySet<TimeInForce>, IReadOnlySet<ExecutionMode>, bool, bool, IReadOnlyDictionary<string, string>?)
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.OrderGatewayCapabilities(System.Collections.Generic.IReadOnlySet<Meridian.Execution.Sdk.OrderType>, System.Collections.Generic.IReadOnlySet<Meridian.Execution.Sdk.TimeInForce>, System.Collections.Generic.IReadOnlySet<Meridian.Execution.Models.ExecutionMode>, bool, bool, System.Collections.Generic.IReadOnlyDictionary<string, string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    Describes the provider-independent capabilities exposed by an order gateway.
+
+    Concrete brokers can publish additional implementation-specific hints through
+
+    <xref href="Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions" data-throw-if-not-resolved="false"></xref> without leaking provider types into strategies.
+  example: []
+  syntax:
+    content: public OrderGatewayCapabilities(IReadOnlySet<OrderType> SupportedOrderTypes, IReadOnlySet<TimeInForce> SupportedTimeInForce, IReadOnlySet<ExecutionMode> SupportedExecutionModes, bool SupportsOrderModification, bool SupportsPartialFills, IReadOnlyDictionary<string, string>? ProviderExtensions = null)
+    parameters:
+    - id: SupportedOrderTypes
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType}
+    - id: SupportedTimeInForce
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce}
+    - id: SupportedExecutionModes
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Models.ExecutionMode}
+    - id: SupportsOrderModification
+      type: System.Boolean
+    - id: SupportsPartialFills
+      type: System.Boolean
+    - id: ProviderExtensions
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Sub New(SupportedOrderTypes As IReadOnlySet(Of OrderType), SupportedTimeInForce As IReadOnlySet(Of TimeInForce), SupportedExecutionModes As IReadOnlySet(Of ExecutionMode), SupportsOrderModification As Boolean, SupportsPartialFills As Boolean, ProviderExtensions As IReadOnlyDictionary(Of String, String) = Nothing)
+  overload: Meridian.Execution.Models.OrderGatewayCapabilities.#ctor*
+  nameWithType.vb: OrderGatewayCapabilities.New(IReadOnlySet(Of OrderType), IReadOnlySet(Of TimeInForce), IReadOnlySet(Of ExecutionMode), Boolean, Boolean, IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Execution.Models.OrderGatewayCapabilities.New(System.Collections.Generic.IReadOnlySet(Of Meridian.Execution.Sdk.OrderType), System.Collections.Generic.IReadOnlySet(Of Meridian.Execution.Sdk.TimeInForce), System.Collections.Generic.IReadOnlySet(Of Meridian.Execution.Models.ExecutionMode), Boolean, Boolean, System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: New(IReadOnlySet(Of OrderType), IReadOnlySet(Of TimeInForce), IReadOnlySet(Of ExecutionMode), Boolean, Boolean, IReadOnlyDictionary(Of String, String))
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedOrderTypes
+  commentId: P:Meridian.Execution.Models.OrderGatewayCapabilities.SupportedOrderTypes
+  id: SupportedOrderTypes
+  parent: Meridian.Execution.Models.OrderGatewayCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedOrderTypes
+  nameWithType: OrderGatewayCapabilities.SupportedOrderTypes
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedOrderTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedOrderTypes
+    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public IReadOnlySet<OrderType> SupportedOrderTypes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType}
+    content.vb: Public Property SupportedOrderTypes As IReadOnlySet(Of OrderType)
+  overload: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedOrderTypes*
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedTimeInForce
+  commentId: P:Meridian.Execution.Models.OrderGatewayCapabilities.SupportedTimeInForce
+  id: SupportedTimeInForce
+  parent: Meridian.Execution.Models.OrderGatewayCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedTimeInForce
+  nameWithType: OrderGatewayCapabilities.SupportedTimeInForce
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedTimeInForce
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedTimeInForce
+    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public IReadOnlySet<TimeInForce> SupportedTimeInForce { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce}
+    content.vb: Public Property SupportedTimeInForce As IReadOnlySet(Of TimeInForce)
+  overload: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedTimeInForce*
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedExecutionModes
+  commentId: P:Meridian.Execution.Models.OrderGatewayCapabilities.SupportedExecutionModes
+  id: SupportedExecutionModes
+  parent: Meridian.Execution.Models.OrderGatewayCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedExecutionModes
+  nameWithType: OrderGatewayCapabilities.SupportedExecutionModes
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedExecutionModes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedExecutionModes
+    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public IReadOnlySet<ExecutionMode> SupportedExecutionModes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Models.ExecutionMode}
+    content.vb: Public Property SupportedExecutionModes As IReadOnlySet(Of ExecutionMode)
+  overload: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedExecutionModes*
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsOrderModification
+  commentId: P:Meridian.Execution.Models.OrderGatewayCapabilities.SupportsOrderModification
+  id: SupportsOrderModification
+  parent: Meridian.Execution.Models.OrderGatewayCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsOrderModification
+  nameWithType: OrderGatewayCapabilities.SupportsOrderModification
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsOrderModification
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsOrderModification
+    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public bool SupportsOrderModification { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsOrderModification As Boolean
+  overload: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsOrderModification*
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsPartialFills
+  commentId: P:Meridian.Execution.Models.OrderGatewayCapabilities.SupportsPartialFills
+  id: SupportsPartialFills
+  parent: Meridian.Execution.Models.OrderGatewayCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsPartialFills
+  nameWithType: OrderGatewayCapabilities.SupportsPartialFills
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsPartialFills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsPartialFills
+    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public bool SupportsPartialFills { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsPartialFills As Boolean
+  overload: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsPartialFills*
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions
+  commentId: P:Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions
+  id: ProviderExtensions
+  parent: Meridian.Execution.Models.OrderGatewayCapabilities
+  langs:
+  - csharp
+  - vb
+  name: ProviderExtensions
+  nameWithType: OrderGatewayCapabilities.ProviderExtensions
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderExtensions
+    path: ../../src/Meridian.Execution/Models/OrderGatewayCapabilities.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? ProviderExtensions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property ProviderExtensions As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions*
+references:
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions
+  commentId: P:Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html#Meridian_Execution_Models_OrderGatewayCapabilities_ProviderExtensions
+  name: ProviderExtensions
+  nameWithType: OrderGatewayCapabilities.ProviderExtensions
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Models.OrderGatewayCapabilities}
+  commentId: T:System.IEquatable{Meridian.Execution.Models.OrderGatewayCapabilities}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OrderGatewayCapabilities>
+  nameWithType: IEquatable<OrderGatewayCapabilities>
+  fullName: System.IEquatable<Meridian.Execution.Models.OrderGatewayCapabilities>
+  nameWithType.vb: IEquatable(Of OrderGatewayCapabilities)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Models.OrderGatewayCapabilities)
+  name.vb: IEquatable(Of OrderGatewayCapabilities)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Models.OrderGatewayCapabilities
+    name: OrderGatewayCapabilities
+    href: Meridian.Execution.Models.OrderGatewayCapabilities.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.OrderGatewayCapabilities
+    name: OrderGatewayCapabilities
+    href: Meridian.Execution.Models.OrderGatewayCapabilities.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.#ctor*
+  commentId: Overload:Meridian.Execution.Models.OrderGatewayCapabilities.#ctor
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html#Meridian_Execution_Models_OrderGatewayCapabilities__ctor_System_Collections_Generic_IReadOnlySet_Meridian_Execution_Sdk_OrderType__System_Collections_Generic_IReadOnlySet_Meridian_Execution_Sdk_TimeInForce__System_Collections_Generic_IReadOnlySet_Meridian_Execution_Models_ExecutionMode__System_Boolean_System_Boolean_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__
+  name: OrderGatewayCapabilities
+  nameWithType: OrderGatewayCapabilities.OrderGatewayCapabilities
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.OrderGatewayCapabilities
+  nameWithType.vb: OrderGatewayCapabilities.New
+  fullName.vb: Meridian.Execution.Models.OrderGatewayCapabilities.New
+  name.vb: New
+- uid: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType}
+  commentId: T:System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<OrderType>
+  nameWithType: IReadOnlySet<OrderType>
+  fullName: System.Collections.Generic.IReadOnlySet<Meridian.Execution.Sdk.OrderType>
+  nameWithType.vb: IReadOnlySet(Of OrderType)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of Meridian.Execution.Sdk.OrderType)
+  name.vb: IReadOnlySet(Of OrderType)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.OrderType
+    name: OrderType
+    href: Meridian.Execution.Sdk.OrderType.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.OrderType
+    name: OrderType
+    href: Meridian.Execution.Sdk.OrderType.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce}
+  commentId: T:System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<TimeInForce>
+  nameWithType: IReadOnlySet<TimeInForce>
+  fullName: System.Collections.Generic.IReadOnlySet<Meridian.Execution.Sdk.TimeInForce>
+  nameWithType.vb: IReadOnlySet(Of TimeInForce)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of Meridian.Execution.Sdk.TimeInForce)
+  name.vb: IReadOnlySet(Of TimeInForce)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.TimeInForce
+    name: TimeInForce
+    href: Meridian.Execution.Sdk.TimeInForce.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.TimeInForce
+    name: TimeInForce
+    href: Meridian.Execution.Sdk.TimeInForce.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Models.ExecutionMode}
+  commentId: T:System.Collections.Generic.IReadOnlySet{Meridian.Execution.Models.ExecutionMode}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<ExecutionMode>
+  nameWithType: IReadOnlySet<ExecutionMode>
+  fullName: System.Collections.Generic.IReadOnlySet<Meridian.Execution.Models.ExecutionMode>
+  nameWithType.vb: IReadOnlySet(Of ExecutionMode)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of Meridian.Execution.Models.ExecutionMode)
+  name.vb: IReadOnlySet(Of ExecutionMode)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: Meridian.Execution.Models.ExecutionMode
+    name: ExecutionMode
+    href: Meridian.Execution.Models.ExecutionMode.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Models.ExecutionMode
+    name: ExecutionMode
+    href: Meridian.Execution.Models.ExecutionMode.html
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedOrderTypes*
+  commentId: Overload:Meridian.Execution.Models.OrderGatewayCapabilities.SupportedOrderTypes
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html#Meridian_Execution_Models_OrderGatewayCapabilities_SupportedOrderTypes
+  name: SupportedOrderTypes
+  nameWithType: OrderGatewayCapabilities.SupportedOrderTypes
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedOrderTypes
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedTimeInForce*
+  commentId: Overload:Meridian.Execution.Models.OrderGatewayCapabilities.SupportedTimeInForce
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html#Meridian_Execution_Models_OrderGatewayCapabilities_SupportedTimeInForce
+  name: SupportedTimeInForce
+  nameWithType: OrderGatewayCapabilities.SupportedTimeInForce
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedTimeInForce
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedExecutionModes*
+  commentId: Overload:Meridian.Execution.Models.OrderGatewayCapabilities.SupportedExecutionModes
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html#Meridian_Execution_Models_OrderGatewayCapabilities_SupportedExecutionModes
+  name: SupportedExecutionModes
+  nameWithType: OrderGatewayCapabilities.SupportedExecutionModes
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportedExecutionModes
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsOrderModification*
+  commentId: Overload:Meridian.Execution.Models.OrderGatewayCapabilities.SupportsOrderModification
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html#Meridian_Execution_Models_OrderGatewayCapabilities_SupportsOrderModification
+  name: SupportsOrderModification
+  nameWithType: OrderGatewayCapabilities.SupportsOrderModification
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsOrderModification
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsPartialFills*
+  commentId: Overload:Meridian.Execution.Models.OrderGatewayCapabilities.SupportsPartialFills
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html#Meridian_Execution_Models_OrderGatewayCapabilities_SupportsPartialFills
+  name: SupportsPartialFills
+  nameWithType: OrderGatewayCapabilities.SupportsPartialFills
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.SupportsPartialFills
+- uid: Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions*
+  commentId: Overload:Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions
+  href: Meridian.Execution.Models.OrderGatewayCapabilities.html#Meridian_Execution_Models_OrderGatewayCapabilities_ProviderExtensions
+  name: ProviderExtensions
+  nameWithType: OrderGatewayCapabilities.ProviderExtensions
+  fullName: Meridian.Execution.Models.OrderGatewayCapabilities.ProviderExtensions

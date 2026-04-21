@@ -103,6 +103,8 @@ The storage layer currently delivers:
 | Capacity forecasting | ⏳ Planned | — |
 | Adaptive partitioning | ⏳ Planned | — |
 
+`SourceRegistry`, `MetadataTagService`, and `DataLineageService` now treat persistence as part of the mutation boundary rather than a deferred background task. Their writes complete through `AtomicFileWriter` before the mutating call returns, save failures surface to the caller, and the metadata/lineage JSON stores use ADR-014 source-generated serializer contexts instead of ad-hoc `JsonSerializerOptions`.
+
 ### Storage Profiles (Presets)
 Storage profiles are optional presets that map to existing storage options without removing advanced configuration.
 

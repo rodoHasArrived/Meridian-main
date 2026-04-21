@@ -1,0 +1,214 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.ConnectionState
+  commentId: T:Meridian.Ui.Services.Contracts.ConnectionState
+  id: ConnectionState
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.ConnectionState.Connected
+  - Meridian.Ui.Services.Contracts.ConnectionState.Connecting
+  - Meridian.Ui.Services.Contracts.ConnectionState.Disconnected
+  - Meridian.Ui.Services.Contracts.ConnectionState.Error
+  - Meridian.Ui.Services.Contracts.ConnectionState.Reconnecting
+  langs:
+  - csharp
+  - vb
+  name: ConnectionState
+  nameWithType: ConnectionState
+  fullName: Meridian.Ui.Services.Contracts.ConnectionState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionState
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Connection states shared between WPF desktop applications.
+
+    Part of Phase 6C.2 service deduplication.
+  example: []
+  syntax:
+    content: 'public enum ConnectionState : byte'
+    content.vb: Public Enum ConnectionState As Byte
+- uid: Meridian.Ui.Services.Contracts.ConnectionState.Disconnected
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionState.Disconnected
+  id: Disconnected
+  parent: Meridian.Ui.Services.Contracts.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Disconnected
+  nameWithType: ConnectionState.Disconnected
+  fullName: Meridian.Ui.Services.Contracts.ConnectionState.Disconnected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Disconnected
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Disconnected = 0
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionState
+- uid: Meridian.Ui.Services.Contracts.ConnectionState.Connecting
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionState.Connecting
+  id: Connecting
+  parent: Meridian.Ui.Services.Contracts.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Connecting
+  nameWithType: ConnectionState.Connecting
+  fullName: Meridian.Ui.Services.Contracts.ConnectionState.Connecting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connecting
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Connecting = 1
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionState
+- uid: Meridian.Ui.Services.Contracts.ConnectionState.Connected
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionState.Connected
+  id: Connected
+  parent: Meridian.Ui.Services.Contracts.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Connected
+  nameWithType: ConnectionState.Connected
+  fullName: Meridian.Ui.Services.Contracts.ConnectionState.Connected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connected
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Connected = 2
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionState
+- uid: Meridian.Ui.Services.Contracts.ConnectionState.Reconnecting
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionState.Reconnecting
+  id: Reconnecting
+  parent: Meridian.Ui.Services.Contracts.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Reconnecting
+  nameWithType: ConnectionState.Reconnecting
+  fullName: Meridian.Ui.Services.Contracts.ConnectionState.Reconnecting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reconnecting
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Reconnecting = 3
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionState
+- uid: Meridian.Ui.Services.Contracts.ConnectionState.Error
+  commentId: F:Meridian.Ui.Services.Contracts.ConnectionState.Error
+  id: Error
+  parent: Meridian.Ui.Services.Contracts.ConnectionState
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: ConnectionState.Error
+  fullName: Meridian.Ui.Services.Contracts.ConnectionState.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Error = 4
+    return:
+      type: Meridian.Ui.Services.Contracts.ConnectionState
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.ConnectionState
+  commentId: T:Meridian.Ui.Services.Contracts.ConnectionState
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.ConnectionState.html
+  name: ConnectionState
+  nameWithType: ConnectionState
+  fullName: Meridian.Ui.Services.Contracts.ConnectionState

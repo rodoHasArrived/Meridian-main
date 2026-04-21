@@ -1,0 +1,455 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Manifest.DateRangeInfo
+  commentId: T:Meridian.Contracts.Manifest.DateRangeInfo
+  id: DateRangeInfo
+  parent: Meridian.Contracts.Manifest
+  children:
+  - Meridian.Contracts.Manifest.DateRangeInfo.End
+  - Meridian.Contracts.Manifest.DateRangeInfo.Start
+  - Meridian.Contracts.Manifest.DateRangeInfo.TradingDays
+  langs:
+  - csharp
+  - vb
+  name: DateRangeInfo
+  nameWithType: DateRangeInfo
+  fullName: Meridian.Contracts.Manifest.DateRangeInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateRangeInfo
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Date range information.
+  example: []
+  syntax:
+    content: public sealed class DateRangeInfo
+    content.vb: Public NotInheritable Class DateRangeInfo
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Manifest.DateRangeInfo.Start
+  commentId: P:Meridian.Contracts.Manifest.DateRangeInfo.Start
+  id: Start
+  parent: Meridian.Contracts.Manifest.DateRangeInfo
+  langs:
+  - csharp
+  - vb
+  name: Start
+  nameWithType: DateRangeInfo.Start
+  fullName: Meridian.Contracts.Manifest.DateRangeInfo.Start
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the start date of the range.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("start")]
+
+      public DateTime Start { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("start")>
+
+      Public Property Start As Date
+  overload: Meridian.Contracts.Manifest.DateRangeInfo.Start*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: start
+- uid: Meridian.Contracts.Manifest.DateRangeInfo.End
+  commentId: P:Meridian.Contracts.Manifest.DateRangeInfo.End
+  id: End
+  parent: Meridian.Contracts.Manifest.DateRangeInfo
+  langs:
+  - csharp
+  - vb
+  name: End
+  nameWithType: DateRangeInfo.End
+  fullName: Meridian.Contracts.Manifest.DateRangeInfo.End
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: End
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the end date of the range.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("end")]
+
+      public DateTime End { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("end")>
+
+      Public Property [End] As Date
+  overload: Meridian.Contracts.Manifest.DateRangeInfo.End*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: end
+- uid: Meridian.Contracts.Manifest.DateRangeInfo.TradingDays
+  commentId: P:Meridian.Contracts.Manifest.DateRangeInfo.TradingDays
+  id: TradingDays
+  parent: Meridian.Contracts.Manifest.DateRangeInfo
+  langs:
+  - csharp
+  - vb
+  name: TradingDays
+  nameWithType: DateRangeInfo.TradingDays
+  fullName: Meridian.Contracts.Manifest.DateRangeInfo.TradingDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Manifest/DataManifest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingDays
+    path: ../../src/Meridian.Contracts/Manifest/DataManifest.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Manifest
+  summary: Gets or sets the number of trading days in the range.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("tradingDays")]
+
+      public int TradingDays { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("tradingDays")>
+
+      Public Property TradingDays As Integer
+  overload: Meridian.Contracts.Manifest.DateRangeInfo.TradingDays*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: tradingDays
+references:
+- uid: Meridian.Contracts.Manifest
+  commentId: N:Meridian.Contracts.Manifest
+  href: Meridian.html
+  name: Meridian.Contracts.Manifest
+  nameWithType: Meridian.Contracts.Manifest
+  fullName: Meridian.Contracts.Manifest
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Manifest
+    name: Manifest
+    href: Meridian.Contracts.Manifest.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Manifest.DateRangeInfo.Start*
+  commentId: Overload:Meridian.Contracts.Manifest.DateRangeInfo.Start
+  href: Meridian.Contracts.Manifest.DateRangeInfo.html#Meridian_Contracts_Manifest_DateRangeInfo_Start
+  name: Start
+  nameWithType: DateRangeInfo.Start
+  fullName: Meridian.Contracts.Manifest.DateRangeInfo.Start
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Manifest.DateRangeInfo.End*
+  commentId: Overload:Meridian.Contracts.Manifest.DateRangeInfo.End
+  href: Meridian.Contracts.Manifest.DateRangeInfo.html#Meridian_Contracts_Manifest_DateRangeInfo_End
+  name: End
+  nameWithType: DateRangeInfo.End
+  fullName: Meridian.Contracts.Manifest.DateRangeInfo.End
+- uid: Meridian.Contracts.Manifest.DateRangeInfo.TradingDays*
+  commentId: Overload:Meridian.Contracts.Manifest.DateRangeInfo.TradingDays
+  href: Meridian.Contracts.Manifest.DateRangeInfo.html#Meridian_Contracts_Manifest_DateRangeInfo_TradingDays
+  name: TradingDays
+  nameWithType: DateRangeInfo.TradingDays
+  fullName: Meridian.Contracts.Manifest.DateRangeInfo.TradingDays
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

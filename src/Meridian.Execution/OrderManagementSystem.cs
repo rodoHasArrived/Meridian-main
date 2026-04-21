@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Threading.Channels;
 using Meridian.Application.Pipeline;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Execution;
@@ -18,20 +19,30 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     private readonly IExecutionGateway _gateway;
     private readonly IRiskValidator? _riskValidator;
     private readonly ISecurityMasterGate? _securityMasterGate;
+    private readonly ExecutionOperatorControlService? _operatorControls;
+    private readonly ExecutionAuditTrailService? _auditTrail;
+    private readonly Meridian.Execution.Models.IPortfolioState? _portfolioState;
     private readonly ILogger<OrderManagementSystem> _logger;
     private readonly Channel<ExecutionReport> _executionChannel;
+    private readonly SemaphoreSlim _gatewayConnectionLock = new(1, 1);
     private int _orderSequence;
 
     public OrderManagementSystem(
         IExecutionGateway gateway,
         ILogger<OrderManagementSystem> logger,
         IRiskValidator? riskValidator = null,
-        ISecurityMasterGate? securityMasterGate = null)
+        ISecurityMasterGate? securityMasterGate = null,
+        ExecutionOperatorControlService? operatorControls = null,
+        ExecutionAuditTrailService? auditTrail = null,
+        Meridian.Execution.Models.IPortfolioState? portfolioState = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _riskValidator = riskValidator;
         _securityMasterGate = securityMasterGate;
+        _operatorControls = operatorControls;
+        _auditTrail = auditTrail;
+        _portfolioState = portfolioState;
         // Use custom EventPipelinePolicy for execution reports: high capacity with backpressure
         var executionPolicy = new EventPipelinePolicy(
             Capacity: 1000,
@@ -48,6 +59,50 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
         ArgumentNullException.ThrowIfNull(request);
 
         var orderId = request.ClientOrderId ?? GenerateOrderId();
+        var brokerName = _gateway.GatewayId;
+
+        // Extract metadata fields for audit correlation
+        string? actor = null;
+        string? correlationId = null;
+        string? runId = null;
+        request.Metadata?.TryGetValue("actor", out actor);
+        request.Metadata?.TryGetValue("correlationId", out correlationId);
+        request.Metadata?.TryGetValue("runId", out runId);
+
+        // Operator controls gate — rejects orders when circuit breaker is open (unless bypassed)
+        if (_operatorControls is not null)
+        {
+            var controlDecision = _operatorControls.EvaluateOrder(request, _portfolioState);
+            if (!controlDecision.IsApproved)
+            {
+                _logger.LogWarning("Order {OrderId} for {Symbol} rejected by operator controls: {Reason}",
+                    orderId, request.Symbol, controlDecision.RejectReason);
+
+                if (_auditTrail is not null)
+                {
+                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                        AuditId: Guid.NewGuid().ToString("N"),
+                        Category: "Order",
+                        Action: "OrderRejected",
+                        Outcome: "Rejected",
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        Actor: actor,
+                        BrokerName: brokerName,
+                        OrderId: orderId,
+                        RunId: runId,
+                        Symbol: request.Symbol,
+                        CorrelationId: correlationId,
+                        Message: controlDecision.RejectReason), ct).ConfigureAwait(false);
+                }
+
+                return new OrderResult
+                {
+                    Success = false,
+                    OrderId = orderId,
+                    ErrorMessage = controlDecision.RejectReason
+                };
+            }
+        }
 
         // Security Master gate — reject orders for symbols not in the master (when gate is wired)
         if (_securityMasterGate is not null)
@@ -57,6 +112,23 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             {
                 _logger.LogWarning("Order {OrderId} for {Symbol} rejected by Security Master gate: {Reason}",
                     orderId, request.Symbol, gateResult.Reason);
+
+                if (_auditTrail is not null)
+                {
+                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                        AuditId: Guid.NewGuid().ToString("N"),
+                        Category: "Order",
+                        Action: "OrderRejected",
+                        Outcome: "Rejected",
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        Actor: actor,
+                        BrokerName: brokerName,
+                        OrderId: orderId,
+                        RunId: runId,
+                        Symbol: request.Symbol,
+                        CorrelationId: correlationId,
+                        Message: gateResult.Reason), ct).ConfigureAwait(false);
+                }
 
                 return new OrderResult
                 {
@@ -75,6 +147,23 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             {
                 _logger.LogWarning("Order {OrderId} for {Symbol} rejected by risk: {Reason}",
                     orderId, request.Symbol, riskResult.RejectReason);
+
+                if (_auditTrail is not null)
+                {
+                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                        AuditId: Guid.NewGuid().ToString("N"),
+                        Category: "Order",
+                        Action: "OrderRejected",
+                        Outcome: "Rejected",
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        Actor: actor,
+                        BrokerName: brokerName,
+                        OrderId: orderId,
+                        RunId: runId,
+                        Symbol: request.Symbol,
+                        CorrelationId: correlationId,
+                        Message: riskResult.RejectReason), ct).ConfigureAwait(false);
+                }
 
                 return new OrderResult
                 {
@@ -103,6 +192,8 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
 
         try
         {
+            await EnsureGatewayConnectedAsync(correlationId, actor, runId, request.Symbol, ct).ConfigureAwait(false);
+
             var report = await _gateway.SubmitOrderAsync(request with { ClientOrderId = orderId }, ct)
                 .ConfigureAwait(false);
 
@@ -112,10 +203,32 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             _logger.LogInformation("Order {OrderId} submitted for {Symbol} {Side} {Quantity} — status {Status}",
                 orderId, request.Symbol, request.Side, request.Quantity, updatedState.Status);
 
+            // Record submitted order in the audit trail when connected
+            if (_auditTrail is not null)
+            {
+                await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                    AuditId: Guid.NewGuid().ToString("N"),
+                    Category: "Order",
+                    Action: "OrderSubmitted",
+                    Outcome: updatedState.Status.ToString(),
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    Actor: actor,
+                    BrokerName: brokerName,
+                    OrderId: orderId,
+                    RunId: runId,
+                    Symbol: request.Symbol,
+                    CorrelationId: correlationId), ct).ConfigureAwait(false);
+            }
+
             // Publish fills to the execution channel so portfolio trackers and other
             // consumers can subscribe without coupling directly to the gateway.
             if (report.OrderStatus is OrderStatus.Filled or OrderStatus.PartiallyFilled)
             {
+                if (_portfolioState is PaperTradingPortfolio paperPortfolio)
+                {
+                    paperPortfolio.ApplyFill(report);
+                }
+
                 _executionChannel.Writer.TryWrite(report);
             }
 
@@ -150,11 +263,33 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
+        await EnsureGatewayConnectedAsync(
+            correlationId: null,
+            actor: null,
+            runId: null,
+            symbol: state.Symbol,
+            ct: ct).ConfigureAwait(false);
         var report = await _gateway.CancelOrderAsync(orderId, ct).ConfigureAwait(false);
+        if (report.OrderStatus is not OrderStatus.Cancelled)
+        {
+            return new OrderResult
+            {
+                Success = false,
+                OrderId = orderId,
+                OrderState = state,
+                ErrorMessage = report.RejectReason ?? "Cancel request failed"
+            };
+        }
+
         var updated = ApplyReport(state, report);
         _orders[orderId] = updated;
 
-        return new OrderResult { Success = true, OrderId = orderId, OrderState = updated };
+        return new OrderResult
+        {
+            Success = true,
+            OrderId = orderId,
+            OrderState = updated
+        };
     }
 
     /// <inheritdoc />
@@ -165,6 +300,12 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
             return new OrderResult { Success = false, OrderId = orderId, ErrorMessage = "Order not found" };
         }
 
+        await EnsureGatewayConnectedAsync(
+            correlationId: null,
+            actor: null,
+            runId: null,
+            symbol: state.Symbol,
+            ct: ct).ConfigureAwait(false);
         var report = await _gateway.ModifyOrderAsync(orderId, modification, ct).ConfigureAwait(false);
         var updated = ApplyReport(state, report);
         _orders[orderId] = updated;
@@ -218,6 +359,7 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     public void Dispose()
     {
         _executionChannel.Writer.TryComplete();
+        _gatewayConnectionLock.Dispose();
     }
 
     /// <summary>
@@ -232,6 +374,77 @@ public sealed class OrderManagementSystem : IOrderManager, IDisposable
     {
         var seq = Interlocked.Increment(ref _orderSequence);
         return $"MDN-{DateTimeOffset.UtcNow:yyyyMMdd}-{seq:D6}";
+    }
+
+    private async Task EnsureGatewayConnectedAsync(
+        string? correlationId,
+        string? actor,
+        string? runId,
+        string? symbol,
+        CancellationToken ct)
+    {
+        if (_gateway.IsConnected)
+        {
+            return;
+        }
+
+        await _gatewayConnectionLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (_gateway.IsConnected)
+            {
+                return;
+            }
+
+            _logger.LogInformation(
+                "Connecting execution gateway {GatewayId} on demand before order operation",
+                _gateway.GatewayId);
+
+            try
+            {
+                await _gateway.ConnectAsync(ct).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                if (_auditTrail is not null)
+                {
+                    await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                        AuditId: Guid.NewGuid().ToString("N"),
+                        Category: "Order",
+                        Action: "GatewayConnectFailed",
+                        Outcome: "Rejected",
+                        OccurredAt: DateTimeOffset.UtcNow,
+                        Actor: actor,
+                        BrokerName: _gateway.GatewayId,
+                        RunId: runId,
+                        Symbol: symbol,
+                        CorrelationId: correlationId,
+                        Message: ex.Message), ct).ConfigureAwait(false);
+                }
+
+                throw;
+            }
+
+            if (_auditTrail is not null)
+            {
+                await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+                    AuditId: Guid.NewGuid().ToString("N"),
+                    Category: "Order",
+                    Action: "GatewayConnected",
+                    Outcome: "Connected",
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    Actor: actor,
+                    BrokerName: _gateway.GatewayId,
+                    RunId: runId,
+                    Symbol: symbol,
+                    CorrelationId: correlationId,
+                    Message: $"Connected {_gateway.GatewayId} on demand before execution."), ct).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _gatewayConnectionLock.Release();
+        }
     }
 
     private static OrderState ApplyReport(OrderState current, ExecutionReport report)

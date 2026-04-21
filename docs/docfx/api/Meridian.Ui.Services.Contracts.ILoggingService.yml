@@ -1,0 +1,284 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.ILoggingService
+  commentId: T:Meridian.Ui.Services.Contracts.ILoggingService
+  id: ILoggingService
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.ILoggingService.LogError(System.String,System.Exception,System.ValueTuple{System.String,System.String}[])
+  - Meridian.Ui.Services.Contracts.ILoggingService.LogInfo(System.String,System.ValueTuple{System.String,System.String}[])
+  - Meridian.Ui.Services.Contracts.ILoggingService.LogWarning(System.String,System.Exception)
+  langs:
+  - csharp
+  - vb
+  name: ILoggingService
+  nameWithType: ILoggingService
+  fullName: Meridian.Ui.Services.Contracts.ILoggingService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ILoggingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ILoggingService
+    path: ../../src/Meridian.Ui.Services/Contracts/ILoggingService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Interface for logging services used by shared UI services.
+
+    Implemented by platform-specific logging services (WPF).
+  example: []
+  syntax:
+    content: public interface ILoggingService
+    content.vb: Public Interface ILoggingService
+  derivedClasses:
+  - Meridian.Ui.Services.Services.LoggingServiceBase
+- uid: Meridian.Ui.Services.Contracts.ILoggingService.LogError(System.String,System.Exception,System.ValueTuple{System.String,System.String}[])
+  commentId: M:Meridian.Ui.Services.Contracts.ILoggingService.LogError(System.String,System.Exception,System.ValueTuple{System.String,System.String}[])
+  id: LogError(System.String,System.Exception,System.ValueTuple{System.String,System.String}[])
+  parent: Meridian.Ui.Services.Contracts.ILoggingService
+  langs:
+  - csharp
+  - vb
+  name: LogError(string, Exception?, params (string key, string value)[])
+  nameWithType: ILoggingService.LogError(string, Exception?, params (string key, string value)[])
+  fullName: Meridian.Ui.Services.Contracts.ILoggingService.LogError(string, System.Exception?, params (string key, string value)[])
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ILoggingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogError
+    path: ../../src/Meridian.Ui.Services/Contracts/ILoggingService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: void LogError(string message, Exception? exception = null, params (string key, string value)[] properties)
+    parameters:
+    - id: message
+      type: System.String
+    - id: exception
+      type: System.Exception
+    - id: properties
+      type: System.ValueTuple{System.String,System.String}[]
+    content.vb: Sub LogError(message As String, exception As Exception = Nothing, ParamArray properties As (key As String, value As String)())
+  overload: Meridian.Ui.Services.Contracts.ILoggingService.LogError*
+  nameWithType.vb: ILoggingService.LogError(String, Exception, ParamArray (key As String, value As String)())
+  fullName.vb: Meridian.Ui.Services.Contracts.ILoggingService.LogError(String, System.Exception, ParamArray (key As String, value As String)())
+  name.vb: LogError(String, Exception, ParamArray (key As String, value As String)())
+- uid: Meridian.Ui.Services.Contracts.ILoggingService.LogWarning(System.String,System.Exception)
+  commentId: M:Meridian.Ui.Services.Contracts.ILoggingService.LogWarning(System.String,System.Exception)
+  id: LogWarning(System.String,System.Exception)
+  parent: Meridian.Ui.Services.Contracts.ILoggingService
+  langs:
+  - csharp
+  - vb
+  name: LogWarning(string, Exception?)
+  nameWithType: ILoggingService.LogWarning(string, Exception?)
+  fullName: Meridian.Ui.Services.Contracts.ILoggingService.LogWarning(string, System.Exception?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ILoggingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogWarning
+    path: ../../src/Meridian.Ui.Services/Contracts/ILoggingService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: void LogWarning(string message, Exception? exception = null)
+    parameters:
+    - id: message
+      type: System.String
+    - id: exception
+      type: System.Exception
+    content.vb: Sub LogWarning(message As String, exception As Exception = Nothing)
+  overload: Meridian.Ui.Services.Contracts.ILoggingService.LogWarning*
+  nameWithType.vb: ILoggingService.LogWarning(String, Exception)
+  fullName.vb: Meridian.Ui.Services.Contracts.ILoggingService.LogWarning(String, System.Exception)
+  name.vb: LogWarning(String, Exception)
+- uid: Meridian.Ui.Services.Contracts.ILoggingService.LogInfo(System.String,System.ValueTuple{System.String,System.String}[])
+  commentId: M:Meridian.Ui.Services.Contracts.ILoggingService.LogInfo(System.String,System.ValueTuple{System.String,System.String}[])
+  id: LogInfo(System.String,System.ValueTuple{System.String,System.String}[])
+  parent: Meridian.Ui.Services.Contracts.ILoggingService
+  langs:
+  - csharp
+  - vb
+  name: LogInfo(string, params (string key, string value)[])
+  nameWithType: ILoggingService.LogInfo(string, params (string key, string value)[])
+  fullName: Meridian.Ui.Services.Contracts.ILoggingService.LogInfo(string, params (string key, string value)[])
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ILoggingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LogInfo
+    path: ../../src/Meridian.Ui.Services/Contracts/ILoggingService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: void LogInfo(string message, params (string key, string value)[] properties)
+    parameters:
+    - id: message
+      type: System.String
+    - id: properties
+      type: System.ValueTuple{System.String,System.String}[]
+    content.vb: Sub LogInfo(message As String, ParamArray properties As (key As String, value As String)())
+  overload: Meridian.Ui.Services.Contracts.ILoggingService.LogInfo*
+  nameWithType.vb: ILoggingService.LogInfo(String, ParamArray (key As String, value As String)())
+  fullName.vb: Meridian.Ui.Services.Contracts.ILoggingService.LogInfo(String, ParamArray (key As String, value As String)())
+  name.vb: LogInfo(String, ParamArray (key As String, value As String)())
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.ILoggingService.LogError*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ILoggingService.LogError
+  href: Meridian.Ui.Services.Contracts.ILoggingService.html#Meridian_Ui_Services_Contracts_ILoggingService_LogError_System_String_System_Exception_System_ValueTuple_System_String_System_String____
+  name: LogError
+  nameWithType: ILoggingService.LogError
+  fullName: Meridian.Ui.Services.Contracts.ILoggingService.LogError
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: System.ValueTuple{System.String,System.String}[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: (string key, string value)[]
+  nameWithType: (string key, string value)[]
+  fullName: (string key, string value)[]
+  nameWithType.vb: (key As String, value As String)()
+  fullName.vb: (key As String, value As String)()
+  name.vb: (key As String, value As String)()
+  spec.csharp:
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.key
+    name: key
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.key
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.value
+    name: value
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.value
+  - name: )
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.key
+    name: key
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.key
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.value
+    name: value
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.value
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts.ILoggingService.LogWarning*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ILoggingService.LogWarning
+  href: Meridian.Ui.Services.Contracts.ILoggingService.html#Meridian_Ui_Services_Contracts_ILoggingService_LogWarning_System_String_System_Exception_
+  name: LogWarning
+  nameWithType: ILoggingService.LogWarning
+  fullName: Meridian.Ui.Services.Contracts.ILoggingService.LogWarning
+- uid: Meridian.Ui.Services.Contracts.ILoggingService.LogInfo*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ILoggingService.LogInfo
+  href: Meridian.Ui.Services.Contracts.ILoggingService.html#Meridian_Ui_Services_Contracts_ILoggingService_LogInfo_System_String_System_ValueTuple_System_String_System_String____
+  name: LogInfo
+  nameWithType: ILoggingService.LogInfo
+  fullName: Meridian.Ui.Services.Contracts.ILoggingService.LogInfo

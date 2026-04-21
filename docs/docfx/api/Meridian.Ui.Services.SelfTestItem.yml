@@ -1,0 +1,483 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SelfTestItem
+  commentId: T:Meridian.Ui.Services.SelfTestItem
+  id: SelfTestItem
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SelfTestItem.Category
+  - Meridian.Ui.Services.SelfTestItem.DurationMs
+  - Meridian.Ui.Services.SelfTestItem.Message
+  - Meridian.Ui.Services.SelfTestItem.Name
+  - Meridian.Ui.Services.SelfTestItem.Status
+  langs:
+  - csharp
+  - vb
+  name: SelfTestItem
+  nameWithType: SelfTestItem
+  fullName: Meridian.Ui.Services.SelfTestItem
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SelfTestItem
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 688
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class SelfTestItem
+    content.vb: Public NotInheritable Class SelfTestItem
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SelfTestItem.Name
+  commentId: P:Meridian.Ui.Services.SelfTestItem.Name
+  id: Name
+  parent: Meridian.Ui.Services.SelfTestItem
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: SelfTestItem.Name
+  fullName: Meridian.Ui.Services.SelfTestItem.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 690
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Ui.Services.SelfTestItem.Name*
+- uid: Meridian.Ui.Services.SelfTestItem.Category
+  commentId: P:Meridian.Ui.Services.SelfTestItem.Category
+  id: Category
+  parent: Meridian.Ui.Services.SelfTestItem
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: SelfTestItem.Category
+  fullName: Meridian.Ui.Services.SelfTestItem.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 691
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Category { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Category As String
+  overload: Meridian.Ui.Services.SelfTestItem.Category*
+- uid: Meridian.Ui.Services.SelfTestItem.Status
+  commentId: P:Meridian.Ui.Services.SelfTestItem.Status
+  id: Status
+  parent: Meridian.Ui.Services.SelfTestItem
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: SelfTestItem.Status
+  fullName: Meridian.Ui.Services.SelfTestItem.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 692
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Status { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Status As String
+  overload: Meridian.Ui.Services.SelfTestItem.Status*
+- uid: Meridian.Ui.Services.SelfTestItem.Message
+  commentId: P:Meridian.Ui.Services.SelfTestItem.Message
+  id: Message
+  parent: Meridian.Ui.Services.SelfTestItem
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: SelfTestItem.Message
+  fullName: Meridian.Ui.Services.SelfTestItem.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 693
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Message { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Ui.Services.SelfTestItem.Message*
+- uid: Meridian.Ui.Services.SelfTestItem.DurationMs
+  commentId: P:Meridian.Ui.Services.SelfTestItem.DurationMs
+  id: DurationMs
+  parent: Meridian.Ui.Services.SelfTestItem
+  langs:
+  - csharp
+  - vb
+  name: DurationMs
+  nameWithType: SelfTestItem.DurationMs
+  fullName: Meridian.Ui.Services.SelfTestItem.DurationMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DurationMs
+    path: ../../src/Meridian.Ui.Services/Services/DiagnosticsService.cs
+    startLine: 694
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double DurationMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DurationMs As Double
+  overload: Meridian.Ui.Services.SelfTestItem.DurationMs*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SelfTestItem.Name*
+  commentId: Overload:Meridian.Ui.Services.SelfTestItem.Name
+  href: Meridian.Ui.Services.SelfTestItem.html#Meridian_Ui_Services_SelfTestItem_Name
+  name: Name
+  nameWithType: SelfTestItem.Name
+  fullName: Meridian.Ui.Services.SelfTestItem.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SelfTestItem.Category*
+  commentId: Overload:Meridian.Ui.Services.SelfTestItem.Category
+  href: Meridian.Ui.Services.SelfTestItem.html#Meridian_Ui_Services_SelfTestItem_Category
+  name: Category
+  nameWithType: SelfTestItem.Category
+  fullName: Meridian.Ui.Services.SelfTestItem.Category
+- uid: Meridian.Ui.Services.SelfTestItem.Status*
+  commentId: Overload:Meridian.Ui.Services.SelfTestItem.Status
+  href: Meridian.Ui.Services.SelfTestItem.html#Meridian_Ui_Services_SelfTestItem_Status
+  name: Status
+  nameWithType: SelfTestItem.Status
+  fullName: Meridian.Ui.Services.SelfTestItem.Status
+- uid: Meridian.Ui.Services.SelfTestItem.Message*
+  commentId: Overload:Meridian.Ui.Services.SelfTestItem.Message
+  href: Meridian.Ui.Services.SelfTestItem.html#Meridian_Ui_Services_SelfTestItem_Message
+  name: Message
+  nameWithType: SelfTestItem.Message
+  fullName: Meridian.Ui.Services.SelfTestItem.Message
+- uid: Meridian.Ui.Services.SelfTestItem.DurationMs*
+  commentId: Overload:Meridian.Ui.Services.SelfTestItem.DurationMs
+  href: Meridian.Ui.Services.SelfTestItem.html#Meridian_Ui_Services_SelfTestItem_DurationMs
+  name: DurationMs
+  nameWithType: SelfTestItem.DurationMs
+  fullName: Meridian.Ui.Services.SelfTestItem.DurationMs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

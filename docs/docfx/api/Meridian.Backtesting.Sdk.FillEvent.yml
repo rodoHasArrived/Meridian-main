@@ -1,0 +1,827 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.FillEvent
+  commentId: T:Meridian.Backtesting.Sdk.FillEvent
+  id: FillEvent
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.FillEvent.#ctor(System.Guid,System.Guid,System.String,System.Int64,System.Decimal,System.Decimal,System.DateTimeOffset,System.String,System.Nullable{System.Guid})
+  - Meridian.Backtesting.Sdk.FillEvent.AccountId
+  - Meridian.Backtesting.Sdk.FillEvent.Commission
+  - Meridian.Backtesting.Sdk.FillEvent.FillId
+  - Meridian.Backtesting.Sdk.FillEvent.FillPrice
+  - Meridian.Backtesting.Sdk.FillEvent.FilledAt
+  - Meridian.Backtesting.Sdk.FillEvent.FilledQuantity
+  - Meridian.Backtesting.Sdk.FillEvent.OrderId
+  - Meridian.Backtesting.Sdk.FillEvent.Symbol
+  - Meridian.Backtesting.Sdk.FillEvent.TargetLotId
+  langs:
+  - csharp
+  - vb
+  name: FillEvent
+  nameWithType: FillEvent
+  fullName: Meridian.Backtesting.Sdk.FillEvent
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillEvent
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Represents a complete or partial execution of a simulated order.
+  example: []
+  syntax:
+    content: 'public sealed record FillEvent : IEquatable<FillEvent>'
+    content.vb: Public NotInheritable Class FillEvent Implements IEquatable(Of FillEvent)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.FillEvent}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.FillEvent.#ctor(System.Guid,System.Guid,System.String,System.Int64,System.Decimal,System.Decimal,System.DateTimeOffset,System.String,System.Nullable{System.Guid})
+  commentId: M:Meridian.Backtesting.Sdk.FillEvent.#ctor(System.Guid,System.Guid,System.String,System.Int64,System.Decimal,System.Decimal,System.DateTimeOffset,System.String,System.Nullable{System.Guid})
+  id: '#ctor(System.Guid,System.Guid,System.String,System.Int64,System.Decimal,System.Decimal,System.DateTimeOffset,System.String,System.Nullable{System.Guid})'
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: FillEvent(Guid, Guid, string, long, decimal, decimal, DateTimeOffset, string?, Guid?)
+  nameWithType: FillEvent.FillEvent(Guid, Guid, string, long, decimal, decimal, DateTimeOffset, string?, Guid?)
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FillEvent(System.Guid, System.Guid, string, long, decimal, decimal, System.DateTimeOffset, string?, System.Guid?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Represents a complete or partial execution of a simulated order.
+  example: []
+  syntax:
+    content: public FillEvent(Guid FillId, Guid OrderId, string Symbol, long FilledQuantity, decimal FillPrice, decimal Commission, DateTimeOffset FilledAt, string? AccountId = null, Guid? TargetLotId = null)
+    parameters:
+    - id: FillId
+      type: System.Guid
+    - id: OrderId
+      type: System.Guid
+    - id: Symbol
+      type: System.String
+    - id: FilledQuantity
+      type: System.Int64
+    - id: FillPrice
+      type: System.Decimal
+    - id: Commission
+      type: System.Decimal
+    - id: FilledAt
+      type: System.DateTimeOffset
+    - id: AccountId
+      type: System.String
+    - id: TargetLotId
+      type: System.Nullable{System.Guid}
+    content.vb: Public Sub New(FillId As Guid, OrderId As Guid, Symbol As String, FilledQuantity As Long, FillPrice As Decimal, Commission As Decimal, FilledAt As DateTimeOffset, AccountId As String = Nothing, TargetLotId As Guid? = Nothing)
+  overload: Meridian.Backtesting.Sdk.FillEvent.#ctor*
+  nameWithType.vb: FillEvent.New(Guid, Guid, String, Long, Decimal, Decimal, DateTimeOffset, String, Guid?)
+  fullName.vb: Meridian.Backtesting.Sdk.FillEvent.New(System.Guid, System.Guid, String, Long, Decimal, Decimal, System.DateTimeOffset, String, System.Guid?)
+  name.vb: New(Guid, Guid, String, Long, Decimal, Decimal, DateTimeOffset, String, Guid?)
+- uid: Meridian.Backtesting.Sdk.FillEvent.FillId
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.FillId
+  id: FillId
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: FillId
+  nameWithType: FillEvent.FillId
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FillId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillId
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid FillId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property FillId As Guid
+  overload: Meridian.Backtesting.Sdk.FillEvent.FillId*
+- uid: Meridian.Backtesting.Sdk.FillEvent.OrderId
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.OrderId
+  id: OrderId
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: OrderId
+  nameWithType: FillEvent.OrderId
+  fullName: Meridian.Backtesting.Sdk.FillEvent.OrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderId
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid OrderId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property OrderId As Guid
+  overload: Meridian.Backtesting.Sdk.FillEvent.OrderId*
+- uid: Meridian.Backtesting.Sdk.FillEvent.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: FillEvent.Symbol
+  fullName: Meridian.Backtesting.Sdk.FillEvent.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.FillEvent.Symbol*
+- uid: Meridian.Backtesting.Sdk.FillEvent.FilledQuantity
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.FilledQuantity
+  id: FilledQuantity
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: FilledQuantity
+  nameWithType: FillEvent.FilledQuantity
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FilledQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilledQuantity
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public long FilledQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property FilledQuantity As Long
+  overload: Meridian.Backtesting.Sdk.FillEvent.FilledQuantity*
+- uid: Meridian.Backtesting.Sdk.FillEvent.FillPrice
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.FillPrice
+  id: FillPrice
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: FillPrice
+  nameWithType: FillEvent.FillPrice
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FillPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillPrice
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal FillPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property FillPrice As Decimal
+  overload: Meridian.Backtesting.Sdk.FillEvent.FillPrice*
+- uid: Meridian.Backtesting.Sdk.FillEvent.Commission
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.Commission
+  id: Commission
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: Commission
+  nameWithType: FillEvent.Commission
+  fullName: Meridian.Backtesting.Sdk.FillEvent.Commission
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Commission
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal Commission { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Commission As Decimal
+  overload: Meridian.Backtesting.Sdk.FillEvent.Commission*
+- uid: Meridian.Backtesting.Sdk.FillEvent.FilledAt
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.FilledAt
+  id: FilledAt
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: FilledAt
+  nameWithType: FillEvent.FilledAt
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FilledAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilledAt
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public DateTimeOffset FilledAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property FilledAt As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.FillEvent.FilledAt*
+- uid: Meridian.Backtesting.Sdk.FillEvent.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.AccountId
+  id: AccountId
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: FillEvent.AccountId
+  fullName: Meridian.Backtesting.Sdk.FillEvent.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string? AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Backtesting.Sdk.FillEvent.AccountId*
+- uid: Meridian.Backtesting.Sdk.FillEvent.TargetLotId
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.TargetLotId
+  id: TargetLotId
+  parent: Meridian.Backtesting.Sdk.FillEvent
+  langs:
+  - csharp
+  - vb
+  name: TargetLotId
+  nameWithType: FillEvent.TargetLotId
+  fullName: Meridian.Backtesting.Sdk.FillEvent.TargetLotId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FillEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetLotId
+    path: ../../src/Meridian.Backtesting.Sdk/FillEvent.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid? TargetLotId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property TargetLotId As Guid?
+  overload: Meridian.Backtesting.Sdk.FillEvent.TargetLotId*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.FillEvent}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.FillEvent}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FillEvent>
+  nameWithType: IEquatable<FillEvent>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.FillEvent>
+  nameWithType.vb: IEquatable(Of FillEvent)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.FillEvent)
+  name.vb: IEquatable(Of FillEvent)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.FillEvent.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.#ctor
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent__ctor_System_Guid_System_Guid_System_String_System_Int64_System_Decimal_System_Decimal_System_DateTimeOffset_System_String_System_Nullable_System_Guid__
+  name: FillEvent
+  nameWithType: FillEvent.FillEvent
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FillEvent
+  nameWithType.vb: FillEvent.New
+  fullName.vb: Meridian.Backtesting.Sdk.FillEvent.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.FillEvent.FillId*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.FillId
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_FillId
+  name: FillId
+  nameWithType: FillEvent.FillId
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FillId
+- uid: Meridian.Backtesting.Sdk.FillEvent.OrderId*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.OrderId
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_OrderId
+  name: OrderId
+  nameWithType: FillEvent.OrderId
+  fullName: Meridian.Backtesting.Sdk.FillEvent.OrderId
+- uid: Meridian.Backtesting.Sdk.FillEvent.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.Symbol
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_Symbol
+  name: Symbol
+  nameWithType: FillEvent.Symbol
+  fullName: Meridian.Backtesting.Sdk.FillEvent.Symbol
+- uid: Meridian.Backtesting.Sdk.FillEvent.FilledQuantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.FilledQuantity
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_FilledQuantity
+  name: FilledQuantity
+  nameWithType: FillEvent.FilledQuantity
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FilledQuantity
+- uid: Meridian.Backtesting.Sdk.FillEvent.FillPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.FillPrice
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_FillPrice
+  name: FillPrice
+  nameWithType: FillEvent.FillPrice
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FillPrice
+- uid: Meridian.Backtesting.Sdk.FillEvent.Commission*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.Commission
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_Commission
+  name: Commission
+  nameWithType: FillEvent.Commission
+  fullName: Meridian.Backtesting.Sdk.FillEvent.Commission
+- uid: Meridian.Backtesting.Sdk.FillEvent.FilledAt*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.FilledAt
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_FilledAt
+  name: FilledAt
+  nameWithType: FillEvent.FilledAt
+  fullName: Meridian.Backtesting.Sdk.FillEvent.FilledAt
+- uid: Meridian.Backtesting.Sdk.FillEvent.AccountId*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.AccountId
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_AccountId
+  name: AccountId
+  nameWithType: FillEvent.AccountId
+  fullName: Meridian.Backtesting.Sdk.FillEvent.AccountId
+- uid: Meridian.Backtesting.Sdk.FillEvent.TargetLotId*
+  commentId: Overload:Meridian.Backtesting.Sdk.FillEvent.TargetLotId
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_TargetLotId
+  name: TargetLotId
+  nameWithType: FillEvent.TargetLotId
+  fullName: Meridian.Backtesting.Sdk.FillEvent.TargetLotId

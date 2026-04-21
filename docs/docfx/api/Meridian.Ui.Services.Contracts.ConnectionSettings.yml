@@ -1,0 +1,576 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings
+  commentId: T:Meridian.Ui.Services.Contracts.ConnectionSettings
+  id: ConnectionSettings
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.ConnectionSettings.AutoReconnectEnabled
+  - Meridian.Ui.Services.Contracts.ConnectionSettings.HealthCheckIntervalSeconds
+  - Meridian.Ui.Services.Contracts.ConnectionSettings.InitialReconnectDelayMs
+  - Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectAttempts
+  - Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectDelayMs
+  - Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceTimeoutSeconds
+  - Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceUrl
+  langs:
+  - csharp
+  - vb
+  name: ConnectionSettings
+  nameWithType: ConnectionSettings
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionSettings
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Connection settings shared between desktop applications.
+  example: []
+  syntax:
+    content: public sealed class ConnectionSettings
+    content.vb: Public NotInheritable Class ConnectionSettings
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.AutoReconnectEnabled
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionSettings.AutoReconnectEnabled
+  id: AutoReconnectEnabled
+  parent: Meridian.Ui.Services.Contracts.ConnectionSettings
+  langs:
+  - csharp
+  - vb
+  name: AutoReconnectEnabled
+  nameWithType: ConnectionSettings.AutoReconnectEnabled
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.AutoReconnectEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AutoReconnectEnabled
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public bool AutoReconnectEnabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property AutoReconnectEnabled As Boolean
+  overload: Meridian.Ui.Services.Contracts.ConnectionSettings.AutoReconnectEnabled*
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectAttempts
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectAttempts
+  id: MaxReconnectAttempts
+  parent: Meridian.Ui.Services.Contracts.ConnectionSettings
+  langs:
+  - csharp
+  - vb
+  name: MaxReconnectAttempts
+  nameWithType: ConnectionSettings.MaxReconnectAttempts
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectAttempts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxReconnectAttempts
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public int MaxReconnectAttempts { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxReconnectAttempts As Integer
+  overload: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectAttempts*
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.InitialReconnectDelayMs
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionSettings.InitialReconnectDelayMs
+  id: InitialReconnectDelayMs
+  parent: Meridian.Ui.Services.Contracts.ConnectionSettings
+  langs:
+  - csharp
+  - vb
+  name: InitialReconnectDelayMs
+  nameWithType: ConnectionSettings.InitialReconnectDelayMs
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.InitialReconnectDelayMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitialReconnectDelayMs
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public int InitialReconnectDelayMs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property InitialReconnectDelayMs As Integer
+  overload: Meridian.Ui.Services.Contracts.ConnectionSettings.InitialReconnectDelayMs*
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectDelayMs
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectDelayMs
+  id: MaxReconnectDelayMs
+  parent: Meridian.Ui.Services.Contracts.ConnectionSettings
+  langs:
+  - csharp
+  - vb
+  name: MaxReconnectDelayMs
+  nameWithType: ConnectionSettings.MaxReconnectDelayMs
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectDelayMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxReconnectDelayMs
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public int MaxReconnectDelayMs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxReconnectDelayMs As Integer
+  overload: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectDelayMs*
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.HealthCheckIntervalSeconds
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionSettings.HealthCheckIntervalSeconds
+  id: HealthCheckIntervalSeconds
+  parent: Meridian.Ui.Services.Contracts.ConnectionSettings
+  langs:
+  - csharp
+  - vb
+  name: HealthCheckIntervalSeconds
+  nameWithType: ConnectionSettings.HealthCheckIntervalSeconds
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.HealthCheckIntervalSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheckIntervalSeconds
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public int HealthCheckIntervalSeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HealthCheckIntervalSeconds As Integer
+  overload: Meridian.Ui.Services.Contracts.ConnectionSettings.HealthCheckIntervalSeconds*
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceUrl
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceUrl
+  id: ServiceUrl
+  parent: Meridian.Ui.Services.Contracts.ConnectionSettings
+  langs:
+  - csharp
+  - vb
+  name: ServiceUrl
+  nameWithType: ConnectionSettings.ServiceUrl
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceUrl
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public string ServiceUrl { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ServiceUrl As String
+  overload: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceUrl*
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceTimeoutSeconds
+  commentId: P:Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceTimeoutSeconds
+  id: ServiceTimeoutSeconds
+  parent: Meridian.Ui.Services.Contracts.ConnectionSettings
+  langs:
+  - csharp
+  - vb
+  name: ServiceTimeoutSeconds
+  nameWithType: ConnectionSettings.ServiceTimeoutSeconds
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceTimeoutSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceTimeoutSeconds
+    path: ../../src/Meridian.Ui.Services/Contracts/ConnectionTypes.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: public int ServiceTimeoutSeconds { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ServiceTimeoutSeconds As Integer
+  overload: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceTimeoutSeconds*
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.AutoReconnectEnabled*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionSettings.AutoReconnectEnabled
+  href: Meridian.Ui.Services.Contracts.ConnectionSettings.html#Meridian_Ui_Services_Contracts_ConnectionSettings_AutoReconnectEnabled
+  name: AutoReconnectEnabled
+  nameWithType: ConnectionSettings.AutoReconnectEnabled
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.AutoReconnectEnabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectAttempts*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectAttempts
+  href: Meridian.Ui.Services.Contracts.ConnectionSettings.html#Meridian_Ui_Services_Contracts_ConnectionSettings_MaxReconnectAttempts
+  name: MaxReconnectAttempts
+  nameWithType: ConnectionSettings.MaxReconnectAttempts
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectAttempts
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.InitialReconnectDelayMs*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionSettings.InitialReconnectDelayMs
+  href: Meridian.Ui.Services.Contracts.ConnectionSettings.html#Meridian_Ui_Services_Contracts_ConnectionSettings_InitialReconnectDelayMs
+  name: InitialReconnectDelayMs
+  nameWithType: ConnectionSettings.InitialReconnectDelayMs
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.InitialReconnectDelayMs
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectDelayMs*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectDelayMs
+  href: Meridian.Ui.Services.Contracts.ConnectionSettings.html#Meridian_Ui_Services_Contracts_ConnectionSettings_MaxReconnectDelayMs
+  name: MaxReconnectDelayMs
+  nameWithType: ConnectionSettings.MaxReconnectDelayMs
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.MaxReconnectDelayMs
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.HealthCheckIntervalSeconds*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionSettings.HealthCheckIntervalSeconds
+  href: Meridian.Ui.Services.Contracts.ConnectionSettings.html#Meridian_Ui_Services_Contracts_ConnectionSettings_HealthCheckIntervalSeconds
+  name: HealthCheckIntervalSeconds
+  nameWithType: ConnectionSettings.HealthCheckIntervalSeconds
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.HealthCheckIntervalSeconds
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceUrl*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceUrl
+  href: Meridian.Ui.Services.Contracts.ConnectionSettings.html#Meridian_Ui_Services_Contracts_ConnectionSettings_ServiceUrl
+  name: ServiceUrl
+  nameWithType: ConnectionSettings.ServiceUrl
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceUrl
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceTimeoutSeconds*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceTimeoutSeconds
+  href: Meridian.Ui.Services.Contracts.ConnectionSettings.html#Meridian_Ui_Services_Contracts_ConnectionSettings_ServiceTimeoutSeconds
+  name: ServiceTimeoutSeconds
+  nameWithType: ConnectionSettings.ServiceTimeoutSeconds
+  fullName: Meridian.Ui.Services.Contracts.ConnectionSettings.ServiceTimeoutSeconds

@@ -1,0 +1,710 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics
+  commentId: T:Meridian.Ui.Services.ProviderLatencyStatistics
+  id: ProviderLatencyStatistics
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ProviderLatencyStatistics.MaxMs
+  - Meridian.Ui.Services.ProviderLatencyStatistics.MeanMs
+  - Meridian.Ui.Services.ProviderLatencyStatistics.MedianMs
+  - Meridian.Ui.Services.ProviderLatencyStatistics.MinMs
+  - Meridian.Ui.Services.ProviderLatencyStatistics.P50Ms
+  - Meridian.Ui.Services.ProviderLatencyStatistics.P90Ms
+  - Meridian.Ui.Services.ProviderLatencyStatistics.P95Ms
+  - Meridian.Ui.Services.ProviderLatencyStatistics.P99Ms
+  - Meridian.Ui.Services.ProviderLatencyStatistics.Provider
+  - Meridian.Ui.Services.ProviderLatencyStatistics.SampleCount
+  - Meridian.Ui.Services.ProviderLatencyStatistics.StdDevMs
+  langs:
+  - csharp
+  - vb
+  name: ProviderLatencyStatistics
+  nameWithType: ProviderLatencyStatistics
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderLatencyStatistics
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class ProviderLatencyStatistics
+    content.vb: Public NotInheritable Class ProviderLatencyStatistics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.Provider
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.Provider
+  id: Provider
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: ProviderLatencyStatistics.Provider
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Provider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.Provider*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.MinMs
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.MinMs
+  id: MinMs
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: MinMs
+  nameWithType: ProviderLatencyStatistics.MinMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.MinMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinMs
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double MinMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MinMs As Double
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.MinMs*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.MaxMs
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.MaxMs
+  id: MaxMs
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: MaxMs
+  nameWithType: ProviderLatencyStatistics.MaxMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.MaxMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxMs
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double MaxMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxMs As Double
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.MaxMs*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.MeanMs
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.MeanMs
+  id: MeanMs
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: MeanMs
+  nameWithType: ProviderLatencyStatistics.MeanMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.MeanMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MeanMs
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double MeanMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MeanMs As Double
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.MeanMs*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.MedianMs
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.MedianMs
+  id: MedianMs
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: MedianMs
+  nameWithType: ProviderLatencyStatistics.MedianMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.MedianMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MedianMs
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double MedianMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MedianMs As Double
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.MedianMs*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.StdDevMs
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.StdDevMs
+  id: StdDevMs
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: StdDevMs
+  nameWithType: ProviderLatencyStatistics.StdDevMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.StdDevMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StdDevMs
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double StdDevMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property StdDevMs As Double
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.StdDevMs*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.P50Ms
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.P50Ms
+  id: P50Ms
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: P50Ms
+  nameWithType: ProviderLatencyStatistics.P50Ms
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.P50Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P50Ms
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double P50Ms { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P50Ms As Double
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.P50Ms*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.P90Ms
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.P90Ms
+  id: P90Ms
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: P90Ms
+  nameWithType: ProviderLatencyStatistics.P90Ms
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.P90Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P90Ms
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double P90Ms { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P90Ms As Double
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.P90Ms*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.P95Ms
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.P95Ms
+  id: P95Ms
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: P95Ms
+  nameWithType: ProviderLatencyStatistics.P95Ms
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.P95Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P95Ms
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double P95Ms { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P95Ms As Double
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.P95Ms*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.P99Ms
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.P99Ms
+  id: P99Ms
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: P99Ms
+  nameWithType: ProviderLatencyStatistics.P99Ms
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.P99Ms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P99Ms
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double P99Ms { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P99Ms As Double
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.P99Ms*
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.SampleCount
+  commentId: P:Meridian.Ui.Services.ProviderLatencyStatistics.SampleCount
+  id: SampleCount
+  parent: Meridian.Ui.Services.ProviderLatencyStatistics
+  langs:
+  - csharp
+  - vb
+  name: SampleCount
+  nameWithType: ProviderLatencyStatistics.SampleCount
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.SampleCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SampleCount
+    path: ../../src/Meridian.Ui.Services/Services/AdvancedAnalyticsModels.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long SampleCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SampleCount As Long
+  overload: Meridian.Ui.Services.ProviderLatencyStatistics.SampleCount*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.Provider*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.Provider
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_Provider
+  name: Provider
+  nameWithType: ProviderLatencyStatistics.Provider
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.Provider
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.MinMs*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.MinMs
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_MinMs
+  name: MinMs
+  nameWithType: ProviderLatencyStatistics.MinMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.MinMs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.MaxMs*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.MaxMs
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_MaxMs
+  name: MaxMs
+  nameWithType: ProviderLatencyStatistics.MaxMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.MaxMs
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.MeanMs*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.MeanMs
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_MeanMs
+  name: MeanMs
+  nameWithType: ProviderLatencyStatistics.MeanMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.MeanMs
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.MedianMs*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.MedianMs
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_MedianMs
+  name: MedianMs
+  nameWithType: ProviderLatencyStatistics.MedianMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.MedianMs
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.StdDevMs*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.StdDevMs
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_StdDevMs
+  name: StdDevMs
+  nameWithType: ProviderLatencyStatistics.StdDevMs
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.StdDevMs
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.P50Ms*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.P50Ms
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_P50Ms
+  name: P50Ms
+  nameWithType: ProviderLatencyStatistics.P50Ms
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.P50Ms
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.P90Ms*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.P90Ms
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_P90Ms
+  name: P90Ms
+  nameWithType: ProviderLatencyStatistics.P90Ms
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.P90Ms
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.P95Ms*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.P95Ms
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_P95Ms
+  name: P95Ms
+  nameWithType: ProviderLatencyStatistics.P95Ms
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.P95Ms
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.P99Ms*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.P99Ms
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_P99Ms
+  name: P99Ms
+  nameWithType: ProviderLatencyStatistics.P99Ms
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.P99Ms
+- uid: Meridian.Ui.Services.ProviderLatencyStatistics.SampleCount*
+  commentId: Overload:Meridian.Ui.Services.ProviderLatencyStatistics.SampleCount
+  href: Meridian.Ui.Services.ProviderLatencyStatistics.html#Meridian_Ui_Services_ProviderLatencyStatistics_SampleCount
+  name: SampleCount
+  nameWithType: ProviderLatencyStatistics.SampleCount
+  fullName: Meridian.Ui.Services.ProviderLatencyStatistics.SampleCount
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long

@@ -5,7 +5,7 @@ Meridian – Canonical Startup (Windows PowerShell)
 
 Features:
   - Build (optional) with/without IBAPI
-  - Start Collector + UI
+  - Start Collector
   - Write PID files into .\run\
   - Ctrl+C handling + graceful stop
 
@@ -14,7 +14,6 @@ Usage:
 
 Env vars (optional):
   $env:USE_IBAPI = "true"|"false"
-  $env:START_UI  = "true"|"false"
   $env:BUILD     = "true"|"false"
   $env:DOTNET_CONFIGURATION = "Release"|"Debug"
   $env:IB_HOST, IB_PORT, IB_CLIENT_ID
@@ -24,14 +23,12 @@ $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Src  = Join-Path $Root "src\Meridian"
-$Ui   = Join-Path $Root "src\Meridian.Ui"
 $Data = Join-Path $Root "data"
 $Logs = Join-Path $Root "logs"
 $Run  = Join-Path $Root "run"
 
 $Config = $env:DOTNET_CONFIGURATION; if (-not $Config) { $Config = "Release" }
 $UseIbApi = $env:USE_IBAPI; if (-not $UseIbApi) { $UseIbApi = "false" }
-$StartUi = $env:START_UI; if (-not $StartUi) { $StartUi = "true" }
 $DoBuild = $env:BUILD; if (-not $DoBuild) { $DoBuild = "true" }
 
 $IbHost = $env:IB_HOST; if (-not $IbHost) { $IbHost = "127.0.0.1" }
@@ -41,7 +38,6 @@ $IbClientId = $env:IB_CLIENT_ID; if (-not $IbClientId) { $IbClientId = "17" }
 New-Item -ItemType Directory -Force -Path $Data,$Logs,$Run | Out-Null
 
 $CollectorPidFile = Join-Path $Run "collector.pid"
-$UiPidFile        = Join-Path $Run "ui.pid"
 
 
 function Test-TcpPort($HostName, [int]$Port, [int]$TimeoutMs = 800) {
@@ -152,9 +148,8 @@ $handler = {
   if ($global:Stopping) { return }
   $global:Stopping = $true
   Write-Host "`n[INFO] Ctrl+C received. Shutting down..."
-  Stop-ByPidFile $UiPidFile "UI"
   Stop-ByPidFile $CollectorPidFile "Collector"
-  Remove-Item $UiPidFile,$CollectorPidFile -ErrorAction SilentlyContinue
+  Remove-Item $CollectorPidFile -ErrorAction SilentlyContinue
   exit 0
 }
 
@@ -194,19 +189,6 @@ $collector = Start-Process -FilePath "dotnet" -ArgumentList $collectorArgs -Pass
   -RedirectStandardOutput (Join-Path $Logs "collector.log") -RedirectStandardError (Join-Path $Logs "collector.err.log")
 $collector.Id | Out-File -FilePath $CollectorPidFile -Encoding ascii -Force
 Write-Host "[INFO] Collector PID: $($collector.Id)"
-
-if ($StartUi -eq "true") {
-  Write-Host "[INFO] Starting UI..."
-  $uiArgs = @(
-    "run",
-    "--project", (Join-Path $Ui "Meridian.Ui.csproj"),
-    "--configuration", $Config
-  )
-  $ui = Start-Process -FilePath "dotnet" -ArgumentList $uiArgs -PassThru -NoNewWindow `
-    -RedirectStandardOutput (Join-Path $Logs "ui.log") -RedirectStandardError (Join-Path $Logs "ui.err.log")
-  $ui.Id | Out-File -FilePath $UiPidFile -Encoding ascii -Force
-  Write-Host "[INFO] UI PID: $($ui.Id)"
-}
 
 Write-Host "-----------------------------------------------"
 Write-Host "[INFO] Running."

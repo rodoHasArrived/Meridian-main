@@ -1,0 +1,857 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  commentId: T:Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  id: LegalEntitySummaryDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.BaseCurrency
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Code
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveFrom
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityType
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.IsActive
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Jurisdiction
+  - Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Name
+  langs:
+  - csharp
+  - vb
+  name: LegalEntitySummaryDto
+  nameWithType: LegalEntitySummaryDto
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LegalEntitySummaryDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record LegalEntitySummaryDto : IEquatable<LegalEntitySummaryDto>'
+    content.vb: Public NotInheritable Class LegalEntitySummaryDto Implements IEquatable(Of LegalEntitySummaryDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.LegalEntitySummaryDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  id: '#ctor(System.Guid,Meridian.Contracts.FundStructure.LegalEntityTypeDto,System.String,System.String,System.String,System.String,System.Boolean,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)'
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: LegalEntitySummaryDto(Guid, LegalEntityTypeDto, string, string, string, string, bool, DateTimeOffset, DateTimeOffset?, string?)
+  nameWithType: LegalEntitySummaryDto.LegalEntitySummaryDto(Guid, LegalEntityTypeDto, string, string, string, string, bool, DateTimeOffset, DateTimeOffset?, string?)
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.LegalEntitySummaryDto(System.Guid, Meridian.Contracts.FundStructure.LegalEntityTypeDto, string, string, string, string, bool, System.DateTimeOffset, System.DateTimeOffset?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public LegalEntitySummaryDto(Guid EntityId, LegalEntityTypeDto EntityType, string Code, string Name, string Jurisdiction, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, string? Description = null)
+    parameters:
+    - id: EntityId
+      type: System.Guid
+    - id: EntityType
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+    - id: Code
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: Jurisdiction
+      type: System.String
+    - id: BaseCurrency
+      type: System.String
+    - id: IsActive
+      type: System.Boolean
+    - id: EffectiveFrom
+      type: System.DateTimeOffset
+    - id: EffectiveTo
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(EntityId As Guid, EntityType As LegalEntityTypeDto, Code As String, Name As String, Jurisdiction As String, BaseCurrency As String, IsActive As Boolean, EffectiveFrom As DateTimeOffset, EffectiveTo As DateTimeOffset?, Description As String = Nothing)
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor*
+  nameWithType.vb: LegalEntitySummaryDto.New(Guid, LegalEntityTypeDto, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, String)
+  fullName.vb: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.New(System.Guid, Meridian.Contracts.FundStructure.LegalEntityTypeDto, String, String, String, String, Boolean, System.DateTimeOffset, System.DateTimeOffset?, String)
+  name.vb: New(Guid, LegalEntityTypeDto, String, String, String, String, Boolean, DateTimeOffset, DateTimeOffset?, String)
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId
+  id: EntityId
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: EntityId
+  nameWithType: LegalEntitySummaryDto.EntityId
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid EntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property EntityId As Guid
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityType
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityType
+  id: EntityType
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: EntityType
+  nameWithType: LegalEntitySummaryDto.EntityType
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityType
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public LegalEntityTypeDto EntityType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+    content.vb: Public Property EntityType As LegalEntityTypeDto
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityType*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Code
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Code
+  id: Code
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: LegalEntitySummaryDto.Code
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Code As String
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Code*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Name
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Name
+  id: Name
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: LegalEntitySummaryDto.Name
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Name*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Jurisdiction
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Jurisdiction
+  id: Jurisdiction
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: Jurisdiction
+  nameWithType: LegalEntitySummaryDto.Jurisdiction
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Jurisdiction
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Jurisdiction
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Jurisdiction { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Jurisdiction As String
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Jurisdiction*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.BaseCurrency
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: LegalEntitySummaryDto.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.BaseCurrency*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.IsActive
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.IsActive
+  id: IsActive
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: IsActive
+  nameWithType: LegalEntitySummaryDto.IsActive
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.IsActive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsActive
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public bool IsActive { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsActive As Boolean
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.IsActive*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveFrom
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveFrom
+  id: EffectiveFrom
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveFrom
+  nameWithType: LegalEntitySummaryDto.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveFrom
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset EffectiveFrom { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EffectiveFrom As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveFrom*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo
+  id: EffectiveTo
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveTo
+  nameWithType: LegalEntitySummaryDto.EffectiveTo
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveTo
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset? EffectiveTo { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property EffectiveTo As DateTimeOffset?
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo*
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
+  commentId: P:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
+  id: Description
+  parent: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: LegalEntitySummaryDto.Description
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.LegalEntitySummaryDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.LegalEntitySummaryDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LegalEntitySummaryDto>
+  nameWithType: IEquatable<LegalEntitySummaryDto>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.LegalEntitySummaryDto>
+  nameWithType.vb: IEquatable(Of LegalEntitySummaryDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.LegalEntitySummaryDto)
+  name.vb: IEquatable(Of LegalEntitySummaryDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+    name: LegalEntitySummaryDto
+    href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto
+    name: LegalEntitySummaryDto
+    href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.#ctor
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto__ctor_System_Guid_Meridian_Contracts_FundStructure_LegalEntityTypeDto_System_String_System_String_System_String_System_String_System_Boolean_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_
+  name: LegalEntitySummaryDto
+  nameWithType: LegalEntitySummaryDto.LegalEntitySummaryDto
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.LegalEntitySummaryDto
+  nameWithType.vb: LegalEntitySummaryDto.New
+  fullName.vb: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  commentId: T:Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.LegalEntityTypeDto.html
+  name: LegalEntityTypeDto
+  nameWithType: LegalEntityTypeDto
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_EntityId
+  name: EntityId
+  nameWithType: LegalEntitySummaryDto.EntityId
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityId
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityType*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityType
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_EntityType
+  name: EntityType
+  nameWithType: LegalEntitySummaryDto.EntityType
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EntityType
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Code*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Code
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_Code
+  name: Code
+  nameWithType: LegalEntitySummaryDto.Code
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Code
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Name*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Name
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_Name
+  name: Name
+  nameWithType: LegalEntitySummaryDto.Name
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Name
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Jurisdiction*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Jurisdiction
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_Jurisdiction
+  name: Jurisdiction
+  nameWithType: LegalEntitySummaryDto.Jurisdiction
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Jurisdiction
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.BaseCurrency*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.BaseCurrency
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_BaseCurrency
+  name: BaseCurrency
+  nameWithType: LegalEntitySummaryDto.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.BaseCurrency
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.IsActive*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.IsActive
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_IsActive
+  name: IsActive
+  nameWithType: LegalEntitySummaryDto.IsActive
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.IsActive
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveFrom*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveFrom
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_EffectiveFrom
+  name: EffectiveFrom
+  nameWithType: LegalEntitySummaryDto.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveFrom
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_EffectiveTo
+  name: EffectiveTo
+  nameWithType: LegalEntitySummaryDto.EffectiveTo
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.EffectiveTo
+- uid: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description*
+  commentId: Overload:Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description
+  href: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.html#Meridian_Contracts_FundStructure_LegalEntitySummaryDto_Description
+  name: Description
+  nameWithType: LegalEntitySummaryDto.Description
+  fullName: Meridian.Contracts.FundStructure.LegalEntitySummaryDto.Description

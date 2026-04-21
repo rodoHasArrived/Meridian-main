@@ -1,0 +1,1009 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Indicators.IndicatorConfiguration
+  commentId: T:Meridian.Application.Indicators.IndicatorConfiguration
+  id: IndicatorConfiguration
+  parent: Meridian.Application.Indicators
+  children:
+  - Meridian.Application.Indicators.IndicatorConfiguration.AdxPeriod
+  - Meridian.Application.Indicators.IndicatorConfiguration.AtrPeriod
+  - Meridian.Application.Indicators.IndicatorConfiguration.BollingerPeriod
+  - Meridian.Application.Indicators.IndicatorConfiguration.BollingerStdDev
+  - Meridian.Application.Indicators.IndicatorConfiguration.Default
+  - Meridian.Application.Indicators.IndicatorConfiguration.EmaPeriods
+  - Meridian.Application.Indicators.IndicatorConfiguration.EnabledIndicators
+  - Meridian.Application.Indicators.IndicatorConfiguration.MacdFastPeriod
+  - Meridian.Application.Indicators.IndicatorConfiguration.MacdSignalPeriod
+  - Meridian.Application.Indicators.IndicatorConfiguration.MacdSlowPeriod
+  - Meridian.Application.Indicators.IndicatorConfiguration.MaxQuotesHistory
+  - Meridian.Application.Indicators.IndicatorConfiguration.RsiPeriod
+  - Meridian.Application.Indicators.IndicatorConfiguration.SmaPeriods
+  - Meridian.Application.Indicators.IndicatorConfiguration.StochDPeriod
+  - Meridian.Application.Indicators.IndicatorConfiguration.StochKPeriod
+  - Meridian.Application.Indicators.IndicatorConfiguration.StochSmoothPeriod
+  langs:
+  - csharp
+  - vb
+  name: IndicatorConfiguration
+  nameWithType: IndicatorConfiguration
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndicatorConfiguration
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 485
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  summary: Configuration for which indicators to calculate and their parameters.
+  example: []
+  syntax:
+    content: public sealed class IndicatorConfiguration
+    content.vb: Public NotInheritable Class IndicatorConfiguration
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.EnabledIndicators
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.EnabledIndicators
+  id: EnabledIndicators
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: EnabledIndicators
+  nameWithType: IndicatorConfiguration.EnabledIndicators
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.EnabledIndicators
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnabledIndicators
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 487
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public HashSet<IndicatorType> EnabledIndicators { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.HashSet{Meridian.Application.Indicators.IndicatorType}
+    content.vb: Public Property EnabledIndicators As HashSet(Of IndicatorType)
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.EnabledIndicators*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.SmaPeriods
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.SmaPeriods
+  id: SmaPeriods
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: SmaPeriods
+  nameWithType: IndicatorConfiguration.SmaPeriods
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.SmaPeriods
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SmaPeriods
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 499
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int[] SmaPeriods { get; init; }
+    parameters: []
+    return:
+      type: System.Int32[]
+    content.vb: Public Property SmaPeriods As Integer()
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.SmaPeriods*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.EmaPeriods
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.EmaPeriods
+  id: EmaPeriods
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: EmaPeriods
+  nameWithType: IndicatorConfiguration.EmaPeriods
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.EmaPeriods
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EmaPeriods
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 500
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int[] EmaPeriods { get; init; }
+    parameters: []
+    return:
+      type: System.Int32[]
+    content.vb: Public Property EmaPeriods As Integer()
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.EmaPeriods*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.RsiPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.RsiPeriod
+  id: RsiPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: RsiPeriod
+  nameWithType: IndicatorConfiguration.RsiPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.RsiPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RsiPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 503
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int RsiPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RsiPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.RsiPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.MacdFastPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.MacdFastPeriod
+  id: MacdFastPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: MacdFastPeriod
+  nameWithType: IndicatorConfiguration.MacdFastPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.MacdFastPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MacdFastPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 506
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int MacdFastPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MacdFastPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.MacdFastPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.MacdSlowPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.MacdSlowPeriod
+  id: MacdSlowPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: MacdSlowPeriod
+  nameWithType: IndicatorConfiguration.MacdSlowPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.MacdSlowPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MacdSlowPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 507
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int MacdSlowPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MacdSlowPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.MacdSlowPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.MacdSignalPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.MacdSignalPeriod
+  id: MacdSignalPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: MacdSignalPeriod
+  nameWithType: IndicatorConfiguration.MacdSignalPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.MacdSignalPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MacdSignalPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 508
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int MacdSignalPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MacdSignalPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.MacdSignalPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.BollingerPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.BollingerPeriod
+  id: BollingerPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: BollingerPeriod
+  nameWithType: IndicatorConfiguration.BollingerPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.BollingerPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BollingerPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int BollingerPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BollingerPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.BollingerPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.BollingerStdDev
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.BollingerStdDev
+  id: BollingerStdDev
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: BollingerStdDev
+  nameWithType: IndicatorConfiguration.BollingerStdDev
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.BollingerStdDev
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BollingerStdDev
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 512
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public double BollingerStdDev { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property BollingerStdDev As Double
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.BollingerStdDev*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.AtrPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.AtrPeriod
+  id: AtrPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: AtrPeriod
+  nameWithType: IndicatorConfiguration.AtrPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.AtrPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AtrPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int AtrPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property AtrPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.AtrPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.StochKPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.StochKPeriod
+  id: StochKPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: StochKPeriod
+  nameWithType: IndicatorConfiguration.StochKPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.StochKPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StochKPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int StochKPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property StochKPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.StochKPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.StochDPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.StochDPeriod
+  id: StochDPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: StochDPeriod
+  nameWithType: IndicatorConfiguration.StochDPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.StochDPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StochDPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 519
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int StochDPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property StochDPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.StochDPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.StochSmoothPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.StochSmoothPeriod
+  id: StochSmoothPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: StochSmoothPeriod
+  nameWithType: IndicatorConfiguration.StochSmoothPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.StochSmoothPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StochSmoothPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int StochSmoothPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property StochSmoothPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.StochSmoothPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.AdxPeriod
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.AdxPeriod
+  id: AdxPeriod
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: AdxPeriod
+  nameWithType: IndicatorConfiguration.AdxPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.AdxPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdxPeriod
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 523
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int AdxPeriod { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property AdxPeriod As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.AdxPeriod*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.MaxQuotesHistory
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.MaxQuotesHistory
+  id: MaxQuotesHistory
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: MaxQuotesHistory
+  nameWithType: IndicatorConfiguration.MaxQuotesHistory
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.MaxQuotesHistory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxQuotesHistory
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 526
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public int MaxQuotesHistory { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxQuotesHistory As Integer
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.MaxQuotesHistory*
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.Default
+  commentId: P:Meridian.Application.Indicators.IndicatorConfiguration.Default
+  id: Default
+  parent: Meridian.Application.Indicators.IndicatorConfiguration
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: IndicatorConfiguration.Default
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Application/Indicators/TechnicalIndicatorService.cs
+    startLine: 528
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Indicators
+  syntax:
+    content: public static IndicatorConfiguration Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Indicators.IndicatorConfiguration
+    content.vb: Public Shared ReadOnly Property [Default] As IndicatorConfiguration
+  overload: Meridian.Application.Indicators.IndicatorConfiguration.Default*
+references:
+- uid: Meridian.Application.Indicators
+  commentId: N:Meridian.Application.Indicators
+  href: Meridian.html
+  name: Meridian.Application.Indicators
+  nameWithType: Meridian.Application.Indicators
+  fullName: Meridian.Application.Indicators
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.EnabledIndicators*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.EnabledIndicators
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_EnabledIndicators
+  name: EnabledIndicators
+  nameWithType: IndicatorConfiguration.EnabledIndicators
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.EnabledIndicators
+- uid: System.Collections.Generic.HashSet{Meridian.Application.Indicators.IndicatorType}
+  commentId: T:System.Collections.Generic.HashSet{Meridian.Application.Indicators.IndicatorType}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.HashSet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  name: HashSet<IndicatorType>
+  nameWithType: HashSet<IndicatorType>
+  fullName: System.Collections.Generic.HashSet<Meridian.Application.Indicators.IndicatorType>
+  nameWithType.vb: HashSet(Of IndicatorType)
+  fullName.vb: System.Collections.Generic.HashSet(Of Meridian.Application.Indicators.IndicatorType)
+  name.vb: HashSet(Of IndicatorType)
+  spec.csharp:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: <
+  - uid: Meridian.Application.Indicators.IndicatorType
+    name: IndicatorType
+    href: Meridian.Application.Indicators.IndicatorType.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Indicators.IndicatorType
+    name: IndicatorType
+    href: Meridian.Application.Indicators.IndicatorType.html
+  - name: )
+- uid: System.Collections.Generic.HashSet`1
+  commentId: T:System.Collections.Generic.HashSet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  name: HashSet<T>
+  nameWithType: HashSet<T>
+  fullName: System.Collections.Generic.HashSet<T>
+  nameWithType.vb: HashSet(Of T)
+  fullName.vb: System.Collections.Generic.HashSet(Of T)
+  name.vb: HashSet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.SmaPeriods*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.SmaPeriods
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_SmaPeriods
+  name: SmaPeriods
+  nameWithType: IndicatorConfiguration.SmaPeriods
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.SmaPeriods
+- uid: System.Int32[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int[]
+  nameWithType: int[]
+  fullName: int[]
+  nameWithType.vb: Integer()
+  fullName.vb: Integer()
+  name.vb: Integer()
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: (
+  - name: )
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.EmaPeriods*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.EmaPeriods
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_EmaPeriods
+  name: EmaPeriods
+  nameWithType: IndicatorConfiguration.EmaPeriods
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.EmaPeriods
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.RsiPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.RsiPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_RsiPeriod
+  name: RsiPeriod
+  nameWithType: IndicatorConfiguration.RsiPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.RsiPeriod
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.MacdFastPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.MacdFastPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_MacdFastPeriod
+  name: MacdFastPeriod
+  nameWithType: IndicatorConfiguration.MacdFastPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.MacdFastPeriod
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.MacdSlowPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.MacdSlowPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_MacdSlowPeriod
+  name: MacdSlowPeriod
+  nameWithType: IndicatorConfiguration.MacdSlowPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.MacdSlowPeriod
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.MacdSignalPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.MacdSignalPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_MacdSignalPeriod
+  name: MacdSignalPeriod
+  nameWithType: IndicatorConfiguration.MacdSignalPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.MacdSignalPeriod
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.BollingerPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.BollingerPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_BollingerPeriod
+  name: BollingerPeriod
+  nameWithType: IndicatorConfiguration.BollingerPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.BollingerPeriod
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.BollingerStdDev*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.BollingerStdDev
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_BollingerStdDev
+  name: BollingerStdDev
+  nameWithType: IndicatorConfiguration.BollingerStdDev
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.BollingerStdDev
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.AtrPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.AtrPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_AtrPeriod
+  name: AtrPeriod
+  nameWithType: IndicatorConfiguration.AtrPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.AtrPeriod
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.StochKPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.StochKPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_StochKPeriod
+  name: StochKPeriod
+  nameWithType: IndicatorConfiguration.StochKPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.StochKPeriod
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.StochDPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.StochDPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_StochDPeriod
+  name: StochDPeriod
+  nameWithType: IndicatorConfiguration.StochDPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.StochDPeriod
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.StochSmoothPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.StochSmoothPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_StochSmoothPeriod
+  name: StochSmoothPeriod
+  nameWithType: IndicatorConfiguration.StochSmoothPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.StochSmoothPeriod
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.AdxPeriod*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.AdxPeriod
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_AdxPeriod
+  name: AdxPeriod
+  nameWithType: IndicatorConfiguration.AdxPeriod
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.AdxPeriod
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.MaxQuotesHistory*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.MaxQuotesHistory
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_MaxQuotesHistory
+  name: MaxQuotesHistory
+  nameWithType: IndicatorConfiguration.MaxQuotesHistory
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.MaxQuotesHistory
+- uid: Meridian.Application.Indicators.IndicatorConfiguration.Default*
+  commentId: Overload:Meridian.Application.Indicators.IndicatorConfiguration.Default
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html#Meridian_Application_Indicators_IndicatorConfiguration_Default
+  name: Default
+  nameWithType: IndicatorConfiguration.Default
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration.Default
+- uid: Meridian.Application.Indicators.IndicatorConfiguration
+  commentId: T:Meridian.Application.Indicators.IndicatorConfiguration
+  parent: Meridian.Application.Indicators
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html
+  name: IndicatorConfiguration
+  nameWithType: IndicatorConfiguration
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration

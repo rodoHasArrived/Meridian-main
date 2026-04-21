@@ -1,0 +1,861 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  commentId: T:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  id: ICppTraderSessionClient
+  parent: Meridian.Infrastructure.CppTrader.Host
+  children:
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.CancelOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.GetSnapshotAsync(Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.HeartbeatAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.ReadEventsAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.RegisterSymbolAsync(Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionId
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionKind
+  - Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SubmitOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ICppTraderSessionClient
+  nameWithType: ICppTraderSessionClient
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICppTraderSessionClient
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: 'public interface ICppTraderSessionClient : IAsyncDisposable'
+    content.vb: Public Interface ICppTraderSessionClient Inherits IAsyncDisposable
+  inheritedMembers:
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionId
+  commentId: P:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionId
+  id: SessionId
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  langs:
+  - csharp
+  - vb
+  name: SessionId
+  nameWithType: ICppTraderSessionClient.SessionId
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionId
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: string SessionId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property SessionId As String
+  overload: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionId*
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionKind
+  commentId: P:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionKind
+  id: SessionKind
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  langs:
+  - csharp
+  - vb
+  name: SessionKind
+  nameWithType: ICppTraderSessionClient.SessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionKind
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: CppTraderSessionKind SessionKind { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+    content.vb: ReadOnly Property SessionKind As CppTraderSessionKind
+  overload: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionKind*
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.RegisterSymbolAsync(Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.RegisterSymbolAsync(Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest,System.Threading.CancellationToken)
+  id: RegisterSymbolAsync(Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  langs:
+  - csharp
+  - vb
+  name: RegisterSymbolAsync(RegisterSymbolRequest, CancellationToken)
+  nameWithType: ICppTraderSessionClient.RegisterSymbolAsync(RegisterSymbolRequest, CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.RegisterSymbolAsync(Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSymbolAsync
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: Task<RegisterSymbolResponse> RegisterSymbolAsync(RegisterSymbolRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolResponse}
+    content.vb: Function RegisterSymbolAsync(request As RegisterSymbolRequest, ct As CancellationToken = Nothing) As Task(Of RegisterSymbolResponse)
+  overload: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.RegisterSymbolAsync*
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SubmitOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SubmitOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest,System.Threading.CancellationToken)
+  id: SubmitOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  langs:
+  - csharp
+  - vb
+  name: SubmitOrderAsync(SubmitOrderRequest, CancellationToken)
+  nameWithType: ICppTraderSessionClient.SubmitOrderAsync(SubmitOrderRequest, CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SubmitOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubmitOrderAsync
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: Task<SubmitOrderResponse> SubmitOrderAsync(SubmitOrderRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse}
+    content.vb: Function SubmitOrderAsync(request As SubmitOrderRequest, ct As CancellationToken = Nothing) As Task(Of SubmitOrderResponse)
+  overload: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SubmitOrderAsync*
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.CancelOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.CancelOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest,System.Threading.CancellationToken)
+  id: CancelOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  langs:
+  - csharp
+  - vb
+  name: CancelOrderAsync(CancelOrderRequest, CancellationToken)
+  nameWithType: ICppTraderSessionClient.CancelOrderAsync(CancelOrderRequest, CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.CancelOrderAsync(Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancelOrderAsync
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: Task<CancelOrderResponse> CancelOrderAsync(CancelOrderRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.CancelOrderResponse}
+    content.vb: Function CancelOrderAsync(request As CancelOrderRequest, ct As CancellationToken = Nothing) As Task(Of CancelOrderResponse)
+  overload: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.CancelOrderAsync*
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.GetSnapshotAsync(Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.GetSnapshotAsync(Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest,System.Threading.CancellationToken)
+  id: GetSnapshotAsync(Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshotAsync(GetSnapshotRequest, CancellationToken)
+  nameWithType: ICppTraderSessionClient.GetSnapshotAsync(GetSnapshotRequest, CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.GetSnapshotAsync(Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshotAsync
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: Task<GetSnapshotResponse> GetSnapshotAsync(GetSnapshotRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotResponse}
+    content.vb: Function GetSnapshotAsync(request As GetSnapshotRequest, ct As CancellationToken = Nothing) As Task(Of GetSnapshotResponse)
+  overload: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.GetSnapshotAsync*
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.HeartbeatAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.HeartbeatAsync(System.Threading.CancellationToken)
+  id: HeartbeatAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  langs:
+  - csharp
+  - vb
+  name: HeartbeatAsync(CancellationToken)
+  nameWithType: ICppTraderSessionClient.HeartbeatAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.HeartbeatAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeartbeatAsync
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: Task<HeartbeatResponse> HeartbeatAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.HeartbeatResponse}
+    content.vb: Function HeartbeatAsync(ct As CancellationToken = Nothing) As Task(Of HeartbeatResponse)
+  overload: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.HeartbeatAsync*
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.ReadEventsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.ReadEventsAsync(System.Threading.CancellationToken)
+  id: ReadEventsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient
+  langs:
+  - csharp
+  - vb
+  name: ReadEventsAsync(CancellationToken)
+  nameWithType: ICppTraderSessionClient.ReadEventsAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.ReadEventsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReadEventsAsync
+    path: ../../src/Meridian.Infrastructure.CppTrader/Host/ICppTraderSessionClient.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Host
+  syntax:
+    content: IAsyncEnumerable<CppTraderEnvelope> ReadEventsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope}
+    content.vb: Function ReadEventsAsync(ct As CancellationToken = Nothing) As IAsyncEnumerable(Of CppTraderEnvelope)
+  overload: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.ReadEventsAsync*
+references:
+- uid: Meridian.Infrastructure.CppTrader.Host
+  commentId: N:Meridian.Infrastructure.CppTrader.Host
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Host
+  nameWithType: Meridian.Infrastructure.CppTrader.Host
+  fullName: Meridian.Infrastructure.CppTrader.Host
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Host
+    name: Host
+    href: Meridian.Infrastructure.CppTrader.Host.html
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionId*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionId
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderSessionClient_SessionId
+  name: SessionId
+  nameWithType: ICppTraderSessionClient.SessionId
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionKind*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionKind
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderSessionClient_SessionKind
+  name: SessionKind
+  nameWithType: ICppTraderSessionClient.SessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SessionKind
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.html
+  name: CppTraderSessionKind
+  nameWithType: CppTraderSessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.RegisterSymbolAsync*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.RegisterSymbolAsync
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderSessionClient_RegisterSymbolAsync_Meridian_Infrastructure_CppTrader_Protocol_RegisterSymbolRequest_System_Threading_CancellationToken_
+  name: RegisterSymbolAsync
+  nameWithType: ICppTraderSessionClient.RegisterSymbolAsync
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.RegisterSymbolAsync
+- uid: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest.html
+  name: RegisterSymbolRequest
+  nameWithType: RegisterSymbolRequest
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<RegisterSymbolResponse>
+  nameWithType: Task<RegisterSymbolResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolResponse>
+  nameWithType.vb: Task(Of RegisterSymbolResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolResponse)
+  name.vb: Task(Of RegisterSymbolResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolResponse
+    name: RegisterSymbolResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolResponse
+    name: RegisterSymbolResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolResponse.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SubmitOrderAsync*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SubmitOrderAsync
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderSessionClient_SubmitOrderAsync_Meridian_Infrastructure_CppTrader_Protocol_SubmitOrderRequest_System_Threading_CancellationToken_
+  name: SubmitOrderAsync
+  nameWithType: ICppTraderSessionClient.SubmitOrderAsync
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.SubmitOrderAsync
+- uid: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest.html
+  name: SubmitOrderRequest
+  nameWithType: SubmitOrderRequest
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderRequest
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SubmitOrderResponse>
+  nameWithType: Task<SubmitOrderResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse>
+  nameWithType.vb: Task(Of SubmitOrderResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse)
+  name.vb: Task(Of SubmitOrderResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse
+    name: SubmitOrderResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse
+    name: SubmitOrderResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse.html
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.CancelOrderAsync*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.CancelOrderAsync
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderSessionClient_CancelOrderAsync_Meridian_Infrastructure_CppTrader_Protocol_CancelOrderRequest_System_Threading_CancellationToken_
+  name: CancelOrderAsync
+  nameWithType: ICppTraderSessionClient.CancelOrderAsync
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.CancelOrderAsync
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest.html
+  name: CancelOrderRequest
+  nameWithType: CancelOrderRequest
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CancelOrderRequest
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.CancelOrderResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.CancelOrderResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CancelOrderResponse>
+  nameWithType: Task<CancelOrderResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.CppTrader.Protocol.CancelOrderResponse>
+  nameWithType.vb: Task(Of CancelOrderResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.CppTrader.Protocol.CancelOrderResponse)
+  name.vb: Task(Of CancelOrderResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CancelOrderResponse
+    name: CancelOrderResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.CancelOrderResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CancelOrderResponse
+    name: CancelOrderResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.CancelOrderResponse.html
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.GetSnapshotAsync*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.GetSnapshotAsync
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderSessionClient_GetSnapshotAsync_Meridian_Infrastructure_CppTrader_Protocol_GetSnapshotRequest_System_Threading_CancellationToken_
+  name: GetSnapshotAsync
+  nameWithType: ICppTraderSessionClient.GetSnapshotAsync
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.GetSnapshotAsync
+- uid: Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest.html
+  name: GetSnapshotRequest
+  nameWithType: GetSnapshotRequest
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotRequest
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<GetSnapshotResponse>
+  nameWithType: Task<GetSnapshotResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotResponse>
+  nameWithType.vb: Task(Of GetSnapshotResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotResponse)
+  name.vb: Task(Of GetSnapshotResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotResponse
+    name: GetSnapshotResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotResponse
+    name: GetSnapshotResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.GetSnapshotResponse.html
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.HeartbeatAsync*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.HeartbeatAsync
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderSessionClient_HeartbeatAsync_System_Threading_CancellationToken_
+  name: HeartbeatAsync
+  nameWithType: ICppTraderSessionClient.HeartbeatAsync
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.HeartbeatAsync
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.HeartbeatResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.CppTrader.Protocol.HeartbeatResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<HeartbeatResponse>
+  nameWithType: Task<HeartbeatResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.CppTrader.Protocol.HeartbeatResponse>
+  nameWithType.vb: Task(Of HeartbeatResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.CppTrader.Protocol.HeartbeatResponse)
+  name.vb: Task(Of HeartbeatResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.HeartbeatResponse
+    name: HeartbeatResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.HeartbeatResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.HeartbeatResponse
+    name: HeartbeatResponse
+    href: Meridian.Infrastructure.CppTrader.Protocol.HeartbeatResponse.html
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.ReadEventsAsync*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.ReadEventsAsync
+  href: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.html#Meridian_Infrastructure_CppTrader_Host_ICppTraderSessionClient_ReadEventsAsync_System_Threading_CancellationToken_
+  name: ReadEventsAsync
+  nameWithType: ICppTraderSessionClient.ReadEventsAsync
+  fullName: Meridian.Infrastructure.CppTrader.Host.ICppTraderSessionClient.ReadEventsAsync
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<CppTraderEnvelope>
+  nameWithType: IAsyncEnumerable<CppTraderEnvelope>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope>
+  nameWithType.vb: IAsyncEnumerable(Of CppTraderEnvelope)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope)
+  name.vb: IAsyncEnumerable(Of CppTraderEnvelope)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+    name: CppTraderEnvelope
+    href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope
+    name: CppTraderEnvelope
+    href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderEnvelope.html
+  - name: )
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

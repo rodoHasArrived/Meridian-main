@@ -2,9 +2,9 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-04-01
+**Reviewed:** 2026-04-09
 
-This folder contains architecture diagrams for the Meridian system, updated to reflect the current monolithic runtime, UI options, and provider list. It is the single home for all visual assets:
+This folder contains architecture diagrams for the Meridian system, updated to reflect the current monolithic runtime, shared workstation delivery, security-master productization, and fund-operations workflows. It is the single home for all visual assets:
 
 - **Graphviz DOT diagrams** — C4 context/container/component, data flow, provider and storage architecture (files in this directory)
 - **UML diagrams** — Sequence, state, activity, timing, and communication diagrams in [`uml/`](uml/README.md)
@@ -27,6 +27,10 @@ This folder contains architecture diagrams for the Meridian system, updated to r
 | **Onboarding Flow** | User journey from first-run to operation | `onboarding-flow.dot` |
 | **CLI Commands** | All CLI flags and commands reference | `cli-commands.dot` |
 | **Project Dependencies** | Project layer dependencies and test coverage | `project-dependencies.dot` |
+| **Runtime Hosts & Startup Modes** | Runnable projects plus the shared startup orchestration behind `src/Meridian` | `runtime-hosts.dot` |
+| **Workstation Delivery** | How WPF and the retained desktop-local API seams converge on shared run, portfolio, ledger, and security-reference services | `workstation-delivery.dot` |
+| **Security Master Lifecycle** | Import, event storage, projections, cache warmup, and workstation/query consumers | `security-master-lifecycle.dot` |
+| **Fund Ops & Reconciliation** | Governance workspace review loop across reconciliation services, F# rules, and persisted break queues | `fund-ops-reconciliation.dot` |
 | **UI Navigation Map** | Auto-generated WPF sidebar/workspace navigation map from source code without hand-maintained drift | `ui-navigation-map.dot` |
 | **UI Implementation Flow** | Auto-generated WPF shell/DI/navigation flow from source code without hand-maintained drift | `ui-implementation-flow.dot` |
 | **Backtesting Engine** | Tick-level backtest replay: universe discovery, fill models, portfolio simulation, and metrics | `backtesting-engine.dot` |
@@ -58,7 +62,7 @@ Shows the Meridian in context with:
 
 Shows the major deployable units:
 
-- **Presentation Layer**: Web Dashboard, WPF Desktop App, CLI Interface
+- **Presentation Layer**: Desktop-local API host, WPF Desktop App, CLI Interface
 - **Onboarding & Diagnostics Layer**: Configuration Wizard, Auto-Configuration, Diagnostic Services, Error Formatter
 - **Core Collector Service** (.NET 9 console with 100K bounded channel policy)
 - **F# Domain Library** (Type-safe validation, discriminated unions)
@@ -178,7 +182,7 @@ Comprehensive reference for all 24+ CLI flags:
 
 - **Setup Commands**: --wizard, --auto-config, --generate-config, --detect-providers
 - **Diagnostic Commands**: --validate-credentials, --test-connectivity, --quick-check, --validate-config, --dry-run, --selftest
-- **Operation Commands**: --ui, --http-port, --watch-config, --backfill, --backfill-provider, --backfill-symbols, --backfill-from, --backfill-to
+- **Operation Commands**: --mode, --http-port, --watch-config, --backfill, --backfill-provider, --backfill-symbols, --backfill-from, --backfill-to
 - **Symbol Commands**: --symbols, --symbols-monitored, --symbols-archived, --symbols-add, --symbols-remove, --symbol-status
 - **Package Commands**: --package, --import-package, --list-package, --validate-package
 - **Documentation Commands**: --show-config, --error-codes, --help, --version
@@ -195,10 +199,49 @@ Shows all 28 source projects as a layered dependency graph, derived directly fro
 - **Layer 3 (Infrastructure & Storage)**: Infrastructure · Storage · Infrastructure.CppTrader
 - **Layer 4 (Application & Backtesting SDK)**: Application · Backtesting.Sdk
 - **Layer 5 (Execution, Backtesting, Risk, Strategies)**: Execution · Backtesting · Risk · Strategies · QuantScript
-- **Layer 6 (UI & Presentation)**: Ui.Shared · Ui.Services · Ui (web) · Wpf (desktop) · McpServer · Mcp
+- **Layer 6 (UI & Presentation)**: Ui.Shared · Ui.Services · Wpf (desktop) · McpServer · Mcp
 - **Layer 7 (Entry Point)**: Meridian main app
 - **Tests (8 projects · 371 test files)**: Tests (251) · FSharp.Tests (10) · Backtesting.Tests (13) · DirectLending.Tests (5) · McpServer.Tests (2) · QuantScript.Tests (6) · Wpf.Tests (30) · Ui.Tests (54)
 - **Benchmarks**: BenchmarkDotNet — pipeline, storage, and serialization hot paths
+
+### Runtime Hosts & Startup Modes
+
+Shows the currently runnable Meridian hosts and the shared startup path behind `src/Meridian`:
+
+- **Runnable projects**: `src/Meridian`, `src/Meridian.Wpf`, `src/Meridian.Mcp`, `src/Meridian.McpServer`
+- **Startup orchestration**: `SharedStartupBootstrapper` → `StartupOrchestrator` → `CommandModeRunner`, `DesktopModeRunner`, `CollectorModeRunner`, `BackfillModeRunner`
+- **Shared runtime**: `UiServer`, `Meridian.Ui.Shared`, `HostStartupFactory`, `EventPipeline`, `StatusWriter`
+- **Purpose**: clarifies which entry point owns which experience and where `--mode desktop`, headless streaming, and backfill actually branch
+
+### Workstation Delivery
+
+Shows how Meridian now delivers workstation features across the desktop shell and retained local API seams:
+
+- **Desktop surface**: `ResearchWorkspaceShellPage`, `TradingWorkspaceShellPage`, `GovernanceWorkspaceShellPage`
+- **API surface**: retained `/api/workstation/*` plus adjacent `/api/portfolio/*` and `/api/strategies/*` routes
+- **Shared read models**: `StrategyRunWorkspaceService`, `StrategyRunReadService`, `PortfolioReadService`, `LedgerReadService`, `CashFlowProjectionService`
+- **Security enrichment**: `SecurityMasterSecurityReferenceLookup` → `ISecurityMasterQueryService`
+- **Purpose**: makes the current workstation convergence visible without having to infer it from separate WPF, API, and strategy-service folders
+
+### Security Master Lifecycle
+
+Shows the current Security Master path from ingest to workstation consumption:
+
+- **Import path**: `SecurityMasterCsvParser` + `SecurityMasterImportService` + `SecurityMasterService`
+- **Persistence**: `PostgresSecurityMasterEventStore`, `PostgresSecurityMasterSnapshotStore`, `PostgresSecurityMasterStore`
+- **Projection path**: `SecurityMasterAggregateRebuilder`, `SecurityMasterProjectionService`, `SecurityMasterProjectionWarmupService`, `SecurityMasterProjectionCache`
+- **Consumers**: `SecurityMasterQueryService`, `SecurityMasterSecurityReferenceLookup`, WPF Security Master pages, and workstation/query endpoints
+- **Purpose**: explains how the event-sourced security model, warm projections, and workstation lookup surfaces fit together today
+
+### Fund Ops & Reconciliation
+
+Shows the current governance and reconciliation review loop:
+
+- **Workbench surface**: `GovernanceWorkspaceShellPage`, `FundLedgerViewModel`, `FundReconciliationWorkbenchService`
+- **API path**: `IWorkstationReconciliationApiClient` → `/api/workstation/reconciliation/*`
+- **Core services**: `ReconciliationRunService`, `ReconciliationProjectionService`, `StrategyRunReadService`, optional `IBankTransactionSource`
+- **Rule engine + state**: `LedgerInterop.ReconcilePortfolioLedgerChecks`, `IReconciliationRunRepository`, `StrategyRunStore`
+- **Purpose**: makes the fund-ops workflow legible across UI, API, application services, F# reconciliation logic, and persisted review state
 
 ### Backtesting Engine
 
@@ -480,4 +523,4 @@ See [uml/README.md](uml/README.md) for the full inventory and rendering instruct
 
 _Graphviz diagrams generated with DOT language. UML diagrams generated with PlantUML._
 
-_Last Updated: 2026-03-24_
+_Last Updated: 2026-04-09_

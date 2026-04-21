@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Meridian.Contracts.Configuration;
 
 namespace Meridian.Ui.Services;
 
@@ -23,7 +24,7 @@ public sealed class ManifestService
     private ManifestService()
     {
         _configService = new ConfigService();
-        _catalogPath = Path.Combine(AppContext.BaseDirectory, "_catalog");
+        _catalogPath = MeridianPathDefaults.GetCatalogRoot(_configService.ConfigPath);
     }
 
     /// <summary>
@@ -32,10 +33,7 @@ public sealed class ManifestService
     public async Task<(DataManifest, string)> GenerateManifestForSessionAsync(CollectionSession session, CancellationToken ct = default)
     {
         var config = await _configService.LoadConfigAsync();
-        var dataRoot = config?.DataRoot ?? "data";
-        var basePath = Path.IsPathRooted(dataRoot)
-            ? dataRoot
-            : Path.Combine(AppContext.BaseDirectory, dataRoot);
+        var basePath = _configService.ResolveDataRoot(config);
 
         var manifest = new DataManifest
         {
@@ -106,10 +104,7 @@ public sealed class ManifestService
     public async Task<(DataManifest, string)> GenerateManifestForDateRangeAsync(DateTime startDate, DateTime endDate, string[]? symbols = null, CancellationToken ct = default)
     {
         var config = await _configService.LoadConfigAsync();
-        var dataRoot = config?.DataRoot ?? "data";
-        var basePath = Path.IsPathRooted(dataRoot)
-            ? dataRoot
-            : Path.Combine(AppContext.BaseDirectory, dataRoot);
+        var basePath = _configService.ResolveDataRoot(config);
 
         var manifest = new DataManifest
         {

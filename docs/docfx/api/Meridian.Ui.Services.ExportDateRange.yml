@@ -1,0 +1,631 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ExportDateRange
+  commentId: T:Meridian.Ui.Services.ExportDateRange
+  id: ExportDateRange
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ExportDateRange.EndDate
+  - Meridian.Ui.Services.ExportDateRange.LastMonth
+  - Meridian.Ui.Services.ExportDateRange.LastNDays(System.Int32)
+  - Meridian.Ui.Services.ExportDateRange.LastWeek
+  - Meridian.Ui.Services.ExportDateRange.StartDate
+  - Meridian.Ui.Services.ExportDateRange.Yesterday
+  langs:
+  - csharp
+  - vb
+  name: ExportDateRange
+  nameWithType: ExportDateRange
+  fullName: Meridian.Ui.Services.ExportDateRange
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportDateRange
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 680
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public sealed record ExportDateRange : IEquatable<ExportDateRange>'
+    content.vb: Public NotInheritable Class ExportDateRange Implements IEquatable(Of ExportDateRange)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Services.ExportDateRange}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ExportDateRange.StartDate
+  commentId: P:Meridian.Ui.Services.ExportDateRange.StartDate
+  id: StartDate
+  parent: Meridian.Ui.Services.ExportDateRange
+  langs:
+  - csharp
+  - vb
+  name: StartDate
+  nameWithType: ExportDateRange.StartDate
+  fullName: Meridian.Ui.Services.ExportDateRange.StartDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartDate
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 682
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly? StartDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property StartDate As DateOnly?
+  overload: Meridian.Ui.Services.ExportDateRange.StartDate*
+- uid: Meridian.Ui.Services.ExportDateRange.EndDate
+  commentId: P:Meridian.Ui.Services.ExportDateRange.EndDate
+  id: EndDate
+  parent: Meridian.Ui.Services.ExportDateRange
+  langs:
+  - csharp
+  - vb
+  name: EndDate
+  nameWithType: ExportDateRange.EndDate
+  fullName: Meridian.Ui.Services.ExportDateRange.EndDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndDate
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 683
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly? EndDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property EndDate As DateOnly?
+  overload: Meridian.Ui.Services.ExportDateRange.EndDate*
+- uid: Meridian.Ui.Services.ExportDateRange.LastNDays(System.Int32)
+  commentId: M:Meridian.Ui.Services.ExportDateRange.LastNDays(System.Int32)
+  id: LastNDays(System.Int32)
+  parent: Meridian.Ui.Services.ExportDateRange
+  langs:
+  - csharp
+  - vb
+  name: LastNDays(int)
+  nameWithType: ExportDateRange.LastNDays(int)
+  fullName: Meridian.Ui.Services.ExportDateRange.LastNDays(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastNDays
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 685
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static ExportDateRange LastNDays(int days)
+    parameters:
+    - id: days
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.ExportDateRange
+    content.vb: Public Shared Function LastNDays(days As Integer) As ExportDateRange
+  overload: Meridian.Ui.Services.ExportDateRange.LastNDays*
+  nameWithType.vb: ExportDateRange.LastNDays(Integer)
+  fullName.vb: Meridian.Ui.Services.ExportDateRange.LastNDays(Integer)
+  name.vb: LastNDays(Integer)
+- uid: Meridian.Ui.Services.ExportDateRange.Yesterday
+  commentId: P:Meridian.Ui.Services.ExportDateRange.Yesterday
+  id: Yesterday
+  parent: Meridian.Ui.Services.ExportDateRange
+  langs:
+  - csharp
+  - vb
+  name: Yesterday
+  nameWithType: ExportDateRange.Yesterday
+  fullName: Meridian.Ui.Services.ExportDateRange.Yesterday
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Yesterday
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 691
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static ExportDateRange Yesterday { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ExportDateRange
+    content.vb: Public Shared ReadOnly Property Yesterday As ExportDateRange
+  overload: Meridian.Ui.Services.ExportDateRange.Yesterday*
+- uid: Meridian.Ui.Services.ExportDateRange.LastWeek
+  commentId: P:Meridian.Ui.Services.ExportDateRange.LastWeek
+  id: LastWeek
+  parent: Meridian.Ui.Services.ExportDateRange
+  langs:
+  - csharp
+  - vb
+  name: LastWeek
+  nameWithType: ExportDateRange.LastWeek
+  fullName: Meridian.Ui.Services.ExportDateRange.LastWeek
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastWeek
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 692
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static ExportDateRange LastWeek { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ExportDateRange
+    content.vb: Public Shared ReadOnly Property LastWeek As ExportDateRange
+  overload: Meridian.Ui.Services.ExportDateRange.LastWeek*
+- uid: Meridian.Ui.Services.ExportDateRange.LastMonth
+  commentId: P:Meridian.Ui.Services.ExportDateRange.LastMonth
+  id: LastMonth
+  parent: Meridian.Ui.Services.ExportDateRange
+  langs:
+  - csharp
+  - vb
+  name: LastMonth
+  nameWithType: ExportDateRange.LastMonth
+  fullName: Meridian.Ui.Services.ExportDateRange.LastMonth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastMonth
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 693
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static ExportDateRange LastMonth { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ExportDateRange
+    content.vb: Public Shared ReadOnly Property LastMonth As ExportDateRange
+  overload: Meridian.Ui.Services.ExportDateRange.LastMonth*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Services.ExportDateRange}
+  commentId: T:System.IEquatable{Meridian.Ui.Services.ExportDateRange}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExportDateRange>
+  nameWithType: IEquatable<ExportDateRange>
+  fullName: System.IEquatable<Meridian.Ui.Services.ExportDateRange>
+  nameWithType.vb: IEquatable(Of ExportDateRange)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Services.ExportDateRange)
+  name.vb: IEquatable(Of ExportDateRange)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Services.ExportDateRange
+    name: ExportDateRange
+    href: Meridian.Ui.Services.ExportDateRange.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ExportDateRange
+    name: ExportDateRange
+    href: Meridian.Ui.Services.ExportDateRange.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.ExportDateRange.StartDate*
+  commentId: Overload:Meridian.Ui.Services.ExportDateRange.StartDate
+  href: Meridian.Ui.Services.ExportDateRange.html#Meridian_Ui_Services_ExportDateRange_StartDate
+  name: StartDate
+  nameWithType: ExportDateRange.StartDate
+  fullName: Meridian.Ui.Services.ExportDateRange.StartDate
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.ExportDateRange.EndDate*
+  commentId: Overload:Meridian.Ui.Services.ExportDateRange.EndDate
+  href: Meridian.Ui.Services.ExportDateRange.html#Meridian_Ui_Services_ExportDateRange_EndDate
+  name: EndDate
+  nameWithType: ExportDateRange.EndDate
+  fullName: Meridian.Ui.Services.ExportDateRange.EndDate
+- uid: Meridian.Ui.Services.ExportDateRange.LastNDays*
+  commentId: Overload:Meridian.Ui.Services.ExportDateRange.LastNDays
+  href: Meridian.Ui.Services.ExportDateRange.html#Meridian_Ui_Services_ExportDateRange_LastNDays_System_Int32_
+  name: LastNDays
+  nameWithType: ExportDateRange.LastNDays
+  fullName: Meridian.Ui.Services.ExportDateRange.LastNDays
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.ExportDateRange
+  commentId: T:Meridian.Ui.Services.ExportDateRange
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportDateRange.html
+  name: ExportDateRange
+  nameWithType: ExportDateRange
+  fullName: Meridian.Ui.Services.ExportDateRange
+- uid: Meridian.Ui.Services.ExportDateRange.Yesterday*
+  commentId: Overload:Meridian.Ui.Services.ExportDateRange.Yesterday
+  href: Meridian.Ui.Services.ExportDateRange.html#Meridian_Ui_Services_ExportDateRange_Yesterday
+  name: Yesterday
+  nameWithType: ExportDateRange.Yesterday
+  fullName: Meridian.Ui.Services.ExportDateRange.Yesterday
+- uid: Meridian.Ui.Services.ExportDateRange.LastWeek*
+  commentId: Overload:Meridian.Ui.Services.ExportDateRange.LastWeek
+  href: Meridian.Ui.Services.ExportDateRange.html#Meridian_Ui_Services_ExportDateRange_LastWeek
+  name: LastWeek
+  nameWithType: ExportDateRange.LastWeek
+  fullName: Meridian.Ui.Services.ExportDateRange.LastWeek
+- uid: Meridian.Ui.Services.ExportDateRange.LastMonth*
+  commentId: Overload:Meridian.Ui.Services.ExportDateRange.LastMonth
+  href: Meridian.Ui.Services.ExportDateRange.html#Meridian_Ui_Services_ExportDateRange_LastMonth
+  name: LastMonth
+  nameWithType: ExportDateRange.LastMonth
+  fullName: Meridian.Ui.Services.ExportDateRange.LastMonth

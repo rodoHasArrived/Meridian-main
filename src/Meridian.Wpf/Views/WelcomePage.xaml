@@ -13,7 +13,7 @@
         <StackPanel MaxWidth="1200">
 
             <!-- Header with branding -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />

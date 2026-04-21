@@ -31,6 +31,7 @@ public sealed class BackfillCostEstimator
 
         var symbols = request.Symbols?.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray()
                       ?? Array.Empty<string>();
+        var granularity = request.Granularity;
 
         if (symbols.Length == 0)
             return BackfillCostEstimate.Empty("No symbols specified.");
@@ -46,11 +47,28 @@ public sealed class BackfillCostEstimator
         {
             if (_providers.TryGetValue(request.Provider.ToLowerInvariant(), out var provider))
             {
-                providerEstimates.Add(EstimateForProvider(provider, symbols, tradingDays, from, to));
+                if (!SupportsGranularity(provider, granularity))
+                {
+                    return CreateEstimateWithoutProviders(
+                        symbols,
+                        from,
+                        to,
+                        tradingDays,
+                        granularity,
+                        $"Provider '{provider.DisplayName}' does not support {granularity.ToDisplayName()} backfill.");
+                }
+
+                providerEstimates.Add(EstimateForProvider(provider, symbols, granularity, tradingDays, from, to));
             }
             else
             {
-                return BackfillCostEstimate.Empty($"Unknown provider: {request.Provider}");
+                return CreateEstimateWithoutProviders(
+                    symbols,
+                    from,
+                    to,
+                    tradingDays,
+                    granularity,
+                    $"Unknown provider: {request.Provider}");
             }
         }
         else
@@ -58,8 +76,20 @@ public sealed class BackfillCostEstimator
             // Estimate for all available providers, sorted by priority
             foreach (var provider in _providers.Values.OrderBy(p => p.Priority))
             {
-                providerEstimates.Add(EstimateForProvider(provider, symbols, tradingDays, from, to));
+                if (SupportsGranularity(provider, granularity))
+                    providerEstimates.Add(EstimateForProvider(provider, symbols, granularity, tradingDays, from, to));
             }
+        }
+
+        if (providerEstimates.Count == 0)
+        {
+            return CreateEstimateWithoutProviders(
+                symbols,
+                from,
+                to,
+                tradingDays,
+                granularity,
+                $"No historical providers support {granularity.ToDisplayName()} backfill.");
         }
 
         var recommended = providerEstimates
@@ -75,20 +105,19 @@ public sealed class BackfillCostEstimator
             TradingDays: tradingDays,
             ProviderEstimates: providerEstimates,
             RecommendedProvider: recommended?.ProviderName,
-            Warnings: GenerateWarnings(providerEstimates, symbols, tradingDays),
+            Warnings: GenerateWarnings(providerEstimates, symbols, granularity, tradingDays),
             EstimatedAt: DateTimeOffset.UtcNow);
     }
 
     private ProviderCostEstimate EstimateForProvider(
         IHistoricalDataProvider provider,
         string[] symbols,
+        DataGranularity granularity,
         int tradingDays,
         DateOnly from,
         DateOnly to)
     {
-        // Each symbol typically requires one API call per day or one call for the full range,
-        // depending on the provider. Most providers return daily bars in a single call per symbol.
-        var callsPerSymbol = provider.SupportsIntraday ? tradingDays : 1;
+        var callsPerSymbol = EstimateRequestsPerSymbol(provider, granularity, tradingDays);
         var totalCalls = symbols.Length * callsPerSymbol;
 
         var rateLimitDelay = provider.RateLimitDelay;
@@ -127,18 +156,25 @@ public sealed class BackfillCostEstimator
             RateLimitWindow: rateLimitWindow,
             RateLimitDelay: rateLimitDelay,
             WouldExceedFreeQuota: wouldExceedFree,
-            SupportsDateRange: !provider.SupportsIntraday);
+            SupportsDateRange: callsPerSymbol <= 1);
     }
 
     private static List<string> GenerateWarnings(
         List<ProviderCostEstimate> estimates,
         string[] symbols,
+        DataGranularity granularity,
         int tradingDays)
     {
         var warnings = new List<string>();
 
         if (tradingDays > 365)
             warnings.Add($"Large date range ({tradingDays} trading days). Consider breaking into smaller chunks.");
+
+        if (granularity.IsIntraday() && tradingDays > 60)
+        {
+            warnings.Add(
+                $"{granularity.ToDisplayName()} intraday requests will be chunked into multiple Yahoo-compatible windows.");
+        }
 
         if (symbols.Length > 50)
             warnings.Add($"Large symbol list ({symbols.Length} symbols). This will require many API calls.");
@@ -154,6 +190,61 @@ public sealed class BackfillCostEstimator
         }
 
         return warnings;
+    }
+
+    private static BackfillCostEstimate CreateEstimateWithoutProviders(
+        string[] symbols,
+        DateOnly from,
+        DateOnly to,
+        int tradingDays,
+        DataGranularity granularity,
+        string warning)
+    {
+        var warnings = GenerateWarnings(new List<ProviderCostEstimate>(), symbols, granularity, tradingDays);
+        warnings.Add(warning);
+
+        return new BackfillCostEstimate(
+            Symbols: symbols,
+            From: from,
+            To: to,
+            TradingDays: tradingDays,
+            ProviderEstimates: Array.Empty<ProviderCostEstimate>(),
+            RecommendedProvider: null,
+            Warnings: warnings,
+            EstimatedAt: DateTimeOffset.UtcNow);
+    }
+
+    private static bool SupportsGranularity(IHistoricalDataProvider provider, DataGranularity granularity)
+    {
+        if (!granularity.IsIntraday())
+            return true;
+
+        return provider is IHistoricalAggregateBarProvider aggregateProvider &&
+               aggregateProvider.SupportedGranularities.Contains(granularity);
+    }
+
+    private static int EstimateRequestsPerSymbol(IHistoricalDataProvider provider, DataGranularity granularity, int tradingDays)
+    {
+        if (!granularity.IsIntraday())
+            return 1;
+
+        if (provider is not IHistoricalAggregateBarProvider aggregateProvider ||
+            !aggregateProvider.SupportedGranularities.Contains(granularity))
+        {
+            throw new InvalidOperationException(
+                $"Provider '{provider.DisplayName}' does not support {granularity.ToDisplayName()} intraday backfill.");
+        }
+
+        var windowDays = granularity switch
+        {
+            DataGranularity.Minute1 => 8,
+            DataGranularity.Minute5 or DataGranularity.Minute15 or DataGranularity.Minute30 => 60,
+            DataGranularity.Hour1 or DataGranularity.Hour4 => 730,
+            _ => 1
+        };
+
+        var normalizedTradingDays = Math.Max(tradingDays, 1);
+        return (int)Math.Ceiling(normalizedTradingDays / (double)windowDays);
     }
 
     private static int EstimateTradingDays(DateOnly from, DateOnly to)
@@ -190,7 +281,8 @@ public sealed record BackfillCostRequest(
     string[]? Symbols,
     string? Provider = null,
     DateOnly? From = null,
-    DateOnly? To = null);
+    DateOnly? To = null,
+    DataGranularity Granularity = DataGranularity.Daily);
 
 /// <summary>
 /// Cost estimate for a backfill request.

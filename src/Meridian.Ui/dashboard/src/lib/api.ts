@@ -1,8 +1,10 @@
 import type {
   BackfillProgressResponse,
   BackfillTriggerRequest,
+  BackfillTriggerResult,
   DataOperationsWorkspaceResponse,
   EquityCurveSummary,
+  ExecutionAuditEntry,
   GovernanceWorkspaceResponse,
   LedgerSummary,
   LedgerTrialBalanceLine,
@@ -10,6 +12,7 @@ import type {
   OrderSubmitRequest,
   PaperSessionSummary,
   PaperSessionDetail,
+  PaperSessionReplayVerification,
   PromotionDecisionResult,
   PromotionEvaluationResult,
   PromotionRecord,
@@ -144,11 +147,19 @@ export function createPaperSession(strategyId: string, strategyName: string | nu
 }
 
 export function closePaperSession(sessionId: string) {
-  return postJson<void>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/close`);
+  return postJson<TradingActionResult>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/close`);
 }
 
 export function getPaperSessionDetail(sessionId: string) {
   return getJson<PaperSessionDetail>(`/api/execution/sessions/${encodeURIComponent(sessionId)}`);
+}
+
+export function getPaperSessionReplayVerification(sessionId: string) {
+  return getJson<PaperSessionReplayVerification>(`/api/execution/sessions/${encodeURIComponent(sessionId)}/replay`);
+}
+
+export function getExecutionAudit(take = 20) {
+  return getJson<ExecutionAuditEntry[]>(`/api/execution/audit?take=${encodeURIComponent(String(take))}`);
 }
 
 // --- Strategy lifecycle ---
@@ -319,4 +330,62 @@ export function triggerBackfill(request: BackfillTriggerRequest) {
 
 export function previewBackfill(request: BackfillTriggerRequest) {
   return postJson<BackfillTriggerResult>("/api/backfill/run/preview", request);
+}
+
+// --- System overview ---
+
+export function getSystemStatus() {
+  return getJson<import("@/types").SystemOverviewResponse>("/api/status");
+}
+
+// --- Symbol management ---
+
+export function getSymbols() {
+  return getJson<import("@/types").SymbolRecord[]>("/api/symbols");
+}
+
+export function getSymbolsStatistics() {
+  return getJson<import("@/types").SymbolStatistics>("/api/symbols/statistics");
+}
+
+export function searchSymbolsQuery(query: string) {
+  return getJson<import("@/types").SymbolRecord[]>(`/api/symbols/search?query=${encodeURIComponent(query)}`);
+}
+
+export function addSymbol(symbol: string, provider?: string) {
+  return postJson<{ success: boolean; symbol: string }>("/api/symbols/add", { symbol, provider: provider ?? null });
+}
+
+export function removeSymbol(symbol: string) {
+  return postJson<{ success: boolean; symbol: string }>(`/api/symbols/${encodeURIComponent(symbol)}/remove`);
+}
+
+export function archiveSymbol(symbol: string) {
+  return postJson<{ success: boolean; symbol: string }>(`/api/symbols/${encodeURIComponent(symbol)}/archive`);
+}
+
+export function bulkAddSymbols(symbols: string[]) {
+  return postJson<{ added: number; skipped: number; errors: string[] }>("/api/symbols/bulk-add", { symbols });
+}
+
+// --- Quality monitoring ---
+
+export function getQualityDashboard() {
+  return getJson<import("@/types").QualityDashboardResponse>("/api/quality/dashboard");
+}
+
+export function getQualityGaps() {
+  return getJson<import("@/types").QualityGapEntry[]>("/api/quality/gaps");
+}
+
+export function getQualityAnomalies() {
+  return getJson<import("@/types").QualityAnomalyEntry[]>("/api/quality/anomalies");
+}
+
+export function acknowledgeAnomaly(anomalyId: string) {
+  return postJson<void>(`/api/quality/anomalies/${encodeURIComponent(anomalyId)}/acknowledge`);
+}
+
+export function getQualityCompleteness() {
+  return getJson<Array<{ symbol: string; score: number; sampledAt: string }>>("/api/quality/completeness");
 }

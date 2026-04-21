@@ -1,0 +1,257 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.IntegrityEventType
+  commentId: T:Meridian.Ui.Services.IntegrityEventType
+  id: IntegrityEventType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.IntegrityEventType.Duplicate
+  - Meridian.Ui.Services.IntegrityEventType.Other
+  - Meridian.Ui.Services.IntegrityEventType.OutOfOrder
+  - Meridian.Ui.Services.IntegrityEventType.ProviderSwitch
+  - Meridian.Ui.Services.IntegrityEventType.SequenceGap
+  - Meridian.Ui.Services.IntegrityEventType.StaleData
+  - Meridian.Ui.Services.IntegrityEventType.ValidationFailure
+  langs:
+  - csharp
+  - vb
+  name: IntegrityEventType
+  nameWithType: IntegrityEventType
+  fullName: Meridian.Ui.Services.IntegrityEventType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntegrityEventType
+    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    startLine: 374
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Types of integrity events.
+  example: []
+  syntax:
+    content: 'public enum IntegrityEventType : byte'
+    content.vb: Public Enum IntegrityEventType As Byte
+- uid: Meridian.Ui.Services.IntegrityEventType.SequenceGap
+  commentId: F:Meridian.Ui.Services.IntegrityEventType.SequenceGap
+  id: SequenceGap
+  parent: Meridian.Ui.Services.IntegrityEventType
+  langs:
+  - csharp
+  - vb
+  name: SequenceGap
+  nameWithType: IntegrityEventType.SequenceGap
+  fullName: Meridian.Ui.Services.IntegrityEventType.SequenceGap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceGap
+    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    startLine: 376
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: SequenceGap = 0
+    return:
+      type: Meridian.Ui.Services.IntegrityEventType
+- uid: Meridian.Ui.Services.IntegrityEventType.OutOfOrder
+  commentId: F:Meridian.Ui.Services.IntegrityEventType.OutOfOrder
+  id: OutOfOrder
+  parent: Meridian.Ui.Services.IntegrityEventType
+  langs:
+  - csharp
+  - vb
+  name: OutOfOrder
+  nameWithType: IntegrityEventType.OutOfOrder
+  fullName: Meridian.Ui.Services.IntegrityEventType.OutOfOrder
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutOfOrder
+    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: OutOfOrder = 1
+    return:
+      type: Meridian.Ui.Services.IntegrityEventType
+- uid: Meridian.Ui.Services.IntegrityEventType.StaleData
+  commentId: F:Meridian.Ui.Services.IntegrityEventType.StaleData
+  id: StaleData
+  parent: Meridian.Ui.Services.IntegrityEventType
+  langs:
+  - csharp
+  - vb
+  name: StaleData
+  nameWithType: IntegrityEventType.StaleData
+  fullName: Meridian.Ui.Services.IntegrityEventType.StaleData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StaleData
+    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    startLine: 378
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: StaleData = 2
+    return:
+      type: Meridian.Ui.Services.IntegrityEventType
+- uid: Meridian.Ui.Services.IntegrityEventType.ValidationFailure
+  commentId: F:Meridian.Ui.Services.IntegrityEventType.ValidationFailure
+  id: ValidationFailure
+  parent: Meridian.Ui.Services.IntegrityEventType
+  langs:
+  - csharp
+  - vb
+  name: ValidationFailure
+  nameWithType: IntegrityEventType.ValidationFailure
+  fullName: Meridian.Ui.Services.IntegrityEventType.ValidationFailure
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidationFailure
+    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    startLine: 379
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ValidationFailure = 3
+    return:
+      type: Meridian.Ui.Services.IntegrityEventType
+- uid: Meridian.Ui.Services.IntegrityEventType.Duplicate
+  commentId: F:Meridian.Ui.Services.IntegrityEventType.Duplicate
+  id: Duplicate
+  parent: Meridian.Ui.Services.IntegrityEventType
+  langs:
+  - csharp
+  - vb
+  name: Duplicate
+  nameWithType: IntegrityEventType.Duplicate
+  fullName: Meridian.Ui.Services.IntegrityEventType.Duplicate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duplicate
+    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Duplicate = 4
+    return:
+      type: Meridian.Ui.Services.IntegrityEventType
+- uid: Meridian.Ui.Services.IntegrityEventType.ProviderSwitch
+  commentId: F:Meridian.Ui.Services.IntegrityEventType.ProviderSwitch
+  id: ProviderSwitch
+  parent: Meridian.Ui.Services.IntegrityEventType
+  langs:
+  - csharp
+  - vb
+  name: ProviderSwitch
+  nameWithType: IntegrityEventType.ProviderSwitch
+  fullName: Meridian.Ui.Services.IntegrityEventType.ProviderSwitch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderSwitch
+    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ProviderSwitch = 5
+    return:
+      type: Meridian.Ui.Services.IntegrityEventType
+- uid: Meridian.Ui.Services.IntegrityEventType.Other
+  commentId: F:Meridian.Ui.Services.IntegrityEventType.Other
+  id: Other
+  parent: Meridian.Ui.Services.IntegrityEventType
+  langs:
+  - csharp
+  - vb
+  name: Other
+  nameWithType: IntegrityEventType.Other
+  fullName: Meridian.Ui.Services.IntegrityEventType.Other
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Other
+    path: ../../src/Meridian.Ui.Services/Services/IntegrityEventsService.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Other = 6
+    return:
+      type: Meridian.Ui.Services.IntegrityEventType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.IntegrityEventType
+  commentId: T:Meridian.Ui.Services.IntegrityEventType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.IntegrityEventType.html
+  name: IntegrityEventType
+  nameWithType: IntegrityEventType
+  fullName: Meridian.Ui.Services.IntegrityEventType

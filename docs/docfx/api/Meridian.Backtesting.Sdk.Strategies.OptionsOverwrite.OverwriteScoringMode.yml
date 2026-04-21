@@ -1,0 +1,145 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  id: OverwriteScoringMode
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Basic
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Relative
+  langs:
+  - csharp
+  - vb
+  name: OverwriteScoringMode
+  nameWithType: OverwriteScoringMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverwriteScoringMode
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Scoring mode used to rank candidate call options.
+  example: []
+  syntax:
+    content: public enum OverwriteScoringMode
+    content.vb: Public Enum OverwriteScoringMode
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Basic
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Basic
+  id: Basic
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  langs:
+  - csharp
+  - vb
+  name: Basic
+  nameWithType: OverwriteScoringMode.Basic
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Basic
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Basic
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Score by bid price × multiplier (conservative executable premium dollar amount).
+  example: []
+  syntax:
+    content: Basic = 0
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Relative
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Relative
+  id: Relative
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  langs:
+  - csharp
+  - vb
+  name: Relative
+  nameWithType: OverwriteScoringMode.Relative
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Relative
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Relative
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Score by vega-dollar IV residual penalised by spread and boosted by market depth.
+
+    Selects relatively expensive volatility versus an estimated IV surface.
+  example: []
+  syntax:
+    content: Relative = 1
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.html
+  name: OverwriteScoringMode
+  nameWithType: OverwriteScoringMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode

@@ -1,0 +1,899 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  commentId: T:Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  id: StartupContext
+  parent: Meridian.Application.Composition.Startup.StartupModels
+  children:
+  - Meridian.Application.Composition.Startup.StartupModels.StartupContext.CancellationToken
+  - Meridian.Application.Composition.Startup.StartupModels.StartupContext.CliArgs
+  - Meridian.Application.Composition.Startup.StartupModels.StartupContext.Config
+  - Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigPath
+  - Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigurationService
+  - Meridian.Application.Composition.Startup.StartupModels.StartupContext.DashboardServerFactory
+  - Meridian.Application.Composition.Startup.StartupModels.StartupContext.Deployment
+  - Meridian.Application.Composition.Startup.StartupModels.StartupContext.Log
+  langs:
+  - csharp
+  - vb
+  name: StartupContext
+  nameWithType: StartupContext
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartupContext
+    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.StartupModels
+  summary: >-
+    Fully-resolved startup context that the <xref href="Meridian.Application.Composition.Startup.StartupOrchestrator" data-throw-if-not-resolved="false"></xref> and every mode runner operate on.
+
+    Created after config is loaded, logging is bootstrapped, and the deployment context is resolved.
+
+    All fields are required; the record is produced once and flows immutably through the startup pipeline.
+  example: []
+  syntax:
+    content: 'public sealed record StartupContext : IEquatable<StartupContext>'
+    content.vb: Public NotInheritable Class StartupContext Implements IEquatable(Of StartupContext)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Composition.Startup.StartupModels.StartupContext}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CliArgs
+  commentId: P:Meridian.Application.Composition.Startup.StartupModels.StartupContext.CliArgs
+  id: CliArgs
+  parent: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  langs:
+  - csharp
+  - vb
+  name: CliArgs
+  nameWithType: StartupContext.CliArgs
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CliArgs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CliArgs
+    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.StartupModels
+  summary: Parsed CLI arguments.
+  example: []
+  syntax:
+    content: public required CliArguments CliArgs { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Commands.CliArguments
+    content.vb: Public Property CliArgs As CliArguments
+  overload: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CliArgs*
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigPath
+  commentId: P:Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigPath
+  id: ConfigPath
+  parent: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  langs:
+  - csharp
+  - vb
+  name: ConfigPath
+  nameWithType: StartupContext.ConfigPath
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigPath
+    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.StartupModels
+  summary: Resolved path to the active configuration file.
+  example: []
+  syntax:
+    content: public required string ConfigPath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConfigPath As String
+  overload: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigPath*
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Config
+  commentId: P:Meridian.Application.Composition.Startup.StartupModels.StartupContext.Config
+  id: Config
+  parent: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  langs:
+  - csharp
+  - vb
+  name: Config
+  nameWithType: StartupContext.Config
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Config
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Config
+    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.StartupModels
+  summary: Loaded and prepared application configuration.
+  example: []
+  syntax:
+    content: public required AppConfig Config { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Property Config As AppConfig
+  overload: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Config*
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Deployment
+  commentId: P:Meridian.Application.Composition.Startup.StartupModels.StartupContext.Deployment
+  id: Deployment
+  parent: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  langs:
+  - csharp
+  - vb
+  name: Deployment
+  nameWithType: StartupContext.Deployment
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Deployment
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Deployment
+    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.StartupModels
+  summary: Resolved deployment context (mode, port, hot-reload, Docker, etc.).
+  example: []
+  syntax:
+    content: public required DeploymentContext Deployment { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.DeploymentContext
+    content.vb: Public Property Deployment As DeploymentContext
+  overload: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Deployment*
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigurationService
+  commentId: P:Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigurationService
+  id: ConfigurationService
+  parent: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationService
+  nameWithType: StartupContext.ConfigurationService
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigurationService
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationService
+    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.StartupModels
+  summary: Configuration service used for validation and hot-reload.
+  example: []
+  syntax:
+    content: public required ConfigurationService ConfigurationService { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.ConfigurationService
+    content.vb: Public Property ConfigurationService As ConfigurationService
+  overload: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigurationService*
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.DashboardServerFactory
+  commentId: P:Meridian.Application.Composition.Startup.StartupModels.StartupContext.DashboardServerFactory
+  id: DashboardServerFactory
+  parent: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  langs:
+  - csharp
+  - vb
+  name: DashboardServerFactory
+  nameWithType: StartupContext.DashboardServerFactory
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.DashboardServerFactory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DashboardServerFactory
+    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.StartupModels
+  summary: Factory for creating the host-specific dashboard server.
+  example: []
+  syntax:
+    content: public required DashboardServerFactory DashboardServerFactory { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Composition.Startup.DashboardServerFactory
+    content.vb: Public Property DashboardServerFactory As DashboardServerFactory
+  overload: Meridian.Application.Composition.Startup.StartupModels.StartupContext.DashboardServerFactory*
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Log
+  commentId: P:Meridian.Application.Composition.Startup.StartupModels.StartupContext.Log
+  id: Log
+  parent: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  langs:
+  - csharp
+  - vb
+  name: Log
+  nameWithType: StartupContext.Log
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Log
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Log
+    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.StartupModels
+  summary: Bootstrap logger scoped to the process entry point.
+  example: []
+  syntax:
+    content: public required ILogger Log { get; init; }
+    parameters: []
+    return:
+      type: Serilog.ILogger
+    content.vb: Public Property Log As ILogger
+  overload: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Log*
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CancellationToken
+  commentId: P:Meridian.Application.Composition.Startup.StartupModels.StartupContext.CancellationToken
+  id: CancellationToken
+  parent: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  langs:
+  - csharp
+  - vb
+  name: CancellationToken
+  nameWithType: StartupContext.CancellationToken
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CancellationToken
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CancellationToken
+    path: ../../src/Meridian.Application/Composition/Startup/StartupModels/StartupContext.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup.StartupModels
+  summary: Process-level cancellation token.
+  example: []
+  syntax:
+    content: public CancellationToken CancellationToken { get; init; }
+    parameters: []
+    return:
+      type: System.Threading.CancellationToken
+    content.vb: Public Property CancellationToken As CancellationToken
+  overload: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CancellationToken*
+references:
+- uid: Meridian.Application.Composition.Startup.StartupOrchestrator
+  commentId: T:Meridian.Application.Composition.Startup.StartupOrchestrator
+  href: Meridian.Application.Composition.Startup.StartupOrchestrator.html
+  name: StartupOrchestrator
+  nameWithType: StartupOrchestrator
+  fullName: Meridian.Application.Composition.Startup.StartupOrchestrator
+- uid: Meridian.Application.Composition.Startup.StartupModels
+  commentId: N:Meridian.Application.Composition.Startup.StartupModels
+  href: Meridian.html
+  name: Meridian.Application.Composition.Startup.StartupModels
+  nameWithType: Meridian.Application.Composition.Startup.StartupModels
+  fullName: Meridian.Application.Composition.Startup.StartupModels
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.StartupModels
+    name: StartupModels
+    href: Meridian.Application.Composition.Startup.StartupModels.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.StartupModels
+    name: StartupModels
+    href: Meridian.Application.Composition.Startup.StartupModels.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Composition.Startup.StartupModels.StartupContext}
+  commentId: T:System.IEquatable{Meridian.Application.Composition.Startup.StartupModels.StartupContext}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StartupContext>
+  nameWithType: IEquatable<StartupContext>
+  fullName: System.IEquatable<Meridian.Application.Composition.Startup.StartupModels.StartupContext>
+  nameWithType.vb: IEquatable(Of StartupContext)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Composition.Startup.StartupModels.StartupContext)
+  name.vb: IEquatable(Of StartupContext)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+    name: StartupContext
+    href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+    name: StartupContext
+    href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CliArgs*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupModels.StartupContext.CliArgs
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html#Meridian_Application_Composition_Startup_StartupModels_StartupContext_CliArgs
+  name: CliArgs
+  nameWithType: StartupContext.CliArgs
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CliArgs
+- uid: Meridian.Application.Commands.CliArguments
+  commentId: T:Meridian.Application.Commands.CliArguments
+  parent: Meridian.Application.Commands
+  href: Meridian.Application.Commands.CliArguments.html
+  name: CliArguments
+  nameWithType: CliArguments
+  fullName: Meridian.Application.Commands.CliArguments
+- uid: Meridian.Application.Commands
+  commentId: N:Meridian.Application.Commands
+  href: Meridian.html
+  name: Meridian.Application.Commands
+  nameWithType: Meridian.Application.Commands
+  fullName: Meridian.Application.Commands
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Commands
+    name: Commands
+    href: Meridian.Application.Commands.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Commands
+    name: Commands
+    href: Meridian.Application.Commands.html
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigPath*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigPath
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html#Meridian_Application_Composition_Startup_StartupModels_StartupContext_ConfigPath
+  name: ConfigPath
+  nameWithType: StartupContext.ConfigPath
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Config*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupModels.StartupContext.Config
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html#Meridian_Application_Composition_Startup_StartupModels_StartupContext_Config
+  name: Config
+  nameWithType: StartupContext.Config
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Config
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Deployment*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupModels.StartupContext.Deployment
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html#Meridian_Application_Composition_Startup_StartupModels_StartupContext_Deployment
+  name: Deployment
+  nameWithType: StartupContext.Deployment
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Deployment
+- uid: Meridian.Application.Config.DeploymentContext
+  commentId: T:Meridian.Application.Config.DeploymentContext
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DeploymentContext.html
+  name: DeploymentContext
+  nameWithType: DeploymentContext
+  fullName: Meridian.Application.Config.DeploymentContext
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigurationService*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigurationService
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html#Meridian_Application_Composition_Startup_StartupModels_StartupContext_ConfigurationService
+  name: ConfigurationService
+  nameWithType: StartupContext.ConfigurationService
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.ConfigurationService
+- uid: Meridian.Application.Services.ConfigurationService
+  commentId: T:Meridian.Application.Services.ConfigurationService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigurationService.html
+  name: ConfigurationService
+  nameWithType: ConfigurationService
+  fullName: Meridian.Application.Services.ConfigurationService
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.DashboardServerFactory*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupModels.StartupContext.DashboardServerFactory
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html#Meridian_Application_Composition_Startup_StartupModels_StartupContext_DashboardServerFactory
+  name: DashboardServerFactory
+  nameWithType: StartupContext.DashboardServerFactory
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.DashboardServerFactory
+- uid: Meridian.Application.Composition.Startup.DashboardServerFactory
+  commentId: T:Meridian.Application.Composition.Startup.DashboardServerFactory
+  parent: Meridian.Application.Composition.Startup
+  href: Meridian.Application.Composition.Startup.DashboardServerFactory.html
+  name: DashboardServerFactory
+  nameWithType: DashboardServerFactory
+  fullName: Meridian.Application.Composition.Startup.DashboardServerFactory
+- uid: Meridian.Application.Composition.Startup
+  commentId: N:Meridian.Application.Composition.Startup
+  href: Meridian.html
+  name: Meridian.Application.Composition.Startup
+  nameWithType: Meridian.Application.Composition.Startup
+  fullName: Meridian.Application.Composition.Startup
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Log*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupModels.StartupContext.Log
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html#Meridian_Application_Composition_Startup_StartupModels_StartupContext_Log
+  name: Log
+  nameWithType: StartupContext.Log
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.Log
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CancellationToken*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupModels.StartupContext.CancellationToken
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html#Meridian_Application_Composition_Startup_StartupModels_StartupContext_CancellationToken
+  name: CancellationToken
+  nameWithType: StartupContext.CancellationToken
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext.CancellationToken
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading

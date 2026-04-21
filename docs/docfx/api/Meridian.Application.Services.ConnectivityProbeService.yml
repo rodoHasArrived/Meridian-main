@@ -1,0 +1,712 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ConnectivityProbeService
+  commentId: T:Meridian.Application.Services.ConnectivityProbeService
+  id: ConnectivityProbeService
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ConnectivityProbeService.#ctor(System.Net.Http.IHttpClientFactory,Serilog.ILogger)
+  - Meridian.Application.Services.ConnectivityProbeService.ConnectivityChanged
+  - Meridian.Application.Services.ConnectivityProbeService.Dispose
+  - Meridian.Application.Services.ConnectivityProbeService.IsOnline
+  - Meridian.Application.Services.ConnectivityProbeService.Start
+  langs:
+  - csharp
+  - vb
+  name: ConnectivityProbeService
+  nameWithType: ConnectivityProbeService
+  fullName: Meridian.Application.Services.ConnectivityProbeService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityProbeService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectivityProbeService
+    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Sealed implementation that probes connectivity every 60 seconds using HTTP GET to Google's connectivity check endpoint.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-010", "Uses IHttpClientFactory and the configured connectivity-test client for HTTP lifecycle management")]
+
+      public sealed class ConnectivityProbeService : IConnectivityProbeService, IDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-010", "Uses IHttpClientFactory and the configured connectivity-test client for HTTP lifecycle management")>
+
+      Public NotInheritable Class ConnectivityProbeService Implements IConnectivityProbeService, IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Contracts.Services.IConnectivityProbeService
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-010
+    - type: System.String
+      value: Uses IHttpClientFactory and the configured connectivity-test client for HTTP lifecycle management
+- uid: Meridian.Application.Services.ConnectivityProbeService.IsOnline
+  commentId: P:Meridian.Application.Services.ConnectivityProbeService.IsOnline
+  id: IsOnline
+  parent: Meridian.Application.Services.ConnectivityProbeService
+  langs:
+  - csharp
+  - vb
+  name: IsOnline
+  nameWithType: ConnectivityProbeService.IsOnline
+  fullName: Meridian.Application.Services.ConnectivityProbeService.IsOnline
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityProbeService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsOnline
+    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets whether the system is currently online.
+  example: []
+  syntax:
+    content: public bool IsOnline { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsOnline As Boolean
+  overload: Meridian.Application.Services.ConnectivityProbeService.IsOnline*
+  implements:
+  - Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+- uid: Meridian.Application.Services.ConnectivityProbeService.ConnectivityChanged
+  commentId: E:Meridian.Application.Services.ConnectivityProbeService.ConnectivityChanged
+  id: ConnectivityChanged
+  parent: Meridian.Application.Services.ConnectivityProbeService
+  langs:
+  - csharp
+  - vb
+  name: ConnectivityChanged
+  nameWithType: ConnectivityProbeService.ConnectivityChanged
+  fullName: Meridian.Application.Services.ConnectivityProbeService.ConnectivityChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityProbeService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectivityChanged
+    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Raised when connectivity state changes (true = online, false = offline).
+  example: []
+  syntax:
+    content: public event EventHandler<bool>? ConnectivityChanged
+    return:
+      type: System.EventHandler{System.Boolean}
+    content.vb: Public Event ConnectivityChanged As EventHandler(Of Boolean)
+  implements:
+  - Meridian.Contracts.Services.IConnectivityProbeService.ConnectivityChanged
+- uid: Meridian.Application.Services.ConnectivityProbeService.#ctor(System.Net.Http.IHttpClientFactory,Serilog.ILogger)
+  commentId: M:Meridian.Application.Services.ConnectivityProbeService.#ctor(System.Net.Http.IHttpClientFactory,Serilog.ILogger)
+  id: '#ctor(System.Net.Http.IHttpClientFactory,Serilog.ILogger)'
+  parent: Meridian.Application.Services.ConnectivityProbeService
+  langs:
+  - csharp
+  - vb
+  name: ConnectivityProbeService(IHttpClientFactory, ILogger?)
+  nameWithType: ConnectivityProbeService.ConnectivityProbeService(IHttpClientFactory, ILogger?)
+  fullName: Meridian.Application.Services.ConnectivityProbeService.ConnectivityProbeService(System.Net.Http.IHttpClientFactory, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityProbeService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Initializes ConnectivityProbeService using <xref href="System.Net.Http.IHttpClientFactory" data-throw-if-not-resolved="false"></xref> for HTTP calls.
+
+    Per ADR-010, <xref href="System.Net.Http.HttpClient" data-throw-if-not-resolved="false"></xref> is never instantiated directly.
+  example: []
+  syntax:
+    content: public ConnectivityProbeService(IHttpClientFactory httpClientFactory, ILogger? log = null)
+    parameters:
+    - id: httpClientFactory
+      type: System.Net.Http.IHttpClientFactory
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(httpClientFactory As IHttpClientFactory, log As ILogger = Nothing)
+  overload: Meridian.Application.Services.ConnectivityProbeService.#ctor*
+  nameWithType.vb: ConnectivityProbeService.New(IHttpClientFactory, ILogger)
+  fullName.vb: Meridian.Application.Services.ConnectivityProbeService.New(System.Net.Http.IHttpClientFactory, Serilog.ILogger)
+  name.vb: New(IHttpClientFactory, ILogger)
+- uid: Meridian.Application.Services.ConnectivityProbeService.Start
+  commentId: M:Meridian.Application.Services.ConnectivityProbeService.Start
+  id: Start
+  parent: Meridian.Application.Services.ConnectivityProbeService
+  langs:
+  - csharp
+  - vb
+  name: Start()
+  nameWithType: ConnectivityProbeService.Start()
+  fullName: Meridian.Application.Services.ConnectivityProbeService.Start()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityProbeService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Starts the periodic connectivity probe.
+  example: []
+  syntax:
+    content: public void Start()
+    content.vb: Public Sub Start()
+  overload: Meridian.Application.Services.ConnectivityProbeService.Start*
+- uid: Meridian.Application.Services.ConnectivityProbeService.Dispose
+  commentId: M:Meridian.Application.Services.ConnectivityProbeService.Dispose
+  id: Dispose
+  parent: Meridian.Application.Services.ConnectivityProbeService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ConnectivityProbeService.Dispose()
+  fullName: Meridian.Application.Services.ConnectivityProbeService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConnectivityProbeService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Services/ConnectivityProbeService.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Services.ConnectivityProbeService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Services.IConnectivityProbeService
+  commentId: T:Meridian.Contracts.Services.IConnectivityProbeService
+  parent: Meridian.Contracts.Services
+  href: Meridian.Contracts.Services.IConnectivityProbeService.html
+  name: IConnectivityProbeService
+  nameWithType: IConnectivityProbeService
+  fullName: Meridian.Contracts.Services.IConnectivityProbeService
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Services
+  commentId: N:Meridian.Contracts.Services
+  href: Meridian.html
+  name: Meridian.Contracts.Services
+  nameWithType: Meridian.Contracts.Services
+  fullName: Meridian.Contracts.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Services
+    name: Services
+    href: Meridian.Contracts.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Services
+    name: Services
+    href: Meridian.Contracts.Services.html
+- uid: Meridian.Application.Services.ConnectivityProbeService.IsOnline*
+  commentId: Overload:Meridian.Application.Services.ConnectivityProbeService.IsOnline
+  href: Meridian.Application.Services.ConnectivityProbeService.html#Meridian_Application_Services_ConnectivityProbeService_IsOnline
+  name: IsOnline
+  nameWithType: ConnectivityProbeService.IsOnline
+  fullName: Meridian.Application.Services.ConnectivityProbeService.IsOnline
+- uid: Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+  commentId: P:Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+  parent: Meridian.Contracts.Services.IConnectivityProbeService
+  name: IsOnline
+  nameWithType: IConnectivityProbeService.IsOnline
+  fullName: Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Services.IConnectivityProbeService.ConnectivityChanged
+  commentId: E:Meridian.Contracts.Services.IConnectivityProbeService.ConnectivityChanged
+  parent: Meridian.Contracts.Services.IConnectivityProbeService
+  name: ConnectivityChanged
+  nameWithType: IConnectivityProbeService.ConnectivityChanged
+  fullName: Meridian.Contracts.Services.IConnectivityProbeService.ConnectivityChanged
+- uid: System.EventHandler{System.Boolean}
+  commentId: T:System.EventHandler{System.Boolean}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<bool>
+  nameWithType: EventHandler<bool>
+  fullName: System.EventHandler<bool>
+  nameWithType.vb: EventHandler(Of Boolean)
+  fullName.vb: System.EventHandler(Of Boolean)
+  name.vb: EventHandler(Of Boolean)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.Net.Http.IHttpClientFactory
+  commentId: T:System.Net.Http.IHttpClientFactory
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.ihttpclientfactory
+  name: IHttpClientFactory
+  nameWithType: IHttpClientFactory
+  fullName: System.Net.Http.IHttpClientFactory
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: Meridian.Application.Services.ConnectivityProbeService.#ctor*
+  commentId: Overload:Meridian.Application.Services.ConnectivityProbeService.#ctor
+  href: Meridian.Application.Services.ConnectivityProbeService.html#Meridian_Application_Services_ConnectivityProbeService__ctor_System_Net_Http_IHttpClientFactory_Serilog_ILogger_
+  name: ConnectivityProbeService
+  nameWithType: ConnectivityProbeService.ConnectivityProbeService
+  fullName: Meridian.Application.Services.ConnectivityProbeService.ConnectivityProbeService
+  nameWithType.vb: ConnectivityProbeService.New
+  fullName.vb: Meridian.Application.Services.ConnectivityProbeService.New
+  name.vb: New
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Services.ConnectivityProbeService.Start*
+  commentId: Overload:Meridian.Application.Services.ConnectivityProbeService.Start
+  href: Meridian.Application.Services.ConnectivityProbeService.html#Meridian_Application_Services_ConnectivityProbeService_Start
+  name: Start
+  nameWithType: ConnectivityProbeService.Start
+  fullName: Meridian.Application.Services.ConnectivityProbeService.Start
+- uid: Meridian.Application.Services.ConnectivityProbeService.Dispose*
+  commentId: Overload:Meridian.Application.Services.ConnectivityProbeService.Dispose
+  href: Meridian.Application.Services.ConnectivityProbeService.html#Meridian_Application_Services_ConnectivityProbeService_Dispose
+  name: Dispose
+  nameWithType: ConnectivityProbeService.Dispose
+  fullName: Meridian.Application.Services.ConnectivityProbeService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

@@ -1,0 +1,44 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Integrations.Lean
+  commentId: N:Meridian.Integrations.Lean
+  id: Meridian.Integrations.Lean
+  children:
+  - Meridian.Integrations.Lean.MeridianDataProvider
+  - Meridian.Integrations.Lean.MeridianQuoteData
+  - Meridian.Integrations.Lean.MeridianTradeData
+  - Meridian.Integrations.Lean.SampleLeanAlgorithm
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Integrations.Lean
+  nameWithType: Meridian.Integrations.Lean
+  fullName: Meridian.Integrations.Lean
+  type: Namespace
+  assemblies:
+  - Meridian
+references:
+- uid: Meridian.Integrations.Lean.MeridianDataProvider
+  commentId: T:Meridian.Integrations.Lean.MeridianDataProvider
+  href: Meridian.Integrations.Lean.MeridianDataProvider.html
+  name: MeridianDataProvider
+  nameWithType: MeridianDataProvider
+  fullName: Meridian.Integrations.Lean.MeridianDataProvider
+- uid: Meridian.Integrations.Lean.MeridianQuoteData
+  commentId: T:Meridian.Integrations.Lean.MeridianQuoteData
+  href: Meridian.Integrations.Lean.MeridianQuoteData.html
+  name: MeridianQuoteData
+  nameWithType: MeridianQuoteData
+  fullName: Meridian.Integrations.Lean.MeridianQuoteData
+- uid: Meridian.Integrations.Lean.MeridianTradeData
+  commentId: T:Meridian.Integrations.Lean.MeridianTradeData
+  href: Meridian.Integrations.Lean.MeridianTradeData.html
+  name: MeridianTradeData
+  nameWithType: MeridianTradeData
+  fullName: Meridian.Integrations.Lean.MeridianTradeData
+- uid: Meridian.Integrations.Lean.SampleLeanAlgorithm
+  commentId: T:Meridian.Integrations.Lean.SampleLeanAlgorithm
+  href: Meridian.Integrations.Lean.SampleLeanAlgorithm.html
+  name: SampleLeanAlgorithm
+  nameWithType: SampleLeanAlgorithm
+  fullName: Meridian.Integrations.Lean.SampleLeanAlgorithm

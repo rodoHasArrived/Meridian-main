@@ -1,0 +1,3115 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ConfigurationService
+  commentId: T:Meridian.Application.Services.ConfigurationService
+  id: ConfigurationService
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ConfigurationService.#ctor(Serilog.ILogger,Meridian.Application.Services.ConfigurationWizard,Meridian.Application.Services.AutoConfigurationService,Meridian.Application.Config.Credentials.ProviderCredentialResolver)
+  - Meridian.Application.Services.ConfigurationService.ApplyEnvironmentOverrides(Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Services.ConfigurationService.ApplySelfHealingFixes(Meridian.Application.Config.AppConfig,Meridian.Application.Config.SelfHealingStrictness)
+  - Meridian.Application.Services.ConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Services.ConfigurationService.CreateCredentialContext(System.Type,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  - Meridian.Application.Services.ConfigurationService.DetectProviders
+  - Meridian.Application.Services.ConfigurationService.DisplayConfigSummary(Meridian.Application.Config.AppConfig,System.String,System.String[])
+  - Meridian.Application.Services.ConfigurationService.DisposeAsync
+  - Meridian.Application.Services.ConfigurationService.DryRunValidationAsync(Meridian.Application.Config.AppConfig,Meridian.Application.Services.DryRunOptions,System.Threading.CancellationToken)
+  - Meridian.Application.Services.ConfigurationService.GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  - Meridian.Application.Services.ConfigurationService.GetBestRealTimeProvider
+  - Meridian.Application.Services.ConfigurationService.GetConfig(System.String)
+  - Meridian.Application.Services.ConfigurationService.GetConfigTemplate(System.String)
+  - Meridian.Application.Services.ConfigurationService.GetCredentialStatus
+  - Meridian.Application.Services.ConfigurationService.GetEnvironmentName
+  - Meridian.Application.Services.ConfigurationService.GetHistoricalProviders
+  - Meridian.Application.Services.ConfigurationService.GetProvidersByCapability(System.String)
+  - Meridian.Application.Services.ConfigurationService.IsIBGatewayAvailable
+  - Meridian.Application.Services.ConfigurationService.LoadAndPrepareConfig(System.String,System.Boolean)
+  - Meridian.Application.Services.ConfigurationService.LoadValidatedConfig(System.String,Meridian.Application.Config.PipelineOptions)
+  - Meridian.Application.Services.ConfigurationService.PerformQuickCheck(Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Services.ConfigurationService.Pipeline
+  - Meridian.Application.Services.ConfigurationService.PrintProviderDetection(System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider})
+  - Meridian.Application.Services.ConfigurationService.ProcessConfig(Meridian.Application.Config.AppConfig,Meridian.Application.Config.PipelineOptions)
+  - Meridian.Application.Services.ConfigurationService.ResolveAllCredentials(Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Services.ConfigurationService.RunAutoConfig
+  - Meridian.Application.Services.ConfigurationService.RunAutoConfigAndValidate(Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Services.ConfigurationService.RunQuickstartAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Services.ConfigurationService.RunWizardAndValidateAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Services.ConfigurationService.RunWizardAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Services.ConfigurationService.SaveConfigAsync(Meridian.Application.Config.AppConfig,System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Services.ConfigurationService.StartHotReload(System.String,System.Action{Meridian.Application.Config.AppConfig},System.Action{System.Exception})
+  - Meridian.Application.Services.ConfigurationService.StartValidatedHotReload(System.String,System.Action{Meridian.Application.Config.ValidatedConfig},System.Action{System.Exception},Meridian.Application.Config.PipelineOptions)
+  - Meridian.Application.Services.ConfigurationService.StopHotReload
+  - Meridian.Application.Services.ConfigurationService.TestConnectivityAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  - Meridian.Application.Services.ConfigurationService.ValidateConfig(Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String}@)
+  - Meridian.Application.Services.ConfigurationService.ValidateConfig(System.String)
+  - Meridian.Application.Services.ConfigurationService.ValidateCredentialsAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationService
+  nameWithType: ConfigurationService
+  fullName: Meridian.Application.Services.ConfigurationService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationService
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Unified configuration service that consolidates all configuration-related operations.
+
+    This is the single entry point for wizard, auto-config, validation, provider detection,
+
+    credential resolution, self-healing fixes, and hot reload.
+  remarks: >-
+    <p><b>Consolidation Goal:</b> All CLI paths and UI workflows should route through this
+
+    service to eliminate duplicate validation and environment detection logic.</p>
+
+    <p><b>Key Responsibilities:</b></p>
+
+    <ul><li>Provider detection and enumeration</li><li>Credential resolution from environment variables and config</li><li>Configuration validation with detailed error reporting</li><li>Self-healing fixes for common configuration issues</li><li>Configuration hot reload monitoring</li><li>Unified pipeline producing ValidatedConfig from any entry point</li></ul>
+  example: []
+  syntax:
+    content: 'public sealed class ConfigurationService : IAsyncDisposable'
+    content.vb: Public NotInheritable Class ConfigurationService Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.ConfigurationService.#ctor(Serilog.ILogger,Meridian.Application.Services.ConfigurationWizard,Meridian.Application.Services.AutoConfigurationService,Meridian.Application.Config.Credentials.ProviderCredentialResolver)
+  commentId: M:Meridian.Application.Services.ConfigurationService.#ctor(Serilog.ILogger,Meridian.Application.Services.ConfigurationWizard,Meridian.Application.Services.AutoConfigurationService,Meridian.Application.Config.Credentials.ProviderCredentialResolver)
+  id: '#ctor(Serilog.ILogger,Meridian.Application.Services.ConfigurationWizard,Meridian.Application.Services.AutoConfigurationService,Meridian.Application.Config.Credentials.ProviderCredentialResolver)'
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationService(ILogger?, ConfigurationWizard?, AutoConfigurationService?, ProviderCredentialResolver?)
+  nameWithType: ConfigurationService.ConfigurationService(ILogger?, ConfigurationWizard?, AutoConfigurationService?, ProviderCredentialResolver?)
+  fullName: Meridian.Application.Services.ConfigurationService.ConfigurationService(Serilog.ILogger?, Meridian.Application.Services.ConfigurationWizard?, Meridian.Application.Services.AutoConfigurationService?, Meridian.Application.Config.Credentials.ProviderCredentialResolver?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public ConfigurationService(ILogger? log = null, ConfigurationWizard? wizard = null, AutoConfigurationService? autoConfig = null, ProviderCredentialResolver? credentialResolver = null)
+    parameters:
+    - id: log
+      type: Serilog.ILogger
+    - id: wizard
+      type: Meridian.Application.Services.ConfigurationWizard
+    - id: autoConfig
+      type: Meridian.Application.Services.AutoConfigurationService
+    - id: credentialResolver
+      type: Meridian.Application.Config.Credentials.ProviderCredentialResolver
+    content.vb: Public Sub New(log As ILogger = Nothing, wizard As ConfigurationWizard = Nothing, autoConfig As AutoConfigurationService = Nothing, credentialResolver As ProviderCredentialResolver = Nothing)
+  overload: Meridian.Application.Services.ConfigurationService.#ctor*
+  nameWithType.vb: ConfigurationService.New(ILogger, ConfigurationWizard, AutoConfigurationService, ProviderCredentialResolver)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.New(Serilog.ILogger, Meridian.Application.Services.ConfigurationWizard, Meridian.Application.Services.AutoConfigurationService, Meridian.Application.Config.Credentials.ProviderCredentialResolver)
+  name.vb: New(ILogger, ConfigurationWizard, AutoConfigurationService, ProviderCredentialResolver)
+- uid: Meridian.Application.Services.ConfigurationService.Pipeline
+  commentId: P:Meridian.Application.Services.ConfigurationService.Pipeline
+  id: Pipeline
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: Pipeline
+  nameWithType: ConfigurationService.Pipeline
+  fullName: Meridian.Application.Services.ConfigurationService.Pipeline
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pipeline
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets the underlying configuration pipeline for advanced scenarios.
+  example: []
+  syntax:
+    content: public ConfigurationPipeline Pipeline { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.ConfigurationPipeline
+    content.vb: Public ReadOnly Property Pipeline As ConfigurationPipeline
+  overload: Meridian.Application.Services.ConfigurationService.Pipeline*
+- uid: Meridian.Application.Services.ConfigurationService.RunWizardAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.ConfigurationService.RunWizardAsync(System.Threading.CancellationToken)
+  id: RunWizardAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: RunWizardAsync(CancellationToken)
+  nameWithType: ConfigurationService.RunWizardAsync(CancellationToken)
+  fullName: Meridian.Application.Services.ConfigurationService.RunWizardAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunWizardAsync
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Runs the interactive configuration wizard.
+  example: []
+  syntax:
+    content: public Task<WizardResult> RunWizardAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.WizardResult}
+    content.vb: Public Function RunWizardAsync(ct As CancellationToken = Nothing) As Task(Of WizardResult)
+  overload: Meridian.Application.Services.ConfigurationService.RunWizardAsync*
+- uid: Meridian.Application.Services.ConfigurationService.RunAutoConfig
+  commentId: M:Meridian.Application.Services.ConfigurationService.RunAutoConfig
+  id: RunAutoConfig
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: RunAutoConfig()
+  nameWithType: ConfigurationService.RunAutoConfig()
+  fullName: Meridian.Application.Services.ConfigurationService.RunAutoConfig()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunAutoConfig
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Runs quick auto-configuration based on environment variables.
+  example: []
+  syntax:
+    content: public WizardResult RunAutoConfig()
+    return:
+      type: Meridian.Application.Services.WizardResult
+    content.vb: Public Function RunAutoConfig() As WizardResult
+  overload: Meridian.Application.Services.ConfigurationService.RunAutoConfig*
+- uid: Meridian.Application.Services.ConfigurationService.RunQuickstartAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.ConfigurationService.RunQuickstartAsync(System.Threading.CancellationToken)
+  id: RunQuickstartAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: RunQuickstartAsync(CancellationToken)
+  nameWithType: ConfigurationService.RunQuickstartAsync(CancellationToken)
+  fullName: Meridian.Application.Services.ConfigurationService.RunQuickstartAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunQuickstartAsync
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: 'Runs quickstart: auto-configures, validates credentials, and prepares for launch.'
+  example: []
+  syntax:
+    content: public Task<WizardResult> RunQuickstartAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.WizardResult}
+    content.vb: Public Function RunQuickstartAsync(ct As CancellationToken = Nothing) As Task(Of WizardResult)
+  overload: Meridian.Application.Services.ConfigurationService.RunQuickstartAsync*
+- uid: Meridian.Application.Services.ConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Application.Services.ConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig)
+  id: AutoConfigure(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: AutoConfigure(AppConfig?)
+  nameWithType: ConfigurationService.AutoConfigure(AppConfig?)
+  fullName: Meridian.Application.Services.ConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AutoConfigure
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Auto-configures the application based on detected providers and environment.
+
+    Returns a comprehensive result with detected providers, applied fixes, and recommendations.
+  example: []
+  syntax:
+    content: public AutoConfigurationService.AutoConfigResult AutoConfigure(AppConfig? existingConfig = null)
+    parameters:
+    - id: existingConfig
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+    content.vb: Public Function AutoConfigure(existingConfig As AppConfig = Nothing) As AutoConfigurationService.AutoConfigResult
+  overload: Meridian.Application.Services.ConfigurationService.AutoConfigure*
+  nameWithType.vb: ConfigurationService.AutoConfigure(AppConfig)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.AutoConfigure(Meridian.Application.Config.AppConfig)
+  name.vb: AutoConfigure(AppConfig)
+- uid: Meridian.Application.Services.ConfigurationService.GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  commentId: M:Meridian.Application.Services.ConfigurationService.GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  id: GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GenerateFirstTimeConfig(FirstTimeConfigOptions)
+  nameWithType: ConfigurationService.GenerateFirstTimeConfig(FirstTimeConfigOptions)
+  fullName: Meridian.Application.Services.ConfigurationService.GenerateFirstTimeConfig(Meridian.Application.Services.FirstTimeConfigOptions)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateFirstTimeConfig
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates configuration for first-time users with interactive defaults.
+  example: []
+  syntax:
+    content: public AppConfig GenerateFirstTimeConfig(FirstTimeConfigOptions options)
+    parameters:
+    - id: options
+      type: Meridian.Application.Services.FirstTimeConfigOptions
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Function GenerateFirstTimeConfig(options As FirstTimeConfigOptions) As AppConfig
+  overload: Meridian.Application.Services.ConfigurationService.GenerateFirstTimeConfig*
+- uid: Meridian.Application.Services.ConfigurationService.DetectProviders
+  commentId: M:Meridian.Application.Services.ConfigurationService.DetectProviders
+  id: DetectProviders
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: DetectProviders()
+  nameWithType: ConfigurationService.DetectProviders()
+  fullName: Meridian.Application.Services.ConfigurationService.DetectProviders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectProviders
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Detects all available providers based on environment variables and configuration.
+
+    This is the single source of truth for provider detection.
+  example: []
+  syntax:
+    content: public IReadOnlyList<AutoConfigurationService.DetectedProvider> DetectProviders()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+    content.vb: Public Function DetectProviders() As IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  overload: Meridian.Application.Services.ConfigurationService.DetectProviders*
+- uid: Meridian.Application.Services.ConfigurationService.GetCredentialStatus
+  commentId: M:Meridian.Application.Services.ConfigurationService.GetCredentialStatus
+  id: GetCredentialStatus
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GetCredentialStatus()
+  nameWithType: ConfigurationService.GetCredentialStatus()
+  fullName: Meridian.Application.Services.ConfigurationService.GetCredentialStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCredentialStatus
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets a quick summary of which providers have credentials configured.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, bool> GetCredentialStatus()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Boolean}
+    content.vb: Public Function GetCredentialStatus() As IReadOnlyDictionary(Of String, Boolean)
+  overload: Meridian.Application.Services.ConfigurationService.GetCredentialStatus*
+- uid: Meridian.Application.Services.ConfigurationService.GetProvidersByCapability(System.String)
+  commentId: M:Meridian.Application.Services.ConfigurationService.GetProvidersByCapability(System.String)
+  id: GetProvidersByCapability(System.String)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GetProvidersByCapability(string)
+  nameWithType: ConfigurationService.GetProvidersByCapability(string)
+  fullName: Meridian.Application.Services.ConfigurationService.GetProvidersByCapability(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProvidersByCapability
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets detected providers filtered by capability.
+  example: []
+  syntax:
+    content: public IReadOnlyList<AutoConfigurationService.DetectedProvider> GetProvidersByCapability(string capability)
+    parameters:
+    - id: capability
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+    content.vb: Public Function GetProvidersByCapability(capability As String) As IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  overload: Meridian.Application.Services.ConfigurationService.GetProvidersByCapability*
+  nameWithType.vb: ConfigurationService.GetProvidersByCapability(String)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.GetProvidersByCapability(String)
+  name.vb: GetProvidersByCapability(String)
+- uid: Meridian.Application.Services.ConfigurationService.GetBestRealTimeProvider
+  commentId: M:Meridian.Application.Services.ConfigurationService.GetBestRealTimeProvider
+  id: GetBestRealTimeProvider
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GetBestRealTimeProvider()
+  nameWithType: ConfigurationService.GetBestRealTimeProvider()
+  fullName: Meridian.Application.Services.ConfigurationService.GetBestRealTimeProvider()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBestRealTimeProvider
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets the best available provider for real-time streaming.
+  example: []
+  syntax:
+    content: public AutoConfigurationService.DetectedProvider? GetBestRealTimeProvider()
+    return:
+      type: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+    content.vb: Public Function GetBestRealTimeProvider() As AutoConfigurationService.DetectedProvider
+  overload: Meridian.Application.Services.ConfigurationService.GetBestRealTimeProvider*
+- uid: Meridian.Application.Services.ConfigurationService.GetHistoricalProviders
+  commentId: M:Meridian.Application.Services.ConfigurationService.GetHistoricalProviders
+  id: GetHistoricalProviders
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GetHistoricalProviders()
+  nameWithType: ConfigurationService.GetHistoricalProviders()
+  fullName: Meridian.Application.Services.ConfigurationService.GetHistoricalProviders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHistoricalProviders
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets available providers for historical data backfill.
+  example: []
+  syntax:
+    content: public IReadOnlyList<AutoConfigurationService.DetectedProvider> GetHistoricalProviders()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+    content.vb: Public Function GetHistoricalProviders() As IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  overload: Meridian.Application.Services.ConfigurationService.GetHistoricalProviders*
+- uid: Meridian.Application.Services.ConfigurationService.PrintProviderDetection(System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider})
+  commentId: M:Meridian.Application.Services.ConfigurationService.PrintProviderDetection(System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider})
+  id: PrintProviderDetection(System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider})
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: PrintProviderDetection(IReadOnlyList<DetectedProvider>?)
+  nameWithType: ConfigurationService.PrintProviderDetection(IReadOnlyList<AutoConfigurationService.DetectedProvider>?)
+  fullName: Meridian.Application.Services.ConfigurationService.PrintProviderDetection(System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.AutoConfigurationService.DetectedProvider>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrintProviderDetection
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Prints provider detection results to console (for CLI commands).
+  example: []
+  syntax:
+    content: public void PrintProviderDetection(IReadOnlyList<AutoConfigurationService.DetectedProvider>? providers = null)
+    parameters:
+    - id: providers
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+    content.vb: Public Sub PrintProviderDetection(providers As IReadOnlyList(Of AutoConfigurationService.DetectedProvider) = Nothing)
+  overload: Meridian.Application.Services.ConfigurationService.PrintProviderDetection*
+  nameWithType.vb: ConfigurationService.PrintProviderDetection(IReadOnlyList(Of AutoConfigurationService.DetectedProvider))
+  fullName.vb: Meridian.Application.Services.ConfigurationService.PrintProviderDetection(System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.AutoConfigurationService.DetectedProvider))
+  name.vb: PrintProviderDetection(IReadOnlyList(Of DetectedProvider))
+- uid: Meridian.Application.Services.ConfigurationService.CreateCredentialContext(System.Type,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Application.Services.ConfigurationService.CreateCredentialContext(System.Type,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: CreateCredentialContext(System.Type,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: CreateCredentialContext(Type, IReadOnlyDictionary<string, string?>?)
+  nameWithType: ConfigurationService.CreateCredentialContext(Type, IReadOnlyDictionary<string, string?>?)
+  fullName: Meridian.Application.Services.ConfigurationService.CreateCredentialContext(System.Type, System.Collections.Generic.IReadOnlyDictionary<string, string?>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateCredentialContext
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Creates a provider-scoped credential context from attribute metadata and config fallbacks.
+  example: []
+  syntax:
+    content: public ICredentialContext CreateCredentialContext(Type providerType, IReadOnlyDictionary<string, string?>? configuredValues = null)
+    parameters:
+    - id: providerType
+      type: System.Type
+    - id: configuredValues
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    return:
+      type: Meridian.Infrastructure.Contracts.ICredentialContext
+    content.vb: Public Function CreateCredentialContext(providerType As Type, configuredValues As IReadOnlyDictionary(Of String, String) = Nothing) As ICredentialContext
+  overload: Meridian.Application.Services.ConfigurationService.CreateCredentialContext*
+  nameWithType.vb: ConfigurationService.CreateCredentialContext(Type, IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Application.Services.ConfigurationService.CreateCredentialContext(System.Type, System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: CreateCredentialContext(Type, IReadOnlyDictionary(Of String, String))
+- uid: Meridian.Application.Services.ConfigurationService.ResolveAllCredentials(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Application.Services.ConfigurationService.ResolveAllCredentials(Meridian.Application.Config.AppConfig)
+  id: ResolveAllCredentials(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: ResolveAllCredentials(AppConfig)
+  nameWithType: ConfigurationService.ResolveAllCredentials(AppConfig)
+  fullName: Meridian.Application.Services.ConfigurationService.ResolveAllCredentials(Meridian.Application.Config.AppConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveAllCredentials
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Resolves all credentials for a given configuration and returns a config with resolved values.
+  example: []
+  syntax:
+    content: public AppConfig ResolveAllCredentials(AppConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Function ResolveAllCredentials(config As AppConfig) As AppConfig
+  overload: Meridian.Application.Services.ConfigurationService.ResolveAllCredentials*
+- uid: Meridian.Application.Services.ConfigurationService.ValidateConfig(System.String)
+  commentId: M:Meridian.Application.Services.ConfigurationService.ValidateConfig(System.String)
+  id: ValidateConfig(System.String)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: ValidateConfig(string)
+  nameWithType: ConfigurationService.ValidateConfig(string)
+  fullName: Meridian.Application.Services.ConfigurationService.ValidateConfig(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateConfig
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Validates a configuration file and returns an exit code (0 = valid, 1 = invalid).
+
+    This is the single validation entry point for CLI commands.
+  example: []
+  syntax:
+    content: public int ValidateConfig(string configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+    return:
+      type: System.Int32
+    content.vb: Public Function ValidateConfig(configPath As String) As Integer
+  overload: Meridian.Application.Services.ConfigurationService.ValidateConfig*
+  nameWithType.vb: ConfigurationService.ValidateConfig(String)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.ValidateConfig(String)
+  name.vb: ValidateConfig(String)
+- uid: Meridian.Application.Services.ConfigurationService.ValidateConfig(Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String}@)
+  commentId: M:Meridian.Application.Services.ConfigurationService.ValidateConfig(Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String}@)
+  id: ValidateConfig(Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String}@)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: ValidateConfig(AppConfig, out IReadOnlyList<string>)
+  nameWithType: ConfigurationService.ValidateConfig(AppConfig, out IReadOnlyList<string>)
+  fullName: Meridian.Application.Services.ConfigurationService.ValidateConfig(Meridian.Application.Config.AppConfig, out System.Collections.Generic.IReadOnlyList<string>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateConfig
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Validates an AppConfig object using the unified validation pipeline.
+
+    Returns true if valid, false otherwise.
+  example: []
+  syntax:
+    content: public bool ValidateConfig(AppConfig config, out IReadOnlyList<string> errors)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: errors
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    return:
+      type: System.Boolean
+    content.vb: Public Function ValidateConfig(config As AppConfig, errors As IReadOnlyList(Of String)) As Boolean
+  overload: Meridian.Application.Services.ConfigurationService.ValidateConfig*
+  nameWithType.vb: ConfigurationService.ValidateConfig(AppConfig, IReadOnlyList(Of String))
+  fullName.vb: Meridian.Application.Services.ConfigurationService.ValidateConfig(Meridian.Application.Config.AppConfig, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: ValidateConfig(AppConfig, IReadOnlyList(Of String))
+- uid: Meridian.Application.Services.ConfigurationService.DryRunValidationAsync(Meridian.Application.Config.AppConfig,Meridian.Application.Services.DryRunOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.ConfigurationService.DryRunValidationAsync(Meridian.Application.Config.AppConfig,Meridian.Application.Services.DryRunOptions,System.Threading.CancellationToken)
+  id: DryRunValidationAsync(Meridian.Application.Config.AppConfig,Meridian.Application.Services.DryRunOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: DryRunValidationAsync(AppConfig, DryRunOptions?, CancellationToken)
+  nameWithType: ConfigurationService.DryRunValidationAsync(AppConfig, DryRunOptions?, CancellationToken)
+  fullName: Meridian.Application.Services.ConfigurationService.DryRunValidationAsync(Meridian.Application.Config.AppConfig, Meridian.Application.Services.DryRunOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DryRunValidationAsync
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Performs comprehensive validation without starting the collector (dry-run).
+  example: []
+  syntax:
+    content: public Task<DryRunResult> DryRunValidationAsync(AppConfig config, DryRunOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: options
+      type: Meridian.Application.Services.DryRunOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.DryRunResult}
+    content.vb: Public Function DryRunValidationAsync(config As AppConfig, options As DryRunOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of DryRunResult)
+  overload: Meridian.Application.Services.ConfigurationService.DryRunValidationAsync*
+  nameWithType.vb: ConfigurationService.DryRunValidationAsync(AppConfig, DryRunOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.DryRunValidationAsync(Meridian.Application.Config.AppConfig, Meridian.Application.Services.DryRunOptions, System.Threading.CancellationToken)
+  name.vb: DryRunValidationAsync(AppConfig, DryRunOptions, CancellationToken)
+- uid: Meridian.Application.Services.ConfigurationService.PerformQuickCheck(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Application.Services.ConfigurationService.PerformQuickCheck(Meridian.Application.Config.AppConfig)
+  id: PerformQuickCheck(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: PerformQuickCheck(AppConfig)
+  nameWithType: ConfigurationService.PerformQuickCheck(AppConfig)
+  fullName: Meridian.Application.Services.ConfigurationService.PerformQuickCheck(Meridian.Application.Config.AppConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PerformQuickCheck
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Performs a quick configuration health check.
+  example: []
+  syntax:
+    content: public QuickCheckResult PerformQuickCheck(AppConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: Meridian.Application.Services.QuickCheckResult
+    content.vb: Public Function PerformQuickCheck(config As AppConfig) As QuickCheckResult
+  overload: Meridian.Application.Services.ConfigurationService.PerformQuickCheck*
+- uid: Meridian.Application.Services.ConfigurationService.TestConnectivityAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.ConfigurationService.TestConnectivityAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  id: TestConnectivityAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: TestConnectivityAsync(AppConfig, CancellationToken)
+  nameWithType: ConfigurationService.TestConnectivityAsync(AppConfig, CancellationToken)
+  fullName: Meridian.Application.Services.ConfigurationService.TestConnectivityAsync(Meridian.Application.Config.AppConfig, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestConnectivityAsync
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 410
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Tests connectivity to all configured providers.
+  example: []
+  syntax:
+    content: public Task<ConnectivityTestService.ConnectivitySummary> TestConnectivityAsync(AppConfig config, CancellationToken ct = default)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary}
+    content.vb: Public Function TestConnectivityAsync(config As AppConfig, ct As CancellationToken = Nothing) As Task(Of ConnectivityTestService.ConnectivitySummary)
+  overload: Meridian.Application.Services.ConfigurationService.TestConnectivityAsync*
+- uid: Meridian.Application.Services.ConfigurationService.ValidateCredentialsAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.ConfigurationService.ValidateCredentialsAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  id: ValidateCredentialsAsync(Meridian.Application.Config.AppConfig,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: ValidateCredentialsAsync(AppConfig, CancellationToken)
+  nameWithType: ConfigurationService.ValidateCredentialsAsync(AppConfig, CancellationToken)
+  fullName: Meridian.Application.Services.ConfigurationService.ValidateCredentialsAsync(Meridian.Application.Config.AppConfig, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateCredentialsAsync
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 421
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Validates API credentials for all configured providers.
+  example: []
+  syntax:
+    content: public Task<CredentialValidationService.ValidationSummary> ValidateCredentialsAsync(AppConfig config, CancellationToken ct = default)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Services.CredentialValidationService.ValidationSummary}
+    content.vb: Public Function ValidateCredentialsAsync(config As AppConfig, ct As CancellationToken = Nothing) As Task(Of CredentialValidationService.ValidationSummary)
+  overload: Meridian.Application.Services.ConfigurationService.ValidateCredentialsAsync*
+- uid: Meridian.Application.Services.ConfigurationService.ApplySelfHealingFixes(Meridian.Application.Config.AppConfig,Meridian.Application.Config.SelfHealingStrictness)
+  commentId: M:Meridian.Application.Services.ConfigurationService.ApplySelfHealingFixes(Meridian.Application.Config.AppConfig,Meridian.Application.Config.SelfHealingStrictness)
+  id: ApplySelfHealingFixes(Meridian.Application.Config.AppConfig,Meridian.Application.Config.SelfHealingStrictness)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: ApplySelfHealingFixes(AppConfig, SelfHealingStrictness)
+  nameWithType: ConfigurationService.ApplySelfHealingFixes(AppConfig, SelfHealingStrictness)
+  fullName: Meridian.Application.Services.ConfigurationService.ApplySelfHealingFixes(Meridian.Application.Config.AppConfig, Meridian.Application.Config.SelfHealingStrictness)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplySelfHealingFixes
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 444
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Applies self-healing fixes to a configuration and returns the fixed config
+
+    along with lists of applied fixes and advisory warnings.
+  example: []
+  syntax:
+    content: public (AppConfig Config, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Warnings) ApplySelfHealingFixes(AppConfig config, SelfHealingStrictness strictness = SelfHealingStrictness.Development)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+      description: The configuration to fix.
+    - id: strictness
+      type: Meridian.Application.Config.SelfHealingStrictness
+      description: >-
+        Controls which fixes are applied.
+
+        <xref href="Meridian.Application.Config.SelfHealingStrictness.Development" data-throw-if-not-resolved="false"></xref> (default) applies all fixes and logs
+
+        significant (<xref href="Meridian.Application.Config.SelfHealingSeverity.Warn" data-throw-if-not-resolved="false"></xref>) ones as warnings.
+
+        <xref href="Meridian.Application.Config.SelfHealingStrictness.Production" data-throw-if-not-resolved="false"></xref> applies only safe
+
+        (<xref href="Meridian.Application.Config.SelfHealingSeverity.AutoFix" data-throw-if-not-resolved="false"></xref>) changes and leaves
+
+        <xref href="Meridian.Application.Config.SelfHealingSeverity.Warn" data-throw-if-not-resolved="false"></xref>-level fixes unapplied.
+    return:
+      type: System.ValueTuple{Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String}}
+    content.vb: Public Function ApplySelfHealingFixes(config As AppConfig, strictness As SelfHealingStrictness = SelfHealingStrictness.Development) As (Config As AppConfig, AppliedFixes As IReadOnlyList(Of String), Warnings As IReadOnlyList(Of String))
+  overload: Meridian.Application.Services.ConfigurationService.ApplySelfHealingFixes*
+- uid: Meridian.Application.Services.ConfigurationService.IsIBGatewayAvailable
+  commentId: M:Meridian.Application.Services.ConfigurationService.IsIBGatewayAvailable
+  id: IsIBGatewayAvailable
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: IsIBGatewayAvailable()
+  nameWithType: ConfigurationService.IsIBGatewayAvailable()
+  fullName: Meridian.Application.Services.ConfigurationService.IsIBGatewayAvailable()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsIBGatewayAvailable
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 604
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Checks if IB Gateway/TWS is available on default ports.
+  example: []
+  syntax:
+    content: public bool IsIBGatewayAvailable()
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsIBGatewayAvailable() As Boolean
+  overload: Meridian.Application.Services.ConfigurationService.IsIBGatewayAvailable*
+- uid: Meridian.Application.Services.ConfigurationService.ApplyEnvironmentOverrides(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Application.Services.ConfigurationService.ApplyEnvironmentOverrides(Meridian.Application.Config.AppConfig)
+  id: ApplyEnvironmentOverrides(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: ApplyEnvironmentOverrides(AppConfig)
+  nameWithType: ConfigurationService.ApplyEnvironmentOverrides(AppConfig)
+  fullName: Meridian.Application.Services.ConfigurationService.ApplyEnvironmentOverrides(Meridian.Application.Config.AppConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyEnvironmentOverrides
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 633
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Applies environment variable overrides to configuration.
+  example: []
+  syntax:
+    content: public AppConfig ApplyEnvironmentOverrides(AppConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Function ApplyEnvironmentOverrides(config As AppConfig) As AppConfig
+  overload: Meridian.Application.Services.ConfigurationService.ApplyEnvironmentOverrides*
+- uid: Meridian.Application.Services.ConfigurationService.LoadAndPrepareConfig(System.String,System.Boolean)
+  commentId: M:Meridian.Application.Services.ConfigurationService.LoadAndPrepareConfig(System.String,System.Boolean)
+  id: LoadAndPrepareConfig(System.String,System.Boolean)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: LoadAndPrepareConfig(string, bool)
+  nameWithType: ConfigurationService.LoadAndPrepareConfig(string, bool)
+  fullName: Meridian.Application.Services.ConfigurationService.LoadAndPrepareConfig(string, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadAndPrepareConfig
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 643
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Loads configuration with environment overlays and self-healing fixes applied.
+
+    This is the recommended way to load configuration for all entry points.
+  example: []
+  syntax:
+    content: public AppConfig LoadAndPrepareConfig(string configPath, bool applySelfHealing = true)
+    parameters:
+    - id: configPath
+      type: System.String
+    - id: applySelfHealing
+      type: System.Boolean
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Function LoadAndPrepareConfig(configPath As String, applySelfHealing As Boolean = True) As AppConfig
+  overload: Meridian.Application.Services.ConfigurationService.LoadAndPrepareConfig*
+  nameWithType.vb: ConfigurationService.LoadAndPrepareConfig(String, Boolean)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.LoadAndPrepareConfig(String, Boolean)
+  name.vb: LoadAndPrepareConfig(String, Boolean)
+- uid: Meridian.Application.Services.ConfigurationService.LoadValidatedConfig(System.String,Meridian.Application.Config.PipelineOptions)
+  commentId: M:Meridian.Application.Services.ConfigurationService.LoadValidatedConfig(System.String,Meridian.Application.Config.PipelineOptions)
+  id: LoadValidatedConfig(System.String,Meridian.Application.Config.PipelineOptions)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: LoadValidatedConfig(string, PipelineOptions?)
+  nameWithType: ConfigurationService.LoadValidatedConfig(string, PipelineOptions?)
+  fullName: Meridian.Application.Services.ConfigurationService.LoadValidatedConfig(string, Meridian.Application.Config.PipelineOptions?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadValidatedConfig
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 691
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Loads and validates configuration through the unified pipeline.
+
+    Returns a ValidatedConfig with full metadata about validation, fixes, and warnings.
+  remarks: This is the preferred method for new code. It provides richer metadata than LoadAndPrepareConfig.
+  example: []
+  syntax:
+    content: public ValidatedConfig LoadValidatedConfig(string configPath, PipelineOptions? options = null)
+    parameters:
+    - id: configPath
+      type: System.String
+    - id: options
+      type: Meridian.Application.Config.PipelineOptions
+    return:
+      type: Meridian.Application.Config.ValidatedConfig
+    content.vb: Public Function LoadValidatedConfig(configPath As String, options As PipelineOptions = Nothing) As ValidatedConfig
+  overload: Meridian.Application.Services.ConfigurationService.LoadValidatedConfig*
+  nameWithType.vb: ConfigurationService.LoadValidatedConfig(String, PipelineOptions)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.LoadValidatedConfig(String, Meridian.Application.Config.PipelineOptions)
+  name.vb: LoadValidatedConfig(String, PipelineOptions)
+- uid: Meridian.Application.Services.ConfigurationService.ProcessConfig(Meridian.Application.Config.AppConfig,Meridian.Application.Config.PipelineOptions)
+  commentId: M:Meridian.Application.Services.ConfigurationService.ProcessConfig(Meridian.Application.Config.AppConfig,Meridian.Application.Config.PipelineOptions)
+  id: ProcessConfig(Meridian.Application.Config.AppConfig,Meridian.Application.Config.PipelineOptions)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: ProcessConfig(AppConfig, PipelineOptions?)
+  nameWithType: ConfigurationService.ProcessConfig(AppConfig, PipelineOptions?)
+  fullName: Meridian.Application.Services.ConfigurationService.ProcessConfig(Meridian.Application.Config.AppConfig, Meridian.Application.Config.PipelineOptions?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessConfig
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 707
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Processes an existing AppConfig through the unified pipeline.
+  example: []
+  syntax:
+    content: public ValidatedConfig ProcessConfig(AppConfig config, PipelineOptions? options = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: options
+      type: Meridian.Application.Config.PipelineOptions
+    return:
+      type: Meridian.Application.Config.ValidatedConfig
+    content.vb: Public Function ProcessConfig(config As AppConfig, options As PipelineOptions = Nothing) As ValidatedConfig
+  overload: Meridian.Application.Services.ConfigurationService.ProcessConfig*
+  nameWithType.vb: ConfigurationService.ProcessConfig(AppConfig, PipelineOptions)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.ProcessConfig(Meridian.Application.Config.AppConfig, Meridian.Application.Config.PipelineOptions)
+  name.vb: ProcessConfig(AppConfig, PipelineOptions)
+- uid: Meridian.Application.Services.ConfigurationService.RunWizardAndValidateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.ConfigurationService.RunWizardAndValidateAsync(System.Threading.CancellationToken)
+  id: RunWizardAndValidateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: RunWizardAndValidateAsync(CancellationToken)
+  nameWithType: ConfigurationService.RunWizardAndValidateAsync(CancellationToken)
+  fullName: Meridian.Application.Services.ConfigurationService.RunWizardAndValidateAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunWizardAndValidateAsync
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 715
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Runs the wizard and processes the result through the pipeline.
+  example: []
+  syntax:
+    content: public Task<ValidatedConfig> RunWizardAndValidateAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Config.ValidatedConfig}
+    content.vb: Public Function RunWizardAndValidateAsync(ct As CancellationToken = Nothing) As Task(Of ValidatedConfig)
+  overload: Meridian.Application.Services.ConfigurationService.RunWizardAndValidateAsync*
+- uid: Meridian.Application.Services.ConfigurationService.RunAutoConfigAndValidate(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Application.Services.ConfigurationService.RunAutoConfigAndValidate(Meridian.Application.Config.AppConfig)
+  id: RunAutoConfigAndValidate(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: RunAutoConfigAndValidate(AppConfig?)
+  nameWithType: ConfigurationService.RunAutoConfigAndValidate(AppConfig?)
+  fullName: Meridian.Application.Services.ConfigurationService.RunAutoConfigAndValidate(Meridian.Application.Config.AppConfig?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunAutoConfigAndValidate
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 724
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Runs auto-configuration and processes the result through the pipeline.
+  example: []
+  syntax:
+    content: public ValidatedConfig RunAutoConfigAndValidate(AppConfig? existingConfig = null)
+    parameters:
+    - id: existingConfig
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: Meridian.Application.Config.ValidatedConfig
+    content.vb: Public Function RunAutoConfigAndValidate(existingConfig As AppConfig = Nothing) As ValidatedConfig
+  overload: Meridian.Application.Services.ConfigurationService.RunAutoConfigAndValidate*
+  nameWithType.vb: ConfigurationService.RunAutoConfigAndValidate(AppConfig)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.RunAutoConfigAndValidate(Meridian.Application.Config.AppConfig)
+  name.vb: RunAutoConfigAndValidate(AppConfig)
+- uid: Meridian.Application.Services.ConfigurationService.GetEnvironmentName
+  commentId: M:Meridian.Application.Services.ConfigurationService.GetEnvironmentName
+  id: GetEnvironmentName
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GetEnvironmentName()
+  nameWithType: ConfigurationService.GetEnvironmentName()
+  fullName: Meridian.Application.Services.ConfigurationService.GetEnvironmentName()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEnvironmentName
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 763
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets the current environment name from MDC_ENVIRONMENT or DOTNET_ENVIRONMENT.
+  example: []
+  syntax:
+    content: public static string? GetEnvironmentName()
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetEnvironmentName() As String
+  overload: Meridian.Application.Services.ConfigurationService.GetEnvironmentName*
+- uid: Meridian.Application.Services.ConfigurationService.StartHotReload(System.String,System.Action{Meridian.Application.Config.AppConfig},System.Action{System.Exception})
+  commentId: M:Meridian.Application.Services.ConfigurationService.StartHotReload(System.String,System.Action{Meridian.Application.Config.AppConfig},System.Action{System.Exception})
+  id: StartHotReload(System.String,System.Action{Meridian.Application.Config.AppConfig},System.Action{System.Exception})
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: StartHotReload(string, Action<AppConfig>, Action<Exception>?)
+  nameWithType: ConfigurationService.StartHotReload(string, Action<AppConfig>, Action<Exception>?)
+  fullName: Meridian.Application.Services.ConfigurationService.StartHotReload(string, System.Action<Meridian.Application.Config.AppConfig>, System.Action<System.Exception>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartHotReload
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 797
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Starts hot reload monitoring for configuration file changes.
+  example: []
+  syntax:
+    content: public ConfigWatcher StartHotReload(string configPath, Action<AppConfig> onConfigChanged, Action<Exception>? onError = null)
+    parameters:
+    - id: configPath
+      type: System.String
+    - id: onConfigChanged
+      type: System.Action{Meridian.Application.Config.AppConfig}
+    - id: onError
+      type: System.Action{System.Exception}
+    return:
+      type: Meridian.Application.Config.ConfigWatcher
+    content.vb: Public Function StartHotReload(configPath As String, onConfigChanged As Action(Of AppConfig), onError As Action(Of Exception) = Nothing) As ConfigWatcher
+  overload: Meridian.Application.Services.ConfigurationService.StartHotReload*
+  nameWithType.vb: ConfigurationService.StartHotReload(String, Action(Of AppConfig), Action(Of Exception))
+  fullName.vb: Meridian.Application.Services.ConfigurationService.StartHotReload(String, System.Action(Of Meridian.Application.Config.AppConfig), System.Action(Of System.Exception))
+  name.vb: StartHotReload(String, Action(Of AppConfig), Action(Of Exception))
+- uid: Meridian.Application.Services.ConfigurationService.StartValidatedHotReload(System.String,System.Action{Meridian.Application.Config.ValidatedConfig},System.Action{System.Exception},Meridian.Application.Config.PipelineOptions)
+  commentId: M:Meridian.Application.Services.ConfigurationService.StartValidatedHotReload(System.String,System.Action{Meridian.Application.Config.ValidatedConfig},System.Action{System.Exception},Meridian.Application.Config.PipelineOptions)
+  id: StartValidatedHotReload(System.String,System.Action{Meridian.Application.Config.ValidatedConfig},System.Action{System.Exception},Meridian.Application.Config.PipelineOptions)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: StartValidatedHotReload(string, Action<ValidatedConfig>, Action<Exception>?, PipelineOptions?)
+  nameWithType: ConfigurationService.StartValidatedHotReload(string, Action<ValidatedConfig>, Action<Exception>?, PipelineOptions?)
+  fullName: Meridian.Application.Services.ConfigurationService.StartValidatedHotReload(string, System.Action<Meridian.Application.Config.ValidatedConfig>, System.Action<System.Exception>?, Meridian.Application.Config.PipelineOptions?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartValidatedHotReload
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 820
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Starts hot reload monitoring with validated configuration updates.
+
+    The callback receives a ValidatedConfig that has been processed through the full pipeline.
+  example: []
+  syntax:
+    content: public ConfigWatcher StartValidatedHotReload(string configPath, Action<ValidatedConfig> onConfigChanged, Action<Exception>? onError = null, PipelineOptions? options = null)
+    parameters:
+    - id: configPath
+      type: System.String
+    - id: onConfigChanged
+      type: System.Action{Meridian.Application.Config.ValidatedConfig}
+    - id: onError
+      type: System.Action{System.Exception}
+    - id: options
+      type: Meridian.Application.Config.PipelineOptions
+    return:
+      type: Meridian.Application.Config.ConfigWatcher
+    content.vb: Public Function StartValidatedHotReload(configPath As String, onConfigChanged As Action(Of ValidatedConfig), onError As Action(Of Exception) = Nothing, options As PipelineOptions = Nothing) As ConfigWatcher
+  overload: Meridian.Application.Services.ConfigurationService.StartValidatedHotReload*
+  nameWithType.vb: ConfigurationService.StartValidatedHotReload(String, Action(Of ValidatedConfig), Action(Of Exception), PipelineOptions)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.StartValidatedHotReload(String, System.Action(Of Meridian.Application.Config.ValidatedConfig), System.Action(Of System.Exception), Meridian.Application.Config.PipelineOptions)
+  name.vb: StartValidatedHotReload(String, Action(Of ValidatedConfig), Action(Of Exception), PipelineOptions)
+- uid: Meridian.Application.Services.ConfigurationService.StopHotReload
+  commentId: M:Meridian.Application.Services.ConfigurationService.StopHotReload
+  id: StopHotReload
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: StopHotReload()
+  nameWithType: ConfigurationService.StopHotReload()
+  fullName: Meridian.Application.Services.ConfigurationService.StopHotReload()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopHotReload
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 835
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Stops hot reload monitoring.
+  example: []
+  syntax:
+    content: public void StopHotReload()
+    content.vb: Public Sub StopHotReload()
+  overload: Meridian.Application.Services.ConfigurationService.StopHotReload*
+- uid: Meridian.Application.Services.ConfigurationService.DisplayConfigSummary(Meridian.Application.Config.AppConfig,System.String,System.String[])
+  commentId: M:Meridian.Application.Services.ConfigurationService.DisplayConfigSummary(Meridian.Application.Config.AppConfig,System.String,System.String[])
+  id: DisplayConfigSummary(Meridian.Application.Config.AppConfig,System.String,System.String[])
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: DisplayConfigSummary(AppConfig, string, string[])
+  nameWithType: ConfigurationService.DisplayConfigSummary(AppConfig, string, string[])
+  fullName: Meridian.Application.Services.ConfigurationService.DisplayConfigSummary(Meridian.Application.Config.AppConfig, string, string[])
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayConfigSummary
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 846
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays configuration summary to console.
+  example: []
+  syntax:
+    content: public void DisplayConfigSummary(AppConfig config, string configPath, string[] args)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: configPath
+      type: System.String
+    - id: args
+      type: System.String[]
+    content.vb: Public Sub DisplayConfigSummary(config As AppConfig, configPath As String, args As String())
+  overload: Meridian.Application.Services.ConfigurationService.DisplayConfigSummary*
+  nameWithType.vb: ConfigurationService.DisplayConfigSummary(AppConfig, String, String())
+  fullName.vb: Meridian.Application.Services.ConfigurationService.DisplayConfigSummary(Meridian.Application.Config.AppConfig, String, String())
+  name.vb: DisplayConfigSummary(AppConfig, String, String())
+- uid: Meridian.Application.Services.ConfigurationService.GetConfigTemplate(System.String)
+  commentId: M:Meridian.Application.Services.ConfigurationService.GetConfigTemplate(System.String)
+  id: GetConfigTemplate(System.String)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GetConfigTemplate(string)
+  nameWithType: ConfigurationService.GetConfigTemplate(string)
+  fullName: Meridian.Application.Services.ConfigurationService.GetConfigTemplate(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetConfigTemplate
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 855
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generates a configuration template.
+  example: []
+  syntax:
+    content: public ConfigTemplate? GetConfigTemplate(string templateName)
+    parameters:
+    - id: templateName
+      type: System.String
+    return:
+      type: Meridian.Application.Services.ConfigTemplate
+    content.vb: Public Function GetConfigTemplate(templateName As String) As ConfigTemplate
+  overload: Meridian.Application.Services.ConfigurationService.GetConfigTemplate*
+  nameWithType.vb: ConfigurationService.GetConfigTemplate(String)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.GetConfigTemplate(String)
+  name.vb: GetConfigTemplate(String)
+- uid: Meridian.Application.Services.ConfigurationService.GetConfig(System.String)
+  commentId: M:Meridian.Application.Services.ConfigurationService.GetConfig(System.String)
+  id: GetConfig(System.String)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: GetConfig(string?)
+  nameWithType: ConfigurationService.GetConfig(string?)
+  fullName: Meridian.Application.Services.ConfigurationService.GetConfig(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetConfig
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 864
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Returns the current on-disk config via ConfigStore.
+  example: []
+  syntax:
+    content: public AppConfig GetConfig(string? configPath = null)
+    parameters:
+    - id: configPath
+      type: System.String
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Function GetConfig(configPath As String = Nothing) As AppConfig
+  overload: Meridian.Application.Services.ConfigurationService.GetConfig*
+  nameWithType.vb: ConfigurationService.GetConfig(String)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.GetConfig(String)
+  name.vb: GetConfig(String)
+- uid: Meridian.Application.Services.ConfigurationService.SaveConfigAsync(Meridian.Application.Config.AppConfig,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Services.ConfigurationService.SaveConfigAsync(Meridian.Application.Config.AppConfig,System.String,System.Threading.CancellationToken)
+  id: SaveConfigAsync(Meridian.Application.Config.AppConfig,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: SaveConfigAsync(AppConfig, string?, CancellationToken)
+  nameWithType: ConfigurationService.SaveConfigAsync(AppConfig, string?, CancellationToken)
+  fullName: Meridian.Application.Services.ConfigurationService.SaveConfigAsync(Meridian.Application.Config.AppConfig, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveConfigAsync
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 873
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Saves a modified config back to disk.
+  example: []
+  syntax:
+    content: public Task SaveConfigAsync(AppConfig config, string? configPath = null, CancellationToken ct = default)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+    - id: configPath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SaveConfigAsync(config As AppConfig, configPath As String = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Services.ConfigurationService.SaveConfigAsync*
+  nameWithType.vb: ConfigurationService.SaveConfigAsync(AppConfig, String, CancellationToken)
+  fullName.vb: Meridian.Application.Services.ConfigurationService.SaveConfigAsync(Meridian.Application.Config.AppConfig, String, System.Threading.CancellationToken)
+  name.vb: SaveConfigAsync(AppConfig, String, CancellationToken)
+- uid: Meridian.Application.Services.ConfigurationService.DisposeAsync
+  commentId: M:Meridian.Application.Services.ConfigurationService.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Services.ConfigurationService
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: ConfigurationService.DisposeAsync()
+  fullName: Meridian.Application.Services.ConfigurationService.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Services/ConfigurationService.cs
+    startLine: 881
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Services.ConfigurationService.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.ConfigurationService.#ctor*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.#ctor
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService__ctor_Serilog_ILogger_Meridian_Application_Services_ConfigurationWizard_Meridian_Application_Services_AutoConfigurationService_Meridian_Application_Config_Credentials_ProviderCredentialResolver_
+  name: ConfigurationService
+  nameWithType: ConfigurationService.ConfigurationService
+  fullName: Meridian.Application.Services.ConfigurationService.ConfigurationService
+  nameWithType.vb: ConfigurationService.New
+  fullName.vb: Meridian.Application.Services.ConfigurationService.New
+  name.vb: New
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Meridian.Application.Services.ConfigurationWizard
+  commentId: T:Meridian.Application.Services.ConfigurationWizard
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigurationWizard.html
+  name: ConfigurationWizard
+  nameWithType: ConfigurationWizard
+  fullName: Meridian.Application.Services.ConfigurationWizard
+- uid: Meridian.Application.Services.AutoConfigurationService
+  commentId: T:Meridian.Application.Services.AutoConfigurationService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.AutoConfigurationService.html
+  name: AutoConfigurationService
+  nameWithType: AutoConfigurationService
+  fullName: Meridian.Application.Services.AutoConfigurationService
+- uid: Meridian.Application.Config.Credentials.ProviderCredentialResolver
+  commentId: T:Meridian.Application.Config.Credentials.ProviderCredentialResolver
+  parent: Meridian.Application.Config.Credentials
+  href: Meridian.Application.Config.Credentials.ProviderCredentialResolver.html
+  name: ProviderCredentialResolver
+  nameWithType: ProviderCredentialResolver
+  fullName: Meridian.Application.Config.Credentials.ProviderCredentialResolver
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Config.Credentials
+  commentId: N:Meridian.Application.Config.Credentials
+  href: Meridian.html
+  name: Meridian.Application.Config.Credentials
+  nameWithType: Meridian.Application.Config.Credentials
+  fullName: Meridian.Application.Config.Credentials
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  - name: .
+  - uid: Meridian.Application.Config.Credentials
+    name: Credentials
+    href: Meridian.Application.Config.Credentials.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  - name: .
+  - uid: Meridian.Application.Config.Credentials
+    name: Credentials
+    href: Meridian.Application.Config.Credentials.html
+- uid: Meridian.Application.Services.ConfigurationService.Pipeline*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.Pipeline
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_Pipeline
+  name: Pipeline
+  nameWithType: ConfigurationService.Pipeline
+  fullName: Meridian.Application.Services.ConfigurationService.Pipeline
+- uid: Meridian.Application.Config.ConfigurationPipeline
+  commentId: T:Meridian.Application.Config.ConfigurationPipeline
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationPipeline.html
+  name: ConfigurationPipeline
+  nameWithType: ConfigurationPipeline
+  fullName: Meridian.Application.Config.ConfigurationPipeline
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Services.ConfigurationService.RunWizardAsync*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.RunWizardAsync
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_RunWizardAsync_System_Threading_CancellationToken_
+  name: RunWizardAsync
+  nameWithType: ConfigurationService.RunWizardAsync
+  fullName: Meridian.Application.Services.ConfigurationService.RunWizardAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.WizardResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.WizardResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<WizardResult>
+  nameWithType: Task<WizardResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.WizardResult>
+  nameWithType.vb: Task(Of WizardResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.WizardResult)
+  name.vb: Task(Of WizardResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.WizardResult
+    name: WizardResult
+    href: Meridian.Application.Services.WizardResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.WizardResult
+    name: WizardResult
+    href: Meridian.Application.Services.WizardResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Services.ConfigurationService.RunAutoConfig*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.RunAutoConfig
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_RunAutoConfig
+  name: RunAutoConfig
+  nameWithType: ConfigurationService.RunAutoConfig
+  fullName: Meridian.Application.Services.ConfigurationService.RunAutoConfig
+- uid: Meridian.Application.Services.WizardResult
+  commentId: T:Meridian.Application.Services.WizardResult
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.WizardResult.html
+  name: WizardResult
+  nameWithType: WizardResult
+  fullName: Meridian.Application.Services.WizardResult
+- uid: Meridian.Application.Services.ConfigurationService.RunQuickstartAsync*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.RunQuickstartAsync
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_RunQuickstartAsync_System_Threading_CancellationToken_
+  name: RunQuickstartAsync
+  nameWithType: ConfigurationService.RunQuickstartAsync
+  fullName: Meridian.Application.Services.ConfigurationService.RunQuickstartAsync
+- uid: Meridian.Application.Services.ConfigurationService.AutoConfigure*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.AutoConfigure
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_AutoConfigure_Meridian_Application_Config_AppConfig_
+  name: AutoConfigure
+  nameWithType: ConfigurationService.AutoConfigure
+  fullName: Meridian.Application.Services.ConfigurationService.AutoConfigure
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+  commentId: T:Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.AutoConfigurationService.html
+  name: AutoConfigurationService.AutoConfigResult
+  nameWithType: AutoConfigurationService.AutoConfigResult
+  fullName: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+  spec.csharp:
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+    name: AutoConfigResult
+    href: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult.html
+  spec.vb:
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult
+    name: AutoConfigResult
+    href: Meridian.Application.Services.AutoConfigurationService.AutoConfigResult.html
+- uid: Meridian.Application.Services.ConfigurationService.GenerateFirstTimeConfig*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.GenerateFirstTimeConfig
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_GenerateFirstTimeConfig_Meridian_Application_Services_FirstTimeConfigOptions_
+  name: GenerateFirstTimeConfig
+  nameWithType: ConfigurationService.GenerateFirstTimeConfig
+  fullName: Meridian.Application.Services.ConfigurationService.GenerateFirstTimeConfig
+- uid: Meridian.Application.Services.FirstTimeConfigOptions
+  commentId: T:Meridian.Application.Services.FirstTimeConfigOptions
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.FirstTimeConfigOptions.html
+  name: FirstTimeConfigOptions
+  nameWithType: FirstTimeConfigOptions
+  fullName: Meridian.Application.Services.FirstTimeConfigOptions
+- uid: Meridian.Application.Services.ConfigurationService.DetectProviders*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.DetectProviders
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_DetectProviders
+  name: DetectProviders
+  nameWithType: ConfigurationService.DetectProviders
+  fullName: Meridian.Application.Services.ConfigurationService.DetectProviders
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AutoConfigurationService.DetectedProvider>
+  nameWithType: IReadOnlyList<AutoConfigurationService.DetectedProvider>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.AutoConfigurationService.DetectedProvider>
+  nameWithType.vb: IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.AutoConfigurationService.DetectedProvider)
+  name.vb: IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+    name: DetectedProvider
+    href: Meridian.Application.Services.AutoConfigurationService.DetectedProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+    name: DetectedProvider
+    href: Meridian.Application.Services.AutoConfigurationService.DetectedProvider.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.ConfigurationService.GetCredentialStatus*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.GetCredentialStatus
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_GetCredentialStatus
+  name: GetCredentialStatus
+  nameWithType: ConfigurationService.GetCredentialStatus
+  fullName: Meridian.Application.Services.ConfigurationService.GetCredentialStatus
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Boolean}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Boolean}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, bool>
+  nameWithType: IReadOnlyDictionary<string, bool>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, bool>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Boolean)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Boolean)
+  name.vb: IReadOnlyDictionary(Of String, Boolean)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Application.Services.ConfigurationService.GetProvidersByCapability*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.GetProvidersByCapability
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_GetProvidersByCapability_System_String_
+  name: GetProvidersByCapability
+  nameWithType: ConfigurationService.GetProvidersByCapability
+  fullName: Meridian.Application.Services.ConfigurationService.GetProvidersByCapability
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.ConfigurationService.GetBestRealTimeProvider*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.GetBestRealTimeProvider
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_GetBestRealTimeProvider
+  name: GetBestRealTimeProvider
+  nameWithType: ConfigurationService.GetBestRealTimeProvider
+  fullName: Meridian.Application.Services.ConfigurationService.GetBestRealTimeProvider
+- uid: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+  commentId: T:Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.AutoConfigurationService.html
+  name: AutoConfigurationService.DetectedProvider
+  nameWithType: AutoConfigurationService.DetectedProvider
+  fullName: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+  spec.csharp:
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+    name: DetectedProvider
+    href: Meridian.Application.Services.AutoConfigurationService.DetectedProvider.html
+  spec.vb:
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+    name: DetectedProvider
+    href: Meridian.Application.Services.AutoConfigurationService.DetectedProvider.html
+- uid: Meridian.Application.Services.ConfigurationService.GetHistoricalProviders*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.GetHistoricalProviders
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_GetHistoricalProviders
+  name: GetHistoricalProviders
+  nameWithType: ConfigurationService.GetHistoricalProviders
+  fullName: Meridian.Application.Services.ConfigurationService.GetHistoricalProviders
+- uid: Meridian.Application.Services.ConfigurationService.PrintProviderDetection*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.PrintProviderDetection
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_PrintProviderDetection_System_Collections_Generic_IReadOnlyList_Meridian_Application_Services_AutoConfigurationService_DetectedProvider__
+  name: PrintProviderDetection
+  nameWithType: ConfigurationService.PrintProviderDetection
+  fullName: Meridian.Application.Services.ConfigurationService.PrintProviderDetection
+- uid: Meridian.Application.Services.ConfigurationService.CreateCredentialContext*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.CreateCredentialContext
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_CreateCredentialContext_System_Type_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__
+  name: CreateCredentialContext
+  nameWithType: ConfigurationService.CreateCredentialContext
+  fullName: Meridian.Application.Services.ConfigurationService.CreateCredentialContext
+- uid: System.Type
+  commentId: T:System.Type
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.type
+  name: Type
+  nameWithType: Type
+  fullName: System.Type
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Contracts.ICredentialContext
+  commentId: T:Meridian.Infrastructure.Contracts.ICredentialContext
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.ICredentialContext.html
+  name: ICredentialContext
+  nameWithType: ICredentialContext
+  fullName: Meridian.Infrastructure.Contracts.ICredentialContext
+- uid: Meridian.Infrastructure.Contracts
+  commentId: N:Meridian.Infrastructure.Contracts
+  href: Meridian.html
+  name: Meridian.Infrastructure.Contracts
+  nameWithType: Meridian.Infrastructure.Contracts
+  fullName: Meridian.Infrastructure.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html
+- uid: Meridian.Application.Services.ConfigurationService.ResolveAllCredentials*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.ResolveAllCredentials
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_ResolveAllCredentials_Meridian_Application_Config_AppConfig_
+  name: ResolveAllCredentials
+  nameWithType: ConfigurationService.ResolveAllCredentials
+  fullName: Meridian.Application.Services.ConfigurationService.ResolveAllCredentials
+- uid: Meridian.Application.Services.ConfigurationService.ValidateConfig*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.ValidateConfig
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_ValidateConfig_System_String_
+  name: ValidateConfig
+  nameWithType: ConfigurationService.ValidateConfig
+  fullName: Meridian.Application.Services.ConfigurationService.ValidateConfig
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Services.ConfigurationService.DryRunValidationAsync*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.DryRunValidationAsync
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_DryRunValidationAsync_Meridian_Application_Config_AppConfig_Meridian_Application_Services_DryRunOptions_System_Threading_CancellationToken_
+  name: DryRunValidationAsync
+  nameWithType: ConfigurationService.DryRunValidationAsync
+  fullName: Meridian.Application.Services.ConfigurationService.DryRunValidationAsync
+- uid: Meridian.Application.Services.DryRunOptions
+  commentId: T:Meridian.Application.Services.DryRunOptions
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.DryRunOptions.html
+  name: DryRunOptions
+  nameWithType: DryRunOptions
+  fullName: Meridian.Application.Services.DryRunOptions
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.DryRunResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.DryRunResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DryRunResult>
+  nameWithType: Task<DryRunResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.DryRunResult>
+  nameWithType.vb: Task(Of DryRunResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.DryRunResult)
+  name.vb: Task(Of DryRunResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.DryRunResult
+    name: DryRunResult
+    href: Meridian.Application.Services.DryRunResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.DryRunResult
+    name: DryRunResult
+    href: Meridian.Application.Services.DryRunResult.html
+  - name: )
+- uid: Meridian.Application.Services.ConfigurationService.PerformQuickCheck*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.PerformQuickCheck
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_PerformQuickCheck_Meridian_Application_Config_AppConfig_
+  name: PerformQuickCheck
+  nameWithType: ConfigurationService.PerformQuickCheck
+  fullName: Meridian.Application.Services.ConfigurationService.PerformQuickCheck
+- uid: Meridian.Application.Services.QuickCheckResult
+  commentId: T:Meridian.Application.Services.QuickCheckResult
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.QuickCheckResult.html
+  name: QuickCheckResult
+  nameWithType: QuickCheckResult
+  fullName: Meridian.Application.Services.QuickCheckResult
+- uid: Meridian.Application.Services.ConfigurationService.TestConnectivityAsync*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.TestConnectivityAsync
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_TestConnectivityAsync_Meridian_Application_Config_AppConfig_System_Threading_CancellationToken_
+  name: TestConnectivityAsync
+  nameWithType: ConfigurationService.TestConnectivityAsync
+  fullName: Meridian.Application.Services.ConfigurationService.TestConnectivityAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ConnectivityTestService.ConnectivitySummary>
+  nameWithType: Task<ConnectivityTestService.ConnectivitySummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary>
+  nameWithType.vb: Task(Of ConnectivityTestService.ConnectivitySummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary)
+  name.vb: Task(Of ConnectivityTestService.ConnectivitySummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.ConnectivityTestService
+    name: ConnectivityTestService
+    href: Meridian.Application.Services.ConnectivityTestService.html
+  - name: .
+  - uid: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+    name: ConnectivitySummary
+    href: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ConnectivityTestService
+    name: ConnectivityTestService
+    href: Meridian.Application.Services.ConnectivityTestService.html
+  - name: .
+  - uid: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary
+    name: ConnectivitySummary
+    href: Meridian.Application.Services.ConnectivityTestService.ConnectivitySummary.html
+  - name: )
+- uid: Meridian.Application.Services.ConfigurationService.ValidateCredentialsAsync*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.ValidateCredentialsAsync
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_ValidateCredentialsAsync_Meridian_Application_Config_AppConfig_System_Threading_CancellationToken_
+  name: ValidateCredentialsAsync
+  nameWithType: ConfigurationService.ValidateCredentialsAsync
+  fullName: Meridian.Application.Services.ConfigurationService.ValidateCredentialsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Services.CredentialValidationService.ValidationSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Services.CredentialValidationService.ValidationSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CredentialValidationService.ValidationSummary>
+  nameWithType: Task<CredentialValidationService.ValidationSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Services.CredentialValidationService.ValidationSummary>
+  nameWithType.vb: Task(Of CredentialValidationService.ValidationSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Services.CredentialValidationService.ValidationSummary)
+  name.vb: Task(Of CredentialValidationService.ValidationSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Services.CredentialValidationService
+    name: CredentialValidationService
+    href: Meridian.Application.Services.CredentialValidationService.html
+  - name: .
+  - uid: Meridian.Application.Services.CredentialValidationService.ValidationSummary
+    name: ValidationSummary
+    href: Meridian.Application.Services.CredentialValidationService.ValidationSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.CredentialValidationService
+    name: CredentialValidationService
+    href: Meridian.Application.Services.CredentialValidationService.html
+  - name: .
+  - uid: Meridian.Application.Services.CredentialValidationService.ValidationSummary
+    name: ValidationSummary
+    href: Meridian.Application.Services.CredentialValidationService.ValidationSummary.html
+  - name: )
+- uid: Meridian.Application.Config.SelfHealingStrictness.Development
+  commentId: F:Meridian.Application.Config.SelfHealingStrictness.Development
+  href: Meridian.Application.Config.SelfHealingStrictness.html#Meridian_Application_Config_SelfHealingStrictness_Development
+  name: Development
+  nameWithType: SelfHealingStrictness.Development
+  fullName: Meridian.Application.Config.SelfHealingStrictness.Development
+- uid: Meridian.Application.Config.SelfHealingSeverity.Warn
+  commentId: F:Meridian.Application.Config.SelfHealingSeverity.Warn
+  href: Meridian.Application.Config.SelfHealingSeverity.html#Meridian_Application_Config_SelfHealingSeverity_Warn
+  name: Warn
+  nameWithType: SelfHealingSeverity.Warn
+  fullName: Meridian.Application.Config.SelfHealingSeverity.Warn
+- uid: Meridian.Application.Config.SelfHealingStrictness.Production
+  commentId: F:Meridian.Application.Config.SelfHealingStrictness.Production
+  href: Meridian.Application.Config.SelfHealingStrictness.html#Meridian_Application_Config_SelfHealingStrictness_Production
+  name: Production
+  nameWithType: SelfHealingStrictness.Production
+  fullName: Meridian.Application.Config.SelfHealingStrictness.Production
+- uid: Meridian.Application.Config.SelfHealingSeverity.AutoFix
+  commentId: F:Meridian.Application.Config.SelfHealingSeverity.AutoFix
+  href: Meridian.Application.Config.SelfHealingSeverity.html#Meridian_Application_Config_SelfHealingSeverity_AutoFix
+  name: AutoFix
+  nameWithType: SelfHealingSeverity.AutoFix
+  fullName: Meridian.Application.Config.SelfHealingSeverity.AutoFix
+- uid: Meridian.Application.Services.ConfigurationService.ApplySelfHealingFixes*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.ApplySelfHealingFixes
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_ApplySelfHealingFixes_Meridian_Application_Config_AppConfig_Meridian_Application_Config_SelfHealingStrictness_
+  name: ApplySelfHealingFixes
+  nameWithType: ConfigurationService.ApplySelfHealingFixes
+  fullName: Meridian.Application.Services.ConfigurationService.ApplySelfHealingFixes
+- uid: Meridian.Application.Config.SelfHealingStrictness
+  commentId: T:Meridian.Application.Config.SelfHealingStrictness
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.SelfHealingStrictness.html
+  name: SelfHealingStrictness
+  nameWithType: SelfHealingStrictness
+  fullName: Meridian.Application.Config.SelfHealingStrictness
+- uid: System.ValueTuple{Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String}}
+  commentId: T:System.ValueTuple{Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String}}
+  parent: System
+  definition: System.ValueTuple`3
+  href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.application.config.appconfig,system.collections.generic.ireadonlylist-system.string-,system.collections.generic.ireadonlylist-system.string--.config
+  name: (AppConfig Config, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Warnings)
+  nameWithType: (AppConfig Config, IReadOnlyList<string> AppliedFixes, IReadOnlyList<string> Warnings)
+  fullName: (Meridian.Application.Config.AppConfig Config, System.Collections.Generic.IReadOnlyList<string> AppliedFixes, System.Collections.Generic.IReadOnlyList<string> Warnings)
+  nameWithType.vb: (Config As AppConfig, AppliedFixes As IReadOnlyList(Of String), Warnings As IReadOnlyList(Of String))
+  fullName.vb: (Config As Meridian.Application.Config.AppConfig, AppliedFixes As System.Collections.Generic.IReadOnlyList(Of String), Warnings As System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: (Config As AppConfig, AppliedFixes As IReadOnlyList(Of String), Warnings As IReadOnlyList(Of String))
+  spec.csharp:
+  - name: (
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String}}.Config
+    name: Config
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.application.config.appconfig,system.collections.generic.ireadonlylist-system.string-,system.collections.generic.ireadonlylist-system.string--.config
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String}}.AppliedFixes
+    name: AppliedFixes
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.application.config.appconfig,system.collections.generic.ireadonlylist-system.string-,system.collections.generic.ireadonlylist-system.string--.appliedfixes
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String}}.Warnings
+    name: Warnings
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.application.config.appconfig,system.collections.generic.ireadonlylist-system.string-,system.collections.generic.ireadonlylist-system.string--.warnings
+  - name: )
+  spec.vb:
+  - name: (
+  - uid: System.ValueTuple{Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String}}.Config
+    name: Config
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.application.config.appconfig,system.collections.generic.ireadonlylist-system.string-,system.collections.generic.ireadonlylist-system.string--.config
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String}}.AppliedFixes
+    name: AppliedFixes
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.application.config.appconfig,system.collections.generic.ireadonlylist-system.string-,system.collections.generic.ireadonlylist-system.string--.appliedfixes
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Application.Config.AppConfig,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String}}.Warnings
+    name: Warnings
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.application.config.appconfig,system.collections.generic.ireadonlylist-system.string-,system.collections.generic.ireadonlylist-system.string--.warnings
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.ValueTuple`3
+  commentId: T:System.ValueTuple`3
+  name: (T1, T2, T3)
+  nameWithType: (T1, T2, T3)
+  fullName: (T1, T2, T3)
+  spec.csharp:
+  - name: (
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: )
+  spec.vb:
+  - name: (
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: )
+- uid: Meridian.Application.Services.ConfigurationService.IsIBGatewayAvailable*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.IsIBGatewayAvailable
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_IsIBGatewayAvailable
+  name: IsIBGatewayAvailable
+  nameWithType: ConfigurationService.IsIBGatewayAvailable
+  fullName: Meridian.Application.Services.ConfigurationService.IsIBGatewayAvailable
+- uid: Meridian.Application.Services.ConfigurationService.ApplyEnvironmentOverrides*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.ApplyEnvironmentOverrides
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_ApplyEnvironmentOverrides_Meridian_Application_Config_AppConfig_
+  name: ApplyEnvironmentOverrides
+  nameWithType: ConfigurationService.ApplyEnvironmentOverrides
+  fullName: Meridian.Application.Services.ConfigurationService.ApplyEnvironmentOverrides
+- uid: Meridian.Application.Services.ConfigurationService.LoadAndPrepareConfig*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.LoadAndPrepareConfig
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_LoadAndPrepareConfig_System_String_System_Boolean_
+  name: LoadAndPrepareConfig
+  nameWithType: ConfigurationService.LoadAndPrepareConfig
+  fullName: Meridian.Application.Services.ConfigurationService.LoadAndPrepareConfig
+- uid: Meridian.Application.Services.ConfigurationService.LoadValidatedConfig*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.LoadValidatedConfig
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_LoadValidatedConfig_System_String_Meridian_Application_Config_PipelineOptions_
+  name: LoadValidatedConfig
+  nameWithType: ConfigurationService.LoadValidatedConfig
+  fullName: Meridian.Application.Services.ConfigurationService.LoadValidatedConfig
+- uid: Meridian.Application.Config.PipelineOptions
+  commentId: T:Meridian.Application.Config.PipelineOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.PipelineOptions.html
+  name: PipelineOptions
+  nameWithType: PipelineOptions
+  fullName: Meridian.Application.Config.PipelineOptions
+- uid: Meridian.Application.Config.ValidatedConfig
+  commentId: T:Meridian.Application.Config.ValidatedConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ValidatedConfig.html
+  name: ValidatedConfig
+  nameWithType: ValidatedConfig
+  fullName: Meridian.Application.Config.ValidatedConfig
+- uid: Meridian.Application.Services.ConfigurationService.ProcessConfig*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.ProcessConfig
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_ProcessConfig_Meridian_Application_Config_AppConfig_Meridian_Application_Config_PipelineOptions_
+  name: ProcessConfig
+  nameWithType: ConfigurationService.ProcessConfig
+  fullName: Meridian.Application.Services.ConfigurationService.ProcessConfig
+- uid: Meridian.Application.Services.ConfigurationService.RunWizardAndValidateAsync*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.RunWizardAndValidateAsync
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_RunWizardAndValidateAsync_System_Threading_CancellationToken_
+  name: RunWizardAndValidateAsync
+  nameWithType: ConfigurationService.RunWizardAndValidateAsync
+  fullName: Meridian.Application.Services.ConfigurationService.RunWizardAndValidateAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Config.ValidatedConfig}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Config.ValidatedConfig}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ValidatedConfig>
+  nameWithType: Task<ValidatedConfig>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Config.ValidatedConfig>
+  nameWithType.vb: Task(Of ValidatedConfig)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Config.ValidatedConfig)
+  name.vb: Task(Of ValidatedConfig)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Config.ValidatedConfig
+    name: ValidatedConfig
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ValidatedConfig
+    name: ValidatedConfig
+  - name: )
+- uid: Meridian.Application.Services.ConfigurationService.RunAutoConfigAndValidate*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.RunAutoConfigAndValidate
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_RunAutoConfigAndValidate_Meridian_Application_Config_AppConfig_
+  name: RunAutoConfigAndValidate
+  nameWithType: ConfigurationService.RunAutoConfigAndValidate
+  fullName: Meridian.Application.Services.ConfigurationService.RunAutoConfigAndValidate
+- uid: Meridian.Application.Services.ConfigurationService.GetEnvironmentName*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.GetEnvironmentName
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_GetEnvironmentName
+  name: GetEnvironmentName
+  nameWithType: ConfigurationService.GetEnvironmentName
+  fullName: Meridian.Application.Services.ConfigurationService.GetEnvironmentName
+- uid: Meridian.Application.Services.ConfigurationService.StartHotReload*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.StartHotReload
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_StartHotReload_System_String_System_Action_Meridian_Application_Config_AppConfig__System_Action_System_Exception__
+  name: StartHotReload
+  nameWithType: ConfigurationService.StartHotReload
+  fullName: Meridian.Application.Services.ConfigurationService.StartHotReload
+- uid: System.Action{Meridian.Application.Config.AppConfig}
+  commentId: T:System.Action{Meridian.Application.Config.AppConfig}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<AppConfig>
+  nameWithType: Action<AppConfig>
+  fullName: System.Action<Meridian.Application.Config.AppConfig>
+  nameWithType.vb: Action(Of AppConfig)
+  fullName.vb: System.Action(Of Meridian.Application.Config.AppConfig)
+  name.vb: Action(Of AppConfig)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: )
+- uid: System.Action{System.Exception}
+  commentId: T:System.Action{System.Exception}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<Exception>
+  nameWithType: Action<Exception>
+  fullName: System.Action<System.Exception>
+  nameWithType.vb: Action(Of Exception)
+  fullName.vb: System.Action(Of System.Exception)
+  name.vb: Action(Of Exception)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: )
+- uid: Meridian.Application.Config.ConfigWatcher
+  commentId: T:Meridian.Application.Config.ConfigWatcher
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigWatcher.html
+  name: ConfigWatcher
+  nameWithType: ConfigWatcher
+  fullName: Meridian.Application.Config.ConfigWatcher
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.ConfigurationService.StartValidatedHotReload*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.StartValidatedHotReload
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_StartValidatedHotReload_System_String_System_Action_Meridian_Application_Config_ValidatedConfig__System_Action_System_Exception__Meridian_Application_Config_PipelineOptions_
+  name: StartValidatedHotReload
+  nameWithType: ConfigurationService.StartValidatedHotReload
+  fullName: Meridian.Application.Services.ConfigurationService.StartValidatedHotReload
+- uid: System.Action{Meridian.Application.Config.ValidatedConfig}
+  commentId: T:System.Action{Meridian.Application.Config.ValidatedConfig}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ValidatedConfig>
+  nameWithType: Action<ValidatedConfig>
+  fullName: System.Action<Meridian.Application.Config.ValidatedConfig>
+  nameWithType.vb: Action(Of ValidatedConfig)
+  fullName.vb: System.Action(Of Meridian.Application.Config.ValidatedConfig)
+  name.vb: Action(Of ValidatedConfig)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Config.ValidatedConfig
+    name: ValidatedConfig
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ValidatedConfig
+    name: ValidatedConfig
+  - name: )
+- uid: Meridian.Application.Services.ConfigurationService.StopHotReload*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.StopHotReload
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_StopHotReload
+  name: StopHotReload
+  nameWithType: ConfigurationService.StopHotReload
+  fullName: Meridian.Application.Services.ConfigurationService.StopHotReload
+- uid: Meridian.Application.Services.ConfigurationService.DisplayConfigSummary*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.DisplayConfigSummary
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_DisplayConfigSummary_Meridian_Application_Config_AppConfig_System_String_System_String___
+  name: DisplayConfigSummary
+  nameWithType: ConfigurationService.DisplayConfigSummary
+  fullName: Meridian.Application.Services.ConfigurationService.DisplayConfigSummary
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Services.ConfigurationService.GetConfigTemplate*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.GetConfigTemplate
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_GetConfigTemplate_System_String_
+  name: GetConfigTemplate
+  nameWithType: ConfigurationService.GetConfigTemplate
+  fullName: Meridian.Application.Services.ConfigurationService.GetConfigTemplate
+- uid: Meridian.Application.Services.ConfigTemplate
+  commentId: T:Meridian.Application.Services.ConfigTemplate
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigTemplate.html
+  name: ConfigTemplate
+  nameWithType: ConfigTemplate
+  fullName: Meridian.Application.Services.ConfigTemplate
+- uid: Meridian.Application.Services.ConfigurationService.GetConfig*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.GetConfig
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_GetConfig_System_String_
+  name: GetConfig
+  nameWithType: ConfigurationService.GetConfig
+  fullName: Meridian.Application.Services.ConfigurationService.GetConfig
+- uid: Meridian.Application.Services.ConfigurationService.SaveConfigAsync*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.SaveConfigAsync
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_SaveConfigAsync_Meridian_Application_Config_AppConfig_System_String_System_Threading_CancellationToken_
+  name: SaveConfigAsync
+  nameWithType: ConfigurationService.SaveConfigAsync
+  fullName: Meridian.Application.Services.ConfigurationService.SaveConfigAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Application.Services.ConfigurationService.DisposeAsync*
+  commentId: Overload:Meridian.Application.Services.ConfigurationService.DisposeAsync
+  href: Meridian.Application.Services.ConfigurationService.html#Meridian_Application_Services_ConfigurationService_DisposeAsync
+  name: DisposeAsync
+  nameWithType: ConfigurationService.DisposeAsync
+  fullName: Meridian.Application.Services.ConfigurationService.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

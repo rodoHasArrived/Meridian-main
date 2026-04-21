@@ -117,8 +117,13 @@ public sealed class FieldValidationStage : IConfigValidationStage
             "Alpaca.KeyId" => "Set ALPACA__KEYID environment variable or update config",
             "Alpaca.SecretKey" => "Set ALPACA__SECRETKEY environment variable or update config",
             "Alpaca.Feed" => "Use 'iex' for free data or 'sip' for paid subscription",
-            "StockSharp.Enabled" => "Set StockSharp:Enabled to true when using StockSharp",
-            "StockSharp.ConnectorType" => "Use Rithmic, IQFeed, CQG, InteractiveBrokers, or Custom with AdapterType",
+            "IB.Host" => "Set the TWS or IB Gateway host, usually 127.0.0.1 for a local workstation",
+            "IB.Port" => "Use 7497 for paper TWS, 7496 for live TWS, or your configured Gateway socket port",
+            "IB.ClientId" => "Use a non-negative client id that does not conflict with another active IB API session",
+            "IB.UsePaperTrading" => "Keep paper trading enabled unless you explicitly intend to route live orders",
+            "IBClientPortal.Enabled" => "Enable this only when Client Portal Gateway is running and you want portfolio/account import",
+            "IBClientPortal.BaseUrl" => "Point this at the Client Portal HTTP endpoint, typically https://localhost:5000",
+            "IBClientPortal.AllowSelfSignedCertificates" => "Enable this when using the local Client Portal Gateway default self-signed HTTPS certificate",
             var p when p.Contains("Symbol") => "Symbol must be 1-20 uppercase characters",
             var p when p.Contains("DepthLevels") => "Depth levels should be between 1 and 50",
             _ => null
@@ -147,6 +152,27 @@ public sealed class SemanticValidationStage : IConfigValidationStage
                 "Symbols",
                 "No symbols have trades or depth subscriptions enabled",
                 "Enable SubscribeTrades or SubscribeDepth for at least one symbol"));
+        }
+
+        if (config.IB is { UsePaperTrading: false })
+        {
+            results.Add(new ConfigValidationResult(
+                ConfigValidationSeverity.Warning,
+                "IB.UsePaperTrading",
+                "Interactive Brokers is configured for live routing.",
+                "Confirm that live trading is intentional and keep UsePaperTrading=true for paper-safe defaults."));
+        }
+
+        if (config.IBClientPortal is { Enabled: true, AllowSelfSignedCertificates: false } clientPortal &&
+            Uri.TryCreate(clientPortal.BaseUrl, UriKind.Absolute, out var baseUri) &&
+            string.Equals(baseUri.Host, "localhost", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(baseUri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            results.Add(new ConfigValidationResult(
+                ConfigValidationSeverity.Warning,
+                "IBClientPortal.AllowSelfSignedCertificates",
+                "Client Portal is configured for local HTTPS without allowing self-signed certificates.",
+                "Enable AllowSelfSignedCertificates or switch BaseUrl to a trusted certificate endpoint."));
         }
 
         return results;

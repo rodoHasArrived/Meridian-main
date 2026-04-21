@@ -39,6 +39,9 @@ public sealed class DataQualityScoringService : IDataQualityScoringService
 
     /// <inheritdoc />
     public async Task<QualityAssessment> ScoreFileAsync(string filePath, CancellationToken ct = default)
+        => await ScoreFileAsync(filePath, persistMetadata: true, ct).ConfigureAwait(false);
+
+    private async Task<QualityAssessment> ScoreFileAsync(string filePath, bool persistMetadata, CancellationToken ct)
     {
         var fileInfo = new FileInfo(filePath);
         if (!fileInfo.Exists)
@@ -87,15 +90,15 @@ public sealed class DataQualityScoringService : IDataQualityScoringService
 
         _assessments[filePath] = assessment;
 
-        // Persist quality score to metadata if service available
-        _metadataService?.SetQualityScore(filePath, compositeScore, "DataQualityScoringService");
-        _metadataService?.SetInsight(filePath, "quality_assessment", new DataInsight(
-            Category: "quality",
-            Description: $"Quality score: {compositeScore:F3} ({GetQualityGrade(compositeScore)})",
-            NumericValue: compositeScore,
-            Unit: "score",
-            ComputedAtUtc: DateTime.UtcNow,
-            Severity: compositeScore < 0.5 ? InsightSeverity.Warning : InsightSeverity.Info));
+        if (persistMetadata && _metadataService is not null)
+        {
+            await _metadataService.SetQualityAssessmentAsync(
+                filePath,
+                compositeScore,
+                CreateQualityInsight(assessment),
+                "DataQualityScoringService",
+                ct).ConfigureAwait(false);
+        }
 
         return assessment;
     }
@@ -163,6 +166,9 @@ public sealed class DataQualityScoringService : IDataQualityScoringService
     public async Task<DataQualityScoringReport> GenerateReportAsync(CancellationToken ct = default)
     {
         var assessments = new List<QualityAssessment>();
+        var metadataUpdates = _metadataService is null
+            ? null
+            : new List<QualityAssessmentMetadataUpdate>();
 
         if (!Directory.Exists(_options.RootPath))
             return new DataQualityScoringReport(DateTime.UtcNow, assessments, new QualityReportSummary());
@@ -176,13 +182,23 @@ public sealed class DataQualityScoringService : IDataQualityScoringService
             ct.ThrowIfCancellationRequested();
             try
             {
-                var assessment = await ScoreFileAsync(file, ct);
+                var assessment = await ScoreFileAsync(file, persistMetadata: false, ct).ConfigureAwait(false);
                 assessments.Add(assessment);
+                metadataUpdates?.Add(new QualityAssessmentMetadataUpdate(
+                    FilePath: assessment.FilePath,
+                    Score: assessment.CompositeScore,
+                    Insight: CreateQualityInsight(assessment),
+                    ScoredBy: "DataQualityScoringService"));
             }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Failed to score file {File}", file);
             }
+        }
+
+        if (metadataUpdates is { Count: > 0 })
+        {
+            await _metadataService!.SetQualityAssessmentsAsync(metadataUpdates, ct).ConfigureAwait(false);
         }
 
         var summary = new QualityReportSummary
@@ -199,6 +215,17 @@ public sealed class DataQualityScoringService : IDataQualityScoringService
         };
 
         return new DataQualityScoringReport(DateTime.UtcNow, assessments, summary);
+    }
+
+    private static DataInsight CreateQualityInsight(QualityAssessment assessment)
+    {
+        return new DataInsight(
+            Category: "quality",
+            Description: $"Quality score: {assessment.CompositeScore:F3} ({GetQualityGrade(assessment.CompositeScore)})",
+            NumericValue: assessment.CompositeScore,
+            Unit: "score",
+            ComputedAtUtc: assessment.AssessedAtUtc,
+            Severity: assessment.CompositeScore < 0.5 ? InsightSeverity.Warning : InsightSeverity.Info);
     }
 
     private async Task<double> ComputeCompletenessScoreAsync(string filePath, CancellationToken ct)

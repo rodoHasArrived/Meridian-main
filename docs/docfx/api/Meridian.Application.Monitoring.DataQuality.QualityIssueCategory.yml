@@ -1,0 +1,308 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  commentId: T:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  id: QualityIssueCategory
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Completeness
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Consistency
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Format
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Gaps
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Latency
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Sequence
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Timeliness
+  - Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.ValueAnomaly
+  langs:
+  - csharp
+  - vb
+  name: QualityIssueCategory
+  nameWithType: QualityIssueCategory
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityIssueCategory
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Categories of quality issues for filtering and routing.
+  example: []
+  syntax:
+    content: 'public enum QualityIssueCategory : byte'
+    content.vb: Public Enum QualityIssueCategory As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Gaps
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Gaps
+  id: Gaps
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  langs:
+  - csharp
+  - vb
+  name: Gaps
+  nameWithType: QualityIssueCategory.Gaps
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Gaps
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gaps
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Data gaps or missing values.
+  example: []
+  syntax:
+    content: Gaps = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Sequence
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Sequence
+  id: Sequence
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  langs:
+  - csharp
+  - vb
+  name: Sequence
+  nameWithType: QualityIssueCategory.Sequence
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Sequence
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sequence
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Sequence anomalies (out-of-order, duplicates).
+  example: []
+  syntax:
+    content: Sequence = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.ValueAnomaly
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.ValueAnomaly
+  id: ValueAnomaly
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  langs:
+  - csharp
+  - vb
+  name: ValueAnomaly
+  nameWithType: QualityIssueCategory.ValueAnomaly
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.ValueAnomaly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValueAnomaly
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Value anomalies (outliers, invalid prices).
+  example: []
+  syntax:
+    content: ValueAnomaly = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Latency
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Latency
+  id: Latency
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  langs:
+  - csharp
+  - vb
+  name: Latency
+  nameWithType: QualityIssueCategory.Latency
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Latency
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Latency
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Latency issues.
+  example: []
+  syntax:
+    content: Latency = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Completeness
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Completeness
+  id: Completeness
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  langs:
+  - csharp
+  - vb
+  name: Completeness
+  nameWithType: QualityIssueCategory.Completeness
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Completeness
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completeness
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Completeness issues.
+  example: []
+  syntax:
+    content: Completeness = 4
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Consistency
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Consistency
+  id: Consistency
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  langs:
+  - csharp
+  - vb
+  name: Consistency
+  nameWithType: QualityIssueCategory.Consistency
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Consistency
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Consistency
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Consistency issues across sources.
+  example: []
+  syntax:
+    content: Consistency = 5
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Format
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Format
+  id: Format
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  langs:
+  - csharp
+  - vb
+  name: Format
+  nameWithType: QualityIssueCategory.Format
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Format
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Format or schema issues.
+  example: []
+  syntax:
+    content: Format = 6
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Timeliness
+  commentId: F:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Timeliness
+  id: Timeliness
+  parent: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  langs:
+  - csharp
+  - vb
+  name: Timeliness
+  nameWithType: QualityIssueCategory.Timeliness
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.Timeliness
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timeliness
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/IQualityAnalyzer.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Timeliness issues.
+  example: []
+  syntax:
+    content: Timeliness = 7
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  commentId: T:Meridian.Application.Monitoring.DataQuality.QualityIssueCategory
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory.html
+  name: QualityIssueCategory
+  nameWithType: QualityIssueCategory
+  fullName: Meridian.Application.Monitoring.DataQuality.QualityIssueCategory

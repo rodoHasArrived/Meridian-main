@@ -32,6 +32,7 @@
                         <Button Content="Run Browser" Command="{Binding OpenBrowserCommand}" Style="{StaticResource GhostButtonStyle}" Margin="0,0,8,0" />
                         <Button Content="Run Detail" Command="{Binding OpenRunDetailCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
                         <Button Content="Portfolio" Command="{Binding OpenPortfolioCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
+                        <Button Content="Security Master" Command="{Binding OpenSelectedSecurityCommand}" Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,8,0" />
                         <Button Content="Ledger" Command="{Binding OpenLedgerCommand}" Style="{StaticResource PrimaryButtonStyle}" />
                     </StackPanel>
                 </Grid>
@@ -108,6 +109,7 @@
                 <StackPanel>
                     <TextBlock Text="Cash Flow Events" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
                     <DataGrid ItemsSource="{Binding Entries}"
+                              SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
                               AutoGenerateColumns="False"
                               IsReadOnly="True"
                               HeadersVisibility="Column"

@@ -1,0 +1,122 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.FinancialAccountKind
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccountKind
+  id: FinancialAccountKind
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.FinancialAccountKind.Bank
+  - Meridian.Backtesting.Sdk.FinancialAccountKind.Brokerage
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccountKind
+  nameWithType: FinancialAccountKind
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancialAccountKind
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Supported account categories used by the simulator and ledger.
+  example: []
+  syntax:
+    content: public enum FinancialAccountKind
+    content.vb: Public Enum FinancialAccountKind
+- uid: Meridian.Backtesting.Sdk.FinancialAccountKind.Brokerage
+  commentId: F:Meridian.Backtesting.Sdk.FinancialAccountKind.Brokerage
+  id: Brokerage
+  parent: Meridian.Backtesting.Sdk.FinancialAccountKind
+  langs:
+  - csharp
+  - vb
+  name: Brokerage
+  nameWithType: FinancialAccountKind.Brokerage
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountKind.Brokerage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Brokerage
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Brokerage = 0
+    return:
+      type: Meridian.Backtesting.Sdk.FinancialAccountKind
+- uid: Meridian.Backtesting.Sdk.FinancialAccountKind.Bank
+  commentId: F:Meridian.Backtesting.Sdk.FinancialAccountKind.Bank
+  id: Bank
+  parent: Meridian.Backtesting.Sdk.FinancialAccountKind
+  langs:
+  - csharp
+  - vb
+  name: Bank
+  nameWithType: FinancialAccountKind.Bank
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountKind.Bank
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bank
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccount.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Bank = 1
+    return:
+      type: Meridian.Backtesting.Sdk.FinancialAccountKind
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.FinancialAccountKind
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccountKind
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.FinancialAccountKind.html
+  name: FinancialAccountKind
+  nameWithType: FinancialAccountKind
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountKind

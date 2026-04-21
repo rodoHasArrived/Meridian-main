@@ -1,0 +1,159 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Etl.EtlDestinationKind
+  commentId: T:Meridian.Contracts.Etl.EtlDestinationKind
+  id: EtlDestinationKind
+  parent: Meridian.Contracts.Etl
+  children:
+  - Meridian.Contracts.Etl.EtlDestinationKind.Local
+  - Meridian.Contracts.Etl.EtlDestinationKind.Sftp
+  - Meridian.Contracts.Etl.EtlDestinationKind.StorageCatalog
+  langs:
+  - csharp
+  - vb
+  name: EtlDestinationKind
+  nameWithType: EtlDestinationKind
+  fullName: Meridian.Contracts.Etl.EtlDestinationKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EtlDestinationKind
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter))]
+
+      public enum EtlDestinationKind : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter))>
+
+      Public Enum EtlDestinationKind As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter
+- uid: Meridian.Contracts.Etl.EtlDestinationKind.StorageCatalog
+  commentId: F:Meridian.Contracts.Etl.EtlDestinationKind.StorageCatalog
+  id: StorageCatalog
+  parent: Meridian.Contracts.Etl.EtlDestinationKind
+  langs:
+  - csharp
+  - vb
+  name: StorageCatalog
+  nameWithType: EtlDestinationKind.StorageCatalog
+  fullName: Meridian.Contracts.Etl.EtlDestinationKind.StorageCatalog
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageCatalog
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: StorageCatalog = 0
+    return:
+      type: Meridian.Contracts.Etl.EtlDestinationKind
+- uid: Meridian.Contracts.Etl.EtlDestinationKind.Local
+  commentId: F:Meridian.Contracts.Etl.EtlDestinationKind.Local
+  id: Local
+  parent: Meridian.Contracts.Etl.EtlDestinationKind
+  langs:
+  - csharp
+  - vb
+  name: Local
+  nameWithType: EtlDestinationKind.Local
+  fullName: Meridian.Contracts.Etl.EtlDestinationKind.Local
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Local
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: Local = 1
+    return:
+      type: Meridian.Contracts.Etl.EtlDestinationKind
+- uid: Meridian.Contracts.Etl.EtlDestinationKind.Sftp
+  commentId: F:Meridian.Contracts.Etl.EtlDestinationKind.Sftp
+  id: Sftp
+  parent: Meridian.Contracts.Etl.EtlDestinationKind
+  langs:
+  - csharp
+  - vb
+  name: Sftp
+  nameWithType: EtlDestinationKind.Sftp
+  fullName: Meridian.Contracts.Etl.EtlDestinationKind.Sftp
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sftp
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: Sftp = 2
+    return:
+      type: Meridian.Contracts.Etl.EtlDestinationKind
+references:
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Contracts.Etl.EtlDestinationKind
+  commentId: T:Meridian.Contracts.Etl.EtlDestinationKind
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlDestinationKind.html
+  name: EtlDestinationKind
+  nameWithType: EtlDestinationKind
+  fullName: Meridian.Contracts.Etl.EtlDestinationKind

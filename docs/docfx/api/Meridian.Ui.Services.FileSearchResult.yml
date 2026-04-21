@@ -1,0 +1,612 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.FileSearchResult
+  commentId: T:Meridian.Ui.Services.FileSearchResult
+  id: FileSearchResult
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.FileSearchResult.Date
+  - Meridian.Ui.Services.FileSearchResult.EventCount
+  - Meridian.Ui.Services.FileSearchResult.EventType
+  - Meridian.Ui.Services.FileSearchResult.Path
+  - Meridian.Ui.Services.FileSearchResult.QualityScore
+  - Meridian.Ui.Services.FileSearchResult.SizeBytes
+  - Meridian.Ui.Services.FileSearchResult.Source
+  - Meridian.Ui.Services.FileSearchResult.Symbol
+  langs:
+  - csharp
+  - vb
+  name: FileSearchResult
+  nameWithType: FileSearchResult
+  fullName: Meridian.Ui.Services.FileSearchResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileSearchResult
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: File search result from core API.
+  example: []
+  syntax:
+    content: public sealed class FileSearchResult
+    content.vb: Public NotInheritable Class FileSearchResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.FileSearchResult.Path
+  commentId: P:Meridian.Ui.Services.FileSearchResult.Path
+  id: Path
+  parent: Meridian.Ui.Services.FileSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Path
+  nameWithType: FileSearchResult.Path
+  fullName: Meridian.Ui.Services.FileSearchResult.Path
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Path
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Path { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Path As String
+  overload: Meridian.Ui.Services.FileSearchResult.Path*
+- uid: Meridian.Ui.Services.FileSearchResult.Symbol
+  commentId: P:Meridian.Ui.Services.FileSearchResult.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.FileSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: FileSearchResult.Symbol
+  fullName: Meridian.Ui.Services.FileSearchResult.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.FileSearchResult.Symbol*
+- uid: Meridian.Ui.Services.FileSearchResult.EventType
+  commentId: P:Meridian.Ui.Services.FileSearchResult.EventType
+  id: EventType
+  parent: Meridian.Ui.Services.FileSearchResult
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: FileSearchResult.EventType
+  fullName: Meridian.Ui.Services.FileSearchResult.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? EventType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EventType As String
+  overload: Meridian.Ui.Services.FileSearchResult.EventType*
+- uid: Meridian.Ui.Services.FileSearchResult.Source
+  commentId: P:Meridian.Ui.Services.FileSearchResult.Source
+  id: Source
+  parent: Meridian.Ui.Services.FileSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: FileSearchResult.Source
+  fullName: Meridian.Ui.Services.FileSearchResult.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Source { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Ui.Services.FileSearchResult.Source*
+- uid: Meridian.Ui.Services.FileSearchResult.Date
+  commentId: P:Meridian.Ui.Services.FileSearchResult.Date
+  id: Date
+  parent: Meridian.Ui.Services.FileSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Date
+  nameWithType: FileSearchResult.Date
+  fullName: Meridian.Ui.Services.FileSearchResult.Date
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Date
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTimeOffset Date { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property [Date] As DateTimeOffset
+  overload: Meridian.Ui.Services.FileSearchResult.Date*
+- uid: Meridian.Ui.Services.FileSearchResult.SizeBytes
+  commentId: P:Meridian.Ui.Services.FileSearchResult.SizeBytes
+  id: SizeBytes
+  parent: Meridian.Ui.Services.FileSearchResult
+  langs:
+  - csharp
+  - vb
+  name: SizeBytes
+  nameWithType: FileSearchResult.SizeBytes
+  fullName: Meridian.Ui.Services.FileSearchResult.SizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SizeBytes
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long SizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SizeBytes As Long
+  overload: Meridian.Ui.Services.FileSearchResult.SizeBytes*
+- uid: Meridian.Ui.Services.FileSearchResult.EventCount
+  commentId: P:Meridian.Ui.Services.FileSearchResult.EventCount
+  id: EventCount
+  parent: Meridian.Ui.Services.FileSearchResult
+  langs:
+  - csharp
+  - vb
+  name: EventCount
+  nameWithType: FileSearchResult.EventCount
+  fullName: Meridian.Ui.Services.FileSearchResult.EventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCount
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long EventCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EventCount As Long
+  overload: Meridian.Ui.Services.FileSearchResult.EventCount*
+- uid: Meridian.Ui.Services.FileSearchResult.QualityScore
+  commentId: P:Meridian.Ui.Services.FileSearchResult.QualityScore
+  id: QualityScore
+  parent: Meridian.Ui.Services.FileSearchResult
+  langs:
+  - csharp
+  - vb
+  name: QualityScore
+  nameWithType: FileSearchResult.QualityScore
+  fullName: Meridian.Ui.Services.FileSearchResult.QualityScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityScore
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double QualityScore { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property QualityScore As Double
+  overload: Meridian.Ui.Services.FileSearchResult.QualityScore*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.FileSearchResult.Path*
+  commentId: Overload:Meridian.Ui.Services.FileSearchResult.Path
+  href: Meridian.Ui.Services.FileSearchResult.html#Meridian_Ui_Services_FileSearchResult_Path
+  name: Path
+  nameWithType: FileSearchResult.Path
+  fullName: Meridian.Ui.Services.FileSearchResult.Path
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.FileSearchResult.Symbol*
+  commentId: Overload:Meridian.Ui.Services.FileSearchResult.Symbol
+  href: Meridian.Ui.Services.FileSearchResult.html#Meridian_Ui_Services_FileSearchResult_Symbol
+  name: Symbol
+  nameWithType: FileSearchResult.Symbol
+  fullName: Meridian.Ui.Services.FileSearchResult.Symbol
+- uid: Meridian.Ui.Services.FileSearchResult.EventType*
+  commentId: Overload:Meridian.Ui.Services.FileSearchResult.EventType
+  href: Meridian.Ui.Services.FileSearchResult.html#Meridian_Ui_Services_FileSearchResult_EventType
+  name: EventType
+  nameWithType: FileSearchResult.EventType
+  fullName: Meridian.Ui.Services.FileSearchResult.EventType
+- uid: Meridian.Ui.Services.FileSearchResult.Source*
+  commentId: Overload:Meridian.Ui.Services.FileSearchResult.Source
+  href: Meridian.Ui.Services.FileSearchResult.html#Meridian_Ui_Services_FileSearchResult_Source
+  name: Source
+  nameWithType: FileSearchResult.Source
+  fullName: Meridian.Ui.Services.FileSearchResult.Source
+- uid: Meridian.Ui.Services.FileSearchResult.Date*
+  commentId: Overload:Meridian.Ui.Services.FileSearchResult.Date
+  href: Meridian.Ui.Services.FileSearchResult.html#Meridian_Ui_Services_FileSearchResult_Date
+  name: Date
+  nameWithType: FileSearchResult.Date
+  fullName: Meridian.Ui.Services.FileSearchResult.Date
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Ui.Services.FileSearchResult.SizeBytes*
+  commentId: Overload:Meridian.Ui.Services.FileSearchResult.SizeBytes
+  href: Meridian.Ui.Services.FileSearchResult.html#Meridian_Ui_Services_FileSearchResult_SizeBytes
+  name: SizeBytes
+  nameWithType: FileSearchResult.SizeBytes
+  fullName: Meridian.Ui.Services.FileSearchResult.SizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.FileSearchResult.EventCount*
+  commentId: Overload:Meridian.Ui.Services.FileSearchResult.EventCount
+  href: Meridian.Ui.Services.FileSearchResult.html#Meridian_Ui_Services_FileSearchResult_EventCount
+  name: EventCount
+  nameWithType: FileSearchResult.EventCount
+  fullName: Meridian.Ui.Services.FileSearchResult.EventCount
+- uid: Meridian.Ui.Services.FileSearchResult.QualityScore*
+  commentId: Overload:Meridian.Ui.Services.FileSearchResult.QualityScore
+  href: Meridian.Ui.Services.FileSearchResult.html#Meridian_Ui_Services_FileSearchResult_QualityScore
+  name: QualityScore
+  nameWithType: FileSearchResult.QualityScore
+  fullName: Meridian.Ui.Services.FileSearchResult.QualityScore
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

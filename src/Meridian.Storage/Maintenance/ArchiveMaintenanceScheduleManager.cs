@@ -198,7 +198,10 @@ public sealed class ArchiveMaintenanceScheduleManager : IArchiveMaintenanceSched
         );
     }
 
-    public void UpdateScheduleAfterExecution(string scheduleId, MaintenanceExecution execution)
+    public async Task UpdateScheduleAfterExecutionAsync(
+        string scheduleId,
+        MaintenanceExecution execution,
+        CancellationToken ct = default)
     {
         if (!_schedules.TryGetValue(scheduleId, out var schedule))
             return;
@@ -222,7 +225,7 @@ public sealed class ArchiveMaintenanceScheduleManager : IArchiveMaintenanceSched
         // Calculate next execution from the time it ran
         schedule.NextExecutionAt = schedule.CalculateNextExecution(execution.StartedAt);
 
-        _ = PersistSchedulesAsync(CancellationToken.None);
+        await PersistSchedulesAsync(ct).ConfigureAwait(false);
     }
 
     private void LoadSchedules()
@@ -310,7 +313,7 @@ public sealed class MaintenanceExecutionHistory : IMaintenanceExecutionHistory
         LoadHistory();
     }
 
-    public void RecordExecution(MaintenanceExecution execution)
+    public async Task RecordExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default)
     {
         _executions[execution.ExecutionId] = execution;
 
@@ -329,13 +332,13 @@ public sealed class MaintenanceExecutionHistory : IMaintenanceExecutionHistory
             }
         }
 
-        _ = PersistHistoryAsync(CancellationToken.None);
+        await PersistHistoryAsync(ct).ConfigureAwait(false);
     }
 
-    public void UpdateExecution(MaintenanceExecution execution)
+    public Task UpdateExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default)
     {
         _executions[execution.ExecutionId] = execution;
-        _ = PersistHistoryAsync(CancellationToken.None);
+        return PersistHistoryAsync(ct);
     }
 
     public MaintenanceExecution? GetExecution(string executionId)

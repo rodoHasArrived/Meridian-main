@@ -1,0 +1,486 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore
+  commentId: T:Meridian.Contracts.Domain.IPositionSnapshotStore
+  id: IPositionSnapshotStore
+  parent: Meridian.Contracts.Domain
+  children:
+  - Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  - Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IPositionSnapshotStore
+  nameWithType: IPositionSnapshotStore
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPositionSnapshotStore
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: >-
+    Provides crash-safe persistence for per-account portfolio snapshots.
+
+    Implementations must follow the WAL pattern (ADR-007) and respect the
+
+    <code>LifecyclePolicyEngine</code> tiered-storage rules (ADR-002).
+  example: []
+  syntax:
+    content: public interface IPositionSnapshotStore
+    content.vb: Public Interface IPositionSnapshotStore
+  derivedClasses:
+  - Meridian.Storage.Services.JsonlPositionSnapshotStore
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  id: SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Domain.IPositionSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: SaveSnapshotAsync(AccountSnapshotRecord, CancellationToken)
+  nameWithType: IPositionSnapshotStore.SaveSnapshotAsync(AccountSnapshotRecord, CancellationToken)
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveSnapshotAsync
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Persists an account snapshot.  Idempotent — latest write wins.
+  example: []
+  syntax:
+    content: Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default)
+    parameters:
+    - id: snapshot
+      type: Meridian.Contracts.Domain.AccountSnapshotRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveSnapshotAsync(snapshot As AccountSnapshotRecord, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync*
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Domain.IPositionSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: GetLatestSnapshotAsync(string, string, CancellationToken)
+  nameWithType: IPositionSnapshotStore.GetLatestSnapshotAsync(string, string, CancellationToken)
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestSnapshotAsync
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: >-
+    Retrieves the most recent snapshot for the given run / account pair.
+
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when none exists.
+  example: []
+  syntax:
+    content: Task<AccountSnapshotRecord?> GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: accountId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Domain.AccountSnapshotRecord}
+    content.vb: Function GetLatestSnapshotAsync(runId As String, accountId As String, ct As CancellationToken = Nothing) As Task(Of AccountSnapshotRecord)
+  overload: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync*
+  nameWithType.vb: IPositionSnapshotStore.GetLatestSnapshotAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(String, String, System.Threading.CancellationToken)
+  name.vb: GetLatestSnapshotAsync(String, String, CancellationToken)
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Domain.IPositionSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshotHistoryAsync(string, string, DateTimeOffset, DateTimeOffset, CancellationToken)
+  nameWithType: IPositionSnapshotStore.GetSnapshotHistoryAsync(string, string, DateTimeOffset, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(string, string, System.DateTimeOffset, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshotHistoryAsync
+    path: ../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: >-
+    Streams all snapshots for the given run / account pair between
+
+    <code class="paramref">from</code> and <code class="paramref">to</code> (both inclusive, UTC).
+  example: []
+  syntax:
+    content: IAsyncEnumerable<AccountSnapshotRecord> GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: accountId
+      type: System.String
+    - id: from
+      type: System.DateTimeOffset
+    - id: to
+      type: System.DateTimeOffset
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Contracts.Domain.AccountSnapshotRecord}
+    content.vb: Function GetSnapshotHistoryAsync(runId As String, accountId As String, from As DateTimeOffset, [to] As DateTimeOffset, ct As CancellationToken = Nothing) As IAsyncEnumerable(Of AccountSnapshotRecord)
+  overload: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync*
+  nameWithType.vb: IPositionSnapshotStore.GetSnapshotHistoryAsync(String, String, DateTimeOffset, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(String, String, System.DateTimeOffset, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: GetSnapshotHistoryAsync(String, String, DateTimeOffset, DateTimeOffset, CancellationToken)
+references:
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync*
+  commentId: Overload:Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync
+  href: Meridian.Contracts.Domain.IPositionSnapshotStore.html#Meridian_Contracts_Domain_IPositionSnapshotStore_SaveSnapshotAsync_Meridian_Contracts_Domain_AccountSnapshotRecord_System_Threading_CancellationToken_
+  name: SaveSnapshotAsync
+  nameWithType: IPositionSnapshotStore.SaveSnapshotAsync
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync
+- uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+  commentId: T:Meridian.Contracts.Domain.AccountSnapshotRecord
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  name: AccountSnapshotRecord
+  nameWithType: AccountSnapshotRecord
+  fullName: Meridian.Contracts.Domain.AccountSnapshotRecord
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync*
+  commentId: Overload:Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync
+  href: Meridian.Contracts.Domain.IPositionSnapshotStore.html#Meridian_Contracts_Domain_IPositionSnapshotStore_GetLatestSnapshotAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: GetLatestSnapshotAsync
+  nameWithType: IPositionSnapshotStore.GetLatestSnapshotAsync
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Domain.AccountSnapshotRecord}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Domain.AccountSnapshotRecord}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AccountSnapshotRecord>
+  nameWithType: Task<AccountSnapshotRecord>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Domain.AccountSnapshotRecord>
+  nameWithType.vb: Task(Of AccountSnapshotRecord)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Domain.AccountSnapshotRecord)
+  name.vb: Task(Of AccountSnapshotRecord)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+    href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+    href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync*
+  commentId: Overload:Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync
+  href: Meridian.Contracts.Domain.IPositionSnapshotStore.html#Meridian_Contracts_Domain_IPositionSnapshotStore_GetSnapshotHistoryAsync_System_String_System_String_System_DateTimeOffset_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: GetSnapshotHistoryAsync
+  nameWithType: IPositionSnapshotStore.GetSnapshotHistoryAsync
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Contracts.Domain.AccountSnapshotRecord}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Contracts.Domain.AccountSnapshotRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<AccountSnapshotRecord>
+  nameWithType: IAsyncEnumerable<AccountSnapshotRecord>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Contracts.Domain.AccountSnapshotRecord>
+  nameWithType.vb: IAsyncEnumerable(Of AccountSnapshotRecord)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Contracts.Domain.AccountSnapshotRecord)
+  name.vb: IAsyncEnumerable(Of AccountSnapshotRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+    href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+    href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  - name: )
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

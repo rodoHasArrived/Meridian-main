@@ -1,0 +1,1162 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backfill.BackfillStatusStore
+  commentId: T:Meridian.Application.Backfill.BackfillStatusStore
+  id: BackfillStatusStore
+  parent: Meridian.Application.Backfill
+  children:
+  - Meridian.Application.Backfill.BackfillStatusStore.#ctor(System.String)
+  - Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Threading.CancellationToken)
+  - Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Backfill.BackfillStatusStore.FromConfig(Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Backfill.BackfillStatusStore.TryRead
+  - Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts
+  - Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  - Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints
+  - Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  - Meridian.Application.Backfill.BackfillStatusStore.WriteAsync(Meridian.Application.Backfill.BackfillResult,System.Threading.CancellationToken)
+  - Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  - Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BackfillStatusStore
+  nameWithType: BackfillStatusStore
+  fullName: Meridian.Application.Backfill.BackfillStatusStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillStatusStore
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Persists and reads last backfill status so both the collector and UI can surface progress.
+
+    Also tracks per-symbol checkpoints so interrupted jobs can be resumed without re-fetching
+
+    bars that were already written successfully.
+  example: []
+  syntax:
+    content: public sealed class BackfillStatusStore
+    content.vb: Public NotInheritable Class BackfillStatusStore
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Backfill.BackfillStatusStore.#ctor(System.String)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: BackfillStatusStore(string)
+  nameWithType: BackfillStatusStore.BackfillStatusStore(string)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.BackfillStatusStore(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public BackfillStatusStore(string dataRoot)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    content.vb: Public Sub New(dataRoot As String)
+  overload: Meridian.Application.Backfill.BackfillStatusStore.#ctor*
+  nameWithType.vb: BackfillStatusStore.New(String)
+  fullName.vb: Meridian.Application.Backfill.BackfillStatusStore.New(String)
+  name.vb: New(String)
+- uid: Meridian.Application.Backfill.BackfillStatusStore.FromConfig(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.FromConfig(Meridian.Application.Config.AppConfig)
+  id: FromConfig(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: FromConfig(AppConfig)
+  nameWithType: BackfillStatusStore.FromConfig(AppConfig)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.FromConfig(Meridian.Application.Config.AppConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromConfig
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public static BackfillStatusStore FromConfig(AppConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: Meridian.Application.Backfill.BackfillStatusStore
+    content.vb: Public Shared Function FromConfig(cfg As AppConfig) As BackfillStatusStore
+  overload: Meridian.Application.Backfill.BackfillStatusStore.FromConfig*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.WriteAsync(Meridian.Application.Backfill.BackfillResult,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.WriteAsync(Meridian.Application.Backfill.BackfillResult,System.Threading.CancellationToken)
+  id: WriteAsync(Meridian.Application.Backfill.BackfillResult,System.Threading.CancellationToken)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: WriteAsync(BackfillResult, CancellationToken)
+  nameWithType: BackfillStatusStore.WriteAsync(BackfillResult, CancellationToken)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.WriteAsync(Meridian.Application.Backfill.BackfillResult, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteAsync
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public Task WriteAsync(BackfillResult result, CancellationToken ct = default)
+    parameters:
+    - id: result
+      type: Meridian.Application.Backfill.BackfillResult
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function WriteAsync(result As BackfillResult, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Backfill.BackfillStatusStore.WriteAsync*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryRead
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.TryRead
+  id: TryRead
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: TryRead()
+  nameWithType: BackfillStatusStore.TryRead()
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryRead()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryRead
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public BackfillResult? TryRead()
+    return:
+      type: Meridian.Application.Backfill.BackfillResult
+    content.vb: Public Function TryRead() As BackfillResult
+  overload: Meridian.Application.Backfill.BackfillStatusStore.TryRead*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  id: WriteSymbolCheckpointAsync(System.String,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: WriteSymbolCheckpointAsync(string, DateOnly, long, CancellationToken)
+  nameWithType: BackfillStatusStore.WriteSymbolCheckpointAsync(string, DateOnly, long, CancellationToken)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(string, System.DateOnly, long, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteSymbolCheckpointAsync
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Records that <code class="paramref">symbol</code> was successfully backfilled up to and including
+
+    <code class="paramref">lastCompletedDate</code> with <code class="paramref">barsWritten</code> bars.
+
+    Subsequent calls update the stored date if the new value is later than the previously
+
+    recorded one; the bar count is replaced unconditionally when the date advances.
+
+    Thread-safe: concurrent writes are serialized through an internal lock.
+  example: []
+  syntax:
+    content: public Task WriteSymbolCheckpointAsync(string symbol, DateOnly lastCompletedDate, long barsWritten = 0, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: lastCompletedDate
+      type: System.DateOnly
+    - id: barsWritten
+      type: System.Int64
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function WriteSymbolCheckpointAsync(symbol As String, lastCompletedDate As DateOnly, barsWritten As Long = 0, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync*
+  nameWithType.vb: BackfillStatusStore.WriteSymbolCheckpointAsync(String, DateOnly, Long, CancellationToken)
+  fullName.vb: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(String, System.DateOnly, Long, System.Threading.CancellationToken)
+  name.vb: WriteSymbolCheckpointAsync(String, DateOnly, Long, CancellationToken)
+- uid: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  id: WriteSymbolCheckpointAsync(System.String,Meridian.Infrastructure.Adapters.Core.DataGranularity,System.DateOnly,System.Int64,System.Threading.CancellationToken)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: WriteSymbolCheckpointAsync(string, DataGranularity, DateOnly, long, CancellationToken)
+  nameWithType: BackfillStatusStore.WriteSymbolCheckpointAsync(string, DataGranularity, DateOnly, long, CancellationToken)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(string, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly, long, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteSymbolCheckpointAsync
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Records that <code class="paramref">symbol</code> was successfully backfilled up to and including
+
+    <code class="paramref">lastCompletedDate</code> for the specified <code class="paramref">granularity</code>.
+
+    Granularity-scoped checkpoints prevent one backfill lane from suppressing another.
+  example: []
+  syntax:
+    content: public Task WriteSymbolCheckpointAsync(string symbol, DataGranularity granularity, DateOnly lastCompletedDate, long barsWritten = 0, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    - id: lastCompletedDate
+      type: System.DateOnly
+    - id: barsWritten
+      type: System.Int64
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function WriteSymbolCheckpointAsync(symbol As String, granularity As DataGranularity, lastCompletedDate As DateOnly, barsWritten As Long = 0, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync*
+  nameWithType.vb: BackfillStatusStore.WriteSymbolCheckpointAsync(String, DataGranularity, DateOnly, Long, CancellationToken)
+  fullName.vb: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync(String, Meridian.Infrastructure.Adapters.Core.DataGranularity, System.DateOnly, Long, System.Threading.CancellationToken)
+  name.vb: WriteSymbolCheckpointAsync(String, DataGranularity, DateOnly, Long, CancellationToken)
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints
+  id: TryReadSymbolCheckpoints
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: TryReadSymbolCheckpoints()
+  nameWithType: BackfillStatusStore.TryReadSymbolCheckpoints()
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryReadSymbolCheckpoints
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Returns the per-symbol checkpoint map, or <code>null</code> when no checkpoints have been saved yet.
+
+    Keys are symbol names (case-insensitive); values are the last successfully completed date.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, DateOnly>? TryReadSymbolCheckpoints()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.DateOnly}
+    content.vb: Public Function TryReadSymbolCheckpoints() As IReadOnlyDictionary(Of String, DateOnly)
+  overload: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: TryReadSymbolCheckpoints(DataGranularity)
+  nameWithType: BackfillStatusStore.TryReadSymbolCheckpoints(DataGranularity)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryReadSymbolCheckpoints
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Returns the checkpoint map for the requested <code class="paramref">granularity</code>.
+
+    Legacy unscoped entries are treated as daily checkpoints for backward compatibility.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, DateOnly>? TryReadSymbolCheckpoints(DataGranularity granularity)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.DateOnly}
+    content.vb: Public Function TryReadSymbolCheckpoints(granularity As DataGranularity) As IReadOnlyDictionary(Of String, DateOnly)
+  overload: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts
+  id: TryReadSymbolBarCounts
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: TryReadSymbolBarCounts()
+  nameWithType: BackfillStatusStore.TryReadSymbolBarCounts()
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryReadSymbolBarCounts
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Returns the per-symbol bar-count map persisted alongside the checkpoints, or <code>null</code>
+
+    when no bar-count data has been saved yet.
+
+    Keys are symbol names (case-insensitive); values are the number of bars written in the run
+
+    that last advanced the checkpoint date for that symbol.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, long>? TryReadSymbolBarCounts()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+    content.vb: Public Function TryReadSymbolBarCounts() As IReadOnlyDictionary(Of String, Long)
+  overload: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  id: TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: TryReadSymbolBarCounts(DataGranularity)
+  nameWithType: BackfillStatusStore.TryReadSymbolBarCounts(DataGranularity)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts(Meridian.Infrastructure.Adapters.Core.DataGranularity)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryReadSymbolBarCounts
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Returns the per-symbol bar-count map for the requested <code class="paramref">granularity</code>.
+
+    Legacy unscoped entries are treated as daily bar counts for backward compatibility.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, long>? TryReadSymbolBarCounts(DataGranularity granularity)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+    content.vb: Public Function TryReadSymbolBarCounts(granularity As DataGranularity) As IReadOnlyDictionary(Of String, Long)
+  overload: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(System.Threading.CancellationToken)
+  id: ClearSymbolCheckpointsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: ClearSymbolCheckpointsAsync(CancellationToken)
+  nameWithType: BackfillStatusStore.ClearSymbolCheckpointsAsync(CancellationToken)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearSymbolCheckpointsAsync
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Removes all per-symbol checkpoints and bar-count data.
+
+    Call when starting a fresh (non-resume) backfill run.
+  example: []
+  syntax:
+    content: public Task ClearSymbolCheckpointsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ClearSymbolCheckpointsAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync*
+- uid: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Threading.CancellationToken)
+  id: ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity,System.Threading.CancellationToken)
+  parent: Meridian.Application.Backfill.BackfillStatusStore
+  langs:
+  - csharp
+  - vb
+  name: ClearSymbolCheckpointsAsync(DataGranularity, CancellationToken)
+  nameWithType: BackfillStatusStore.ClearSymbolCheckpointsAsync(DataGranularity, CancellationToken)
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync(Meridian.Infrastructure.Adapters.Core.DataGranularity, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillStatusStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearSymbolCheckpointsAsync
+    path: ../../src/Meridian.Application/Backfill/BackfillStatusStore.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Removes only the checkpoints and bar-count data associated with the requested
+
+    <code class="paramref">granularity</code>, preserving resume state for other backfill lanes.
+  example: []
+  syntax:
+    content: public Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default)
+    parameters:
+    - id: granularity
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ClearSymbolCheckpointsAsync(granularity As DataGranularity, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync*
+references:
+- uid: Meridian.Application.Backfill
+  commentId: N:Meridian.Application.Backfill
+  href: Meridian.html
+  name: Meridian.Application.Backfill
+  nameWithType: Meridian.Application.Backfill
+  fullName: Meridian.Application.Backfill
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Backfill.BackfillStatusStore.#ctor*
+  commentId: Overload:Meridian.Application.Backfill.BackfillStatusStore.#ctor
+  href: Meridian.Application.Backfill.BackfillStatusStore.html#Meridian_Application_Backfill_BackfillStatusStore__ctor_System_String_
+  name: BackfillStatusStore
+  nameWithType: BackfillStatusStore.BackfillStatusStore
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.BackfillStatusStore
+  nameWithType.vb: BackfillStatusStore.New
+  fullName.vb: Meridian.Application.Backfill.BackfillStatusStore.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Backfill.BackfillStatusStore.FromConfig*
+  commentId: Overload:Meridian.Application.Backfill.BackfillStatusStore.FromConfig
+  href: Meridian.Application.Backfill.BackfillStatusStore.html#Meridian_Application_Backfill_BackfillStatusStore_FromConfig_Meridian_Application_Config_AppConfig_
+  name: FromConfig
+  nameWithType: BackfillStatusStore.FromConfig
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.FromConfig
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Application.Backfill.BackfillStatusStore
+  commentId: T:Meridian.Application.Backfill.BackfillStatusStore
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.BackfillStatusStore.html
+  name: BackfillStatusStore
+  nameWithType: BackfillStatusStore
+  fullName: Meridian.Application.Backfill.BackfillStatusStore
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Backfill.BackfillStatusStore.WriteAsync*
+  commentId: Overload:Meridian.Application.Backfill.BackfillStatusStore.WriteAsync
+  href: Meridian.Application.Backfill.BackfillStatusStore.html#Meridian_Application_Backfill_BackfillStatusStore_WriteAsync_Meridian_Application_Backfill_BackfillResult_System_Threading_CancellationToken_
+  name: WriteAsync
+  nameWithType: BackfillStatusStore.WriteAsync
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.WriteAsync
+- uid: Meridian.Application.Backfill.BackfillResult
+  commentId: T:Meridian.Application.Backfill.BackfillResult
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.BackfillResult.html
+  name: BackfillResult
+  nameWithType: BackfillResult
+  fullName: Meridian.Application.Backfill.BackfillResult
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryRead*
+  commentId: Overload:Meridian.Application.Backfill.BackfillStatusStore.TryRead
+  href: Meridian.Application.Backfill.BackfillStatusStore.html#Meridian_Application_Backfill_BackfillStatusStore_TryRead
+  name: TryRead
+  nameWithType: BackfillStatusStore.TryRead
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryRead
+- uid: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync*
+  commentId: Overload:Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync
+  href: Meridian.Application.Backfill.BackfillStatusStore.html#Meridian_Application_Backfill_BackfillStatusStore_WriteSymbolCheckpointAsync_System_String_System_DateOnly_System_Int64_System_Threading_CancellationToken_
+  name: WriteSymbolCheckpointAsync
+  nameWithType: BackfillStatusStore.WriteSymbolCheckpointAsync
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.WriteSymbolCheckpointAsync
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints*
+  commentId: Overload:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints
+  href: Meridian.Application.Backfill.BackfillStatusStore.html#Meridian_Application_Backfill_BackfillStatusStore_TryReadSymbolCheckpoints
+  name: TryReadSymbolCheckpoints
+  nameWithType: BackfillStatusStore.TryReadSymbolCheckpoints
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolCheckpoints
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.DateOnly}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.DateOnly}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, DateOnly>
+  nameWithType: IReadOnlyDictionary<string, DateOnly>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, System.DateOnly>
+  nameWithType.vb: IReadOnlyDictionary(Of String, DateOnly)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, System.DateOnly)
+  name.vb: IReadOnlyDictionary(Of String, DateOnly)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts*
+  commentId: Overload:Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts
+  href: Meridian.Application.Backfill.BackfillStatusStore.html#Meridian_Application_Backfill_BackfillStatusStore_TryReadSymbolBarCounts
+  name: TryReadSymbolBarCounts
+  nameWithType: BackfillStatusStore.TryReadSymbolBarCounts
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.TryReadSymbolBarCounts
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, long>
+  nameWithType: IReadOnlyDictionary<string, long>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, long>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Long)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Long)
+  name.vb: IReadOnlyDictionary(Of String, Long)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync*
+  commentId: Overload:Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync
+  href: Meridian.Application.Backfill.BackfillStatusStore.html#Meridian_Application_Backfill_BackfillStatusStore_ClearSymbolCheckpointsAsync_System_Threading_CancellationToken_
+  name: ClearSymbolCheckpointsAsync
+  nameWithType: BackfillStatusStore.ClearSymbolCheckpointsAsync
+  fullName: Meridian.Application.Backfill.BackfillStatusStore.ClearSymbolCheckpointsAsync

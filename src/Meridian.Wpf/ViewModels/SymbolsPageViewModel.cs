@@ -34,6 +34,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     private readonly HttpClient _httpClient = new();
 
     private CancellationTokenSource? _loadCts;
+    private bool _isStopped = true;
 
     public static readonly IReadOnlyDictionary<string, string[]> SymbolTemplates =
         new Dictionary<string, string[]>
@@ -194,6 +195,7 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
     // ── Lifecycle ───────────────────────────────────────────────────────────
     public async Task StartAsync(CancellationToken ct = default)
     {
+        _isStopped = false;
         _watchlistService.WatchlistsChanged += OnWatchlistsChanged;
 
         // Populate action bar.
@@ -208,13 +210,29 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     public void Stop()
     {
+        _isStopped = true;
         _watchlistService.WatchlistsChanged -= OnWatchlistsChanged;
-        _loadCts?.Cancel();
-        _loadCts?.Dispose();
+
+        var loadCts = Interlocked.Exchange(ref _loadCts, null);
+        if (loadCts is null)
+            return;
+
+        try
+        {
+            loadCts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
+
+        loadCts.Dispose();
     }
 
     private void OnWatchlistsChanged(object? sender, WpfServices.WatchlistsChangedEventArgs e)
     {
+        if (_isStopped)
+            return;
+
         _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(async () => await LoadWatchlistsAsync());
     }
 
@@ -254,11 +272,32 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
 
     public async Task LoadWatchlistsAsync(CancellationToken ct = default)
     {
-        _loadCts?.Cancel();
-        _loadCts = new CancellationTokenSource();
+        if (_isStopped)
+            return;
+
+        var nextLoadCts = new CancellationTokenSource();
+        var previousLoadCts = Interlocked.Exchange(ref _loadCts, nextLoadCts);
+
+        if (previousLoadCts is not null)
+        {
+            try
+            {
+                previousLoadCts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+
+            previousLoadCts.Dispose();
+        }
+
         try
         {
-            var watchlists = await _watchlistService.GetAllWatchlistsAsync(_loadCts.Token);
+            var watchlists = await _watchlistService.GetAllWatchlistsAsync(nextLoadCts.Token);
+
+            if (_isStopped || !ReferenceEquals(_loadCts, nextLoadCts))
+                return;
+
             Watchlists.Clear();
             foreach (var wl in watchlists)
             {
@@ -276,6 +315,15 @@ public sealed class SymbolsPageViewModel : BindableBase, IDisposable, ICommandCo
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to load watchlists", ex);
+        }
+        finally
+        {
+            if (ReferenceEquals(_loadCts, nextLoadCts))
+            {
+                Interlocked.Exchange(ref _loadCts, null);
+            }
+
+            nextLoadCts.Dispose();
         }
     }
 

@@ -1,0 +1,535 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Treasury.IMmfLiquidityService
+  commentId: T:Meridian.Application.Treasury.IMmfLiquidityService
+  id: IMmfLiquidityService
+  parent: Meridian.Application.Treasury
+  children:
+  - Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IMmfLiquidityService
+  nameWithType: IMmfLiquidityService
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IMmfLiquidityService
+    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Liquidity-focused query surface for money market funds.
+
+    Provides WAM-based liquidity state, fund-family projections,
+
+    and portfolio-wide liquid-fund views for treasury and governance consumers.
+  example: []
+  syntax:
+    content: public interface IMmfLiquidityService
+    content.vb: Public Interface IMmfLiquidityService
+  derivedClasses:
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetLiquidityStateAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMmfLiquidityService
+  langs:
+  - csharp
+  - vb
+  name: GetLiquidityStateAsync(Guid, CancellationToken)
+  nameWithType: IMmfLiquidityService.GetLiquidityStateAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLiquidityStateAsync
+    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns the current liquidity state for the given MMF,
+
+    or <code>null</code> if the security does not exist.
+  example: []
+  syntax:
+    content: Task<MmfLiquidityDto?> GetLiquidityStateAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfLiquidityDto}
+    content.vb: Function GetLiquidityStateAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of MmfLiquidityDto)
+  overload: Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync*
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  id: GetFamilyProjectionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMmfLiquidityService
+  langs:
+  - csharp
+  - vb
+  name: GetFamilyProjectionAsync(string, CancellationToken)
+  nameWithType: IMmfLiquidityService.GetFamilyProjectionAsync(string, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFamilyProjectionAsync
+    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns the fund-family projection for the given normalised family name,
+
+    or <code>null</code> if no MMFs are registered under that family.
+  example: []
+  syntax:
+    content: Task<MmfFundFamilyDto?> GetFamilyProjectionAsync(string normalizedFamilyName, CancellationToken ct = default)
+    parameters:
+    - id: normalizedFamilyName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfFundFamilyDto}
+    content.vb: Function GetFamilyProjectionAsync(normalizedFamilyName As String, ct As CancellationToken = Nothing) As Task(Of MmfFundFamilyDto)
+  overload: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync*
+  nameWithType.vb: IMmfLiquidityService.GetFamilyProjectionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync(String, System.Threading.CancellationToken)
+  name.vb: GetFamilyProjectionAsync(String, CancellationToken)
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  id: GetByFamilyAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMmfLiquidityService
+  langs:
+  - csharp
+  - vb
+  name: GetByFamilyAsync(string, CancellationToken)
+  nameWithType: IMmfLiquidityService.GetByFamilyAsync(string, CancellationToken)
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByFamilyAsync
+    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns all MMFs belonging to the given fund family.
+
+    Returns an empty list when no members are found.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<MmfDetailDto>> GetByFamilyAsync(string normalizedFamilyName, CancellationToken ct = default)
+    parameters:
+    - id: normalizedFamilyName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfDetailDto}}
+    content.vb: Function GetByFamilyAsync(normalizedFamilyName As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of MmfDetailDto))
+  overload: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync*
+  nameWithType.vb: IMmfLiquidityService.GetByFamilyAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync(String, System.Threading.CancellationToken)
+  name.vb: GetByFamilyAsync(String, CancellationToken)
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  id: GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Treasury.IMmfLiquidityService
+  langs:
+  - csharp
+  - vb
+  name: GetAllLiquidFundsAsync(CancellationToken)
+  nameWithType: IMmfLiquidityService.GetAllLiquidFundsAsync(CancellationToken)
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllLiquidFundsAsync
+    path: ../../src/Meridian.Application/Treasury/IMmfLiquidityService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Treasury
+  summary: >-
+    Returns all active MMFs currently in the <xref href="Meridian.Contracts.Treasury.MmfLiquidityState.Liquid" data-throw-if-not-resolved="false"></xref> state.
+
+    Used by treasury and cash-management dashboards for portfolio-level liquidity views.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<MmfLiquidityDto>> GetAllLiquidFundsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfLiquidityDto}}
+    content.vb: Function GetAllLiquidFundsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of MmfLiquidityDto))
+  overload: Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync*
+references:
+- uid: Meridian.Application.Treasury
+  commentId: N:Meridian.Application.Treasury
+  href: Meridian.html
+  name: Meridian.Application.Treasury
+  nameWithType: Meridian.Application.Treasury
+  fullName: Meridian.Application.Treasury
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Treasury
+    name: Treasury
+    href: Meridian.Application.Treasury.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Treasury
+    name: Treasury
+    href: Meridian.Application.Treasury.html
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync*
+  commentId: Overload:Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetLiquidityStateAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetLiquidityStateAsync
+  nameWithType: IMmfLiquidityService.GetLiquidityStateAsync
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetLiquidityStateAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfLiquidityDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfLiquidityDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MmfLiquidityDto>
+  nameWithType: Task<MmfLiquidityDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Treasury.MmfLiquidityDto>
+  nameWithType.vb: Task(Of MmfLiquidityDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Treasury.MmfLiquidityDto)
+  name.vb: Task(Of MmfLiquidityDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync*
+  commentId: Overload:Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetFamilyProjectionAsync_System_String_System_Threading_CancellationToken_
+  name: GetFamilyProjectionAsync
+  nameWithType: IMmfLiquidityService.GetFamilyProjectionAsync
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetFamilyProjectionAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfFundFamilyDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Treasury.MmfFundFamilyDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MmfFundFamilyDto>
+  nameWithType: Task<MmfFundFamilyDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Treasury.MmfFundFamilyDto>
+  nameWithType.vb: Task(Of MmfFundFamilyDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Treasury.MmfFundFamilyDto)
+  name.vb: Task(Of MmfFundFamilyDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfFundFamilyDto
+    name: MmfFundFamilyDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfFundFamilyDto
+    name: MmfFundFamilyDto
+  - name: )
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync*
+  commentId: Overload:Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetByFamilyAsync_System_String_System_Threading_CancellationToken_
+  name: GetByFamilyAsync
+  nameWithType: IMmfLiquidityService.GetByFamilyAsync
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetByFamilyAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfDetailDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfDetailDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<MmfDetailDto>>
+  nameWithType: Task<IReadOnlyList<MmfDetailDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Treasury.MmfDetailDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of MmfDetailDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Treasury.MmfDetailDto))
+  name.vb: Task(Of IReadOnlyList(Of MmfDetailDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfDetailDto
+    name: MmfDetailDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfDetailDto
+    name: MmfDetailDto
+  - name: )
+  - name: )
+- uid: Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+  commentId: F:Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+  name: Liquid
+  nameWithType: MmfLiquidityState.Liquid
+  fullName: Meridian.Contracts.Treasury.MmfLiquidityState.Liquid
+- uid: Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync*
+  commentId: Overload:Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html#Meridian_Application_Treasury_IMmfLiquidityService_GetAllLiquidFundsAsync_System_Threading_CancellationToken_
+  name: GetAllLiquidFundsAsync
+  nameWithType: IMmfLiquidityService.GetAllLiquidFundsAsync
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService.GetAllLiquidFundsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfLiquidityDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Treasury.MmfLiquidityDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<MmfLiquidityDto>>
+  nameWithType: Task<IReadOnlyList<MmfLiquidityDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Treasury.MmfLiquidityDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of MmfLiquidityDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Treasury.MmfLiquidityDto))
+  name.vb: Task(Of IReadOnlyList(Of MmfLiquidityDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Treasury.MmfLiquidityDto
+    name: MmfLiquidityDto
+  - name: )
+  - name: )

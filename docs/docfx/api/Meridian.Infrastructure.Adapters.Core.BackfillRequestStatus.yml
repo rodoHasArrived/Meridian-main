@@ -1,0 +1,211 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  id: BackfillRequestStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Cancelled
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Completed
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Failed
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.InProgress
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Pending
+  langs:
+  - csharp
+  - vb
+  name: BackfillRequestStatus
+  nameWithType: BackfillRequestStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillRequestStatus
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 483
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Status of a backfill request.
+  example: []
+  syntax:
+    content: 'public enum BackfillRequestStatus : byte'
+    content.vb: Public Enum BackfillRequestStatus As Byte
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Pending
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Pending
+  id: Pending
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: BackfillRequestStatus.Pending
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 485
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.InProgress
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.InProgress
+  id: InProgress
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  langs:
+  - csharp
+  - vb
+  name: InProgress
+  nameWithType: BackfillRequestStatus.InProgress
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.InProgress
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InProgress
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 486
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: InProgress = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Completed
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Completed
+  id: Completed
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: BackfillRequestStatus.Completed
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 487
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: Completed = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Failed
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Failed
+  id: Failed
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: BackfillRequestStatus.Failed
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 488
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: Failed = 3
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Cancelled
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: BackfillRequestStatus.Cancelled
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 489
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: Cancelled = 4
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.html
+  name: BackfillRequestStatus
+  nameWithType: BackfillRequestStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus

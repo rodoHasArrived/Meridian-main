@@ -1,0 +1,1562 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  id: OptionsOverwriteParams
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.DepthBonusWeight
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RiskFreeRate
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RollDelta
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ScoringMode
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.TakeProfitCapture
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDelta(System.Double)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDte(System.Nullable{System.Int32})
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinIvPercentile(System.Double)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinStrike(System.Decimal)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithOverwriteRatio(System.Double)
+  langs:
+  - csharp
+  - vb
+  name: OptionsOverwriteParams
+  nameWithType: OptionsOverwriteParams
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionsOverwriteParams
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    All tunable parameters for the <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy" data-throw-if-not-resolved="false"></xref>.
+
+    Conservative defaults are provided for every parameter per the strategy specification.
+  example: []
+  syntax:
+    content: 'public sealed record OptionsOverwriteParams : IEquatable<OptionsOverwriteParams>'
+    content.vb: Public NotInheritable Class OptionsOverwriteParams Implements IEquatable(Of OptionsOverwriteParams)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+  id: MinStrike
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: MinStrike
+  nameWithType: OptionsOverwriteParams.MinStrike
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinStrike
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Hard minimum strike the owner is willing to accept as a cap on the underlying position.
+
+    Only call options with <code>strike &gt;= MinStrike</code> are eligible.
+
+    Must be set by the user; there is no meaningful default.
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Minimum strike", "Hard constraint: do not sell calls with strike below this price.")]
+
+      public decimal MinStrike { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <StrategyParameter("Minimum strike", "Hard constraint: do not sell calls with strike below this price.")>
+
+      Public Property MinStrike As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Minimum strike
+    - type: System.String
+      value: 'Hard constraint: do not sell calls with strike below this price.'
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio
+  id: OverwriteRatio
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: OverwriteRatio
+  nameWithType: OptionsOverwriteParams.OverwriteRatio
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverwriteRatio
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Fraction of the long underlying exposure to overwrite. 1.0 = fully covered; 0.5 = 50 % overwrite.
+
+    Conservative default: 0.75.
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Overwrite ratio", "Fraction of underlying shares to overwrite. 1.0 = fully covered.")]
+
+      public double OverwriteRatio { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <StrategyParameter("Overwrite ratio", "Fraction of underlying shares to overwrite. 1.0 = fully covered.")>
+
+      Public Property OverwriteRatio As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Overwrite ratio
+    - type: System.String
+      value: Fraction of underlying shares to overwrite. 1.0 = fully covered.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+  id: MaxDelta
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: MaxDelta
+  nameWithType: OptionsOverwriteParams.MaxDelta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDelta
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Maximum absolute call delta allowed. Options with |delta| &gt; MaxDelta are excluded.
+
+    Conservative default: 0.35 (30-delta buy-write benchmark standard).
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Max call delta", "Do not sell calls with absolute delta above this threshold.")]
+
+      public double MaxDelta { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <StrategyParameter("Max call delta", "Do not sell calls with absolute delta above this threshold.")>
+
+      Public Property MaxDelta As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Max call delta
+    - type: System.String
+      value: Do not sell calls with absolute delta above this threshold.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+  id: MaxDte
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: MaxDte
+  nameWithType: OptionsOverwriteParams.MaxDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDte
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Optional maximum days-to-expiration cap. <code>null</code> means no DTE cap is applied.
+
+    Consider setting 60 if margin / liquidity concerns dominate.
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Max DTE", "Optional maximum days to expiration. Leave null for no cap.")]
+
+      public int? MaxDte { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: >-
+      <StrategyParameter("Max DTE", "Optional maximum days to expiration. Leave null for no cap.")>
+
+      Public Property MaxDte As Integer?
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Max DTE
+    - type: System.String
+      value: Optional maximum days to expiration. Leave null for no cap.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte
+  id: MinDte
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: MinDte
+  nameWithType: OptionsOverwriteParams.MinDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinDte
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Optional minimum days-to-expiration. Options with fewer DTE than this are excluded.
+
+    Conservative default: 7 (avoids gamma-risk pinning near expiration).
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Min DTE", "Minimum days to expiration. Options expiring sooner are excluded.")]
+
+      public int MinDte { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <StrategyParameter("Min DTE", "Minimum days to expiration. Options expiring sooner are excluded.")>
+
+      Public Property MinDte As Integer
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Min DTE
+    - type: System.String
+      value: Minimum days to expiration. Options expiring sooner are excluded.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+  id: MinIvPercentile
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: MinIvPercentile
+  nameWithType: OptionsOverwriteParams.MinIvPercentile
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinIvPercentile
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Minimum IV percentile (0–100). Avoids selling cheap volatility.
+
+    Conservative default: 50 (sell only when IV is above its historical median).
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Min IV percentile", "Minimum implied-volatility percentile (0–100). Avoids selling cheap vol.")]
+
+      public double MinIvPercentile { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <StrategyParameter("Min IV percentile", "Minimum implied-volatility percentile (0–100). Avoids selling cheap vol.")>
+
+      Public Property MinIvPercentile As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Min IV percentile
+    - type: System.String
+      value: Minimum implied-volatility percentile (0–100). Avoids selling cheap vol.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest
+  id: MinOpenInterest
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: MinOpenInterest
+  nameWithType: OptionsOverwriteParams.MinOpenInterest
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinOpenInterest
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Minimum open interest for a contract to be considered liquid.
+
+    Conservative default: 1,000.
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Min open interest", "Minimum open interest required. Excludes illiquid contracts.")]
+
+      public long MinOpenInterest { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <StrategyParameter("Min open interest", "Minimum open interest required. Excludes illiquid contracts.")>
+
+      Public Property MinOpenInterest As Long
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Min open interest
+    - type: System.String
+      value: Minimum open interest required. Excludes illiquid contracts.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume
+  id: MinVolume
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: MinVolume
+  nameWithType: OptionsOverwriteParams.MinVolume
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinVolume
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Minimum daily volume for a contract.
+
+    Conservative default: 100.
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Min volume", "Minimum daily trading volume required.")]
+
+      public long MinVolume { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <StrategyParameter("Min volume", "Minimum daily trading volume required.")>
+
+      Public Property MinVolume As Long
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Min volume
+    - type: System.String
+      value: Minimum daily trading volume required.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct
+  id: MaxSpreadPct
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: MaxSpreadPct
+  nameWithType: OptionsOverwriteParams.MaxSpreadPct
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxSpreadPct
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Maximum (ask - bid) / mid allowed as a fraction.
+
+    Conservative defaults: 5 % for liquid ETFs; 10 % for single-name stocks.
+
+    Strategy default: 0.05.
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Max spread %", "Maximum bid-ask spread as a fraction of mid price (e.g. 0.05 = 5%).")]
+
+      public double MaxSpreadPct { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <StrategyParameter("Max spread %", "Maximum bid-ask spread as a fraction of mid price (e.g. 0.05 = 5%).")>
+
+      Public Property MaxSpreadPct As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Max spread %
+    - type: System.String
+      value: Maximum bid-ask spread as a fraction of mid price (e.g. 0.05 = 5%).
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.TakeProfitCapture
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.TakeProfitCapture
+  id: TakeProfitCapture
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: TakeProfitCapture
+  nameWithType: OptionsOverwriteParams.TakeProfitCapture
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.TakeProfitCapture
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TakeProfitCapture
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Close / roll when this fraction of the original premium has been captured.
+
+    Conservative default: 0.80 (80 % capture reduces late-gamma and assignment risk).
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Take-profit capture", "Close or roll when this fraction of initial premium has been earned.")]
+
+      public double TakeProfitCapture { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <StrategyParameter("Take-profit capture", "Close or roll when this fraction of initial premium has been earned.")>
+
+      Public Property TakeProfitCapture As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.TakeProfitCapture*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Take-profit capture
+    - type: System.String
+      value: Close or roll when this fraction of initial premium has been earned.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RollDelta
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RollDelta
+  id: RollDelta
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: RollDelta
+  nameWithType: OptionsOverwriteParams.RollDelta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RollDelta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RollDelta
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Roll the call when its absolute delta rises to or above this value.
+
+    Conservative default: 0.55 (prevents the short from becoming too deep ITM).
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Roll delta trigger", "Roll when the short call's absolute delta reaches or exceeds this value.")]
+
+      public double RollDelta { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <StrategyParameter("Roll delta trigger", "Roll when the short call's absolute delta reaches or exceeds this value.")>
+
+      Public Property RollDelta As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RollDelta*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Roll delta trigger
+    - type: System.String
+      value: Roll when the short call's absolute delta reaches or exceeds this value.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays
+  id: ExDivWindowDays
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: ExDivWindowDays
+  nameWithType: OptionsOverwriteParams.ExDivWindowDays
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExDivWindowDays
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Number of calendar days before ex-dividend to apply the dividend-assignment-risk filter.
+
+    Conservative default: 7.
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Ex-div window days", "Days before ex-dividend date to screen for early-assignment risk.")]
+
+      public int ExDivWindowDays { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <StrategyParameter("Ex-div window days", "Days before ex-dividend date to screen for early-assignment risk.")>
+
+      Public Property ExDivWindowDays As Integer
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Ex-div window days
+    - type: System.String
+      value: Days before ex-dividend date to screen for early-assignment risk.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ScoringMode
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ScoringMode
+  id: ScoringMode
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: ScoringMode
+  nameWithType: OptionsOverwriteParams.ScoringMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ScoringMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScoringMode
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Scoring mode: <code>Basic</code> maximises raw bid premium; <code>Relative</code> maximises
+
+    vega-dollar IV residual penalised by spread and boosted by depth.
+
+    Default: <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Relative" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Scoring mode", "Basic: highest bid. Relative: richest vol adjusted for spread/depth.")]
+
+      public OverwriteScoringMode ScoringMode { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+    content.vb: >-
+      <StrategyParameter("Scoring mode", "Basic: highest bid. Relative: richest vol adjusted for spread/depth.")>
+
+      Public Property ScoringMode As OverwriteScoringMode
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ScoringMode*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Scoring mode
+    - type: System.String
+      value: 'Basic: highest bid. Relative: richest vol adjusted for spread/depth.'
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.DepthBonusWeight
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.DepthBonusWeight
+  id: DepthBonusWeight
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: DepthBonusWeight
+  nameWithType: OptionsOverwriteParams.DepthBonusWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.DepthBonusWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthBonusWeight
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Weight applied to the log-depth bonus term in the <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Relative" data-throw-if-not-resolved="false"></xref> score.
+
+    Default: 0.05.
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Depth bonus weight", "Coefficient applied to the log-OI+volume term in the relative score.")]
+
+      public double DepthBonusWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <StrategyParameter("Depth bonus weight", "Coefficient applied to the log-OI+volume term in the relative score.")>
+
+      Public Property DepthBonusWeight As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.DepthBonusWeight*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Depth bonus weight
+    - type: System.String
+      value: Coefficient applied to the log-OI+volume term in the relative score.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RiskFreeRate
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RiskFreeRate
+  id: RiskFreeRate
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: RiskFreeRate
+  nameWithType: OptionsOverwriteParams.RiskFreeRate
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RiskFreeRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RiskFreeRate
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Continuously-compounded risk-free rate used in Black-Scholes mark-to-market.
+
+    Default: 0.04 (4 %).
+  example: []
+  syntax:
+    content: >-
+      [StrategyParameter("Risk-free rate", "Annual risk-free rate for Black-Scholes option pricing.")]
+
+      public double RiskFreeRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: >-
+      <StrategyParameter("Risk-free rate", "Annual risk-free rate for Black-Scholes option pricing.")>
+
+      Public Property RiskFreeRate As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RiskFreeRate*
+  attributes:
+  - type: Meridian.Backtesting.Sdk.StrategyParameterAttribute
+    ctor: Meridian.Backtesting.Sdk.StrategyParameterAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: Risk-free rate
+    - type: System.String
+      value: Annual risk-free rate for Black-Scholes option pricing.
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinStrike(System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinStrike(System.Decimal)
+  id: WithMinStrike(System.Decimal)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: WithMinStrike(decimal)
+  nameWithType: OptionsOverwriteParams.WithMinStrike(decimal)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinStrike(decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithMinStrike
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Returns a copy with <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike" data-throw-if-not-resolved="false"></xref> set.
+  example: []
+  syntax:
+    content: public OptionsOverwriteParams WithMinStrike(decimal minStrike)
+    parameters:
+    - id: minStrike
+      type: System.Decimal
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    content.vb: Public Function WithMinStrike(minStrike As Decimal) As OptionsOverwriteParams
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinStrike*
+  nameWithType.vb: OptionsOverwriteParams.WithMinStrike(Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinStrike(Decimal)
+  name.vb: WithMinStrike(Decimal)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithOverwriteRatio(System.Double)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithOverwriteRatio(System.Double)
+  id: WithOverwriteRatio(System.Double)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: WithOverwriteRatio(double)
+  nameWithType: OptionsOverwriteParams.WithOverwriteRatio(double)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithOverwriteRatio(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithOverwriteRatio
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Returns a copy with <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio" data-throw-if-not-resolved="false"></xref> set.
+  example: []
+  syntax:
+    content: public OptionsOverwriteParams WithOverwriteRatio(double ratio)
+    parameters:
+    - id: ratio
+      type: System.Double
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    content.vb: Public Function WithOverwriteRatio(ratio As Double) As OptionsOverwriteParams
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithOverwriteRatio*
+  nameWithType.vb: OptionsOverwriteParams.WithOverwriteRatio(Double)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithOverwriteRatio(Double)
+  name.vb: WithOverwriteRatio(Double)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDelta(System.Double)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDelta(System.Double)
+  id: WithMaxDelta(System.Double)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: WithMaxDelta(double)
+  nameWithType: OptionsOverwriteParams.WithMaxDelta(double)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDelta(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithMaxDelta
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Returns a copy with <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta" data-throw-if-not-resolved="false"></xref> set.
+  example: []
+  syntax:
+    content: public OptionsOverwriteParams WithMaxDelta(double maxDelta)
+    parameters:
+    - id: maxDelta
+      type: System.Double
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    content.vb: Public Function WithMaxDelta(maxDelta As Double) As OptionsOverwriteParams
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDelta*
+  nameWithType.vb: OptionsOverwriteParams.WithMaxDelta(Double)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDelta(Double)
+  name.vb: WithMaxDelta(Double)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinIvPercentile(System.Double)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinIvPercentile(System.Double)
+  id: WithMinIvPercentile(System.Double)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: WithMinIvPercentile(double)
+  nameWithType: OptionsOverwriteParams.WithMinIvPercentile(double)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinIvPercentile(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithMinIvPercentile
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Returns a copy with <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile" data-throw-if-not-resolved="false"></xref> set.
+  example: []
+  syntax:
+    content: public OptionsOverwriteParams WithMinIvPercentile(double percentile)
+    parameters:
+    - id: percentile
+      type: System.Double
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    content.vb: Public Function WithMinIvPercentile(percentile As Double) As OptionsOverwriteParams
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinIvPercentile*
+  nameWithType.vb: OptionsOverwriteParams.WithMinIvPercentile(Double)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinIvPercentile(Double)
+  name.vb: WithMinIvPercentile(Double)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDte(System.Nullable{System.Int32})
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDte(System.Nullable{System.Int32})
+  id: WithMaxDte(System.Nullable{System.Int32})
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  langs:
+  - csharp
+  - vb
+  name: WithMaxDte(int?)
+  nameWithType: OptionsOverwriteParams.WithMaxDte(int?)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDte(int?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithMaxDte
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Returns a copy with <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte" data-throw-if-not-resolved="false"></xref> set.
+  example: []
+  syntax:
+    content: public OptionsOverwriteParams WithMaxDte(int? maxDte)
+    parameters:
+    - id: maxDte
+      type: System.Nullable{System.Int32}
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    content.vb: Public Function WithMaxDte(maxDte As Integer?) As OptionsOverwriteParams
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDte*
+  nameWithType.vb: OptionsOverwriteParams.WithMaxDte(Integer?)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDte(Integer?)
+  name.vb: WithMaxDte(Integer?)
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy.html
+  name: CoveredCallOverwriteStrategy
+  nameWithType: CoveredCallOverwriteStrategy
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.CoveredCallOverwriteStrategy
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OptionsOverwriteParams>
+  nameWithType: IEquatable<OptionsOverwriteParams>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams>
+  nameWithType.vb: IEquatable(Of OptionsOverwriteParams)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  name.vb: IEquatable(Of OptionsOverwriteParams)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    name: OptionsOverwriteParams
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    name: OptionsOverwriteParams
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinStrike
+  name: MinStrike
+  nameWithType: OptionsOverwriteParams.MinStrike
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_OverwriteRatio
+  name: OverwriteRatio
+  nameWithType: OptionsOverwriteParams.OverwriteRatio
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MaxDelta
+  name: MaxDelta
+  nameWithType: OptionsOverwriteParams.MaxDelta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MaxDte
+  name: MaxDte
+  nameWithType: OptionsOverwriteParams.MaxDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinDte
+  name: MinDte
+  nameWithType: OptionsOverwriteParams.MinDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinIvPercentile
+  name: MinIvPercentile
+  nameWithType: OptionsOverwriteParams.MinIvPercentile
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinOpenInterest
+  name: MinOpenInterest
+  nameWithType: OptionsOverwriteParams.MinOpenInterest
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinVolume
+  name: MinVolume
+  nameWithType: OptionsOverwriteParams.MinVolume
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MaxSpreadPct
+  name: MaxSpreadPct
+  nameWithType: OptionsOverwriteParams.MaxSpreadPct
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.TakeProfitCapture*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.TakeProfitCapture
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_TakeProfitCapture
+  name: TakeProfitCapture
+  nameWithType: OptionsOverwriteParams.TakeProfitCapture
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.TakeProfitCapture
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RollDelta*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RollDelta
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_RollDelta
+  name: RollDelta
+  nameWithType: OptionsOverwriteParams.RollDelta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RollDelta
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_ExDivWindowDays
+  name: ExDivWindowDays
+  nameWithType: OptionsOverwriteParams.ExDivWindowDays
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Relative
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Relative
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OverwriteScoringMode_Relative
+  name: Relative
+  nameWithType: OverwriteScoringMode.Relative
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.Relative
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ScoringMode*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ScoringMode
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_ScoringMode
+  name: ScoringMode
+  nameWithType: OptionsOverwriteParams.ScoringMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ScoringMode
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode.html
+  name: OverwriteScoringMode
+  nameWithType: OverwriteScoringMode
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OverwriteScoringMode
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.DepthBonusWeight*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.DepthBonusWeight
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_DepthBonusWeight
+  name: DepthBonusWeight
+  nameWithType: OptionsOverwriteParams.DepthBonusWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.DepthBonusWeight
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RiskFreeRate*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RiskFreeRate
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_RiskFreeRate
+  name: RiskFreeRate
+  nameWithType: OptionsOverwriteParams.RiskFreeRate
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.RiskFreeRate
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinStrike
+  name: MinStrike
+  nameWithType: OptionsOverwriteParams.MinStrike
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinStrike*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinStrike
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_WithMinStrike_System_Decimal_
+  name: WithMinStrike
+  nameWithType: OptionsOverwriteParams.WithMinStrike
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinStrike
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html
+  name: OptionsOverwriteParams
+  nameWithType: OptionsOverwriteParams
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_OverwriteRatio
+  name: OverwriteRatio
+  nameWithType: OptionsOverwriteParams.OverwriteRatio
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.OverwriteRatio
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithOverwriteRatio*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithOverwriteRatio
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_WithOverwriteRatio_System_Double_
+  name: WithOverwriteRatio
+  nameWithType: OptionsOverwriteParams.WithOverwriteRatio
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithOverwriteRatio
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MaxDelta
+  name: MaxDelta
+  nameWithType: OptionsOverwriteParams.MaxDelta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDelta*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDelta
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_WithMaxDelta_System_Double_
+  name: WithMaxDelta
+  nameWithType: OptionsOverwriteParams.WithMaxDelta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDelta
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinIvPercentile
+  name: MinIvPercentile
+  nameWithType: OptionsOverwriteParams.MinIvPercentile
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinIvPercentile*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinIvPercentile
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_WithMinIvPercentile_System_Double_
+  name: WithMinIvPercentile
+  nameWithType: OptionsOverwriteParams.WithMinIvPercentile
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMinIvPercentile
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MaxDte
+  name: MaxDte
+  nameWithType: OptionsOverwriteParams.MaxDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDte*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDte
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_WithMaxDte_System_Nullable_System_Int32__
+  name: WithMaxDte
+  nameWithType: OptionsOverwriteParams.WithMaxDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.WithMaxDte

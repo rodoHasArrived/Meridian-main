@@ -1,0 +1,486 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+  commentId: T:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+  id: FundReportAssetClassSectionDto
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.#ctor(System.String,System.Decimal)
+  - Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.AssetClass
+  - Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.Total
+  langs:
+  - csharp
+  - vb
+  name: FundReportAssetClassSectionDto
+  nameWithType: FundReportAssetClassSectionDto
+  fullName: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundReportAssetClassSectionDto
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Asset-class total included in a report-pack preview.
+  example: []
+  syntax:
+    content: 'public sealed record FundReportAssetClassSectionDto : IEquatable<FundReportAssetClassSectionDto>'
+    content.vb: Public NotInheritable Class FundReportAssetClassSectionDto Implements IEquatable(Of FundReportAssetClassSectionDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundReportAssetClassSectionDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.#ctor(System.String,System.Decimal)
+  commentId: M:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.#ctor(System.String,System.Decimal)
+  id: '#ctor(System.String,System.Decimal)'
+  parent: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+  langs:
+  - csharp
+  - vb
+  name: FundReportAssetClassSectionDto(string, decimal)
+  nameWithType: FundReportAssetClassSectionDto.FundReportAssetClassSectionDto(string, decimal)
+  fullName: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.FundReportAssetClassSectionDto(string, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Asset-class total included in a report-pack preview.
+  example: []
+  syntax:
+    content: public FundReportAssetClassSectionDto(string AssetClass, decimal Total)
+    parameters:
+    - id: AssetClass
+      type: System.String
+    - id: Total
+      type: System.Decimal
+    content.vb: Public Sub New(AssetClass As String, Total As Decimal)
+  overload: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.#ctor*
+  nameWithType.vb: FundReportAssetClassSectionDto.New(String, Decimal)
+  fullName.vb: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.New(String, Decimal)
+  name.vb: New(String, Decimal)
+- uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.AssetClass
+  commentId: P:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.AssetClass
+  id: AssetClass
+  parent: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: FundReportAssetClassSectionDto.AssetClass
+  fullName: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AssetClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetClass As String
+  overload: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.AssetClass*
+- uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.Total
+  commentId: P:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.Total
+  id: Total
+  parent: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+  langs:
+  - csharp
+  - vb
+  name: Total
+  nameWithType: FundReportAssetClassSectionDto.Total
+  fullName: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.Total
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Total
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal Total { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Total As Decimal
+  overload: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.Total*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundReportAssetClassSectionDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundReportAssetClassSectionDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundReportAssetClassSectionDto>
+  nameWithType: IEquatable<FundReportAssetClassSectionDto>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundReportAssetClassSectionDto>
+  nameWithType.vb: IEquatable(Of FundReportAssetClassSectionDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundReportAssetClassSectionDto)
+  name.vb: IEquatable(Of FundReportAssetClassSectionDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+    name: FundReportAssetClassSectionDto
+    href: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto
+    name: FundReportAssetClassSectionDto
+    href: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.#ctor
+  href: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.html#Meridian_Contracts_Workstation_FundReportAssetClassSectionDto__ctor_System_String_System_Decimal_
+  name: FundReportAssetClassSectionDto
+  nameWithType: FundReportAssetClassSectionDto.FundReportAssetClassSectionDto
+  fullName: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.FundReportAssetClassSectionDto
+  nameWithType.vb: FundReportAssetClassSectionDto.New
+  fullName.vb: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.AssetClass*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.AssetClass
+  href: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.html#Meridian_Contracts_Workstation_FundReportAssetClassSectionDto_AssetClass
+  name: AssetClass
+  nameWithType: FundReportAssetClassSectionDto.AssetClass
+  fullName: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.AssetClass
+- uid: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.Total*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.Total
+  href: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.html#Meridian_Contracts_Workstation_FundReportAssetClassSectionDto_Total
+  name: Total
+  nameWithType: FundReportAssetClassSectionDto.Total
+  fullName: Meridian.Contracts.Workstation.FundReportAssetClassSectionDto.Total

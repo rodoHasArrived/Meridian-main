@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.Configuration;
 using Meridian.Ui.Services;
 
 namespace Meridian.Ui.Tests.Services;
@@ -19,6 +20,40 @@ public sealed class ActivityFeedServiceTests
         var a = ActivityFeedService.Instance;
         var b = ActivityFeedService.Instance;
         a.Should().BeSameAs(b);
+    }
+
+    [Fact]
+    public void Constructor_UsesResolvedDataRootForActivityLogPath()
+    {
+        using var fixture = new PathFixture("mdc-activity-path");
+        var service = new ActivityFeedService(new FixedConfigService(
+            fixture.ConfigPath,
+            new AppConfigDto { DataRoot = "retained-data" }));
+
+        var path = GetPrivateField<string>(service, "_activityLogPath");
+
+        path.Should().Be(Path.Combine(fixture.RootPath, "retained-data", "_logs", "activity_log.json"));
+    }
+
+    [Fact]
+    public void Constructor_UsesConfigFileWithoutInvokingAsyncLoad()
+    {
+        using var fixture = new PathFixture("mdc-activity-file");
+        File.WriteAllText(
+            fixture.ConfigPath,
+            """
+            {
+              "dataRoot": "retained-data"
+            }
+            """);
+
+        var configService = new ThrowingLoadConfigService(fixture.ConfigPath);
+        var service = new ActivityFeedService(configService);
+
+        var path = GetPrivateField<string>(service, "_activityLogPath");
+
+        configService.LoadConfigCallCount.Should().Be(0);
+        path.Should().Be(Path.Combine(fixture.RootPath, "retained-data", "_logs", "activity_log.json"));
     }
 
     // ── AddActivity ──────────────────────────────────────────────────
@@ -415,5 +450,14 @@ public sealed class ActivityFeedServiceTests
 
         received.Should().NotBeNull();
         received!.Id.Should().Be(id);
+    }
+
+    private static T GetPrivateField<T>(object instance, string fieldName)
+    {
+        var field = instance.GetType().GetField(
+            fieldName,
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        field.Should().NotBeNull();
+        return (T)field!.GetValue(instance)!;
     }
 }

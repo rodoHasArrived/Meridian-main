@@ -1,0 +1,612 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.TradingSession
+  commentId: T:Meridian.Application.Scheduling.TradingSession
+  id: TradingSession
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.TradingSession.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset)
+  - Meridian.Application.Scheduling.TradingSession.CloseTime
+  - Meridian.Application.Scheduling.TradingSession.Exchange
+  - Meridian.Application.Scheduling.TradingSession.Market
+  - Meridian.Application.Scheduling.TradingSession.OpenTime
+  - Meridian.Application.Scheduling.TradingSession.SessionType
+  langs:
+  - csharp
+  - vb
+  name: TradingSession
+  nameWithType: TradingSession
+  fullName: Meridian.Application.Scheduling.TradingSession
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingSession
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Represents a trading session.
+  example: []
+  syntax:
+    content: 'public sealed record TradingSession : IEquatable<TradingSession>'
+    content.vb: Public NotInheritable Class TradingSession Implements IEquatable(Of TradingSession)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Scheduling.TradingSession}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.TradingSession.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Scheduling.TradingSession.#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset)'
+  parent: Meridian.Application.Scheduling.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: TradingSession(string, string, string, DateTimeOffset, DateTimeOffset)
+  nameWithType: TradingSession.TradingSession(string, string, string, DateTimeOffset, DateTimeOffset)
+  fullName: Meridian.Application.Scheduling.TradingSession.TradingSession(string, string, string, System.DateTimeOffset, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Represents a trading session.
+  example: []
+  syntax:
+    content: public TradingSession(string Exchange, string Market, string SessionType, DateTimeOffset OpenTime, DateTimeOffset CloseTime)
+    parameters:
+    - id: Exchange
+      type: System.String
+      description: Exchange identifier.
+    - id: Market
+      type: System.String
+      description: Market name (e.g., "US", "EU").
+    - id: SessionType
+      type: System.String
+      description: Type of session (pre-market, regular, after-hours).
+    - id: OpenTime
+      type: System.DateTimeOffset
+      description: Session open time.
+    - id: CloseTime
+      type: System.DateTimeOffset
+      description: Session close time.
+    content.vb: Public Sub New(Exchange As String, Market As String, SessionType As String, OpenTime As DateTimeOffset, CloseTime As DateTimeOffset)
+  overload: Meridian.Application.Scheduling.TradingSession.#ctor*
+  nameWithType.vb: TradingSession.New(String, String, String, DateTimeOffset, DateTimeOffset)
+  fullName.vb: Meridian.Application.Scheduling.TradingSession.New(String, String, String, System.DateTimeOffset, System.DateTimeOffset)
+  name.vb: New(String, String, String, DateTimeOffset, DateTimeOffset)
+- uid: Meridian.Application.Scheduling.TradingSession.Exchange
+  commentId: P:Meridian.Application.Scheduling.TradingSession.Exchange
+  id: Exchange
+  parent: Meridian.Application.Scheduling.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: TradingSession.Exchange
+  fullName: Meridian.Application.Scheduling.TradingSession.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Exchange identifier.
+  example: []
+  syntax:
+    content: public string Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Application.Scheduling.TradingSession.Exchange*
+- uid: Meridian.Application.Scheduling.TradingSession.Market
+  commentId: P:Meridian.Application.Scheduling.TradingSession.Market
+  id: Market
+  parent: Meridian.Application.Scheduling.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: Market
+  nameWithType: TradingSession.Market
+  fullName: Meridian.Application.Scheduling.TradingSession.Market
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Market
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Market name (e.g., "US", "EU").
+  example: []
+  syntax:
+    content: public string Market { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Market As String
+  overload: Meridian.Application.Scheduling.TradingSession.Market*
+- uid: Meridian.Application.Scheduling.TradingSession.SessionType
+  commentId: P:Meridian.Application.Scheduling.TradingSession.SessionType
+  id: SessionType
+  parent: Meridian.Application.Scheduling.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: SessionType
+  nameWithType: TradingSession.SessionType
+  fullName: Meridian.Application.Scheduling.TradingSession.SessionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionType
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Type of session (pre-market, regular, after-hours).
+  example: []
+  syntax:
+    content: public string SessionType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SessionType As String
+  overload: Meridian.Application.Scheduling.TradingSession.SessionType*
+- uid: Meridian.Application.Scheduling.TradingSession.OpenTime
+  commentId: P:Meridian.Application.Scheduling.TradingSession.OpenTime
+  id: OpenTime
+  parent: Meridian.Application.Scheduling.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: OpenTime
+  nameWithType: TradingSession.OpenTime
+  fullName: Meridian.Application.Scheduling.TradingSession.OpenTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenTime
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Session open time.
+  example: []
+  syntax:
+    content: public DateTimeOffset OpenTime { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property OpenTime As DateTimeOffset
+  overload: Meridian.Application.Scheduling.TradingSession.OpenTime*
+- uid: Meridian.Application.Scheduling.TradingSession.CloseTime
+  commentId: P:Meridian.Application.Scheduling.TradingSession.CloseTime
+  id: CloseTime
+  parent: Meridian.Application.Scheduling.TradingSession
+  langs:
+  - csharp
+  - vb
+  name: CloseTime
+  nameWithType: TradingSession.CloseTime
+  fullName: Meridian.Application.Scheduling.TradingSession.CloseTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CloseTime
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Session close time.
+  example: []
+  syntax:
+    content: public DateTimeOffset CloseTime { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CloseTime As DateTimeOffset
+  overload: Meridian.Application.Scheduling.TradingSession.CloseTime*
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Scheduling.TradingSession}
+  commentId: T:System.IEquatable{Meridian.Application.Scheduling.TradingSession}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TradingSession>
+  nameWithType: IEquatable<TradingSession>
+  fullName: System.IEquatable<Meridian.Application.Scheduling.TradingSession>
+  nameWithType.vb: IEquatable(Of TradingSession)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Scheduling.TradingSession)
+  name.vb: IEquatable(Of TradingSession)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.TradingSession
+    name: TradingSession
+    href: Meridian.Application.Scheduling.TradingSession.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.TradingSession
+    name: TradingSession
+    href: Meridian.Application.Scheduling.TradingSession.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Scheduling.TradingSession.#ctor*
+  commentId: Overload:Meridian.Application.Scheduling.TradingSession.#ctor
+  href: Meridian.Application.Scheduling.TradingSession.html#Meridian_Application_Scheduling_TradingSession__ctor_System_String_System_String_System_String_System_DateTimeOffset_System_DateTimeOffset_
+  name: TradingSession
+  nameWithType: TradingSession.TradingSession
+  fullName: Meridian.Application.Scheduling.TradingSession.TradingSession
+  nameWithType.vb: TradingSession.New
+  fullName.vb: Meridian.Application.Scheduling.TradingSession.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Scheduling.TradingSession.Exchange*
+  commentId: Overload:Meridian.Application.Scheduling.TradingSession.Exchange
+  href: Meridian.Application.Scheduling.TradingSession.html#Meridian_Application_Scheduling_TradingSession_Exchange
+  name: Exchange
+  nameWithType: TradingSession.Exchange
+  fullName: Meridian.Application.Scheduling.TradingSession.Exchange
+- uid: Meridian.Application.Scheduling.TradingSession.Market*
+  commentId: Overload:Meridian.Application.Scheduling.TradingSession.Market
+  href: Meridian.Application.Scheduling.TradingSession.html#Meridian_Application_Scheduling_TradingSession_Market
+  name: Market
+  nameWithType: TradingSession.Market
+  fullName: Meridian.Application.Scheduling.TradingSession.Market
+- uid: Meridian.Application.Scheduling.TradingSession.SessionType*
+  commentId: Overload:Meridian.Application.Scheduling.TradingSession.SessionType
+  href: Meridian.Application.Scheduling.TradingSession.html#Meridian_Application_Scheduling_TradingSession_SessionType
+  name: SessionType
+  nameWithType: TradingSession.SessionType
+  fullName: Meridian.Application.Scheduling.TradingSession.SessionType
+- uid: Meridian.Application.Scheduling.TradingSession.OpenTime*
+  commentId: Overload:Meridian.Application.Scheduling.TradingSession.OpenTime
+  href: Meridian.Application.Scheduling.TradingSession.html#Meridian_Application_Scheduling_TradingSession_OpenTime
+  name: OpenTime
+  nameWithType: TradingSession.OpenTime
+  fullName: Meridian.Application.Scheduling.TradingSession.OpenTime
+- uid: Meridian.Application.Scheduling.TradingSession.CloseTime*
+  commentId: Overload:Meridian.Application.Scheduling.TradingSession.CloseTime
+  href: Meridian.Application.Scheduling.TradingSession.html#Meridian_Application_Scheduling_TradingSession_CloseTime
+  name: CloseTime
+  nameWithType: TradingSession.CloseTime
+  fullName: Meridian.Application.Scheduling.TradingSession.CloseTime

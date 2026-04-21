@@ -28,8 +28,9 @@ public sealed class TaskbarProgressService
             _taskbarList = (ITaskbarList3)new TaskbarInstance();
             _taskbarList.HrInit();
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[TaskbarProgressService] COM initialization failed, disabling taskbar progress: {ex.Message}");
             _taskbarList = null;
         }
     }
@@ -45,8 +46,9 @@ public sealed class TaskbarProgressService
         {
             _hwnd = new WindowInteropHelper(mainWindow).Handle;
         }
-        catch
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[TaskbarProgressService] Failed to capture HWND, disabling taskbar progress: {ex.Message}");
             _hwnd = IntPtr.Zero;
         }
     }
@@ -90,9 +92,9 @@ public sealed class TaskbarProgressService
         {
             action(hwnd);
         }
-        catch
+        catch (Exception ex)
         {
-            // Taskbar integration is cosmetic; swallow COM failures silently.
+            System.Diagnostics.Debug.WriteLine($"[TaskbarProgressService] Taskbar progress update failed: {ex.Message}");
         }
     }
 
@@ -106,7 +108,10 @@ public sealed class TaskbarProgressService
             if (win != null)
                 return new WindowInteropHelper(win).Handle;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TaskbarProgressService] Failed to resolve HWND: {ex.Message}");
+        }
 
         return IntPtr.Zero;
     }

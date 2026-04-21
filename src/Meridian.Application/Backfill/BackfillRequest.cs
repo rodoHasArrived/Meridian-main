@@ -1,5 +1,6 @@
 using System.Linq;
 using Meridian.Application.Config;
+using Meridian.Infrastructure.Adapters.Core;
 
 namespace Meridian.Application.Backfill;
 
@@ -10,6 +11,7 @@ namespace Meridian.Application.Backfill;
 /// <param name="Symbols">Symbols to backfill.</param>
 /// <param name="From">Optional inclusive start date.</param>
 /// <param name="To">Optional inclusive end date.</param>
+/// <param name="Granularity">Requested backfill granularity. Defaults to daily bars.</param>
 /// <param name="MaxConcurrentSymbols">
 /// Maximum number of symbols to process concurrently. Overrides the value from
 /// <see cref="BackfillJobsConfig.MaxConcurrentRequests"/> when set.
@@ -30,6 +32,7 @@ public sealed record BackfillRequest(
     IReadOnlyList<string> Symbols,
     DateOnly? From = null,
     DateOnly? To = null,
+    DataGranularity Granularity = DataGranularity.Daily,
     int? MaxConcurrentSymbols = null,
     IReadOnlyDictionary<string, int>? SymbolPriorities = null,
     bool ResumeFromCheckpoint = false
@@ -47,6 +50,7 @@ public sealed record BackfillRequest(
             symbols,
             defaults?.From,
             defaults?.To,
+            DataGranularityExtensions.ParseValueOrDefault(defaults?.Granularity),
             MaxConcurrentSymbols: defaults?.Jobs?.MaxConcurrentRequests);
     }
 }

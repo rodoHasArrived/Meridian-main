@@ -1,0 +1,1197 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Session.CollectionSession
+  commentId: T:Meridian.Contracts.Session.CollectionSession
+  id: CollectionSession
+  parent: Meridian.Contracts.Session
+  children:
+  - Meridian.Contracts.Session.CollectionSession.CreatedAt
+  - Meridian.Contracts.Session.CollectionSession.Description
+  - Meridian.Contracts.Session.CollectionSession.EndedAt
+  - Meridian.Contracts.Session.CollectionSession.EventTypes
+  - Meridian.Contracts.Session.CollectionSession.Id
+  - Meridian.Contracts.Session.CollectionSession.ManifestPath
+  - Meridian.Contracts.Session.CollectionSession.Name
+  - Meridian.Contracts.Session.CollectionSession.Notes
+  - Meridian.Contracts.Session.CollectionSession.Provider
+  - Meridian.Contracts.Session.CollectionSession.QualityScore
+  - Meridian.Contracts.Session.CollectionSession.StartedAt
+  - Meridian.Contracts.Session.CollectionSession.Statistics
+  - Meridian.Contracts.Session.CollectionSession.Status
+  - Meridian.Contracts.Session.CollectionSession.Symbols
+  - Meridian.Contracts.Session.CollectionSession.Tags
+  - Meridian.Contracts.Session.CollectionSession.UpdatedAt
+  langs:
+  - csharp
+  - vb
+  name: CollectionSession
+  nameWithType: CollectionSession
+  fullName: Meridian.Contracts.Session.CollectionSession
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollectionSession
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Represents a discrete data collection session with comprehensive tracking.
+  example: []
+  syntax:
+    content: public sealed class CollectionSession
+    content.vb: Public NotInheritable Class CollectionSession
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Session.CollectionSession.Id
+  commentId: P:Meridian.Contracts.Session.CollectionSession.Id
+  id: Id
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: CollectionSession.Id
+  fullName: Meridian.Contracts.Session.CollectionSession.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the unique session identifier.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("id")]
+
+      public string Id { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("id")>
+
+      Public Property Id As String
+  overload: Meridian.Contracts.Session.CollectionSession.Id*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: id
+- uid: Meridian.Contracts.Session.CollectionSession.Name
+  commentId: P:Meridian.Contracts.Session.CollectionSession.Name
+  id: Name
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: CollectionSession.Name
+  fullName: Meridian.Contracts.Session.CollectionSession.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the human-readable session name.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("name")]
+
+      public string Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("name")>
+
+      Public Property Name As String
+  overload: Meridian.Contracts.Session.CollectionSession.Name*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: name
+- uid: Meridian.Contracts.Session.CollectionSession.Description
+  commentId: P:Meridian.Contracts.Session.CollectionSession.Description
+  id: Description
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: CollectionSession.Description
+  fullName: Meridian.Contracts.Session.CollectionSession.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the session description.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string? Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Contracts.Session.CollectionSession.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+- uid: Meridian.Contracts.Session.CollectionSession.Status
+  commentId: P:Meridian.Contracts.Session.CollectionSession.Status
+  id: Status
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: CollectionSession.Status
+  fullName: Meridian.Contracts.Session.CollectionSession.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the current session status.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("status")]
+
+      public string Status { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("status")>
+
+      Public Property Status As String
+  overload: Meridian.Contracts.Session.CollectionSession.Status*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: status
+- uid: Meridian.Contracts.Session.CollectionSession.StartedAt
+  commentId: P:Meridian.Contracts.Session.CollectionSession.StartedAt
+  id: StartedAt
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: CollectionSession.StartedAt
+  fullName: Meridian.Contracts.Session.CollectionSession.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the timestamp when data collection started.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("startedAt")]
+
+      public DateTime? StartedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("startedAt")>
+
+      Public Property StartedAt As Date?
+  overload: Meridian.Contracts.Session.CollectionSession.StartedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: startedAt
+- uid: Meridian.Contracts.Session.CollectionSession.EndedAt
+  commentId: P:Meridian.Contracts.Session.CollectionSession.EndedAt
+  id: EndedAt
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: EndedAt
+  nameWithType: CollectionSession.EndedAt
+  fullName: Meridian.Contracts.Session.CollectionSession.EndedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndedAt
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the timestamp when data collection ended.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("endedAt")]
+
+      public DateTime? EndedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("endedAt")>
+
+      Public Property EndedAt As Date?
+  overload: Meridian.Contracts.Session.CollectionSession.EndedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: endedAt
+- uid: Meridian.Contracts.Session.CollectionSession.Symbols
+  commentId: P:Meridian.Contracts.Session.CollectionSession.Symbols
+  id: Symbols
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: CollectionSession.Symbols
+  fullName: Meridian.Contracts.Session.CollectionSession.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the array of symbols being collected.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbols")]
+
+      public string[] Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("symbols")>
+
+      Public Property Symbols As String()
+  overload: Meridian.Contracts.Session.CollectionSession.Symbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbols
+- uid: Meridian.Contracts.Session.CollectionSession.EventTypes
+  commentId: P:Meridian.Contracts.Session.CollectionSession.EventTypes
+  id: EventTypes
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: EventTypes
+  nameWithType: CollectionSession.EventTypes
+  fullName: Meridian.Contracts.Session.CollectionSession.EventTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypes
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the array of event types being collected.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("eventTypes")]
+
+      public string[] EventTypes { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("eventTypes")>
+
+      Public Property EventTypes As String()
+  overload: Meridian.Contracts.Session.CollectionSession.EventTypes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventTypes
+- uid: Meridian.Contracts.Session.CollectionSession.Provider
+  commentId: P:Meridian.Contracts.Session.CollectionSession.Provider
+  id: Provider
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: CollectionSession.Provider
+  fullName: Meridian.Contracts.Session.CollectionSession.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the data provider name.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("provider")]
+
+      public string? Provider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("provider")>
+
+      Public Property Provider As String
+  overload: Meridian.Contracts.Session.CollectionSession.Provider*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: provider
+- uid: Meridian.Contracts.Session.CollectionSession.Tags
+  commentId: P:Meridian.Contracts.Session.CollectionSession.Tags
+  id: Tags
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: CollectionSession.Tags
+  fullName: Meridian.Contracts.Session.CollectionSession.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the session tags for categorization.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("tags")]
+
+      public string[]? Tags { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("tags")>
+
+      Public Property Tags As String()
+  overload: Meridian.Contracts.Session.CollectionSession.Tags*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: tags
+- uid: Meridian.Contracts.Session.CollectionSession.Notes
+  commentId: P:Meridian.Contracts.Session.CollectionSession.Notes
+  id: Notes
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: CollectionSession.Notes
+  fullName: Meridian.Contracts.Session.CollectionSession.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets additional notes about the session.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("notes")]
+
+      public string? Notes { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("notes")>
+
+      Public Property Notes As String
+  overload: Meridian.Contracts.Session.CollectionSession.Notes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: notes
+- uid: Meridian.Contracts.Session.CollectionSession.Statistics
+  commentId: P:Meridian.Contracts.Session.CollectionSession.Statistics
+  id: Statistics
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: Statistics
+  nameWithType: CollectionSession.Statistics
+  fullName: Meridian.Contracts.Session.CollectionSession.Statistics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Statistics
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the session statistics.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("statistics")]
+
+      public CollectionSessionStatistics? Statistics { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Session.CollectionSessionStatistics
+    content.vb: >-
+      <JsonPropertyName("statistics")>
+
+      Public Property Statistics As CollectionSessionStatistics
+  overload: Meridian.Contracts.Session.CollectionSession.Statistics*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: statistics
+- uid: Meridian.Contracts.Session.CollectionSession.QualityScore
+  commentId: P:Meridian.Contracts.Session.CollectionSession.QualityScore
+  id: QualityScore
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: QualityScore
+  nameWithType: CollectionSession.QualityScore
+  fullName: Meridian.Contracts.Session.CollectionSession.QualityScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityScore
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the data quality score (0.0 to 1.0).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("qualityScore")]
+
+      public float QualityScore { get; set; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("qualityScore")>
+
+      Public Property QualityScore As Single
+  overload: Meridian.Contracts.Session.CollectionSession.QualityScore*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: qualityScore
+- uid: Meridian.Contracts.Session.CollectionSession.ManifestPath
+  commentId: P:Meridian.Contracts.Session.CollectionSession.ManifestPath
+  id: ManifestPath
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: ManifestPath
+  nameWithType: CollectionSession.ManifestPath
+  fullName: Meridian.Contracts.Session.CollectionSession.ManifestPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManifestPath
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the path to the session manifest file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("manifestPath")]
+
+      public string? ManifestPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("manifestPath")>
+
+      Public Property ManifestPath As String
+  overload: Meridian.Contracts.Session.CollectionSession.ManifestPath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: manifestPath
+- uid: Meridian.Contracts.Session.CollectionSession.CreatedAt
+  commentId: P:Meridian.Contracts.Session.CollectionSession.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: CollectionSession.CreatedAt
+  fullName: Meridian.Contracts.Session.CollectionSession.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the timestamp when the session was created.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("createdAt")]
+
+      public DateTime CreatedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("createdAt")>
+
+      Public Property CreatedAt As Date
+  overload: Meridian.Contracts.Session.CollectionSession.CreatedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: createdAt
+- uid: Meridian.Contracts.Session.CollectionSession.UpdatedAt
+  commentId: P:Meridian.Contracts.Session.CollectionSession.UpdatedAt
+  id: UpdatedAt
+  parent: Meridian.Contracts.Session.CollectionSession
+  langs:
+  - csharp
+  - vb
+  name: UpdatedAt
+  nameWithType: CollectionSession.UpdatedAt
+  fullName: Meridian.Contracts.Session.CollectionSession.UpdatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Session/CollectionSession.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdatedAt
+    path: ../../src/Meridian.Contracts/Session/CollectionSession.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Session
+  summary: Gets or sets the timestamp when the session was last updated.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("updatedAt")]
+
+      public DateTime UpdatedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("updatedAt")>
+
+      Public Property UpdatedAt As Date
+  overload: Meridian.Contracts.Session.CollectionSession.UpdatedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: updatedAt
+references:
+- uid: Meridian.Contracts.Session
+  commentId: N:Meridian.Contracts.Session
+  href: Meridian.html
+  name: Meridian.Contracts.Session
+  nameWithType: Meridian.Contracts.Session
+  fullName: Meridian.Contracts.Session
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Session
+    name: Session
+    href: Meridian.Contracts.Session.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Session
+    name: Session
+    href: Meridian.Contracts.Session.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Session.CollectionSession.Id*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.Id
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_Id
+  name: Id
+  nameWithType: CollectionSession.Id
+  fullName: Meridian.Contracts.Session.CollectionSession.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Session.CollectionSession.Name*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.Name
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_Name
+  name: Name
+  nameWithType: CollectionSession.Name
+  fullName: Meridian.Contracts.Session.CollectionSession.Name
+- uid: Meridian.Contracts.Session.CollectionSession.Description*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.Description
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_Description
+  name: Description
+  nameWithType: CollectionSession.Description
+  fullName: Meridian.Contracts.Session.CollectionSession.Description
+- uid: Meridian.Contracts.Session.CollectionSession.Status*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.Status
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_Status
+  name: Status
+  nameWithType: CollectionSession.Status
+  fullName: Meridian.Contracts.Session.CollectionSession.Status
+- uid: Meridian.Contracts.Session.CollectionSession.StartedAt*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.StartedAt
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_StartedAt
+  name: StartedAt
+  nameWithType: CollectionSession.StartedAt
+  fullName: Meridian.Contracts.Session.CollectionSession.StartedAt
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Session.CollectionSession.EndedAt*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.EndedAt
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_EndedAt
+  name: EndedAt
+  nameWithType: CollectionSession.EndedAt
+  fullName: Meridian.Contracts.Session.CollectionSession.EndedAt
+- uid: Meridian.Contracts.Session.CollectionSession.Symbols*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.Symbols
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_Symbols
+  name: Symbols
+  nameWithType: CollectionSession.Symbols
+  fullName: Meridian.Contracts.Session.CollectionSession.Symbols
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Session.CollectionSession.EventTypes*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.EventTypes
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_EventTypes
+  name: EventTypes
+  nameWithType: CollectionSession.EventTypes
+  fullName: Meridian.Contracts.Session.CollectionSession.EventTypes
+- uid: Meridian.Contracts.Session.CollectionSession.Provider*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.Provider
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_Provider
+  name: Provider
+  nameWithType: CollectionSession.Provider
+  fullName: Meridian.Contracts.Session.CollectionSession.Provider
+- uid: Meridian.Contracts.Session.CollectionSession.Tags*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.Tags
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_Tags
+  name: Tags
+  nameWithType: CollectionSession.Tags
+  fullName: Meridian.Contracts.Session.CollectionSession.Tags
+- uid: Meridian.Contracts.Session.CollectionSession.Notes*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.Notes
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_Notes
+  name: Notes
+  nameWithType: CollectionSession.Notes
+  fullName: Meridian.Contracts.Session.CollectionSession.Notes
+- uid: Meridian.Contracts.Session.CollectionSession.Statistics*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.Statistics
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_Statistics
+  name: Statistics
+  nameWithType: CollectionSession.Statistics
+  fullName: Meridian.Contracts.Session.CollectionSession.Statistics
+- uid: Meridian.Contracts.Session.CollectionSessionStatistics
+  commentId: T:Meridian.Contracts.Session.CollectionSessionStatistics
+  parent: Meridian.Contracts.Session
+  href: Meridian.Contracts.Session.CollectionSessionStatistics.html
+  name: CollectionSessionStatistics
+  nameWithType: CollectionSessionStatistics
+  fullName: Meridian.Contracts.Session.CollectionSessionStatistics
+- uid: Meridian.Contracts.Session.CollectionSession.QualityScore*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.QualityScore
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_QualityScore
+  name: QualityScore
+  nameWithType: CollectionSession.QualityScore
+  fullName: Meridian.Contracts.Session.CollectionSession.QualityScore
+- uid: System.Single
+  commentId: T:System.Single
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.single
+  name: float
+  nameWithType: float
+  fullName: float
+  nameWithType.vb: Single
+  fullName.vb: Single
+  name.vb: Single
+- uid: Meridian.Contracts.Session.CollectionSession.ManifestPath*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.ManifestPath
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_ManifestPath
+  name: ManifestPath
+  nameWithType: CollectionSession.ManifestPath
+  fullName: Meridian.Contracts.Session.CollectionSession.ManifestPath
+- uid: Meridian.Contracts.Session.CollectionSession.CreatedAt*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.CreatedAt
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_CreatedAt
+  name: CreatedAt
+  nameWithType: CollectionSession.CreatedAt
+  fullName: Meridian.Contracts.Session.CollectionSession.CreatedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Session.CollectionSession.UpdatedAt*
+  commentId: Overload:Meridian.Contracts.Session.CollectionSession.UpdatedAt
+  href: Meridian.Contracts.Session.CollectionSession.html#Meridian_Contracts_Session_CollectionSession_UpdatedAt
+  name: UpdatedAt
+  nameWithType: CollectionSession.UpdatedAt
+  fullName: Meridian.Contracts.Session.CollectionSession.UpdatedAt

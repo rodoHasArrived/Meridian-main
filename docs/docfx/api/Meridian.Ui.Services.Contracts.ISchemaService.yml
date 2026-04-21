@@ -1,0 +1,138 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.ISchemaService
+  commentId: T:Meridian.Ui.Services.Contracts.ISchemaService
+  id: ISchemaService
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(System.String)
+  langs:
+  - csharp
+  - vb
+  name: ISchemaService
+  nameWithType: ISchemaService
+  fullName: Meridian.Ui.Services.Contracts.ISchemaService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ISchemaService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISchemaService
+    path: ../../src/Meridian.Ui.Services/Contracts/ISchemaService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Interface for schema services used by shared UI services.
+
+    Implemented by platform-specific schema services (WPF).
+  example: []
+  syntax:
+    content: public interface ISchemaService
+    content.vb: Public Interface ISchemaService
+  derivedClasses:
+  - Meridian.Ui.Services.SchemaService
+  - Meridian.Ui.Services.SchemaServiceBase
+- uid: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(System.String)
+  commentId: M:Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(System.String)
+  id: GetJsonSchema(System.String)
+  parent: Meridian.Ui.Services.Contracts.ISchemaService
+  langs:
+  - csharp
+  - vb
+  name: GetJsonSchema(string)
+  nameWithType: ISchemaService.GetJsonSchema(string)
+  fullName: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/ISchemaService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJsonSchema
+    path: ../../src/Meridian.Ui.Services/Contracts/ISchemaService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Gets the JSON schema for a specific event type.
+  example: []
+  syntax:
+    content: string? GetJsonSchema(string eventType)
+    parameters:
+    - id: eventType
+      type: System.String
+      description: The event type (e.g., "Trade", "BboQuote", "LOBSnapshot", "HistoricalBar").
+    return:
+      type: System.String
+      description: JSON schema string, or null if not available.
+    content.vb: Function GetJsonSchema(eventType As String) As String
+  overload: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema*
+  nameWithType.vb: ISchemaService.GetJsonSchema(String)
+  fullName.vb: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(String)
+  name.vb: GetJsonSchema(String)
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema*
+  commentId: Overload:Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema
+  href: Meridian.Ui.Services.Contracts.ISchemaService.html#Meridian_Ui_Services_Contracts_ISchemaService_GetJsonSchema_System_String_
+  name: GetJsonSchema
+  nameWithType: ISchemaService.GetJsonSchema
+  fullName: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

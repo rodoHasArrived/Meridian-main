@@ -22,9 +22,9 @@ public partial class ActivityLogPage : Page
         WpfServices.LoggingService loggingService,
         WpfServices.NotificationService notificationService)
     {
-        InitializeComponent();
-
         _viewModel = new ActivityLogViewModel(statusService, loggingService, notificationService);
+
+        InitializeComponent();
         DataContext = _viewModel;
 
         // Relay the VM's scroll-request to the actual ListBox control.
@@ -45,6 +45,9 @@ public partial class ActivityLogPage : Page
 
     private void Filter_Changed(object sender, SelectionChangedEventArgs e)
     {
+        if (LevelFilterCombo is null || CategoryFilterCombo is null)
+            return;
+
         if (LevelFilterCombo.SelectedItem is ComboBoxItem levelItem)
             _viewModel.UpdateLevelFilter(levelItem.Content?.ToString() ?? "All");
 
@@ -53,7 +56,7 @@ public partial class ActivityLogPage : Page
     }
 
     private void Search_Changed(object sender, TextChangedEventArgs e) =>
-        _viewModel.UpdateSearch(SearchBox.Text);
+        _viewModel.UpdateSearch(SearchBox?.Text ?? string.Empty);
 
     private void Export_Click(object sender, RoutedEventArgs e)
     {

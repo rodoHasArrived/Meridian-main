@@ -73,6 +73,20 @@
             <Setter Property="Margin" Value="10,0,0,0" />
         </Style>
 
+        <Style x:Key="ShellNavTitleStyle" TargetType="TextBlock" BasedOn="{StaticResource ShellNavLabelStyle}">
+            <Setter Property="Margin" Value="0" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="ShellNavSubtitleStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Foreground" Value="{StaticResource NavItemForegroundBrush}" />
+            <Setter Property="Opacity" Value="0.78" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
         <!-- Marquee: uppercase muted section labels — light text on dark sidebar -->
         <Style x:Key="ShellSectionLabelStyle" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource MeridianBodyFontFamily}" />
@@ -132,6 +146,31 @@
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Template" Value="{StaticResource SidebarButtonTemplate}" />
         </Style>
+
+        <DataTemplate x:Key="ShellNavigationItemTemplate">
+            <Grid Margin="0,2,0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="{Binding Glyph}"
+                           Style="{StaticResource ShellNavIconStyle}"
+                           VerticalAlignment="Top" />
+
+                <StackPanel Grid.Column="1"
+                            Margin="10,0,0,0">
+                    <TextBlock Text="{Binding Title}"
+                               Style="{StaticResource ShellNavTitleStyle}" />
+                    <TextBlock Text="{Binding Subtitle}"
+                               Style="{StaticResource ShellNavSubtitleStyle}"
+                               Margin="0,2,0,0" />
+                    <TextBlock Text="{Binding MetaLine}"
+                               Style="{StaticResource ShellSectionLabelStyle}"
+                               Margin="0,4,0,0" />
+                </StackPanel>
+            </Grid>
+        </DataTemplate>
         <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
     </Page.Resources>
 
@@ -180,6 +219,24 @@
                             <KeyBinding Key="Enter" Command="{Binding OpenSelectedCommandPalettePageCommand}" />
                         </TextBox.InputBindings>
                     </TextBox>
+                    <DockPanel Margin="16,0,16,8" LastChildFill="False">
+                        <TextBlock x:Name="CommandPaletteSummaryText"
+                                   Text="{Binding CommandPaletteResultSummary}"
+                                   FontSize="11"
+                                   Opacity="0.78"
+                                   Foreground="{StaticResource NavSectionLabelBrush}"
+                                   AutomationProperties.AutomationId="CommandPaletteSummaryText"
+                                   AutomationProperties.Name="Command Palette Summary" />
+                        <Button x:Name="CommandPaletteClearButton"
+                                DockPanel.Dock="Right"
+                                Style="{StaticResource SubtleButtonStyle}"
+                                Padding="8,3"
+                                Command="{Binding ClearCommandPaletteQueryCommand}"
+                                AutomationProperties.AutomationId="CommandPaletteClearButton"
+                                AutomationProperties.Name="Clear Command Palette Search">
+                            <TextBlock Text="Clear search" />
+                        </Button>
+                    </DockPanel>
                     <ListBox x:Name="CommandPaletteResults"
                              MaxHeight="360"
                              Background="Transparent"
@@ -190,7 +247,61 @@
                              SelectedItem="{Binding SelectedCommandPalettePage, Mode=TwoWay}"
                              AutomationProperties.AutomationId="CommandPaletteResults"
                              AutomationProperties.Name="Command Palette Results"
-                             Margin="10,0,10,8" />
+                             Margin="10,0,10,8">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,2,0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="20" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{Binding Glyph}"
+                                               Style="{StaticResource ShellNavIconStyle}"
+                                               VerticalAlignment="Top" />
+
+                                    <StackPanel Grid.Column="1"
+                                                Margin="10,0,0,0">
+                                        <DockPanel LastChildFill="True">
+                                            <TextBlock Text="{Binding Title}"
+                                                       Style="{StaticResource ShellNavTitleStyle}" />
+                                            <TextBlock DockPanel.Dock="Right"
+                                                       Margin="12,0,0,0"
+                                                       Text="{Binding WorkspaceTitle}"
+                                                       Style="{StaticResource ShellSectionLabelStyle}"
+                                                       VerticalAlignment="Center" />
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding Subtitle}"
+                                                   Style="{StaticResource ShellNavSubtitleStyle}"
+                                                   Margin="0,2,0,0" />
+                                        <TextBlock Text="{Binding MetaLine}"
+                                                   Style="{StaticResource ShellSectionLabelStyle}"
+                                                   Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Border x:Name="CommandPaletteEmptyState"
+                            Margin="16,0,16,12"
+                            Padding="16"
+                            Visibility="{Binding CommandPaletteEmptyVisibility}"
+                            Style="{StaticResource CompactCardStyle}"
+                            AutomationProperties.AutomationId="CommandPaletteEmptyState"
+                            AutomationProperties.Name="Command Palette Empty State">
+                        <StackPanel>
+                            <TextBlock x:Name="CommandPaletteEmptyTitleText"
+                                       Text="{Binding CommandPaletteEmptyTitle}"
+                                       Style="{StaticResource CardHeaderStyle}"
+                                       FontSize="15"
+                                       AutomationProperties.AutomationId="CommandPaletteEmptyTitleText" />
+                            <TextBlock x:Name="CommandPaletteEmptyDescriptionText"
+                                       Margin="0,6,0,0"
+                                       Text="{Binding CommandPaletteEmptyDescription}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       AutomationProperties.AutomationId="CommandPaletteEmptyDescriptionText" />
+                        </StackPanel>
+                    </Border>
                     <TextBlock Text="Ctrl+K to open - Esc to close - Enter to open selection"
                                FontSize="11"
                                Opacity="0.7"
@@ -232,6 +343,63 @@
                     </StackPanel>
                     <!-- Mode badge + search icon -->
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="{StaticResource TopBarBorderBrush}"
+                                CornerRadius="3"
+                                Padding="8,3"
+                                Margin="0,0,12,0"
+                                Visibility="{Binding ActiveFundVisibility}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE8B7;"
+                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                           FontSize="11"
+                                           Foreground="#F59E0B"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding ActiveFundName}"
+                                           Margin="6,0,0,0"
+                                           FontSize="11"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TopBarTextBrush}" />
+                                <TextBlock Text="{Binding ActiveFundSubtitle}"
+                                           Margin="6,0,0,0"
+                                           FontSize="11"
+                                           Foreground="#9CA3AF" />
+                            </StackPanel>
+                        </Border>
+                        <ComboBox Width="220"
+                                  Margin="0,0,8,0"
+                                  ItemsSource="{Binding OperatingContexts}"
+                                  SelectedItem="{Binding SelectedOperatingContext, Mode=TwoWay}"
+                                  DisplayMemberPath="DisplayName"
+                                  Background="{StaticResource TopBarBorderBrush}"
+                                  Foreground="{StaticResource TopBarTextBrush}"
+                                  BorderBrush="{StaticResource SidebarBorderBrush}"
+                                  Padding="6,2"
+                                  ToolTip="Switch operating context"
+                                  AutomationProperties.Name="Operating Context Switcher" />
+                        <Button Style="{StaticResource IconButtonStyle}"
+                                Command="{Binding SwitchFundCommand}"
+                                ToolTip="Choose Operating Context"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Foreground="{StaticResource TopBarTextBrush}"
+                                Width="28" Height="28" Padding="4"
+                                Margin="0,0,8,0"
+                                AutomationProperties.Name="Choose Operating Context">
+                            <TextBlock Text="&#xE777;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="14"
+                                       Foreground="#9CA3AF" />
+                        </Button>
+                        <ComboBox Width="132"
+                                  Margin="0,0,8,0"
+                                  ItemsSource="{Binding WindowModes}"
+                                  SelectedItem="{Binding SelectedWindowMode, Mode=TwoWay}"
+                                  Background="{StaticResource TopBarBorderBrush}"
+                                  Foreground="{StaticResource TopBarTextBrush}"
+                                  BorderBrush="{StaticResource SidebarBorderBrush}"
+                                  Padding="6,2"
+                                  ToolTip="Select bounded window mode"
+                                  AutomationProperties.Name="Window Mode Switcher" />
                         <Border Background="{StaticResource TopBarBorderBrush}"
                                 CornerRadius="3"
                                 Padding="8,3"
@@ -293,9 +461,11 @@
 
                                 <Button x:Name="ResearchWorkspaceButton"
                                         Grid.Row="0" Grid.Column="0"
-                                        Command="{Binding SelectWorkspaceCommand}"
-                                        CommandParameter="research"
-                                        Margin="0,0,4,4">
+                                        Command="{Binding NavigateToPageCommand}"
+                                        CommandParameter="ResearchShell"
+                                        Margin="0,0,4,4"
+                                        AutomationProperties.AutomationId="WorkspaceResearchButton"
+                                        AutomationProperties.Name="Research Workspace">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -310,7 +480,7 @@
                                     </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Research" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Runs · Charts"
+                                        <TextBlock Text="Studio · Compare"
                                                    Margin="0,2,0,0" FontSize="10"
                                                    Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
@@ -318,9 +488,11 @@
 
                                 <Button x:Name="TradingWorkspaceButton"
                                         Grid.Row="0" Grid.Column="1"
-                                        Command="{Binding SelectWorkspaceCommand}"
-                                        CommandParameter="trading"
-                                        Margin="4,0,0,4">
+                                        Command="{Binding NavigateToPageCommand}"
+                                        CommandParameter="TradingShell"
+                                        Margin="4,0,0,4"
+                                        AutomationProperties.AutomationId="WorkspaceTradingButton"
+                                        AutomationProperties.Name="Trading Workspace">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -335,7 +507,7 @@
                                     </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Trading" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Live · Orders"
+                                        <TextBlock Text="Live · Orders · Risk"
                                                    Margin="0,2,0,0" FontSize="10"
                                                    Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
@@ -343,9 +515,11 @@
 
                                 <Button x:Name="DataOperationsWorkspaceButton"
                                         Grid.Row="1" Grid.Column="0"
-                                        Command="{Binding SelectWorkspaceCommand}"
-                                        CommandParameter="data-operations"
-                                        Margin="0,0,4,0">
+                                        Command="{Binding NavigateToPageCommand}"
+                                        CommandParameter="DataOperationsShell"
+                                        Margin="0,0,4,0"
+                                        AutomationProperties.AutomationId="WorkspaceDataOperationsButton"
+                                        AutomationProperties.Name="Data Operations Workspace">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -360,7 +534,7 @@
                                     </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Data Ops" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Providers · Storage"
+                                        <TextBlock Text="Providers · Jobs"
                                                    Margin="0,2,0,0" FontSize="10"
                                                    Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
@@ -368,9 +542,11 @@
 
                                 <Button x:Name="GovernanceWorkspaceButton"
                                         Grid.Row="1" Grid.Column="1"
-                                        Command="{Binding SelectWorkspaceCommand}"
-                                        CommandParameter="governance"
-                                        Margin="4,0,0,0">
+                                        Command="{Binding NavigateToPageCommand}"
+                                        CommandParameter="GovernanceShell"
+                                        Margin="4,0,0,0"
+                                        AutomationProperties.AutomationId="WorkspaceGovernanceButton"
+                                        AutomationProperties.Name="Governance Workspace">
                                     <Button.Style>
                                         <Style TargetType="Button" BasedOn="{StaticResource WorkspaceTileStyle}">
                                             <Style.Triggers>
@@ -385,7 +561,7 @@
                                     </Button.Style>
                                     <StackPanel>
                                         <TextBlock Text="Governance" FontSize="12" FontWeight="SemiBold" />
-                                        <TextBlock Text="Quality · Policy"
+                                        <TextBlock Text="Ledger · Audit · Controls"
                                                    Margin="0,2,0,0" FontSize="10"
                                                    Opacity="0.75" TextWrapping="Wrap" />
                                     </StackPanel>
@@ -410,242 +586,94 @@
                                   HorizontalScrollBarVisibility="Disabled"
                                   Padding="0,6,0,12">
                         <StackPanel>
-                            <StackPanel Visibility="{Binding IsResearchWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
-                                <ListBox x:Name="ResearchNavList"
+                            <TextBlock Text="{Binding WorkspaceSummary}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       Margin="16,0,16,10"
+                                       TextWrapping="Wrap" />
+
+                            <TextBlock Text="Primary Flows"
+                                       Style="{StaticResource ShellSectionLabelStyle}"
+                                       Margin="16,0,0,6" />
+                            <ListBox x:Name="WorkspacePrimaryNavList"
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     ItemContainerStyle="{StaticResource ShellNavItemStyle}"
+                                     ItemTemplate="{StaticResource ShellNavigationItemTemplate}"
+                                     ItemsSource="{Binding PrimaryNavigationItems}"
+                                     SelectedValuePath="PageTag"
+                                     SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                     SelectionChanged="WorkspaceNavigationList_SelectionChanged"
+                                     AutomationProperties.AutomationId="WorkspacePrimaryNavList"
+                                     AutomationProperties.Name="Primary Workspace Navigation" />
+
+                            <StackPanel Visibility="{Binding HasSecondaryNavigation, Converter={StaticResource BoolToVisibility}}">
+                                <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
+                                <TextBlock Text="Secondary Flows"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,0,0,6" />
+                                <ListBox x:Name="WorkspaceSecondaryNavList"
                                          Background="Transparent"
                                          BorderThickness="0"
                                          ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectedValuePath="Tag"
-                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                         AutomationProperties.AutomationId="ResearchNavList"
-                                         AutomationProperties.Name="Research Navigation">
-                                    <ListBoxItem Tag="Dashboard"
-                                                 AutomationProperties.AutomationId="ResearchNavDashboard"
-                                                 AutomationProperties.Name="Dashboard Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconDashboard}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Dashboard" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="LiveData"
-                                                 AutomationProperties.AutomationId="ResearchNavLiveData"
-                                                 AutomationProperties.Name="Live Data Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconChart}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Live Data" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="Charts"
-                                                 AutomationProperties.AutomationId="ResearchNavCharts"
-                                                 AutomationProperties.Name="Charts Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconChartLine}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Charts" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="QuantScript"
-                                                 AutomationProperties.AutomationId="ResearchNavQuantScript"
-                                                 AutomationProperties.Name="QuantScript Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconCode}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="QuantScript" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="RunMat"
-                                                 AutomationProperties.AutomationId="ResearchNavRunMat"
-                                                 AutomationProperties.Name="RunMat Lab Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconCode}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="RunMat Lab" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="StrategyRuns"
-                                                 AutomationProperties.AutomationId="ResearchNavStrategyRuns"
-                                                 AutomationProperties.Name="Strategy Runs Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Strategy Runs" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="OrderBook"
-                                                 AutomationProperties.AutomationId="ResearchNavOrderBook"
-                                                 AutomationProperties.Name="Order Book Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconTable}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Order Book" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="Watchlist"
-                                                 AutomationProperties.AutomationId="ResearchNavWatchlist"
-                                                 AutomationProperties.Name="Watchlist Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconFavorite}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Watchlist" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                </ListBox>
+                                         ItemTemplate="{StaticResource ShellNavigationItemTemplate}"
+                                         ItemsSource="{Binding SecondaryNavigationItems}"
+                                         SelectedValuePath="PageTag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                         SelectionChanged="WorkspaceNavigationList_SelectionChanged"
+                                         AutomationProperties.AutomationId="WorkspaceSecondaryNavList"
+                                         AutomationProperties.Name="Secondary Workspace Navigation" />
                             </StackPanel>
 
-                            <StackPanel Visibility="{Binding IsTradingWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
-                                <ListBox x:Name="TradingNavList"
+                            <StackPanel Visibility="{Binding HasOverflowNavigation, Converter={StaticResource BoolToVisibility}}">
+                                <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
+                                <TextBlock Text="Workspace Overflow"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,0,0,6" />
+                                <ListBox x:Name="WorkspaceOverflowNavList"
                                          Background="Transparent"
                                          BorderThickness="0"
                                          ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectedValuePath="Tag"
-                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                    <ListBoxItem Tag="Backtest">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconPlay}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Backtest" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="StrategyRuns">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Strategy Runs" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="LeanIntegration">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconCode}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Lean Engine" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="PortfolioImport">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconImport}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Portfolio Import" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="TradingHours">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconClock}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Trading Hours" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="PositionBlotter"
-                                                 AutomationProperties.AutomationId="TradingNavPositionBlotter"
-                                                 AutomationProperties.Name="Position Blotter Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Position Blotter" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="DirectLending"
-                                                 AutomationProperties.AutomationId="TradingNavDirectLending">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Direct Lending" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                </ListBox>
+                                         ItemTemplate="{StaticResource ShellNavigationItemTemplate}"
+                                         ItemsSource="{Binding OverflowNavigationItems}"
+                                         SelectedValuePath="PageTag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                         SelectionChanged="WorkspaceNavigationList_SelectionChanged"
+                                         AutomationProperties.AutomationId="WorkspaceOverflowNavList"
+                                         AutomationProperties.Name="Workspace Overflow Navigation" />
                             </StackPanel>
 
-                            <StackPanel Visibility="{Binding IsDataOperationsWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
-                                <ListBox x:Name="DataOpsNavList"
+                            <StackPanel Visibility="{Binding HasRelatedWorkflows, Converter={StaticResource BoolToVisibility}}">
+                                <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
+                                <TextBlock Text="Related Workflows"
+                                           Style="{StaticResource ShellSectionLabelStyle}"
+                                           Margin="16,0,0,6" />
+                                <ListBox x:Name="RelatedWorkflowNavList"
                                          Background="Transparent"
                                          BorderThickness="0"
                                          ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectedValuePath="Tag"
-                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                    <ListBoxItem Tag="Provider">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconNetwork}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Provider" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="Symbols">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconList}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Symbols" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="Backfill">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconDownload}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Backfill" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="Storage">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconDatabase}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Storage" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="DataExport">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconExport}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Export" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="PackageManager">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconFolder}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Packages" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                </ListBox>
-                            </StackPanel>
-
-                            <StackPanel Visibility="{Binding IsGovernanceWorkspaceActive, Converter={StaticResource BoolToVisibility}}">
-                                <ListBox x:Name="GovernanceNavList"
-                                         Background="Transparent"
-                                         BorderThickness="0"
-                                         ItemContainerStyle="{StaticResource ShellNavItemStyle}"
-                                         SelectedValuePath="Tag"
-                                         SelectedValue="{Binding CurrentPageTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
-                                    <ListBoxItem Tag="DataQuality">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconCheckmark}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Data Quality" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="ProviderHealth">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconNetwork}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Provider Health" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="SystemHealth">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconConnected}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="System Health" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="Diagnostics">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconTerminal}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Diagnostics" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="DashboardWeb"
-                                                 AutomationProperties.AutomationId="NavDashboardWeb"
-                                                 AutomationProperties.Name="Web Dashboard Navigation">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconGlobe}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Web Dashboard" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="Settings">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconSettings}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Settings" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                    <ListBoxItem Tag="AdminMaintenance">
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{StaticResource IconLock}" Style="{StaticResource ShellNavIconStyle}" />
-                                            <TextBlock Text="Admin" Style="{StaticResource ShellNavLabelStyle}" />
-                                        </StackPanel>
-                                    </ListBoxItem>
-                                </ListBox>
+                                         ItemTemplate="{StaticResource ShellNavigationItemTemplate}"
+                                         ItemsSource="{Binding RelatedWorkflowItems}"
+                                         SelectedValuePath="PageTag"
+                                         SelectedValue="{Binding CurrentPageTag, Mode=OneWay}"
+                                         SelectionChanged="WorkspaceNavigationList_SelectionChanged"
+                                         AutomationProperties.AutomationId="RelatedWorkflowNavList"
+                                         AutomationProperties.Name="Related Workflow Navigation" />
                             </StackPanel>
 
                             <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="16,10,16,10" />
 
-                            <TextBlock Text="Recent"
-                                       Style="{StaticResource ShellSectionLabelStyle}"
-                                       Margin="16,0,0,6" />
+                            <DockPanel Margin="16,0,16,6" LastChildFill="False">
+                                <TextBlock Text="Recent"
+                                           Style="{StaticResource ShellSectionLabelStyle}" />
+                                <Border DockPanel.Dock="Right"
+                                        Style="{StaticResource NeutralBadgeStyle}">
+                                    <TextBlock x:Name="RecentPagesSummaryText"
+                                               Text="{Binding RecentPagesSummaryText}"
+                                               FontSize="11"
+                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                               AutomationProperties.AutomationId="RecentPagesSummaryText" />
+                                </Border>
+                            </DockPanel>
                             <ItemsControl ItemsSource="{Binding RecentPages}">
                                 <ItemsControl.ItemsPanel>
                                     <ItemsPanelTemplate>
@@ -657,15 +685,48 @@
                                         <Button Style="{StaticResource RecentPageButtonStyle}"
                                                 Command="{Binding DataContext.NavigateToPageCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                                 CommandParameter="{Binding PageTag}"
-                                                Content="{Binding DisplayName}" />
+                                                Content="{Binding DisplayName}"
+                                                AutomationProperties.AutomationId="{Binding PageTag, StringFormat=RecentPage{0}}"
+                                                AutomationProperties.Name="{Binding DisplayName}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                            <TextBlock x:Name="RecentPagesEmptyText"
-                                       Text="Navigate to any page to start building history."
-                                       Visibility="{Binding RecentPagesEmptyVisibility}"
-                                       Style="{StaticResource CardDescriptionStyle}"
-                                       Margin="16,0,0,0" />
+                            <Border x:Name="RecentPagesEmptyState"
+                                    Margin="16,0,16,0"
+                                    Padding="14"
+                                    Visibility="{Binding RecentPagesEmptyVisibility}"
+                                    Style="{StaticResource CompactCardStyle}"
+                                    AutomationProperties.AutomationId="RecentPagesEmptyState"
+                                    AutomationProperties.Name="Recent Pages Empty State">
+                                <StackPanel>
+                                    <TextBlock x:Name="RecentPagesEmptyText"
+                                               Text="No recent pages yet."
+                                               AutomationProperties.AutomationId="RecentPagesEmptyText"
+                                               AutomationProperties.Name="Recent Pages Empty Title"
+                                               Style="{StaticResource CardHeaderStyle}"
+                                               FontSize="14" />
+                                    <TextBlock Margin="0,6,0,0"
+                                               Text="{Binding RecentPagesHintText}"
+                                               Style="{StaticResource CardDescriptionStyle}" />
+                                    <Button x:Name="RecentPagesEmptyActionButton"
+                                            Margin="0,10,0,0"
+                                            HorizontalAlignment="Left"
+                                            Style="{StaticResource SecondaryButtonStyle}"
+                                            Command="{Binding ShowCommandPaletteCommand}"
+                                            AutomationProperties.AutomationId="RecentPagesEmptyActionButton"
+                                            AutomationProperties.Name="Open Command Palette From Recent Empty State">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{StaticResource IconSearch}"
+                                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                       FontSize="12"
+                                                       VerticalAlignment="Center" />
+                                            <TextBlock Text="Open Command Palette"
+                                                       Margin="8,0,0,0"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
                     </ScrollViewer>
 
@@ -715,11 +776,13 @@
                                     Style="{StaticResource FooterNavButtonStyle}"
                                     Margin="0,4,0,0"
                                     Command="{Binding ToggleTickerStripCommand}"
+                                    AutomationProperties.AutomationId="TickerStripToggleButton"
                                     AutomationProperties.Name="Toggle Ticker Strip"
                                     ToolTip="Toggle live ticker strip">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#x1F4C8;" FontSize="11" VerticalAlignment="Center" />
-                                    <TextBlock Text="{Binding TickerStripLabel}"
+                                    <TextBlock x:Name="TickerStripToggleLabelText"
+                                               Text="{Binding TickerStripLabel}"
                                                Margin="8,0,0,0" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Button>
@@ -732,6 +795,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
@@ -741,6 +805,8 @@
                         Padding="16,10"
                         CornerRadius="0"
                         Visibility="{Binding FixtureModeBannerVisibility}"
+                        AutomationProperties.AutomationId="FixtureModeBanner"
+                        AutomationProperties.Name="Fixture Mode Banner"
                         Panel.ZIndex="10">
                     <Border.Background>
                         <LinearGradientBrush x:Name="FixtureModeBannerBrush" StartPoint="0,0" EndPoint="1,0">
@@ -764,6 +830,8 @@
                                        FontSize="12"
                                        FontWeight="SemiBold"
                                        Foreground="#1A1A2E"
+                                       AutomationProperties.AutomationId="FixtureModeLabel"
+                                       AutomationProperties.Name="Fixture Mode Label"
                                        VerticalAlignment="Center" />
                         </StackPanel>
                         <Button x:Name="FixtureModeDismissButton"
@@ -772,6 +840,8 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Command="{Binding DismissFixtureModeBannerCommand}"
+                                AutomationProperties.AutomationId="FixtureModeDismissButton"
+                                AutomationProperties.Name="Dismiss Fixture Mode Banner"
                                 ToolTip="Dismiss banner">
                             <TextBlock Text="&#x2715;"
                                        FontSize="12"
@@ -785,7 +855,7 @@
                         BorderBrush="{StaticResource ConsoleBorderBrush}"
                         BorderThickness="0,0,0,1"
                         CornerRadius="0"
-                        Padding="24,16"
+                        Padding="24,12"
                         Margin="0,0,0,0">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -799,6 +869,8 @@
                                         Style="{StaticResource IconButtonStyle}"
                                         Visibility="{Binding BackButtonVisibility}"
                                         Command="{Binding GoBackCommand}"
+                                        AutomationProperties.AutomationId="ShellBackButton"
+                                        AutomationProperties.Name="Shell Back Button"
                                         ToolTip="Go Back">
                                     <TextBlock Text="{StaticResource IconBack}"
                                                FontFamily="{StaticResource SymbolThemeFontFamily}"
@@ -809,8 +881,10 @@
                                            VerticalAlignment="Center"
                                            Style="{StaticResource ShellSectionLabelStyle}" />
                             </StackPanel>
-                            <TextBlock Text="{Binding CurrentPageTitle}"
+                            <TextBlock x:Name="PageTitleTextBlock"
+                                       Text="{Binding CurrentPageTitle}"
                                        Margin="0,6,0,0"
+                                       Visibility="Collapsed"
                                        FontFamily="{StaticResource MeridianDisplayFontFamily}"
                                        FontSize="20"
                                        FontWeight="SemiBold"
@@ -820,7 +894,40 @@
                             <TextBlock x:Name="PageSubtitleText"
                                        Margin="0,8,0,0"
                                        Text="{Binding CurrentPageSubtitle}"
+                                       Visibility="Collapsed"
                                        Style="{StaticResource CardDescriptionStyle}" />
+                            <Border x:Name="ContextSelectionHint"
+                                    Margin="0,12,0,0"
+                                    Padding="12,10"
+                                    Visibility="{Binding ContextSelectionHintVisibility}"
+                                    Style="{StaticResource WarningBadgeInlineStyle}"
+                                    AutomationProperties.AutomationId="ContextSelectionHint"
+                                    AutomationProperties.Name="Context Selection Hint">
+                                <DockPanel LastChildFill="False">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE7BA;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource WarningColorBrush}" />
+                                        <TextBlock x:Name="ContextSelectionHintTextBlock"
+                                                   Margin="8,0,0,0"
+                                                   Text="{Binding ContextSelectionHintText}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                                   AutomationProperties.AutomationId="ContextSelectionHintText" />
+                                    </StackPanel>
+                                    <Button x:Name="ContextSelectionHintButton"
+                                            DockPanel.Dock="Right"
+                                            Margin="12,0,0,0"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Command="{Binding SwitchFundCommand}"
+                                            AutomationProperties.AutomationId="ContextSelectionHintButton"
+                                            AutomationProperties.Name="Choose Operating Context">
+                                        <TextBlock Text="Choose Context" />
+                                    </Button>
+                                </DockPanel>
+                            </Border>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1"
@@ -828,29 +935,90 @@
                                     VerticalAlignment="Top">
                             <WrapPanel HorizontalAlignment="Right" Margin="0,0,0,12">
                                 <Border x:Name="ConnectionStatusBadge"
-                                        Style="{StaticResource SuccessBadgeStyle}"
                                         Margin="0,0,10,10">
+                                    <Border.Style>
+                                        <Style TargetType="Border" BasedOn="{StaticResource NeutralBadgeStyle}">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ShellStatusTone}" Value="Success">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentGreenAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource SuccessColorBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ShellStatusTone}" Value="Warning">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentOrangeAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource WarningColorBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ShellStatusTone}" Value="Danger">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentRedAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding ShellStatusTone}" Value="Info">
+                                                    <Setter Property="Background" Value="{StaticResource ConsoleAccentBlueAlpha10Brush}" />
+                                                    <Setter Property="BorderBrush" Value="{StaticResource InfoColorBrush}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse x:Name="ConnectionStatusDot"
                                                  Width="8"
                                                  Height="8"
-                                                 Fill="{StaticResource SuccessColorBrush}"
-                                                 Margin="0,0,6,0" />
+                                                 Margin="0,0,6,0">
+                                            <Ellipse.Style>
+                                                <Style TargetType="Ellipse">
+                                                    <Setter Property="Fill" Value="{StaticResource SuccessColorBrush}" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ShellStatusTone}" Value="Warning">
+                                                            <Setter Property="Fill" Value="{StaticResource WarningColorBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ShellStatusTone}" Value="Danger">
+                                                            <Setter Property="Fill" Value="{StaticResource ErrorColorBrush}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ShellStatusTone}" Value="Info">
+                                                            <Setter Property="Fill" Value="{StaticResource InfoColorBrush}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Ellipse.Style>
+                                        </Ellipse>
                                         <TextBlock x:Name="ConnectionStatusText"
-                                                   Text="Connected"
+                                                   Text="{Binding ShellStatusText}"
                                                    FontSize="12"
-                                                   Foreground="{StaticResource SuccessColorBrush}" />
+                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                                     </StackPanel>
                                 </Border>
 
                                 <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,10,10">
-                                    <TextBlock Text="{Binding WorkspaceSummary}"
-                                               FontSize="12"
-                                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE823;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="12"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                        <TextBlock Text="{Binding ShellLastRefreshText}"
+                                                   Margin="6,0,0,0"
+                                                   FontSize="12"
+                                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
+                                    </StackPanel>
                                 </Border>
                             </WrapPanel>
 
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button Style="{StaticResource SecondaryButtonStyle}"
+                                        ToolTip="Choose operating context"
+                                        Margin="0,0,8,0"
+                                        Command="{Binding SwitchFundCommand}"
+                                        AutomationProperties.AutomationId="SwitchContextButton"
+                                        AutomationProperties.Name="Switch Operating Context">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="&#xE777;"
+                                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                                   FontSize="14"
+                                                   VerticalAlignment="Center" />
+                                        <TextBlock Text="{Binding SwitchContextActionText}"
+                                                   Margin="8,0,0,0"
+                                                   VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
                                 <Button Style="{StaticResource GhostButtonStyle}"
                                         ToolTip="Refresh (F5)"
                                         Command="{Binding RefreshPageCommand}"
@@ -899,7 +1067,12 @@
                     </Grid>
                 </Border>
 
-                <DockPanel Grid.Row="2">
+                <views:WorkspaceShellContextStripControl Grid.Row="2"
+                                                        Margin="24,0,24,16"
+                                                        Visibility="Collapsed"
+                                                        ShellContext="{Binding ShellContext}" />
+
+                <DockPanel Grid.Row="3">
                     <Border DockPanel.Dock="Top" Height="32"
                             Background="{StaticResource CommandBarBackground}"
                             BorderBrush="{StaticResource CommandBarBorderBrush}" BorderThickness="0,0,0,1">

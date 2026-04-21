@@ -1,0 +1,699 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto
+  commentId: T:Meridian.Execution.Services.PersistedLedgerLineDto
+  id: PersistedLedgerLineDto
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.PersistedLedgerLineDto.#ctor(System.Guid,System.Guid,System.DateTimeOffset,Meridian.Execution.Services.PersistedLedgerAccountDto,System.Decimal,System.Decimal,System.String)
+  - Meridian.Execution.Services.PersistedLedgerLineDto.Account
+  - Meridian.Execution.Services.PersistedLedgerLineDto.Credit
+  - Meridian.Execution.Services.PersistedLedgerLineDto.Debit
+  - Meridian.Execution.Services.PersistedLedgerLineDto.Description
+  - Meridian.Execution.Services.PersistedLedgerLineDto.EntryId
+  - Meridian.Execution.Services.PersistedLedgerLineDto.JournalEntryId
+  - Meridian.Execution.Services.PersistedLedgerLineDto.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: PersistedLedgerLineDto
+  nameWithType: PersistedLedgerLineDto
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PersistedLedgerLineDto
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Lightweight serialisation DTO for a single debit/credit line in a journal entry.
+  example: []
+  syntax:
+    content: 'public sealed record PersistedLedgerLineDto : IEquatable<PersistedLedgerLineDto>'
+    content.vb: Public NotInheritable Class PersistedLedgerLineDto Implements IEquatable(Of PersistedLedgerLineDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Services.PersistedLedgerLineDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.#ctor(System.Guid,System.Guid,System.DateTimeOffset,Meridian.Execution.Services.PersistedLedgerAccountDto,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Execution.Services.PersistedLedgerLineDto.#ctor(System.Guid,System.Guid,System.DateTimeOffset,Meridian.Execution.Services.PersistedLedgerAccountDto,System.Decimal,System.Decimal,System.String)
+  id: '#ctor(System.Guid,System.Guid,System.DateTimeOffset,Meridian.Execution.Services.PersistedLedgerAccountDto,System.Decimal,System.Decimal,System.String)'
+  parent: Meridian.Execution.Services.PersistedLedgerLineDto
+  langs:
+  - csharp
+  - vb
+  name: PersistedLedgerLineDto(Guid, Guid, DateTimeOffset, PersistedLedgerAccountDto, decimal, decimal, string)
+  nameWithType: PersistedLedgerLineDto.PersistedLedgerLineDto(Guid, Guid, DateTimeOffset, PersistedLedgerAccountDto, decimal, decimal, string)
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.PersistedLedgerLineDto(System.Guid, System.Guid, System.DateTimeOffset, Meridian.Execution.Services.PersistedLedgerAccountDto, decimal, decimal, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Lightweight serialisation DTO for a single debit/credit line in a journal entry.
+  example: []
+  syntax:
+    content: public PersistedLedgerLineDto(Guid EntryId, Guid JournalEntryId, DateTimeOffset Timestamp, PersistedLedgerAccountDto Account, decimal Debit, decimal Credit, string Description)
+    parameters:
+    - id: EntryId
+      type: System.Guid
+    - id: JournalEntryId
+      type: System.Guid
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Account
+      type: Meridian.Execution.Services.PersistedLedgerAccountDto
+    - id: Debit
+      type: System.Decimal
+    - id: Credit
+      type: System.Decimal
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(EntryId As Guid, JournalEntryId As Guid, Timestamp As DateTimeOffset, Account As PersistedLedgerAccountDto, Debit As Decimal, Credit As Decimal, Description As String)
+  overload: Meridian.Execution.Services.PersistedLedgerLineDto.#ctor*
+  nameWithType.vb: PersistedLedgerLineDto.New(Guid, Guid, DateTimeOffset, PersistedLedgerAccountDto, Decimal, Decimal, String)
+  fullName.vb: Meridian.Execution.Services.PersistedLedgerLineDto.New(System.Guid, System.Guid, System.DateTimeOffset, Meridian.Execution.Services.PersistedLedgerAccountDto, Decimal, Decimal, String)
+  name.vb: New(Guid, Guid, DateTimeOffset, PersistedLedgerAccountDto, Decimal, Decimal, String)
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.EntryId
+  commentId: P:Meridian.Execution.Services.PersistedLedgerLineDto.EntryId
+  id: EntryId
+  parent: Meridian.Execution.Services.PersistedLedgerLineDto
+  langs:
+  - csharp
+  - vb
+  name: EntryId
+  nameWithType: PersistedLedgerLineDto.EntryId
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.EntryId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryId
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public Guid EntryId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property EntryId As Guid
+  overload: Meridian.Execution.Services.PersistedLedgerLineDto.EntryId*
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.JournalEntryId
+  commentId: P:Meridian.Execution.Services.PersistedLedgerLineDto.JournalEntryId
+  id: JournalEntryId
+  parent: Meridian.Execution.Services.PersistedLedgerLineDto
+  langs:
+  - csharp
+  - vb
+  name: JournalEntryId
+  nameWithType: PersistedLedgerLineDto.JournalEntryId
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.JournalEntryId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JournalEntryId
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public Guid JournalEntryId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property JournalEntryId As Guid
+  overload: Meridian.Execution.Services.PersistedLedgerLineDto.JournalEntryId*
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Timestamp
+  commentId: P:Meridian.Execution.Services.PersistedLedgerLineDto.Timestamp
+  id: Timestamp
+  parent: Meridian.Execution.Services.PersistedLedgerLineDto
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: PersistedLedgerLineDto.Timestamp
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Execution.Services.PersistedLedgerLineDto.Timestamp*
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Account
+  commentId: P:Meridian.Execution.Services.PersistedLedgerLineDto.Account
+  id: Account
+  parent: Meridian.Execution.Services.PersistedLedgerLineDto
+  langs:
+  - csharp
+  - vb
+  name: Account
+  nameWithType: PersistedLedgerLineDto.Account
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Account
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Account
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public PersistedLedgerAccountDto Account { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Services.PersistedLedgerAccountDto
+    content.vb: Public Property Account As PersistedLedgerAccountDto
+  overload: Meridian.Execution.Services.PersistedLedgerLineDto.Account*
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Debit
+  commentId: P:Meridian.Execution.Services.PersistedLedgerLineDto.Debit
+  id: Debit
+  parent: Meridian.Execution.Services.PersistedLedgerLineDto
+  langs:
+  - csharp
+  - vb
+  name: Debit
+  nameWithType: PersistedLedgerLineDto.Debit
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Debit
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Debit
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public decimal Debit { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Debit As Decimal
+  overload: Meridian.Execution.Services.PersistedLedgerLineDto.Debit*
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Credit
+  commentId: P:Meridian.Execution.Services.PersistedLedgerLineDto.Credit
+  id: Credit
+  parent: Meridian.Execution.Services.PersistedLedgerLineDto
+  langs:
+  - csharp
+  - vb
+  name: Credit
+  nameWithType: PersistedLedgerLineDto.Credit
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Credit
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Credit
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public decimal Credit { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Credit As Decimal
+  overload: Meridian.Execution.Services.PersistedLedgerLineDto.Credit*
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Description
+  commentId: P:Meridian.Execution.Services.PersistedLedgerLineDto.Description
+  id: Description
+  parent: Meridian.Execution.Services.PersistedLedgerLineDto
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: PersistedLedgerLineDto.Description
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/IPaperSessionStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Execution/Services/IPaperSessionStore.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Execution.Services.PersistedLedgerLineDto.Description*
+references:
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Services.PersistedLedgerLineDto}
+  commentId: T:System.IEquatable{Meridian.Execution.Services.PersistedLedgerLineDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PersistedLedgerLineDto>
+  nameWithType: IEquatable<PersistedLedgerLineDto>
+  fullName: System.IEquatable<Meridian.Execution.Services.PersistedLedgerLineDto>
+  nameWithType.vb: IEquatable(Of PersistedLedgerLineDto)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Services.PersistedLedgerLineDto)
+  name.vb: IEquatable(Of PersistedLedgerLineDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Services.PersistedLedgerLineDto
+    name: PersistedLedgerLineDto
+    href: Meridian.Execution.Services.PersistedLedgerLineDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.PersistedLedgerLineDto
+    name: PersistedLedgerLineDto
+    href: Meridian.Execution.Services.PersistedLedgerLineDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.#ctor*
+  commentId: Overload:Meridian.Execution.Services.PersistedLedgerLineDto.#ctor
+  href: Meridian.Execution.Services.PersistedLedgerLineDto.html#Meridian_Execution_Services_PersistedLedgerLineDto__ctor_System_Guid_System_Guid_System_DateTimeOffset_Meridian_Execution_Services_PersistedLedgerAccountDto_System_Decimal_System_Decimal_System_String_
+  name: PersistedLedgerLineDto
+  nameWithType: PersistedLedgerLineDto.PersistedLedgerLineDto
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.PersistedLedgerLineDto
+  nameWithType.vb: PersistedLedgerLineDto.New
+  fullName.vb: Meridian.Execution.Services.PersistedLedgerLineDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Execution.Services.PersistedLedgerAccountDto
+  commentId: T:Meridian.Execution.Services.PersistedLedgerAccountDto
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.PersistedLedgerAccountDto.html
+  name: PersistedLedgerAccountDto
+  nameWithType: PersistedLedgerAccountDto
+  fullName: Meridian.Execution.Services.PersistedLedgerAccountDto
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.EntryId*
+  commentId: Overload:Meridian.Execution.Services.PersistedLedgerLineDto.EntryId
+  href: Meridian.Execution.Services.PersistedLedgerLineDto.html#Meridian_Execution_Services_PersistedLedgerLineDto_EntryId
+  name: EntryId
+  nameWithType: PersistedLedgerLineDto.EntryId
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.EntryId
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.JournalEntryId*
+  commentId: Overload:Meridian.Execution.Services.PersistedLedgerLineDto.JournalEntryId
+  href: Meridian.Execution.Services.PersistedLedgerLineDto.html#Meridian_Execution_Services_PersistedLedgerLineDto_JournalEntryId
+  name: JournalEntryId
+  nameWithType: PersistedLedgerLineDto.JournalEntryId
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.JournalEntryId
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Timestamp*
+  commentId: Overload:Meridian.Execution.Services.PersistedLedgerLineDto.Timestamp
+  href: Meridian.Execution.Services.PersistedLedgerLineDto.html#Meridian_Execution_Services_PersistedLedgerLineDto_Timestamp
+  name: Timestamp
+  nameWithType: PersistedLedgerLineDto.Timestamp
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Timestamp
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Account*
+  commentId: Overload:Meridian.Execution.Services.PersistedLedgerLineDto.Account
+  href: Meridian.Execution.Services.PersistedLedgerLineDto.html#Meridian_Execution_Services_PersistedLedgerLineDto_Account
+  name: Account
+  nameWithType: PersistedLedgerLineDto.Account
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Account
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Debit*
+  commentId: Overload:Meridian.Execution.Services.PersistedLedgerLineDto.Debit
+  href: Meridian.Execution.Services.PersistedLedgerLineDto.html#Meridian_Execution_Services_PersistedLedgerLineDto_Debit
+  name: Debit
+  nameWithType: PersistedLedgerLineDto.Debit
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Debit
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Credit*
+  commentId: Overload:Meridian.Execution.Services.PersistedLedgerLineDto.Credit
+  href: Meridian.Execution.Services.PersistedLedgerLineDto.html#Meridian_Execution_Services_PersistedLedgerLineDto_Credit
+  name: Credit
+  nameWithType: PersistedLedgerLineDto.Credit
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Credit
+- uid: Meridian.Execution.Services.PersistedLedgerLineDto.Description*
+  commentId: Overload:Meridian.Execution.Services.PersistedLedgerLineDto.Description
+  href: Meridian.Execution.Services.PersistedLedgerLineDto.html#Meridian_Execution_Services_PersistedLedgerLineDto_Description
+  name: Description
+  nameWithType: PersistedLedgerLineDto.Description
+  fullName: Meridian.Execution.Services.PersistedLedgerLineDto.Description

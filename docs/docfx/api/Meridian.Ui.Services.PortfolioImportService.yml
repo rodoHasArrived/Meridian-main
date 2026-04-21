@@ -1,0 +1,984 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.PortfolioImportService
+  commentId: T:Meridian.Ui.Services.PortfolioImportService
+  id: PortfolioImportService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.PortfolioImportService.GetIndexConstituentsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortfolioImportService.ImportAsSubscriptionsAsync(System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry},System.Boolean,System.Boolean,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortfolioImportService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},System.Boolean,System.Boolean,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortfolioImportService.ImportToWatchlistAsync(System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry},System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortfolioImportService.Instance
+  - Meridian.Ui.Services.PortfolioImportService.ParseCsvAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.PortfolioImportService.ParseJsonAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: PortfolioImportService
+  nameWithType: PortfolioImportService
+  fullName: Meridian.Ui.Services.PortfolioImportService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioImportService
+    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for importing portfolios from CSV and JSON files.
+
+    Supports bulk symbol import and portfolio management.
+  example: []
+  syntax:
+    content: public sealed class PortfolioImportService
+    content.vb: Public NotInheritable Class PortfolioImportService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.PortfolioImportService.Instance
+  commentId: P:Meridian.Ui.Services.PortfolioImportService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.PortfolioImportService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: PortfolioImportService.Instance
+  fullName: Meridian.Ui.Services.PortfolioImportService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static PortfolioImportService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.PortfolioImportService
+    content.vb: Public Shared ReadOnly Property Instance As PortfolioImportService
+  overload: Meridian.Ui.Services.PortfolioImportService.Instance*
+- uid: Meridian.Ui.Services.PortfolioImportService.ParseCsvAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortfolioImportService.ParseCsvAsync(System.String,System.Threading.CancellationToken)
+  id: ParseCsvAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortfolioImportService
+  langs:
+  - csharp
+  - vb
+  name: ParseCsvAsync(string, CancellationToken)
+  nameWithType: PortfolioImportService.ParseCsvAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.PortfolioImportService.ParseCsvAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseCsvAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Parses a CSV file containing portfolio symbols.
+
+    Supports various CSV formats with automatic header detection.
+  example: []
+  syntax:
+    content: public Task<PortfolioParseResult> ParseCsvAsync(string filePath, CancellationToken ct = default)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PortfolioParseResult}
+    content.vb: Public Function ParseCsvAsync(filePath As String, ct As CancellationToken = Nothing) As Task(Of PortfolioParseResult)
+  overload: Meridian.Ui.Services.PortfolioImportService.ParseCsvAsync*
+  nameWithType.vb: PortfolioImportService.ParseCsvAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortfolioImportService.ParseCsvAsync(String, System.Threading.CancellationToken)
+  name.vb: ParseCsvAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.PortfolioImportService.ParseJsonAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortfolioImportService.ParseJsonAsync(System.String,System.Threading.CancellationToken)
+  id: ParseJsonAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortfolioImportService
+  langs:
+  - csharp
+  - vb
+  name: ParseJsonAsync(string, CancellationToken)
+  nameWithType: PortfolioImportService.ParseJsonAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.PortfolioImportService.ParseJsonAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseJsonAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Parses a JSON file containing portfolio data.
+
+    Supports both array format and object format with symbols property.
+  example: []
+  syntax:
+    content: public Task<PortfolioParseResult> ParseJsonAsync(string filePath, CancellationToken ct = default)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PortfolioParseResult}
+    content.vb: Public Function ParseJsonAsync(filePath As String, ct As CancellationToken = Nothing) As Task(Of PortfolioParseResult)
+  overload: Meridian.Ui.Services.PortfolioImportService.ParseJsonAsync*
+  nameWithType.vb: PortfolioImportService.ParseJsonAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortfolioImportService.ParseJsonAsync(String, System.Threading.CancellationToken)
+  name.vb: ParseJsonAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.PortfolioImportService.ImportAsSubscriptionsAsync(System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry},System.Boolean,System.Boolean,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortfolioImportService.ImportAsSubscriptionsAsync(System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry},System.Boolean,System.Boolean,System.Int32,System.Threading.CancellationToken)
+  id: ImportAsSubscriptionsAsync(System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry},System.Boolean,System.Boolean,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortfolioImportService
+  langs:
+  - csharp
+  - vb
+  name: ImportAsSubscriptionsAsync(IEnumerable<PortfolioEntry>, bool, bool, int, CancellationToken)
+  nameWithType: PortfolioImportService.ImportAsSubscriptionsAsync(IEnumerable<PortfolioEntry>, bool, bool, int, CancellationToken)
+  fullName: Meridian.Ui.Services.PortfolioImportService.ImportAsSubscriptionsAsync(System.Collections.Generic.IEnumerable<Meridian.Ui.Services.PortfolioEntry>, bool, bool, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportAsSubscriptionsAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Imports portfolio entries as symbol subscriptions.
+  example: []
+  syntax:
+    content: public Task<PortfolioImportResult> ImportAsSubscriptionsAsync(IEnumerable<PortfolioEntry> entries, bool enableTrades = true, bool enableDepth = false, int depthLevels = 5, CancellationToken ct = default)
+    parameters:
+    - id: entries
+      type: System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry}
+    - id: enableTrades
+      type: System.Boolean
+    - id: enableDepth
+      type: System.Boolean
+    - id: depthLevels
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PortfolioImportResult}
+    content.vb: Public Function ImportAsSubscriptionsAsync(entries As IEnumerable(Of PortfolioEntry), enableTrades As Boolean = True, enableDepth As Boolean = False, depthLevels As Integer = 5, ct As CancellationToken = Nothing) As Task(Of PortfolioImportResult)
+  overload: Meridian.Ui.Services.PortfolioImportService.ImportAsSubscriptionsAsync*
+  nameWithType.vb: PortfolioImportService.ImportAsSubscriptionsAsync(IEnumerable(Of PortfolioEntry), Boolean, Boolean, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortfolioImportService.ImportAsSubscriptionsAsync(System.Collections.Generic.IEnumerable(Of Meridian.Ui.Services.PortfolioEntry), Boolean, Boolean, Integer, System.Threading.CancellationToken)
+  name.vb: ImportAsSubscriptionsAsync(IEnumerable(Of PortfolioEntry), Boolean, Boolean, Integer, CancellationToken)
+- uid: Meridian.Ui.Services.PortfolioImportService.ImportToWatchlistAsync(System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry},System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortfolioImportService.ImportToWatchlistAsync(System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry},System.String,System.Threading.CancellationToken)
+  id: ImportToWatchlistAsync(System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry},System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortfolioImportService
+  langs:
+  - csharp
+  - vb
+  name: ImportToWatchlistAsync(IEnumerable<PortfolioEntry>, string, CancellationToken)
+  nameWithType: PortfolioImportService.ImportToWatchlistAsync(IEnumerable<PortfolioEntry>, string, CancellationToken)
+  fullName: Meridian.Ui.Services.PortfolioImportService.ImportToWatchlistAsync(System.Collections.Generic.IEnumerable<Meridian.Ui.Services.PortfolioEntry>, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportToWatchlistAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Imports portfolio entries to a watchlist.
+  example: []
+  syntax:
+    content: public Task<PortfolioImportResult> ImportToWatchlistAsync(IEnumerable<PortfolioEntry> entries, string watchlistName, CancellationToken ct = default)
+    parameters:
+    - id: entries
+      type: System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry}
+    - id: watchlistName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PortfolioImportResult}
+    content.vb: Public Function ImportToWatchlistAsync(entries As IEnumerable(Of PortfolioEntry), watchlistName As String, ct As CancellationToken = Nothing) As Task(Of PortfolioImportResult)
+  overload: Meridian.Ui.Services.PortfolioImportService.ImportToWatchlistAsync*
+  nameWithType.vb: PortfolioImportService.ImportToWatchlistAsync(IEnumerable(Of PortfolioEntry), String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortfolioImportService.ImportToWatchlistAsync(System.Collections.Generic.IEnumerable(Of Meridian.Ui.Services.PortfolioEntry), String, System.Threading.CancellationToken)
+  name.vb: ImportToWatchlistAsync(IEnumerable(Of PortfolioEntry), String, CancellationToken)
+- uid: Meridian.Ui.Services.PortfolioImportService.GetIndexConstituentsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortfolioImportService.GetIndexConstituentsAsync(System.String,System.Threading.CancellationToken)
+  id: GetIndexConstituentsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortfolioImportService
+  langs:
+  - csharp
+  - vb
+  name: GetIndexConstituentsAsync(string, CancellationToken)
+  nameWithType: PortfolioImportService.GetIndexConstituentsAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.PortfolioImportService.GetIndexConstituentsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetIndexConstituentsAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets common index constituents for quick import.
+  example: []
+  syntax:
+    content: public Task<IndexConstituentsResult> GetIndexConstituentsAsync(string indexName, CancellationToken ct = default)
+    parameters:
+    - id: indexName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.IndexConstituentsResult}
+    content.vb: Public Function GetIndexConstituentsAsync(indexName As String, ct As CancellationToken = Nothing) As Task(Of IndexConstituentsResult)
+  overload: Meridian.Ui.Services.PortfolioImportService.GetIndexConstituentsAsync*
+  nameWithType.vb: PortfolioImportService.GetIndexConstituentsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortfolioImportService.GetIndexConstituentsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetIndexConstituentsAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.PortfolioImportService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},System.Boolean,System.Boolean,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.PortfolioImportService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},System.Boolean,System.Boolean,System.Int32,System.Threading.CancellationToken)
+  id: ImportSymbolsAsync(System.Collections.Generic.IEnumerable{System.String},System.Boolean,System.Boolean,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.PortfolioImportService
+  langs:
+  - csharp
+  - vb
+  name: ImportSymbolsAsync(IEnumerable<string>, bool, bool, int, CancellationToken)
+  nameWithType: PortfolioImportService.ImportSymbolsAsync(IEnumerable<string>, bool, bool, int, CancellationToken)
+  fullName: Meridian.Ui.Services.PortfolioImportService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable<string>, bool, bool, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportSymbolsAsync
+    path: ../../src/Meridian.Ui.Services/Services/PortfolioImportService.cs
+    startLine: 255
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Imports a list of symbols as subscriptions.
+  example: []
+  syntax:
+    content: public Task<PortfolioImportResult> ImportSymbolsAsync(IEnumerable<string> symbols, bool enableTrades = true, bool enableDepth = false, int depthLevels = 5, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: enableTrades
+      type: System.Boolean
+    - id: enableDepth
+      type: System.Boolean
+    - id: depthLevels
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PortfolioImportResult}
+    content.vb: Public Function ImportSymbolsAsync(symbols As IEnumerable(Of String), enableTrades As Boolean = True, enableDepth As Boolean = False, depthLevels As Integer = 5, ct As CancellationToken = Nothing) As Task(Of PortfolioImportResult)
+  overload: Meridian.Ui.Services.PortfolioImportService.ImportSymbolsAsync*
+  nameWithType.vb: PortfolioImportService.ImportSymbolsAsync(IEnumerable(Of String), Boolean, Boolean, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.PortfolioImportService.ImportSymbolsAsync(System.Collections.Generic.IEnumerable(Of String), Boolean, Boolean, Integer, System.Threading.CancellationToken)
+  name.vb: ImportSymbolsAsync(IEnumerable(Of String), Boolean, Boolean, Integer, CancellationToken)
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.PortfolioImportService.Instance*
+  commentId: Overload:Meridian.Ui.Services.PortfolioImportService.Instance
+  href: Meridian.Ui.Services.PortfolioImportService.html#Meridian_Ui_Services_PortfolioImportService_Instance
+  name: Instance
+  nameWithType: PortfolioImportService.Instance
+  fullName: Meridian.Ui.Services.PortfolioImportService.Instance
+- uid: Meridian.Ui.Services.PortfolioImportService
+  commentId: T:Meridian.Ui.Services.PortfolioImportService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.PortfolioImportService.html
+  name: PortfolioImportService
+  nameWithType: PortfolioImportService
+  fullName: Meridian.Ui.Services.PortfolioImportService
+- uid: Meridian.Ui.Services.PortfolioImportService.ParseCsvAsync*
+  commentId: Overload:Meridian.Ui.Services.PortfolioImportService.ParseCsvAsync
+  href: Meridian.Ui.Services.PortfolioImportService.html#Meridian_Ui_Services_PortfolioImportService_ParseCsvAsync_System_String_System_Threading_CancellationToken_
+  name: ParseCsvAsync
+  nameWithType: PortfolioImportService.ParseCsvAsync
+  fullName: Meridian.Ui.Services.PortfolioImportService.ParseCsvAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PortfolioParseResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PortfolioParseResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PortfolioParseResult>
+  nameWithType: Task<PortfolioParseResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PortfolioParseResult>
+  nameWithType.vb: Task(Of PortfolioParseResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PortfolioParseResult)
+  name.vb: Task(Of PortfolioParseResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PortfolioParseResult
+    name: PortfolioParseResult
+    href: Meridian.Ui.Services.PortfolioParseResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PortfolioParseResult
+    name: PortfolioParseResult
+    href: Meridian.Ui.Services.PortfolioParseResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.PortfolioImportService.ParseJsonAsync*
+  commentId: Overload:Meridian.Ui.Services.PortfolioImportService.ParseJsonAsync
+  href: Meridian.Ui.Services.PortfolioImportService.html#Meridian_Ui_Services_PortfolioImportService_ParseJsonAsync_System_String_System_Threading_CancellationToken_
+  name: ParseJsonAsync
+  nameWithType: PortfolioImportService.ParseJsonAsync
+  fullName: Meridian.Ui.Services.PortfolioImportService.ParseJsonAsync
+- uid: Meridian.Ui.Services.PortfolioImportService.ImportAsSubscriptionsAsync*
+  commentId: Overload:Meridian.Ui.Services.PortfolioImportService.ImportAsSubscriptionsAsync
+  href: Meridian.Ui.Services.PortfolioImportService.html#Meridian_Ui_Services_PortfolioImportService_ImportAsSubscriptionsAsync_System_Collections_Generic_IEnumerable_Meridian_Ui_Services_PortfolioEntry__System_Boolean_System_Boolean_System_Int32_System_Threading_CancellationToken_
+  name: ImportAsSubscriptionsAsync
+  nameWithType: PortfolioImportService.ImportAsSubscriptionsAsync
+  fullName: Meridian.Ui.Services.PortfolioImportService.ImportAsSubscriptionsAsync
+- uid: System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Ui.Services.PortfolioEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<PortfolioEntry>
+  nameWithType: IEnumerable<PortfolioEntry>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Ui.Services.PortfolioEntry>
+  nameWithType.vb: IEnumerable(Of PortfolioEntry)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Ui.Services.PortfolioEntry)
+  name.vb: IEnumerable(Of PortfolioEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Ui.Services.PortfolioEntry
+    name: PortfolioEntry
+    href: Meridian.Ui.Services.PortfolioEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PortfolioEntry
+    name: PortfolioEntry
+    href: Meridian.Ui.Services.PortfolioEntry.html
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PortfolioImportResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PortfolioImportResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PortfolioImportResult>
+  nameWithType: Task<PortfolioImportResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PortfolioImportResult>
+  nameWithType.vb: Task(Of PortfolioImportResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PortfolioImportResult)
+  name.vb: Task(Of PortfolioImportResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PortfolioImportResult
+    name: PortfolioImportResult
+    href: Meridian.Ui.Services.PortfolioImportResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PortfolioImportResult
+    name: PortfolioImportResult
+    href: Meridian.Ui.Services.PortfolioImportResult.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.PortfolioImportService.ImportToWatchlistAsync*
+  commentId: Overload:Meridian.Ui.Services.PortfolioImportService.ImportToWatchlistAsync
+  href: Meridian.Ui.Services.PortfolioImportService.html#Meridian_Ui_Services_PortfolioImportService_ImportToWatchlistAsync_System_Collections_Generic_IEnumerable_Meridian_Ui_Services_PortfolioEntry__System_String_System_Threading_CancellationToken_
+  name: ImportToWatchlistAsync
+  nameWithType: PortfolioImportService.ImportToWatchlistAsync
+  fullName: Meridian.Ui.Services.PortfolioImportService.ImportToWatchlistAsync
+- uid: Meridian.Ui.Services.PortfolioImportService.GetIndexConstituentsAsync*
+  commentId: Overload:Meridian.Ui.Services.PortfolioImportService.GetIndexConstituentsAsync
+  href: Meridian.Ui.Services.PortfolioImportService.html#Meridian_Ui_Services_PortfolioImportService_GetIndexConstituentsAsync_System_String_System_Threading_CancellationToken_
+  name: GetIndexConstituentsAsync
+  nameWithType: PortfolioImportService.GetIndexConstituentsAsync
+  fullName: Meridian.Ui.Services.PortfolioImportService.GetIndexConstituentsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.IndexConstituentsResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.IndexConstituentsResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IndexConstituentsResult>
+  nameWithType: Task<IndexConstituentsResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.IndexConstituentsResult>
+  nameWithType.vb: Task(Of IndexConstituentsResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.IndexConstituentsResult)
+  name.vb: Task(Of IndexConstituentsResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.IndexConstituentsResult
+    name: IndexConstituentsResult
+    href: Meridian.Ui.Services.IndexConstituentsResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.IndexConstituentsResult
+    name: IndexConstituentsResult
+    href: Meridian.Ui.Services.IndexConstituentsResult.html
+  - name: )
+- uid: Meridian.Ui.Services.PortfolioImportService.ImportSymbolsAsync*
+  commentId: Overload:Meridian.Ui.Services.PortfolioImportService.ImportSymbolsAsync
+  href: Meridian.Ui.Services.PortfolioImportService.html#Meridian_Ui_Services_PortfolioImportService_ImportSymbolsAsync_System_Collections_Generic_IEnumerable_System_String__System_Boolean_System_Boolean_System_Int32_System_Threading_CancellationToken_
+  name: ImportSymbolsAsync
+  nameWithType: PortfolioImportService.ImportSymbolsAsync
+  fullName: Meridian.Ui.Services.PortfolioImportService.ImportSymbolsAsync
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )

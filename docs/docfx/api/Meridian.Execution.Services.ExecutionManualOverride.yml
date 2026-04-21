@@ -1,0 +1,797 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.ExecutionManualOverride
+  commentId: T:Meridian.Execution.Services.ExecutionManualOverride
+  id: ExecutionManualOverride
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.ExecutionManualOverride.#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String)
+  - Meridian.Execution.Services.ExecutionManualOverride.CreatedAt
+  - Meridian.Execution.Services.ExecutionManualOverride.CreatedBy
+  - Meridian.Execution.Services.ExecutionManualOverride.ExpiresAt
+  - Meridian.Execution.Services.ExecutionManualOverride.Kind
+  - Meridian.Execution.Services.ExecutionManualOverride.OverrideId
+  - Meridian.Execution.Services.ExecutionManualOverride.Reason
+  - Meridian.Execution.Services.ExecutionManualOverride.RunId
+  - Meridian.Execution.Services.ExecutionManualOverride.StrategyId
+  - Meridian.Execution.Services.ExecutionManualOverride.Symbol
+  langs:
+  - csharp
+  - vb
+  name: ExecutionManualOverride
+  nameWithType: ExecutionManualOverride
+  fullName: Meridian.Execution.Services.ExecutionManualOverride
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionManualOverride
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Operator-created manual override used to temporarily bypass or force execution controls.
+  example: []
+  syntax:
+    content: 'public sealed record ExecutionManualOverride : IEquatable<ExecutionManualOverride>'
+    content.vb: Public NotInheritable Class ExecutionManualOverride Implements IEquatable(Of ExecutionManualOverride)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Services.ExecutionManualOverride}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.ExecutionManualOverride.#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String)
+  commentId: M:Meridian.Execution.Services.ExecutionManualOverride.#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String)'
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: ExecutionManualOverride(string, string, string, string, DateTimeOffset, DateTimeOffset?, string?, string?, string?)
+  nameWithType: ExecutionManualOverride.ExecutionManualOverride(string, string, string, string, DateTimeOffset, DateTimeOffset?, string?, string?, string?)
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.ExecutionManualOverride(string, string, string, string, System.DateTimeOffset, System.DateTimeOffset?, string?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Operator-created manual override used to temporarily bypass or force execution controls.
+  example: []
+  syntax:
+    content: public ExecutionManualOverride(string OverrideId, string Kind, string Reason, string CreatedBy, DateTimeOffset CreatedAt, DateTimeOffset? ExpiresAt = null, string? Symbol = null, string? StrategyId = null, string? RunId = null)
+    parameters:
+    - id: OverrideId
+      type: System.String
+    - id: Kind
+      type: System.String
+    - id: Reason
+      type: System.String
+    - id: CreatedBy
+      type: System.String
+    - id: CreatedAt
+      type: System.DateTimeOffset
+    - id: ExpiresAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Symbol
+      type: System.String
+    - id: StrategyId
+      type: System.String
+    - id: RunId
+      type: System.String
+    content.vb: Public Sub New(OverrideId As String, Kind As String, Reason As String, CreatedBy As String, CreatedAt As DateTimeOffset, ExpiresAt As DateTimeOffset? = Nothing, Symbol As String = Nothing, StrategyId As String = Nothing, RunId As String = Nothing)
+  overload: Meridian.Execution.Services.ExecutionManualOverride.#ctor*
+  nameWithType.vb: ExecutionManualOverride.New(String, String, String, String, DateTimeOffset, DateTimeOffset?, String, String, String)
+  fullName.vb: Meridian.Execution.Services.ExecutionManualOverride.New(String, String, String, String, System.DateTimeOffset, System.DateTimeOffset?, String, String, String)
+  name.vb: New(String, String, String, String, DateTimeOffset, DateTimeOffset?, String, String, String)
+- uid: Meridian.Execution.Services.ExecutionManualOverride.OverrideId
+  commentId: P:Meridian.Execution.Services.ExecutionManualOverride.OverrideId
+  id: OverrideId
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: OverrideId
+  nameWithType: ExecutionManualOverride.OverrideId
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.OverrideId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverrideId
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string OverrideId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OverrideId As String
+  overload: Meridian.Execution.Services.ExecutionManualOverride.OverrideId*
+- uid: Meridian.Execution.Services.ExecutionManualOverride.Kind
+  commentId: P:Meridian.Execution.Services.ExecutionManualOverride.Kind
+  id: Kind
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: Kind
+  nameWithType: ExecutionManualOverride.Kind
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.Kind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Kind
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string Kind { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Kind As String
+  overload: Meridian.Execution.Services.ExecutionManualOverride.Kind*
+- uid: Meridian.Execution.Services.ExecutionManualOverride.Reason
+  commentId: P:Meridian.Execution.Services.ExecutionManualOverride.Reason
+  id: Reason
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: ExecutionManualOverride.Reason
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Execution.Services.ExecutionManualOverride.Reason*
+- uid: Meridian.Execution.Services.ExecutionManualOverride.CreatedBy
+  commentId: P:Meridian.Execution.Services.ExecutionManualOverride.CreatedBy
+  id: CreatedBy
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: CreatedBy
+  nameWithType: ExecutionManualOverride.CreatedBy
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.CreatedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedBy
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string CreatedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CreatedBy As String
+  overload: Meridian.Execution.Services.ExecutionManualOverride.CreatedBy*
+- uid: Meridian.Execution.Services.ExecutionManualOverride.CreatedAt
+  commentId: P:Meridian.Execution.Services.ExecutionManualOverride.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: ExecutionManualOverride.CreatedAt
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public DateTimeOffset CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CreatedAt As DateTimeOffset
+  overload: Meridian.Execution.Services.ExecutionManualOverride.CreatedAt*
+- uid: Meridian.Execution.Services.ExecutionManualOverride.ExpiresAt
+  commentId: P:Meridian.Execution.Services.ExecutionManualOverride.ExpiresAt
+  id: ExpiresAt
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: ExpiresAt
+  nameWithType: ExecutionManualOverride.ExpiresAt
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.ExpiresAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpiresAt
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public DateTimeOffset? ExpiresAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ExpiresAt As DateTimeOffset?
+  overload: Meridian.Execution.Services.ExecutionManualOverride.ExpiresAt*
+- uid: Meridian.Execution.Services.ExecutionManualOverride.Symbol
+  commentId: P:Meridian.Execution.Services.ExecutionManualOverride.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: ExecutionManualOverride.Symbol
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Execution.Services.ExecutionManualOverride.Symbol*
+- uid: Meridian.Execution.Services.ExecutionManualOverride.StrategyId
+  commentId: P:Meridian.Execution.Services.ExecutionManualOverride.StrategyId
+  id: StrategyId
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: ExecutionManualOverride.StrategyId
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Execution.Services.ExecutionManualOverride.StrategyId*
+- uid: Meridian.Execution.Services.ExecutionManualOverride.RunId
+  commentId: P:Meridian.Execution.Services.ExecutionManualOverride.RunId
+  id: RunId
+  parent: Meridian.Execution.Services.ExecutionManualOverride
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: ExecutionManualOverride.RunId
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Execution.Services.ExecutionManualOverride.RunId*
+references:
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Services.ExecutionManualOverride}
+  commentId: T:System.IEquatable{Meridian.Execution.Services.ExecutionManualOverride}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExecutionManualOverride>
+  nameWithType: IEquatable<ExecutionManualOverride>
+  fullName: System.IEquatable<Meridian.Execution.Services.ExecutionManualOverride>
+  nameWithType.vb: IEquatable(Of ExecutionManualOverride)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Services.ExecutionManualOverride)
+  name.vb: IEquatable(Of ExecutionManualOverride)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionManualOverride
+    name: ExecutionManualOverride
+    href: Meridian.Execution.Services.ExecutionManualOverride.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionManualOverride
+    name: ExecutionManualOverride
+    href: Meridian.Execution.Services.ExecutionManualOverride.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.ExecutionManualOverride.#ctor*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.#ctor
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride__ctor_System_String_System_String_System_String_System_String_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_System_String_System_String_
+  name: ExecutionManualOverride
+  nameWithType: ExecutionManualOverride.ExecutionManualOverride
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.ExecutionManualOverride
+  nameWithType.vb: ExecutionManualOverride.New
+  fullName.vb: Meridian.Execution.Services.ExecutionManualOverride.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.ExecutionManualOverride.OverrideId*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.OverrideId
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride_OverrideId
+  name: OverrideId
+  nameWithType: ExecutionManualOverride.OverrideId
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.OverrideId
+- uid: Meridian.Execution.Services.ExecutionManualOverride.Kind*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.Kind
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride_Kind
+  name: Kind
+  nameWithType: ExecutionManualOverride.Kind
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.Kind
+- uid: Meridian.Execution.Services.ExecutionManualOverride.Reason*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.Reason
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride_Reason
+  name: Reason
+  nameWithType: ExecutionManualOverride.Reason
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.Reason
+- uid: Meridian.Execution.Services.ExecutionManualOverride.CreatedBy*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.CreatedBy
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride_CreatedBy
+  name: CreatedBy
+  nameWithType: ExecutionManualOverride.CreatedBy
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.CreatedBy
+- uid: Meridian.Execution.Services.ExecutionManualOverride.CreatedAt*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.CreatedAt
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride_CreatedAt
+  name: CreatedAt
+  nameWithType: ExecutionManualOverride.CreatedAt
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.CreatedAt
+- uid: Meridian.Execution.Services.ExecutionManualOverride.ExpiresAt*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.ExpiresAt
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride_ExpiresAt
+  name: ExpiresAt
+  nameWithType: ExecutionManualOverride.ExpiresAt
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.ExpiresAt
+- uid: Meridian.Execution.Services.ExecutionManualOverride.Symbol*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.Symbol
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride_Symbol
+  name: Symbol
+  nameWithType: ExecutionManualOverride.Symbol
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.Symbol
+- uid: Meridian.Execution.Services.ExecutionManualOverride.StrategyId*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.StrategyId
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride_StrategyId
+  name: StrategyId
+  nameWithType: ExecutionManualOverride.StrategyId
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.StrategyId
+- uid: Meridian.Execution.Services.ExecutionManualOverride.RunId*
+  commentId: Overload:Meridian.Execution.Services.ExecutionManualOverride.RunId
+  href: Meridian.Execution.Services.ExecutionManualOverride.html#Meridian_Execution_Services_ExecutionManualOverride_RunId
+  name: RunId
+  nameWithType: ExecutionManualOverride.RunId
+  fullName: Meridian.Execution.Services.ExecutionManualOverride.RunId

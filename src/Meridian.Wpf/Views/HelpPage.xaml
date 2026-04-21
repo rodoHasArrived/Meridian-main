@@ -20,7 +20,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1000">
             <!-- Header -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
                 <StackPanel Orientation="Horizontal">
                     <Border Width="44" Height="44" CornerRadius="14"
                             Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
@@ -410,7 +410,7 @@
                                    Foreground="{StaticResource ConsoleTextSecondaryBrush}">
 1. Install and run TWS (Trader Workstation) or IB Gateway
 2. Enable API connections in TWS: Edit → Global Configuration → API → Settings
-3. Set the port (7496 for live, 7497 for paper trading)
+3. Set the port (7497 for paper trading, 7496 for live)
 4. Start the collector with the --ib-host and --ib-port arguments
                         </TextBlock>
                     </Expander>

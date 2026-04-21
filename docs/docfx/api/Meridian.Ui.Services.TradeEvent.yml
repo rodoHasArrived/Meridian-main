@@ -1,0 +1,613 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.TradeEvent
+  commentId: T:Meridian.Ui.Services.TradeEvent
+  id: TradeEvent
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.TradeEvent.Condition
+  - Meridian.Ui.Services.TradeEvent.Exchange
+  - Meridian.Ui.Services.TradeEvent.Price
+  - Meridian.Ui.Services.TradeEvent.SequenceNumber
+  - Meridian.Ui.Services.TradeEvent.Side
+  - Meridian.Ui.Services.TradeEvent.Size
+  - Meridian.Ui.Services.TradeEvent.Symbol
+  - Meridian.Ui.Services.TradeEvent.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: TradeEvent
+  nameWithType: TradeEvent
+  fullName: Meridian.Ui.Services.TradeEvent
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeEvent
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class TradeEvent
+    content.vb: Public NotInheritable Class TradeEvent
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.TradeEvent.Symbol
+  commentId: P:Meridian.Ui.Services.TradeEvent.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.TradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: TradeEvent.Symbol
+  fullName: Meridian.Ui.Services.TradeEvent.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.TradeEvent.Symbol*
+- uid: Meridian.Ui.Services.TradeEvent.Price
+  commentId: P:Meridian.Ui.Services.TradeEvent.Price
+  id: Price
+  parent: Meridian.Ui.Services.TradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: TradeEvent.Price
+  fullName: Meridian.Ui.Services.TradeEvent.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal Price { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Ui.Services.TradeEvent.Price*
+- uid: Meridian.Ui.Services.TradeEvent.Size
+  commentId: P:Meridian.Ui.Services.TradeEvent.Size
+  id: Size
+  parent: Meridian.Ui.Services.TradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: TradeEvent.Size
+  fullName: Meridian.Ui.Services.TradeEvent.Size
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public decimal Size { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Size As Decimal
+  overload: Meridian.Ui.Services.TradeEvent.Size*
+- uid: Meridian.Ui.Services.TradeEvent.Timestamp
+  commentId: P:Meridian.Ui.Services.TradeEvent.Timestamp
+  id: Timestamp
+  parent: Meridian.Ui.Services.TradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: TradeEvent.Timestamp
+  fullName: Meridian.Ui.Services.TradeEvent.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime Timestamp { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property Timestamp As Date
+  overload: Meridian.Ui.Services.TradeEvent.Timestamp*
+- uid: Meridian.Ui.Services.TradeEvent.Exchange
+  commentId: P:Meridian.Ui.Services.TradeEvent.Exchange
+  id: Exchange
+  parent: Meridian.Ui.Services.TradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: TradeEvent.Exchange
+  fullName: Meridian.Ui.Services.TradeEvent.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Exchange { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Ui.Services.TradeEvent.Exchange*
+- uid: Meridian.Ui.Services.TradeEvent.Condition
+  commentId: P:Meridian.Ui.Services.TradeEvent.Condition
+  id: Condition
+  parent: Meridian.Ui.Services.TradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Condition
+  nameWithType: TradeEvent.Condition
+  fullName: Meridian.Ui.Services.TradeEvent.Condition
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Condition
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Condition { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Condition As String
+  overload: Meridian.Ui.Services.TradeEvent.Condition*
+- uid: Meridian.Ui.Services.TradeEvent.SequenceNumber
+  commentId: P:Meridian.Ui.Services.TradeEvent.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Ui.Services.TradeEvent
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: TradeEvent.SequenceNumber
+  fullName: Meridian.Ui.Services.TradeEvent.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long SequenceNumber { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SequenceNumber As Long
+  overload: Meridian.Ui.Services.TradeEvent.SequenceNumber*
+- uid: Meridian.Ui.Services.TradeEvent.Side
+  commentId: P:Meridian.Ui.Services.TradeEvent.Side
+  id: Side
+  parent: Meridian.Ui.Services.TradeEvent
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: TradeEvent.Side
+  fullName: Meridian.Ui.Services.TradeEvent.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Side { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Side As String
+  overload: Meridian.Ui.Services.TradeEvent.Side*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.TradeEvent.Symbol*
+  commentId: Overload:Meridian.Ui.Services.TradeEvent.Symbol
+  href: Meridian.Ui.Services.TradeEvent.html#Meridian_Ui_Services_TradeEvent_Symbol
+  name: Symbol
+  nameWithType: TradeEvent.Symbol
+  fullName: Meridian.Ui.Services.TradeEvent.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.TradeEvent.Price*
+  commentId: Overload:Meridian.Ui.Services.TradeEvent.Price
+  href: Meridian.Ui.Services.TradeEvent.html#Meridian_Ui_Services_TradeEvent_Price
+  name: Price
+  nameWithType: TradeEvent.Price
+  fullName: Meridian.Ui.Services.TradeEvent.Price
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Ui.Services.TradeEvent.Size*
+  commentId: Overload:Meridian.Ui.Services.TradeEvent.Size
+  href: Meridian.Ui.Services.TradeEvent.html#Meridian_Ui_Services_TradeEvent_Size
+  name: Size
+  nameWithType: TradeEvent.Size
+  fullName: Meridian.Ui.Services.TradeEvent.Size
+- uid: Meridian.Ui.Services.TradeEvent.Timestamp*
+  commentId: Overload:Meridian.Ui.Services.TradeEvent.Timestamp
+  href: Meridian.Ui.Services.TradeEvent.html#Meridian_Ui_Services_TradeEvent_Timestamp
+  name: Timestamp
+  nameWithType: TradeEvent.Timestamp
+  fullName: Meridian.Ui.Services.TradeEvent.Timestamp
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.TradeEvent.Exchange*
+  commentId: Overload:Meridian.Ui.Services.TradeEvent.Exchange
+  href: Meridian.Ui.Services.TradeEvent.html#Meridian_Ui_Services_TradeEvent_Exchange
+  name: Exchange
+  nameWithType: TradeEvent.Exchange
+  fullName: Meridian.Ui.Services.TradeEvent.Exchange
+- uid: Meridian.Ui.Services.TradeEvent.Condition*
+  commentId: Overload:Meridian.Ui.Services.TradeEvent.Condition
+  href: Meridian.Ui.Services.TradeEvent.html#Meridian_Ui_Services_TradeEvent_Condition
+  name: Condition
+  nameWithType: TradeEvent.Condition
+  fullName: Meridian.Ui.Services.TradeEvent.Condition
+- uid: Meridian.Ui.Services.TradeEvent.SequenceNumber*
+  commentId: Overload:Meridian.Ui.Services.TradeEvent.SequenceNumber
+  href: Meridian.Ui.Services.TradeEvent.html#Meridian_Ui_Services_TradeEvent_SequenceNumber
+  name: SequenceNumber
+  nameWithType: TradeEvent.SequenceNumber
+  fullName: Meridian.Ui.Services.TradeEvent.SequenceNumber
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.TradeEvent.Side*
+  commentId: Overload:Meridian.Ui.Services.TradeEvent.Side
+  href: Meridian.Ui.Services.TradeEvent.html#Meridian_Ui_Services_TradeEvent_Side
+  name: Side
+  nameWithType: TradeEvent.Side
+  fullName: Meridian.Ui.Services.TradeEvent.Side

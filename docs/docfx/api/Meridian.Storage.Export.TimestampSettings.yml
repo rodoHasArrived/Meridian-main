@@ -1,0 +1,456 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.TimestampSettings
+  commentId: T:Meridian.Storage.Export.TimestampSettings
+  id: TimestampSettings
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.TimestampSettings.Format
+  - Meridian.Storage.Export.TimestampSettings.IncludeNanoseconds
+  - Meridian.Storage.Export.TimestampSettings.Timezone
+  langs:
+  - csharp
+  - vb
+  name: TimestampSettings
+  nameWithType: TimestampSettings
+  fullName: Meridian.Storage.Export.TimestampSettings
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampSettings
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Timestamp handling settings.
+  example: []
+  syntax:
+    content: public sealed class TimestampSettings
+    content.vb: Public NotInheritable Class TimestampSettings
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Export.TimestampSettings.Format
+  commentId: P:Meridian.Storage.Export.TimestampSettings.Format
+  id: Format
+  parent: Meridian.Storage.Export.TimestampSettings
+  langs:
+  - csharp
+  - vb
+  name: Format
+  nameWithType: TimestampSettings.Format
+  fullName: Meridian.Storage.Export.TimestampSettings.Format
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 323
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: >-
+      [JsonPropertyName("format")]
+
+      public TimestampFormat Format { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.TimestampFormat
+    content.vb: >-
+      <JsonPropertyName("format")>
+
+      Public Property Format As TimestampFormat
+  overload: Meridian.Storage.Export.TimestampSettings.Format*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: format
+- uid: Meridian.Storage.Export.TimestampSettings.Timezone
+  commentId: P:Meridian.Storage.Export.TimestampSettings.Timezone
+  id: Timezone
+  parent: Meridian.Storage.Export.TimestampSettings
+  langs:
+  - csharp
+  - vb
+  name: Timezone
+  nameWithType: TimestampSettings.Timezone
+  fullName: Meridian.Storage.Export.TimestampSettings.Timezone
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timezone
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 326
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: >-
+      [JsonPropertyName("timezone")]
+
+      public string Timezone { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("timezone")>
+
+      Public Property Timezone As String
+  overload: Meridian.Storage.Export.TimestampSettings.Timezone*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: timezone
+- uid: Meridian.Storage.Export.TimestampSettings.IncludeNanoseconds
+  commentId: P:Meridian.Storage.Export.TimestampSettings.IncludeNanoseconds
+  id: IncludeNanoseconds
+  parent: Meridian.Storage.Export.TimestampSettings
+  langs:
+  - csharp
+  - vb
+  name: IncludeNanoseconds
+  nameWithType: TimestampSettings.IncludeNanoseconds
+  fullName: Meridian.Storage.Export.TimestampSettings.IncludeNanoseconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeNanoseconds
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 329
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: >-
+      [JsonPropertyName("includeNanoseconds")]
+
+      public bool IncludeNanoseconds { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeNanoseconds")>
+
+      Public Property IncludeNanoseconds As Boolean
+  overload: Meridian.Storage.Export.TimestampSettings.IncludeNanoseconds*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeNanoseconds
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Export.TimestampSettings.Format*
+  commentId: Overload:Meridian.Storage.Export.TimestampSettings.Format
+  href: Meridian.Storage.Export.TimestampSettings.html#Meridian_Storage_Export_TimestampSettings_Format
+  name: Format
+  nameWithType: TimestampSettings.Format
+  fullName: Meridian.Storage.Export.TimestampSettings.Format
+- uid: Meridian.Storage.Export.TimestampFormat
+  commentId: T:Meridian.Storage.Export.TimestampFormat
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.TimestampFormat.html
+  name: TimestampFormat
+  nameWithType: TimestampFormat
+  fullName: Meridian.Storage.Export.TimestampFormat
+- uid: Meridian.Storage.Export.TimestampSettings.Timezone*
+  commentId: Overload:Meridian.Storage.Export.TimestampSettings.Timezone
+  href: Meridian.Storage.Export.TimestampSettings.html#Meridian_Storage_Export_TimestampSettings_Timezone
+  name: Timezone
+  nameWithType: TimestampSettings.Timezone
+  fullName: Meridian.Storage.Export.TimestampSettings.Timezone
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Export.TimestampSettings.IncludeNanoseconds*
+  commentId: Overload:Meridian.Storage.Export.TimestampSettings.IncludeNanoseconds
+  href: Meridian.Storage.Export.TimestampSettings.html#Meridian_Storage_Export_TimestampSettings_IncludeNanoseconds
+  name: IncludeNanoseconds
+  nameWithType: TimestampSettings.IncludeNanoseconds
+  fullName: Meridian.Storage.Export.TimestampSettings.IncludeNanoseconds
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

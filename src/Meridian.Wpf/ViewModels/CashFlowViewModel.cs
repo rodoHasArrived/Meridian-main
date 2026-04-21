@@ -16,6 +16,7 @@ public sealed class CashFlowViewModel : BindableBase
     private readonly NavigationService _navigationService;
     private string? _runId;
     private object? _parameter;
+    private CashFlowEntryDto? _selectedEntry;
 
     public object? Parameter
     {
@@ -31,6 +32,18 @@ public sealed class CashFlowViewModel : BindableBase
 
     public ObservableCollection<CashFlowEntryDto> Entries { get; } = [];
     public ObservableCollection<CashLadderBucketDto> LadderBuckets { get; } = [];
+
+    public CashFlowEntryDto? SelectedEntry
+    {
+        get => _selectedEntry;
+        set
+        {
+            if (SetProperty(ref _selectedEntry, value))
+            {
+                OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
+            }
+        }
+    }
 
     private string _title = "Cash Flow";
     public string Title
@@ -92,6 +105,7 @@ public sealed class CashFlowViewModel : BindableBase
     public IRelayCommand OpenRunDetailCommand { get; }
     public IRelayCommand OpenPortfolioCommand { get; }
     public IRelayCommand OpenLedgerCommand { get; }
+    public IRelayCommand OpenSelectedSecurityCommand { get; }
 
     /// <summary>
     /// Parameterless constructor for use in XAML code-behind; resolves
@@ -112,6 +126,7 @@ public sealed class CashFlowViewModel : BindableBase
         OpenRunDetailCommand = new RelayCommand(OpenRunDetail, () => !string.IsNullOrWhiteSpace(_runId));
         OpenPortfolioCommand = new RelayCommand(OpenPortfolio, () => !string.IsNullOrWhiteSpace(_runId));
         OpenLedgerCommand = new RelayCommand(OpenLedger, () => !string.IsNullOrWhiteSpace(_runId));
+        OpenSelectedSecurityCommand = new RelayCommand(OpenSelectedSecurity, () => !string.IsNullOrWhiteSpace(SelectedEntry?.Symbol));
     }
 
     private async Task LoadFromParameterAsync(object? parameter, CancellationToken ct = default)
@@ -151,6 +166,8 @@ public sealed class CashFlowViewModel : BindableBase
             Entries.Add(entry);
         }
 
+        SelectedEntry = Entries.FirstOrDefault(entry => !string.IsNullOrWhiteSpace(entry.Symbol));
+
         LadderBuckets.Clear();
         foreach (var bucket in summary.Ladder.Buckets)
         {
@@ -160,6 +177,7 @@ public sealed class CashFlowViewModel : BindableBase
         OpenRunDetailCommand.NotifyCanExecuteChanged();
         OpenPortfolioCommand.NotifyCanExecuteChanged();
         OpenLedgerCommand.NotifyCanExecuteChanged();
+        OpenSelectedSecurityCommand.NotifyCanExecuteChanged();
     }
 
     private void OpenRunDetail()
@@ -183,6 +201,14 @@ public sealed class CashFlowViewModel : BindableBase
         if (!string.IsNullOrWhiteSpace(_runId))
         {
             _navigationService.NavigateTo("RunLedger", _runId);
+        }
+    }
+
+    private void OpenSelectedSecurity()
+    {
+        if (!string.IsNullOrWhiteSpace(SelectedEntry?.Symbol))
+        {
+            _navigationService.NavigateTo("SecurityMaster", SelectedEntry.Symbol);
         }
     }
 }

@@ -1,0 +1,715 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ConfigWatcher
+  commentId: T:Meridian.Application.Config.ConfigWatcher
+  id: ConfigWatcher
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ConfigWatcher.#ctor(System.String,System.Nullable{System.TimeSpan})
+  - Meridian.Application.Config.ConfigWatcher.ConfigChanged
+  - Meridian.Application.Config.ConfigWatcher.DebounceInterval
+  - Meridian.Application.Config.ConfigWatcher.Dispose
+  - Meridian.Application.Config.ConfigWatcher.Error
+  - Meridian.Application.Config.ConfigWatcher.Start
+  - Meridian.Application.Config.ConfigWatcher.Stop
+  langs:
+  - csharp
+  - vb
+  name: ConfigWatcher
+  nameWithType: ConfigWatcher
+  fullName: Meridian.Application.Config.ConfigWatcher
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigWatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigWatcher
+    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Watches a JSON config file and raises debounced change events with the parsed AppConfig.
+  example: []
+  syntax:
+    content: 'public sealed class ConfigWatcher : IDisposable'
+    content.vb: Public NotInheritable Class ConfigWatcher Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.ConfigWatcher.ConfigChanged
+  commentId: E:Meridian.Application.Config.ConfigWatcher.ConfigChanged
+  id: ConfigChanged
+  parent: Meridian.Application.Config.ConfigWatcher
+  langs:
+  - csharp
+  - vb
+  name: ConfigChanged
+  nameWithType: ConfigWatcher.ConfigChanged
+  fullName: Meridian.Application.Config.ConfigWatcher.ConfigChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigWatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigChanged
+    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public event Action<AppConfig>? ConfigChanged
+    return:
+      type: System.Action{Meridian.Application.Config.AppConfig}
+    content.vb: Public Event ConfigChanged As Action(Of AppConfig)
+- uid: Meridian.Application.Config.ConfigWatcher.Error
+  commentId: E:Meridian.Application.Config.ConfigWatcher.Error
+  id: Error
+  parent: Meridian.Application.Config.ConfigWatcher
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: ConfigWatcher.Error
+  fullName: Meridian.Application.Config.ConfigWatcher.Error
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigWatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public event Action<Exception>? Error
+    return:
+      type: System.Action{System.Exception}
+    content.vb: Public Event [Error] As Action(Of Exception)
+- uid: Meridian.Application.Config.ConfigWatcher.#ctor(System.String,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Application.Config.ConfigWatcher.#ctor(System.String,System.Nullable{System.TimeSpan})
+  id: '#ctor(System.String,System.Nullable{System.TimeSpan})'
+  parent: Meridian.Application.Config.ConfigWatcher
+  langs:
+  - csharp
+  - vb
+  name: ConfigWatcher(string, TimeSpan?)
+  nameWithType: ConfigWatcher.ConfigWatcher(string, TimeSpan?)
+  fullName: Meridian.Application.Config.ConfigWatcher.ConfigWatcher(string, System.TimeSpan?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigWatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public ConfigWatcher(string path, TimeSpan? debounce = null)
+    parameters:
+    - id: path
+      type: System.String
+    - id: debounce
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Sub New(path As String, debounce As TimeSpan? = Nothing)
+  overload: Meridian.Application.Config.ConfigWatcher.#ctor*
+  nameWithType.vb: ConfigWatcher.New(String, TimeSpan?)
+  fullName.vb: Meridian.Application.Config.ConfigWatcher.New(String, System.TimeSpan?)
+  name.vb: New(String, TimeSpan?)
+- uid: Meridian.Application.Config.ConfigWatcher.DebounceInterval
+  commentId: P:Meridian.Application.Config.ConfigWatcher.DebounceInterval
+  id: DebounceInterval
+  parent: Meridian.Application.Config.ConfigWatcher
+  langs:
+  - csharp
+  - vb
+  name: DebounceInterval
+  nameWithType: ConfigWatcher.DebounceInterval
+  fullName: Meridian.Application.Config.ConfigWatcher.DebounceInterval
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigWatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DebounceInterval
+    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public TimeSpan DebounceInterval { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public ReadOnly Property DebounceInterval As TimeSpan
+  overload: Meridian.Application.Config.ConfigWatcher.DebounceInterval*
+- uid: Meridian.Application.Config.ConfigWatcher.Start
+  commentId: M:Meridian.Application.Config.ConfigWatcher.Start
+  id: Start
+  parent: Meridian.Application.Config.ConfigWatcher
+  langs:
+  - csharp
+  - vb
+  name: Start()
+  nameWithType: ConfigWatcher.Start()
+  fullName: Meridian.Application.Config.ConfigWatcher.Start()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigWatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public void Start()
+    content.vb: Public Sub Start()
+  overload: Meridian.Application.Config.ConfigWatcher.Start*
+- uid: Meridian.Application.Config.ConfigWatcher.Stop
+  commentId: M:Meridian.Application.Config.ConfigWatcher.Stop
+  id: Stop
+  parent: Meridian.Application.Config.ConfigWatcher
+  langs:
+  - csharp
+  - vb
+  name: Stop()
+  nameWithType: ConfigWatcher.Stop()
+  fullName: Meridian.Application.Config.ConfigWatcher.Stop()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigWatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stop
+    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public void Stop()
+    content.vb: Public Sub [Stop]()
+  overload: Meridian.Application.Config.ConfigWatcher.Stop*
+- uid: Meridian.Application.Config.ConfigWatcher.Dispose
+  commentId: M:Meridian.Application.Config.ConfigWatcher.Dispose
+  id: Dispose
+  parent: Meridian.Application.Config.ConfigWatcher
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ConfigWatcher.Dispose()
+  fullName: Meridian.Application.Config.ConfigWatcher.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigWatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Config/ConfigWatcher.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Config.ConfigWatcher.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Config.AppConfig}
+  commentId: T:System.Action{Meridian.Application.Config.AppConfig}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<AppConfig>
+  nameWithType: Action<AppConfig>
+  fullName: System.Action<Meridian.Application.Config.AppConfig>
+  nameWithType.vb: Action(Of AppConfig)
+  fullName.vb: System.Action(Of Meridian.Application.Config.AppConfig)
+  name.vb: Action(Of AppConfig)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Action{System.Exception}
+  commentId: T:System.Action{System.Exception}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<Exception>
+  nameWithType: Action<Exception>
+  fullName: System.Action<System.Exception>
+  nameWithType.vb: Action(Of Exception)
+  fullName.vb: System.Action(Of System.Exception)
+  name.vb: Action(Of Exception)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: )
+- uid: Meridian.Application.Config.ConfigWatcher.#ctor*
+  commentId: Overload:Meridian.Application.Config.ConfigWatcher.#ctor
+  href: Meridian.Application.Config.ConfigWatcher.html#Meridian_Application_Config_ConfigWatcher__ctor_System_String_System_Nullable_System_TimeSpan__
+  name: ConfigWatcher
+  nameWithType: ConfigWatcher.ConfigWatcher
+  fullName: Meridian.Application.Config.ConfigWatcher.ConfigWatcher
+  nameWithType.vb: ConfigWatcher.New
+  fullName.vb: Meridian.Application.Config.ConfigWatcher.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.ConfigWatcher.DebounceInterval*
+  commentId: Overload:Meridian.Application.Config.ConfigWatcher.DebounceInterval
+  href: Meridian.Application.Config.ConfigWatcher.html#Meridian_Application_Config_ConfigWatcher_DebounceInterval
+  name: DebounceInterval
+  nameWithType: ConfigWatcher.DebounceInterval
+  fullName: Meridian.Application.Config.ConfigWatcher.DebounceInterval
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.Config.ConfigWatcher.Start*
+  commentId: Overload:Meridian.Application.Config.ConfigWatcher.Start
+  href: Meridian.Application.Config.ConfigWatcher.html#Meridian_Application_Config_ConfigWatcher_Start
+  name: Start
+  nameWithType: ConfigWatcher.Start
+  fullName: Meridian.Application.Config.ConfigWatcher.Start
+- uid: Meridian.Application.Config.ConfigWatcher.Stop*
+  commentId: Overload:Meridian.Application.Config.ConfigWatcher.Stop
+  href: Meridian.Application.Config.ConfigWatcher.html#Meridian_Application_Config_ConfigWatcher_Stop
+  name: Stop
+  nameWithType: ConfigWatcher.Stop
+  fullName: Meridian.Application.Config.ConfigWatcher.Stop
+- uid: Meridian.Application.Config.ConfigWatcher.Dispose*
+  commentId: Overload:Meridian.Application.Config.ConfigWatcher.Dispose
+  href: Meridian.Application.Config.ConfigWatcher.html#Meridian_Application_Config_ConfigWatcher_Dispose
+  name: Dispose
+  nameWithType: ConfigWatcher.Dispose
+  fullName: Meridian.Application.Config.ConfigWatcher.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

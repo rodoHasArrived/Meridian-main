@@ -1,10 +1,11 @@
 # Full Implementation Backlog (Non-Assembly Scope)
 
-**Last Updated:** 2026-03-31
+**Last Updated:** 2026-04-21
 **Status:** Active normalized backlog
 **Purpose:** Single current backlog for finishing the remaining planned non-assembly work
 
 This document is the normalized execution backlog for the repository's remaining product and structural work outside Phase 16 assembly/SIMD optimization.
+It is subordinate to [`ROADMAP.md`](ROADMAP.md): the tracks below are execution buckets that map to the canonical Wave 1-6 order and optional tracks, not an independent strategy. Status labels and target dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
 
 Use it with:
 
@@ -14,6 +15,23 @@ Use it with:
 - `../plans/governance-fund-ops-blueprint.md`
 - `../plans/quant-script-environment-blueprint.md`
 - `../plans/l3-inference-implementation-plan.md`
+
+---
+
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
 
 ---
 
@@ -33,49 +51,52 @@ Closed platform work:
 - Strategy lifecycle control endpoints: `/api/strategies/status`, `/api/strategies/{id}/status`, `/api/strategies/{id}/pause`, `/api/strategies/{id}/stop`
 - `PaperSessionPersistenceService`, `IPortfolioState`, `IOrderGateway`, `IOrderManager`, `StrategyLifecycleManager` fully wired in DI
 - Brokerage gateway framework complete: `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter`, plus Alpaca/IB/StockSharp adapter implementations
+- WPF shell modernization: native Fluent theme (`ThemeMode="System"`, PR #524), SVG icon set replacing emoji glyphs (PR #512), LiveCharts2 candlestick charting on Charting page (PR #522)
+- Zero-API-key startup: Synthetic provider default when no credentials are present (PR #513)
+- Route/health endpoint reliability: duplicate DFA route definitions and duplicate health endpoint registrations resolved (PRs #521, #519)
+- Workflow guide and live screenshots: `docs/WORKFLOW_GUIDE.md` with UI screenshots (PR #511); CI screenshot-refresh workflow (PR #515)
 
 Implemented foundations now available to build on:
 
 - workspace categories aligned around `Research`, `Trading`, `Data Operations`, and `Governance`
-- Security Master application/storage/domain foundation
+- current working-tree WPF shell consolidation should support Track B, Track C, and Track F workflows rather than become a separate roadmap lane
+- delivered Security Master platform seam with shared coverage/provenance flowing across workstation and governance surfaces
 - coordination services and lease/ownership primitives for future multi-instance work
 - paper trading gateway and brokerage adapter layer with REST surface fully wired
 - promotion workflow service and endpoint layer providing the `Backtest → Paper → Live` execution path
 
-The remaining backlog is therefore about turning those foundations into a complete operator-facing product.
+The remaining backlog is therefore about turning those foundations and delivered seams into a complete operator-facing product.
 
 ---
 
 ## Backlog Tracks
 
-### Track A: Provider confidence and current-functionality hardening
+### Track A / Wave 1: Closed trust-gate maintenance
 
-Goal: make the currently shipped platform easier to trust and easier to operate.
+Goal: preserve the closed Wave 1 trust gate without widening scope, and keep the currently shipped platform easier to trust and easier to operate.
 
 Open work:
 
-- expand Polygon replay coverage across more feeds and edge cases
-- strengthen NYSE shared-lifecycle regression coverage
-- keep IB runtime/bootstrap guidance aligned with the official vendor surface
-- keep StockSharp connector/runtime guidance aligned with validated adapters
-- expand under-tested provider coverage for TwelveData, Nasdaq Data Link, Alpha Vantage, Finnhub, Stooq, and OpenFIGI
-- continue backtesting-engine and strategy-run persistence coverage expansion
-- validate backfill checkpoint reliability across providers and longer date ranges
+- keep the active provider set fixed at Alpaca, Robinhood, and Yahoo across roadmap, status, matrix, and script surfaces
+- keep Robinhood runtime-bounded evidence explicit and current under `artifacts/provider-validation/robinhood/`
+- rerun `run-wave1-provider-validation.ps1` when provider, checkpoint, or Parquet proof surfaces change
+- keep deferred providers labeled consistently outside the active Wave 1 gate
+- continue adjacent backtesting-engine and strategy-run persistence coverage expansion without reopening Wave 1 scope
 
 Exit signal:
 
-Every major provider has documented replay/runtime evidence and passes its validation suite. Backfill checkpoints and gap detection are validated across providers and date ranges.
+The active gate for Alpaca, Robinhood, and Yahoo stays reproducible through `run-wave1-provider-validation.ps1`; checkpoint and Parquet rows stay closed in repo tests; and deferred providers remain clearly outside the active Wave 1 claim.
 
-### Track B: Paper trading cockpit web UI
+### Track B / Wave 2: Paper-trading cockpit hardening
 
-Goal: make the existing execution primitives, brokerage adapters, and wired REST endpoints visible through a real operator cockpit in the web dashboard.
+Goal: harden the existing execution primitives, brokerage adapters, and wired REST/dashboard flows into a dependable operator cockpit in the web workstation.
 
 Open work:
 
-- build live positions, open orders, fills, P&L, and risk state panels in the React dashboard wired to `/api/execution/*`
-- expose promotion evaluation result and approval controls in the dashboard
-- add paper-trading session persistence and replay from persisted order history
-- validate brokerage gateway adapters against real vendor APIs (Alpaca, IB, StockSharp)
+- tighten the existing live positions, open orders, fills, P&L, and risk panels in the React dashboard wired to `/api/execution/*`
+- expose promotion evaluation result, approval controls, session state, and execution-control state with clearer acceptance criteria in the dashboard
+- verify paper-trading session persistence and replay from persisted order history under realistic operator scenarios
+- extend broker validation beyond the checked-in Alpaca execution path to additional live adapters (IB, StockSharp)
 
 Primary anchors:
 
@@ -86,18 +107,18 @@ Primary anchors:
 
 Exit signal:
 
-A strategy researched in backtest can be promoted to paper trading through one connected workflow in the web dashboard, with live positions and fills visible.
+A strategy researched in backtest can be promoted to paper trading through one connected workflow in the web workstation, with live positions and fills visible.
 
-### Track C: Portfolio and strategy tracking depth
+### Track C / Wave 3: Shared run / portfolio / ledger continuity
 
-Goal: strengthen portfolio read models and multi-run comparison so strategy research produces durable, comparable results.
+Goal: strengthen the shared run, portfolio, ledger, cash-flow, and reconciliation model so strategy workflows feel durable and continuous across workspaces.
 
 Open work:
 
 - extend run history beyond backtest-first into paper and live-adjacent results
-- deepen portfolio drill-ins: attribution, drawdown breakdown, trade-level analysis
+- deepen portfolio drill-ins: attribution, drawdown breakdown, cash-flow, and trade-level analysis
 - build portfolio comparison across multiple strategy runs
-- surface ledger reconciliation in the web dashboard
+- surface ledger and reconciliation continuity in the web dashboard
 - strengthen strategy lifecycle test coverage
 
 Primary anchors:
@@ -108,9 +129,9 @@ Primary anchors:
 
 Exit signal:
 
-Portfolio and strategy tracking are useful for iterative strategy development across backtest, paper, and live-adjacent runs through one consistent model.
+Research, trading, and governance rely on one consistent shared run, portfolio, ledger, cash-flow, and reconciliation model across backtest, paper, and live-adjacent runs.
 
-### Track D: Backtest Studio unification
+### Track D / Wave 5: Backtest Studio unification
 
 Goal: consolidate the native and QuantConnect Lean backtest experiences into one coherent workflow.
 
@@ -131,7 +152,7 @@ Exit signal:
 
 Backtesting feels like one product regardless of whether the native engine or Lean is used, with consistent result models.
 
-### Track E: Live integration readiness
+### Track E / Wave 6: Live integration readiness
 
 Goal: validate the brokerage gateway framework against real vendor surfaces and add the execution audit trail needed for live operations.
 
@@ -153,14 +174,13 @@ Exit signal:
 
 At least one brokerage adapter is validated against a live vendor surface with audit trail.
 
-### Track F: Governance and fund-operations productization
+### Track F / Wave 4: Governance and fund-operations productization
 
-Goal: productize Security Master and the direct lending foundations into operator-facing governance tooling.
+Goal: productize governance and fund-operations workflows on top of the delivered Security Master seam and direct-lending foundations.
 
 Open work:
 
-- productize Security Master beyond its current foundational services
-- add account/entity and strategy-structure workflows
+- extend the delivered Security Master seam into broader account/entity and strategy-structure workflows
 - deepen portfolio and ledger surfaces into first-class governance tooling
 - add multi-ledger, trial-balance, and cash-flow views
 - implement reconciliation workflows and governed reporting/report-pack generation
@@ -223,6 +243,32 @@ Primary anchors:
 - `src/Meridian.Core/Config/CoordinationConfig.cs`
 - `tests/Meridian.Tests/Application/Coordination/`
 
+### Track K: Phase 1.5 — Preferred & Convertible Equity domain extension
+
+Goal: extend the F# Security Master domain model to support preferred and convertible equity classifications as a foundation for Phase 1.5 UFL Equity V2.
+
+Open work:
+
+- add `EquityClassification` discriminated union to `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- add `PreferredTerms` record: `DividendRate`, `DividendType` (Fixed/Floating/Cumulative), `RedemptionPrice`, `RedemptionDate`, `CallableDate`, `ParticipationTerms`, `LiquidationPreference`
+- add `ConvertibleTerms` record: underlying, conversion ratio, conversion price, and date windows
+- add `LiquidationPreference` union: `Pari`, `Senior of decimal`, `Subordinated`
+- update `EquityTerms` to include optional `Classification: EquityClassification option` field
+- add unit tests validating term constraints (backward-compatible with existing common equity flows)
+- update `docs/ai/claude/CLAUDE.domain-naming.md` with naming conventions (`PrefShrDef`, `ConvPrefDef`, `DivTr`, `RedTr`, `CallTr`, `ConvTr`)
+
+Primary anchors:
+
+- `src/Meridian.FSharp/Domain/SecurityMaster.fs`
+- `src/Meridian.FSharp/Domain/SecurityClassification.fs` (partial foundation already present: `PreferredEquity`, `PreferredShare`)
+- `issues/phase_1_5_1_add_equityclassification_discriminator_and_preferredterms_domain_model.md`
+- `PROJECTS/Phase_1.5_Preferred_and_Convertible_Equity_Support.md`
+- `docs/plans/ufl-equity-target-state-v2.md`
+
+Exit signal:
+
+All acceptance criteria in the issue file are checked: discriminated union, term records, unit tests, and naming doc update complete.
+
 ### Track J: Structural closure and documentation convergence
 
 Goal: keep the repo coherent as the remaining product work lands.
@@ -243,9 +289,9 @@ References:
 
 ## Recommended Delivery Order
 
-### Wave 1 *(active)*
+### Wave 1 *(closed, maintain)*
 
-- Track A: Provider confidence and hardening
+- Track A: Closed trust-gate maintenance
 
 ### Wave 2
 
@@ -257,30 +303,35 @@ References:
 
 ### Wave 4
 
-- Track D: Backtest Studio unification
+- Track F: Governance and fund-operations productization on top of Security Master
 
 ### Wave 5
+
+- Track D: Backtest Studio unification
+
+### Wave 6
 
 - Track E: Live integration readiness
 
 ### Optional Wave
 
-- Track F: Governance and Security Master productization
 - Track G: QuantScript *(implemented — deeper workflow integration and sample scripts remain)*
 - Track H: L3 inference/simulation foundation
 - Track I: Multi-instance coordination
 - Track J: Remaining structural/documentation closure
+- Track K: Phase 1.5 preferred/convertible equity domain extension *(F# domain layer — all acceptance criteria open)*
 
 ---
 
 ## Practical Definition of Done
 
-The repository can reasonably claim core-platform readiness when all of the following are true:
+The repository can reasonably claim core operator-readiness when all of the following are true:
 
-1. Every major provider has documented replay/runtime validation evidence
-2. Paper trading is exposed as a full cockpit in the web dashboard (wired to the existing `/api/execution/*` and `/api/promotion/*` endpoints)
-3. The `Backtest → Paper` promotion workflow is explicit and auditable through the dashboard
-4. Portfolio and run history cover backtest, paper, and live-adjacent results through one consistent model
-5. Backfill checkpoint reliability is validated across providers and date ranges
+1. **Wave 1 gates:** the active gate for Alpaca, Robinhood, and Yahoo is documented in executable suites or committed runtime artifacts, and checkpoint plus Parquet proof remains closed in repo tests.
+2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest → Paper` is explicit and auditable.
+3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
+4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
+
+Waves 5 and 6 deepen the product and widen readiness claims, but they are not prerequisites for the core operator-ready baseline above.
 
 Until then, Meridian is best described as feature-rich and structurally strong, but still in active productization rather than fully complete.

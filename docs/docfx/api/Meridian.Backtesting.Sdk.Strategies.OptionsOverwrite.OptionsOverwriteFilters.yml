@@ -1,0 +1,811 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  id: OptionsOverwriteFilters
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.Decimal)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.OpenPositionHasDividendRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.DateOnly,System.Decimal,System.Nullable{System.Int32},System.Nullable{System.Decimal})
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesLiquidityFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesRiskFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  langs:
+  - csharp
+  - vb
+  name: OptionsOverwriteFilters
+  nameWithType: OptionsOverwriteFilters
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionsOverwriteFilters
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Static filter methods that screen option candidates before scoring.
+
+    Each method returns <code>true</code> when the candidate <em>passes</em> the filter.
+  example: []
+  syntax:
+    content: public static class OptionsOverwriteFilters
+    content.vb: Public Module OptionsOverwriteFilters
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesLiquidityFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesLiquidityFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  id: PassesLiquidityFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  langs:
+  - csharp
+  - vb
+  name: PassesLiquidityFilter(OptionCandidateInfo, OptionsOverwriteParams)
+  nameWithType: OptionsOverwriteFilters.PassesLiquidityFilter(OptionCandidateInfo, OptionsOverwriteParams)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesLiquidityFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PassesLiquidityFilter
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Returns <code>true</code> when the candidate meets all liquidity requirements:
+
+
+    <ul><li>Bid price must be strictly positive (no zero-bid contracts)</li><li>Open interest ≥ <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest" data-throw-if-not-resolved="false"></xref></li><li>Volume ≥ <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume" data-throw-if-not-resolved="false"></xref></li><li>Bid-ask spread ≤ <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct" data-throw-if-not-resolved="false"></xref></li></ul>
+  example: []
+  syntax:
+    content: public static bool PassesLiquidityFilter(OptionCandidateInfo opt, OptionsOverwriteParams p)
+    parameters:
+    - id: opt
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+    - id: p
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function PassesLiquidityFilter(opt As OptionCandidateInfo, p As OptionsOverwriteParams) As Boolean
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesLiquidityFilter*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesRiskFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesRiskFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  id: PassesRiskFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  langs:
+  - csharp
+  - vb
+  name: PassesRiskFilter(OptionCandidateInfo, OptionsOverwriteParams)
+  nameWithType: OptionsOverwriteFilters.PassesRiskFilter(OptionCandidateInfo, OptionsOverwriteParams)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesRiskFilter(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PassesRiskFilter
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Returns <code>true</code> when the candidate satisfies all risk constraints:
+
+
+    <ul><li>Strike ≥ <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike" data-throw-if-not-resolved="false"></xref></li><li>|Delta| ≤ <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta" data-throw-if-not-resolved="false"></xref></li><li>DTE ≥ <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte" data-throw-if-not-resolved="false"></xref></li><li>DTE ≤ <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte" data-throw-if-not-resolved="false"></xref> (when set)</li><li>IV percentile ≥ <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile" data-throw-if-not-resolved="false"></xref> (when available)</li></ul>
+  example: []
+  syntax:
+    content: public static bool PassesRiskFilter(OptionCandidateInfo opt, OptionsOverwriteParams p)
+    parameters:
+    - id: opt
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+    - id: p
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function PassesRiskFilter(opt As OptionCandidateInfo, p As OptionsOverwriteParams) As Boolean
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesRiskFilter*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  id: HasDividendAssignmentRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  langs:
+  - csharp
+  - vb
+  name: HasDividendAssignmentRisk(OptionCandidateInfo, OptionsOverwriteParams)
+  nameWithType: OptionsOverwriteFilters.HasDividendAssignmentRisk(OptionCandidateInfo, OptionsOverwriteParams)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasDividendAssignmentRisk
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Returns <code>true</code> when the candidate has elevated dividend-early-assignment risk
+
+    and should therefore be <em>excluded</em>.
+
+
+    <p>
+
+    Applies only to American-style options where:
+
+
+    <ol><li>Ex-dividend date is within <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays" data-throw-if-not-resolved="false"></xref> days.</li><li>The option is in-the-money.</li><li>Remaining extrinsic value is less than the expected dividend amount — the rational holder
+            will exercise to capture the dividend rather than sell the option.</li></ol>
+    </p>
+  example: []
+  syntax:
+    content: public static bool HasDividendAssignmentRisk(OptionCandidateInfo opt, OptionsOverwriteParams p)
+    parameters:
+    - id: opt
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+    - id: p
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function HasDividendAssignmentRisk(opt As OptionCandidateInfo, p As OptionsOverwriteParams) As Boolean
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRisk*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.Decimal)
+  id: HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.Decimal)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  langs:
+  - csharp
+  - vb
+  name: HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo, OptionsOverwriteParams, decimal)
+  nameWithType: OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo, OptionsOverwriteParams, decimal)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasDividendAssignmentRiskWithUnderlyingPrice
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Returns <code>true</code> when the candidate has elevated dividend-assignment risk,
+
+    with access to the actual underlying price for a precise ITM / extrinsic calculation.
+  example: []
+  syntax:
+    content: public static bool HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo opt, OptionsOverwriteParams p, decimal underlyingPrice)
+    parameters:
+    - id: opt
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+    - id: p
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    - id: underlyingPrice
+      type: System.Decimal
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function HasDividendAssignmentRiskWithUnderlyingPrice(opt As OptionCandidateInfo, p As OptionsOverwriteParams, underlyingPrice As Decimal) As Boolean
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice*
+  nameWithType.vb: OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo, OptionsOverwriteParams, Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams, Decimal)
+  name.vb: HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo, OptionsOverwriteParams, Decimal)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.OpenPositionHasDividendRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.DateOnly,System.Decimal,System.Nullable{System.Int32},System.Nullable{System.Decimal})
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.OpenPositionHasDividendRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.DateOnly,System.Decimal,System.Nullable{System.Int32},System.Nullable{System.Decimal})
+  id: OpenPositionHasDividendRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.DateOnly,System.Decimal,System.Nullable{System.Int32},System.Nullable{System.Decimal})
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters
+  langs:
+  - csharp
+  - vb
+  name: OpenPositionHasDividendRisk(ShortCallPosition, OptionsOverwriteParams, DateOnly, decimal, int?, decimal?)
+  nameWithType: OptionsOverwriteFilters.OpenPositionHasDividendRisk(ShortCallPosition, OptionsOverwriteParams, DateOnly, decimal, int?, decimal?)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.OpenPositionHasDividendRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams, System.DateOnly, decimal, int?, decimal?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenPositionHasDividendRisk
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteFilters.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Returns <code>true</code> when an open short call has elevated assignment risk from an
+
+    upcoming ex-dividend event (mirror of <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo%2cMeridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams%2cSystem.Decimal)" data-throw-if-not-resolved="false"></xref>
+
+    but operating on a <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition" data-throw-if-not-resolved="false"></xref>).
+  example: []
+  syntax:
+    content: public static bool OpenPositionHasDividendRisk(ShortCallPosition position, OptionsOverwriteParams p, DateOnly asOf, decimal underlyingPrice, int? daysToNextExDiv, decimal? nextDividendAmount)
+    parameters:
+    - id: position
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+    - id: p
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    - id: asOf
+      type: System.DateOnly
+    - id: underlyingPrice
+      type: System.Decimal
+    - id: daysToNextExDiv
+      type: System.Nullable{System.Int32}
+    - id: nextDividendAmount
+      type: System.Nullable{System.Decimal}
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function OpenPositionHasDividendRisk(position As ShortCallPosition, p As OptionsOverwriteParams, asOf As DateOnly, underlyingPrice As Decimal, daysToNextExDiv As Integer?, nextDividendAmount As Decimal?) As Boolean
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.OpenPositionHasDividendRisk*
+  nameWithType.vb: OptionsOverwriteFilters.OpenPositionHasDividendRisk(ShortCallPosition, OptionsOverwriteParams, DateOnly, Decimal, Integer?, Decimal?)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.OpenPositionHasDividendRisk(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams, System.DateOnly, Decimal, Integer?, Decimal?)
+  name.vb: OpenPositionHasDividendRisk(ShortCallPosition, OptionsOverwriteParams, DateOnly, Decimal, Integer?, Decimal?)
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinOpenInterest
+  name: MinOpenInterest
+  nameWithType: OptionsOverwriteParams.MinOpenInterest
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinOpenInterest
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinVolume
+  name: MinVolume
+  nameWithType: OptionsOverwriteParams.MinVolume
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinVolume
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MaxSpreadPct
+  name: MaxSpreadPct
+  nameWithType: OptionsOverwriteParams.MaxSpreadPct
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxSpreadPct
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesLiquidityFilter*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesLiquidityFilter
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteFilters_PassesLiquidityFilter_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_
+  name: PassesLiquidityFilter
+  nameWithType: OptionsOverwriteFilters.PassesLiquidityFilter
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesLiquidityFilter
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html
+  name: OptionCandidateInfo
+  nameWithType: OptionCandidateInfo
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html
+  name: OptionsOverwriteParams
+  nameWithType: OptionsOverwriteParams
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinStrike
+  name: MinStrike
+  nameWithType: OptionsOverwriteParams.MinStrike
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinStrike
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MaxDelta
+  name: MaxDelta
+  nameWithType: OptionsOverwriteParams.MaxDelta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDelta
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinDte
+  name: MinDte
+  nameWithType: OptionsOverwriteParams.MinDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinDte
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MaxDte
+  name: MaxDte
+  nameWithType: OptionsOverwriteParams.MaxDte
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MaxDte
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_MinIvPercentile
+  name: MinIvPercentile
+  nameWithType: OptionsOverwriteParams.MinIvPercentile
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.MinIvPercentile
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesRiskFilter*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesRiskFilter
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteFilters_PassesRiskFilter_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_
+  name: PassesRiskFilter
+  nameWithType: OptionsOverwriteFilters.PassesRiskFilter
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.PassesRiskFilter
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_ExDivWindowDays
+  name: ExDivWindowDays
+  nameWithType: OptionsOverwriteParams.ExDivWindowDays
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.ExDivWindowDays
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRisk*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRisk
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteFilters_HasDividendAssignmentRisk_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_
+  name: HasDividendAssignmentRisk
+  nameWithType: OptionsOverwriteFilters.HasDividendAssignmentRisk
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRisk
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteFilters_HasDividendAssignmentRiskWithUnderlyingPrice_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_System_Decimal_
+  name: HasDividendAssignmentRiskWithUnderlyingPrice
+  nameWithType: OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.Decimal)
+  isExternal: true
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteFilters_HasDividendAssignmentRiskWithUnderlyingPrice_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_System_Decimal_
+  name: HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo, OptionsOverwriteParams, decimal)
+  nameWithType: OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo, OptionsOverwriteParams, decimal)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams, decimal)
+  nameWithType.vb: OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo, OptionsOverwriteParams, Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo, Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams, Decimal)
+  name.vb: HasDividendAssignmentRiskWithUnderlyingPrice(OptionCandidateInfo, OptionsOverwriteParams, Decimal)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.Decimal)
+    name: HasDividendAssignmentRiskWithUnderlyingPrice
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteFilters_HasDividendAssignmentRiskWithUnderlyingPrice_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_System_Decimal_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+    name: OptionCandidateInfo
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    name: OptionsOverwriteParams
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.HasDividendAssignmentRiskWithUnderlyingPrice(Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo,Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams,System.Decimal)
+    name: HasDividendAssignmentRiskWithUnderlyingPrice
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteFilters_HasDividendAssignmentRiskWithUnderlyingPrice_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_System_Decimal_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+    name: OptionCandidateInfo
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams
+    name: OptionsOverwriteParams
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteParams.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition.html
+  name: ShortCallPosition
+  nameWithType: ShortCallPosition
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.OpenPositionHasDividendRisk*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.OpenPositionHasDividendRisk
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteFilters_OpenPositionHasDividendRisk_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_ShortCallPosition_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteParams_System_DateOnly_System_Decimal_System_Nullable_System_Int32__System_Nullable_System_Decimal__
+  name: OpenPositionHasDividendRisk
+  nameWithType: OptionsOverwriteFilters.OpenPositionHasDividendRisk
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteFilters.OpenPositionHasDividendRisk
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

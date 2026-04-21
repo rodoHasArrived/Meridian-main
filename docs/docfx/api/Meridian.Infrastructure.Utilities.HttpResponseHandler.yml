@@ -1,0 +1,952 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler
+  commentId: T:Meridian.Infrastructure.Utilities.HttpResponseHandler
+  id: HttpResponseHandler
+  parent: Meridian.Infrastructure.Utilities
+  children:
+  - Meridian.Infrastructure.Utilities.HttpResponseHandler.#ctor(System.String,Serilog.ILogger)
+  - Meridian.Infrastructure.Utilities.HttpResponseHandler.ExtractRetryAfter(System.Net.Http.HttpResponseMessage)
+  - Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponse(System.Net.HttpStatusCode,System.String,System.String,System.String)
+  - Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponseAsync(System.Net.Http.HttpResponseMessage,System.String,System.String,System.Action{Meridian.Infrastructure.Utilities.RateLimitEventArgs},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Utilities.HttpResponseHandler.TryHandleResponseAsync(System.Net.Http.HttpResponseMessage,System.String,System.String,System.Action{Meridian.Infrastructure.Adapters.Core.RateLimitInfo},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: HttpResponseHandler
+  nameWithType: HttpResponseHandler
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HttpResponseHandler
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Centralized HTTP response handling to eliminate duplicate error handling code
+
+    across providers. Handles common HTTP status codes (429, 403, 404, etc.) consistently.
+  example: []
+  syntax:
+    content: public sealed class HttpResponseHandler
+    content.vb: Public NotInheritable Class HttpResponseHandler
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.#ctor(System.String,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Utilities.HttpResponseHandler.#ctor(System.String,Serilog.ILogger)
+  id: '#ctor(System.String,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Utilities.HttpResponseHandler
+  langs:
+  - csharp
+  - vb
+  name: HttpResponseHandler(string, ILogger?)
+  nameWithType: HttpResponseHandler.HttpResponseHandler(string, ILogger?)
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.HttpResponseHandler(string, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  syntax:
+    content: public HttpResponseHandler(string providerName, ILogger? log = null)
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(providerName As String, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Utilities.HttpResponseHandler.#ctor*
+  nameWithType.vb: HttpResponseHandler.New(String, ILogger)
+  fullName.vb: Meridian.Infrastructure.Utilities.HttpResponseHandler.New(String, Serilog.ILogger)
+  name.vb: New(String, ILogger)
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponseAsync(System.Net.Http.HttpResponseMessage,System.String,System.String,System.Action{Meridian.Infrastructure.Utilities.RateLimitEventArgs},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponseAsync(System.Net.Http.HttpResponseMessage,System.String,System.String,System.Action{Meridian.Infrastructure.Utilities.RateLimitEventArgs},System.Threading.CancellationToken)
+  id: HandleResponseAsync(System.Net.Http.HttpResponseMessage,System.String,System.String,System.Action{Meridian.Infrastructure.Utilities.RateLimitEventArgs},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Utilities.HttpResponseHandler
+  langs:
+  - csharp
+  - vb
+  name: HandleResponseAsync(HttpResponseMessage, string, string, Action<RateLimitEventArgs>?, CancellationToken)
+  nameWithType: HttpResponseHandler.HandleResponseAsync(HttpResponseMessage, string, string, Action<RateLimitEventArgs>?, CancellationToken)
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponseAsync(System.Net.Http.HttpResponseMessage, string, string, System.Action<Meridian.Infrastructure.Utilities.RateLimitEventArgs>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HandleResponseAsync
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Handle HTTP response and throw appropriate exceptions for error status codes.
+
+    Returns result if successful, throws on error (except 404 which returns IsNotFound).
+  example: []
+  syntax:
+    content: public Task<HttpResponseResult> HandleResponseAsync(HttpResponseMessage response, string symbol, string dataType, Action<RateLimitEventArgs>? onRateLimitHit = null, CancellationToken ct = default)
+    parameters:
+    - id: response
+      type: System.Net.Http.HttpResponseMessage
+    - id: symbol
+      type: System.String
+    - id: dataType
+      type: System.String
+    - id: onRateLimitHit
+      type: System.Action{Meridian.Infrastructure.Utilities.RateLimitEventArgs}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.Utilities.HttpResponseResult}
+    content.vb: Public Function HandleResponseAsync(response As HttpResponseMessage, symbol As String, dataType As String, onRateLimitHit As Action(Of RateLimitEventArgs) = Nothing, ct As CancellationToken = Nothing) As Task(Of HttpResponseResult)
+  overload: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponseAsync*
+  nameWithType.vb: HttpResponseHandler.HandleResponseAsync(HttpResponseMessage, String, String, Action(Of RateLimitEventArgs), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponseAsync(System.Net.Http.HttpResponseMessage, String, String, System.Action(Of Meridian.Infrastructure.Utilities.RateLimitEventArgs), System.Threading.CancellationToken)
+  name.vb: HandleResponseAsync(HttpResponseMessage, String, String, Action(Of RateLimitEventArgs), CancellationToken)
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.TryHandleResponseAsync(System.Net.Http.HttpResponseMessage,System.String,System.String,System.Action{Meridian.Infrastructure.Adapters.Core.RateLimitInfo},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Utilities.HttpResponseHandler.TryHandleResponseAsync(System.Net.Http.HttpResponseMessage,System.String,System.String,System.Action{Meridian.Infrastructure.Adapters.Core.RateLimitInfo},System.Threading.CancellationToken)
+  id: TryHandleResponseAsync(System.Net.Http.HttpResponseMessage,System.String,System.String,System.Action{Meridian.Infrastructure.Adapters.Core.RateLimitInfo},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Utilities.HttpResponseHandler
+  langs:
+  - csharp
+  - vb
+  name: TryHandleResponseAsync(HttpResponseMessage, string, string, Action<RateLimitInfo>?, CancellationToken)
+  nameWithType: HttpResponseHandler.TryHandleResponseAsync(HttpResponseMessage, string, string, Action<RateLimitInfo>?, CancellationToken)
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.TryHandleResponseAsync(System.Net.Http.HttpResponseMessage, string, string, System.Action<Meridian.Infrastructure.Adapters.Core.RateLimitInfo>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryHandleResponseAsync
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Handle HTTP response without throwing exceptions. Returns a result object
+
+    with categorized error information. This is the preferred method for use
+
+    in base provider classes that need to return results rather than throw.
+  remarks: >-
+    Use this method when you need to handle errors in the calling code
+
+    rather than letting exceptions propagate.
+  example: []
+  syntax:
+    content: public Task<HttpHandleResult> TryHandleResponseAsync(HttpResponseMessage response, string symbol, string dataType, Action<RateLimitInfo>? onRateLimitHit = null, CancellationToken ct = default)
+    parameters:
+    - id: response
+      type: System.Net.Http.HttpResponseMessage
+    - id: symbol
+      type: System.String
+    - id: dataType
+      type: System.String
+    - id: onRateLimitHit
+      type: System.Action{Meridian.Infrastructure.Adapters.Core.RateLimitInfo}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.Resilience.HttpHandleResult}
+    content.vb: Public Function TryHandleResponseAsync(response As HttpResponseMessage, symbol As String, dataType As String, onRateLimitHit As Action(Of RateLimitInfo) = Nothing, ct As CancellationToken = Nothing) As Task(Of HttpHandleResult)
+  overload: Meridian.Infrastructure.Utilities.HttpResponseHandler.TryHandleResponseAsync*
+  nameWithType.vb: HttpResponseHandler.TryHandleResponseAsync(HttpResponseMessage, String, String, Action(Of RateLimitInfo), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Utilities.HttpResponseHandler.TryHandleResponseAsync(System.Net.Http.HttpResponseMessage, String, String, System.Action(Of Meridian.Infrastructure.Adapters.Core.RateLimitInfo), System.Threading.CancellationToken)
+  name.vb: TryHandleResponseAsync(HttpResponseMessage, String, String, Action(Of RateLimitInfo), CancellationToken)
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponse(System.Net.HttpStatusCode,System.String,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponse(System.Net.HttpStatusCode,System.String,System.String,System.String)
+  id: HandleResponse(System.Net.HttpStatusCode,System.String,System.String,System.String)
+  parent: Meridian.Infrastructure.Utilities.HttpResponseHandler
+  langs:
+  - csharp
+  - vb
+  name: HandleResponse(HttpStatusCode, string, string, string?)
+  nameWithType: HttpResponseHandler.HandleResponse(HttpStatusCode, string, string, string?)
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponse(System.Net.HttpStatusCode, string, string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HandleResponse
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Synchronous version for responses already read.
+  example: []
+  syntax:
+    content: public HttpResponseResult HandleResponse(HttpStatusCode statusCode, string symbol, string dataType, string? errorContent = null)
+    parameters:
+    - id: statusCode
+      type: System.Net.HttpStatusCode
+    - id: symbol
+      type: System.String
+    - id: dataType
+      type: System.String
+    - id: errorContent
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.Utilities.HttpResponseResult
+    content.vb: Public Function HandleResponse(statusCode As HttpStatusCode, symbol As String, dataType As String, errorContent As String = Nothing) As HttpResponseResult
+  overload: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponse*
+  nameWithType.vb: HttpResponseHandler.HandleResponse(HttpStatusCode, String, String, String)
+  fullName.vb: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponse(System.Net.HttpStatusCode, String, String, String)
+  name.vb: HandleResponse(HttpStatusCode, String, String, String)
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.ExtractRetryAfter(System.Net.Http.HttpResponseMessage)
+  commentId: M:Meridian.Infrastructure.Utilities.HttpResponseHandler.ExtractRetryAfter(System.Net.Http.HttpResponseMessage)
+  id: ExtractRetryAfter(System.Net.Http.HttpResponseMessage)
+  parent: Meridian.Infrastructure.Utilities.HttpResponseHandler
+  langs:
+  - csharp
+  - vb
+  name: ExtractRetryAfter(HttpResponseMessage)
+  nameWithType: HttpResponseHandler.ExtractRetryAfter(HttpResponseMessage)
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.ExtractRetryAfter(System.Net.Http.HttpResponseMessage)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExtractRetryAfter
+    path: ../../src/Meridian.Infrastructure/Utilities/HttpResponseHandler.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Extract Retry-After header value from response.
+  example: []
+  syntax:
+    content: public static TimeSpan? ExtractRetryAfter(HttpResponseMessage response)
+    parameters:
+    - id: response
+      type: System.Net.Http.HttpResponseMessage
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Shared Function ExtractRetryAfter(response As HttpResponseMessage) As TimeSpan?
+  overload: Meridian.Infrastructure.Utilities.HttpResponseHandler.ExtractRetryAfter*
+references:
+- uid: Meridian.Infrastructure.Utilities
+  commentId: N:Meridian.Infrastructure.Utilities
+  href: Meridian.html
+  name: Meridian.Infrastructure.Utilities
+  nameWithType: Meridian.Infrastructure.Utilities
+  fullName: Meridian.Infrastructure.Utilities
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Utilities.HttpResponseHandler.#ctor
+  href: Meridian.Infrastructure.Utilities.HttpResponseHandler.html#Meridian_Infrastructure_Utilities_HttpResponseHandler__ctor_System_String_Serilog_ILogger_
+  name: HttpResponseHandler
+  nameWithType: HttpResponseHandler.HttpResponseHandler
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.HttpResponseHandler
+  nameWithType.vb: HttpResponseHandler.New
+  fullName.vb: Meridian.Infrastructure.Utilities.HttpResponseHandler.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponseAsync*
+  commentId: Overload:Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponseAsync
+  href: Meridian.Infrastructure.Utilities.HttpResponseHandler.html#Meridian_Infrastructure_Utilities_HttpResponseHandler_HandleResponseAsync_System_Net_Http_HttpResponseMessage_System_String_System_String_System_Action_Meridian_Infrastructure_Utilities_RateLimitEventArgs__System_Threading_CancellationToken_
+  name: HandleResponseAsync
+  nameWithType: HttpResponseHandler.HandleResponseAsync
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponseAsync
+- uid: System.Net.Http.HttpResponseMessage
+  commentId: T:System.Net.Http.HttpResponseMessage
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpresponsemessage
+  name: HttpResponseMessage
+  nameWithType: HttpResponseMessage
+  fullName: System.Net.Http.HttpResponseMessage
+- uid: System.Action{Meridian.Infrastructure.Utilities.RateLimitEventArgs}
+  commentId: T:System.Action{Meridian.Infrastructure.Utilities.RateLimitEventArgs}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<RateLimitEventArgs>
+  nameWithType: Action<RateLimitEventArgs>
+  fullName: System.Action<Meridian.Infrastructure.Utilities.RateLimitEventArgs>
+  nameWithType.vb: Action(Of RateLimitEventArgs)
+  fullName.vb: System.Action(Of Meridian.Infrastructure.Utilities.RateLimitEventArgs)
+  name.vb: Action(Of RateLimitEventArgs)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+    name: RateLimitEventArgs
+    href: Meridian.Infrastructure.Utilities.RateLimitEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Utilities.RateLimitEventArgs
+    name: RateLimitEventArgs
+    href: Meridian.Infrastructure.Utilities.RateLimitEventArgs.html
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.Utilities.HttpResponseResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.Utilities.HttpResponseResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<HttpResponseResult>
+  nameWithType: Task<HttpResponseResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.Utilities.HttpResponseResult>
+  nameWithType.vb: Task(Of HttpResponseResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.Utilities.HttpResponseResult)
+  name.vb: Task(Of HttpResponseResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.Utilities.HttpResponseResult
+    name: HttpResponseResult
+    href: Meridian.Infrastructure.Utilities.HttpResponseResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Utilities.HttpResponseResult
+    name: HttpResponseResult
+    href: Meridian.Infrastructure.Utilities.HttpResponseResult.html
+  - name: )
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.TryHandleResponseAsync*
+  commentId: Overload:Meridian.Infrastructure.Utilities.HttpResponseHandler.TryHandleResponseAsync
+  href: Meridian.Infrastructure.Utilities.HttpResponseHandler.html#Meridian_Infrastructure_Utilities_HttpResponseHandler_TryHandleResponseAsync_System_Net_Http_HttpResponseMessage_System_String_System_String_System_Action_Meridian_Infrastructure_Adapters_Core_RateLimitInfo__System_Threading_CancellationToken_
+  name: TryHandleResponseAsync
+  nameWithType: HttpResponseHandler.TryHandleResponseAsync
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.TryHandleResponseAsync
+- uid: System.Action{Meridian.Infrastructure.Adapters.Core.RateLimitInfo}
+  commentId: T:System.Action{Meridian.Infrastructure.Adapters.Core.RateLimitInfo}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<RateLimitInfo>
+  nameWithType: Action<RateLimitInfo>
+  fullName: System.Action<Meridian.Infrastructure.Adapters.Core.RateLimitInfo>
+  nameWithType.vb: Action(Of RateLimitInfo)
+  fullName.vb: System.Action(Of Meridian.Infrastructure.Adapters.Core.RateLimitInfo)
+  name.vb: Action(Of RateLimitInfo)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.RateLimitInfo
+    name: RateLimitInfo
+    href: Meridian.Infrastructure.Adapters.Core.RateLimitInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.RateLimitInfo
+    name: RateLimitInfo
+    href: Meridian.Infrastructure.Adapters.Core.RateLimitInfo.html
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.Resilience.HttpHandleResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.Resilience.HttpHandleResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<HttpHandleResult>
+  nameWithType: Task<HttpHandleResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.Resilience.HttpHandleResult>
+  nameWithType.vb: Task(Of HttpHandleResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.Resilience.HttpHandleResult)
+  name.vb: Task(Of HttpHandleResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.Resilience.HttpHandleResult
+    name: HttpHandleResult
+    href: Meridian.Infrastructure.Resilience.HttpHandleResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Resilience.HttpHandleResult
+    name: HttpHandleResult
+    href: Meridian.Infrastructure.Resilience.HttpHandleResult.html
+  - name: )
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponse*
+  commentId: Overload:Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponse
+  href: Meridian.Infrastructure.Utilities.HttpResponseHandler.html#Meridian_Infrastructure_Utilities_HttpResponseHandler_HandleResponse_System_Net_HttpStatusCode_System_String_System_String_System_String_
+  name: HandleResponse
+  nameWithType: HttpResponseHandler.HandleResponse
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.HandleResponse
+- uid: System.Net.HttpStatusCode
+  commentId: T:System.Net.HttpStatusCode
+  parent: System.Net
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.httpstatuscode
+  name: HttpStatusCode
+  nameWithType: HttpStatusCode
+  fullName: System.Net.HttpStatusCode
+- uid: Meridian.Infrastructure.Utilities.HttpResponseResult
+  commentId: T:Meridian.Infrastructure.Utilities.HttpResponseResult
+  parent: Meridian.Infrastructure.Utilities
+  href: Meridian.Infrastructure.Utilities.HttpResponseResult.html
+  name: HttpResponseResult
+  nameWithType: HttpResponseResult
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseResult
+- uid: System.Net
+  commentId: N:System.Net
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net
+  nameWithType: System.Net
+  fullName: System.Net
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+- uid: Meridian.Infrastructure.Utilities.HttpResponseHandler.ExtractRetryAfter*
+  commentId: Overload:Meridian.Infrastructure.Utilities.HttpResponseHandler.ExtractRetryAfter
+  href: Meridian.Infrastructure.Utilities.HttpResponseHandler.html#Meridian_Infrastructure_Utilities_HttpResponseHandler_ExtractRetryAfter_System_Net_Http_HttpResponseMessage_
+  name: ExtractRetryAfter
+  nameWithType: HttpResponseHandler.ExtractRetryAfter
+  fullName: Meridian.Infrastructure.Utilities.HttpResponseHandler.ExtractRetryAfter
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

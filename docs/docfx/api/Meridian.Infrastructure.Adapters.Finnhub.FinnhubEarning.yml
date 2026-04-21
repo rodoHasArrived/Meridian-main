@@ -1,0 +1,823 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  commentId: T:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  id: FinnhubEarning
+  parent: Meridian.Infrastructure.Adapters.Finnhub
+  children:
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Actual
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Estimate
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Period
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Quarter
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Surprise
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.SurprisePercent
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Symbol
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Year
+  langs:
+  - csharp
+  - vb
+  name: FinnhubEarning
+  nameWithType: FinnhubEarning
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinnhubEarning
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 455
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  summary: Finnhub earnings data.
+  example: []
+  syntax:
+    content: 'public sealed record FinnhubEarning : IEquatable<FinnhubEarning>'
+    content.vb: Public NotInheritable Class FinnhubEarning Implements IEquatable(Of FinnhubEarning)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Actual
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Actual
+  id: Actual
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  langs:
+  - csharp
+  - vb
+  name: Actual
+  nameWithType: FinnhubEarning.Actual
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Actual
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Actual
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 457
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  syntax:
+    content: >-
+      [JsonPropertyName("actual")]
+
+      public decimal? Actual { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: >-
+      <JsonPropertyName("actual")>
+
+      Public Property Actual As Decimal?
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Actual*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: actual
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Estimate
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Estimate
+  id: Estimate
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  langs:
+  - csharp
+  - vb
+  name: Estimate
+  nameWithType: FinnhubEarning.Estimate
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Estimate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Estimate
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 460
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  syntax:
+    content: >-
+      [JsonPropertyName("estimate")]
+
+      public decimal? Estimate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: >-
+      <JsonPropertyName("estimate")>
+
+      Public Property Estimate As Decimal?
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Estimate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: estimate
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Period
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Period
+  id: Period
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  langs:
+  - csharp
+  - vb
+  name: Period
+  nameWithType: FinnhubEarning.Period
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Period
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Period
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 463
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  syntax:
+    content: >-
+      [JsonPropertyName("period")]
+
+      public string? Period { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("period")>
+
+      Public Property Period As String
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Period*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: period
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Quarter
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Quarter
+  id: Quarter
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  langs:
+  - csharp
+  - vb
+  name: Quarter
+  nameWithType: FinnhubEarning.Quarter
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Quarter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quarter
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 466
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  syntax:
+    content: >-
+      [JsonPropertyName("quarter")]
+
+      public int? Quarter { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: >-
+      <JsonPropertyName("quarter")>
+
+      Public Property Quarter As Integer?
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Quarter*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: quarter
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Surprise
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Surprise
+  id: Surprise
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  langs:
+  - csharp
+  - vb
+  name: Surprise
+  nameWithType: FinnhubEarning.Surprise
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Surprise
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Surprise
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 469
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  syntax:
+    content: >-
+      [JsonPropertyName("surprise")]
+
+      public decimal? Surprise { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: >-
+      <JsonPropertyName("surprise")>
+
+      Public Property Surprise As Decimal?
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Surprise*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: surprise
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.SurprisePercent
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.SurprisePercent
+  id: SurprisePercent
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  langs:
+  - csharp
+  - vb
+  name: SurprisePercent
+  nameWithType: FinnhubEarning.SurprisePercent
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.SurprisePercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SurprisePercent
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 472
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  syntax:
+    content: >-
+      [JsonPropertyName("surprisePercent")]
+
+      public decimal? SurprisePercent { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: >-
+      <JsonPropertyName("surprisePercent")>
+
+      Public Property SurprisePercent As Decimal?
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.SurprisePercent*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: surprisePercent
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Symbol
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: FinnhubEarning.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 475
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  syntax:
+    content: >-
+      [JsonPropertyName("symbol")]
+
+      public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("symbol")>
+
+      Public Property Symbol As String
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Symbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbol
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Year
+  commentId: P:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Year
+  id: Year
+  parent: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  langs:
+  - csharp
+  - vb
+  name: Year
+  nameWithType: FinnhubEarning.Year
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Year
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Year
+    path: ../../src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubHistoricalDataProvider.cs
+    startLine: 478
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Finnhub
+  syntax:
+    content: >-
+      [JsonPropertyName("year")]
+
+      public int? Year { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: >-
+      <JsonPropertyName("year")>
+
+      Public Property Year As Integer?
+  overload: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Year*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: year
+references:
+- uid: Meridian.Infrastructure.Adapters.Finnhub
+  commentId: N:Meridian.Infrastructure.Adapters.Finnhub
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Finnhub
+  nameWithType: Meridian.Infrastructure.Adapters.Finnhub
+  fullName: Meridian.Infrastructure.Adapters.Finnhub
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Finnhub
+    name: Finnhub
+    href: Meridian.Infrastructure.Adapters.Finnhub.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Finnhub
+    name: Finnhub
+    href: Meridian.Infrastructure.Adapters.Finnhub.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FinnhubEarning>
+  nameWithType: IEquatable<FinnhubEarning>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning>
+  nameWithType.vb: IEquatable(Of FinnhubEarning)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning)
+  name.vb: IEquatable(Of FinnhubEarning)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+    name: FinnhubEarning
+    href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+    name: FinnhubEarning
+    href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Actual*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Actual
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubEarning_Actual
+  name: Actual
+  nameWithType: FinnhubEarning.Actual
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Actual
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Estimate*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Estimate
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubEarning_Estimate
+  name: Estimate
+  nameWithType: FinnhubEarning.Estimate
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Estimate
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Period*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Period
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubEarning_Period
+  name: Period
+  nameWithType: FinnhubEarning.Period
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Period
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Quarter*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Quarter
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubEarning_Quarter
+  name: Quarter
+  nameWithType: FinnhubEarning.Quarter
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Quarter
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Surprise*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Surprise
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubEarning_Surprise
+  name: Surprise
+  nameWithType: FinnhubEarning.Surprise
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Surprise
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.SurprisePercent*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.SurprisePercent
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubEarning_SurprisePercent
+  name: SurprisePercent
+  nameWithType: FinnhubEarning.SurprisePercent
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.SurprisePercent
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Symbol*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Symbol
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubEarning_Symbol
+  name: Symbol
+  nameWithType: FinnhubEarning.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Symbol
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Year*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Year
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html#Meridian_Infrastructure_Adapters_Finnhub_FinnhubEarning_Year
+  name: Year
+  nameWithType: FinnhubEarning.Year
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.Year

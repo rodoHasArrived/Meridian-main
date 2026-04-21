@@ -1,441 +1,250 @@
-# Interactive Brokers API Setup Guide
+# Interactive Brokers Native Setup
 
-This document provides instructions for setting up the Interactive Brokers API (IBApi) with the Meridian project.
+This guide covers Meridian's three Interactive Brokers modes and the preferred local vendor setup for real TWS/Gateway connectivity.
 
-Use this guide together with [Provider Confidence Baseline](provider-confidence-baseline.md). Meridian currently validates three distinct IB modes, and operators should treat them differently:
+Use this together with [provider-confidence-baseline.md](provider-confidence-baseline.md) and [provider-validation-matrix.md](../status/provider-validation-matrix.md).
 
-| Mode | What the repo validates | What it does **not** prove |
-|---|---|---|
-| Non-`IBAPI` simulation/runtime-guidance | `IBRuntimeGuidanceTests` confirm the provider metadata and exceptions point back to this guide and to the smoke-build path | Real TWS/Gateway connectivity, entitlements, or vendor DLL compatibility |
-| `EnableIbApiSmoke=true` compile-only smoke | `scripts/dev/build-ibapi-smoke.ps1` keeps the gated infrastructure code path buildable in automation | Real market-data flow or runtime compatibility with the official vendor surface |
-| Official `IBAPI` vendor path | Build-time path documented here for local/manual use | CI coverage in the default repo build; this still requires local TWS/Gateway and entitlements |
+## Prerequisites
 
-## Overview
+- Local Interactive Brokers TWS or IB Gateway installation
+- Official IB API SDK downloaded locally (not committed to the repository)
+- Meridian build environment with `-p:EnableWindowsTargeting=true`
+- Paper account access for safe initial verification (`7497`)
 
-The Interactive Brokers API is **not available as a standard NuGet package** and must be installed manually. The Meridian uses conditional compilation (`#if IBAPI`) to allow the project to build with or without IB API support.
+## Modes
 
-## Installation Options
+| Mode | Build switch | What it is for | What it is not |
+|---|---|---|---|
+| Guidance | none | Default repo build. Keeps IB visible in UX and returns setup guidance. | Real market data, historical bars, or brokerage routing. |
+| Smoke | `-p:EnableIbApiSmoke=true` | Compile-only verification of the `#if IBAPI` code path in automation. | Vendor compatibility or live connectivity proof. |
+| Vendor | `-p:EnableIbApiVendor=true` | Native Interactive Brokers runtime using the official SDK from a local ignored folder. | CI-default behavior. Requires local TWS/Gateway and entitlements. |
 
-### Option 1: Manual DLL Reference (Recommended for Development)
+## Official SDK Source
 
-1. **Download the IB API**
-   - Visit: https://www.interactivebrokers.com/en/trading/tws-api.php
-   - Download the "TWS API" for Windows, Linux, or macOS
-   - Current version (as of 2026): 10.19 or later
+Meridian does not commit the Interactive Brokers SDK. The official download source is [Interactive Brokers API Software](https://interactivebrokers.github.io/).
 
-2. **Extract and Build IBApi**
+The official site currently lists:
 
-   **For Windows:**
-   ```powershell
-   # Extract the downloaded archive
-   # Navigate to: TWS API\source\CSharpClient
+- Latest release: `10.45`, dated March 30, 2026
+- Stable release: `10.37`, dated May 28, 2025
 
-   # Build the solution
-   cd "C:\TWS API\source\CSharpClient"
-   dotnet build CSharpAPI.sln -c Release
+Keep the vendor files local only. The repo ignores:
 
-   # The DLL will be in: bin\Release\netX.X\
-   ```
+- `external/IBApi/`
+- `external/IBApi-*.msi`
 
-   **For Linux/macOS:**
-   ```bash
-   # Extract the archive
-   # Navigate to: TWS API/source/CSharpClient
+## Preferred Local Layout
 
-   cd ~/TWS\ API/source/CSharpClient
-   dotnet build CSharpAPI.sln -c Release
-   ```
+Place the official SDK under:
 
-3. **Copy the DLL to Your Project**
-   ```bash
-   # Create a lib directory in your solution
-   mkdir -p Meridian/lib/IBApi
-
-   # Copy the DLL
-   cp path/to/CSharpAPI/bin/Release/net6.0/CSharpAPI.dll Meridian/lib/IBApi/
-   ```
-
-4. **Update Meridian.csproj**
-
-   Uncomment and modify the IBApi reference in `Meridian.csproj`:
-
-   ```xml
-   <ItemGroup>
-     <!-- Interactive Brokers API - Local Reference -->
-     <Reference Include="IBApi">
-       <HintPath>..\..\lib\IBApi\CSharpAPI.dll</HintPath>
-       <Private>true</Private>
-     </Reference>
-   </ItemGroup>
-
-   <PropertyGroup>
-     <DefineConstants>$(DefineConstants);IBAPI</DefineConstants>
-   </PropertyGroup>
-   ```
-
-### Option 2: Build from Source and Reference Project
-
-1. **Clone IB API Source**
-   ```bash
-   # Download and extract TWS API
-   # Copy the CSharpClient folder to your solution
-   cp -r "TWS API/source/CSharpClient" Meridian/external/IBApi
-   ```
-
-2. **Add as Project Reference**
-
-   Add to `Meridian.sln`:
-   ```
-   dotnet sln Meridian.sln add external/IBApi/CSharpAPI.csproj
-   ```
-
-3. **Reference in Meridian.csproj**
-   ```xml
-   <ItemGroup>
-     <ProjectReference Include="..\..\external\IBApi\CSharpAPI.csproj" />
-   </ItemGroup>
-
-   <PropertyGroup>
-     <DefineConstants>$(DefineConstants);IBAPI</DefineConstants>
-   </PropertyGroup>
-   ```
-
-### Option 3: Compile-Only Smoke Build
-
-**Warning**: This uses Meridian's local compile-only `IBApi` stub and is meant only to keep the IB-gated code path buildable in automation.
-
-1. **Meridian smoke-build path**
-
-   Meridian now supports an opt-in infrastructure-only smoke build using a local compile stub for the `IBApi` surface:
-
-   ```powershell
-   ./scripts/dev/build-ibapi-smoke.ps1
-   ```
-
-   Equivalent manual build:
-
-   ```powershell
-   dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj `
-     -c Release `
-     -p:EnableWindowsTargeting=true `
-     -p:EnableIbApiSmoke=true
-   ```
-
-   This path is intended for compile verification only. It does not prove live connectivity to TWS/Gateway or compatibility with the official vendor DLL.
-
-### Option 4: Build Without IB API
-
-If you don't need Interactive Brokers support, the project will build successfully without the API:
-
-```bash
-# Build without IBAPI defined
-dotnet build
-
-# The IBMarketDataClient will use IBSimulationClient internally.
-# This keeps the IB provider surface visible and testable without a live IB installation,
-# but it is guidance/simulation mode rather than real broker connectivity.
+```text
+external/IBApi/
 ```
 
-## Repo-Validated Offline Checks
+Meridian vendor mode resolves the SDK in this order:
 
-Use these commands when you want repo-grounded confidence before attempting a local vendor setup:
+1. `IBApiProjectPath`
+2. `IBApiDllPath`
+3. Auto-discovered prebuilt DLL under `$(IBApiRoot)\TWS API\source\CSharpClient\client\bin\$(Configuration)\net8.0\CSharpAPI.dll`
+4. Auto-discovered prebuilt DLL under `$(IBApiRoot)\TWS API\source\CSharpClient\client\bin\$(Configuration)\netstandard2.0\CSharpAPI.dll`
+5. Auto-discovered project under `$(IBApiRoot)\TWS API\source\CSharpClient\client\CSharpAPI.csproj`
 
-```powershell
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBOrderSampleTests"
-./scripts/dev/build-ibapi-smoke.ps1
-```
+If none of those resolve, the build fails with setup guidance.
 
-These checks validate Meridian's simulation/runtime-guidance messages, committed sample order fixtures, and the compile-only smoke path. They do not replace a local TWS/Gateway connectivity check.
+`IBApiRoot` defaults to `external/IBApi`.
 
-## Enabling IB API Support
+## Install Steps
 
-Once the IBApi DLL or project reference is added, enable it by defining the `IBAPI` constant:
-
-```xml
-<PropertyGroup>
-  <DefineConstants>$(DefineConstants);IBAPI</DefineConstants>
-</PropertyGroup>
-```
-
-Or pass it during build:
-```bash
-dotnet build -p:DefineConstants="IBAPI"
-```
-
-## TWS/IB Gateway Setup
-
-### Prerequisites
-
-1. **Interactive Brokers Account**
-   - Live or Paper Trading account
-   - Enable API access in account management
-
-2. **TWS or IB Gateway**
-   - Download from: https://www.interactivebrokers.com/en/trading/tws.php
-   - Install and configure for API access
-
-### Configuration Steps
-
-1. **Enable API Connections**
-
-   In TWS/IB Gateway:
-   - Navigate to: **File → Global Configuration → API → Settings**
-   - Check: **Enable ActiveX and Socket Clients**
-   - Set **Socket Port**: `7497` (paper trading) or `7496` (live trading)
-   - Check: **Allow connections from localhost**
-   - For remote connections, add trusted IPs
-   - Uncheck: **Read-Only API** (if you need trading capabilities)
-
-2. **Configure Permissions**
-   - Check: **Download open orders on connection**
-   - Check: **Use negative numbers to bind automatic orders**
-   - Set **Master API Client ID** (optional)
-
-3. **Market Data Subscriptions**
-   - Ensure you have active market data subscriptions for the symbols you want to collect
-   - Check subscriptions in Account Management → Market Data Subscriptions
-
-### Connection Parameters
-
-Default connection settings in `EnhancedIBConnectionManager.cs`:
-
-```csharp
-_conn = new EnhancedIBConnectionManager(
-    _router,
-    host: "127.0.0.1",  // TWS/Gateway host
-    port: 7497,          // Paper trading port (7496 for live)
-    clientId: 1          // Unique client ID
-);
-```
-
-Customize in `appsettings.json`:
-
-```json
-{
-  "InteractiveBrokers": {
-    "Host": "127.0.0.1",
-    "Port": 7497,
-    "ClientId": 1,
-    "Enabled": true
-  }
-}
-```
-
-## API Version Compatibility
-
-Meridian validates the IB server version immediately after each TCP connection is established
-(`IBApiVersionValidator.ValidateServerVersion`).
-
-| IB Server Version | TWS / Gateway | Meridian Support |
-|:-----------------:|:-------------:|:-----------------|
-| < 70              | < TWS 966     | ❌ Not supported — upgrade required |
-| 70 – 178          | TWS 966 – 10.19 | ✅ Supported and CI-tested |
-| > 178             | > TWS 10.19   | ⚠️ Accepted with warning — update `IBApiVersionValidator.MaxTestedServerVersion` after confirming |
-
-> **Note**: "Server version" is the integer exchanged during the TCP handshake
-> (`EClientSocket.ServerVersion`), **not** the human-readable TWS release number shown
-> in the TWS title bar.
-
-### Startup Version Validation
-
-When Meridian connects with the `IBAPI` flag, it calls
-`IBApiVersionValidator.ValidateServerVersion(serverVersion, clientVersion)` automatically.
-This check happens in `EnhancedIBConnectionManager.ConnectInternalAsync`.
-
-**If the server version is too old** (< 70):
-
-```
-ERROR IB API version mismatch: server=65 (min=70), client=178
-System.IBApiVersionMismatchException: IB server version 65 is below the minimum supported
-version 70. Upgrade TWS or IB Gateway to version 966 or later (API server version >= 70).
-See docs/providers/interactive-brokers-setup.md for installation guidance.
-```
-
-**Resolution**: Upgrade TWS or IB Gateway to at least version 966 (API server version ≥ 70).
-Download the latest installer from https://www.interactivebrokers.com/en/trading/tws.php.
-
-**If the server version is untested** (> 178):
-
-```
-WARN IB server version 185 exceeds the highest tested version 178. Meridian will continue,
-but some API behaviour may differ. Update MaxTestedServerVersion in IBApiVersionValidator
-after confirming compatibility.
-```
-
-**Resolution**: Run integration tests against the new TWS version and update
-`IBApiVersionValidator.MaxTestedServerVersion` in
-`src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiVersionValidator.cs`.
-
-### Version Requirements Summary
-
-```
-Minimum IB API DLL version (IBApi client): 178  (TWS API installer 10.19+)
-Minimum IB server version at runtime:       70   (TWS/Gateway 966+)
-Maximum tested IB server version:          178   (TWS 10.19)
-```
-
-## Build and Runtime Prerequisites (Exact Checklist)
-
-Use this checklist before marking IB as runtime-validated.
-
-| Requirement | Required Value | Verification |
-|---|---|---|
-| Compile constant | `DefineConstants=IBAPI` | Build output includes `IBAPI` conditional path compilation. |
-| Smoke path (optional but recommended) | `EnableIbApiSmoke=true` | `scripts/dev/build-ibapi-smoke.ps1` completes successfully. |
-| Vendor API/DLL baseline | `IBApi`/`CSharpAPI` version `178+` | Inspect local installed vendor assembly metadata. |
-| Runtime server baseline | API server version `>= 70` | Startup logs from `IBApiVersionValidator.ValidateServerVersion`. |
-| Runtime tested ceiling | server version `<= 178`, or warning explicitly accepted | Startup warning captured if above tested max. |
-| Startup check execution | `EnhancedIBConnectionManager.ConnectInternalAsync` calls version validator | Confirm log path runs during real startup. |
-| Broker endpoint | TWS/Gateway reachable (`127.0.0.1:7497` paper or `:7496` live) | Connection handshake succeeds. |
-
-### Required Validation Commands
+1. Download the official Windows installer or archive from [Interactive Brokers API Software](https://interactivebrokers.github.io/).
+2. Extract or install the SDK into `external/IBApi/`.
+3. If you want Meridian to use the vendor SDK directly, build Meridian with:
 
 ```powershell
 dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj `
   -c Release `
   -p:EnableWindowsTargeting=true `
-  -p:DefineConstants=IBAPI
-
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj `
-  --filter "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBSimulationClientContractTests|FullyQualifiedName~IBOrderSampleTests"
+  -p:EnableIbApiVendor=true
 ```
 
+4. If you want to point at a different local SDK location, override one or more of:
 
-
-### Build Errors
-
-**Error**: `The type or namespace name 'IBApi' could not be found`
-
-**Solution**:
-- Ensure IBApi DLL/project is referenced correctly
-- Verify `IBAPI` constant is defined
-- Check HintPath in .csproj points to correct location
-
-### Connection Errors
-
-**Error**: `Connection refused` or `Unable to connect to TWS`
-
-**Solutions**:
-1. Verify TWS/IB Gateway is running
-2. Check API settings are enabled (see Configuration Steps above)
-3. Verify port number (7497 for paper, 7496 for live)
-4. Check firewall settings allow localhost connections
-5. Ensure only one client with the same ClientId is connected
-
-**Error**: `Market data farm connection is inactive`
-
-**Solutions**:
-1. Wait a few seconds - connection may still be establishing
-2. Check market data subscriptions in account management
-3. Verify market is open (some data only available during market hours)
-4. Check IB service status: https://www.interactivebrokers.com/en/support/systemStatus.php
-
-### Data Issues
-
-**Error**: `No market data permissions for requested instrument`
-
-**Solutions**:
-1. Subscribe to required market data in Account Management
-2. Verify symbol format (use `Symbol` for stocks, `Forex` for currencies)
-3. Check exchange is specified correctly in `SymbolConfig`
-
-**Error**: `Historical data request pacing violation`
-
-**Solutions**:
-1. Implement rate limiting (IB has strict request limits)
-2. Wait 10+ seconds between historical data requests
-3. Reduce concurrent subscription count
-4. Use tick-by-tick data instead of historical bars when possible
-
-## API Documentation
-
-### Official Resources
-
-- **IB API Guide**: https://interactivebrokers.github.io/tws-api/
-- **API Reference**: https://interactivebrokers.github.io/tws-api/classIBApi_1_1EClient.html
-- **Market Data Types**: https://interactivebrokers.github.io/tws-api/market_data_type.html
-- **Tick Types**: https://interactivebrokers.github.io/tws-api/tick_types.html
-
-### Community Resources
-
-- **IB API Users Group**: https://groups.io/g/twsapi
-- **Stack Overflow**: Tag `interactive-brokers-api`
-- **IB Insync** (Python reference): https://github.com/erdewit/ib_insync
-
-## Testing Without Live Connection
-
-### Using IBSimulationClient
-
-Build without `IBAPI` defined to use the stub implementation:
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj
+```powershell
+dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj `
+  -c Release `
+  -p:EnableWindowsTargeting=true `
+  -p:EnableIbApiVendor=true `
+  -p:IBApiRoot="D:\vendor\IBApi"
 ```
 
-The `IBMarketDataClient` will automatically delegate to `IBSimulationClient`.
+or
 
-That simulation path is intentional: the provider stays visible and testable in non-`IBAPI` builds, but it is not a substitute for a real TWS/Gateway connection.
-
-### Self-Test Mode
-
-Run built-in self-tests:
-
-```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --selftest
+```powershell
+dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj `
+  -c Release `
+  -p:EnableWindowsTargeting=true `
+  -p:EnableIbApiVendor=true `
+  -p:IBApiDllPath="D:\vendor\IBApi\TWS API\source\CSharpClient\client\bin\Release\net8.0\CSharpAPI.dll"
 ```
 
-This tests the data pipeline without requiring any provider connection.
+Legacy `-p:DefineConstants=IBAPI` remains supported for advanced/local workflows, but `EnableIbApiVendor=true` is the preferred switch.
 
-## Production Deployment
+## Smoke Build
 
-### Recommendations
+Use the smoke path when you only need compile verification:
 
-1. **Use IB Gateway Instead of TWS**
-   - Lighter weight
-   - No GUI overhead
-   - More suitable for server deployment
-   - Same API interface
+```powershell
+./scripts/dev/build-ibapi-smoke.ps1
+```
 
-2. **Implement Connection Monitoring**
-   - The `EnhancedIBConnectionManager` includes automatic reconnection
-   - Monitor `ConnectionStatus` events
-   - Set up alerts for prolonged disconnections
+Equivalent manual command:
 
-3. **Configure Rate Limits**
-   - IB has strict message rate limits
-   - Implement throttling in subscription manager
-   - Batch subscription requests
+```powershell
+dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj `
+  -c Release `
+  -p:EnableWindowsTargeting=true `
+  -p:EnableIbApiSmoke=true
+```
 
-4. **Handle Market Hours**
-   - Some data types only available during market hours
-   - Implement schedule-aware subscription logic
-   - Handle graceful degradation when markets closed
+Do not combine smoke mode with vendor mode.
 
-5. **Use Paper Trading for Development**
-   - Always develop against paper trading account
-   - Port 7497 for paper trading
-   - Identical API to live trading
+## Configuration
 
-## License and Terms
+### Runtime Configuration
 
-- The Interactive Brokers API is proprietary software
-- Review IB's API license agreement before redistribution
-- Commercial use requires active IB account
-- Market data subscriptions are billed separately
+Meridian now separates:
 
-## Alternative Providers
+- `IB`: socket/TWS/Gateway configuration for streaming, historical data, and brokerage
+- `IBClientPortal`: HTTP configuration for Client Portal portfolio/account import
 
-If IB API setup is too complex, consider:
+Paper-safe defaults:
 
-1. **Alpaca** - Simple WebSocket API, no special SDK required (already supported)
-2. **Polygon** - REST and WebSocket APIs (stub implementation ready)
-3. **Alpha Vantage** - Free tier available
-4. **Yahoo Finance** (historical data only)
+- `IB.Port = 7497`
+- `IB.ClientId = 1`
+- `IB.UsePaperTrading = true`
+- `IBClientPortal.BaseUrl = https://localhost:5000`
+- `IBClientPortal.AllowSelfSignedCertificates = true`
 
----
+Example:
 
-**Version:** 1.7.2
-**Last Updated:** 2026-03-26
-**TWS API Version:** 10.19+ (server version ≥ 70, tested up to 178)
-**Tested With:** .NET 9.0
-**See Also:** [Getting Started](../getting-started/README.md) | [Configuration](../HELP.md#configuration) | [Operator Runbook](../operations/operator-runbook.md)
+```json
+{
+  "DataSource": "IB",
+  "IB": {
+    "Host": "127.0.0.1",
+    "Port": 7497,
+    "ClientId": 1,
+    "UsePaperTrading": true,
+    "SubscribeDepth": true,
+    "DepthLevels": 10,
+    "TickByTick": true
+  },
+  "IBClientPortal": {
+    "Enabled": false,
+    "BaseUrl": "https://localhost:5000",
+    "AllowSelfSignedCertificates": true
+  }
+}
+```
+
+Important:
+
+- Do not point `IBClientPortal.BaseUrl` at the TWS/Gateway socket port.
+- Client Portal import is HTTP(S); TWS/Gateway market data and brokerage use the socket connection.
+- Live routing requires explicit opt-in by setting `IB.UsePaperTrading` to `false` and using the correct live port.
+
+## Environment Overrides
+
+Socket settings:
+
+- `MDC_IB_HOST`
+- `MDC_IB_PORT`
+- `MDC_IB_CLIENT_ID`
+- `MDC_IB_PAPER`
+- `MDC_IB_SUBSCRIBE_DEPTH`
+- `MDC_IB_DEPTH_LEVELS`
+- `MDC_IB_TICK_BY_TICK`
+
+Client Portal settings:
+
+- `MDC_IB_CLIENT_PORTAL_ENABLED`
+- `MDC_IB_CLIENT_PORTAL_BASE_URL`
+- `MDC_IB_CLIENT_PORTAL_ALLOW_SELF_SIGNED`
+
+## TWS / Gateway Setup
+
+In TWS or IB Gateway:
+
+1. Open `File -> Global Configuration -> API -> Settings`
+2. Enable `ActiveX and Socket Clients`
+3. Use `7497` for paper or `7496` for live unless your local installation is customized
+4. Allow localhost connections
+5. Disable `Read-Only API` if you want order routing
+6. Enable `Download open orders on connection` if you want order state synchronized on connect
+
+Meridian native vendor mode uses those socket settings for:
+
+- `IBMarketDataClient`
+- `IBHistoricalDataProvider`
+- `IBBrokerageGateway`
+
+## Client Portal Setup
+
+Client Portal is optional and only used for portfolio/account import.
+
+Typical local workflow:
+
+1. Start IB Client Portal Gateway
+2. Confirm it is reachable at `https://localhost:5000`
+3. Set `IBClientPortal.Enabled = true`
+4. Leave `AllowSelfSignedCertificates = true` for the default local certificate unless you have installed a trusted cert
+
+## Status Endpoint
+
+The IB status endpoint now reports:
+
+- `buildMode`: `guidance`, `smoke`, or `vendor`
+- `runtimeTarget`: `paper` or `live`
+- socket readiness separately from Client Portal readiness
+
+Use it to confirm whether the current process is only guidance/smoke or truly vendor-enabled.
+
+## Validation Commands
+
+Repo-grounded checks:
+
+```powershell
+dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj -c Release -p:EnableWindowsTargeting=true
+dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiSmoke=true
+dotnet build src/Meridian.Infrastructure/Meridian.Infrastructure.csproj -c Release -p:EnableWindowsTargeting=true -p:EnableIbApiVendor=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release -p:EnableWindowsTargeting=true --filter "FullyQualifiedName~IBRuntimeGuidanceTests|FullyQualifiedName~IBBrokerageGatewayTests|FullyQualifiedName~IBEndpointTests|FullyQualifiedName~ConfigValidatorTests|FullyQualifiedName~ConfigEnvironmentOverrideTests"
+```
+
+Manual paper-trading acceptance:
+
+1. Connect to paper TWS/Gateway
+2. Verify trades, quotes, and depth subscriptions
+3. Verify historical daily and intraday bars
+4. Submit, modify, and cancel a paper order
+5. Verify positions, open orders, and account summary callbacks
+6. Verify Client Portal portfolio import with `IBClientPortal.BaseUrl`
+
+Store sanitized evidence under:
+
+```text
+artifacts/provider-validation/interactive-brokers/<yyyy-mm-dd>/
+```
+
+Recommended scenario folders:
+
+- `bootstrap/`
+- `server-version/`
+- `market-data-entitlements/`
+- `disconnect-reconnect/`
+
+## Version Compatibility
+
+Meridian validates the IB server version during socket connect through `IBApiVersionValidator`.
+
+That validation checks the server handshake version, not the marketing version shown in the TWS title bar.
+
+If the server is too old, Meridian fails fast with guidance to upgrade TWS/Gateway.

@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.NotificationType
+  commentId: T:Meridian.Ui.Services.NotificationType
+  id: NotificationType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.NotificationType.Error
+  - Meridian.Ui.Services.NotificationType.Info
+  - Meridian.Ui.Services.NotificationType.Success
+  - Meridian.Ui.Services.NotificationType.Warning
+  langs:
+  - csharp
+  - vb
+  name: NotificationType
+  nameWithType: NotificationType
+  fullName: Meridian.Ui.Services.NotificationType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotificationType
+    path: ../../src/Meridian.Ui.Services/Services/NotificationService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Notification type levels.
+  example: []
+  syntax:
+    content: 'public enum NotificationType : byte'
+    content.vb: Public Enum NotificationType As Byte
+- uid: Meridian.Ui.Services.NotificationType.Info
+  commentId: F:Meridian.Ui.Services.NotificationType.Info
+  id: Info
+  parent: Meridian.Ui.Services.NotificationType
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: NotificationType.Info
+  fullName: Meridian.Ui.Services.NotificationType.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Ui.Services/Services/NotificationService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Ui.Services.NotificationType
+- uid: Meridian.Ui.Services.NotificationType.Success
+  commentId: F:Meridian.Ui.Services.NotificationType.Success
+  id: Success
+  parent: Meridian.Ui.Services.NotificationType
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: NotificationType.Success
+  fullName: Meridian.Ui.Services.NotificationType.Success
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Ui.Services/Services/NotificationService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Success = 1
+    return:
+      type: Meridian.Ui.Services.NotificationType
+- uid: Meridian.Ui.Services.NotificationType.Warning
+  commentId: F:Meridian.Ui.Services.NotificationType.Warning
+  id: Warning
+  parent: Meridian.Ui.Services.NotificationType
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: NotificationType.Warning
+  fullName: Meridian.Ui.Services.NotificationType.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Ui.Services/Services/NotificationService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Warning = 2
+    return:
+      type: Meridian.Ui.Services.NotificationType
+- uid: Meridian.Ui.Services.NotificationType.Error
+  commentId: F:Meridian.Ui.Services.NotificationType.Error
+  id: Error
+  parent: Meridian.Ui.Services.NotificationType
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: NotificationType.Error
+  fullName: Meridian.Ui.Services.NotificationType.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NotificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Services/NotificationService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Error = 3
+    return:
+      type: Meridian.Ui.Services.NotificationType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.NotificationType
+  commentId: T:Meridian.Ui.Services.NotificationType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.NotificationType.html
+  name: NotificationType
+  nameWithType: NotificationType
+  fullName: Meridian.Ui.Services.NotificationType

@@ -245,25 +245,6 @@ public class ConfigValidationPipelineTests
     }
 
     [Fact]
-    public void Validate_StockSharpCustomConnectorWithoutAdapterType_ReturnsError()
-    {
-        var pipeline = ConfigValidationPipeline.CreateDefault();
-        var config = CreateValidConfig() with
-        {
-            DataSource = DataSourceKind.StockSharp,
-            StockSharp = new StockSharpConfig
-            {
-                Enabled = true,
-                ConnectorType = "custom"
-            }
-        };
-
-        var results = pipeline.Validate(config);
-
-        results.Should().Contain(r => r.IsError && r.Message.Contains("AdapterType"));
-    }
-
-    [Fact]
     public void ValidationResult_HasCorrectSeverityLevels()
     {
         // Arrange
@@ -304,6 +285,13 @@ public class ConfigValidationPipelineTests
                 KeyId = "VALIDKEYID123456",
                 SecretKey = "VALIDSECRET123456",
                 Feed = "iex"
+            },
+            IB = new IBOptions
+            {
+                Host = "127.0.0.1",
+                Port = 7497,
+                ClientId = 1,
+                UsePaperTrading = true
             },
             Symbols = new[]
             {

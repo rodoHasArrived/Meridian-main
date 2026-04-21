@@ -1,0 +1,310 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Etl.IEtlExportService
+  commentId: T:Meridian.Application.Etl.IEtlExportService
+  id: IEtlExportService
+  parent: Meridian.Application.Etl
+  children:
+  - Meridian.Application.Etl.IEtlExportService.ExportAsync(Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Etl.EtlJobDefinition,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IEtlExportService
+  nameWithType: IEtlExportService
+  fullName: Meridian.Application.Etl.IEtlExportService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IEtlExportService
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: public interface IEtlExportService
+    content.vb: Public Interface IEtlExportService
+  derivedClasses:
+  - Meridian.Application.Etl.EtlExportService
+- uid: Meridian.Application.Etl.IEtlExportService.ExportAsync(Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Etl.EtlJobDefinition,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Etl.IEtlExportService.ExportAsync(Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Etl.EtlJobDefinition,System.Threading.CancellationToken)
+  id: ExportAsync(Meridian.Contracts.Pipeline.IngestionJob,Meridian.Contracts.Etl.EtlJobDefinition,System.Threading.CancellationToken)
+  parent: Meridian.Application.Etl.IEtlExportService
+  langs:
+  - csharp
+  - vb
+  name: ExportAsync(IngestionJob, EtlJobDefinition, CancellationToken)
+  nameWithType: IEtlExportService.ExportAsync(IngestionJob, EtlJobDefinition, CancellationToken)
+  fullName: Meridian.Application.Etl.IEtlExportService.ExportAsync(Meridian.Contracts.Pipeline.IngestionJob, Meridian.Contracts.Etl.EtlJobDefinition, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Etl/EtlAbstractions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportAsync
+    path: ../../src/Meridian.Application/Etl/EtlAbstractions.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Etl
+  syntax:
+    content: Task<EtlExportResult> ExportAsync(IngestionJob job, EtlJobDefinition definition, CancellationToken ct = default)
+    parameters:
+    - id: job
+      type: Meridian.Contracts.Pipeline.IngestionJob
+    - id: definition
+      type: Meridian.Contracts.Etl.EtlJobDefinition
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Etl.EtlExportResult}
+    content.vb: Function ExportAsync(job As IngestionJob, definition As EtlJobDefinition, ct As CancellationToken = Nothing) As Task(Of EtlExportResult)
+  overload: Meridian.Application.Etl.IEtlExportService.ExportAsync*
+references:
+- uid: Meridian.Application.Etl
+  commentId: N:Meridian.Application.Etl
+  href: Meridian.html
+  name: Meridian.Application.Etl
+  nameWithType: Meridian.Application.Etl
+  fullName: Meridian.Application.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Etl
+    name: Etl
+    href: Meridian.Application.Etl.html
+- uid: Meridian.Application.Etl.IEtlExportService.ExportAsync*
+  commentId: Overload:Meridian.Application.Etl.IEtlExportService.ExportAsync
+  href: Meridian.Application.Etl.IEtlExportService.html#Meridian_Application_Etl_IEtlExportService_ExportAsync_Meridian_Contracts_Pipeline_IngestionJob_Meridian_Contracts_Etl_EtlJobDefinition_System_Threading_CancellationToken_
+  name: ExportAsync
+  nameWithType: IEtlExportService.ExportAsync
+  fullName: Meridian.Application.Etl.IEtlExportService.ExportAsync
+- uid: Meridian.Contracts.Pipeline.IngestionJob
+  commentId: T:Meridian.Contracts.Pipeline.IngestionJob
+  parent: Meridian.Contracts.Pipeline
+  href: Meridian.Contracts.Pipeline.IngestionJob.html
+  name: IngestionJob
+  nameWithType: IngestionJob
+  fullName: Meridian.Contracts.Pipeline.IngestionJob
+- uid: Meridian.Contracts.Etl.EtlJobDefinition
+  commentId: T:Meridian.Contracts.Etl.EtlJobDefinition
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlJobDefinition.html
+  name: EtlJobDefinition
+  nameWithType: EtlJobDefinition
+  fullName: Meridian.Contracts.Etl.EtlJobDefinition
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Etl.EtlExportResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Etl.EtlExportResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EtlExportResult>
+  nameWithType: Task<EtlExportResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Etl.EtlExportResult>
+  nameWithType.vb: Task(Of EtlExportResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Etl.EtlExportResult)
+  name.vb: Task(Of EtlExportResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Etl.EtlExportResult
+    name: EtlExportResult
+    href: Meridian.Application.Etl.EtlExportResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Etl.EtlExportResult
+    name: EtlExportResult
+    href: Meridian.Application.Etl.EtlExportResult.html
+  - name: )
+- uid: Meridian.Contracts.Pipeline
+  commentId: N:Meridian.Contracts.Pipeline
+  href: Meridian.html
+  name: Meridian.Contracts.Pipeline
+  nameWithType: Meridian.Contracts.Pipeline
+  fullName: Meridian.Contracts.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Pipeline
+    name: Pipeline
+    href: Meridian.Contracts.Pipeline.html
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

@@ -1,0 +1,24 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <LinearGradientBrush x:Key="MeridianBrandGradientBrush" StartPoint="0,1" EndPoint="1,0">
+        <GradientStop Color="#1A6BB5" Offset="0" />
+        <GradientStop Color="#0EA5E9" Offset="0.55" />
+        <GradientStop Color="#16A34A" Offset="1" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="MeridianBrandBeamBrush" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Color="#60A5FA" Offset="0" />
+        <GradientStop Color="#67E8F9" Offset="0.55" />
+        <GradientStop Color="#86EFAC" Offset="1" />
+    </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="MeridianBrandStarBrush" Color="#84F3B6" />
+    <SolidColorBrush x:Key="MeridianBrandHaloBrush" Color="#355B81" />
+    <SolidColorBrush x:Key="MeridianBrandHorizonBrush" Color="#3F78C2" />
+
+    <Geometry x:Key="MeridianBrandChartGeometry">M 6.5,17 L 10.1,11.4 L 12.9,14.2 L 17.9,8.1</Geometry>
+    <Geometry x:Key="MeridianBrandMeridianGeometry">M 12,4.3 L 12,18.9</Geometry>
+    <Geometry x:Key="MeridianBrandHorizonGeometry">M 6.2,18.6 C 8.7,16.7 15.3,16.7 17.8,18.6</Geometry>
+</ResourceDictionary>

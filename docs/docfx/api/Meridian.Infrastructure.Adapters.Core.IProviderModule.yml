@@ -1,0 +1,635 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderModule
+  id: IProviderModule
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.IProviderModule.Capabilities
+  - Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleDisplayName
+  - Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleId
+  - Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Infrastructure.DataSources.DataSourceRegistry)
+  - Meridian.Infrastructure.Adapters.Core.IProviderModule.ValidateAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IProviderModule
+  nameWithType: IProviderModule
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IProviderModule
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 18
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Defines a self-describing provider module that bundles all capability types for a single
+
+    external data provider (streaming, historical, symbol search, brokerage) behind one DI
+
+    registration entry point.
+  remarks: >-
+    Implement once per external provider (e.g., <code>AlpacaProviderModule</code>).
+
+    Use <xref href="Meridian.Infrastructure.Adapters.Core.ProviderModuleLoader" data-throw-if-not-resolved="false"></xref> to discover and load modules from assemblies.
+
+
+    All new properties have default interface implementations so existing callers of
+
+    <xref href="Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection%2cMeridian.Infrastructure.DataSources.DataSourceRegistry)" data-throw-if-not-resolved="false"></xref> remain source-compatible without changes.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Module-based provider registration entry point")]
+
+      [ImplementsAdr("ADR-005", "Module-based provider discovery alongside attribute-based discovery")]
+
+      public interface IProviderModule
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Module-based provider registration entry point")>
+
+      <ImplementsAdr("ADR-005", "Module-based provider discovery alongside attribute-based discovery")>
+
+      Public Interface IProviderModule
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Module-based provider registration entry point
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-005
+    - type: System.String
+      value: Module-based provider discovery alongside attribute-based discovery
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleId
+  id: ModuleId
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderModule
+  langs:
+  - csharp
+  - vb
+  name: ModuleId
+  nameWithType: IProviderModule.ModuleId
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModuleId
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 26
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Unique provider identifier (e.g., "alpaca", "polygon"). Lower-case, no spaces.
+
+    Default: derived from the implementing class name by stripping "ProviderModule".
+  example: []
+  syntax:
+    content: string ModuleId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ModuleId As String
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleId*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleDisplayName
+  id: ModuleDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderModule
+  langs:
+  - csharp
+  - vb
+  name: ModuleDisplayName
+  nameWithType: IProviderModule.ModuleDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModuleDisplayName
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 32
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Human-readable display name (e.g., "Alpaca Markets").
+
+    Default: derived from the implementing class name by stripping "ProviderModule".
+  example: []
+  syntax:
+    content: string ModuleDisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ModuleDisplayName As String
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleDisplayName*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.Capabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderModule.Capabilities
+  id: Capabilities
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderModule
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: IProviderModule.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 39
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Capabilities advertised by this module before registration.
+
+    Used by <xref href="Meridian.Infrastructure.Adapters.Core.ProviderModuleLoader" data-throw-if-not-resolved="false"></xref> for capability-based filtering and
+
+    load diagnostics. An empty array means the module does not self-declare capabilities.
+  example: []
+  syntax:
+    content: ProviderCapabilities[] Capabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[]
+    content.vb: ReadOnly Property Capabilities As ProviderCapabilities()
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderModule.Capabilities*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.ValidateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IProviderModule.ValidateAsync(System.Threading.CancellationToken)
+  id: ValidateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderModule
+  langs:
+  - csharp
+  - vb
+  name: ValidateAsync(CancellationToken)
+  nameWithType: IProviderModule.ValidateAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.ValidateAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateAsync
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 50
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Validates that prerequisites for this module are satisfied before registration.
+
+    Default implementation always returns <xref href="Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Valid" data-throw-if-not-resolved="false"></xref>.
+  remarks: >-
+    Override to check credential availability, required services, or version
+
+    compatibility. Returning an invalid result causes <xref href="Meridian.Infrastructure.Adapters.Core.ProviderModuleLoader" data-throw-if-not-resolved="false"></xref>
+
+    to skip this module and record a failure instead of throwing.
+  example: []
+  syntax:
+    content: ValueTask<ModuleValidationResult> ValidateAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.ValueTask{Meridian.Infrastructure.Adapters.Core.ModuleValidationResult}
+    content.vb: Function ValidateAsync(ct As CancellationToken = Nothing) As ValueTask(Of ModuleValidationResult)
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderModule.ValidateAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Infrastructure.DataSources.DataSourceRegistry)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Infrastructure.DataSources.DataSourceRegistry)
+  id: Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Infrastructure.DataSources.DataSourceRegistry)
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderModule
+  langs:
+  - csharp
+  - vb
+  name: Register(IServiceCollection, DataSourceRegistry)
+  nameWithType: IProviderModule.Register(IServiceCollection, DataSourceRegistry)
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection, Meridian.Infrastructure.DataSources.DataSourceRegistry)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderModule.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Register
+    path: ../../src/Meridian.ProviderSdk/IProviderModule.cs
+    startLine: 56
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Register provider services into the DI container.
+  example: []
+  syntax:
+    content: void Register(IServiceCollection services, DataSourceRegistry registry)
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    - id: registry
+      type: Meridian.Infrastructure.DataSources.DataSourceRegistry
+    content.vb: Sub Register(services As IServiceCollection, registry As DataSourceRegistry)
+  overload: Meridian.Infrastructure.Adapters.Core.IProviderModule.Register*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderModuleLoader
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderModuleLoader
+  href: Meridian.Infrastructure.Adapters.Core.ProviderModuleLoader.html
+  name: ProviderModuleLoader
+  nameWithType: ProviderModuleLoader
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderModuleLoader
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Infrastructure.DataSources.DataSourceRegistry)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Infrastructure.DataSources.DataSourceRegistry)
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderModule
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.IProviderModule.html#Meridian_Infrastructure_Adapters_Core_IProviderModule_Register_Microsoft_Extensions_DependencyInjection_IServiceCollection_Meridian_Infrastructure_DataSources_DataSourceRegistry_
+  name: Register(IServiceCollection, DataSourceRegistry)
+  nameWithType: IProviderModule.Register(IServiceCollection, DataSourceRegistry)
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection, Meridian.Infrastructure.DataSources.DataSourceRegistry)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Infrastructure.DataSources.DataSourceRegistry)
+    name: Register
+    href: Meridian.Infrastructure.Adapters.Core.IProviderModule.html#Meridian_Infrastructure_Adapters_Core_IProviderModule_Register_Microsoft_Extensions_DependencyInjection_IServiceCollection_Meridian_Infrastructure_DataSources_DataSourceRegistry_
+  - name: (
+  - uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    name: IServiceCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DataSourceRegistry
+    name: DataSourceRegistry
+    href: Meridian.Infrastructure.DataSources.DataSourceRegistry.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.Register(Microsoft.Extensions.DependencyInjection.IServiceCollection,Meridian.Infrastructure.DataSources.DataSourceRegistry)
+    name: Register
+    href: Meridian.Infrastructure.Adapters.Core.IProviderModule.html#Meridian_Infrastructure_Adapters_Core_IProviderModule_Register_Microsoft_Extensions_DependencyInjection_IServiceCollection_Meridian_Infrastructure_DataSources_DataSourceRegistry_
+  - name: (
+  - uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    name: IServiceCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DataSourceRegistry
+    name: DataSourceRegistry
+    href: Meridian.Infrastructure.DataSources.DataSourceRegistry.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderModule
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderModule.html
+  name: IProviderModule
+  nameWithType: IProviderModule
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleId
+  href: Meridian.Infrastructure.Adapters.Core.IProviderModule.html#Meridian_Infrastructure_Adapters_Core_IProviderModule_ModuleId
+  name: ModuleId
+  nameWithType: IProviderModule.ModuleId
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleDisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleDisplayName
+  href: Meridian.Infrastructure.Adapters.Core.IProviderModule.html#Meridian_Infrastructure_Adapters_Core_IProviderModule_ModuleDisplayName
+  name: ModuleDisplayName
+  nameWithType: IProviderModule.ModuleDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.ModuleDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.Capabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderModule.Capabilities
+  href: Meridian.Infrastructure.Adapters.Core.IProviderModule.html#Meridian_Infrastructure_Adapters_Core_IProviderModule_Capabilities
+  name: Capabilities
+  nameWithType: IProviderModule.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.Capabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[]
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities[]
+  nameWithType: ProviderCapabilities[]
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities[]
+  nameWithType.vb: ProviderCapabilities()
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities()
+  name.vb: ProviderCapabilities()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    name: ProviderCapabilities
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    name: ProviderCapabilities
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Valid
+  commentId: F:Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Valid
+  href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html#Meridian_Infrastructure_Adapters_Core_ModuleValidationResult_Valid
+  name: Valid
+  nameWithType: ModuleValidationResult.Valid
+  fullName: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.Valid
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.ValidateAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderModule.ValidateAsync
+  href: Meridian.Infrastructure.Adapters.Core.IProviderModule.html#Meridian_Infrastructure_Adapters_Core_IProviderModule_ValidateAsync_System_Threading_CancellationToken_
+  name: ValidateAsync
+  nameWithType: IProviderModule.ValidateAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.ValidateAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.ValueTask{Meridian.Infrastructure.Adapters.Core.ModuleValidationResult}
+  commentId: T:System.Threading.Tasks.ValueTask{Meridian.Infrastructure.Adapters.Core.ModuleValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.ValueTask`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<ModuleValidationResult>
+  nameWithType: ValueTask<ModuleValidationResult>
+  fullName: System.Threading.Tasks.ValueTask<Meridian.Infrastructure.Adapters.Core.ModuleValidationResult>
+  nameWithType.vb: ValueTask(Of ModuleValidationResult)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of Meridian.Infrastructure.Adapters.Core.ModuleValidationResult)
+  name.vb: ValueTask(Of ModuleValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+    name: ModuleValidationResult
+    href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult
+    name: ModuleValidationResult
+    href: Meridian.Infrastructure.Adapters.Core.ModuleValidationResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.ValueTask`1
+  commentId: T:System.Threading.Tasks.ValueTask`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  name: ValueTask<TResult>
+  nameWithType: ValueTask<TResult>
+  fullName: System.Threading.Tasks.ValueTask<TResult>
+  nameWithType.vb: ValueTask(Of TResult)
+  fullName.vb: System.Threading.Tasks.ValueTask(Of TResult)
+  name.vb: ValueTask(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.ValueTask`1
+    name: ValueTask
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderModule.Register*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.IProviderModule.Register
+  href: Meridian.Infrastructure.Adapters.Core.IProviderModule.html#Meridian_Infrastructure_Adapters_Core_IProviderModule_Register_Microsoft_Extensions_DependencyInjection_IServiceCollection_Meridian_Infrastructure_DataSources_DataSourceRegistry_
+  name: Register
+  nameWithType: IProviderModule.Register
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderModule.Register
+- uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+  commentId: T:Microsoft.Extensions.DependencyInjection.IServiceCollection
+  parent: Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  name: IServiceCollection
+  nameWithType: IServiceCollection
+  fullName: Microsoft.Extensions.DependencyInjection.IServiceCollection
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceRegistry
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceRegistry.html
+  name: DataSourceRegistry
+  nameWithType: DataSourceRegistry
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry
+- uid: Microsoft.Extensions.DependencyInjection
+  commentId: N:Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.DependencyInjection
+  nameWithType: Microsoft.Extensions.DependencyInjection
+  fullName: Microsoft.Extensions.DependencyInjection
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html

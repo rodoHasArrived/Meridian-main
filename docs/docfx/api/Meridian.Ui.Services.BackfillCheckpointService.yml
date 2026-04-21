@@ -1,0 +1,994 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.BackfillCheckpointService
+  commentId: T:Meridian.Ui.Services.BackfillCheckpointService
+  id: BackfillCheckpointService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.BackfillCheckpointService.CleanupOldCheckpointsAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillCheckpointService.CreateCheckpointAsync(System.String,System.String,System.String[],System.DateTime,System.DateTime,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillCheckpointService.GetHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillCheckpointService.GetPendingSymbolsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillCheckpointService.GetResumableJobsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillCheckpointService.Instance
+  - Meridian.Ui.Services.BackfillCheckpointService.LoadCheckpointAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillCheckpointService.MarkJobFailedAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.BackfillCheckpointService.UpdateSymbolProgressAsync(System.String,System.String,Meridian.Ui.Services.SymbolCheckpointStatus,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BackfillCheckpointService
+  nameWithType: BackfillCheckpointService
+  fullName: Meridian.Ui.Services.BackfillCheckpointService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillCheckpointService
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service that tracks backfill job progress with checkpoint/resume support.
+
+    Persists per-symbol progress to disk so interrupted jobs can be resumed.
+  example: []
+  syntax:
+    content: public sealed class BackfillCheckpointService
+    content.vb: Public NotInheritable Class BackfillCheckpointService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.BackfillCheckpointService.Instance
+  commentId: P:Meridian.Ui.Services.BackfillCheckpointService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.BackfillCheckpointService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: BackfillCheckpointService.Instance
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static BackfillCheckpointService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.BackfillCheckpointService
+    content.vb: Public Shared ReadOnly Property Instance As BackfillCheckpointService
+  overload: Meridian.Ui.Services.BackfillCheckpointService.Instance*
+- uid: Meridian.Ui.Services.BackfillCheckpointService.CreateCheckpointAsync(System.String,System.String,System.String[],System.DateTime,System.DateTime,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillCheckpointService.CreateCheckpointAsync(System.String,System.String,System.String[],System.DateTime,System.DateTime,System.Threading.CancellationToken)
+  id: CreateCheckpointAsync(System.String,System.String,System.String[],System.DateTime,System.DateTime,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillCheckpointService
+  langs:
+  - csharp
+  - vb
+  name: CreateCheckpointAsync(string, string, string[], DateTime, DateTime, CancellationToken)
+  nameWithType: BackfillCheckpointService.CreateCheckpointAsync(string, string, string[], DateTime, DateTime, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.CreateCheckpointAsync(string, string, string[], System.DateTime, System.DateTime, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateCheckpointAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a new checkpoint for a backfill job.
+  example: []
+  syntax:
+    content: public Task<BackfillCheckpoint> CreateCheckpointAsync(string jobId, string provider, string[] symbols, DateTime fromDate, DateTime toDate, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: provider
+      type: System.String
+    - id: symbols
+      type: System.String[]
+    - id: fromDate
+      type: System.DateTime
+    - id: toDate
+      type: System.DateTime
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillCheckpoint}
+    content.vb: Public Function CreateCheckpointAsync(jobId As String, provider As String, symbols As String(), fromDate As Date, toDate As Date, ct As CancellationToken = Nothing) As Task(Of BackfillCheckpoint)
+  overload: Meridian.Ui.Services.BackfillCheckpointService.CreateCheckpointAsync*
+  nameWithType.vb: BackfillCheckpointService.CreateCheckpointAsync(String, String, String(), Date, Date, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillCheckpointService.CreateCheckpointAsync(String, String, String(), Date, Date, System.Threading.CancellationToken)
+  name.vb: CreateCheckpointAsync(String, String, String(), Date, Date, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillCheckpointService.UpdateSymbolProgressAsync(System.String,System.String,Meridian.Ui.Services.SymbolCheckpointStatus,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillCheckpointService.UpdateSymbolProgressAsync(System.String,System.String,Meridian.Ui.Services.SymbolCheckpointStatus,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  id: UpdateSymbolProgressAsync(System.String,System.String,Meridian.Ui.Services.SymbolCheckpointStatus,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillCheckpointService
+  langs:
+  - csharp
+  - vb
+  name: UpdateSymbolProgressAsync(string, string, SymbolCheckpointStatus, int, string?, string?, CancellationToken)
+  nameWithType: BackfillCheckpointService.UpdateSymbolProgressAsync(string, string, SymbolCheckpointStatus, int, string?, string?, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.UpdateSymbolProgressAsync(string, string, Meridian.Ui.Services.SymbolCheckpointStatus, int, string?, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateSymbolProgressAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates the progress for a specific symbol within a job.
+  example: []
+  syntax:
+    content: public Task UpdateSymbolProgressAsync(string jobId, string symbol, SymbolCheckpointStatus status, int barsDownloaded, string? lastDate = null, string? errorMessage = null, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: status
+      type: Meridian.Ui.Services.SymbolCheckpointStatus
+    - id: barsDownloaded
+      type: System.Int32
+    - id: lastDate
+      type: System.String
+    - id: errorMessage
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateSymbolProgressAsync(jobId As String, symbol As String, status As SymbolCheckpointStatus, barsDownloaded As Integer, lastDate As String = Nothing, errorMessage As String = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.BackfillCheckpointService.UpdateSymbolProgressAsync*
+  nameWithType.vb: BackfillCheckpointService.UpdateSymbolProgressAsync(String, String, SymbolCheckpointStatus, Integer, String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillCheckpointService.UpdateSymbolProgressAsync(String, String, Meridian.Ui.Services.SymbolCheckpointStatus, Integer, String, String, System.Threading.CancellationToken)
+  name.vb: UpdateSymbolProgressAsync(String, String, SymbolCheckpointStatus, Integer, String, String, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillCheckpointService.MarkJobFailedAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillCheckpointService.MarkJobFailedAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: MarkJobFailedAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillCheckpointService
+  langs:
+  - csharp
+  - vb
+  name: MarkJobFailedAsync(string, string, CancellationToken)
+  nameWithType: BackfillCheckpointService.MarkJobFailedAsync(string, string, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.MarkJobFailedAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkJobFailedAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Marks a job as failed.
+  example: []
+  syntax:
+    content: public Task MarkJobFailedAsync(string jobId, string errorMessage, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: errorMessage
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function MarkJobFailedAsync(jobId As String, errorMessage As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.BackfillCheckpointService.MarkJobFailedAsync*
+  nameWithType.vb: BackfillCheckpointService.MarkJobFailedAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillCheckpointService.MarkJobFailedAsync(String, String, System.Threading.CancellationToken)
+  name.vb: MarkJobFailedAsync(String, String, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillCheckpointService.GetResumableJobsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillCheckpointService.GetResumableJobsAsync(System.Threading.CancellationToken)
+  id: GetResumableJobsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillCheckpointService
+  langs:
+  - csharp
+  - vb
+  name: GetResumableJobsAsync(CancellationToken)
+  nameWithType: BackfillCheckpointService.GetResumableJobsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.GetResumableJobsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetResumableJobsAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all incomplete jobs that can be resumed.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<BackfillCheckpoint>> GetResumableJobsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.BackfillCheckpoint}}
+    content.vb: Public Function GetResumableJobsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of BackfillCheckpoint))
+  overload: Meridian.Ui.Services.BackfillCheckpointService.GetResumableJobsAsync*
+- uid: Meridian.Ui.Services.BackfillCheckpointService.GetPendingSymbolsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillCheckpointService.GetPendingSymbolsAsync(System.String,System.Threading.CancellationToken)
+  id: GetPendingSymbolsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillCheckpointService
+  langs:
+  - csharp
+  - vb
+  name: GetPendingSymbolsAsync(string, CancellationToken)
+  nameWithType: BackfillCheckpointService.GetPendingSymbolsAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.GetPendingSymbolsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPendingSymbolsAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the symbols that still need processing for a resumable job.
+  example: []
+  syntax:
+    content: public Task<string[]> GetPendingSymbolsAsync(string jobId, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String[]}
+    content.vb: Public Function GetPendingSymbolsAsync(jobId As String, ct As CancellationToken = Nothing) As Task(Of String())
+  overload: Meridian.Ui.Services.BackfillCheckpointService.GetPendingSymbolsAsync*
+  nameWithType.vb: BackfillCheckpointService.GetPendingSymbolsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillCheckpointService.GetPendingSymbolsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetPendingSymbolsAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillCheckpointService.LoadCheckpointAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillCheckpointService.LoadCheckpointAsync(System.String,System.Threading.CancellationToken)
+  id: LoadCheckpointAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillCheckpointService
+  langs:
+  - csharp
+  - vb
+  name: LoadCheckpointAsync(string, CancellationToken)
+  nameWithType: BackfillCheckpointService.LoadCheckpointAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.LoadCheckpointAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadCheckpointAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the last checkpoint for a specific job.
+  example: []
+  syntax:
+    content: public Task<BackfillCheckpoint?> LoadCheckpointAsync(string jobId, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillCheckpoint}
+    content.vb: Public Function LoadCheckpointAsync(jobId As String, ct As CancellationToken = Nothing) As Task(Of BackfillCheckpoint)
+  overload: Meridian.Ui.Services.BackfillCheckpointService.LoadCheckpointAsync*
+  nameWithType.vb: BackfillCheckpointService.LoadCheckpointAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillCheckpointService.LoadCheckpointAsync(String, System.Threading.CancellationToken)
+  name.vb: LoadCheckpointAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillCheckpointService.GetHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillCheckpointService.GetHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  id: GetHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillCheckpointService
+  langs:
+  - csharp
+  - vb
+  name: GetHistoryAsync(int, CancellationToken)
+  nameWithType: BackfillCheckpointService.GetHistoryAsync(int, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.GetHistoryAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHistoryAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets execution history with optional limit.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<BackfillCheckpoint>> GetHistoryAsync(int limit = 20, CancellationToken ct = default)
+    parameters:
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.BackfillCheckpoint}}
+    content.vb: Public Function GetHistoryAsync(limit As Integer = 20, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of BackfillCheckpoint))
+  overload: Meridian.Ui.Services.BackfillCheckpointService.GetHistoryAsync*
+  nameWithType.vb: BackfillCheckpointService.GetHistoryAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillCheckpointService.GetHistoryAsync(Integer, System.Threading.CancellationToken)
+  name.vb: GetHistoryAsync(Integer, CancellationToken)
+- uid: Meridian.Ui.Services.BackfillCheckpointService.CleanupOldCheckpointsAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.BackfillCheckpointService.CleanupOldCheckpointsAsync(System.Int32,System.Threading.CancellationToken)
+  id: CleanupOldCheckpointsAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.BackfillCheckpointService
+  langs:
+  - csharp
+  - vb
+  name: CleanupOldCheckpointsAsync(int, CancellationToken)
+  nameWithType: BackfillCheckpointService.CleanupOldCheckpointsAsync(int, CancellationToken)
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.CleanupOldCheckpointsAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CleanupOldCheckpointsAsync
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Deletes old completed checkpoints beyond retention period.
+  example: []
+  syntax:
+    content: public Task CleanupOldCheckpointsAsync(int retentionDays = 30, CancellationToken ct = default)
+    parameters:
+    - id: retentionDays
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function CleanupOldCheckpointsAsync(retentionDays As Integer = 30, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.BackfillCheckpointService.CleanupOldCheckpointsAsync*
+  nameWithType.vb: BackfillCheckpointService.CleanupOldCheckpointsAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.BackfillCheckpointService.CleanupOldCheckpointsAsync(Integer, System.Threading.CancellationToken)
+  name.vb: CleanupOldCheckpointsAsync(Integer, CancellationToken)
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.BackfillCheckpointService.Instance*
+  commentId: Overload:Meridian.Ui.Services.BackfillCheckpointService.Instance
+  href: Meridian.Ui.Services.BackfillCheckpointService.html#Meridian_Ui_Services_BackfillCheckpointService_Instance
+  name: Instance
+  nameWithType: BackfillCheckpointService.Instance
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.Instance
+- uid: Meridian.Ui.Services.BackfillCheckpointService
+  commentId: T:Meridian.Ui.Services.BackfillCheckpointService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BackfillCheckpointService.html
+  name: BackfillCheckpointService
+  nameWithType: BackfillCheckpointService
+  fullName: Meridian.Ui.Services.BackfillCheckpointService
+- uid: Meridian.Ui.Services.BackfillCheckpointService.CreateCheckpointAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillCheckpointService.CreateCheckpointAsync
+  href: Meridian.Ui.Services.BackfillCheckpointService.html#Meridian_Ui_Services_BackfillCheckpointService_CreateCheckpointAsync_System_String_System_String_System_String___System_DateTime_System_DateTime_System_Threading_CancellationToken_
+  name: CreateCheckpointAsync
+  nameWithType: BackfillCheckpointService.CreateCheckpointAsync
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.CreateCheckpointAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillCheckpoint}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.BackfillCheckpoint}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillCheckpoint>
+  nameWithType: Task<BackfillCheckpoint>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.BackfillCheckpoint>
+  nameWithType.vb: Task(Of BackfillCheckpoint)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.BackfillCheckpoint)
+  name.vb: Task(Of BackfillCheckpoint)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.BackfillCheckpoint
+    name: BackfillCheckpoint
+    href: Meridian.Ui.Services.BackfillCheckpoint.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BackfillCheckpoint
+    name: BackfillCheckpoint
+    href: Meridian.Ui.Services.BackfillCheckpoint.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.BackfillCheckpointService.UpdateSymbolProgressAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillCheckpointService.UpdateSymbolProgressAsync
+  href: Meridian.Ui.Services.BackfillCheckpointService.html#Meridian_Ui_Services_BackfillCheckpointService_UpdateSymbolProgressAsync_System_String_System_String_Meridian_Ui_Services_SymbolCheckpointStatus_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  name: UpdateSymbolProgressAsync
+  nameWithType: BackfillCheckpointService.UpdateSymbolProgressAsync
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.UpdateSymbolProgressAsync
+- uid: Meridian.Ui.Services.SymbolCheckpointStatus
+  commentId: T:Meridian.Ui.Services.SymbolCheckpointStatus
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SymbolCheckpointStatus.html
+  name: SymbolCheckpointStatus
+  nameWithType: SymbolCheckpointStatus
+  fullName: Meridian.Ui.Services.SymbolCheckpointStatus
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Ui.Services.BackfillCheckpointService.MarkJobFailedAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillCheckpointService.MarkJobFailedAsync
+  href: Meridian.Ui.Services.BackfillCheckpointService.html#Meridian_Ui_Services_BackfillCheckpointService_MarkJobFailedAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: MarkJobFailedAsync
+  nameWithType: BackfillCheckpointService.MarkJobFailedAsync
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.MarkJobFailedAsync
+- uid: Meridian.Ui.Services.BackfillCheckpointService.GetResumableJobsAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillCheckpointService.GetResumableJobsAsync
+  href: Meridian.Ui.Services.BackfillCheckpointService.html#Meridian_Ui_Services_BackfillCheckpointService_GetResumableJobsAsync_System_Threading_CancellationToken_
+  name: GetResumableJobsAsync
+  nameWithType: BackfillCheckpointService.GetResumableJobsAsync
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.GetResumableJobsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.BackfillCheckpoint}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.BackfillCheckpoint}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<BackfillCheckpoint>>
+  nameWithType: Task<IReadOnlyList<BackfillCheckpoint>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.BackfillCheckpoint>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of BackfillCheckpoint))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.BackfillCheckpoint))
+  name.vb: Task(Of IReadOnlyList(Of BackfillCheckpoint))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.BackfillCheckpoint
+    name: BackfillCheckpoint
+    href: Meridian.Ui.Services.BackfillCheckpoint.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BackfillCheckpoint
+    name: BackfillCheckpoint
+    href: Meridian.Ui.Services.BackfillCheckpoint.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.BackfillCheckpointService.GetPendingSymbolsAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillCheckpointService.GetPendingSymbolsAsync
+  href: Meridian.Ui.Services.BackfillCheckpointService.html#Meridian_Ui_Services_BackfillCheckpointService_GetPendingSymbolsAsync_System_String_System_Threading_CancellationToken_
+  name: GetPendingSymbolsAsync
+  nameWithType: BackfillCheckpointService.GetPendingSymbolsAsync
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.GetPendingSymbolsAsync
+- uid: System.Threading.Tasks.Task{System.String[]}
+  commentId: T:System.Threading.Tasks.Task{System.String[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string[]>
+  nameWithType: Task<string[]>
+  fullName: System.Threading.Tasks.Task<string[]>
+  nameWithType.vb: Task(Of String())
+  fullName.vb: System.Threading.Tasks.Task(Of String())
+  name.vb: Task(Of String())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.BackfillCheckpointService.LoadCheckpointAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillCheckpointService.LoadCheckpointAsync
+  href: Meridian.Ui.Services.BackfillCheckpointService.html#Meridian_Ui_Services_BackfillCheckpointService_LoadCheckpointAsync_System_String_System_Threading_CancellationToken_
+  name: LoadCheckpointAsync
+  nameWithType: BackfillCheckpointService.LoadCheckpointAsync
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.LoadCheckpointAsync
+- uid: Meridian.Ui.Services.BackfillCheckpointService.GetHistoryAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillCheckpointService.GetHistoryAsync
+  href: Meridian.Ui.Services.BackfillCheckpointService.html#Meridian_Ui_Services_BackfillCheckpointService_GetHistoryAsync_System_Int32_System_Threading_CancellationToken_
+  name: GetHistoryAsync
+  nameWithType: BackfillCheckpointService.GetHistoryAsync
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.GetHistoryAsync
+- uid: Meridian.Ui.Services.BackfillCheckpointService.CleanupOldCheckpointsAsync*
+  commentId: Overload:Meridian.Ui.Services.BackfillCheckpointService.CleanupOldCheckpointsAsync
+  href: Meridian.Ui.Services.BackfillCheckpointService.html#Meridian_Ui_Services_BackfillCheckpointService_CleanupOldCheckpointsAsync_System_Int32_System_Threading_CancellationToken_
+  name: CleanupOldCheckpointsAsync
+  nameWithType: BackfillCheckpointService.CleanupOldCheckpointsAsync
+  fullName: Meridian.Ui.Services.BackfillCheckpointService.CleanupOldCheckpointsAsync

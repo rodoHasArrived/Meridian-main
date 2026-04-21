@@ -1,0 +1,898 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto
+  commentId: T:Meridian.Contracts.Workstation.ResearchBriefingDto
+  id: ResearchBriefingDto
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ResearchBriefingDto.#ctor(Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary,Meridian.Contracts.Workstation.InsightFeed,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.WorkstationWatchlist},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingRun},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparison},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingAlert},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchWhatChangedItem})
+  - Meridian.Contracts.Workstation.ResearchBriefingDto.Alerts
+  - Meridian.Contracts.Workstation.ResearchBriefingDto.InsightFeed
+  - Meridian.Contracts.Workstation.ResearchBriefingDto.RecentRuns
+  - Meridian.Contracts.Workstation.ResearchBriefingDto.SavedComparisons
+  - Meridian.Contracts.Workstation.ResearchBriefingDto.Watchlists
+  - Meridian.Contracts.Workstation.ResearchBriefingDto.WhatChanged
+  - Meridian.Contracts.Workstation.ResearchBriefingDto.Workspace
+  langs:
+  - csharp
+  - vb
+  name: ResearchBriefingDto
+  nameWithType: ResearchBriefingDto
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResearchBriefingDto
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Typed Research workspace briefing payload shared across workstation surfaces.
+  example: []
+  syntax:
+    content: 'public sealed record ResearchBriefingDto : IEquatable<ResearchBriefingDto>'
+    content.vb: Public NotInheritable Class ResearchBriefingDto Implements IEquatable(Of ResearchBriefingDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.ResearchBriefingDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.#ctor(Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary,Meridian.Contracts.Workstation.InsightFeed,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.WorkstationWatchlist},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingRun},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparison},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingAlert},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchWhatChangedItem})
+  commentId: M:Meridian.Contracts.Workstation.ResearchBriefingDto.#ctor(Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary,Meridian.Contracts.Workstation.InsightFeed,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.WorkstationWatchlist},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingRun},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparison},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingAlert},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchWhatChangedItem})
+  id: '#ctor(Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary,Meridian.Contracts.Workstation.InsightFeed,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.WorkstationWatchlist},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingRun},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparison},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingAlert},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchWhatChangedItem})'
+  parent: Meridian.Contracts.Workstation.ResearchBriefingDto
+  langs:
+  - csharp
+  - vb
+  name: ResearchBriefingDto(ResearchBriefingWorkspaceSummary, InsightFeed, IReadOnlyList<WorkstationWatchlist>, IReadOnlyList<ResearchBriefingRun>, IReadOnlyList<ResearchSavedComparison>, IReadOnlyList<ResearchBriefingAlert>, IReadOnlyList<ResearchWhatChangedItem>)
+  nameWithType: ResearchBriefingDto.ResearchBriefingDto(ResearchBriefingWorkspaceSummary, InsightFeed, IReadOnlyList<WorkstationWatchlist>, IReadOnlyList<ResearchBriefingRun>, IReadOnlyList<ResearchSavedComparison>, IReadOnlyList<ResearchBriefingAlert>, IReadOnlyList<ResearchWhatChangedItem>)
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.ResearchBriefingDto(Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary, Meridian.Contracts.Workstation.InsightFeed, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.WorkstationWatchlist>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchBriefingRun>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchSavedComparison>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchBriefingAlert>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchWhatChangedItem>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Typed Research workspace briefing payload shared across workstation surfaces.
+  example: []
+  syntax:
+    content: public ResearchBriefingDto(ResearchBriefingWorkspaceSummary Workspace, InsightFeed InsightFeed, IReadOnlyList<WorkstationWatchlist> Watchlists, IReadOnlyList<ResearchBriefingRun> RecentRuns, IReadOnlyList<ResearchSavedComparison> SavedComparisons, IReadOnlyList<ResearchBriefingAlert> Alerts, IReadOnlyList<ResearchWhatChangedItem> WhatChanged)
+    parameters:
+    - id: Workspace
+      type: Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+    - id: InsightFeed
+      type: Meridian.Contracts.Workstation.InsightFeed
+    - id: Watchlists
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.WorkstationWatchlist}
+    - id: RecentRuns
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingRun}
+    - id: SavedComparisons
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparison}
+    - id: Alerts
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingAlert}
+    - id: WhatChanged
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchWhatChangedItem}
+    content.vb: Public Sub New(Workspace As ResearchBriefingWorkspaceSummary, InsightFeed As InsightFeed, Watchlists As IReadOnlyList(Of WorkstationWatchlist), RecentRuns As IReadOnlyList(Of ResearchBriefingRun), SavedComparisons As IReadOnlyList(Of ResearchSavedComparison), Alerts As IReadOnlyList(Of ResearchBriefingAlert), WhatChanged As IReadOnlyList(Of ResearchWhatChangedItem))
+  overload: Meridian.Contracts.Workstation.ResearchBriefingDto.#ctor*
+  nameWithType.vb: ResearchBriefingDto.New(ResearchBriefingWorkspaceSummary, InsightFeed, IReadOnlyList(Of WorkstationWatchlist), IReadOnlyList(Of ResearchBriefingRun), IReadOnlyList(Of ResearchSavedComparison), IReadOnlyList(Of ResearchBriefingAlert), IReadOnlyList(Of ResearchWhatChangedItem))
+  fullName.vb: Meridian.Contracts.Workstation.ResearchBriefingDto.New(Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary, Meridian.Contracts.Workstation.InsightFeed, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.WorkstationWatchlist), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchBriefingRun), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchSavedComparison), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchBriefingAlert), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchWhatChangedItem))
+  name.vb: New(ResearchBriefingWorkspaceSummary, InsightFeed, IReadOnlyList(Of WorkstationWatchlist), IReadOnlyList(Of ResearchBriefingRun), IReadOnlyList(Of ResearchSavedComparison), IReadOnlyList(Of ResearchBriefingAlert), IReadOnlyList(Of ResearchWhatChangedItem))
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.Workspace
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingDto.Workspace
+  id: Workspace
+  parent: Meridian.Contracts.Workstation.ResearchBriefingDto
+  langs:
+  - csharp
+  - vb
+  name: Workspace
+  nameWithType: ResearchBriefingDto.Workspace
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.Workspace
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Workspace
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public ResearchBriefingWorkspaceSummary Workspace { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+    content.vb: Public Property Workspace As ResearchBriefingWorkspaceSummary
+  overload: Meridian.Contracts.Workstation.ResearchBriefingDto.Workspace*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.InsightFeed
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingDto.InsightFeed
+  id: InsightFeed
+  parent: Meridian.Contracts.Workstation.ResearchBriefingDto
+  langs:
+  - csharp
+  - vb
+  name: InsightFeed
+  nameWithType: ResearchBriefingDto.InsightFeed
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.InsightFeed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsightFeed
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public InsightFeed InsightFeed { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.InsightFeed
+    content.vb: Public Property InsightFeed As InsightFeed
+  overload: Meridian.Contracts.Workstation.ResearchBriefingDto.InsightFeed*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.Watchlists
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingDto.Watchlists
+  id: Watchlists
+  parent: Meridian.Contracts.Workstation.ResearchBriefingDto
+  langs:
+  - csharp
+  - vb
+  name: Watchlists
+  nameWithType: ResearchBriefingDto.Watchlists
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.Watchlists
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Watchlists
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<WorkstationWatchlist> Watchlists { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.WorkstationWatchlist}
+    content.vb: Public Property Watchlists As IReadOnlyList(Of WorkstationWatchlist)
+  overload: Meridian.Contracts.Workstation.ResearchBriefingDto.Watchlists*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.RecentRuns
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingDto.RecentRuns
+  id: RecentRuns
+  parent: Meridian.Contracts.Workstation.ResearchBriefingDto
+  langs:
+  - csharp
+  - vb
+  name: RecentRuns
+  nameWithType: ResearchBriefingDto.RecentRuns
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.RecentRuns
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentRuns
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<ResearchBriefingRun> RecentRuns { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingRun}
+    content.vb: Public Property RecentRuns As IReadOnlyList(Of ResearchBriefingRun)
+  overload: Meridian.Contracts.Workstation.ResearchBriefingDto.RecentRuns*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.SavedComparisons
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingDto.SavedComparisons
+  id: SavedComparisons
+  parent: Meridian.Contracts.Workstation.ResearchBriefingDto
+  langs:
+  - csharp
+  - vb
+  name: SavedComparisons
+  nameWithType: ResearchBriefingDto.SavedComparisons
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.SavedComparisons
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SavedComparisons
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<ResearchSavedComparison> SavedComparisons { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparison}
+    content.vb: Public Property SavedComparisons As IReadOnlyList(Of ResearchSavedComparison)
+  overload: Meridian.Contracts.Workstation.ResearchBriefingDto.SavedComparisons*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.Alerts
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingDto.Alerts
+  id: Alerts
+  parent: Meridian.Contracts.Workstation.ResearchBriefingDto
+  langs:
+  - csharp
+  - vb
+  name: Alerts
+  nameWithType: ResearchBriefingDto.Alerts
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.Alerts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alerts
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<ResearchBriefingAlert> Alerts { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingAlert}
+    content.vb: Public Property Alerts As IReadOnlyList(Of ResearchBriefingAlert)
+  overload: Meridian.Contracts.Workstation.ResearchBriefingDto.Alerts*
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.WhatChanged
+  commentId: P:Meridian.Contracts.Workstation.ResearchBriefingDto.WhatChanged
+  id: WhatChanged
+  parent: Meridian.Contracts.Workstation.ResearchBriefingDto
+  langs:
+  - csharp
+  - vb
+  name: WhatChanged
+  nameWithType: ResearchBriefingDto.WhatChanged
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.WhatChanged
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WhatChanged
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<ResearchWhatChangedItem> WhatChanged { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchWhatChangedItem}
+    content.vb: Public Property WhatChanged As IReadOnlyList(Of ResearchWhatChangedItem)
+  overload: Meridian.Contracts.Workstation.ResearchBriefingDto.WhatChanged*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.ResearchBriefingDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.ResearchBriefingDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ResearchBriefingDto>
+  nameWithType: IEquatable<ResearchBriefingDto>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.ResearchBriefingDto>
+  nameWithType.vb: IEquatable(Of ResearchBriefingDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.ResearchBriefingDto)
+  name.vb: IEquatable(Of ResearchBriefingDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingDto
+    name: ResearchBriefingDto
+    href: Meridian.Contracts.Workstation.ResearchBriefingDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingDto
+    name: ResearchBriefingDto
+    href: Meridian.Contracts.Workstation.ResearchBriefingDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingDto.#ctor
+  href: Meridian.Contracts.Workstation.ResearchBriefingDto.html#Meridian_Contracts_Workstation_ResearchBriefingDto__ctor_Meridian_Contracts_Workstation_ResearchBriefingWorkspaceSummary_Meridian_Contracts_Workstation_InsightFeed_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_WorkstationWatchlist__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_ResearchBriefingRun__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_ResearchSavedComparison__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_ResearchBriefingAlert__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_ResearchWhatChangedItem__
+  name: ResearchBriefingDto
+  nameWithType: ResearchBriefingDto.ResearchBriefingDto
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.ResearchBriefingDto
+  nameWithType.vb: ResearchBriefingDto.New
+  fullName.vb: Meridian.Contracts.Workstation.ResearchBriefingDto.New
+  name.vb: New
+- uid: Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+  commentId: T:Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary.html
+  name: ResearchBriefingWorkspaceSummary
+  nameWithType: ResearchBriefingWorkspaceSummary
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary
+- uid: Meridian.Contracts.Workstation.InsightFeed
+  commentId: T:Meridian.Contracts.Workstation.InsightFeed
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.InsightFeed.html
+  name: InsightFeed
+  nameWithType: InsightFeed
+  fullName: Meridian.Contracts.Workstation.InsightFeed
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.WorkstationWatchlist}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.WorkstationWatchlist}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<WorkstationWatchlist>
+  nameWithType: IReadOnlyList<WorkstationWatchlist>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.WorkstationWatchlist>
+  nameWithType.vb: IReadOnlyList(Of WorkstationWatchlist)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.WorkstationWatchlist)
+  name.vb: IReadOnlyList(Of WorkstationWatchlist)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.WorkstationWatchlist
+    name: WorkstationWatchlist
+    href: Meridian.Contracts.Workstation.WorkstationWatchlist.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.WorkstationWatchlist
+    name: WorkstationWatchlist
+    href: Meridian.Contracts.Workstation.WorkstationWatchlist.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingRun}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingRun}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ResearchBriefingRun>
+  nameWithType: IReadOnlyList<ResearchBriefingRun>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchBriefingRun>
+  nameWithType.vb: IReadOnlyList(Of ResearchBriefingRun)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchBriefingRun)
+  name.vb: IReadOnlyList(Of ResearchBriefingRun)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingRun
+    name: ResearchBriefingRun
+    href: Meridian.Contracts.Workstation.ResearchBriefingRun.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingRun
+    name: ResearchBriefingRun
+    href: Meridian.Contracts.Workstation.ResearchBriefingRun.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparison}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparison}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ResearchSavedComparison>
+  nameWithType: IReadOnlyList<ResearchSavedComparison>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchSavedComparison>
+  nameWithType.vb: IReadOnlyList(Of ResearchSavedComparison)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchSavedComparison)
+  name.vb: IReadOnlyList(Of ResearchSavedComparison)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparison
+    name: ResearchSavedComparison
+    href: Meridian.Contracts.Workstation.ResearchSavedComparison.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparison
+    name: ResearchSavedComparison
+    href: Meridian.Contracts.Workstation.ResearchSavedComparison.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingAlert}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchBriefingAlert}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ResearchBriefingAlert>
+  nameWithType: IReadOnlyList<ResearchBriefingAlert>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchBriefingAlert>
+  nameWithType.vb: IReadOnlyList(Of ResearchBriefingAlert)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchBriefingAlert)
+  name.vb: IReadOnlyList(Of ResearchBriefingAlert)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingAlert
+    name: ResearchBriefingAlert
+    href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchBriefingAlert
+    name: ResearchBriefingAlert
+    href: Meridian.Contracts.Workstation.ResearchBriefingAlert.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchWhatChangedItem}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchWhatChangedItem}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ResearchWhatChangedItem>
+  nameWithType: IReadOnlyList<ResearchWhatChangedItem>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchWhatChangedItem>
+  nameWithType.vb: IReadOnlyList(Of ResearchWhatChangedItem)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchWhatChangedItem)
+  name.vb: IReadOnlyList(Of ResearchWhatChangedItem)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchWhatChangedItem
+    name: ResearchWhatChangedItem
+    href: Meridian.Contracts.Workstation.ResearchWhatChangedItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchWhatChangedItem
+    name: ResearchWhatChangedItem
+    href: Meridian.Contracts.Workstation.ResearchWhatChangedItem.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.Workspace*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingDto.Workspace
+  href: Meridian.Contracts.Workstation.ResearchBriefingDto.html#Meridian_Contracts_Workstation_ResearchBriefingDto_Workspace
+  name: Workspace
+  nameWithType: ResearchBriefingDto.Workspace
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.Workspace
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.InsightFeed*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingDto.InsightFeed
+  href: Meridian.Contracts.Workstation.ResearchBriefingDto.html#Meridian_Contracts_Workstation_ResearchBriefingDto_InsightFeed
+  name: InsightFeed
+  nameWithType: ResearchBriefingDto.InsightFeed
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.InsightFeed
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.Watchlists*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingDto.Watchlists
+  href: Meridian.Contracts.Workstation.ResearchBriefingDto.html#Meridian_Contracts_Workstation_ResearchBriefingDto_Watchlists
+  name: Watchlists
+  nameWithType: ResearchBriefingDto.Watchlists
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.Watchlists
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.RecentRuns*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingDto.RecentRuns
+  href: Meridian.Contracts.Workstation.ResearchBriefingDto.html#Meridian_Contracts_Workstation_ResearchBriefingDto_RecentRuns
+  name: RecentRuns
+  nameWithType: ResearchBriefingDto.RecentRuns
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.RecentRuns
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.SavedComparisons*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingDto.SavedComparisons
+  href: Meridian.Contracts.Workstation.ResearchBriefingDto.html#Meridian_Contracts_Workstation_ResearchBriefingDto_SavedComparisons
+  name: SavedComparisons
+  nameWithType: ResearchBriefingDto.SavedComparisons
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.SavedComparisons
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.Alerts*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingDto.Alerts
+  href: Meridian.Contracts.Workstation.ResearchBriefingDto.html#Meridian_Contracts_Workstation_ResearchBriefingDto_Alerts
+  name: Alerts
+  nameWithType: ResearchBriefingDto.Alerts
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.Alerts
+- uid: Meridian.Contracts.Workstation.ResearchBriefingDto.WhatChanged*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchBriefingDto.WhatChanged
+  href: Meridian.Contracts.Workstation.ResearchBriefingDto.html#Meridian_Contracts_Workstation_ResearchBriefingDto_WhatChanged
+  name: WhatChanged
+  nameWithType: ResearchBriefingDto.WhatChanged
+  fullName: Meridian.Contracts.Workstation.ResearchBriefingDto.WhatChanged

@@ -1,0 +1,528 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.FaultEvent
+  id: FaultEvent
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  children:
+  - Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.#ctor(System.String,System.String,System.Boolean)
+  - Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Code
+  - Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.IsTerminal
+  - Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Message
+  langs:
+  - csharp
+  - vb
+  name: FaultEvent
+  nameWithType: FaultEvent
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FaultEvent
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: 'public sealed record FaultEvent : IEquatable<FaultEvent>'
+    content.vb: Public NotInheritable Class FaultEvent Implements IEquatable(Of FaultEvent)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.CppTrader.Protocol.FaultEvent}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.#ctor(System.String,System.String,System.Boolean)
+  commentId: M:Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.#ctor(System.String,System.String,System.Boolean)
+  id: '#ctor(System.String,System.String,System.Boolean)'
+  parent: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent
+  langs:
+  - csharp
+  - vb
+  name: FaultEvent(string, string, bool)
+  nameWithType: FaultEvent.FaultEvent(string, string, bool)
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.FaultEvent(string, string, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public FaultEvent(string Code, string Message, bool IsTerminal = false)
+    parameters:
+    - id: Code
+      type: System.String
+    - id: Message
+      type: System.String
+    - id: IsTerminal
+      type: System.Boolean
+    content.vb: Public Sub New(Code As String, Message As String, IsTerminal As Boolean = False)
+  overload: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.#ctor*
+  nameWithType.vb: FaultEvent.New(String, String, Boolean)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.New(String, String, Boolean)
+  name.vb: New(String, String, Boolean)
+- uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Code
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Code
+  id: Code
+  parent: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: FaultEvent.Code
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public string Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Code As String
+  overload: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Code*
+- uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Message
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Message
+  id: Message
+  parent: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: FaultEvent.Message
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Message*
+- uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.IsTerminal
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.IsTerminal
+  id: IsTerminal
+  parent: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent
+  langs:
+  - csharp
+  - vb
+  name: IsTerminal
+  nameWithType: FaultEvent.IsTerminal
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.IsTerminal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsTerminal
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public bool IsTerminal { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsTerminal As Boolean
+  overload: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.IsTerminal*
+references:
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.CppTrader.Protocol.FaultEvent}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.CppTrader.Protocol.FaultEvent}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FaultEvent>
+  nameWithType: IEquatable<FaultEvent>
+  fullName: System.IEquatable<Meridian.Infrastructure.CppTrader.Protocol.FaultEvent>
+  nameWithType.vb: IEquatable(Of FaultEvent)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.CppTrader.Protocol.FaultEvent)
+  name.vb: IEquatable(Of FaultEvent)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent
+    name: FaultEvent
+    href: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent
+    name: FaultEvent
+    href: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.#ctor*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.#ctor
+  href: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.html#Meridian_Infrastructure_CppTrader_Protocol_FaultEvent__ctor_System_String_System_String_System_Boolean_
+  name: FaultEvent
+  nameWithType: FaultEvent.FaultEvent
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.FaultEvent
+  nameWithType.vb: FaultEvent.New
+  fullName.vb: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Code*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Code
+  href: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.html#Meridian_Infrastructure_CppTrader_Protocol_FaultEvent_Code
+  name: Code
+  nameWithType: FaultEvent.Code
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Code
+- uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Message*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Message
+  href: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.html#Meridian_Infrastructure_CppTrader_Protocol_FaultEvent_Message
+  name: Message
+  nameWithType: FaultEvent.Message
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.Message
+- uid: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.IsTerminal*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.IsTerminal
+  href: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.html#Meridian_Infrastructure_CppTrader_Protocol_FaultEvent_IsTerminal
+  name: IsTerminal
+  nameWithType: FaultEvent.IsTerminal
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.FaultEvent.IsTerminal

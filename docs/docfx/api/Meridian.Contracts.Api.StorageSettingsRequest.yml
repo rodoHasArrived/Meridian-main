@@ -1,0 +1,701 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.StorageSettingsRequest
+  commentId: T:Meridian.Contracts.Api.StorageSettingsRequest
+  id: StorageSettingsRequest
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.StorageSettingsRequest.#ctor(System.String,System.Boolean,System.String,System.String,System.Boolean,System.String,System.String)
+  - Meridian.Contracts.Api.StorageSettingsRequest.Compress
+  - Meridian.Contracts.Api.StorageSettingsRequest.DataRoot
+  - Meridian.Contracts.Api.StorageSettingsRequest.DatePartition
+  - Meridian.Contracts.Api.StorageSettingsRequest.FilePrefix
+  - Meridian.Contracts.Api.StorageSettingsRequest.IncludeProvider
+  - Meridian.Contracts.Api.StorageSettingsRequest.NamingConvention
+  - Meridian.Contracts.Api.StorageSettingsRequest.Profile
+  langs:
+  - csharp
+  - vb
+  name: StorageSettingsRequest
+  nameWithType: StorageSettingsRequest
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageSettingsRequest
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Request to update storage settings.
+  example: []
+  syntax:
+    content: 'public record StorageSettingsRequest : IEquatable<StorageSettingsRequest>'
+    content.vb: Public Class StorageSettingsRequest Implements IEquatable(Of StorageSettingsRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.StorageSettingsRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.#ctor(System.String,System.Boolean,System.String,System.String,System.Boolean,System.String,System.String)
+  commentId: M:Meridian.Contracts.Api.StorageSettingsRequest.#ctor(System.String,System.Boolean,System.String,System.String,System.Boolean,System.String,System.String)
+  id: '#ctor(System.String,System.Boolean,System.String,System.String,System.Boolean,System.String,System.String)'
+  parent: Meridian.Contracts.Api.StorageSettingsRequest
+  langs:
+  - csharp
+  - vb
+  name: StorageSettingsRequest(string?, bool, string?, string?, bool, string?, string?)
+  nameWithType: StorageSettingsRequest.StorageSettingsRequest(string?, bool, string?, string?, bool, string?, string?)
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.StorageSettingsRequest(string?, bool, string?, string?, bool, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Request to update storage settings.
+  example: []
+  syntax:
+    content: public StorageSettingsRequest(string? DataRoot, bool Compress, string? NamingConvention, string? DatePartition, bool IncludeProvider, string? FilePrefix, string? Profile = null)
+    parameters:
+    - id: DataRoot
+      type: System.String
+    - id: Compress
+      type: System.Boolean
+    - id: NamingConvention
+      type: System.String
+    - id: DatePartition
+      type: System.String
+    - id: IncludeProvider
+      type: System.Boolean
+    - id: FilePrefix
+      type: System.String
+    - id: Profile
+      type: System.String
+    content.vb: Public Sub New(DataRoot As String, Compress As Boolean, NamingConvention As String, DatePartition As String, IncludeProvider As Boolean, FilePrefix As String, Profile As String = Nothing)
+  overload: Meridian.Contracts.Api.StorageSettingsRequest.#ctor*
+  nameWithType.vb: StorageSettingsRequest.New(String, Boolean, String, String, Boolean, String, String)
+  fullName.vb: Meridian.Contracts.Api.StorageSettingsRequest.New(String, Boolean, String, String, Boolean, String, String)
+  name.vb: New(String, Boolean, String, String, Boolean, String, String)
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.DataRoot
+  commentId: P:Meridian.Contracts.Api.StorageSettingsRequest.DataRoot
+  id: DataRoot
+  parent: Meridian.Contracts.Api.StorageSettingsRequest
+  langs:
+  - csharp
+  - vb
+  name: DataRoot
+  nameWithType: StorageSettingsRequest.DataRoot
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.DataRoot
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataRoot
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? DataRoot { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DataRoot As String
+  overload: Meridian.Contracts.Api.StorageSettingsRequest.DataRoot*
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.Compress
+  commentId: P:Meridian.Contracts.Api.StorageSettingsRequest.Compress
+  id: Compress
+  parent: Meridian.Contracts.Api.StorageSettingsRequest
+  langs:
+  - csharp
+  - vb
+  name: Compress
+  nameWithType: StorageSettingsRequest.Compress
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.Compress
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compress
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public bool Compress { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Compress As Boolean
+  overload: Meridian.Contracts.Api.StorageSettingsRequest.Compress*
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.NamingConvention
+  commentId: P:Meridian.Contracts.Api.StorageSettingsRequest.NamingConvention
+  id: NamingConvention
+  parent: Meridian.Contracts.Api.StorageSettingsRequest
+  langs:
+  - csharp
+  - vb
+  name: NamingConvention
+  nameWithType: StorageSettingsRequest.NamingConvention
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.NamingConvention
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NamingConvention
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? NamingConvention { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property NamingConvention As String
+  overload: Meridian.Contracts.Api.StorageSettingsRequest.NamingConvention*
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.DatePartition
+  commentId: P:Meridian.Contracts.Api.StorageSettingsRequest.DatePartition
+  id: DatePartition
+  parent: Meridian.Contracts.Api.StorageSettingsRequest
+  langs:
+  - csharp
+  - vb
+  name: DatePartition
+  nameWithType: StorageSettingsRequest.DatePartition
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.DatePartition
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DatePartition
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? DatePartition { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DatePartition As String
+  overload: Meridian.Contracts.Api.StorageSettingsRequest.DatePartition*
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.IncludeProvider
+  commentId: P:Meridian.Contracts.Api.StorageSettingsRequest.IncludeProvider
+  id: IncludeProvider
+  parent: Meridian.Contracts.Api.StorageSettingsRequest
+  langs:
+  - csharp
+  - vb
+  name: IncludeProvider
+  nameWithType: StorageSettingsRequest.IncludeProvider
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.IncludeProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeProvider
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public bool IncludeProvider { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeProvider As Boolean
+  overload: Meridian.Contracts.Api.StorageSettingsRequest.IncludeProvider*
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.FilePrefix
+  commentId: P:Meridian.Contracts.Api.StorageSettingsRequest.FilePrefix
+  id: FilePrefix
+  parent: Meridian.Contracts.Api.StorageSettingsRequest
+  langs:
+  - csharp
+  - vb
+  name: FilePrefix
+  nameWithType: StorageSettingsRequest.FilePrefix
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.FilePrefix
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilePrefix
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? FilePrefix { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FilePrefix As String
+  overload: Meridian.Contracts.Api.StorageSettingsRequest.FilePrefix*
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.Profile
+  commentId: P:Meridian.Contracts.Api.StorageSettingsRequest.Profile
+  id: Profile
+  parent: Meridian.Contracts.Api.StorageSettingsRequest
+  langs:
+  - csharp
+  - vb
+  name: Profile
+  nameWithType: StorageSettingsRequest.Profile
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.Profile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Profile
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? Profile { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Profile As String
+  overload: Meridian.Contracts.Api.StorageSettingsRequest.Profile*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.StorageSettingsRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.StorageSettingsRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StorageSettingsRequest>
+  nameWithType: IEquatable<StorageSettingsRequest>
+  fullName: System.IEquatable<Meridian.Contracts.Api.StorageSettingsRequest>
+  nameWithType.vb: IEquatable(Of StorageSettingsRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.StorageSettingsRequest)
+  name.vb: IEquatable(Of StorageSettingsRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.StorageSettingsRequest
+    name: StorageSettingsRequest
+    href: Meridian.Contracts.Api.StorageSettingsRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.StorageSettingsRequest
+    name: StorageSettingsRequest
+    href: Meridian.Contracts.Api.StorageSettingsRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.StorageSettingsRequest.#ctor
+  href: Meridian.Contracts.Api.StorageSettingsRequest.html#Meridian_Contracts_Api_StorageSettingsRequest__ctor_System_String_System_Boolean_System_String_System_String_System_Boolean_System_String_System_String_
+  name: StorageSettingsRequest
+  nameWithType: StorageSettingsRequest.StorageSettingsRequest
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.StorageSettingsRequest
+  nameWithType.vb: StorageSettingsRequest.New
+  fullName.vb: Meridian.Contracts.Api.StorageSettingsRequest.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.DataRoot*
+  commentId: Overload:Meridian.Contracts.Api.StorageSettingsRequest.DataRoot
+  href: Meridian.Contracts.Api.StorageSettingsRequest.html#Meridian_Contracts_Api_StorageSettingsRequest_DataRoot
+  name: DataRoot
+  nameWithType: StorageSettingsRequest.DataRoot
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.DataRoot
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.Compress*
+  commentId: Overload:Meridian.Contracts.Api.StorageSettingsRequest.Compress
+  href: Meridian.Contracts.Api.StorageSettingsRequest.html#Meridian_Contracts_Api_StorageSettingsRequest_Compress
+  name: Compress
+  nameWithType: StorageSettingsRequest.Compress
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.Compress
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.NamingConvention*
+  commentId: Overload:Meridian.Contracts.Api.StorageSettingsRequest.NamingConvention
+  href: Meridian.Contracts.Api.StorageSettingsRequest.html#Meridian_Contracts_Api_StorageSettingsRequest_NamingConvention
+  name: NamingConvention
+  nameWithType: StorageSettingsRequest.NamingConvention
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.NamingConvention
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.DatePartition*
+  commentId: Overload:Meridian.Contracts.Api.StorageSettingsRequest.DatePartition
+  href: Meridian.Contracts.Api.StorageSettingsRequest.html#Meridian_Contracts_Api_StorageSettingsRequest_DatePartition
+  name: DatePartition
+  nameWithType: StorageSettingsRequest.DatePartition
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.DatePartition
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.IncludeProvider*
+  commentId: Overload:Meridian.Contracts.Api.StorageSettingsRequest.IncludeProvider
+  href: Meridian.Contracts.Api.StorageSettingsRequest.html#Meridian_Contracts_Api_StorageSettingsRequest_IncludeProvider
+  name: IncludeProvider
+  nameWithType: StorageSettingsRequest.IncludeProvider
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.IncludeProvider
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.FilePrefix*
+  commentId: Overload:Meridian.Contracts.Api.StorageSettingsRequest.FilePrefix
+  href: Meridian.Contracts.Api.StorageSettingsRequest.html#Meridian_Contracts_Api_StorageSettingsRequest_FilePrefix
+  name: FilePrefix
+  nameWithType: StorageSettingsRequest.FilePrefix
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.FilePrefix
+- uid: Meridian.Contracts.Api.StorageSettingsRequest.Profile*
+  commentId: Overload:Meridian.Contracts.Api.StorageSettingsRequest.Profile
+  href: Meridian.Contracts.Api.StorageSettingsRequest.html#Meridian_Contracts_Api_StorageSettingsRequest_Profile
+  name: Profile
+  nameWithType: StorageSettingsRequest.Profile
+  fullName: Meridian.Contracts.Api.StorageSettingsRequest.Profile

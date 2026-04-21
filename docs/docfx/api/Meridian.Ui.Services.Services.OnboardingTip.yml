@@ -1,0 +1,496 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.OnboardingTip
+  commentId: T:Meridian.Ui.Services.Services.OnboardingTip
+  id: OnboardingTip
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.OnboardingTip.Content
+  - Meridian.Ui.Services.Services.OnboardingTip.Id
+  - Meridian.Ui.Services.Services.OnboardingTip.Order
+  - Meridian.Ui.Services.Services.OnboardingTip.TargetElement
+  - Meridian.Ui.Services.Services.OnboardingTip.Title
+  langs:
+  - csharp
+  - vb
+  name: OnboardingTip
+  nameWithType: OnboardingTip
+  fullName: Meridian.Ui.Services.Services.OnboardingTip
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TooltipContent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnboardingTip
+    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    An onboarding tip to show new users.
+
+    Shared across desktop platforms.
+  example: []
+  syntax:
+    content: public sealed class OnboardingTip
+    content.vb: Public NotInheritable Class OnboardingTip
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.OnboardingTip.Id
+  commentId: P:Meridian.Ui.Services.Services.OnboardingTip.Id
+  id: Id
+  parent: Meridian.Ui.Services.Services.OnboardingTip
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: OnboardingTip.Id
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TooltipContent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Id { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Ui.Services.Services.OnboardingTip.Id*
+- uid: Meridian.Ui.Services.Services.OnboardingTip.Title
+  commentId: P:Meridian.Ui.Services.Services.OnboardingTip.Title
+  id: Title
+  parent: Meridian.Ui.Services.Services.OnboardingTip
+  langs:
+  - csharp
+  - vb
+  name: Title
+  nameWithType: OnboardingTip.Title
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.Title
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TooltipContent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Title
+    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Title { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Title As String
+  overload: Meridian.Ui.Services.Services.OnboardingTip.Title*
+- uid: Meridian.Ui.Services.Services.OnboardingTip.Content
+  commentId: P:Meridian.Ui.Services.Services.OnboardingTip.Content
+  id: Content
+  parent: Meridian.Ui.Services.Services.OnboardingTip
+  langs:
+  - csharp
+  - vb
+  name: Content
+  nameWithType: OnboardingTip.Content
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.Content
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TooltipContent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Content
+    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Content { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Content As String
+  overload: Meridian.Ui.Services.Services.OnboardingTip.Content*
+- uid: Meridian.Ui.Services.Services.OnboardingTip.TargetElement
+  commentId: P:Meridian.Ui.Services.Services.OnboardingTip.TargetElement
+  id: TargetElement
+  parent: Meridian.Ui.Services.Services.OnboardingTip
+  langs:
+  - csharp
+  - vb
+  name: TargetElement
+  nameWithType: OnboardingTip.TargetElement
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.TargetElement
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TooltipContent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetElement
+    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string TargetElement { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TargetElement As String
+  overload: Meridian.Ui.Services.Services.OnboardingTip.TargetElement*
+- uid: Meridian.Ui.Services.Services.OnboardingTip.Order
+  commentId: P:Meridian.Ui.Services.Services.OnboardingTip.Order
+  id: Order
+  parent: Meridian.Ui.Services.Services.OnboardingTip
+  langs:
+  - csharp
+  - vb
+  name: Order
+  nameWithType: OnboardingTip.Order
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.Order
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/TooltipContent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Order
+    path: ../../src/Meridian.Ui.Services/Services/TooltipContent.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int Order { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Order As Integer
+  overload: Meridian.Ui.Services.Services.OnboardingTip.Order*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.OnboardingTip.Id*
+  commentId: Overload:Meridian.Ui.Services.Services.OnboardingTip.Id
+  href: Meridian.Ui.Services.Services.OnboardingTip.html#Meridian_Ui_Services_Services_OnboardingTip_Id
+  name: Id
+  nameWithType: OnboardingTip.Id
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.OnboardingTip.Title*
+  commentId: Overload:Meridian.Ui.Services.Services.OnboardingTip.Title
+  href: Meridian.Ui.Services.Services.OnboardingTip.html#Meridian_Ui_Services_Services_OnboardingTip_Title
+  name: Title
+  nameWithType: OnboardingTip.Title
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.Title
+- uid: Meridian.Ui.Services.Services.OnboardingTip.Content*
+  commentId: Overload:Meridian.Ui.Services.Services.OnboardingTip.Content
+  href: Meridian.Ui.Services.Services.OnboardingTip.html#Meridian_Ui_Services_Services_OnboardingTip_Content
+  name: Content
+  nameWithType: OnboardingTip.Content
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.Content
+- uid: Meridian.Ui.Services.Services.OnboardingTip.TargetElement*
+  commentId: Overload:Meridian.Ui.Services.Services.OnboardingTip.TargetElement
+  href: Meridian.Ui.Services.Services.OnboardingTip.html#Meridian_Ui_Services_Services_OnboardingTip_TargetElement
+  name: TargetElement
+  nameWithType: OnboardingTip.TargetElement
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.TargetElement
+- uid: Meridian.Ui.Services.Services.OnboardingTip.Order*
+  commentId: Overload:Meridian.Ui.Services.Services.OnboardingTip.Order
+  href: Meridian.Ui.Services.Services.OnboardingTip.html#Meridian_Ui_Services_Services_OnboardingTip_Order
+  name: Order
+  nameWithType: OnboardingTip.Order
+  fullName: Meridian.Ui.Services.Services.OnboardingTip.Order
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

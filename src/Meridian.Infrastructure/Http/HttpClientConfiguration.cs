@@ -31,6 +31,8 @@ public static class HttpClientNames
     public const string FredHistorical = "fred-historical";
     public const string TwelveDataHistorical = "twelvedata-historical";
     public const string RobinhoodHistorical = "robinhood-historical";
+    public const string RobinhoodMarketData = "robinhood-market-data";
+    public const string RobinhoodBrokerage = "robinhood-brokerage";
     public const string RobinhoodSymbolSearch = "robinhood-symbol-search";
 
     // Symbol search providers
@@ -38,6 +40,12 @@ public static class HttpClientNames
     public const string PolygonSymbolSearch = "polygon-symbol-search";
     public const string FinnhubSymbolSearch = "finnhub-symbol-search";
     public const string OpenFigi = "openfigi";
+    public const string EdgarSymbolSearch = "edgar-symbol-search";
+    public const string EdgarSecurityMaster = "edgar-security-master";
+
+    // Options chain providers
+    public const string AlpacaOptions = "alpaca-options";
+    public const string PolygonOptions = "polygon-options";
 
     // Application services
     public const string CredentialValidation = "credential-validation";
@@ -242,7 +250,7 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicy();
 
-        // Robinhood clients (no auth required)
+        // Robinhood Historical client (unofficial API; auth header set per-provider via env var)
         services.AddHttpClient(HttpClientNames.RobinhoodHistorical)
             .ConfigureHttpClient(client =>
             {
@@ -252,6 +260,27 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicy();
 
+        // Robinhood live quotes polling client
+        services.AddHttpClient(HttpClientNames.RobinhoodMarketData)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
+        // Robinhood brokerage client
+        services.AddHttpClient(HttpClientNames.RobinhoodBrokerage)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicy();
+
+        // Robinhood symbol search client
         services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
             .ConfigureHttpClient(client =>
             {
@@ -539,7 +568,7 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.TwelveDataHistorical, onStateChanged);
 
-        // Robinhood clients (no auth required)
+        // Robinhood Historical client (unofficial API; auth header set per-provider via env var)
         services.AddHttpClient(HttpClientNames.RobinhoodHistorical)
             .ConfigureHttpClient(client =>
             {
@@ -549,6 +578,27 @@ public static class HttpClientConfiguration
             })
             .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodHistorical, onStateChanged);
 
+        // Robinhood live quotes polling client
+        services.AddHttpClient(HttpClientNames.RobinhoodMarketData)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodMarketData, onStateChanged);
+
+        // Robinhood brokerage client
+        services.AddHttpClient(HttpClientNames.RobinhoodBrokerage)
+            .ConfigureHttpClient(client =>
+            {
+                client.BaseAddress = new Uri("https://api.robinhood.com/");
+                client.Timeout = SharedResiliencePolicies.DefaultTimeout;
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            })
+            .AddSharedResiliencePolicyTracked(HttpClientNames.RobinhoodBrokerage, onStateChanged);
+
+        // Robinhood symbol search client
         services.AddHttpClient(HttpClientNames.RobinhoodSymbolSearch)
             .ConfigureHttpClient(client =>
             {

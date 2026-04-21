@@ -1,0 +1,174 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.AmortizationType
+  commentId: T:Meridian.Contracts.DirectLending.AmortizationType
+  id: AmortizationType
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.AmortizationType.Bullet
+  - Meridian.Contracts.DirectLending.AmortizationType.CustomSchedule
+  - Meridian.Contracts.DirectLending.AmortizationType.InterestOnly
+  - Meridian.Contracts.DirectLending.AmortizationType.StraightLine
+  langs:
+  - csharp
+  - vb
+  name: AmortizationType
+  nameWithType: AmortizationType
+  fullName: Meridian.Contracts.DirectLending.AmortizationType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AmortizationType
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum AmortizationType : byte'
+    content.vb: Public Enum AmortizationType As Byte
+- uid: Meridian.Contracts.DirectLending.AmortizationType.Bullet
+  commentId: F:Meridian.Contracts.DirectLending.AmortizationType.Bullet
+  id: Bullet
+  parent: Meridian.Contracts.DirectLending.AmortizationType
+  langs:
+  - csharp
+  - vb
+  name: Bullet
+  nameWithType: AmortizationType.Bullet
+  fullName: Meridian.Contracts.DirectLending.AmortizationType.Bullet
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bullet
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Bullet = 0
+    return:
+      type: Meridian.Contracts.DirectLending.AmortizationType
+- uid: Meridian.Contracts.DirectLending.AmortizationType.InterestOnly
+  commentId: F:Meridian.Contracts.DirectLending.AmortizationType.InterestOnly
+  id: InterestOnly
+  parent: Meridian.Contracts.DirectLending.AmortizationType
+  langs:
+  - csharp
+  - vb
+  name: InterestOnly
+  nameWithType: AmortizationType.InterestOnly
+  fullName: Meridian.Contracts.DirectLending.AmortizationType.InterestOnly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InterestOnly
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: InterestOnly = 1
+    return:
+      type: Meridian.Contracts.DirectLending.AmortizationType
+- uid: Meridian.Contracts.DirectLending.AmortizationType.StraightLine
+  commentId: F:Meridian.Contracts.DirectLending.AmortizationType.StraightLine
+  id: StraightLine
+  parent: Meridian.Contracts.DirectLending.AmortizationType
+  langs:
+  - csharp
+  - vb
+  name: StraightLine
+  nameWithType: AmortizationType.StraightLine
+  fullName: Meridian.Contracts.DirectLending.AmortizationType.StraightLine
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StraightLine
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: StraightLine = 2
+    return:
+      type: Meridian.Contracts.DirectLending.AmortizationType
+- uid: Meridian.Contracts.DirectLending.AmortizationType.CustomSchedule
+  commentId: F:Meridian.Contracts.DirectLending.AmortizationType.CustomSchedule
+  id: CustomSchedule
+  parent: Meridian.Contracts.DirectLending.AmortizationType
+  langs:
+  - csharp
+  - vb
+  name: CustomSchedule
+  nameWithType: AmortizationType.CustomSchedule
+  fullName: Meridian.Contracts.DirectLending.AmortizationType.CustomSchedule
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CustomSchedule
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: CustomSchedule = 3
+    return:
+      type: Meridian.Contracts.DirectLending.AmortizationType
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.AmortizationType
+  commentId: T:Meridian.Contracts.DirectLending.AmortizationType
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.AmortizationType.html
+  name: AmortizationType
+  nameWithType: AmortizationType
+  fullName: Meridian.Contracts.DirectLending.AmortizationType

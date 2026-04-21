@@ -14,4 +14,6 @@ public sealed record FinancialAccountSnapshot(
     decimal ShortMarketValue,
     decimal Equity,
     IReadOnlyDictionary<string, Position> Positions,
-    FinancialAccountRules Rules);
+    FinancialAccountRules Rules,
+    IReadOnlyList<OpenLot>? OpenLots = null,
+    IReadOnlyList<ClosedLot>? ClosedLots = null);

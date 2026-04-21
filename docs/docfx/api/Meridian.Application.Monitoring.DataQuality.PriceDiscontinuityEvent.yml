@@ -1,0 +1,777 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  commentId: T:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  id: PriceDiscontinuityEvent
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.#ctor(System.String,System.String,Meridian.Application.Monitoring.DataQuality.DiscontinuityType,System.Decimal,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.ChangePercent
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.CurrentPrice
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Message
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousPrice
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousTimestamp
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Provider
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Symbol
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Timestamp
+  - Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Type
+  langs:
+  - csharp
+  - vb
+  name: PriceDiscontinuityEvent
+  nameWithType: PriceDiscontinuityEvent
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceDiscontinuityEvent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 452
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Event raised when a price discontinuity is detected.
+  example: []
+  syntax:
+    content: 'public readonly record struct PriceDiscontinuityEvent : IEquatable<PriceDiscontinuityEvent>'
+    content.vb: Public Structure PriceDiscontinuityEvent Implements IEquatable(Of PriceDiscontinuityEvent)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.#ctor(System.String,System.String,Meridian.Application.Monitoring.DataQuality.DiscontinuityType,System.Decimal,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.#ctor(System.String,System.String,Meridian.Application.Monitoring.DataQuality.DiscontinuityType,System.Decimal,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,Meridian.Application.Monitoring.DataQuality.DiscontinuityType,System.Decimal,System.Decimal,System.Decimal,System.String,System.DateTimeOffset,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: PriceDiscontinuityEvent(string, string?, DiscontinuityType, decimal, decimal, decimal, string, DateTimeOffset, DateTimeOffset)
+  nameWithType: PriceDiscontinuityEvent.PriceDiscontinuityEvent(string, string?, DiscontinuityType, decimal, decimal, decimal, string, DateTimeOffset, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PriceDiscontinuityEvent(string, string?, Meridian.Application.Monitoring.DataQuality.DiscontinuityType, decimal, decimal, decimal, string, System.DateTimeOffset, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 452
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Event raised when a price discontinuity is detected.
+  example: []
+  syntax:
+    content: public PriceDiscontinuityEvent(string Symbol, string? Provider, DiscontinuityType Type, decimal PreviousPrice, decimal CurrentPrice, decimal ChangePercent, string Message, DateTimeOffset Timestamp, DateTimeOffset PreviousTimestamp)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Provider
+      type: System.String
+    - id: Type
+      type: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+    - id: PreviousPrice
+      type: System.Decimal
+    - id: CurrentPrice
+      type: System.Decimal
+    - id: ChangePercent
+      type: System.Decimal
+    - id: Message
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: PreviousTimestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Symbol As String, Provider As String, Type As DiscontinuityType, PreviousPrice As Decimal, CurrentPrice As Decimal, ChangePercent As Decimal, Message As String, Timestamp As DateTimeOffset, PreviousTimestamp As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.#ctor*
+  nameWithType.vb: PriceDiscontinuityEvent.New(String, String, DiscontinuityType, Decimal, Decimal, Decimal, String, DateTimeOffset, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.New(String, String, Meridian.Application.Monitoring.DataQuality.DiscontinuityType, Decimal, Decimal, Decimal, String, System.DateTimeOffset, System.DateTimeOffset)
+  name.vb: New(String, String, DiscontinuityType, Decimal, Decimal, Decimal, String, DateTimeOffset, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Symbol
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: PriceDiscontinuityEvent.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 453
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Symbol*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Provider
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Provider
+  id: Provider
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: PriceDiscontinuityEvent.Provider
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 454
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string? Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Provider*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Type
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Type
+  id: Type
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: PriceDiscontinuityEvent.Type
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 455
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DiscontinuityType Type { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+    content.vb: Public Property Type As DiscontinuityType
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Type*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousPrice
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousPrice
+  id: PreviousPrice
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: PreviousPrice
+  nameWithType: PriceDiscontinuityEvent.PreviousPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviousPrice
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 456
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public decimal PreviousPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property PreviousPrice As Decimal
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousPrice*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.CurrentPrice
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.CurrentPrice
+  id: CurrentPrice
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: CurrentPrice
+  nameWithType: PriceDiscontinuityEvent.CurrentPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.CurrentPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentPrice
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 457
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public decimal CurrentPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CurrentPrice As Decimal
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.CurrentPrice*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.ChangePercent
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.ChangePercent
+  id: ChangePercent
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: ChangePercent
+  nameWithType: PriceDiscontinuityEvent.ChangePercent
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.ChangePercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChangePercent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 458
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public decimal ChangePercent { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ChangePercent As Decimal
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.ChangePercent*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Message
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Message
+  id: Message
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: PriceDiscontinuityEvent.Message
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 459
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Message*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Timestamp
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: PriceDiscontinuityEvent.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 460
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Timestamp*
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousTimestamp
+  commentId: P:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousTimestamp
+  id: PreviousTimestamp
+  parent: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+  langs:
+  - csharp
+  - vb
+  name: PreviousTimestamp
+  nameWithType: PriceDiscontinuityEvent.PreviousTimestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousTimestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviousTimestamp
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 461
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset PreviousTimestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property PreviousTimestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousTimestamp*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PriceDiscontinuityEvent>
+  nameWithType: IEquatable<PriceDiscontinuityEvent>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent>
+  nameWithType.vb: IEquatable(Of PriceDiscontinuityEvent)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent)
+  name.vb: IEquatable(Of PriceDiscontinuityEvent)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+    name: PriceDiscontinuityEvent
+    href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent
+    name: PriceDiscontinuityEvent
+    href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent__ctor_System_String_System_String_Meridian_Application_Monitoring_DataQuality_DiscontinuityType_System_Decimal_System_Decimal_System_Decimal_System_String_System_DateTimeOffset_System_DateTimeOffset_
+  name: PriceDiscontinuityEvent
+  nameWithType: PriceDiscontinuityEvent.PriceDiscontinuityEvent
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PriceDiscontinuityEvent
+  nameWithType.vb: PriceDiscontinuityEvent.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DiscontinuityType.html
+  name: DiscontinuityType
+  nameWithType: DiscontinuityType
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscontinuityType
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Symbol
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent_Symbol
+  name: Symbol
+  nameWithType: PriceDiscontinuityEvent.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Symbol
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Provider*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Provider
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent_Provider
+  name: Provider
+  nameWithType: PriceDiscontinuityEvent.Provider
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Provider
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Type*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Type
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent_Type
+  name: Type
+  nameWithType: PriceDiscontinuityEvent.Type
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Type
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousPrice*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousPrice
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent_PreviousPrice
+  name: PreviousPrice
+  nameWithType: PriceDiscontinuityEvent.PreviousPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousPrice
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.CurrentPrice*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.CurrentPrice
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent_CurrentPrice
+  name: CurrentPrice
+  nameWithType: PriceDiscontinuityEvent.CurrentPrice
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.CurrentPrice
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.ChangePercent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.ChangePercent
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent_ChangePercent
+  name: ChangePercent
+  nameWithType: PriceDiscontinuityEvent.ChangePercent
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.ChangePercent
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Message*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Message
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent_Message
+  name: Message
+  nameWithType: PriceDiscontinuityEvent.Message
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Message
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Timestamp
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent_Timestamp
+  name: Timestamp
+  nameWithType: PriceDiscontinuityEvent.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.Timestamp
+- uid: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousTimestamp*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousTimestamp
+  href: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.html#Meridian_Application_Monitoring_DataQuality_PriceDiscontinuityEvent_PreviousTimestamp
+  name: PreviousTimestamp
+  nameWithType: PriceDiscontinuityEvent.PreviousTimestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceDiscontinuityEvent.PreviousTimestamp

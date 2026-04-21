@@ -1,0 +1,174 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.SortField
+  commentId: T:Meridian.Storage.Services.SortField
+  id: SortField
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.SortField.Date
+  - Meridian.Storage.Services.SortField.QualityScore
+  - Meridian.Storage.Services.SortField.Size
+  - Meridian.Storage.Services.SortField.Symbol
+  langs:
+  - csharp
+  - vb
+  name: SortField
+  nameWithType: SortField
+  fullName: Meridian.Storage.Services.SortField
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SortField
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 649
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum SortField : byte'
+    content.vb: Public Enum SortField As Byte
+- uid: Meridian.Storage.Services.SortField.Date
+  commentId: F:Meridian.Storage.Services.SortField.Date
+  id: Date
+  parent: Meridian.Storage.Services.SortField
+  langs:
+  - csharp
+  - vb
+  name: Date
+  nameWithType: SortField.Date
+  fullName: Meridian.Storage.Services.SortField.Date
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Date
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 649
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Date = 0
+    return:
+      type: Meridian.Storage.Services.SortField
+- uid: Meridian.Storage.Services.SortField.Size
+  commentId: F:Meridian.Storage.Services.SortField.Size
+  id: Size
+  parent: Meridian.Storage.Services.SortField
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: SortField.Size
+  fullName: Meridian.Storage.Services.SortField.Size
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 649
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Size = 1
+    return:
+      type: Meridian.Storage.Services.SortField
+- uid: Meridian.Storage.Services.SortField.Symbol
+  commentId: F:Meridian.Storage.Services.SortField.Symbol
+  id: Symbol
+  parent: Meridian.Storage.Services.SortField
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SortField.Symbol
+  fullName: Meridian.Storage.Services.SortField.Symbol
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 649
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Symbol = 2
+    return:
+      type: Meridian.Storage.Services.SortField
+- uid: Meridian.Storage.Services.SortField.QualityScore
+  commentId: F:Meridian.Storage.Services.SortField.QualityScore
+  id: QualityScore
+  parent: Meridian.Storage.Services.SortField
+  langs:
+  - csharp
+  - vb
+  name: QualityScore
+  nameWithType: SortField.QualityScore
+  fullName: Meridian.Storage.Services.SortField.QualityScore
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityScore
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 649
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: QualityScore = 3
+    return:
+      type: Meridian.Storage.Services.SortField
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.SortField
+  commentId: T:Meridian.Storage.Services.SortField
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.SortField.html
+  name: SortField
+  nameWithType: SortField
+  fullName: Meridian.Storage.Services.SortField

@@ -1,0 +1,787 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SystemHealthSummary
+  commentId: T:Meridian.Ui.Services.SystemHealthSummary
+  id: SystemHealthSummary
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SystemHealthSummary.ActiveAlerts
+  - Meridian.Ui.Services.SystemHealthSummary.ActiveConnections
+  - Meridian.Ui.Services.SystemHealthSummary.AverageLatencyMs
+  - Meridian.Ui.Services.SystemHealthSummary.EventsLast24Hours
+  - Meridian.Ui.Services.SystemHealthSummary.HealthyConnections
+  - Meridian.Ui.Services.SystemHealthSummary.IsHealthy
+  - Meridian.Ui.Services.SystemHealthSummary.LastUpdated
+  - Meridian.Ui.Services.SystemHealthSummary.OverallStatus
+  - Meridian.Ui.Services.SystemHealthSummary.StorageUsedPercent
+  - Meridian.Ui.Services.SystemHealthSummary.TotalEventsProcessed
+  - Meridian.Ui.Services.SystemHealthSummary.UnhealthyConnections
+  - Meridian.Ui.Services.SystemHealthSummary.Uptime
+  langs:
+  - csharp
+  - vb
+  name: SystemHealthSummary
+  nameWithType: SystemHealthSummary
+  fullName: Meridian.Ui.Services.SystemHealthSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SystemHealthSummary
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class SystemHealthSummary
+    content.vb: Public NotInheritable Class SystemHealthSummary
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SystemHealthSummary.OverallStatus
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.OverallStatus
+  id: OverallStatus
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: OverallStatus
+  nameWithType: SystemHealthSummary.OverallStatus
+  fullName: Meridian.Ui.Services.SystemHealthSummary.OverallStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallStatus
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string OverallStatus { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OverallStatus As String
+  overload: Meridian.Ui.Services.SystemHealthSummary.OverallStatus*
+- uid: Meridian.Ui.Services.SystemHealthSummary.IsHealthy
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.IsHealthy
+  id: IsHealthy
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: IsHealthy
+  nameWithType: SystemHealthSummary.IsHealthy
+  fullName: Meridian.Ui.Services.SystemHealthSummary.IsHealthy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHealthy
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsHealthy { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsHealthy As Boolean
+  overload: Meridian.Ui.Services.SystemHealthSummary.IsHealthy*
+- uid: Meridian.Ui.Services.SystemHealthSummary.ActiveConnections
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.ActiveConnections
+  id: ActiveConnections
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: ActiveConnections
+  nameWithType: SystemHealthSummary.ActiveConnections
+  fullName: Meridian.Ui.Services.SystemHealthSummary.ActiveConnections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveConnections
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int ActiveConnections { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ActiveConnections As Integer
+  overload: Meridian.Ui.Services.SystemHealthSummary.ActiveConnections*
+- uid: Meridian.Ui.Services.SystemHealthSummary.HealthyConnections
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.HealthyConnections
+  id: HealthyConnections
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: HealthyConnections
+  nameWithType: SystemHealthSummary.HealthyConnections
+  fullName: Meridian.Ui.Services.SystemHealthSummary.HealthyConnections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthyConnections
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int HealthyConnections { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HealthyConnections As Integer
+  overload: Meridian.Ui.Services.SystemHealthSummary.HealthyConnections*
+- uid: Meridian.Ui.Services.SystemHealthSummary.UnhealthyConnections
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.UnhealthyConnections
+  id: UnhealthyConnections
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: UnhealthyConnections
+  nameWithType: SystemHealthSummary.UnhealthyConnections
+  fullName: Meridian.Ui.Services.SystemHealthSummary.UnhealthyConnections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnhealthyConnections
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int UnhealthyConnections { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property UnhealthyConnections As Integer
+  overload: Meridian.Ui.Services.SystemHealthSummary.UnhealthyConnections*
+- uid: Meridian.Ui.Services.SystemHealthSummary.AverageLatencyMs
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.AverageLatencyMs
+  id: AverageLatencyMs
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: AverageLatencyMs
+  nameWithType: SystemHealthSummary.AverageLatencyMs
+  fullName: Meridian.Ui.Services.SystemHealthSummary.AverageLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageLatencyMs
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double AverageLatencyMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageLatencyMs As Double
+  overload: Meridian.Ui.Services.SystemHealthSummary.AverageLatencyMs*
+- uid: Meridian.Ui.Services.SystemHealthSummary.TotalEventsProcessed
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.TotalEventsProcessed
+  id: TotalEventsProcessed
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalEventsProcessed
+  nameWithType: SystemHealthSummary.TotalEventsProcessed
+  fullName: Meridian.Ui.Services.SystemHealthSummary.TotalEventsProcessed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEventsProcessed
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalEventsProcessed { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalEventsProcessed As Long
+  overload: Meridian.Ui.Services.SystemHealthSummary.TotalEventsProcessed*
+- uid: Meridian.Ui.Services.SystemHealthSummary.EventsLast24Hours
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.EventsLast24Hours
+  id: EventsLast24Hours
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: EventsLast24Hours
+  nameWithType: SystemHealthSummary.EventsLast24Hours
+  fullName: Meridian.Ui.Services.SystemHealthSummary.EventsLast24Hours
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventsLast24Hours
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long EventsLast24Hours { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EventsLast24Hours As Long
+  overload: Meridian.Ui.Services.SystemHealthSummary.EventsLast24Hours*
+- uid: Meridian.Ui.Services.SystemHealthSummary.StorageUsedPercent
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.StorageUsedPercent
+  id: StorageUsedPercent
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: StorageUsedPercent
+  nameWithType: SystemHealthSummary.StorageUsedPercent
+  fullName: Meridian.Ui.Services.SystemHealthSummary.StorageUsedPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageUsedPercent
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double StorageUsedPercent { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property StorageUsedPercent As Double
+  overload: Meridian.Ui.Services.SystemHealthSummary.StorageUsedPercent*
+- uid: Meridian.Ui.Services.SystemHealthSummary.ActiveAlerts
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.ActiveAlerts
+  id: ActiveAlerts
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: ActiveAlerts
+  nameWithType: SystemHealthSummary.ActiveAlerts
+  fullName: Meridian.Ui.Services.SystemHealthSummary.ActiveAlerts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveAlerts
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int ActiveAlerts { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ActiveAlerts As Integer
+  overload: Meridian.Ui.Services.SystemHealthSummary.ActiveAlerts*
+- uid: Meridian.Ui.Services.SystemHealthSummary.LastUpdated
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.LastUpdated
+  id: LastUpdated
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: LastUpdated
+  nameWithType: SystemHealthSummary.LastUpdated
+  fullName: Meridian.Ui.Services.SystemHealthSummary.LastUpdated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdated
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime LastUpdated { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property LastUpdated As Date
+  overload: Meridian.Ui.Services.SystemHealthSummary.LastUpdated*
+- uid: Meridian.Ui.Services.SystemHealthSummary.Uptime
+  commentId: P:Meridian.Ui.Services.SystemHealthSummary.Uptime
+  id: Uptime
+  parent: Meridian.Ui.Services.SystemHealthSummary
+  langs:
+  - csharp
+  - vb
+  name: Uptime
+  nameWithType: SystemHealthSummary.Uptime
+  fullName: Meridian.Ui.Services.SystemHealthSummary.Uptime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SystemHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Uptime
+    path: ../../src/Meridian.Ui.Services/Services/SystemHealthService.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public TimeSpan Uptime { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Uptime As TimeSpan
+  overload: Meridian.Ui.Services.SystemHealthSummary.Uptime*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SystemHealthSummary.OverallStatus*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.OverallStatus
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_OverallStatus
+  name: OverallStatus
+  nameWithType: SystemHealthSummary.OverallStatus
+  fullName: Meridian.Ui.Services.SystemHealthSummary.OverallStatus
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SystemHealthSummary.IsHealthy*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.IsHealthy
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_IsHealthy
+  name: IsHealthy
+  nameWithType: SystemHealthSummary.IsHealthy
+  fullName: Meridian.Ui.Services.SystemHealthSummary.IsHealthy
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.SystemHealthSummary.ActiveConnections*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.ActiveConnections
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_ActiveConnections
+  name: ActiveConnections
+  nameWithType: SystemHealthSummary.ActiveConnections
+  fullName: Meridian.Ui.Services.SystemHealthSummary.ActiveConnections
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.SystemHealthSummary.HealthyConnections*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.HealthyConnections
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_HealthyConnections
+  name: HealthyConnections
+  nameWithType: SystemHealthSummary.HealthyConnections
+  fullName: Meridian.Ui.Services.SystemHealthSummary.HealthyConnections
+- uid: Meridian.Ui.Services.SystemHealthSummary.UnhealthyConnections*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.UnhealthyConnections
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_UnhealthyConnections
+  name: UnhealthyConnections
+  nameWithType: SystemHealthSummary.UnhealthyConnections
+  fullName: Meridian.Ui.Services.SystemHealthSummary.UnhealthyConnections
+- uid: Meridian.Ui.Services.SystemHealthSummary.AverageLatencyMs*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.AverageLatencyMs
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_AverageLatencyMs
+  name: AverageLatencyMs
+  nameWithType: SystemHealthSummary.AverageLatencyMs
+  fullName: Meridian.Ui.Services.SystemHealthSummary.AverageLatencyMs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.SystemHealthSummary.TotalEventsProcessed*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.TotalEventsProcessed
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_TotalEventsProcessed
+  name: TotalEventsProcessed
+  nameWithType: SystemHealthSummary.TotalEventsProcessed
+  fullName: Meridian.Ui.Services.SystemHealthSummary.TotalEventsProcessed
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.SystemHealthSummary.EventsLast24Hours*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.EventsLast24Hours
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_EventsLast24Hours
+  name: EventsLast24Hours
+  nameWithType: SystemHealthSummary.EventsLast24Hours
+  fullName: Meridian.Ui.Services.SystemHealthSummary.EventsLast24Hours
+- uid: Meridian.Ui.Services.SystemHealthSummary.StorageUsedPercent*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.StorageUsedPercent
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_StorageUsedPercent
+  name: StorageUsedPercent
+  nameWithType: SystemHealthSummary.StorageUsedPercent
+  fullName: Meridian.Ui.Services.SystemHealthSummary.StorageUsedPercent
+- uid: Meridian.Ui.Services.SystemHealthSummary.ActiveAlerts*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.ActiveAlerts
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_ActiveAlerts
+  name: ActiveAlerts
+  nameWithType: SystemHealthSummary.ActiveAlerts
+  fullName: Meridian.Ui.Services.SystemHealthSummary.ActiveAlerts
+- uid: Meridian.Ui.Services.SystemHealthSummary.LastUpdated*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.LastUpdated
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_LastUpdated
+  name: LastUpdated
+  nameWithType: SystemHealthSummary.LastUpdated
+  fullName: Meridian.Ui.Services.SystemHealthSummary.LastUpdated
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.SystemHealthSummary.Uptime*
+  commentId: Overload:Meridian.Ui.Services.SystemHealthSummary.Uptime
+  href: Meridian.Ui.Services.SystemHealthSummary.html#Meridian_Ui_Services_SystemHealthSummary_Uptime
+  name: Uptime
+  nameWithType: SystemHealthSummary.Uptime
+  fullName: Meridian.Ui.Services.SystemHealthSummary.Uptime
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan

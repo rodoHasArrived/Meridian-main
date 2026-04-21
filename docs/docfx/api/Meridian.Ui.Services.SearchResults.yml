@@ -1,0 +1,752 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SearchResults
+  commentId: T:Meridian.Ui.Services.SearchResults
+  id: SearchResults
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SearchResults.Actions
+  - Meridian.Ui.Services.SearchResults.AllResults
+  - Meridian.Ui.Services.SearchResults.Help
+  - Meridian.Ui.Services.SearchResults.Pages
+  - Meridian.Ui.Services.SearchResults.Providers
+  - Meridian.Ui.Services.SearchResults.Query
+  - Meridian.Ui.Services.SearchResults.Symbols
+  - Meridian.Ui.Services.SearchResults.TotalCount
+  langs:
+  - csharp
+  - vb
+  name: SearchResults
+  nameWithType: SearchResults
+  fullName: Meridian.Ui.Services.SearchResults
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchResults
+    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    startLine: 369
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Search results container.
+  example: []
+  syntax:
+    content: public sealed class SearchResults
+    content.vb: Public NotInheritable Class SearchResults
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SearchResults.Query
+  commentId: P:Meridian.Ui.Services.SearchResults.Query
+  id: Query
+  parent: Meridian.Ui.Services.SearchResults
+  langs:
+  - csharp
+  - vb
+  name: Query
+  nameWithType: SearchResults.Query
+  fullName: Meridian.Ui.Services.SearchResults.Query
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Query
+    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    startLine: 371
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Query { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Query As String
+  overload: Meridian.Ui.Services.SearchResults.Query*
+- uid: Meridian.Ui.Services.SearchResults.Symbols
+  commentId: P:Meridian.Ui.Services.SearchResults.Symbols
+  id: Symbols
+  parent: Meridian.Ui.Services.SearchResults
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: SearchResults.Symbols
+  fullName: Meridian.Ui.Services.SearchResults.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<SearchResultItem> Symbols { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.SearchResultItem}
+    content.vb: Public ReadOnly Property Symbols As List(Of SearchResultItem)
+  overload: Meridian.Ui.Services.SearchResults.Symbols*
+- uid: Meridian.Ui.Services.SearchResults.Providers
+  commentId: P:Meridian.Ui.Services.SearchResults.Providers
+  id: Providers
+  parent: Meridian.Ui.Services.SearchResults
+  langs:
+  - csharp
+  - vb
+  name: Providers
+  nameWithType: SearchResults.Providers
+  fullName: Meridian.Ui.Services.SearchResults.Providers
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Providers
+    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    startLine: 373
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<SearchResultItem> Providers { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.SearchResultItem}
+    content.vb: Public ReadOnly Property Providers As List(Of SearchResultItem)
+  overload: Meridian.Ui.Services.SearchResults.Providers*
+- uid: Meridian.Ui.Services.SearchResults.Pages
+  commentId: P:Meridian.Ui.Services.SearchResults.Pages
+  id: Pages
+  parent: Meridian.Ui.Services.SearchResults
+  langs:
+  - csharp
+  - vb
+  name: Pages
+  nameWithType: SearchResults.Pages
+  fullName: Meridian.Ui.Services.SearchResults.Pages
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pages
+    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    startLine: 374
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<SearchResultItem> Pages { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.SearchResultItem}
+    content.vb: Public ReadOnly Property Pages As List(Of SearchResultItem)
+  overload: Meridian.Ui.Services.SearchResults.Pages*
+- uid: Meridian.Ui.Services.SearchResults.Actions
+  commentId: P:Meridian.Ui.Services.SearchResults.Actions
+  id: Actions
+  parent: Meridian.Ui.Services.SearchResults
+  langs:
+  - csharp
+  - vb
+  name: Actions
+  nameWithType: SearchResults.Actions
+  fullName: Meridian.Ui.Services.SearchResults.Actions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Actions
+    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    startLine: 375
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<SearchResultItem> Actions { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.SearchResultItem}
+    content.vb: Public ReadOnly Property Actions As List(Of SearchResultItem)
+  overload: Meridian.Ui.Services.SearchResults.Actions*
+- uid: Meridian.Ui.Services.SearchResults.Help
+  commentId: P:Meridian.Ui.Services.SearchResults.Help
+  id: Help
+  parent: Meridian.Ui.Services.SearchResults
+  langs:
+  - csharp
+  - vb
+  name: Help
+  nameWithType: SearchResults.Help
+  fullName: Meridian.Ui.Services.SearchResults.Help
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Help
+    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    startLine: 376
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<SearchResultItem> Help { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.SearchResultItem}
+    content.vb: Public ReadOnly Property Help As List(Of SearchResultItem)
+  overload: Meridian.Ui.Services.SearchResults.Help*
+- uid: Meridian.Ui.Services.SearchResults.TotalCount
+  commentId: P:Meridian.Ui.Services.SearchResults.TotalCount
+  id: TotalCount
+  parent: Meridian.Ui.Services.SearchResults
+  langs:
+  - csharp
+  - vb
+  name: TotalCount
+  nameWithType: SearchResults.TotalCount
+  fullName: Meridian.Ui.Services.SearchResults.TotalCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCount
+    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    startLine: 378
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TotalCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property TotalCount As Integer
+  overload: Meridian.Ui.Services.SearchResults.TotalCount*
+- uid: Meridian.Ui.Services.SearchResults.AllResults
+  commentId: P:Meridian.Ui.Services.SearchResults.AllResults
+  id: AllResults
+  parent: Meridian.Ui.Services.SearchResults
+  langs:
+  - csharp
+  - vb
+  name: AllResults
+  nameWithType: SearchResults.AllResults
+  fullName: Meridian.Ui.Services.SearchResults.AllResults
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllResults
+    path: ../../src/Meridian.Ui.Services/Services/SearchService.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public IEnumerable<SearchResultItem> AllResults { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Ui.Services.SearchResultItem}
+    content.vb: Public ReadOnly Property AllResults As IEnumerable(Of SearchResultItem)
+  overload: Meridian.Ui.Services.SearchResults.AllResults*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SearchResults.Query*
+  commentId: Overload:Meridian.Ui.Services.SearchResults.Query
+  href: Meridian.Ui.Services.SearchResults.html#Meridian_Ui_Services_SearchResults_Query
+  name: Query
+  nameWithType: SearchResults.Query
+  fullName: Meridian.Ui.Services.SearchResults.Query
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SearchResults.Symbols*
+  commentId: Overload:Meridian.Ui.Services.SearchResults.Symbols
+  href: Meridian.Ui.Services.SearchResults.html#Meridian_Ui_Services_SearchResults_Symbols
+  name: Symbols
+  nameWithType: SearchResults.Symbols
+  fullName: Meridian.Ui.Services.SearchResults.Symbols
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.SearchResultItem}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.SearchResultItem}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<SearchResultItem>
+  nameWithType: List<SearchResultItem>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.SearchResultItem>
+  nameWithType.vb: List(Of SearchResultItem)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.SearchResultItem)
+  name.vb: List(Of SearchResultItem)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.SearchResultItem
+    name: SearchResultItem
+    href: Meridian.Ui.Services.SearchResultItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SearchResultItem
+    name: SearchResultItem
+    href: Meridian.Ui.Services.SearchResultItem.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.SearchResults.Providers*
+  commentId: Overload:Meridian.Ui.Services.SearchResults.Providers
+  href: Meridian.Ui.Services.SearchResults.html#Meridian_Ui_Services_SearchResults_Providers
+  name: Providers
+  nameWithType: SearchResults.Providers
+  fullName: Meridian.Ui.Services.SearchResults.Providers
+- uid: Meridian.Ui.Services.SearchResults.Pages*
+  commentId: Overload:Meridian.Ui.Services.SearchResults.Pages
+  href: Meridian.Ui.Services.SearchResults.html#Meridian_Ui_Services_SearchResults_Pages
+  name: Pages
+  nameWithType: SearchResults.Pages
+  fullName: Meridian.Ui.Services.SearchResults.Pages
+- uid: Meridian.Ui.Services.SearchResults.Actions*
+  commentId: Overload:Meridian.Ui.Services.SearchResults.Actions
+  href: Meridian.Ui.Services.SearchResults.html#Meridian_Ui_Services_SearchResults_Actions
+  name: Actions
+  nameWithType: SearchResults.Actions
+  fullName: Meridian.Ui.Services.SearchResults.Actions
+- uid: Meridian.Ui.Services.SearchResults.Help*
+  commentId: Overload:Meridian.Ui.Services.SearchResults.Help
+  href: Meridian.Ui.Services.SearchResults.html#Meridian_Ui_Services_SearchResults_Help
+  name: Help
+  nameWithType: SearchResults.Help
+  fullName: Meridian.Ui.Services.SearchResults.Help
+- uid: Meridian.Ui.Services.SearchResults.TotalCount*
+  commentId: Overload:Meridian.Ui.Services.SearchResults.TotalCount
+  href: Meridian.Ui.Services.SearchResults.html#Meridian_Ui_Services_SearchResults_TotalCount
+  name: TotalCount
+  nameWithType: SearchResults.TotalCount
+  fullName: Meridian.Ui.Services.SearchResults.TotalCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.SearchResults.AllResults*
+  commentId: Overload:Meridian.Ui.Services.SearchResults.AllResults
+  href: Meridian.Ui.Services.SearchResults.html#Meridian_Ui_Services_SearchResults_AllResults
+  name: AllResults
+  nameWithType: SearchResults.AllResults
+  fullName: Meridian.Ui.Services.SearchResults.AllResults
+- uid: System.Collections.Generic.IEnumerable{Meridian.Ui.Services.SearchResultItem}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Ui.Services.SearchResultItem}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<SearchResultItem>
+  nameWithType: IEnumerable<SearchResultItem>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Ui.Services.SearchResultItem>
+  nameWithType.vb: IEnumerable(Of SearchResultItem)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Ui.Services.SearchResultItem)
+  name.vb: IEnumerable(Of SearchResultItem)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Ui.Services.SearchResultItem
+    name: SearchResultItem
+    href: Meridian.Ui.Services.SearchResultItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SearchResultItem
+    name: SearchResultItem
+    href: Meridian.Ui.Services.SearchResultItem.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

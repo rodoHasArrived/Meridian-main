@@ -1,0 +1,1128 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  id: FinancialAccountSnapshot
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.#ctor(System.String,System.String,Meridian.Backtesting.Sdk.FinancialAccountKind,System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position},Meridian.Backtesting.Sdk.FinancialAccountRules,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.OpenLot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.ClosedLot})
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.AccountId
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Cash
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ClosedLots
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.DisplayName
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Equity
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Institution
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Kind
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.LongMarketValue
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.MarginBalance
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.OpenLots
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Positions
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Rules
+  - Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ShortMarketValue
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccountSnapshot
+  nameWithType: FinancialAccountSnapshot
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancialAccountSnapshot
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Point-in-time view of a single financial account inside a broader portfolio snapshot.
+  example: []
+  syntax:
+    content: 'public sealed record FinancialAccountSnapshot : IEquatable<FinancialAccountSnapshot>'
+    content.vb: Public NotInheritable Class FinancialAccountSnapshot Implements IEquatable(Of FinancialAccountSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.FinancialAccountSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.#ctor(System.String,System.String,Meridian.Backtesting.Sdk.FinancialAccountKind,System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position},Meridian.Backtesting.Sdk.FinancialAccountRules,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.OpenLot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.ClosedLot})
+  commentId: M:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.#ctor(System.String,System.String,Meridian.Backtesting.Sdk.FinancialAccountKind,System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position},Meridian.Backtesting.Sdk.FinancialAccountRules,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.OpenLot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.ClosedLot})
+  id: '#ctor(System.String,System.String,Meridian.Backtesting.Sdk.FinancialAccountKind,System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position},Meridian.Backtesting.Sdk.FinancialAccountRules,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.OpenLot},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.ClosedLot})'
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccountSnapshot(string, string, FinancialAccountKind, string?, decimal, decimal, decimal, decimal, decimal, IReadOnlyDictionary<string, Position>, FinancialAccountRules, IReadOnlyList<OpenLot>?, IReadOnlyList<ClosedLot>?)
+  nameWithType: FinancialAccountSnapshot.FinancialAccountSnapshot(string, string, FinancialAccountKind, string?, decimal, decimal, decimal, decimal, decimal, IReadOnlyDictionary<string, Position>, FinancialAccountRules, IReadOnlyList<OpenLot>?, IReadOnlyList<ClosedLot>?)
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.FinancialAccountSnapshot(string, string, Meridian.Backtesting.Sdk.FinancialAccountKind, string?, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Backtesting.Sdk.Position>, Meridian.Backtesting.Sdk.FinancialAccountRules, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.OpenLot>?, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.ClosedLot>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Point-in-time view of a single financial account inside a broader portfolio snapshot.
+  example: []
+  syntax:
+    content: public FinancialAccountSnapshot(string AccountId, string DisplayName, FinancialAccountKind Kind, string? Institution, decimal Cash, decimal MarginBalance, decimal LongMarketValue, decimal ShortMarketValue, decimal Equity, IReadOnlyDictionary<string, Position> Positions, FinancialAccountRules Rules, IReadOnlyList<OpenLot>? OpenLots = null, IReadOnlyList<ClosedLot>? ClosedLots = null)
+    parameters:
+    - id: AccountId
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: Kind
+      type: Meridian.Backtesting.Sdk.FinancialAccountKind
+    - id: Institution
+      type: System.String
+    - id: Cash
+      type: System.Decimal
+    - id: MarginBalance
+      type: System.Decimal
+    - id: LongMarketValue
+      type: System.Decimal
+    - id: ShortMarketValue
+      type: System.Decimal
+    - id: Equity
+      type: System.Decimal
+    - id: Positions
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position}
+    - id: Rules
+      type: Meridian.Backtesting.Sdk.FinancialAccountRules
+    - id: OpenLots
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.OpenLot}
+    - id: ClosedLots
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.ClosedLot}
+    content.vb: Public Sub New(AccountId As String, DisplayName As String, Kind As FinancialAccountKind, Institution As String, Cash As Decimal, MarginBalance As Decimal, LongMarketValue As Decimal, ShortMarketValue As Decimal, Equity As Decimal, Positions As IReadOnlyDictionary(Of String, Position), Rules As FinancialAccountRules, OpenLots As IReadOnlyList(Of OpenLot) = Nothing, ClosedLots As IReadOnlyList(Of ClosedLot) = Nothing)
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.#ctor*
+  nameWithType.vb: FinancialAccountSnapshot.New(String, String, FinancialAccountKind, String, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyDictionary(Of String, Position), FinancialAccountRules, IReadOnlyList(Of OpenLot), IReadOnlyList(Of ClosedLot))
+  fullName.vb: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.New(String, String, Meridian.Backtesting.Sdk.FinancialAccountKind, String, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Backtesting.Sdk.Position), Meridian.Backtesting.Sdk.FinancialAccountRules, System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.OpenLot), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.ClosedLot))
+  name.vb: New(String, String, FinancialAccountKind, String, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyDictionary(Of String, Position), FinancialAccountRules, IReadOnlyList(Of OpenLot), IReadOnlyList(Of ClosedLot))
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.AccountId
+  id: AccountId
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: FinancialAccountSnapshot.AccountId
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.AccountId*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.DisplayName
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.DisplayName
+  id: DisplayName
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: FinancialAccountSnapshot.DisplayName
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.DisplayName*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Kind
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Kind
+  id: Kind
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Kind
+  nameWithType: FinancialAccountSnapshot.Kind
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Kind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Kind
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public FinancialAccountKind Kind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.FinancialAccountKind
+    content.vb: Public Property Kind As FinancialAccountKind
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Kind*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Institution
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Institution
+  id: Institution
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Institution
+  nameWithType: FinancialAccountSnapshot.Institution
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Institution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Institution
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string? Institution { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Institution As String
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Institution*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Cash
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Cash
+  id: Cash
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: FinancialAccountSnapshot.Cash
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Cash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal Cash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Cash As Decimal
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Cash*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.MarginBalance
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.MarginBalance
+  id: MarginBalance
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: MarginBalance
+  nameWithType: FinancialAccountSnapshot.MarginBalance
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.MarginBalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginBalance
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal MarginBalance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarginBalance As Decimal
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.MarginBalance*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.LongMarketValue
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.LongMarketValue
+  id: LongMarketValue
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LongMarketValue
+  nameWithType: FinancialAccountSnapshot.LongMarketValue
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.LongMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LongMarketValue
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal LongMarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property LongMarketValue As Decimal
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.LongMarketValue*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ShortMarketValue
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ShortMarketValue
+  id: ShortMarketValue
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ShortMarketValue
+  nameWithType: FinancialAccountSnapshot.ShortMarketValue
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ShortMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortMarketValue
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal ShortMarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ShortMarketValue As Decimal
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ShortMarketValue*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Equity
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Equity
+  id: Equity
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Equity
+  nameWithType: FinancialAccountSnapshot.Equity
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Equity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Equity
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal Equity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Equity As Decimal
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Equity*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Positions
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Positions
+  id: Positions
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Positions
+  nameWithType: FinancialAccountSnapshot.Positions
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Positions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Positions
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public IReadOnlyDictionary<string, Position> Positions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position}
+    content.vb: Public Property Positions As IReadOnlyDictionary(Of String, Position)
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Positions*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Rules
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Rules
+  id: Rules
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Rules
+  nameWithType: FinancialAccountSnapshot.Rules
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Rules
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rules
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public FinancialAccountRules Rules { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.FinancialAccountRules
+    content.vb: Public Property Rules As FinancialAccountRules
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Rules*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.OpenLots
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.OpenLots
+  id: OpenLots
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: OpenLots
+  nameWithType: FinancialAccountSnapshot.OpenLots
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.OpenLots
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenLots
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public IReadOnlyList<OpenLot>? OpenLots { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.OpenLot}
+    content.vb: Public Property OpenLots As IReadOnlyList(Of OpenLot)
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.OpenLots*
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ClosedLots
+  commentId: P:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ClosedLots
+  id: ClosedLots
+  parent: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ClosedLots
+  nameWithType: FinancialAccountSnapshot.ClosedLots
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ClosedLots
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClosedLots
+    path: ../../src/Meridian.Backtesting.Sdk/FinancialAccountSnapshot.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public IReadOnlyList<ClosedLot>? ClosedLots { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.ClosedLot}
+    content.vb: Public Property ClosedLots As IReadOnlyList(Of ClosedLot)
+  overload: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ClosedLots*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.FinancialAccountSnapshot}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.FinancialAccountSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FinancialAccountSnapshot>
+  nameWithType: IEquatable<FinancialAccountSnapshot>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.FinancialAccountSnapshot>
+  nameWithType.vb: IEquatable(Of FinancialAccountSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.FinancialAccountSnapshot)
+  name.vb: IEquatable(Of FinancialAccountSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+    name: FinancialAccountSnapshot
+    href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot
+    name: FinancialAccountSnapshot
+    href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.#ctor
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot__ctor_System_String_System_String_Meridian_Backtesting_Sdk_FinancialAccountKind_System_String_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyDictionary_System_String_Meridian_Backtesting_Sdk_Position__Meridian_Backtesting_Sdk_FinancialAccountRules_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_OpenLot__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_ClosedLot__
+  name: FinancialAccountSnapshot
+  nameWithType: FinancialAccountSnapshot.FinancialAccountSnapshot
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.FinancialAccountSnapshot
+  nameWithType.vb: FinancialAccountSnapshot.New
+  fullName.vb: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Backtesting.Sdk.FinancialAccountKind
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccountKind
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.FinancialAccountKind.html
+  name: FinancialAccountKind
+  nameWithType: FinancialAccountKind
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountKind
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Backtesting.Sdk.Position}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, Position>
+  nameWithType: IReadOnlyDictionary<string, Position>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Backtesting.Sdk.Position>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Position)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Backtesting.Sdk.Position)
+  name.vb: IReadOnlyDictionary(Of String, Position)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Position
+    name: Position
+    href: Meridian.Backtesting.Sdk.Position.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Position
+    name: Position
+    href: Meridian.Backtesting.Sdk.Position.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.FinancialAccountRules
+  commentId: T:Meridian.Backtesting.Sdk.FinancialAccountRules
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.FinancialAccountRules.html
+  name: FinancialAccountRules
+  nameWithType: FinancialAccountRules
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountRules
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.OpenLot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.OpenLot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<OpenLot>
+  nameWithType: IReadOnlyList<OpenLot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.OpenLot>
+  nameWithType.vb: IReadOnlyList(Of OpenLot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.OpenLot)
+  name.vb: IReadOnlyList(Of OpenLot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.OpenLot
+    name: OpenLot
+    href: Meridian.Backtesting.Sdk.OpenLot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.OpenLot
+    name: OpenLot
+    href: Meridian.Backtesting.Sdk.OpenLot.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.ClosedLot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.ClosedLot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ClosedLot>
+  nameWithType: IReadOnlyList<ClosedLot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.ClosedLot>
+  nameWithType.vb: IReadOnlyList(Of ClosedLot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.ClosedLot)
+  name.vb: IReadOnlyList(Of ClosedLot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.ClosedLot
+    name: ClosedLot
+    href: Meridian.Backtesting.Sdk.ClosedLot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.ClosedLot
+    name: ClosedLot
+    href: Meridian.Backtesting.Sdk.ClosedLot.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.AccountId*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.AccountId
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_AccountId
+  name: AccountId
+  nameWithType: FinancialAccountSnapshot.AccountId
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.AccountId
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.DisplayName*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.DisplayName
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_DisplayName
+  name: DisplayName
+  nameWithType: FinancialAccountSnapshot.DisplayName
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.DisplayName
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Kind*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Kind
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_Kind
+  name: Kind
+  nameWithType: FinancialAccountSnapshot.Kind
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Kind
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Institution*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Institution
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_Institution
+  name: Institution
+  nameWithType: FinancialAccountSnapshot.Institution
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Institution
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Cash*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Cash
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_Cash
+  name: Cash
+  nameWithType: FinancialAccountSnapshot.Cash
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Cash
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.MarginBalance*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.MarginBalance
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_MarginBalance
+  name: MarginBalance
+  nameWithType: FinancialAccountSnapshot.MarginBalance
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.MarginBalance
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.LongMarketValue*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.LongMarketValue
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_LongMarketValue
+  name: LongMarketValue
+  nameWithType: FinancialAccountSnapshot.LongMarketValue
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.LongMarketValue
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ShortMarketValue*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ShortMarketValue
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_ShortMarketValue
+  name: ShortMarketValue
+  nameWithType: FinancialAccountSnapshot.ShortMarketValue
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ShortMarketValue
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Equity*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Equity
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_Equity
+  name: Equity
+  nameWithType: FinancialAccountSnapshot.Equity
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Equity
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Positions*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Positions
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_Positions
+  name: Positions
+  nameWithType: FinancialAccountSnapshot.Positions
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Positions
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Rules*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Rules
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_Rules
+  name: Rules
+  nameWithType: FinancialAccountSnapshot.Rules
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.Rules
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.OpenLots*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.OpenLots
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_OpenLots
+  name: OpenLots
+  nameWithType: FinancialAccountSnapshot.OpenLots
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.OpenLots
+- uid: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ClosedLots*
+  commentId: Overload:Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ClosedLots
+  href: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.html#Meridian_Backtesting_Sdk_FinancialAccountSnapshot_ClosedLots
+  name: ClosedLots
+  nameWithType: FinancialAccountSnapshot.ClosedLots
+  fullName: Meridian.Backtesting.Sdk.FinancialAccountSnapshot.ClosedLots

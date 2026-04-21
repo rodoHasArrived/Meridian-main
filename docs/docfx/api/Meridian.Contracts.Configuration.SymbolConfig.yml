@@ -1,0 +1,1411 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  id: SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  children:
+  - Meridian.Contracts.Configuration.SymbolConfig.#ctor(System.String,System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Int32},Meridian.Contracts.Domain.Enums.InstrumentType,System.Nullable{Meridian.Contracts.Domain.Enums.LiquidityProfile},System.Nullable{System.Boolean},System.Nullable{System.Decimal},System.Nullable{Meridian.Contracts.Domain.Enums.OptionRight},System.String,System.Nullable{Meridian.Contracts.Domain.Enums.OptionStyle},System.Nullable{System.Int32},System.String)
+  - Meridian.Contracts.Configuration.SymbolConfig.ConId
+  - Meridian.Contracts.Configuration.SymbolConfig.Currency
+  - Meridian.Contracts.Configuration.SymbolConfig.DepthLevels
+  - Meridian.Contracts.Configuration.SymbolConfig.Exchange
+  - Meridian.Contracts.Configuration.SymbolConfig.InstrumentType
+  - Meridian.Contracts.Configuration.SymbolConfig.LastTradeDateOrContractMonth
+  - Meridian.Contracts.Configuration.SymbolConfig.LiquidityProfile
+  - Meridian.Contracts.Configuration.SymbolConfig.LocalSymbol
+  - Meridian.Contracts.Configuration.SymbolConfig.Multiplier
+  - Meridian.Contracts.Configuration.SymbolConfig.OptionStyle
+  - Meridian.Contracts.Configuration.SymbolConfig.PrimaryExchange
+  - Meridian.Contracts.Configuration.SymbolConfig.Right
+  - Meridian.Contracts.Configuration.SymbolConfig.SecurityType
+  - Meridian.Contracts.Configuration.SymbolConfig.Strike
+  - Meridian.Contracts.Configuration.SymbolConfig.SubscribeDepth
+  - Meridian.Contracts.Configuration.SymbolConfig.SubscribeTrades
+  - Meridian.Contracts.Configuration.SymbolConfig.Symbol
+  - Meridian.Contracts.Configuration.SymbolConfig.TradingClass
+  - Meridian.Contracts.Configuration.SymbolConfig.UnderlyingSymbol
+  - Meridian.Contracts.Configuration.SymbolConfig.UseRelaxedValidation
+  langs:
+  - csharp
+  - vb
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolConfig
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: >-
+    Configuration for a subscribed symbol and how to build its IB contract.
+
+
+    Notes for preferred shares on IB:
+
+    - Preferreds are usually represented as SecType=STK with a LocalSymbol like "PCG PRA" or "PCG PR A".
+
+    - To avoid ambiguity, set LocalSymbol explicitly when possible.
+
+
+    Notes for options:
+
+    - Set SecurityType to "OPT" and provide Strike, Right, and LastTradeDateOrContractMonth.
+
+    - For index options (SPX, NDX, RUT), set OptionStyle to European and InstrumentType to IndexOption.
+
+    - For equity options, OptionStyle defaults to American.
+  example: []
+  syntax:
+    content: 'public sealed record SymbolConfig : IEquatable<SymbolConfig>'
+    content.vb: Public NotInheritable Class SymbolConfig Implements IEquatable(Of SymbolConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Configuration.SymbolConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Configuration.SymbolConfig.#ctor(System.String,System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Int32},Meridian.Contracts.Domain.Enums.InstrumentType,System.Nullable{Meridian.Contracts.Domain.Enums.LiquidityProfile},System.Nullable{System.Boolean},System.Nullable{System.Decimal},System.Nullable{Meridian.Contracts.Domain.Enums.OptionRight},System.String,System.Nullable{Meridian.Contracts.Domain.Enums.OptionStyle},System.Nullable{System.Int32},System.String)
+  commentId: M:Meridian.Contracts.Configuration.SymbolConfig.#ctor(System.String,System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Int32},Meridian.Contracts.Domain.Enums.InstrumentType,System.Nullable{Meridian.Contracts.Domain.Enums.LiquidityProfile},System.Nullable{System.Boolean},System.Nullable{System.Decimal},System.Nullable{Meridian.Contracts.Domain.Enums.OptionRight},System.String,System.Nullable{Meridian.Contracts.Domain.Enums.OptionStyle},System.Nullable{System.Int32},System.String)
+  id: '#ctor(System.String,System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Int32},Meridian.Contracts.Domain.Enums.InstrumentType,System.Nullable{Meridian.Contracts.Domain.Enums.LiquidityProfile},System.Nullable{System.Boolean},System.Nullable{System.Decimal},System.Nullable{Meridian.Contracts.Domain.Enums.OptionRight},System.String,System.Nullable{Meridian.Contracts.Domain.Enums.OptionStyle},System.Nullable{System.Int32},System.String)'
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: SymbolConfig(string, bool, bool, int, string, string, string, string?, string?, string?, int?, InstrumentType, LiquidityProfile?, bool?, decimal?, OptionRight?, string?, OptionStyle?, int?, string?)
+  nameWithType: SymbolConfig.SymbolConfig(string, bool, bool, int, string, string, string, string?, string?, string?, int?, InstrumentType, LiquidityProfile?, bool?, decimal?, OptionRight?, string?, OptionStyle?, int?, string?)
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.SymbolConfig(string, bool, bool, int, string, string, string, string?, string?, string?, int?, Meridian.Contracts.Domain.Enums.InstrumentType, Meridian.Contracts.Domain.Enums.LiquidityProfile?, bool?, decimal?, Meridian.Contracts.Domain.Enums.OptionRight?, string?, Meridian.Contracts.Domain.Enums.OptionStyle?, int?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: >-
+    Configuration for a subscribed symbol and how to build its IB contract.
+
+
+    Notes for preferred shares on IB:
+
+    - Preferreds are usually represented as SecType=STK with a LocalSymbol like "PCG PRA" or "PCG PR A".
+
+    - To avoid ambiguity, set LocalSymbol explicitly when possible.
+
+
+    Notes for options:
+
+    - Set SecurityType to "OPT" and provide Strike, Right, and LastTradeDateOrContractMonth.
+
+    - For index options (SPX, NDX, RUT), set OptionStyle to European and InstrumentType to IndexOption.
+
+    - For equity options, OptionStyle defaults to American.
+  example: []
+  syntax:
+    content: public SymbolConfig(string Symbol, bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string SecurityType = "STK", string Exchange = "SMART", string Currency = "USD", string? PrimaryExchange = null, string? LocalSymbol = null, string? TradingClass = null, int? ConId = null, InstrumentType InstrumentType = InstrumentType.Equity, LiquidityProfile? LiquidityProfile = null, bool? UseRelaxedValidation = null, decimal? Strike = null, OptionRight? Right = null, string? LastTradeDateOrContractMonth = null, OptionStyle? OptionStyle = null, int? Multiplier = null, string? UnderlyingSymbol = null)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: SubscribeTrades
+      type: System.Boolean
+    - id: SubscribeDepth
+      type: System.Boolean
+    - id: DepthLevels
+      type: System.Int32
+    - id: SecurityType
+      type: System.String
+    - id: Exchange
+      type: System.String
+    - id: Currency
+      type: System.String
+    - id: PrimaryExchange
+      type: System.String
+    - id: LocalSymbol
+      type: System.String
+    - id: TradingClass
+      type: System.String
+    - id: ConId
+      type: System.Nullable{System.Int32}
+    - id: InstrumentType
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+    - id: LiquidityProfile
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.LiquidityProfile}
+    - id: UseRelaxedValidation
+      type: System.Nullable{System.Boolean}
+    - id: Strike
+      type: System.Nullable{System.Decimal}
+    - id: Right
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.OptionRight}
+    - id: LastTradeDateOrContractMonth
+      type: System.String
+    - id: OptionStyle
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.OptionStyle}
+    - id: Multiplier
+      type: System.Nullable{System.Int32}
+    - id: UnderlyingSymbol
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, SubscribeTrades As Boolean = True, SubscribeDepth As Boolean = True, DepthLevels As Integer = 10, SecurityType As String = "STK", Exchange As String = "SMART", Currency As String = "USD", PrimaryExchange As String = Nothing, LocalSymbol As String = Nothing, TradingClass As String = Nothing, ConId As Integer? = Nothing, InstrumentType As InstrumentType = InstrumentType.Equity, LiquidityProfile As LiquidityProfile? = Nothing, UseRelaxedValidation As Boolean? = Nothing, Strike As Decimal? = Nothing, Right As OptionRight? = Nothing, LastTradeDateOrContractMonth As String = Nothing, OptionStyle As OptionStyle? = Nothing, Multiplier As Integer? = Nothing, UnderlyingSymbol As String = Nothing)
+  overload: Meridian.Contracts.Configuration.SymbolConfig.#ctor*
+  nameWithType.vb: SymbolConfig.New(String, Boolean, Boolean, Integer, String, String, String, String, String, String, Integer?, InstrumentType, LiquidityProfile?, Boolean?, Decimal?, OptionRight?, String, OptionStyle?, Integer?, String)
+  fullName.vb: Meridian.Contracts.Configuration.SymbolConfig.New(String, Boolean, Boolean, Integer, String, String, String, String, String, String, Integer?, Meridian.Contracts.Domain.Enums.InstrumentType, Meridian.Contracts.Domain.Enums.LiquidityProfile?, Boolean?, Decimal?, Meridian.Contracts.Domain.Enums.OptionRight?, String, Meridian.Contracts.Domain.Enums.OptionStyle?, Integer?, String)
+  name.vb: New(String, Boolean, Boolean, Integer, String, String, String, String, String, String, Integer?, InstrumentType, LiquidityProfile?, Boolean?, Decimal?, OptionRight?, String, OptionStyle?, Integer?, String)
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Symbol
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolConfig.Symbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Configuration.SymbolConfig.Symbol*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.SubscribeTrades
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.SubscribeTrades
+  id: SubscribeTrades
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades
+  nameWithType: SymbolConfig.SubscribeTrades
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.SubscribeTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public bool SubscribeTrades { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SubscribeTrades As Boolean
+  overload: Meridian.Contracts.Configuration.SymbolConfig.SubscribeTrades*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.SubscribeDepth
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.SubscribeDepth
+  id: SubscribeDepth
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: SubscribeDepth
+  nameWithType: SymbolConfig.SubscribeDepth
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.SubscribeDepth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeDepth
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public bool SubscribeDepth { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SubscribeDepth As Boolean
+  overload: Meridian.Contracts.Configuration.SymbolConfig.SubscribeDepth*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.DepthLevels
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.DepthLevels
+  id: DepthLevels
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: DepthLevels
+  nameWithType: SymbolConfig.DepthLevels
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.DepthLevels
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthLevels
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public int DepthLevels { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DepthLevels As Integer
+  overload: Meridian.Contracts.Configuration.SymbolConfig.DepthLevels*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.SecurityType
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.SecurityType
+  id: SecurityType
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: SecurityType
+  nameWithType: SymbolConfig.SecurityType
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.SecurityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityType
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public string SecurityType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecurityType As String
+  overload: Meridian.Contracts.Configuration.SymbolConfig.SecurityType*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Exchange
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.Exchange
+  id: Exchange
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: SymbolConfig.Exchange
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public string Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Contracts.Configuration.SymbolConfig.Exchange*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Currency
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.Currency
+  id: Currency
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: SymbolConfig.Currency
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.Configuration.SymbolConfig.Currency*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.PrimaryExchange
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.PrimaryExchange
+  id: PrimaryExchange
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: PrimaryExchange
+  nameWithType: SymbolConfig.PrimaryExchange
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.PrimaryExchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryExchange
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public string? PrimaryExchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PrimaryExchange As String
+  overload: Meridian.Contracts.Configuration.SymbolConfig.PrimaryExchange*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.LocalSymbol
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.LocalSymbol
+  id: LocalSymbol
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: LocalSymbol
+  nameWithType: SymbolConfig.LocalSymbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.LocalSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LocalSymbol
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public string? LocalSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LocalSymbol As String
+  overload: Meridian.Contracts.Configuration.SymbolConfig.LocalSymbol*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.TradingClass
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.TradingClass
+  id: TradingClass
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: TradingClass
+  nameWithType: SymbolConfig.TradingClass
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.TradingClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingClass
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public string? TradingClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TradingClass As String
+  overload: Meridian.Contracts.Configuration.SymbolConfig.TradingClass*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.ConId
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.ConId
+  id: ConId
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: ConId
+  nameWithType: SymbolConfig.ConId
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.ConId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConId
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public int? ConId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property ConId As Integer?
+  overload: Meridian.Contracts.Configuration.SymbolConfig.ConId*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.InstrumentType
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.InstrumentType
+  id: InstrumentType
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: InstrumentType
+  nameWithType: SymbolConfig.InstrumentType
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.InstrumentType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstrumentType
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public InstrumentType InstrumentType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+    content.vb: Public Property InstrumentType As InstrumentType
+  overload: Meridian.Contracts.Configuration.SymbolConfig.InstrumentType*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.LiquidityProfile
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.LiquidityProfile
+  id: LiquidityProfile
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: LiquidityProfile
+  nameWithType: SymbolConfig.LiquidityProfile
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.LiquidityProfile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LiquidityProfile
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public LiquidityProfile? LiquidityProfile { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.LiquidityProfile}
+    content.vb: Public Property LiquidityProfile As LiquidityProfile?
+  overload: Meridian.Contracts.Configuration.SymbolConfig.LiquidityProfile*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.UseRelaxedValidation
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.UseRelaxedValidation
+  id: UseRelaxedValidation
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: UseRelaxedValidation
+  nameWithType: SymbolConfig.UseRelaxedValidation
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.UseRelaxedValidation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseRelaxedValidation
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public bool? UseRelaxedValidation { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property UseRelaxedValidation As Boolean?
+  overload: Meridian.Contracts.Configuration.SymbolConfig.UseRelaxedValidation*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Strike
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.Strike
+  id: Strike
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: Strike
+  nameWithType: SymbolConfig.Strike
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Strike
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strike
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public decimal? Strike { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property Strike As Decimal?
+  overload: Meridian.Contracts.Configuration.SymbolConfig.Strike*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Right
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.Right
+  id: Right
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: Right
+  nameWithType: SymbolConfig.Right
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Right
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Right
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public OptionRight? Right { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.OptionRight}
+    content.vb: Public Property Right As OptionRight?
+  overload: Meridian.Contracts.Configuration.SymbolConfig.Right*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.LastTradeDateOrContractMonth
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.LastTradeDateOrContractMonth
+  id: LastTradeDateOrContractMonth
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: LastTradeDateOrContractMonth
+  nameWithType: SymbolConfig.LastTradeDateOrContractMonth
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.LastTradeDateOrContractMonth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastTradeDateOrContractMonth
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public string? LastTradeDateOrContractMonth { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LastTradeDateOrContractMonth As String
+  overload: Meridian.Contracts.Configuration.SymbolConfig.LastTradeDateOrContractMonth*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.OptionStyle
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.OptionStyle
+  id: OptionStyle
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: OptionStyle
+  nameWithType: SymbolConfig.OptionStyle
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.OptionStyle
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionStyle
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public OptionStyle? OptionStyle { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.OptionStyle}
+    content.vb: Public Property OptionStyle As OptionStyle?
+  overload: Meridian.Contracts.Configuration.SymbolConfig.OptionStyle*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Multiplier
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.Multiplier
+  id: Multiplier
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: Multiplier
+  nameWithType: SymbolConfig.Multiplier
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Multiplier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Multiplier
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public int? Multiplier { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property Multiplier As Integer?
+  overload: Meridian.Contracts.Configuration.SymbolConfig.Multiplier*
+- uid: Meridian.Contracts.Configuration.SymbolConfig.UnderlyingSymbol
+  commentId: P:Meridian.Contracts.Configuration.SymbolConfig.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Contracts.Configuration.SymbolConfig
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: SymbolConfig.UnderlyingSymbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/SymbolConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Contracts/Configuration/SymbolConfig.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public string? UnderlyingSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property UnderlyingSymbol As String
+  overload: Meridian.Contracts.Configuration.SymbolConfig.UnderlyingSymbol*
+references:
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Configuration.SymbolConfig}
+  commentId: T:System.IEquatable{Meridian.Contracts.Configuration.SymbolConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolConfig>
+  nameWithType: IEquatable<SymbolConfig>
+  fullName: System.IEquatable<Meridian.Contracts.Configuration.SymbolConfig>
+  nameWithType.vb: IEquatable(Of SymbolConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Configuration.SymbolConfig)
+  name.vb: IEquatable(Of SymbolConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+    href: Meridian.Contracts.Configuration.SymbolConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+    href: Meridian.Contracts.Configuration.SymbolConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Configuration.SymbolConfig.#ctor*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.#ctor
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig__ctor_System_String_System_Boolean_System_Boolean_System_Int32_System_String_System_String_System_String_System_String_System_String_System_String_System_Nullable_System_Int32__Meridian_Contracts_Domain_Enums_InstrumentType_System_Nullable_Meridian_Contracts_Domain_Enums_LiquidityProfile__System_Nullable_System_Boolean__System_Nullable_System_Decimal__System_Nullable_Meridian_Contracts_Domain_Enums_OptionRight__System_String_System_Nullable_Meridian_Contracts_Domain_Enums_OptionStyle__System_Nullable_System_Int32__System_String_
+  name: SymbolConfig
+  nameWithType: SymbolConfig.SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.SymbolConfig
+  nameWithType.vb: SymbolConfig.New
+  fullName.vb: Meridian.Contracts.Configuration.SymbolConfig.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType
+  commentId: T:Meridian.Contracts.Domain.Enums.InstrumentType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.InstrumentType.html
+  name: InstrumentType
+  nameWithType: InstrumentType
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: System.Nullable{Meridian.Contracts.Domain.Enums.LiquidityProfile}
+  commentId: T:System.Nullable{Meridian.Contracts.Domain.Enums.LiquidityProfile}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Domain.Enums.LiquidityProfile.html
+  name: LiquidityProfile?
+  nameWithType: LiquidityProfile?
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile?
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.Enums.LiquidityProfile
+    name: LiquidityProfile
+    href: Meridian.Contracts.Domain.Enums.LiquidityProfile.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.Enums.LiquidityProfile
+    name: LiquidityProfile
+    href: Meridian.Contracts.Domain.Enums.LiquidityProfile.html
+  - name: '?'
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.Domain.Enums.OptionRight}
+  commentId: T:System.Nullable{Meridian.Contracts.Domain.Enums.OptionRight}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Domain.Enums.OptionRight.html
+  name: OptionRight?
+  nameWithType: OptionRight?
+  fullName: Meridian.Contracts.Domain.Enums.OptionRight?
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.Enums.OptionRight
+    name: OptionRight
+    href: Meridian.Contracts.Domain.Enums.OptionRight.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.Enums.OptionRight
+    name: OptionRight
+    href: Meridian.Contracts.Domain.Enums.OptionRight.html
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.Domain.Enums.OptionStyle}
+  commentId: T:System.Nullable{Meridian.Contracts.Domain.Enums.OptionStyle}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Domain.Enums.OptionStyle.html
+  name: OptionStyle?
+  nameWithType: OptionStyle?
+  fullName: Meridian.Contracts.Domain.Enums.OptionStyle?
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.Enums.OptionStyle
+    name: OptionStyle
+    href: Meridian.Contracts.Domain.Enums.OptionStyle.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.Enums.OptionStyle
+    name: OptionStyle
+    href: Meridian.Contracts.Domain.Enums.OptionStyle.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Symbol*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.Symbol
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_Symbol
+  name: Symbol
+  nameWithType: SymbolConfig.Symbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Symbol
+- uid: Meridian.Contracts.Configuration.SymbolConfig.SubscribeTrades*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.SubscribeTrades
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_SubscribeTrades
+  name: SubscribeTrades
+  nameWithType: SymbolConfig.SubscribeTrades
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.SubscribeTrades
+- uid: Meridian.Contracts.Configuration.SymbolConfig.SubscribeDepth*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.SubscribeDepth
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_SubscribeDepth
+  name: SubscribeDepth
+  nameWithType: SymbolConfig.SubscribeDepth
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.SubscribeDepth
+- uid: Meridian.Contracts.Configuration.SymbolConfig.DepthLevels*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.DepthLevels
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_DepthLevels
+  name: DepthLevels
+  nameWithType: SymbolConfig.DepthLevels
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.DepthLevels
+- uid: Meridian.Contracts.Configuration.SymbolConfig.SecurityType*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.SecurityType
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_SecurityType
+  name: SecurityType
+  nameWithType: SymbolConfig.SecurityType
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.SecurityType
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Exchange*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.Exchange
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_Exchange
+  name: Exchange
+  nameWithType: SymbolConfig.Exchange
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Exchange
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Currency*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.Currency
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_Currency
+  name: Currency
+  nameWithType: SymbolConfig.Currency
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Currency
+- uid: Meridian.Contracts.Configuration.SymbolConfig.PrimaryExchange*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.PrimaryExchange
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_PrimaryExchange
+  name: PrimaryExchange
+  nameWithType: SymbolConfig.PrimaryExchange
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.PrimaryExchange
+- uid: Meridian.Contracts.Configuration.SymbolConfig.LocalSymbol*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.LocalSymbol
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_LocalSymbol
+  name: LocalSymbol
+  nameWithType: SymbolConfig.LocalSymbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.LocalSymbol
+- uid: Meridian.Contracts.Configuration.SymbolConfig.TradingClass*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.TradingClass
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_TradingClass
+  name: TradingClass
+  nameWithType: SymbolConfig.TradingClass
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.TradingClass
+- uid: Meridian.Contracts.Configuration.SymbolConfig.ConId*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.ConId
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_ConId
+  name: ConId
+  nameWithType: SymbolConfig.ConId
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.ConId
+- uid: Meridian.Contracts.Configuration.SymbolConfig.InstrumentType*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.InstrumentType
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_InstrumentType
+  name: InstrumentType
+  nameWithType: SymbolConfig.InstrumentType
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.InstrumentType
+- uid: Meridian.Contracts.Configuration.SymbolConfig.LiquidityProfile*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.LiquidityProfile
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_LiquidityProfile
+  name: LiquidityProfile
+  nameWithType: SymbolConfig.LiquidityProfile
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.LiquidityProfile
+- uid: Meridian.Contracts.Configuration.SymbolConfig.UseRelaxedValidation*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.UseRelaxedValidation
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_UseRelaxedValidation
+  name: UseRelaxedValidation
+  nameWithType: SymbolConfig.UseRelaxedValidation
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.UseRelaxedValidation
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Strike*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.Strike
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_Strike
+  name: Strike
+  nameWithType: SymbolConfig.Strike
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Strike
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Right*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.Right
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_Right
+  name: Right
+  nameWithType: SymbolConfig.Right
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Right
+- uid: Meridian.Contracts.Configuration.SymbolConfig.LastTradeDateOrContractMonth*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.LastTradeDateOrContractMonth
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_LastTradeDateOrContractMonth
+  name: LastTradeDateOrContractMonth
+  nameWithType: SymbolConfig.LastTradeDateOrContractMonth
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.LastTradeDateOrContractMonth
+- uid: Meridian.Contracts.Configuration.SymbolConfig.OptionStyle*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.OptionStyle
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_OptionStyle
+  name: OptionStyle
+  nameWithType: SymbolConfig.OptionStyle
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.OptionStyle
+- uid: Meridian.Contracts.Configuration.SymbolConfig.Multiplier*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.Multiplier
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_Multiplier
+  name: Multiplier
+  nameWithType: SymbolConfig.Multiplier
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.Multiplier
+- uid: Meridian.Contracts.Configuration.SymbolConfig.UnderlyingSymbol*
+  commentId: Overload:Meridian.Contracts.Configuration.SymbolConfig.UnderlyingSymbol
+  href: Meridian.Contracts.Configuration.SymbolConfig.html#Meridian_Contracts_Configuration_SymbolConfig_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: SymbolConfig.UnderlyingSymbol
+  fullName: Meridian.Contracts.Configuration.SymbolConfig.UnderlyingSymbol

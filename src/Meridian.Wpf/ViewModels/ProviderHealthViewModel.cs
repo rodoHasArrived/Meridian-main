@@ -31,6 +31,8 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     private PeriodicTimer? _sparklineTimer;
     private CancellationTokenSource? _cts;
     private DateTime? _lastRefreshTime;
+    private bool _isActive;
+    private bool _isDisposed;
 
     // ── Public collections ──────────────────────────────────────────────────
     public ObservableCollection<ProviderStatusModel> StreamingProviders { get; } = new();
@@ -83,6 +85,13 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
     public async Task StartAsync(CancellationToken ct = default)
     {
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+        if (_isActive)
+        {
+            return;
+        }
+
+        _isActive = true;
         _connectionService.StateChanged += OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated += OnConnectionHealthUpdated;
 
@@ -100,13 +109,14 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
     public void Stop()
     {
+        _isActive = false;
         _connectionService.StateChanged -= OnConnectionStateChanged;
         _connectionService.ConnectionHealthUpdated -= OnConnectionHealthUpdated;
         _refreshTimer.Stop();
         _staleCheckTimer.Stop();
         StopSparklineTimer();
-        _cts?.Cancel();
-        _cts?.Dispose();
+        var refreshCts = Interlocked.Exchange(ref _cts, null);
+        CancelAndDispose(refreshCts);
     }
 
     public async Task RefreshAsync(CancellationToken ct = default)
@@ -200,24 +210,42 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
     private async Task RefreshDataAsync(CancellationToken ct = default)
     {
-        _cts?.Cancel();
-        _cts = new CancellationTokenSource();
+        if (_isDisposed || !_isActive)
+        {
+            return;
+        }
+
+        var refreshCts = ct.CanBeCanceled
+            ? CancellationTokenSource.CreateLinkedTokenSource(ct)
+            : new CancellationTokenSource();
+        var previousRefreshCts = Interlocked.Exchange(ref _cts, refreshCts);
+        CancelAndDispose(previousRefreshCts);
 
         try
         {
-            await LoadStreamingProvidersAsync(_cts.Token);
-            await LoadBackfillProvidersAsync(_cts.Token);
+            if (_isDisposed || !_isActive)
+            {
+                return;
+            }
+
+            await LoadStreamingProvidersAsync(refreshCts.Token);
+            await LoadBackfillProvidersAsync(refreshCts.Token);
             UpdateSummaryStats();
             _lastRefreshTime = DateTime.UtcNow;
             UpdateStaleIndicator();
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (refreshCts.IsCancellationRequested || ct.IsCancellationRequested)
         {
             // Cancelled — ignore
         }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to refresh provider health", ex);
+        }
+        finally
+        {
+            Interlocked.CompareExchange(ref _cts, null, refreshCts);
+            CancelAndDispose(refreshCts, cancel: false);
         }
     }
 
@@ -264,6 +292,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
             StreamingProviders.Add(CreateDefaultProvider("alpaca", "Alpaca Markets"));
             StreamingProviders.Add(CreateDefaultProvider("ib", "Interactive Brokers"));
             StreamingProviders.Add(CreateDefaultProvider("polygon", "Polygon.io"));
+            StreamingProviders.Add(CreateDefaultProvider("robinhood", "Robinhood"));
         }
     }
 
@@ -327,6 +356,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         {
             "ALPACA" => "ALPACA__KEYID",
             "POLYGON" => "POLYGON__APIKEY",
+            "ROBINHOOD" => "ROBINHOOD_ACCESS_TOKEN",
             "TIINGO" => "TIINGO__TOKEN",
             "FINNHUB" => "FINNHUB__APIKEY",
             "ALPHAVANTAGE" => "ALPHAVANTAGE__APIKEY",
@@ -341,6 +371,7 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
         {
             "alpaca" => "200 req/min",
             "polygon" => "5 req/min (free)",
+            "robinhood" => "Rate limited by broker session",
             "tiingo" => "500 req/hour",
             "finnhub" => "60 req/min",
             "alphavantage" => "5 req/min",
@@ -417,6 +448,12 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
         Stop();
         _sparklineTimer?.Dispose();
     }
@@ -431,6 +468,34 @@ public sealed class ProviderHealthViewModel : BindableBase, IDisposable, IPageAc
     {
         _sparklineTimer?.Dispose();
         _sparklineTimer = null;
+    }
+
+    private static void CancelAndDispose(CancellationTokenSource? cts, bool cancel = true)
+    {
+        if (cts is null)
+        {
+            return;
+        }
+
+        if (cancel)
+        {
+            try
+            {
+                cts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+        }
+
+        try
+        {
+            cts.Dispose();
+        }
+        catch (ObjectDisposedException)
+        {
+        }
     }
 
     private async Task RefreshSparklineDataAsync()

@@ -1,0 +1,715 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.DailySummaryResult
+  commentId: T:Meridian.Application.Services.DailySummaryResult
+  id: DailySummaryResult
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.DailySummaryResult.#ctor(System.Boolean,Meridian.Application.Services.DailySummary,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult},System.DateTimeOffset,System.String)
+  - Meridian.Application.Services.DailySummaryResult.DeliveryResults
+  - Meridian.Application.Services.DailySummaryResult.ErrorMessage
+  - Meridian.Application.Services.DailySummaryResult.SentAt
+  - Meridian.Application.Services.DailySummaryResult.Success
+  - Meridian.Application.Services.DailySummaryResult.Summary
+  langs:
+  - csharp
+  - vb
+  name: DailySummaryResult
+  nameWithType: DailySummaryResult
+  fullName: Meridian.Application.Services.DailySummaryResult
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DailySummaryResult
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 643
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Result of a daily summary send operation.
+  example: []
+  syntax:
+    content: 'public readonly record struct DailySummaryResult : IEquatable<DailySummaryResult>'
+    content.vb: Public Structure DailySummaryResult Implements IEquatable(Of DailySummaryResult)
+  implements:
+  - System.IEquatable{Meridian.Application.Services.DailySummaryResult}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Services.DailySummaryResult.#ctor(System.Boolean,Meridian.Application.Services.DailySummary,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult},System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Application.Services.DailySummaryResult.#ctor(System.Boolean,Meridian.Application.Services.DailySummary,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult},System.DateTimeOffset,System.String)
+  id: '#ctor(System.Boolean,Meridian.Application.Services.DailySummary,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult},System.DateTimeOffset,System.String)'
+  parent: Meridian.Application.Services.DailySummaryResult
+  langs:
+  - csharp
+  - vb
+  name: DailySummaryResult(bool, DailySummary, IReadOnlyList<WebhookDeliveryResult>, DateTimeOffset, string?)
+  nameWithType: DailySummaryResult.DailySummaryResult(bool, DailySummary, IReadOnlyList<WebhookDeliveryResult>, DateTimeOffset, string?)
+  fullName: Meridian.Application.Services.DailySummaryResult.DailySummaryResult(bool, Meridian.Application.Services.DailySummary, System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.WebhookDeliveryResult>, System.DateTimeOffset, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 643
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Result of a daily summary send operation.
+  example: []
+  syntax:
+    content: public DailySummaryResult(bool Success, DailySummary Summary, IReadOnlyList<WebhookDeliveryResult> DeliveryResults, DateTimeOffset SentAt, string? ErrorMessage)
+    parameters:
+    - id: Success
+      type: System.Boolean
+    - id: Summary
+      type: Meridian.Application.Services.DailySummary
+    - id: DeliveryResults
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult}
+    - id: SentAt
+      type: System.DateTimeOffset
+    - id: ErrorMessage
+      type: System.String
+    content.vb: Public Sub New(Success As Boolean, Summary As DailySummary, DeliveryResults As IReadOnlyList(Of WebhookDeliveryResult), SentAt As DateTimeOffset, ErrorMessage As String)
+  overload: Meridian.Application.Services.DailySummaryResult.#ctor*
+  nameWithType.vb: DailySummaryResult.New(Boolean, DailySummary, IReadOnlyList(Of WebhookDeliveryResult), DateTimeOffset, String)
+  fullName.vb: Meridian.Application.Services.DailySummaryResult.New(Boolean, Meridian.Application.Services.DailySummary, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.WebhookDeliveryResult), System.DateTimeOffset, String)
+  name.vb: New(Boolean, DailySummary, IReadOnlyList(Of WebhookDeliveryResult), DateTimeOffset, String)
+- uid: Meridian.Application.Services.DailySummaryResult.Success
+  commentId: P:Meridian.Application.Services.DailySummaryResult.Success
+  id: Success
+  parent: Meridian.Application.Services.DailySummaryResult
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: DailySummaryResult.Success
+  fullName: Meridian.Application.Services.DailySummaryResult.Success
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public bool Success { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Success As Boolean
+  overload: Meridian.Application.Services.DailySummaryResult.Success*
+- uid: Meridian.Application.Services.DailySummaryResult.Summary
+  commentId: P:Meridian.Application.Services.DailySummaryResult.Summary
+  id: Summary
+  parent: Meridian.Application.Services.DailySummaryResult
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: DailySummaryResult.Summary
+  fullName: Meridian.Application.Services.DailySummaryResult.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 645
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DailySummary Summary { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.DailySummary
+    content.vb: Public Property Summary As DailySummary
+  overload: Meridian.Application.Services.DailySummaryResult.Summary*
+- uid: Meridian.Application.Services.DailySummaryResult.DeliveryResults
+  commentId: P:Meridian.Application.Services.DailySummaryResult.DeliveryResults
+  id: DeliveryResults
+  parent: Meridian.Application.Services.DailySummaryResult
+  langs:
+  - csharp
+  - vb
+  name: DeliveryResults
+  nameWithType: DailySummaryResult.DeliveryResults
+  fullName: Meridian.Application.Services.DailySummaryResult.DeliveryResults
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeliveryResults
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 646
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public IReadOnlyList<WebhookDeliveryResult> DeliveryResults { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult}
+    content.vb: Public Property DeliveryResults As IReadOnlyList(Of WebhookDeliveryResult)
+  overload: Meridian.Application.Services.DailySummaryResult.DeliveryResults*
+- uid: Meridian.Application.Services.DailySummaryResult.SentAt
+  commentId: P:Meridian.Application.Services.DailySummaryResult.SentAt
+  id: SentAt
+  parent: Meridian.Application.Services.DailySummaryResult
+  langs:
+  - csharp
+  - vb
+  name: SentAt
+  nameWithType: DailySummaryResult.SentAt
+  fullName: Meridian.Application.Services.DailySummaryResult.SentAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SentAt
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 647
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset SentAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property SentAt As DateTimeOffset
+  overload: Meridian.Application.Services.DailySummaryResult.SentAt*
+- uid: Meridian.Application.Services.DailySummaryResult.ErrorMessage
+  commentId: P:Meridian.Application.Services.DailySummaryResult.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Application.Services.DailySummaryResult
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: DailySummaryResult.ErrorMessage
+  fullName: Meridian.Application.Services.DailySummaryResult.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 648
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? ErrorMessage { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorMessage As String
+  overload: Meridian.Application.Services.DailySummaryResult.ErrorMessage*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.IEquatable{Meridian.Application.Services.DailySummaryResult}
+  commentId: T:System.IEquatable{Meridian.Application.Services.DailySummaryResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DailySummaryResult>
+  nameWithType: IEquatable<DailySummaryResult>
+  fullName: System.IEquatable<Meridian.Application.Services.DailySummaryResult>
+  nameWithType.vb: IEquatable(Of DailySummaryResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.DailySummaryResult)
+  name.vb: IEquatable(Of DailySummaryResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.DailySummaryResult
+    name: DailySummaryResult
+    href: Meridian.Application.Services.DailySummaryResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.DailySummaryResult
+    name: DailySummaryResult
+    href: Meridian.Application.Services.DailySummaryResult.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Services.DailySummaryResult.#ctor*
+  commentId: Overload:Meridian.Application.Services.DailySummaryResult.#ctor
+  href: Meridian.Application.Services.DailySummaryResult.html#Meridian_Application_Services_DailySummaryResult__ctor_System_Boolean_Meridian_Application_Services_DailySummary_System_Collections_Generic_IReadOnlyList_Meridian_Application_Services_WebhookDeliveryResult__System_DateTimeOffset_System_String_
+  name: DailySummaryResult
+  nameWithType: DailySummaryResult.DailySummaryResult
+  fullName: Meridian.Application.Services.DailySummaryResult.DailySummaryResult
+  nameWithType.vb: DailySummaryResult.New
+  fullName.vb: Meridian.Application.Services.DailySummaryResult.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Services.DailySummary
+  commentId: T:Meridian.Application.Services.DailySummary
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.DailySummary.html
+  name: DailySummary
+  nameWithType: DailySummary
+  fullName: Meridian.Application.Services.DailySummary
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.WebhookDeliveryResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<WebhookDeliveryResult>
+  nameWithType: IReadOnlyList<WebhookDeliveryResult>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.WebhookDeliveryResult>
+  nameWithType.vb: IReadOnlyList(Of WebhookDeliveryResult)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.WebhookDeliveryResult)
+  name.vb: IReadOnlyList(Of WebhookDeliveryResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.WebhookDeliveryResult
+    name: WebhookDeliveryResult
+    href: Meridian.Application.Services.WebhookDeliveryResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.WebhookDeliveryResult
+    name: WebhookDeliveryResult
+    href: Meridian.Application.Services.WebhookDeliveryResult.html
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.DailySummaryResult.Success*
+  commentId: Overload:Meridian.Application.Services.DailySummaryResult.Success
+  href: Meridian.Application.Services.DailySummaryResult.html#Meridian_Application_Services_DailySummaryResult_Success
+  name: Success
+  nameWithType: DailySummaryResult.Success
+  fullName: Meridian.Application.Services.DailySummaryResult.Success
+- uid: Meridian.Application.Services.DailySummaryResult.Summary*
+  commentId: Overload:Meridian.Application.Services.DailySummaryResult.Summary
+  href: Meridian.Application.Services.DailySummaryResult.html#Meridian_Application_Services_DailySummaryResult_Summary
+  name: Summary
+  nameWithType: DailySummaryResult.Summary
+  fullName: Meridian.Application.Services.DailySummaryResult.Summary
+- uid: Meridian.Application.Services.DailySummaryResult.DeliveryResults*
+  commentId: Overload:Meridian.Application.Services.DailySummaryResult.DeliveryResults
+  href: Meridian.Application.Services.DailySummaryResult.html#Meridian_Application_Services_DailySummaryResult_DeliveryResults
+  name: DeliveryResults
+  nameWithType: DailySummaryResult.DeliveryResults
+  fullName: Meridian.Application.Services.DailySummaryResult.DeliveryResults
+- uid: Meridian.Application.Services.DailySummaryResult.SentAt*
+  commentId: Overload:Meridian.Application.Services.DailySummaryResult.SentAt
+  href: Meridian.Application.Services.DailySummaryResult.html#Meridian_Application_Services_DailySummaryResult_SentAt
+  name: SentAt
+  nameWithType: DailySummaryResult.SentAt
+  fullName: Meridian.Application.Services.DailySummaryResult.SentAt
+- uid: Meridian.Application.Services.DailySummaryResult.ErrorMessage*
+  commentId: Overload:Meridian.Application.Services.DailySummaryResult.ErrorMessage
+  href: Meridian.Application.Services.DailySummaryResult.html#Meridian_Application_Services_DailySummaryResult_ErrorMessage
+  name: ErrorMessage
+  nameWithType: DailySummaryResult.ErrorMessage
+  fullName: Meridian.Application.Services.DailySummaryResult.ErrorMessage

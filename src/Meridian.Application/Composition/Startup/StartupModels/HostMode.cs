@@ -11,11 +11,6 @@ public enum HostMode : byte
     Command,
 
     /// <summary>
-    /// Standalone web dashboard server (HTTP-only, no data collector).
-    /// </summary>
-    Web,
-
-    /// <summary>
     /// Desktop host: embedded HTTP UI server plus the data collector running side-by-side.
     /// </summary>
     Desktop,

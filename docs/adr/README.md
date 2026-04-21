@@ -25,7 +25,8 @@ An ADR is a document that captures an important architectural decision along wit
 | [ADR-013](013-bounded-channel-policy.md) | Bounded Channel Pipeline Policy | Accepted | `EventPipelinePolicy` |
 | [ADR-014](014-json-source-generators.md) | JSON Source Generators | Accepted | `MarketDataJsonContext` |
 | [ADR-015](015-strategy-execution-contract.md) | Strategy Execution Contract | Accepted | `IOrderGateway`, `IExecutionContext` |
-| [ADR-016](016-platform-architecture-migration.md) | Platform Architecture Migration Mandate | Accepted | `Meridian.Execution`, `Meridian.Strategies`, `StrategyRunStore` |
+| [ADR-016](016-platform-architecture-migration.md) | Platform Architecture Migration Mandate | Accepted | `Meridian.Execution`, `Meridian.Risk`, `Meridian.Strategies`, `Meridian.QuantScript`, `StrategyRunStore` |
+| [ADR-015-platform-restructuring](../../archive/docs/migrations/ADR-015-platform-restructuring.md) | Platform Restructuring (historical) | **Superseded** | Archived in migration docs; superseded by ADR-015 and ADR-016 |
 
 ## ADR Dependencies
 
@@ -63,7 +64,7 @@ ADR-012 Monitoring & Alerting
 
 ## Creating a New ADR
 
-Use the template at [_template.md](_template.md) to create new ADRs. Number sequentially (next: ADR-015).
+Use the template at [_template.md](_template.md) to create new ADRs. Number sequentially (next: ADR-017).
 
 ## Verification
 
@@ -77,4 +78,4 @@ This ensures documented decisions remain in sync with actual code.
 
 ---
 
-*Last Updated: 2026-02-20*
+*Last Updated: 2026-04-07*

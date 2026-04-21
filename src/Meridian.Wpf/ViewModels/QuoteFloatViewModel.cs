@@ -91,9 +91,15 @@ public sealed class QuoteFloatViewModel : BindableBase, IDisposable
                 LastPrice = last;
             }
         }
-        catch (OperationCanceledException) { }
-        catch (HttpRequestException) { }
-        catch (JsonException) { }
+        catch (OperationCanceledException) { /* Cancellation is expected */ }
+        catch (HttpRequestException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[QuoteFloatViewModel] HTTP error polling quote for {_symbol}: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[QuoteFloatViewModel] JSON parse error for {_symbol}: {ex.Message}");
+        }
     }
 
     public void Dispose()

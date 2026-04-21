@@ -1,0 +1,461 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.IReconciliationRunService
+  commentId: T:Meridian.Strategies.Services.IReconciliationRunService
+  id: IReconciliationRunService
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.IReconciliationRunService.GetByIdAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.IReconciliationRunService.GetHistoryForRunAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.IReconciliationRunService.GetLatestForRunAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.IReconciliationRunService.RunAsync(Meridian.Contracts.Workstation.ReconciliationRunRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IReconciliationRunService
+  nameWithType: IReconciliationRunService
+  fullName: Meridian.Strategies.Services.IReconciliationRunService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IReconciliationRunService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IReconciliationRunService
+    path: ../../src/Meridian.Strategies/Services/IReconciliationRunService.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public interface IReconciliationRunService
+    content.vb: Public Interface IReconciliationRunService
+  derivedClasses:
+  - Meridian.Strategies.Services.ReconciliationRunService
+- uid: Meridian.Strategies.Services.IReconciliationRunService.RunAsync(Meridian.Contracts.Workstation.ReconciliationRunRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.IReconciliationRunService.RunAsync(Meridian.Contracts.Workstation.ReconciliationRunRequest,System.Threading.CancellationToken)
+  id: RunAsync(Meridian.Contracts.Workstation.ReconciliationRunRequest,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.IReconciliationRunService
+  langs:
+  - csharp
+  - vb
+  name: RunAsync(ReconciliationRunRequest, CancellationToken)
+  nameWithType: IReconciliationRunService.RunAsync(ReconciliationRunRequest, CancellationToken)
+  fullName: Meridian.Strategies.Services.IReconciliationRunService.RunAsync(Meridian.Contracts.Workstation.ReconciliationRunRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IReconciliationRunService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunAsync
+    path: ../../src/Meridian.Strategies/Services/IReconciliationRunService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: Task<ReconciliationRunDetail?> RunAsync(ReconciliationRunRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.Workstation.ReconciliationRunRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.ReconciliationRunDetail}
+    content.vb: Function RunAsync(request As ReconciliationRunRequest, ct As CancellationToken = Nothing) As Task(Of ReconciliationRunDetail)
+  overload: Meridian.Strategies.Services.IReconciliationRunService.RunAsync*
+- uid: Meridian.Strategies.Services.IReconciliationRunService.GetByIdAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.IReconciliationRunService.GetByIdAsync(System.String,System.Threading.CancellationToken)
+  id: GetByIdAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.IReconciliationRunService
+  langs:
+  - csharp
+  - vb
+  name: GetByIdAsync(string, CancellationToken)
+  nameWithType: IReconciliationRunService.GetByIdAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.IReconciliationRunService.GetByIdAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IReconciliationRunService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByIdAsync
+    path: ../../src/Meridian.Strategies/Services/IReconciliationRunService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: Task<ReconciliationRunDetail?> GetByIdAsync(string reconciliationRunId, CancellationToken ct = default)
+    parameters:
+    - id: reconciliationRunId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.ReconciliationRunDetail}
+    content.vb: Function GetByIdAsync(reconciliationRunId As String, ct As CancellationToken = Nothing) As Task(Of ReconciliationRunDetail)
+  overload: Meridian.Strategies.Services.IReconciliationRunService.GetByIdAsync*
+  nameWithType.vb: IReconciliationRunService.GetByIdAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.IReconciliationRunService.GetByIdAsync(String, System.Threading.CancellationToken)
+  name.vb: GetByIdAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Services.IReconciliationRunService.GetLatestForRunAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.IReconciliationRunService.GetLatestForRunAsync(System.String,System.Threading.CancellationToken)
+  id: GetLatestForRunAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.IReconciliationRunService
+  langs:
+  - csharp
+  - vb
+  name: GetLatestForRunAsync(string, CancellationToken)
+  nameWithType: IReconciliationRunService.GetLatestForRunAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.IReconciliationRunService.GetLatestForRunAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IReconciliationRunService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestForRunAsync
+    path: ../../src/Meridian.Strategies/Services/IReconciliationRunService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: Task<ReconciliationRunDetail?> GetLatestForRunAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.ReconciliationRunDetail}
+    content.vb: Function GetLatestForRunAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of ReconciliationRunDetail)
+  overload: Meridian.Strategies.Services.IReconciliationRunService.GetLatestForRunAsync*
+  nameWithType.vb: IReconciliationRunService.GetLatestForRunAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.IReconciliationRunService.GetLatestForRunAsync(String, System.Threading.CancellationToken)
+  name.vb: GetLatestForRunAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Services.IReconciliationRunService.GetHistoryForRunAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.IReconciliationRunService.GetHistoryForRunAsync(System.String,System.Threading.CancellationToken)
+  id: GetHistoryForRunAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.IReconciliationRunService
+  langs:
+  - csharp
+  - vb
+  name: GetHistoryForRunAsync(string, CancellationToken)
+  nameWithType: IReconciliationRunService.GetHistoryForRunAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.IReconciliationRunService.GetHistoryForRunAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IReconciliationRunService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHistoryForRunAsync
+    path: ../../src/Meridian.Strategies/Services/IReconciliationRunService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: Task<IReadOnlyList<ReconciliationRunSummary>> GetHistoryForRunAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationRunSummary}}
+    content.vb: Function GetHistoryForRunAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ReconciliationRunSummary))
+  overload: Meridian.Strategies.Services.IReconciliationRunService.GetHistoryForRunAsync*
+  nameWithType.vb: IReconciliationRunService.GetHistoryForRunAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.IReconciliationRunService.GetHistoryForRunAsync(String, System.Threading.CancellationToken)
+  name.vb: GetHistoryForRunAsync(String, CancellationToken)
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: Meridian.Strategies.Services.IReconciliationRunService.RunAsync*
+  commentId: Overload:Meridian.Strategies.Services.IReconciliationRunService.RunAsync
+  href: Meridian.Strategies.Services.IReconciliationRunService.html#Meridian_Strategies_Services_IReconciliationRunService_RunAsync_Meridian_Contracts_Workstation_ReconciliationRunRequest_System_Threading_CancellationToken_
+  name: RunAsync
+  nameWithType: IReconciliationRunService.RunAsync
+  fullName: Meridian.Strategies.Services.IReconciliationRunService.RunAsync
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationRunRequest
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ReconciliationRunRequest.html
+  name: ReconciliationRunRequest
+  nameWithType: ReconciliationRunRequest
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.ReconciliationRunDetail}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Workstation.ReconciliationRunDetail}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ReconciliationRunDetail>
+  nameWithType: Task<ReconciliationRunDetail>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Workstation.ReconciliationRunDetail>
+  nameWithType.vb: Task(Of ReconciliationRunDetail)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Workstation.ReconciliationRunDetail)
+  name.vb: Task(Of ReconciliationRunDetail)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ReconciliationRunDetail
+    name: ReconciliationRunDetail
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ReconciliationRunDetail
+    name: ReconciliationRunDetail
+  - name: )
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Strategies.Services.IReconciliationRunService.GetByIdAsync*
+  commentId: Overload:Meridian.Strategies.Services.IReconciliationRunService.GetByIdAsync
+  href: Meridian.Strategies.Services.IReconciliationRunService.html#Meridian_Strategies_Services_IReconciliationRunService_GetByIdAsync_System_String_System_Threading_CancellationToken_
+  name: GetByIdAsync
+  nameWithType: IReconciliationRunService.GetByIdAsync
+  fullName: Meridian.Strategies.Services.IReconciliationRunService.GetByIdAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Services.IReconciliationRunService.GetLatestForRunAsync*
+  commentId: Overload:Meridian.Strategies.Services.IReconciliationRunService.GetLatestForRunAsync
+  href: Meridian.Strategies.Services.IReconciliationRunService.html#Meridian_Strategies_Services_IReconciliationRunService_GetLatestForRunAsync_System_String_System_Threading_CancellationToken_
+  name: GetLatestForRunAsync
+  nameWithType: IReconciliationRunService.GetLatestForRunAsync
+  fullName: Meridian.Strategies.Services.IReconciliationRunService.GetLatestForRunAsync
+- uid: Meridian.Strategies.Services.IReconciliationRunService.GetHistoryForRunAsync*
+  commentId: Overload:Meridian.Strategies.Services.IReconciliationRunService.GetHistoryForRunAsync
+  href: Meridian.Strategies.Services.IReconciliationRunService.html#Meridian_Strategies_Services_IReconciliationRunService_GetHistoryForRunAsync_System_String_System_Threading_CancellationToken_
+  name: GetHistoryForRunAsync
+  nameWithType: IReconciliationRunService.GetHistoryForRunAsync
+  fullName: Meridian.Strategies.Services.IReconciliationRunService.GetHistoryForRunAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationRunSummary}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ReconciliationRunSummary}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ReconciliationRunSummary>>
+  nameWithType: Task<IReadOnlyList<ReconciliationRunSummary>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ReconciliationRunSummary>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ReconciliationRunSummary))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ReconciliationRunSummary))
+  name.vb: Task(Of IReadOnlyList(Of ReconciliationRunSummary))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ReconciliationRunSummary
+    name: ReconciliationRunSummary
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ReconciliationRunSummary
+    name: ReconciliationRunSummary
+  - name: )
+  - name: )

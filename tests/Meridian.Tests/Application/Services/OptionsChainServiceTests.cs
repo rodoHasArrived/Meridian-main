@@ -66,6 +66,48 @@ public sealed class OptionsChainServiceTests
         sut.IsProviderAvailable.Should().BeTrue();
     }
 
+    [Fact]
+    public void GetProviderStatus_WhenNoProvider_ReturnsUnavailable()
+    {
+        var sut = CreateService(provider: null);
+
+        var status = sut.GetProviderStatus();
+
+        status.ProviderId.Should().BeNull();
+        status.ProviderDisplayName.Should().BeNull();
+        status.Mode.Should().Be("Unavailable");
+        status.IsFallback.Should().BeFalse();
+        status.Message.Should().Be("No options provider configured.");
+    }
+
+    [Fact]
+    public void GetProviderStatus_WhenSyntheticProvider_ReturnsFallback()
+    {
+        var sut = CreateService(new StubOptionsChainProvider("synthetic", "Synthetic Options"));
+
+        var status = sut.GetProviderStatus();
+
+        status.ProviderId.Should().Be("synthetic");
+        status.ProviderDisplayName.Should().Be("Synthetic Options");
+        status.Mode.Should().Be("Fallback");
+        status.IsFallback.Should().BeTrue();
+        status.Message.Should().Be("Synthetic Options fallback is active.");
+    }
+
+    [Fact]
+    public void GetProviderStatus_WhenConfiguredProviderPresent_ReturnsConfigured()
+    {
+        var sut = CreateService(new StubOptionsChainProvider("robinhood", "Robinhood Options"));
+
+        var status = sut.GetProviderStatus();
+
+        status.ProviderId.Should().Be("robinhood");
+        status.ProviderDisplayName.Should().Be("Robinhood Options");
+        status.Mode.Should().Be("Configured");
+        status.IsFallback.Should().BeFalse();
+        status.Message.Should().Be("Robinhood Options is configured.");
+    }
+
     #endregion
 
     #region Input Validation Tests
@@ -463,4 +505,26 @@ public sealed class OptionsChainServiceTests
     }
 
     #endregion
+
+    private sealed class StubOptionsChainProvider(string providerId, string providerDisplayName) : IOptionsChainProvider
+    {
+        public string ProviderId { get; } = providerId;
+        public string ProviderDisplayName { get; } = providerDisplayName;
+        public string ProviderDescription => "Stub options chain provider";
+        public int ProviderPriority => 100;
+        public ProviderCapabilities ProviderCapabilities => ProviderCapabilities.OptionsChain();
+        public OptionsChainCapabilities Capabilities => OptionsChainCapabilities.Basic;
+
+        public Task<IReadOnlyList<DateOnly>> GetExpirationsAsync(string underlyingSymbol, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<DateOnly>>(Array.Empty<DateOnly>());
+
+        public Task<IReadOnlyList<decimal>> GetStrikesAsync(string underlyingSymbol, DateOnly expiration, CancellationToken ct = default) =>
+            Task.FromResult<IReadOnlyList<decimal>>(Array.Empty<decimal>());
+
+        public Task<OptionChainSnapshot?> GetChainSnapshotAsync(string underlyingSymbol, DateOnly expiration, int? strikeRange = null, CancellationToken ct = default) =>
+            Task.FromResult<OptionChainSnapshot?>(null);
+
+        public Task<OptionQuote?> GetOptionQuoteAsync(OptionContractSpec contract, CancellationToken ct = default) =>
+            Task.FromResult<OptionQuote?>(null);
+    }
 }

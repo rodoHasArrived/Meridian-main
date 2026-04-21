@@ -142,7 +142,10 @@ def _git_last_commit_date(path: Path, root: Path) -> Optional[datetime]:
             timeout=10,
         )
         if result.returncode == 0 and result.stdout.strip():
-            return datetime.fromisoformat(result.stdout.strip())
+            value = result.stdout.strip()
+            if value.endswith("Z"):
+                value = value[:-1] + "+00:00"
+            return datetime.fromisoformat(value)
     except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
         pass
     return None

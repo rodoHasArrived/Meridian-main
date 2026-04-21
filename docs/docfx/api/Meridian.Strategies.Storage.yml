@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Storage
+  commentId: N:Meridian.Strategies.Storage
+  id: Meridian.Strategies.Storage
+  children:
+  - Meridian.Strategies.Storage.StrategyRunStore
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Strategies.Storage
+  nameWithType: Meridian.Strategies.Storage
+  fullName: Meridian.Strategies.Storage
+  type: Namespace
+  assemblies:
+  - Meridian.Strategies
+references:
+- uid: Meridian.Strategies.Storage.StrategyRunStore
+  commentId: T:Meridian.Strategies.Storage.StrategyRunStore
+  href: Meridian.Strategies.Storage.StrategyRunStore.html
+  name: StrategyRunStore
+  nameWithType: StrategyRunStore
+  fullName: Meridian.Strategies.Storage.StrategyRunStore

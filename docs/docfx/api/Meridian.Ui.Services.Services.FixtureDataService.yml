@@ -1,0 +1,969 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.FixtureDataService
+  commentId: T:Meridian.Ui.Services.Services.FixtureDataService
+  id: FixtureDataService
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario
+  - Meridian.Ui.Services.Services.FixtureDataService.GetMockBackfillHealth
+  - Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus
+  - Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData(System.String)
+  - Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
+  - Meridian.Ui.Services.Services.FixtureDataService.GetMockSymbols
+  - Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData(System.String)
+  - Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse(System.String,System.Int32)
+  - Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel(Meridian.Ui.Services.Services.FixtureScenario)
+  - Meridian.Ui.Services.Services.FixtureDataService.Instance
+  - Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
+  - Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: FixtureDataService
+  nameWithType: FixtureDataService
+  fullName: Meridian.Ui.Services.Services.FixtureDataService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FixtureDataService
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Provides canned fixture data for UI development without backend dependency.
+
+    Enables offline development and deterministic testing scenarios.
+  example: []
+  syntax:
+    content: public sealed class FixtureDataService
+    content.vb: Public NotInheritable Class FixtureDataService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.FixtureDataService.Instance
+  commentId: P:Meridian.Ui.Services.Services.FixtureDataService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: FixtureDataService.Instance
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public static FixtureDataService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Services.FixtureDataService
+    content.vb: Public Shared ReadOnly Property Instance As FixtureDataService
+  overload: Meridian.Ui.Services.Services.FixtureDataService.Instance*
+- uid: Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario
+  commentId: P:Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario
+  id: ActiveScenario
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: ActiveScenario
+  nameWithType: FixtureDataService.ActiveScenario
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveScenario
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the currently active fixture scenario.
+  example: []
+  syntax:
+    content: public FixtureScenario ActiveScenario { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+    content.vb: Public ReadOnly Property ActiveScenario As FixtureScenario
+  overload: Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario*
+- uid: Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
+  id: SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: SetScenario(FixtureScenario)
+  nameWithType: FixtureDataService.SetScenario(FixtureScenario)
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.SetScenario(Meridian.Ui.Services.Services.FixtureScenario)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetScenario
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Sets the active fixture scenario.
+  example: []
+  syntax:
+    content: public void SetScenario(FixtureScenario scenario)
+    parameters:
+    - id: scenario
+      type: Meridian.Ui.Services.Services.FixtureScenario
+    content.vb: Public Sub SetScenario(scenario As FixtureScenario)
+  overload: Meridian.Ui.Services.Services.FixtureDataService.SetScenario*
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel(Meridian.Ui.Services.Services.FixtureScenario)
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel(Meridian.Ui.Services.Services.FixtureScenario)
+  id: GetScenarioLabel(Meridian.Ui.Services.Services.FixtureScenario)
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: GetScenarioLabel(FixtureScenario)
+  nameWithType: FixtureDataService.GetScenarioLabel(FixtureScenario)
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel(Meridian.Ui.Services.Services.FixtureScenario)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetScenarioLabel
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Returns a human-readable label for the given scenario.
+  example: []
+  syntax:
+    content: public static string GetScenarioLabel(FixtureScenario scenario)
+    parameters:
+    - id: scenario
+      type: Meridian.Ui.Services.Services.FixtureScenario
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetScenarioLabel(scenario As FixtureScenario) As String
+  overload: Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel*
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
+  id: GetMockStatusResponse
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: GetMockStatusResponse()
+  nameWithType: FixtureDataService.GetMockStatusResponse()
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMockStatusResponse
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets a mock status response showing a running system.
+  example: []
+  syntax:
+    content: public StatusResponse GetMockStatusResponse()
+    return:
+      type: Meridian.Contracts.Api.StatusResponse
+    content.vb: Public Function GetMockStatusResponse() As StatusResponse
+  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse*
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus
+  id: GetMockDisconnectedStatus
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: GetMockDisconnectedStatus()
+  nameWithType: FixtureDataService.GetMockDisconnectedStatus()
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMockDisconnectedStatus
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets a mock status response showing a disconnected system.
+  example: []
+  syntax:
+    content: public StatusResponse GetMockDisconnectedStatus()
+    return:
+      type: Meridian.Contracts.Api.StatusResponse
+    content.vb: Public Function GetMockDisconnectedStatus() As StatusResponse
+  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus*
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData(System.String)
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData(System.String)
+  id: GetMockTradeData(System.String)
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: GetMockTradeData(string)
+  nameWithType: FixtureDataService.GetMockTradeData(string)
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMockTradeData
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets mock trade data for a given symbol.
+  example: []
+  syntax:
+    content: public TradeDataResponse GetMockTradeData(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.TradeDataResponse
+    content.vb: Public Function GetMockTradeData(symbol As String) As TradeDataResponse
+  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData*
+  nameWithType.vb: FixtureDataService.GetMockTradeData(String)
+  fullName.vb: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData(String)
+  name.vb: GetMockTradeData(String)
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData(System.String)
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData(System.String)
+  id: GetMockQuoteData(System.String)
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: GetMockQuoteData(string)
+  nameWithType: FixtureDataService.GetMockQuoteData(string)
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMockQuoteData
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets mock quote data for a given symbol.
+  example: []
+  syntax:
+    content: public QuoteDataResponse GetMockQuoteData(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Contracts.Api.QuoteDataResponse
+    content.vb: Public Function GetMockQuoteData(symbol As String) As QuoteDataResponse
+  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData*
+  nameWithType.vb: FixtureDataService.GetMockQuoteData(String)
+  fullName.vb: Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData(String)
+  name.vb: GetMockQuoteData(String)
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockBackfillHealth
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockBackfillHealth
+  id: GetMockBackfillHealth
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: GetMockBackfillHealth()
+  nameWithType: FixtureDataService.GetMockBackfillHealth()
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockBackfillHealth()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMockBackfillHealth
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets a mock backfill health response showing healthy providers.
+  example: []
+  syntax:
+    content: public BackfillHealthResponse GetMockBackfillHealth()
+    return:
+      type: Meridian.Contracts.Api.BackfillHealthResponse
+    content.vb: Public Function GetMockBackfillHealth() As BackfillHealthResponse
+  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockBackfillHealth*
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockSymbols
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockSymbols
+  id: GetMockSymbols
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: GetMockSymbols()
+  nameWithType: FixtureDataService.GetMockSymbols()
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockSymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMockSymbols
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets a collection of mock symbols for testing.
+  example: []
+  syntax:
+    content: public string[] GetMockSymbols()
+    return:
+      type: System.String[]
+    content.vb: Public Function GetMockSymbols() As String()
+  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockSymbols*
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse(System.String,System.Int32)
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse(System.String,System.Int32)
+  id: GetMockTradesResponse(System.String,System.Int32)
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: GetMockTradesResponse(string, int)
+  nameWithType: FixtureDataService.GetMockTradesResponse(string, int)
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMockTradesResponse
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets mock trades response with multiple trades.
+  example: []
+  syntax:
+    content: public TradesResponse GetMockTradesResponse(string symbol, int count = 10)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: count
+      type: System.Int32
+    return:
+      type: Meridian.Contracts.Api.TradesResponse
+    content.vb: Public Function GetMockTradesResponse(symbol As String, count As Integer = 10) As TradesResponse
+  overload: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse*
+  nameWithType.vb: FixtureDataService.GetMockTradesResponse(String, Integer)
+  fullName.vb: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse(String, Integer)
+  name.vb: GetMockTradesResponse(String, Integer)
+- uid: Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync(System.Threading.CancellationToken)
+  id: SimulateNetworkDelayAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.FixtureDataService
+  langs:
+  - csharp
+  - vb
+  name: SimulateNetworkDelayAsync(CancellationToken)
+  nameWithType: FixtureDataService.SimulateNetworkDelayAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SimulateNetworkDelayAsync
+    path: ../../src/Meridian.Ui.Services/Services/FixtureDataService.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Simulates network delay for realistic fixture behavior.
+  example: []
+  syntax:
+    content: public Task SimulateNetworkDelayAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SimulateNetworkDelayAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.FixtureDataService.Instance*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.Instance
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_Instance
+  name: Instance
+  nameWithType: FixtureDataService.Instance
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.Instance
+- uid: Meridian.Ui.Services.Services.FixtureDataService
+  commentId: T:Meridian.Ui.Services.Services.FixtureDataService
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.FixtureDataService.html
+  name: FixtureDataService
+  nameWithType: FixtureDataService
+  fullName: Meridian.Ui.Services.Services.FixtureDataService
+- uid: Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_ActiveScenario
+  name: ActiveScenario
+  nameWithType: FixtureDataService.ActiveScenario
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.ActiveScenario
+- uid: Meridian.Ui.Services.Services.FixtureScenario
+  commentId: T:Meridian.Ui.Services.Services.FixtureScenario
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.FixtureScenario.html
+  name: FixtureScenario
+  nameWithType: FixtureScenario
+  fullName: Meridian.Ui.Services.Services.FixtureScenario
+- uid: Meridian.Ui.Services.Services.FixtureDataService.SetScenario*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.SetScenario
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_SetScenario_Meridian_Ui_Services_Services_FixtureScenario_
+  name: SetScenario
+  nameWithType: FixtureDataService.SetScenario
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.SetScenario
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetScenarioLabel_Meridian_Ui_Services_Services_FixtureScenario_
+  name: GetScenarioLabel
+  nameWithType: FixtureDataService.GetScenarioLabel
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetScenarioLabel
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockStatusResponse
+  name: GetMockStatusResponse
+  nameWithType: FixtureDataService.GetMockStatusResponse
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockStatusResponse
+- uid: Meridian.Contracts.Api.StatusResponse
+  commentId: T:Meridian.Contracts.Api.StatusResponse
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.StatusResponse.html
+  name: StatusResponse
+  nameWithType: StatusResponse
+  fullName: Meridian.Contracts.Api.StatusResponse
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockDisconnectedStatus
+  name: GetMockDisconnectedStatus
+  nameWithType: FixtureDataService.GetMockDisconnectedStatus
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockDisconnectedStatus
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockTradeData_System_String_
+  name: GetMockTradeData
+  nameWithType: FixtureDataService.GetMockTradeData
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradeData
+- uid: Meridian.Contracts.Api.TradeDataResponse
+  commentId: T:Meridian.Contracts.Api.TradeDataResponse
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.TradeDataResponse.html
+  name: TradeDataResponse
+  nameWithType: TradeDataResponse
+  fullName: Meridian.Contracts.Api.TradeDataResponse
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockQuoteData_System_String_
+  name: GetMockQuoteData
+  nameWithType: FixtureDataService.GetMockQuoteData
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockQuoteData
+- uid: Meridian.Contracts.Api.QuoteDataResponse
+  commentId: T:Meridian.Contracts.Api.QuoteDataResponse
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.QuoteDataResponse.html
+  name: QuoteDataResponse
+  nameWithType: QuoteDataResponse
+  fullName: Meridian.Contracts.Api.QuoteDataResponse
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockBackfillHealth*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockBackfillHealth
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockBackfillHealth
+  name: GetMockBackfillHealth
+  nameWithType: FixtureDataService.GetMockBackfillHealth
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockBackfillHealth
+- uid: Meridian.Contracts.Api.BackfillHealthResponse
+  commentId: T:Meridian.Contracts.Api.BackfillHealthResponse
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.BackfillHealthResponse.html
+  name: BackfillHealthResponse
+  nameWithType: BackfillHealthResponse
+  fullName: Meridian.Contracts.Api.BackfillHealthResponse
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockSymbols*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockSymbols
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockSymbols
+  name: GetMockSymbols
+  nameWithType: FixtureDataService.GetMockSymbols
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockSymbols
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_GetMockTradesResponse_System_String_System_Int32_
+  name: GetMockTradesResponse
+  nameWithType: FixtureDataService.GetMockTradesResponse
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.GetMockTradesResponse
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.TradesResponse
+  commentId: T:Meridian.Contracts.Api.TradesResponse
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.TradesResponse.html
+  name: TradesResponse
+  nameWithType: TradesResponse
+  fullName: Meridian.Contracts.Api.TradesResponse
+- uid: Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync
+  href: Meridian.Ui.Services.Services.FixtureDataService.html#Meridian_Ui_Services_Services_FixtureDataService_SimulateNetworkDelayAsync_System_Threading_CancellationToken_
+  name: SimulateNetworkDelayAsync
+  nameWithType: FixtureDataService.SimulateNetworkDelayAsync
+  fullName: Meridian.Ui.Services.Services.FixtureDataService.SimulateNetworkDelayAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

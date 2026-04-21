@@ -1,0 +1,887 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Etl.SftpFileSourceReader
+  commentId: T:Meridian.Infrastructure.Etl.SftpFileSourceReader
+  id: SftpFileSourceReader
+  parent: Meridian.Infrastructure.Etl
+  children:
+  - Meridian.Infrastructure.Etl.SftpFileSourceReader.#ctor(Meridian.Storage.Etl.EtlStagingStore,Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory)
+  - Meridian.Infrastructure.Etl.SftpFileSourceReader.Kind
+  - Meridian.Infrastructure.Etl.SftpFileSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Etl.SftpFileSourceReader.StageFileAsync(System.String,Meridian.Contracts.Etl.EtlSourceDefinition,Meridian.Contracts.Etl.EtlRemoteFile,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SftpFileSourceReader
+  nameWithType: SftpFileSourceReader
+  fullName: Meridian.Infrastructure.Etl.SftpFileSourceReader
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SftpFileSourceReader
+    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl
+  syntax:
+    content: 'public sealed class SftpFileSourceReader : IEtlSourceReader'
+    content.vb: Public NotInheritable Class SftpFileSourceReader Implements IEtlSourceReader
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Contracts.Etl.IEtlSourceReader
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Etl.SftpFileSourceReader.#ctor(Meridian.Storage.Etl.EtlStagingStore,Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory)
+  commentId: M:Meridian.Infrastructure.Etl.SftpFileSourceReader.#ctor(Meridian.Storage.Etl.EtlStagingStore,Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory)
+  id: '#ctor(Meridian.Storage.Etl.EtlStagingStore,Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory)'
+  parent: Meridian.Infrastructure.Etl.SftpFileSourceReader
+  langs:
+  - csharp
+  - vb
+  name: SftpFileSourceReader(EtlStagingStore, ISftpClientFactory)
+  nameWithType: SftpFileSourceReader.SftpFileSourceReader(EtlStagingStore, ISftpClientFactory)
+  fullName: Meridian.Infrastructure.Etl.SftpFileSourceReader.SftpFileSourceReader(Meridian.Storage.Etl.EtlStagingStore, Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl
+  syntax:
+    content: public SftpFileSourceReader(EtlStagingStore stagingStore, ISftpClientFactory clientFactory)
+    parameters:
+    - id: stagingStore
+      type: Meridian.Storage.Etl.EtlStagingStore
+    - id: clientFactory
+      type: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+    content.vb: Public Sub New(stagingStore As EtlStagingStore, clientFactory As ISftpClientFactory)
+  overload: Meridian.Infrastructure.Etl.SftpFileSourceReader.#ctor*
+  nameWithType.vb: SftpFileSourceReader.New(EtlStagingStore, ISftpClientFactory)
+  fullName.vb: Meridian.Infrastructure.Etl.SftpFileSourceReader.New(Meridian.Storage.Etl.EtlStagingStore, Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory)
+  name.vb: New(EtlStagingStore, ISftpClientFactory)
+- uid: Meridian.Infrastructure.Etl.SftpFileSourceReader.Kind
+  commentId: P:Meridian.Infrastructure.Etl.SftpFileSourceReader.Kind
+  id: Kind
+  parent: Meridian.Infrastructure.Etl.SftpFileSourceReader
+  langs:
+  - csharp
+  - vb
+  name: Kind
+  nameWithType: SftpFileSourceReader.Kind
+  fullName: Meridian.Infrastructure.Etl.SftpFileSourceReader.Kind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Kind
+    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl
+  example: []
+  syntax:
+    content: public EtlSourceKind Kind { get; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Etl.EtlSourceKind
+    content.vb: Public ReadOnly Property Kind As EtlSourceKind
+  overload: Meridian.Infrastructure.Etl.SftpFileSourceReader.Kind*
+  implements:
+  - Meridian.Contracts.Etl.IEtlSourceReader.Kind
+- uid: Meridian.Infrastructure.Etl.SftpFileSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Etl.SftpFileSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition,System.Threading.CancellationToken)
+  id: ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Etl.SftpFileSourceReader
+  langs:
+  - csharp
+  - vb
+  name: ListFilesAsync(EtlSourceDefinition, CancellationToken)
+  nameWithType: SftpFileSourceReader.ListFilesAsync(EtlSourceDefinition, CancellationToken)
+  fullName: Meridian.Infrastructure.Etl.SftpFileSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ListFilesAsync
+    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<EtlRemoteFile>> ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default)
+    parameters:
+    - id: source
+      type: Meridian.Contracts.Etl.EtlSourceDefinition
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Etl.EtlRemoteFile}}
+    content.vb: Public Function ListFilesAsync(source As EtlSourceDefinition, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of EtlRemoteFile))
+  overload: Meridian.Infrastructure.Etl.SftpFileSourceReader.ListFilesAsync*
+  implements:
+  - Meridian.Contracts.Etl.IEtlSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition,System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Etl.SftpFileSourceReader.StageFileAsync(System.String,Meridian.Contracts.Etl.EtlSourceDefinition,Meridian.Contracts.Etl.EtlRemoteFile,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Etl.SftpFileSourceReader.StageFileAsync(System.String,Meridian.Contracts.Etl.EtlSourceDefinition,Meridian.Contracts.Etl.EtlRemoteFile,System.Threading.CancellationToken)
+  id: StageFileAsync(System.String,Meridian.Contracts.Etl.EtlSourceDefinition,Meridian.Contracts.Etl.EtlRemoteFile,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Etl.SftpFileSourceReader
+  langs:
+  - csharp
+  - vb
+  name: StageFileAsync(string, EtlSourceDefinition, EtlRemoteFile, CancellationToken)
+  nameWithType: SftpFileSourceReader.StageFileAsync(string, EtlSourceDefinition, EtlRemoteFile, CancellationToken)
+  fullName: Meridian.Infrastructure.Etl.SftpFileSourceReader.StageFileAsync(string, Meridian.Contracts.Etl.EtlSourceDefinition, Meridian.Contracts.Etl.EtlRemoteFile, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StageFileAsync
+    path: ../../src/Meridian.Infrastructure/Etl/SftpFileSourceReader.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl
+  example: []
+  syntax:
+    content: public Task<EtlStagedFile> StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: source
+      type: Meridian.Contracts.Etl.EtlSourceDefinition
+    - id: file
+      type: Meridian.Contracts.Etl.EtlRemoteFile
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlStagedFile}
+    content.vb: Public Function StageFileAsync(jobId As String, source As EtlSourceDefinition, file As EtlRemoteFile, ct As CancellationToken = Nothing) As Task(Of EtlStagedFile)
+  overload: Meridian.Infrastructure.Etl.SftpFileSourceReader.StageFileAsync*
+  implements:
+  - Meridian.Contracts.Etl.IEtlSourceReader.StageFileAsync(System.String,Meridian.Contracts.Etl.EtlSourceDefinition,Meridian.Contracts.Etl.EtlRemoteFile,System.Threading.CancellationToken)
+  nameWithType.vb: SftpFileSourceReader.StageFileAsync(String, EtlSourceDefinition, EtlRemoteFile, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Etl.SftpFileSourceReader.StageFileAsync(String, Meridian.Contracts.Etl.EtlSourceDefinition, Meridian.Contracts.Etl.EtlRemoteFile, System.Threading.CancellationToken)
+  name.vb: StageFileAsync(String, EtlSourceDefinition, EtlRemoteFile, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.Etl
+  commentId: N:Meridian.Infrastructure.Etl
+  href: Meridian.html
+  name: Meridian.Infrastructure.Etl
+  nameWithType: Meridian.Infrastructure.Etl
+  fullName: Meridian.Infrastructure.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Etl.IEtlSourceReader
+  commentId: T:Meridian.Contracts.Etl.IEtlSourceReader
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.IEtlSourceReader.html
+  name: IEtlSourceReader
+  nameWithType: IEtlSourceReader
+  fullName: Meridian.Contracts.Etl.IEtlSourceReader
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Infrastructure.Etl.SftpFileSourceReader.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Etl.SftpFileSourceReader.#ctor
+  href: Meridian.Infrastructure.Etl.SftpFileSourceReader.html#Meridian_Infrastructure_Etl_SftpFileSourceReader__ctor_Meridian_Storage_Etl_EtlStagingStore_Meridian_Infrastructure_Etl_Sftp_ISftpClientFactory_
+  name: SftpFileSourceReader
+  nameWithType: SftpFileSourceReader.SftpFileSourceReader
+  fullName: Meridian.Infrastructure.Etl.SftpFileSourceReader.SftpFileSourceReader
+  nameWithType.vb: SftpFileSourceReader.New
+  fullName.vb: Meridian.Infrastructure.Etl.SftpFileSourceReader.New
+  name.vb: New
+- uid: Meridian.Storage.Etl.EtlStagingStore
+  commentId: T:Meridian.Storage.Etl.EtlStagingStore
+  parent: Meridian.Storage.Etl
+  href: Meridian.Storage.Etl.EtlStagingStore.html
+  name: EtlStagingStore
+  nameWithType: EtlStagingStore
+  fullName: Meridian.Storage.Etl.EtlStagingStore
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+  commentId: T:Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+  parent: Meridian.Infrastructure.Etl.Sftp
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.html
+  name: ISftpClientFactory
+  nameWithType: ISftpClientFactory
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+- uid: Meridian.Storage.Etl
+  commentId: N:Meridian.Storage.Etl
+  href: Meridian.html
+  name: Meridian.Storage.Etl
+  nameWithType: Meridian.Storage.Etl
+  fullName: Meridian.Storage.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Etl
+    name: Etl
+    href: Meridian.Storage.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Etl
+    name: Etl
+    href: Meridian.Storage.Etl.html
+- uid: Meridian.Infrastructure.Etl.Sftp
+  commentId: N:Meridian.Infrastructure.Etl.Sftp
+  href: Meridian.html
+  name: Meridian.Infrastructure.Etl.Sftp
+  nameWithType: Meridian.Infrastructure.Etl.Sftp
+  fullName: Meridian.Infrastructure.Etl.Sftp
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl.Sftp
+    name: Sftp
+    href: Meridian.Infrastructure.Etl.Sftp.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl.Sftp
+    name: Sftp
+    href: Meridian.Infrastructure.Etl.Sftp.html
+- uid: Meridian.Infrastructure.Etl.SftpFileSourceReader.Kind*
+  commentId: Overload:Meridian.Infrastructure.Etl.SftpFileSourceReader.Kind
+  href: Meridian.Infrastructure.Etl.SftpFileSourceReader.html#Meridian_Infrastructure_Etl_SftpFileSourceReader_Kind
+  name: Kind
+  nameWithType: SftpFileSourceReader.Kind
+  fullName: Meridian.Infrastructure.Etl.SftpFileSourceReader.Kind
+- uid: Meridian.Contracts.Etl.IEtlSourceReader.Kind
+  commentId: P:Meridian.Contracts.Etl.IEtlSourceReader.Kind
+  parent: Meridian.Contracts.Etl.IEtlSourceReader
+  name: Kind
+  nameWithType: IEtlSourceReader.Kind
+  fullName: Meridian.Contracts.Etl.IEtlSourceReader.Kind
+- uid: Meridian.Contracts.Etl.EtlSourceKind
+  commentId: T:Meridian.Contracts.Etl.EtlSourceKind
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlSourceKind.html
+  name: EtlSourceKind
+  nameWithType: EtlSourceKind
+  fullName: Meridian.Contracts.Etl.EtlSourceKind
+- uid: Meridian.Infrastructure.Etl.SftpFileSourceReader.ListFilesAsync*
+  commentId: Overload:Meridian.Infrastructure.Etl.SftpFileSourceReader.ListFilesAsync
+  href: Meridian.Infrastructure.Etl.SftpFileSourceReader.html#Meridian_Infrastructure_Etl_SftpFileSourceReader_ListFilesAsync_Meridian_Contracts_Etl_EtlSourceDefinition_System_Threading_CancellationToken_
+  name: ListFilesAsync
+  nameWithType: SftpFileSourceReader.ListFilesAsync
+  fullName: Meridian.Infrastructure.Etl.SftpFileSourceReader.ListFilesAsync
+- uid: Meridian.Contracts.Etl.IEtlSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Etl.IEtlSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Etl.IEtlSourceReader
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ListFilesAsync(EtlSourceDefinition, CancellationToken)
+  nameWithType: IEtlSourceReader.ListFilesAsync(EtlSourceDefinition, CancellationToken)
+  fullName: Meridian.Contracts.Etl.IEtlSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.Etl.IEtlSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition,System.Threading.CancellationToken)
+    name: ListFilesAsync
+  - name: (
+  - uid: Meridian.Contracts.Etl.EtlSourceDefinition
+    name: EtlSourceDefinition
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.Etl.IEtlSourceReader.ListFilesAsync(Meridian.Contracts.Etl.EtlSourceDefinition,System.Threading.CancellationToken)
+    name: ListFilesAsync
+  - name: (
+  - uid: Meridian.Contracts.Etl.EtlSourceDefinition
+    name: EtlSourceDefinition
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.Etl.EtlSourceDefinition
+  commentId: T:Meridian.Contracts.Etl.EtlSourceDefinition
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlSourceDefinition.html
+  name: EtlSourceDefinition
+  nameWithType: EtlSourceDefinition
+  fullName: Meridian.Contracts.Etl.EtlSourceDefinition
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Etl.EtlRemoteFile}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Etl.EtlRemoteFile}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<EtlRemoteFile>>
+  nameWithType: Task<IReadOnlyList<EtlRemoteFile>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Etl.EtlRemoteFile>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of EtlRemoteFile))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Etl.EtlRemoteFile))
+  name.vb: Task(Of IReadOnlyList(Of EtlRemoteFile))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Etl.EtlRemoteFile
+    name: EtlRemoteFile
+    href: Meridian.Contracts.Etl.EtlRemoteFile.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Etl.EtlRemoteFile
+    name: EtlRemoteFile
+    href: Meridian.Contracts.Etl.EtlRemoteFile.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Etl.SftpFileSourceReader.StageFileAsync*
+  commentId: Overload:Meridian.Infrastructure.Etl.SftpFileSourceReader.StageFileAsync
+  href: Meridian.Infrastructure.Etl.SftpFileSourceReader.html#Meridian_Infrastructure_Etl_SftpFileSourceReader_StageFileAsync_System_String_Meridian_Contracts_Etl_EtlSourceDefinition_Meridian_Contracts_Etl_EtlRemoteFile_System_Threading_CancellationToken_
+  name: StageFileAsync
+  nameWithType: SftpFileSourceReader.StageFileAsync
+  fullName: Meridian.Infrastructure.Etl.SftpFileSourceReader.StageFileAsync
+- uid: Meridian.Contracts.Etl.IEtlSourceReader.StageFileAsync(System.String,Meridian.Contracts.Etl.EtlSourceDefinition,Meridian.Contracts.Etl.EtlRemoteFile,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Etl.IEtlSourceReader.StageFileAsync(System.String,Meridian.Contracts.Etl.EtlSourceDefinition,Meridian.Contracts.Etl.EtlRemoteFile,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Etl.IEtlSourceReader
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: StageFileAsync(string, EtlSourceDefinition, EtlRemoteFile, CancellationToken)
+  nameWithType: IEtlSourceReader.StageFileAsync(string, EtlSourceDefinition, EtlRemoteFile, CancellationToken)
+  fullName: Meridian.Contracts.Etl.IEtlSourceReader.StageFileAsync(string, Meridian.Contracts.Etl.EtlSourceDefinition, Meridian.Contracts.Etl.EtlRemoteFile, System.Threading.CancellationToken)
+  nameWithType.vb: IEtlSourceReader.StageFileAsync(String, EtlSourceDefinition, EtlRemoteFile, CancellationToken)
+  fullName.vb: Meridian.Contracts.Etl.IEtlSourceReader.StageFileAsync(String, Meridian.Contracts.Etl.EtlSourceDefinition, Meridian.Contracts.Etl.EtlRemoteFile, System.Threading.CancellationToken)
+  name.vb: StageFileAsync(String, EtlSourceDefinition, EtlRemoteFile, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.Etl.IEtlSourceReader.StageFileAsync(System.String,Meridian.Contracts.Etl.EtlSourceDefinition,Meridian.Contracts.Etl.EtlRemoteFile,System.Threading.CancellationToken)
+    name: StageFileAsync
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Etl.EtlSourceDefinition
+    name: EtlSourceDefinition
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Etl.EtlRemoteFile
+    name: EtlRemoteFile
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.Etl.IEtlSourceReader.StageFileAsync(System.String,Meridian.Contracts.Etl.EtlSourceDefinition,Meridian.Contracts.Etl.EtlRemoteFile,System.Threading.CancellationToken)
+    name: StageFileAsync
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Etl.EtlSourceDefinition
+    name: EtlSourceDefinition
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Etl.EtlRemoteFile
+    name: EtlRemoteFile
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Etl.EtlRemoteFile
+  commentId: T:Meridian.Contracts.Etl.EtlRemoteFile
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlRemoteFile.html
+  name: EtlRemoteFile
+  nameWithType: EtlRemoteFile
+  fullName: Meridian.Contracts.Etl.EtlRemoteFile
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlStagedFile}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlStagedFile}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EtlStagedFile>
+  nameWithType: Task<EtlStagedFile>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Etl.EtlStagedFile>
+  nameWithType.vb: Task(Of EtlStagedFile)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Etl.EtlStagedFile)
+  name.vb: Task(Of EtlStagedFile)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Etl.EtlStagedFile
+    name: EtlStagedFile
+    href: Meridian.Contracts.Etl.EtlStagedFile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Etl.EtlStagedFile
+    name: EtlStagedFile
+    href: Meridian.Contracts.Etl.EtlStagedFile.html
+  - name: )

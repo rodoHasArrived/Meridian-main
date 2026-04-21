@@ -1,0 +1,856 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  commentId: T:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  id: CppTraderLiveFeedAdapter
+  parent: Meridian.Infrastructure.CppTrader.Execution
+  children:
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplySnapshot(Meridian.Contracts.Domain.Models.LOBSnapshot)
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplyTrade(Meridian.Contracts.Domain.Models.Trade)
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastOrderBook(System.String)
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastQuote(System.String)
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastTrade(System.String)
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.SubscribedSymbols
+  langs:
+  - csharp
+  - vb
+  name: CppTraderLiveFeedAdapter
+  nameWithType: CppTraderLiveFeedAdapter
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTraderLiveFeedAdapter
+    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Execution
+  summary: Session-local feed cache populated from CppTrader execution events.
+  example: []
+  syntax:
+    content: 'public sealed class CppTraderLiveFeedAdapter : ILiveFeedAdapter'
+    content.vb: Public NotInheritable Class CppTraderLiveFeedAdapter Implements ILiveFeedAdapter
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.SubscribedSymbols
+  commentId: P:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.SubscribedSymbols
+  id: SubscribedSymbols
+  parent: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: SubscribedSymbols
+  nameWithType: CppTraderLiveFeedAdapter.SubscribedSymbols
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.SubscribedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedSymbols
+    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Execution
+  summary: All symbols currently subscribed in this execution session.
+  example: []
+  syntax:
+    content: public IReadOnlySet<string> SubscribedSymbols { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+    content.vb: Public ReadOnly Property SubscribedSymbols As IReadOnlySet(Of String)
+  overload: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.SubscribedSymbols*
+  implements:
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastTrade(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastTrade(System.String)
+  id: GetLastTrade(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: GetLastTrade(string)
+  nameWithType: CppTraderLiveFeedAdapter.GetLastTrade(string)
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastTrade(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLastTrade
+    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Execution
+  summary: >-
+    Returns the most recent trade for <code class="paramref">symbol</code>,
+
+    or <code>null</code> if no tick has been received yet.
+  example: []
+  syntax:
+    content: public Trade? GetLastTrade(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Models.Trade
+    content.vb: Public Function GetLastTrade(symbol As String) As Trade
+  overload: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastTrade*
+  implements:
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(System.String)
+  nameWithType.vb: CppTraderLiveFeedAdapter.GetLastTrade(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastTrade(String)
+  name.vb: GetLastTrade(String)
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastQuote(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastQuote(System.String)
+  id: GetLastQuote(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: GetLastQuote(string)
+  nameWithType: CppTraderLiveFeedAdapter.GetLastQuote(string)
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastQuote(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLastQuote
+    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Execution
+  summary: >-
+    Returns the most recent best-bid/offer quote for <code class="paramref">symbol</code>,
+
+    or <code>null</code> if no quote has been received yet.
+  example: []
+  syntax:
+    content: public BboQuotePayload? GetLastQuote(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Models.BboQuotePayload
+    content.vb: Public Function GetLastQuote(symbol As String) As BboQuotePayload
+  overload: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastQuote*
+  implements:
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(System.String)
+  nameWithType.vb: CppTraderLiveFeedAdapter.GetLastQuote(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastQuote(String)
+  name.vb: GetLastQuote(String)
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastOrderBook(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastOrderBook(System.String)
+  id: GetLastOrderBook(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: GetLastOrderBook(string)
+  nameWithType: CppTraderLiveFeedAdapter.GetLastOrderBook(string)
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastOrderBook(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLastOrderBook
+    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Execution
+  summary: >-
+    Returns the most recent Level-2 order book snapshot for <code class="paramref">symbol</code>,
+
+    or <code>null</code> if no snapshot has been received yet.
+  example: []
+  syntax:
+    content: public LOBSnapshot? GetLastOrderBook(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Contracts.Domain.Models.LOBSnapshot
+    content.vb: Public Function GetLastOrderBook(symbol As String) As LOBSnapshot
+  overload: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastOrderBook*
+  implements:
+  - Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(System.String)
+  nameWithType.vb: CppTraderLiveFeedAdapter.GetLastOrderBook(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastOrderBook(String)
+  name.vb: GetLastOrderBook(String)
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplyTrade(Meridian.Contracts.Domain.Models.Trade)
+  commentId: M:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplyTrade(Meridian.Contracts.Domain.Models.Trade)
+  id: ApplyTrade(Meridian.Contracts.Domain.Models.Trade)
+  parent: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: ApplyTrade(Trade)
+  nameWithType: CppTraderLiveFeedAdapter.ApplyTrade(Trade)
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplyTrade(Meridian.Contracts.Domain.Models.Trade)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyTrade
+    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Execution
+  syntax:
+    content: public void ApplyTrade(Trade trade)
+    parameters:
+    - id: trade
+      type: Meridian.Contracts.Domain.Models.Trade
+    content.vb: Public Sub ApplyTrade(trade As Trade)
+  overload: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplyTrade*
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplySnapshot(Meridian.Contracts.Domain.Models.LOBSnapshot)
+  commentId: M:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplySnapshot(Meridian.Contracts.Domain.Models.LOBSnapshot)
+  id: ApplySnapshot(Meridian.Contracts.Domain.Models.LOBSnapshot)
+  parent: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  langs:
+  - csharp
+  - vb
+  name: ApplySnapshot(LOBSnapshot)
+  nameWithType: CppTraderLiveFeedAdapter.ApplySnapshot(LOBSnapshot)
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplySnapshot(Meridian.Contracts.Domain.Models.LOBSnapshot)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplySnapshot
+    path: ../../src/Meridian.Infrastructure.CppTrader/Execution/CppTraderLiveFeedAdapter.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Execution
+  syntax:
+    content: public void ApplySnapshot(LOBSnapshot snapshot)
+    parameters:
+    - id: snapshot
+      type: Meridian.Contracts.Domain.Models.LOBSnapshot
+    content.vb: Public Sub ApplySnapshot(snapshot As LOBSnapshot)
+  overload: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplySnapshot*
+references:
+- uid: Meridian.Infrastructure.CppTrader.Execution
+  commentId: N:Meridian.Infrastructure.CppTrader.Execution
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Execution
+  nameWithType: Meridian.Infrastructure.CppTrader.Execution
+  fullName: Meridian.Infrastructure.CppTrader.Execution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Execution
+    name: Execution
+    href: Meridian.Infrastructure.CppTrader.Execution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Execution
+    name: Execution
+    href: Meridian.Infrastructure.CppTrader.Execution.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  commentId: T:Meridian.Execution.Interfaces.ILiveFeedAdapter
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html
+  name: ILiveFeedAdapter
+  nameWithType: ILiveFeedAdapter
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.SubscribedSymbols*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.SubscribedSymbols
+  href: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.html#Meridian_Infrastructure_CppTrader_Execution_CppTraderLiveFeedAdapter_SubscribedSymbols
+  name: SubscribedSymbols
+  nameWithType: CppTraderLiveFeedAdapter.SubscribedSymbols
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.SubscribedSymbols
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+  commentId: P:Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+  parent: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_SubscribedSymbols
+  name: SubscribedSymbols
+  nameWithType: ILiveFeedAdapter.SubscribedSymbols
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.SubscribedSymbols
+- uid: System.Collections.Generic.IReadOnlySet{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<string>
+  nameWithType: IReadOnlySet<string>
+  fullName: System.Collections.Generic.IReadOnlySet<string>
+  nameWithType.vb: IReadOnlySet(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of String)
+  name.vb: IReadOnlySet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastTrade*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastTrade
+  href: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.html#Meridian_Infrastructure_CppTrader_Execution_CppTraderLiveFeedAdapter_GetLastTrade_System_String_
+  name: GetLastTrade
+  nameWithType: CppTraderLiveFeedAdapter.GetLastTrade
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastTrade
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(System.String)
+  commentId: M:Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(System.String)
+  parent: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  isExternal: true
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastTrade_System_String_
+  name: GetLastTrade(string)
+  nameWithType: ILiveFeedAdapter.GetLastTrade(string)
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(string)
+  nameWithType.vb: ILiveFeedAdapter.GetLastTrade(String)
+  fullName.vb: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(String)
+  name.vb: GetLastTrade(String)
+  spec.csharp:
+  - uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(System.String)
+    name: GetLastTrade
+    href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastTrade_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastTrade(System.String)
+    name: GetLastTrade
+    href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastTrade_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Models.Trade
+  commentId: T:Meridian.Contracts.Domain.Models.Trade
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.Trade.html
+  name: Trade
+  nameWithType: Trade
+  fullName: Meridian.Contracts.Domain.Models.Trade
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastQuote*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastQuote
+  href: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.html#Meridian_Infrastructure_CppTrader_Execution_CppTraderLiveFeedAdapter_GetLastQuote_System_String_
+  name: GetLastQuote
+  nameWithType: CppTraderLiveFeedAdapter.GetLastQuote
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastQuote
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(System.String)
+  commentId: M:Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(System.String)
+  parent: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  isExternal: true
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastQuote_System_String_
+  name: GetLastQuote(string)
+  nameWithType: ILiveFeedAdapter.GetLastQuote(string)
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(string)
+  nameWithType.vb: ILiveFeedAdapter.GetLastQuote(String)
+  fullName.vb: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(String)
+  name.vb: GetLastQuote(String)
+  spec.csharp:
+  - uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(System.String)
+    name: GetLastQuote
+    href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastQuote_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastQuote(System.String)
+    name: GetLastQuote
+    href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastQuote_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+  commentId: T:Meridian.Contracts.Domain.Models.BboQuotePayload
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.BboQuotePayload.html
+  name: BboQuotePayload
+  nameWithType: BboQuotePayload
+  fullName: Meridian.Contracts.Domain.Models.BboQuotePayload
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastOrderBook*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastOrderBook
+  href: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.html#Meridian_Infrastructure_CppTrader_Execution_CppTraderLiveFeedAdapter_GetLastOrderBook_System_String_
+  name: GetLastOrderBook
+  nameWithType: CppTraderLiveFeedAdapter.GetLastOrderBook
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.GetLastOrderBook
+- uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(System.String)
+  commentId: M:Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(System.String)
+  parent: Meridian.Execution.Interfaces.ILiveFeedAdapter
+  isExternal: true
+  href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastOrderBook_System_String_
+  name: GetLastOrderBook(string)
+  nameWithType: ILiveFeedAdapter.GetLastOrderBook(string)
+  fullName: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(string)
+  nameWithType.vb: ILiveFeedAdapter.GetLastOrderBook(String)
+  fullName.vb: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(String)
+  name.vb: GetLastOrderBook(String)
+  spec.csharp:
+  - uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(System.String)
+    name: GetLastOrderBook
+    href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastOrderBook_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.Interfaces.ILiveFeedAdapter.GetLastOrderBook(System.String)
+    name: GetLastOrderBook
+    href: Meridian.Execution.Interfaces.ILiveFeedAdapter.html#Meridian_Execution_Interfaces_ILiveFeedAdapter_GetLastOrderBook_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.LOBSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.LOBSnapshot.html
+  name: LOBSnapshot
+  nameWithType: LOBSnapshot
+  fullName: Meridian.Contracts.Domain.Models.LOBSnapshot
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplyTrade*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplyTrade
+  href: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.html#Meridian_Infrastructure_CppTrader_Execution_CppTraderLiveFeedAdapter_ApplyTrade_Meridian_Contracts_Domain_Models_Trade_
+  name: ApplyTrade
+  nameWithType: CppTraderLiveFeedAdapter.ApplyTrade
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplyTrade
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplySnapshot*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplySnapshot
+  href: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.html#Meridian_Infrastructure_CppTrader_Execution_CppTraderLiveFeedAdapter_ApplySnapshot_Meridian_Contracts_Domain_Models_LOBSnapshot_
+  name: ApplySnapshot
+  nameWithType: CppTraderLiveFeedAdapter.ApplySnapshot
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.ApplySnapshot

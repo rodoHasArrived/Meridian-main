@@ -1,0 +1,376 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  commentId: T:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  id: ICppTraderExecutionTranslator
+  parent: Meridian.Infrastructure.CppTrader.Translation
+  children:
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcceptedStatus(Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent)
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcknowledgement(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse)
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToCancelledStatus(Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent)
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToExecutionStatus(Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent)
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToRejectedStatus(Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent)
+  langs:
+  - csharp
+  - vb
+  name: ICppTraderExecutionTranslator
+  nameWithType: ICppTraderExecutionTranslator
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICppTraderExecutionTranslator
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  syntax:
+    content: public interface ICppTraderExecutionTranslator
+    content.vb: Public Interface ICppTraderExecutionTranslator
+  derivedClasses:
+  - Meridian.Infrastructure.CppTrader.Translation.CppTraderExecutionTranslator
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcknowledgement(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse)
+  commentId: M:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcknowledgement(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse)
+  id: ToAcknowledgement(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse)
+  parent: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  langs:
+  - csharp
+  - vb
+  name: ToAcknowledgement(SubmitOrderResponse)
+  nameWithType: ICppTraderExecutionTranslator.ToAcknowledgement(SubmitOrderResponse)
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcknowledgement(Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToAcknowledgement
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  syntax:
+    content: OrderAcknowledgement ToAcknowledgement(SubmitOrderResponse response)
+    parameters:
+    - id: response
+      type: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse
+    return:
+      type: Meridian.Execution.Models.OrderAcknowledgement
+    content.vb: Function ToAcknowledgement(response As SubmitOrderResponse) As OrderAcknowledgement
+  overload: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcknowledgement*
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcceptedStatus(Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent)
+  commentId: M:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcceptedStatus(Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent)
+  id: ToAcceptedStatus(Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent)
+  parent: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  langs:
+  - csharp
+  - vb
+  name: ToAcceptedStatus(AcceptedEvent)
+  nameWithType: ICppTraderExecutionTranslator.ToAcceptedStatus(AcceptedEvent)
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcceptedStatus(Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToAcceptedStatus
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  syntax:
+    content: OrderStatusUpdate ToAcceptedStatus(AcceptedEvent acceptedEvent)
+    parameters:
+    - id: acceptedEvent
+      type: Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent
+    return:
+      type: Meridian.Execution.Models.OrderStatusUpdate
+    content.vb: Function ToAcceptedStatus(acceptedEvent As AcceptedEvent) As OrderStatusUpdate
+  overload: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcceptedStatus*
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToRejectedStatus(Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent)
+  commentId: M:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToRejectedStatus(Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent)
+  id: ToRejectedStatus(Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent)
+  parent: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  langs:
+  - csharp
+  - vb
+  name: ToRejectedStatus(RejectedEvent)
+  nameWithType: ICppTraderExecutionTranslator.ToRejectedStatus(RejectedEvent)
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToRejectedStatus(Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToRejectedStatus
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  syntax:
+    content: OrderStatusUpdate ToRejectedStatus(RejectedEvent rejectedEvent)
+    parameters:
+    - id: rejectedEvent
+      type: Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent
+    return:
+      type: Meridian.Execution.Models.OrderStatusUpdate
+    content.vb: Function ToRejectedStatus(rejectedEvent As RejectedEvent) As OrderStatusUpdate
+  overload: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToRejectedStatus*
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToCancelledStatus(Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent)
+  commentId: M:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToCancelledStatus(Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent)
+  id: ToCancelledStatus(Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent)
+  parent: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  langs:
+  - csharp
+  - vb
+  name: ToCancelledStatus(CancelledEvent)
+  nameWithType: ICppTraderExecutionTranslator.ToCancelledStatus(CancelledEvent)
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToCancelledStatus(Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToCancelledStatus
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  syntax:
+    content: OrderStatusUpdate ToCancelledStatus(CancelledEvent cancelledEvent)
+    parameters:
+    - id: cancelledEvent
+      type: Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent
+    return:
+      type: Meridian.Execution.Models.OrderStatusUpdate
+    content.vb: Function ToCancelledStatus(cancelledEvent As CancelledEvent) As OrderStatusUpdate
+  overload: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToCancelledStatus*
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToExecutionStatus(Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent)
+  commentId: M:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToExecutionStatus(Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent)
+  id: ToExecutionStatus(Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent)
+  parent: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator
+  langs:
+  - csharp
+  - vb
+  name: ToExecutionStatus(ExecutionEvent)
+  nameWithType: ICppTraderExecutionTranslator.ToExecutionStatus(ExecutionEvent)
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToExecutionStatus(Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToExecutionStatus
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderExecutionTranslator.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  syntax:
+    content: OrderStatusUpdate ToExecutionStatus(ExecutionEvent executionEvent)
+    parameters:
+    - id: executionEvent
+      type: Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent
+    return:
+      type: Meridian.Execution.Models.OrderStatusUpdate
+    content.vb: Function ToExecutionStatus(executionEvent As ExecutionEvent) As OrderStatusUpdate
+  overload: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToExecutionStatus*
+references:
+- uid: Meridian.Infrastructure.CppTrader.Translation
+  commentId: N:Meridian.Infrastructure.CppTrader.Translation
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Translation
+  nameWithType: Meridian.Infrastructure.CppTrader.Translation
+  fullName: Meridian.Infrastructure.CppTrader.Translation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Translation
+    name: Translation
+    href: Meridian.Infrastructure.CppTrader.Translation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Translation
+    name: Translation
+    href: Meridian.Infrastructure.CppTrader.Translation.html
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcknowledgement*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcknowledgement
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.html#Meridian_Infrastructure_CppTrader_Translation_ICppTraderExecutionTranslator_ToAcknowledgement_Meridian_Infrastructure_CppTrader_Protocol_SubmitOrderResponse_
+  name: ToAcknowledgement
+  nameWithType: ICppTraderExecutionTranslator.ToAcknowledgement
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcknowledgement
+- uid: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse.html
+  name: SubmitOrderResponse
+  nameWithType: SubmitOrderResponse
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.SubmitOrderResponse
+- uid: Meridian.Execution.Models.OrderAcknowledgement
+  commentId: T:Meridian.Execution.Models.OrderAcknowledgement
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderAcknowledgement.html
+  name: OrderAcknowledgement
+  nameWithType: OrderAcknowledgement
+  fullName: Meridian.Execution.Models.OrderAcknowledgement
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcceptedStatus*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcceptedStatus
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.html#Meridian_Infrastructure_CppTrader_Translation_ICppTraderExecutionTranslator_ToAcceptedStatus_Meridian_Infrastructure_CppTrader_Protocol_AcceptedEvent_
+  name: ToAcceptedStatus
+  nameWithType: ICppTraderExecutionTranslator.ToAcceptedStatus
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToAcceptedStatus
+- uid: Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent.html
+  name: AcceptedEvent
+  nameWithType: AcceptedEvent
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.AcceptedEvent
+- uid: Meridian.Execution.Models.OrderStatusUpdate
+  commentId: T:Meridian.Execution.Models.OrderStatusUpdate
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderStatusUpdate.html
+  name: OrderStatusUpdate
+  nameWithType: OrderStatusUpdate
+  fullName: Meridian.Execution.Models.OrderStatusUpdate
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToRejectedStatus*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToRejectedStatus
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.html#Meridian_Infrastructure_CppTrader_Translation_ICppTraderExecutionTranslator_ToRejectedStatus_Meridian_Infrastructure_CppTrader_Protocol_RejectedEvent_
+  name: ToRejectedStatus
+  nameWithType: ICppTraderExecutionTranslator.ToRejectedStatus
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToRejectedStatus
+- uid: Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent.html
+  name: RejectedEvent
+  nameWithType: RejectedEvent
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.RejectedEvent
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToCancelledStatus*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToCancelledStatus
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.html#Meridian_Infrastructure_CppTrader_Translation_ICppTraderExecutionTranslator_ToCancelledStatus_Meridian_Infrastructure_CppTrader_Protocol_CancelledEvent_
+  name: ToCancelledStatus
+  nameWithType: ICppTraderExecutionTranslator.ToCancelledStatus
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToCancelledStatus
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent.html
+  name: CancelledEvent
+  nameWithType: CancelledEvent
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CancelledEvent
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToExecutionStatus*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToExecutionStatus
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.html#Meridian_Infrastructure_CppTrader_Translation_ICppTraderExecutionTranslator_ToExecutionStatus_Meridian_Infrastructure_CppTrader_Protocol_ExecutionEvent_
+  name: ToExecutionStatus
+  nameWithType: ICppTraderExecutionTranslator.ToExecutionStatus
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderExecutionTranslator.ToExecutionStatus
+- uid: Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent.html
+  name: ExecutionEvent
+  nameWithType: ExecutionEvent
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.ExecutionEvent

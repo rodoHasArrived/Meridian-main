@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.TourCategory
+  commentId: T:Meridian.Ui.Services.TourCategory
+  id: TourCategory
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.TourCategory.Advanced
+  - Meridian.Ui.Services.TourCategory.DataManagement
+  - Meridian.Ui.Services.TourCategory.GettingStarted
+  - Meridian.Ui.Services.TourCategory.Monitoring
+  langs:
+  - csharp
+  - vb
+  name: TourCategory
+  nameWithType: TourCategory
+  fullName: Meridian.Ui.Services.TourCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TourCategory
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 495
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Tour category for organization.
+  example: []
+  syntax:
+    content: 'public enum TourCategory : byte'
+    content.vb: Public Enum TourCategory As Byte
+- uid: Meridian.Ui.Services.TourCategory.GettingStarted
+  commentId: F:Meridian.Ui.Services.TourCategory.GettingStarted
+  id: GettingStarted
+  parent: Meridian.Ui.Services.TourCategory
+  langs:
+  - csharp
+  - vb
+  name: GettingStarted
+  nameWithType: TourCategory.GettingStarted
+  fullName: Meridian.Ui.Services.TourCategory.GettingStarted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GettingStarted
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 497
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: GettingStarted = 0
+    return:
+      type: Meridian.Ui.Services.TourCategory
+- uid: Meridian.Ui.Services.TourCategory.DataManagement
+  commentId: F:Meridian.Ui.Services.TourCategory.DataManagement
+  id: DataManagement
+  parent: Meridian.Ui.Services.TourCategory
+  langs:
+  - csharp
+  - vb
+  name: DataManagement
+  nameWithType: TourCategory.DataManagement
+  fullName: Meridian.Ui.Services.TourCategory.DataManagement
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataManagement
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 498
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: DataManagement = 1
+    return:
+      type: Meridian.Ui.Services.TourCategory
+- uid: Meridian.Ui.Services.TourCategory.Monitoring
+  commentId: F:Meridian.Ui.Services.TourCategory.Monitoring
+  id: Monitoring
+  parent: Meridian.Ui.Services.TourCategory
+  langs:
+  - csharp
+  - vb
+  name: Monitoring
+  nameWithType: TourCategory.Monitoring
+  fullName: Meridian.Ui.Services.TourCategory.Monitoring
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Monitoring
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 499
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Monitoring = 2
+    return:
+      type: Meridian.Ui.Services.TourCategory
+- uid: Meridian.Ui.Services.TourCategory.Advanced
+  commentId: F:Meridian.Ui.Services.TourCategory.Advanced
+  id: Advanced
+  parent: Meridian.Ui.Services.TourCategory
+  langs:
+  - csharp
+  - vb
+  name: Advanced
+  nameWithType: TourCategory.Advanced
+  fullName: Meridian.Ui.Services.TourCategory.Advanced
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Advanced
+    path: ../../src/Meridian.Ui.Services/Services/OnboardingTourService.cs
+    startLine: 500
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Advanced = 3
+    return:
+      type: Meridian.Ui.Services.TourCategory
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.TourCategory
+  commentId: T:Meridian.Ui.Services.TourCategory
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TourCategory.html
+  name: TourCategory
+  nameWithType: TourCategory
+  fullName: Meridian.Ui.Services.TourCategory

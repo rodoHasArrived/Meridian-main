@@ -1,3 +1,5 @@
+using System.Buffers;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using Meridian.Contracts.Domain.Models;
@@ -54,12 +56,6 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
     private readonly HashSet<(string symbol, decimal price, long size, DateTimeOffset ts)> _recentTrades = new();
     private readonly Queue<(string symbol, decimal price, long size, DateTimeOffset ts)> _recentTradeOrder = new();
     private const int MaxDedupWindowSize = 2048;
-
-    // Cached serializer options to avoid allocations in hot path
-    private static readonly JsonSerializerOptions s_serializerOptions = new()
-    {
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-    };
 
     public AlpacaMarketDataClient(TradeDataCollector tradeCollector, QuoteCollector quoteCollector, AlpacaOptions opt)
         : base(
@@ -136,7 +132,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
     /// </remarks>
     protected override Task AuthenticateAsync(CancellationToken ct)
     {
-        var authMsg = JsonSerializer.Serialize(new { action = "auth", key = _opt.KeyId, secret = _opt.SecretKey });
+        var authMsg = BuildAuthenticationMessage(_opt);
         Log.Debug("Sending authentication message to Alpaca");
         return SendAsync(authMsg, ct);
     }
@@ -187,17 +183,7 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
 
             var trades = Subscriptions.GetSymbolsByKind("trades");
             var quotes = Subscriptions.GetSymbolsByKind("quotes");
-
-            var msg = new Dictionary<string, object?>
-            {
-                ["action"] = "subscribe",
-                ["trades"] = trades.Length == 0 ? null : trades
-            };
-
-            if (_opt.SubscribeQuotes && quotes.Length > 0)
-                msg["quotes"] = quotes;
-
-            var json = JsonSerializer.Serialize(msg, s_serializerOptions);
+            var json = BuildSubscriptionMessage(_opt.SubscribeQuotes, trades, quotes);
             await SendAsync(json, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
@@ -262,6 +248,63 @@ public sealed class AlpacaMarketDataClient : WebSocketProviderBase
             ResubscribeAsync(CancellationToken.None)
                 .ObserveException(Log, $"Alpaca unsubscribe depth for {subscription.Symbol}");
         }
+    }
+
+    internal static string BuildAuthenticationMessage(AlpacaOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        return BuildJsonMessage(writer =>
+        {
+            writer.WriteString("action", "auth");
+            writer.WriteString("key", options.KeyId);
+            writer.WriteString("secret", options.SecretKey);
+        });
+    }
+
+    internal static string BuildSubscriptionMessage(
+        bool subscribeQuotes,
+        IReadOnlyList<string> trades,
+        IReadOnlyList<string> quotes)
+    {
+        ArgumentNullException.ThrowIfNull(trades);
+        ArgumentNullException.ThrowIfNull(quotes);
+
+        return BuildJsonMessage(writer =>
+        {
+            writer.WriteString("action", "subscribe");
+
+            if (trades.Count > 0)
+            {
+                writer.WritePropertyName("trades");
+                writer.WriteStartArray();
+                foreach (var trade in trades)
+                    writer.WriteStringValue(trade);
+                writer.WriteEndArray();
+            }
+
+            if (subscribeQuotes && quotes.Count > 0)
+            {
+                writer.WritePropertyName("quotes");
+                writer.WriteStartArray();
+                foreach (var quote in quotes)
+                    writer.WriteStringValue(quote);
+                writer.WriteEndArray();
+            }
+        });
+    }
+
+    private static string BuildJsonMessage(Action<Utf8JsonWriter> writePayload)
+    {
+        ArgumentNullException.ThrowIfNull(writePayload);
+
+        var buffer = new ArrayBufferWriter<byte>();
+        using var writer = new Utf8JsonWriter(buffer);
+        writer.WriteStartObject();
+        writePayload(writer);
+        writer.WriteEndObject();
+        writer.Flush();
+        return Encoding.UTF8.GetString(buffer.WrittenSpan);
     }
 
 

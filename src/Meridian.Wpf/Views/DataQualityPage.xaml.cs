@@ -17,9 +17,9 @@ public partial class DataQualityPage : Page
 
     public DataQualityPage(DataQualityViewModel viewModel)
     {
-        InitializeComponent();
-        _viewModel = viewModel;
+        _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         DataContext = _viewModel;
+        InitializeComponent();
 
         Loaded += OnPageLoaded;
         Unloaded += OnPageUnloaded;

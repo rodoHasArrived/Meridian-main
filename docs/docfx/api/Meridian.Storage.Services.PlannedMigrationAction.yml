@@ -1,0 +1,671 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.PlannedMigrationAction
+  commentId: T:Meridian.Storage.Services.PlannedMigrationAction
+  id: PlannedMigrationAction
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.PlannedMigrationAction.#ctor(System.String,Meridian.Storage.StorageTier,System.String,System.Int64,System.TimeSpan,System.Int64)
+  - Meridian.Storage.Services.PlannedMigrationAction.EstimatedSavings
+  - Meridian.Storage.Services.PlannedMigrationAction.FileAge
+  - Meridian.Storage.Services.PlannedMigrationAction.Reason
+  - Meridian.Storage.Services.PlannedMigrationAction.SizeBytes
+  - Meridian.Storage.Services.PlannedMigrationAction.SourcePath
+  - Meridian.Storage.Services.PlannedMigrationAction.TargetTier
+  langs:
+  - csharp
+  - vb
+  name: PlannedMigrationAction
+  nameWithType: PlannedMigrationAction
+  fullName: Meridian.Storage.Services.PlannedMigrationAction
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlannedMigrationAction
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 391
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record PlannedMigrationAction : IEquatable<PlannedMigrationAction>'
+    content.vb: Public NotInheritable Class PlannedMigrationAction Implements IEquatable(Of PlannedMigrationAction)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.PlannedMigrationAction}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.PlannedMigrationAction.#ctor(System.String,Meridian.Storage.StorageTier,System.String,System.Int64,System.TimeSpan,System.Int64)
+  commentId: M:Meridian.Storage.Services.PlannedMigrationAction.#ctor(System.String,Meridian.Storage.StorageTier,System.String,System.Int64,System.TimeSpan,System.Int64)
+  id: '#ctor(System.String,Meridian.Storage.StorageTier,System.String,System.Int64,System.TimeSpan,System.Int64)'
+  parent: Meridian.Storage.Services.PlannedMigrationAction
+  langs:
+  - csharp
+  - vb
+  name: PlannedMigrationAction(string, StorageTier, string, long, TimeSpan, long)
+  nameWithType: PlannedMigrationAction.PlannedMigrationAction(string, StorageTier, string, long, TimeSpan, long)
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.PlannedMigrationAction(string, Meridian.Storage.StorageTier, string, long, System.TimeSpan, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 391
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public PlannedMigrationAction(string SourcePath, StorageTier TargetTier, string Reason, long SizeBytes, TimeSpan FileAge, long EstimatedSavings)
+    parameters:
+    - id: SourcePath
+      type: System.String
+    - id: TargetTier
+      type: Meridian.Storage.StorageTier
+    - id: Reason
+      type: System.String
+    - id: SizeBytes
+      type: System.Int64
+    - id: FileAge
+      type: System.TimeSpan
+    - id: EstimatedSavings
+      type: System.Int64
+    content.vb: Public Sub New(SourcePath As String, TargetTier As StorageTier, Reason As String, SizeBytes As Long, FileAge As TimeSpan, EstimatedSavings As Long)
+  overload: Meridian.Storage.Services.PlannedMigrationAction.#ctor*
+  nameWithType.vb: PlannedMigrationAction.New(String, StorageTier, String, Long, TimeSpan, Long)
+  fullName.vb: Meridian.Storage.Services.PlannedMigrationAction.New(String, Meridian.Storage.StorageTier, String, Long, System.TimeSpan, Long)
+  name.vb: New(String, StorageTier, String, Long, TimeSpan, Long)
+- uid: Meridian.Storage.Services.PlannedMigrationAction.SourcePath
+  commentId: P:Meridian.Storage.Services.PlannedMigrationAction.SourcePath
+  id: SourcePath
+  parent: Meridian.Storage.Services.PlannedMigrationAction
+  langs:
+  - csharp
+  - vb
+  name: SourcePath
+  nameWithType: PlannedMigrationAction.SourcePath
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.SourcePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourcePath
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 392
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string SourcePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourcePath As String
+  overload: Meridian.Storage.Services.PlannedMigrationAction.SourcePath*
+- uid: Meridian.Storage.Services.PlannedMigrationAction.TargetTier
+  commentId: P:Meridian.Storage.Services.PlannedMigrationAction.TargetTier
+  id: TargetTier
+  parent: Meridian.Storage.Services.PlannedMigrationAction
+  langs:
+  - csharp
+  - vb
+  name: TargetTier
+  nameWithType: PlannedMigrationAction.TargetTier
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.TargetTier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetTier
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 393
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public StorageTier TargetTier { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.StorageTier
+    content.vb: Public Property TargetTier As StorageTier
+  overload: Meridian.Storage.Services.PlannedMigrationAction.TargetTier*
+- uid: Meridian.Storage.Services.PlannedMigrationAction.Reason
+  commentId: P:Meridian.Storage.Services.PlannedMigrationAction.Reason
+  id: Reason
+  parent: Meridian.Storage.Services.PlannedMigrationAction
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: PlannedMigrationAction.Reason
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 394
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Storage.Services.PlannedMigrationAction.Reason*
+- uid: Meridian.Storage.Services.PlannedMigrationAction.SizeBytes
+  commentId: P:Meridian.Storage.Services.PlannedMigrationAction.SizeBytes
+  id: SizeBytes
+  parent: Meridian.Storage.Services.PlannedMigrationAction
+  langs:
+  - csharp
+  - vb
+  name: SizeBytes
+  nameWithType: PlannedMigrationAction.SizeBytes
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.SizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SizeBytes
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long SizeBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SizeBytes As Long
+  overload: Meridian.Storage.Services.PlannedMigrationAction.SizeBytes*
+- uid: Meridian.Storage.Services.PlannedMigrationAction.FileAge
+  commentId: P:Meridian.Storage.Services.PlannedMigrationAction.FileAge
+  id: FileAge
+  parent: Meridian.Storage.Services.PlannedMigrationAction
+  langs:
+  - csharp
+  - vb
+  name: FileAge
+  nameWithType: PlannedMigrationAction.FileAge
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.FileAge
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileAge
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 396
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan FileAge { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property FileAge As TimeSpan
+  overload: Meridian.Storage.Services.PlannedMigrationAction.FileAge*
+- uid: Meridian.Storage.Services.PlannedMigrationAction.EstimatedSavings
+  commentId: P:Meridian.Storage.Services.PlannedMigrationAction.EstimatedSavings
+  id: EstimatedSavings
+  parent: Meridian.Storage.Services.PlannedMigrationAction
+  langs:
+  - csharp
+  - vb
+  name: EstimatedSavings
+  nameWithType: PlannedMigrationAction.EstimatedSavings
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.EstimatedSavings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/TierMigrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedSavings
+    path: ../../src/Meridian.Storage/Services/TierMigrationService.cs
+    startLine: 397
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long EstimatedSavings { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EstimatedSavings As Long
+  overload: Meridian.Storage.Services.PlannedMigrationAction.EstimatedSavings*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.PlannedMigrationAction}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.PlannedMigrationAction}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PlannedMigrationAction>
+  nameWithType: IEquatable<PlannedMigrationAction>
+  fullName: System.IEquatable<Meridian.Storage.Services.PlannedMigrationAction>
+  nameWithType.vb: IEquatable(Of PlannedMigrationAction)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.PlannedMigrationAction)
+  name.vb: IEquatable(Of PlannedMigrationAction)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.PlannedMigrationAction
+    name: PlannedMigrationAction
+    href: Meridian.Storage.Services.PlannedMigrationAction.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.PlannedMigrationAction
+    name: PlannedMigrationAction
+    href: Meridian.Storage.Services.PlannedMigrationAction.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.PlannedMigrationAction.#ctor*
+  commentId: Overload:Meridian.Storage.Services.PlannedMigrationAction.#ctor
+  href: Meridian.Storage.Services.PlannedMigrationAction.html#Meridian_Storage_Services_PlannedMigrationAction__ctor_System_String_Meridian_Storage_StorageTier_System_String_System_Int64_System_TimeSpan_System_Int64_
+  name: PlannedMigrationAction
+  nameWithType: PlannedMigrationAction.PlannedMigrationAction
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.PlannedMigrationAction
+  nameWithType.vb: PlannedMigrationAction.New
+  fullName.vb: Meridian.Storage.Services.PlannedMigrationAction.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.StorageTier
+  commentId: T:Meridian.Storage.StorageTier
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageTier.html
+  name: StorageTier
+  nameWithType: StorageTier
+  fullName: Meridian.Storage.StorageTier
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.Services.PlannedMigrationAction.SourcePath*
+  commentId: Overload:Meridian.Storage.Services.PlannedMigrationAction.SourcePath
+  href: Meridian.Storage.Services.PlannedMigrationAction.html#Meridian_Storage_Services_PlannedMigrationAction_SourcePath
+  name: SourcePath
+  nameWithType: PlannedMigrationAction.SourcePath
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.SourcePath
+- uid: Meridian.Storage.Services.PlannedMigrationAction.TargetTier*
+  commentId: Overload:Meridian.Storage.Services.PlannedMigrationAction.TargetTier
+  href: Meridian.Storage.Services.PlannedMigrationAction.html#Meridian_Storage_Services_PlannedMigrationAction_TargetTier
+  name: TargetTier
+  nameWithType: PlannedMigrationAction.TargetTier
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.TargetTier
+- uid: Meridian.Storage.Services.PlannedMigrationAction.Reason*
+  commentId: Overload:Meridian.Storage.Services.PlannedMigrationAction.Reason
+  href: Meridian.Storage.Services.PlannedMigrationAction.html#Meridian_Storage_Services_PlannedMigrationAction_Reason
+  name: Reason
+  nameWithType: PlannedMigrationAction.Reason
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.Reason
+- uid: Meridian.Storage.Services.PlannedMigrationAction.SizeBytes*
+  commentId: Overload:Meridian.Storage.Services.PlannedMigrationAction.SizeBytes
+  href: Meridian.Storage.Services.PlannedMigrationAction.html#Meridian_Storage_Services_PlannedMigrationAction_SizeBytes
+  name: SizeBytes
+  nameWithType: PlannedMigrationAction.SizeBytes
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.SizeBytes
+- uid: Meridian.Storage.Services.PlannedMigrationAction.FileAge*
+  commentId: Overload:Meridian.Storage.Services.PlannedMigrationAction.FileAge
+  href: Meridian.Storage.Services.PlannedMigrationAction.html#Meridian_Storage_Services_PlannedMigrationAction_FileAge
+  name: FileAge
+  nameWithType: PlannedMigrationAction.FileAge
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.FileAge
+- uid: Meridian.Storage.Services.PlannedMigrationAction.EstimatedSavings*
+  commentId: Overload:Meridian.Storage.Services.PlannedMigrationAction.EstimatedSavings
+  href: Meridian.Storage.Services.PlannedMigrationAction.html#Meridian_Storage_Services_PlannedMigrationAction_EstimatedSavings
+  name: EstimatedSavings
+  nameWithType: PlannedMigrationAction.EstimatedSavings
+  fullName: Meridian.Storage.Services.PlannedMigrationAction.EstimatedSavings

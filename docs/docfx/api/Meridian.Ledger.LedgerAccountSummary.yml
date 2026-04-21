@@ -1,0 +1,858 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ledger.LedgerAccountSummary
+  commentId: T:Meridian.Ledger.LedgerAccountSummary
+  id: LedgerAccountSummary
+  parent: Meridian.Ledger
+  children:
+  - Meridian.Ledger.LedgerAccountSummary.#ctor(Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  - Meridian.Ledger.LedgerAccountSummary.Account
+  - Meridian.Ledger.LedgerAccountSummary.Balance
+  - Meridian.Ledger.LedgerAccountSummary.Credits
+  - Meridian.Ledger.LedgerAccountSummary.Debits
+  - Meridian.Ledger.LedgerAccountSummary.Empty(Meridian.Ledger.LedgerAccount)
+  - Meridian.Ledger.LedgerAccountSummary.EntryCount
+  - Meridian.Ledger.LedgerAccountSummary.FirstPostedAt
+  - Meridian.Ledger.LedgerAccountSummary.LastPostedAt
+  - Meridian.Ledger.LedgerAccountSummary.TotalCredits
+  - Meridian.Ledger.LedgerAccountSummary.TotalDebits
+  langs:
+  - csharp
+  - vb
+  name: LedgerAccountSummary
+  nameWithType: LedgerAccountSummary
+  fullName: Meridian.Ledger.LedgerAccountSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerAccountSummary
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Aggregate summary for a posted ledger account.
+  example: []
+  syntax:
+    content: 'public sealed record LedgerAccountSummary : IEquatable<LedgerAccountSummary>'
+    content.vb: Public NotInheritable Class LedgerAccountSummary Implements IEquatable(Of LedgerAccountSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ledger.LedgerAccountSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ledger.LedgerAccountSummary.#ctor(Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Ledger.LedgerAccountSummary.#ctor(Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  id: '#ctor(Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: LedgerAccountSummary(LedgerAccount, decimal, decimal, decimal, int, DateTimeOffset?, DateTimeOffset?)
+  nameWithType: LedgerAccountSummary.LedgerAccountSummary(LedgerAccount, decimal, decimal, decimal, int, DateTimeOffset?, DateTimeOffset?)
+  fullName: Meridian.Ledger.LedgerAccountSummary.LedgerAccountSummary(Meridian.Ledger.LedgerAccount, decimal, decimal, decimal, int, System.DateTimeOffset?, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Aggregate summary for a posted ledger account.
+  example: []
+  syntax:
+    content: public LedgerAccountSummary(LedgerAccount Account, decimal Balance, decimal TotalDebits, decimal TotalCredits, int EntryCount, DateTimeOffset? FirstPostedAt, DateTimeOffset? LastPostedAt)
+    parameters:
+    - id: Account
+      type: Meridian.Ledger.LedgerAccount
+    - id: Balance
+      type: System.Decimal
+    - id: TotalDebits
+      type: System.Decimal
+    - id: TotalCredits
+      type: System.Decimal
+    - id: EntryCount
+      type: System.Int32
+    - id: FirstPostedAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: LastPostedAt
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(Account As LedgerAccount, Balance As Decimal, TotalDebits As Decimal, TotalCredits As Decimal, EntryCount As Integer, FirstPostedAt As DateTimeOffset?, LastPostedAt As DateTimeOffset?)
+  overload: Meridian.Ledger.LedgerAccountSummary.#ctor*
+  nameWithType.vb: LedgerAccountSummary.New(LedgerAccount, Decimal, Decimal, Decimal, Integer, DateTimeOffset?, DateTimeOffset?)
+  fullName.vb: Meridian.Ledger.LedgerAccountSummary.New(Meridian.Ledger.LedgerAccount, Decimal, Decimal, Decimal, Integer, System.DateTimeOffset?, System.DateTimeOffset?)
+  name.vb: New(LedgerAccount, Decimal, Decimal, Decimal, Integer, DateTimeOffset?, DateTimeOffset?)
+- uid: Meridian.Ledger.LedgerAccountSummary.Account
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.Account
+  id: Account
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: Account
+  nameWithType: LedgerAccountSummary.Account
+  fullName: Meridian.Ledger.LedgerAccountSummary.Account
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Account
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public LedgerAccount Account { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Property Account As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccountSummary.Account*
+- uid: Meridian.Ledger.LedgerAccountSummary.Balance
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.Balance
+  id: Balance
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: Balance
+  nameWithType: LedgerAccountSummary.Balance
+  fullName: Meridian.Ledger.LedgerAccountSummary.Balance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Balance
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public decimal Balance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Balance As Decimal
+  overload: Meridian.Ledger.LedgerAccountSummary.Balance*
+- uid: Meridian.Ledger.LedgerAccountSummary.TotalDebits
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.TotalDebits
+  id: TotalDebits
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalDebits
+  nameWithType: LedgerAccountSummary.TotalDebits
+  fullName: Meridian.Ledger.LedgerAccountSummary.TotalDebits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDebits
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public decimal TotalDebits { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalDebits As Decimal
+  overload: Meridian.Ledger.LedgerAccountSummary.TotalDebits*
+- uid: Meridian.Ledger.LedgerAccountSummary.TotalCredits
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.TotalCredits
+  id: TotalCredits
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalCredits
+  nameWithType: LedgerAccountSummary.TotalCredits
+  fullName: Meridian.Ledger.LedgerAccountSummary.TotalCredits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCredits
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public decimal TotalCredits { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalCredits As Decimal
+  overload: Meridian.Ledger.LedgerAccountSummary.TotalCredits*
+- uid: Meridian.Ledger.LedgerAccountSummary.EntryCount
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.EntryCount
+  id: EntryCount
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: EntryCount
+  nameWithType: LedgerAccountSummary.EntryCount
+  fullName: Meridian.Ledger.LedgerAccountSummary.EntryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryCount
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public int EntryCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property EntryCount As Integer
+  overload: Meridian.Ledger.LedgerAccountSummary.EntryCount*
+- uid: Meridian.Ledger.LedgerAccountSummary.FirstPostedAt
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.FirstPostedAt
+  id: FirstPostedAt
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: FirstPostedAt
+  nameWithType: LedgerAccountSummary.FirstPostedAt
+  fullName: Meridian.Ledger.LedgerAccountSummary.FirstPostedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstPostedAt
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public DateTimeOffset? FirstPostedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property FirstPostedAt As DateTimeOffset?
+  overload: Meridian.Ledger.LedgerAccountSummary.FirstPostedAt*
+- uid: Meridian.Ledger.LedgerAccountSummary.LastPostedAt
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.LastPostedAt
+  id: LastPostedAt
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: LastPostedAt
+  nameWithType: LedgerAccountSummary.LastPostedAt
+  fullName: Meridian.Ledger.LedgerAccountSummary.LastPostedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastPostedAt
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public DateTimeOffset? LastPostedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastPostedAt As DateTimeOffset?
+  overload: Meridian.Ledger.LedgerAccountSummary.LastPostedAt*
+- uid: Meridian.Ledger.LedgerAccountSummary.Debits
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.Debits
+  id: Debits
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: Debits
+  nameWithType: LedgerAccountSummary.Debits
+  fullName: Meridian.Ledger.LedgerAccountSummary.Debits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Debits
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Backward-compatible alias for <xref href="Meridian.Ledger.LedgerAccountSummary.TotalDebits" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public decimal Debits { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property Debits As Decimal
+  overload: Meridian.Ledger.LedgerAccountSummary.Debits*
+- uid: Meridian.Ledger.LedgerAccountSummary.Credits
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.Credits
+  id: Credits
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: Credits
+  nameWithType: LedgerAccountSummary.Credits
+  fullName: Meridian.Ledger.LedgerAccountSummary.Credits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Credits
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Backward-compatible alias for <xref href="Meridian.Ledger.LedgerAccountSummary.TotalCredits" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public decimal Credits { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property Credits As Decimal
+  overload: Meridian.Ledger.LedgerAccountSummary.Credits*
+- uid: Meridian.Ledger.LedgerAccountSummary.Empty(Meridian.Ledger.LedgerAccount)
+  commentId: M:Meridian.Ledger.LedgerAccountSummary.Empty(Meridian.Ledger.LedgerAccount)
+  id: Empty(Meridian.Ledger.LedgerAccount)
+  parent: Meridian.Ledger.LedgerAccountSummary
+  langs:
+  - csharp
+  - vb
+  name: Empty(LedgerAccount)
+  nameWithType: LedgerAccountSummary.Empty(LedgerAccount)
+  fullName: Meridian.Ledger.LedgerAccountSummary.Empty(Meridian.Ledger.LedgerAccount)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccountSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Empty
+    path: ../../src/Meridian.Ledger/LedgerAccountSummary.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Creates an empty summary for an account with no postings.
+  example: []
+  syntax:
+    content: public static LedgerAccountSummary Empty(LedgerAccount account)
+    parameters:
+    - id: account
+      type: Meridian.Ledger.LedgerAccount
+    return:
+      type: Meridian.Ledger.LedgerAccountSummary
+    content.vb: Public Shared Function Empty(account As LedgerAccount) As LedgerAccountSummary
+  overload: Meridian.Ledger.LedgerAccountSummary.Empty*
+references:
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ledger.LedgerAccountSummary}
+  commentId: T:System.IEquatable{Meridian.Ledger.LedgerAccountSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LedgerAccountSummary>
+  nameWithType: IEquatable<LedgerAccountSummary>
+  fullName: System.IEquatable<Meridian.Ledger.LedgerAccountSummary>
+  nameWithType.vb: IEquatable(Of LedgerAccountSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Ledger.LedgerAccountSummary)
+  name.vb: IEquatable(Of LedgerAccountSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ledger.LedgerAccountSummary
+    name: LedgerAccountSummary
+    href: Meridian.Ledger.LedgerAccountSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerAccountSummary
+    name: LedgerAccountSummary
+    href: Meridian.Ledger.LedgerAccountSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ledger.LedgerAccountSummary.#ctor*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.#ctor
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary__ctor_Meridian_Ledger_LedgerAccount_System_Decimal_System_Decimal_System_Decimal_System_Int32_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  name: LedgerAccountSummary
+  nameWithType: LedgerAccountSummary.LedgerAccountSummary
+  fullName: Meridian.Ledger.LedgerAccountSummary.LedgerAccountSummary
+  nameWithType.vb: LedgerAccountSummary.New
+  fullName.vb: Meridian.Ledger.LedgerAccountSummary.New
+  name.vb: New
+- uid: Meridian.Ledger.LedgerAccount
+  commentId: T:Meridian.Ledger.LedgerAccount
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerAccount.html
+  name: LedgerAccount
+  nameWithType: LedgerAccount
+  fullName: Meridian.Ledger.LedgerAccount
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ledger.LedgerAccountSummary.Account*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.Account
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_Account
+  name: Account
+  nameWithType: LedgerAccountSummary.Account
+  fullName: Meridian.Ledger.LedgerAccountSummary.Account
+- uid: Meridian.Ledger.LedgerAccountSummary.Balance*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.Balance
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_Balance
+  name: Balance
+  nameWithType: LedgerAccountSummary.Balance
+  fullName: Meridian.Ledger.LedgerAccountSummary.Balance
+- uid: Meridian.Ledger.LedgerAccountSummary.TotalDebits*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.TotalDebits
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_TotalDebits
+  name: TotalDebits
+  nameWithType: LedgerAccountSummary.TotalDebits
+  fullName: Meridian.Ledger.LedgerAccountSummary.TotalDebits
+- uid: Meridian.Ledger.LedgerAccountSummary.TotalCredits*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.TotalCredits
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_TotalCredits
+  name: TotalCredits
+  nameWithType: LedgerAccountSummary.TotalCredits
+  fullName: Meridian.Ledger.LedgerAccountSummary.TotalCredits
+- uid: Meridian.Ledger.LedgerAccountSummary.EntryCount*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.EntryCount
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_EntryCount
+  name: EntryCount
+  nameWithType: LedgerAccountSummary.EntryCount
+  fullName: Meridian.Ledger.LedgerAccountSummary.EntryCount
+- uid: Meridian.Ledger.LedgerAccountSummary.FirstPostedAt*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.FirstPostedAt
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_FirstPostedAt
+  name: FirstPostedAt
+  nameWithType: LedgerAccountSummary.FirstPostedAt
+  fullName: Meridian.Ledger.LedgerAccountSummary.FirstPostedAt
+- uid: Meridian.Ledger.LedgerAccountSummary.LastPostedAt*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.LastPostedAt
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_LastPostedAt
+  name: LastPostedAt
+  nameWithType: LedgerAccountSummary.LastPostedAt
+  fullName: Meridian.Ledger.LedgerAccountSummary.LastPostedAt
+- uid: Meridian.Ledger.LedgerAccountSummary.TotalDebits
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.TotalDebits
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_TotalDebits
+  name: TotalDebits
+  nameWithType: LedgerAccountSummary.TotalDebits
+  fullName: Meridian.Ledger.LedgerAccountSummary.TotalDebits
+- uid: Meridian.Ledger.LedgerAccountSummary.Debits*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.Debits
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_Debits
+  name: Debits
+  nameWithType: LedgerAccountSummary.Debits
+  fullName: Meridian.Ledger.LedgerAccountSummary.Debits
+- uid: Meridian.Ledger.LedgerAccountSummary.TotalCredits
+  commentId: P:Meridian.Ledger.LedgerAccountSummary.TotalCredits
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_TotalCredits
+  name: TotalCredits
+  nameWithType: LedgerAccountSummary.TotalCredits
+  fullName: Meridian.Ledger.LedgerAccountSummary.TotalCredits
+- uid: Meridian.Ledger.LedgerAccountSummary.Credits*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.Credits
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_Credits
+  name: Credits
+  nameWithType: LedgerAccountSummary.Credits
+  fullName: Meridian.Ledger.LedgerAccountSummary.Credits
+- uid: Meridian.Ledger.LedgerAccountSummary.Empty*
+  commentId: Overload:Meridian.Ledger.LedgerAccountSummary.Empty
+  href: Meridian.Ledger.LedgerAccountSummary.html#Meridian_Ledger_LedgerAccountSummary_Empty_Meridian_Ledger_LedgerAccount_
+  name: Empty
+  nameWithType: LedgerAccountSummary.Empty
+  fullName: Meridian.Ledger.LedgerAccountSummary.Empty
+- uid: Meridian.Ledger.LedgerAccountSummary
+  commentId: T:Meridian.Ledger.LedgerAccountSummary
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerAccountSummary.html
+  name: LedgerAccountSummary
+  nameWithType: LedgerAccountSummary
+  fullName: Meridian.Ledger.LedgerAccountSummary

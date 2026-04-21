@@ -237,3 +237,7 @@ jobs:
           echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "- **ticker-data-${{ github.run_number }}-${GITHUB_SHA}** — ${{ steps.normalize-inputs.outputs.validated_output_format }} files with historical bar data" >> $GITHUB_STEP_SUMMARY
           echo "- **ticker-test-results-${{ github.run_number }}** — Test result (.trx) file" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "- **ticker-data-${{ github.run_number }}-${GITHUB_SHA}** — ${{ steps.normalize-inputs.outputs.validated_output_format }} files with historical bar data" >> $GITHUB_STEP_SUMMARY
+          echo "- **ticker-test-results-${{ github.run_number }}** — Test result (.trx) file" >> $GITHUB_STEP_SUMMARY

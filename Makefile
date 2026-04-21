@@ -28,7 +28,6 @@ include make/diagnostics.mk
 
 # Project settings
 PROJECT := src/Meridian/Meridian.csproj
-UI_PROJECT := src/Meridian.Ui/Meridian.Ui.csproj
 TEST_PROJECT := tests/Meridian.Tests/Meridian.Tests.csproj
 BENCHMARK_PROJECT := benchmarks/Meridian.Benchmarks/Meridian.Benchmarks.csproj
 DOCGEN_PROJECT := build/dotnet/DocGenerator/DocGenerator.csproj

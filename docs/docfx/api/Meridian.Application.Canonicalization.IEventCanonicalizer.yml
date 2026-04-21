@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Canonicalization.IEventCanonicalizer
+  commentId: T:Meridian.Application.Canonicalization.IEventCanonicalizer
+  id: IEventCanonicalizer
+  parent: Meridian.Application.Canonicalization
+  children:
+  - Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IEventCanonicalizer
+  nameWithType: IEventCanonicalizer
+  fullName: Meridian.Application.Canonicalization.IEventCanonicalizer
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IEventCanonicalizer
+    path: ../../src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: >-
+    Transforms a raw <xref href="Meridian.Domain.Events.MarketEvent" data-throw-if-not-resolved="false"></xref> into a canonicalized event by resolving symbols,
+
+    mapping condition codes, and normalizing venue identifiers.
+
+    Runs <b>before</b> <code>EventPipeline.PublishAsync()</code> to avoid adding latency to the
+
+    high-throughput sink path.
+  example: []
+  syntax:
+    content: public interface IEventCanonicalizer
+    content.vb: Public Interface IEventCanonicalizer
+  derivedClasses:
+  - Meridian.Application.Canonicalization.EventCanonicalizer
+- uid: Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  id: Canonicalize(Meridian.Domain.Events.MarketEvent,System.Threading.CancellationToken)
+  parent: Meridian.Application.Canonicalization.IEventCanonicalizer
+  langs:
+  - csharp
+  - vb
+  name: Canonicalize(MarketEvent, CancellationToken)
+  nameWithType: IEventCanonicalizer.Canonicalize(MarketEvent, CancellationToken)
+  fullName: Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize(Meridian.Domain.Events.MarketEvent, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Canonicalize
+    path: ../../src/Meridian.Application/Canonicalization/IEventCanonicalizer.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: >-
+    Canonicalizes a raw market event. Returns the enriched event with canonical fields populated.
+
+    The original <xref href="Meridian.Domain.Events.MarketEvent.Symbol" data-throw-if-not-resolved="false"></xref> is never mutated.
+  example: []
+  syntax:
+    content: MarketEvent Canonicalize(MarketEvent raw, CancellationToken ct = default)
+    parameters:
+    - id: raw
+      type: Meridian.Domain.Events.MarketEvent
+      description: The raw event from a provider adapter.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: Meridian.Domain.Events.MarketEvent
+      description: The canonicalized event with <xref href="Meridian.Domain.Events.MarketEvent.Tier" data-throw-if-not-resolved="false"></xref> set to <code>Enriched</code>.
+    content.vb: Function Canonicalize(raw As MarketEvent, ct As CancellationToken = Nothing) As MarketEvent
+  overload: Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize*
+references:
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Application.Canonicalization
+  commentId: N:Meridian.Application.Canonicalization
+  href: Meridian.html
+  name: Meridian.Application.Canonicalization
+  nameWithType: Meridian.Application.Canonicalization
+  fullName: Meridian.Application.Canonicalization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Domain.Events.MarketEvent.Symbol
+  commentId: P:Meridian.Domain.Events.MarketEvent.Symbol
+  href: Meridian.Domain.Events.MarketEvent.html#Meridian_Domain_Events_MarketEvent_Symbol
+  name: Symbol
+  nameWithType: MarketEvent.Symbol
+  fullName: Meridian.Domain.Events.MarketEvent.Symbol
+- uid: Meridian.Domain.Events.MarketEvent.Tier
+  commentId: P:Meridian.Domain.Events.MarketEvent.Tier
+  name: Tier
+  nameWithType: MarketEvent.Tier
+  fullName: Meridian.Domain.Events.MarketEvent.Tier
+- uid: Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize*
+  commentId: Overload:Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize
+  href: Meridian.Application.Canonicalization.IEventCanonicalizer.html#Meridian_Application_Canonicalization_IEventCanonicalizer_Canonicalize_Meridian_Domain_Events_MarketEvent_System_Threading_CancellationToken_
+  name: Canonicalize
+  nameWithType: IEventCanonicalizer.Canonicalize
+  fullName: Meridian.Application.Canonicalization.IEventCanonicalizer.Canonicalize
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading

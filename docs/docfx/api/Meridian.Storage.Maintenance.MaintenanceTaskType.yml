@@ -1,0 +1,358 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceTaskType
+  id: MaintenanceTaskType
+  parent: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.Archival
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.Cleanup
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.Compression
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.Defragmentation
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.FullMaintenance
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.HealthCheck
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.IntegrityCheck
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.Repair
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.RetentionEnforcement
+  - Meridian.Storage.Maintenance.MaintenanceTaskType.TierMigration
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceTaskType
+  nameWithType: MaintenanceTaskType
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceTaskType
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Type of maintenance operation.
+  example: []
+  syntax:
+    content: 'public enum MaintenanceTaskType : byte'
+    content.vb: Public Enum MaintenanceTaskType As Byte
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.HealthCheck
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.HealthCheck
+  id: HealthCheck
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: HealthCheck
+  nameWithType: MaintenanceTaskType.HealthCheck
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.HealthCheck
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheck
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Run health checks on storage files.
+  example: []
+  syntax:
+    content: HealthCheck = 0
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.Cleanup
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.Cleanup
+  id: Cleanup
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Cleanup
+  nameWithType: MaintenanceTaskType.Cleanup
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.Cleanup
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cleanup
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Clean up orphaned and temporary files.
+  example: []
+  syntax:
+    content: Cleanup = 1
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.Defragmentation
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.Defragmentation
+  id: Defragmentation
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Defragmentation
+  nameWithType: MaintenanceTaskType.Defragmentation
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.Defragmentation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Defragmentation
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Defragment small files into larger chunks.
+  example: []
+  syntax:
+    content: Defragmentation = 2
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.TierMigration
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.TierMigration
+  id: TierMigration
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: TierMigration
+  nameWithType: MaintenanceTaskType.TierMigration
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.TierMigration
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TierMigration
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Migrate files between storage tiers based on age.
+  example: []
+  syntax:
+    content: TierMigration = 3
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.Compression
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.Compression
+  id: Compression
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Compression
+  nameWithType: MaintenanceTaskType.Compression
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.Compression
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compression
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Recompress files with optimal compression settings.
+  example: []
+  syntax:
+    content: Compression = 4
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.Repair
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.Repair
+  id: Repair
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Repair
+  nameWithType: MaintenanceTaskType.Repair
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.Repair
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Repair
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Repair corrupted or truncated files.
+  example: []
+  syntax:
+    content: Repair = 5
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.FullMaintenance
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.FullMaintenance
+  id: FullMaintenance
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: FullMaintenance
+  nameWithType: MaintenanceTaskType.FullMaintenance
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.FullMaintenance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullMaintenance
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: 'Full maintenance: health check, cleanup, defrag, and tier migration.'
+  example: []
+  syntax:
+    content: FullMaintenance = 6
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.IntegrityCheck
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.IntegrityCheck
+  id: IntegrityCheck
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: IntegrityCheck
+  nameWithType: MaintenanceTaskType.IntegrityCheck
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.IntegrityCheck
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntegrityCheck
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Verify and repair file integrity (checksums).
+  example: []
+  syntax:
+    content: IntegrityCheck = 7
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.Archival
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.Archival
+  id: Archival
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: Archival
+  nameWithType: MaintenanceTaskType.Archival
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.Archival
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Archival
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Archive old data to cold storage.
+  example: []
+  syntax:
+    content: Archival = 8
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType.RetentionEnforcement
+  commentId: F:Meridian.Storage.Maintenance.MaintenanceTaskType.RetentionEnforcement
+  id: RetentionEnforcement
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskType
+  langs:
+  - csharp
+  - vb
+  name: RetentionEnforcement
+  nameWithType: MaintenanceTaskType.RetentionEnforcement
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType.RetentionEnforcement
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetentionEnforcement
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Enforce retention policies and delete expired data.
+  example: []
+  syntax:
+    content: RetentionEnforcement = 9
+    return:
+      type: Meridian.Storage.Maintenance.MaintenanceTaskType
+references:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskType
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceTaskType
+  parent: Meridian.Storage.Maintenance
+  href: Meridian.Storage.Maintenance.MaintenanceTaskType.html
+  name: MaintenanceTaskType
+  nameWithType: MaintenanceTaskType
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskType

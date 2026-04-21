@@ -1,0 +1,978 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  commentId: T:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  id: CppTraderSymbolMapper
+  parent: Meridian.Infrastructure.CppTrader.Symbols
+  children:
+  - Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.#ctor(Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})
+  - Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+  - Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+  - Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+  - Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.GetSymbol(System.String)
+  - Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ToRegisterRequest(System.String)
+  langs:
+  - csharp
+  - vb
+  name: CppTraderSymbolMapper
+  nameWithType: CppTraderSymbolMapper
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTraderSymbolMapper
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  syntax:
+    content: 'public sealed class CppTraderSymbolMapper : ICppTraderSymbolMapper'
+    content.vb: Public NotInheritable Class CppTraderSymbolMapper Implements ICppTraderSymbolMapper
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.#ctor(Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.#ctor(Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})
+  id: '#ctor(Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions})'
+  parent: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: CppTraderSymbolMapper(IOptionsMonitor<CppTraderOptions>)
+  nameWithType: CppTraderSymbolMapper.CppTraderSymbolMapper(IOptionsMonitor<CppTraderOptions>)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.CppTraderSymbolMapper(Microsoft.Extensions.Options.IOptionsMonitor<Meridian.Infrastructure.CppTrader.Options.CppTraderOptions>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  syntax:
+    content: public CppTraderSymbolMapper(IOptionsMonitor<CppTraderOptions> optionsMonitor)
+    parameters:
+    - id: optionsMonitor
+      type: Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions}
+    content.vb: Public Sub New(optionsMonitor As IOptionsMonitor(Of CppTraderOptions))
+  overload: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.#ctor*
+  nameWithType.vb: CppTraderSymbolMapper.New(IOptionsMonitor(Of CppTraderOptions))
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.New(Microsoft.Extensions.Options.IOptionsMonitor(Of Meridian.Infrastructure.CppTrader.Options.CppTraderOptions))
+  name.vb: New(IOptionsMonitor(Of CppTraderOptions))
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.GetSymbol(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.GetSymbol(System.String)
+  id: GetSymbol(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: GetSymbol(string)
+  nameWithType: CppTraderSymbolMapper.GetSymbol(string)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.GetSymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbol
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  example: []
+  syntax:
+    content: public CppTraderSymbolSpecification GetSymbol(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+    content.vb: Public Function GetSymbol(symbol As String) As CppTraderSymbolSpecification
+  overload: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.GetSymbol*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(System.String)
+  nameWithType.vb: CppTraderSymbolMapper.GetSymbol(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.GetSymbol(String)
+  name.vb: GetSymbol(String)
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ToRegisterRequest(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ToRegisterRequest(System.String)
+  id: ToRegisterRequest(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ToRegisterRequest(string)
+  nameWithType: CppTraderSymbolMapper.ToRegisterRequest(string)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ToRegisterRequest(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToRegisterRequest
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  example: []
+  syntax:
+    content: public RegisterSymbolRequest ToRegisterRequest(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+    content.vb: Public Function ToRegisterRequest(symbol As String) As RegisterSymbolRequest
+  overload: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ToRegisterRequest*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(System.String)
+  nameWithType.vb: CppTraderSymbolMapper.ToRegisterRequest(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ToRegisterRequest(String)
+  name.vb: ToRegisterRequest(String)
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+  id: ConvertPriceToNanos(System.String,System.Decimal)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ConvertPriceToNanos(string, decimal)
+  nameWithType: CppTraderSymbolMapper.ConvertPriceToNanos(string, decimal)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertPriceToNanos(string, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConvertPriceToNanos
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  example: []
+  syntax:
+    content: public long ConvertPriceToNanos(string symbol, decimal price)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: price
+      type: System.Decimal
+    return:
+      type: System.Int64
+    content.vb: Public Function ConvertPriceToNanos(symbol As String, price As Decimal) As Long
+  overload: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertPriceToNanos*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+  nameWithType.vb: CppTraderSymbolMapper.ConvertPriceToNanos(String, Decimal)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertPriceToNanos(String, Decimal)
+  name.vb: ConvertPriceToNanos(String, Decimal)
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+  id: ConvertQuantityToNanos(System.String,System.Decimal)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ConvertQuantityToNanos(string, decimal)
+  nameWithType: CppTraderSymbolMapper.ConvertQuantityToNanos(string, decimal)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityToNanos(string, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConvertQuantityToNanos
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  example: []
+  syntax:
+    content: public long ConvertQuantityToNanos(string symbol, decimal quantity)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantity
+      type: System.Decimal
+    return:
+      type: System.Int64
+    content.vb: Public Function ConvertQuantityToNanos(symbol As String, quantity As Decimal) As Long
+  overload: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityToNanos*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+  nameWithType.vb: CppTraderSymbolMapper.ConvertQuantityToNanos(String, Decimal)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityToNanos(String, Decimal)
+  name.vb: ConvertQuantityToNanos(String, Decimal)
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+  id: ConvertQuantityFromNanos(System.String,System.Int64)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper
+  langs:
+  - csharp
+  - vb
+  name: ConvertQuantityFromNanos(string, long)
+  nameWithType: CppTraderSymbolMapper.ConvertQuantityFromNanos(string, long)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityFromNanos(string, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConvertQuantityFromNanos
+    path: ../../src/Meridian.Infrastructure.CppTrader/Symbols/CppTraderSymbolMapper.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Symbols
+  example: []
+  syntax:
+    content: public decimal ConvertQuantityFromNanos(string symbol, long quantityNanos)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: quantityNanos
+      type: System.Int64
+    return:
+      type: System.Decimal
+    content.vb: Public Function ConvertQuantityFromNanos(symbol As String, quantityNanos As Long) As Decimal
+  overload: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityFromNanos*
+  implements:
+  - Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+  nameWithType.vb: CppTraderSymbolMapper.ConvertQuantityFromNanos(String, Long)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityFromNanos(String, Long)
+  name.vb: ConvertQuantityFromNanos(String, Long)
+references:
+- uid: Meridian.Infrastructure.CppTrader.Symbols
+  commentId: N:Meridian.Infrastructure.CppTrader.Symbols
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Symbols
+  nameWithType: Meridian.Infrastructure.CppTrader.Symbols
+  fullName: Meridian.Infrastructure.CppTrader.Symbols
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Symbols
+    name: Symbols
+    href: Meridian.Infrastructure.CppTrader.Symbols.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Symbols
+    name: Symbols
+    href: Meridian.Infrastructure.CppTrader.Symbols.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  commentId: T:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  parent: Meridian.Infrastructure.CppTrader.Symbols
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html
+  name: ICppTraderSymbolMapper
+  nameWithType: ICppTraderSymbolMapper
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.#ctor*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.#ctor
+  href: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_CppTraderSymbolMapper__ctor_Microsoft_Extensions_Options_IOptionsMonitor_Meridian_Infrastructure_CppTrader_Options_CppTraderOptions__
+  name: CppTraderSymbolMapper
+  nameWithType: CppTraderSymbolMapper.CppTraderSymbolMapper
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.CppTraderSymbolMapper
+  nameWithType.vb: CppTraderSymbolMapper.New
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.New
+  name.vb: New
+- uid: Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions}
+  commentId: T:Microsoft.Extensions.Options.IOptionsMonitor{Meridian.Infrastructure.CppTrader.Options.CppTraderOptions}
+  parent: Microsoft.Extensions.Options
+  definition: Microsoft.Extensions.Options.IOptionsMonitor`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  name: IOptionsMonitor<CppTraderOptions>
+  nameWithType: IOptionsMonitor<CppTraderOptions>
+  fullName: Microsoft.Extensions.Options.IOptionsMonitor<Meridian.Infrastructure.CppTrader.Options.CppTraderOptions>
+  nameWithType.vb: IOptionsMonitor(Of CppTraderOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptionsMonitor(Of Meridian.Infrastructure.CppTrader.Options.CppTraderOptions)
+  name.vb: IOptionsMonitor(Of CppTraderOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+    name: CppTraderOptions
+    href: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions
+    name: CppTraderOptions
+    href: Meridian.Infrastructure.CppTrader.Options.CppTraderOptions.html
+  - name: )
+- uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+  commentId: T:Microsoft.Extensions.Options.IOptionsMonitor`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  name: IOptionsMonitor<TOptions>
+  nameWithType: IOptionsMonitor<TOptions>
+  fullName: Microsoft.Extensions.Options.IOptionsMonitor<TOptions>
+  nameWithType.vb: IOptionsMonitor(Of TOptions)
+  fullName.vb: Microsoft.Extensions.Options.IOptionsMonitor(Of TOptions)
+  name.vb: IOptionsMonitor(Of TOptions)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: <
+  - name: TOptions
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Options.IOptionsMonitor`1
+    name: IOptionsMonitor
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options.ioptionsmonitor-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TOptions
+  - name: )
+- uid: Microsoft.Extensions.Options
+  commentId: N:Microsoft.Extensions.Options
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Options
+  nameWithType: Microsoft.Extensions.Options
+  fullName: Microsoft.Extensions.Options
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Options
+    name: Options
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.options
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.GetSymbol*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.GetSymbol
+  href: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_CppTraderSymbolMapper_GetSymbol_System_String_
+  name: GetSymbol
+  nameWithType: CppTraderSymbolMapper.GetSymbol
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.GetSymbol
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  isExternal: true
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_GetSymbol_System_String_
+  name: GetSymbol(string)
+  nameWithType: ICppTraderSymbolMapper.GetSymbol(string)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(string)
+  nameWithType.vb: ICppTraderSymbolMapper.GetSymbol(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(String)
+  name.vb: GetSymbol(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(System.String)
+    name: GetSymbol
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_GetSymbol_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.GetSymbol(System.String)
+    name: GetSymbol
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_GetSymbol_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+  commentId: T:Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+  parent: Meridian.Infrastructure.CppTrader.Options
+  href: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification.html
+  name: CppTraderSymbolSpecification
+  nameWithType: CppTraderSymbolSpecification
+  fullName: Meridian.Infrastructure.CppTrader.Options.CppTraderSymbolSpecification
+- uid: Meridian.Infrastructure.CppTrader.Options
+  commentId: N:Meridian.Infrastructure.CppTrader.Options
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Options
+  nameWithType: Meridian.Infrastructure.CppTrader.Options
+  fullName: Meridian.Infrastructure.CppTrader.Options
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Options
+    name: Options
+    href: Meridian.Infrastructure.CppTrader.Options.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Options
+    name: Options
+    href: Meridian.Infrastructure.CppTrader.Options.html
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ToRegisterRequest*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ToRegisterRequest
+  href: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_CppTraderSymbolMapper_ToRegisterRequest_System_String_
+  name: ToRegisterRequest
+  nameWithType: CppTraderSymbolMapper.ToRegisterRequest
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ToRegisterRequest
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(System.String)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  isExternal: true
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ToRegisterRequest_System_String_
+  name: ToRegisterRequest(string)
+  nameWithType: ICppTraderSymbolMapper.ToRegisterRequest(string)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(string)
+  nameWithType.vb: ICppTraderSymbolMapper.ToRegisterRequest(String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(String)
+  name.vb: ToRegisterRequest(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(System.String)
+    name: ToRegisterRequest
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ToRegisterRequest_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ToRegisterRequest(System.String)
+    name: ToRegisterRequest
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ToRegisterRequest_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest.html
+  name: RegisterSymbolRequest
+  nameWithType: RegisterSymbolRequest
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.RegisterSymbolRequest
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertPriceToNanos*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertPriceToNanos
+  href: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_CppTraderSymbolMapper_ConvertPriceToNanos_System_String_System_Decimal_
+  name: ConvertPriceToNanos
+  nameWithType: CppTraderSymbolMapper.ConvertPriceToNanos
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertPriceToNanos
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  isExternal: true
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertPriceToNanos_System_String_System_Decimal_
+  name: ConvertPriceToNanos(string, decimal)
+  nameWithType: ICppTraderSymbolMapper.ConvertPriceToNanos(string, decimal)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(string, decimal)
+  nameWithType.vb: ICppTraderSymbolMapper.ConvertPriceToNanos(String, Decimal)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(String, Decimal)
+  name.vb: ConvertPriceToNanos(String, Decimal)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+    name: ConvertPriceToNanos
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertPriceToNanos_System_String_System_Decimal_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertPriceToNanos(System.String,System.Decimal)
+    name: ConvertPriceToNanos
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertPriceToNanos_System_String_System_Decimal_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityToNanos*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityToNanos
+  href: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_CppTraderSymbolMapper_ConvertQuantityToNanos_System_String_System_Decimal_
+  name: ConvertQuantityToNanos
+  nameWithType: CppTraderSymbolMapper.ConvertQuantityToNanos
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityToNanos
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  isExternal: true
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertQuantityToNanos_System_String_System_Decimal_
+  name: ConvertQuantityToNanos(string, decimal)
+  nameWithType: ICppTraderSymbolMapper.ConvertQuantityToNanos(string, decimal)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(string, decimal)
+  nameWithType.vb: ICppTraderSymbolMapper.ConvertQuantityToNanos(String, Decimal)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(String, Decimal)
+  name.vb: ConvertQuantityToNanos(String, Decimal)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+    name: ConvertQuantityToNanos
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertQuantityToNanos_System_String_System_Decimal_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityToNanos(System.String,System.Decimal)
+    name: ConvertQuantityToNanos
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertQuantityToNanos_System_String_System_Decimal_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityFromNanos*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityFromNanos
+  href: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_CppTraderSymbolMapper_ConvertQuantityFromNanos_System_String_System_Int64_
+  name: ConvertQuantityFromNanos
+  nameWithType: CppTraderSymbolMapper.ConvertQuantityFromNanos
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.CppTraderSymbolMapper.ConvertQuantityFromNanos
+- uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+  commentId: M:Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+  parent: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper
+  isExternal: true
+  href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertQuantityFromNanos_System_String_System_Int64_
+  name: ConvertQuantityFromNanos(string, long)
+  nameWithType: ICppTraderSymbolMapper.ConvertQuantityFromNanos(string, long)
+  fullName: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(string, long)
+  nameWithType.vb: ICppTraderSymbolMapper.ConvertQuantityFromNanos(String, Long)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(String, Long)
+  name.vb: ConvertQuantityFromNanos(String, Long)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+    name: ConvertQuantityFromNanos
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertQuantityFromNanos_System_String_System_Int64_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.ConvertQuantityFromNanos(System.String,System.Int64)
+    name: ConvertQuantityFromNanos
+    href: Meridian.Infrastructure.CppTrader.Symbols.ICppTraderSymbolMapper.html#Meridian_Infrastructure_CppTrader_Symbols_ICppTraderSymbolMapper_ConvertQuantityFromNanos_System_String_System_Int64_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )

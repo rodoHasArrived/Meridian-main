@@ -1,0 +1,1126 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities
+  commentId: T:Meridian.Execution.Sdk.BrokerageCapabilities
+  id: BrokerageCapabilities
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.BrokerageCapabilities.Extensions
+  - Meridian.Execution.Sdk.BrokerageCapabilities.SupportedAssetClasses
+  - Meridian.Execution.Sdk.BrokerageCapabilities.SupportedMarkets
+  - Meridian.Execution.Sdk.BrokerageCapabilities.SupportedOrderTypes
+  - Meridian.Execution.Sdk.BrokerageCapabilities.SupportedTimeInForce
+  - Meridian.Execution.Sdk.BrokerageCapabilities.SupportsExtendedHours
+  - Meridian.Execution.Sdk.BrokerageCapabilities.SupportsFractionalShares
+  - Meridian.Execution.Sdk.BrokerageCapabilities.SupportsOrderModification
+  - Meridian.Execution.Sdk.BrokerageCapabilities.SupportsPartialFills
+  - Meridian.Execution.Sdk.BrokerageCapabilities.SupportsShortSelling
+  - Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  - Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  langs:
+  - csharp
+  - vb
+  name: BrokerageCapabilities
+  nameWithType: BrokerageCapabilities
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerageCapabilities
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Describes the brokerage-specific capabilities exposed by a gateway.
+  example: []
+  syntax:
+    content: 'public sealed record BrokerageCapabilities : IEquatable<BrokerageCapabilities>'
+    content.vb: Public NotInheritable Class BrokerageCapabilities Implements IEquatable(Of BrokerageCapabilities)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.BrokerageCapabilities}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedOrderTypes
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.SupportedOrderTypes
+  id: SupportedOrderTypes
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedOrderTypes
+  nameWithType: BrokerageCapabilities.SupportedOrderTypes
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedOrderTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedOrderTypes
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Supported order types.
+  example: []
+  syntax:
+    content: public required IReadOnlySet<OrderType> SupportedOrderTypes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType}
+    content.vb: Public Property SupportedOrderTypes As IReadOnlySet(Of OrderType)
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedOrderTypes*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedTimeInForce
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.SupportedTimeInForce
+  id: SupportedTimeInForce
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedTimeInForce
+  nameWithType: BrokerageCapabilities.SupportedTimeInForce
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedTimeInForce
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedTimeInForce
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Supported time-in-force values.
+  example: []
+  syntax:
+    content: public required IReadOnlySet<TimeInForce> SupportedTimeInForce { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce}
+    content.vb: Public Property SupportedTimeInForce As IReadOnlySet(Of TimeInForce)
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedTimeInForce*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsOrderModification
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsOrderModification
+  id: SupportsOrderModification
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsOrderModification
+  nameWithType: BrokerageCapabilities.SupportsOrderModification
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsOrderModification
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsOrderModification
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Supports order modification (amend price/qty on working orders).
+  example: []
+  syntax:
+    content: public bool SupportsOrderModification { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsOrderModification As Boolean
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsOrderModification*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsPartialFills
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsPartialFills
+  id: SupportsPartialFills
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsPartialFills
+  nameWithType: BrokerageCapabilities.SupportsPartialFills
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsPartialFills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsPartialFills
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Supports partial fills.
+  example: []
+  syntax:
+    content: public bool SupportsPartialFills { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsPartialFills As Boolean
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsPartialFills*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsShortSelling
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsShortSelling
+  id: SupportsShortSelling
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsShortSelling
+  nameWithType: BrokerageCapabilities.SupportsShortSelling
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsShortSelling
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsShortSelling
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Supports short selling.
+  example: []
+  syntax:
+    content: public bool SupportsShortSelling { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsShortSelling As Boolean
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsShortSelling*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsFractionalShares
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsFractionalShares
+  id: SupportsFractionalShares
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsFractionalShares
+  nameWithType: BrokerageCapabilities.SupportsFractionalShares
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsFractionalShares
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsFractionalShares
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Supports fractional shares.
+  example: []
+  syntax:
+    content: public bool SupportsFractionalShares { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsFractionalShares As Boolean
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsFractionalShares*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsExtendedHours
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsExtendedHours
+  id: SupportsExtendedHours
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsExtendedHours
+  nameWithType: BrokerageCapabilities.SupportsExtendedHours
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsExtendedHours
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsExtendedHours
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Supports extended/after-hours trading.
+  example: []
+  syntax:
+    content: public bool SupportsExtendedHours { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsExtendedHours As Boolean
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsExtendedHours*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedAssetClasses
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.SupportedAssetClasses
+  id: SupportedAssetClasses
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedAssetClasses
+  nameWithType: BrokerageCapabilities.SupportedAssetClasses
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedAssetClasses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedAssetClasses
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Supported asset classes (e.g., "equity", "option", "crypto", "futures").
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SupportedAssetClasses { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property SupportedAssetClasses As IReadOnlyList(Of String)
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedAssetClasses*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedMarkets
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.SupportedMarkets
+  id: SupportedMarkets
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedMarkets
+  nameWithType: BrokerageCapabilities.SupportedMarkets
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedMarkets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedMarkets
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Supported markets/exchanges.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SupportedMarkets { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property SupportedMarkets As IReadOnlyList(Of String)
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedMarkets*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.Extensions
+  commentId: P:Meridian.Execution.Sdk.BrokerageCapabilities.Extensions
+  id: Extensions
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: Extensions
+  nameWithType: BrokerageCapabilities.Extensions
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.Extensions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Extensions
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Provider-specific extension hints (e.g., "maxOrdersPerSecond").
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, string> Extensions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property Extensions As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.Extensions*
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  id: UsEquity(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: UsEquity(bool, bool, bool, bool, bool)
+  nameWithType: BrokerageCapabilities.UsEquity(bool, bool, bool, bool, bool)
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity(bool, bool, bool, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsEquity
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Standard brokerage capabilities for US equity brokers.
+  example: []
+  syntax:
+    content: public static BrokerageCapabilities UsEquity(bool modification = true, bool partialFills = true, bool shortSelling = true, bool fractional = false, bool extendedHours = false)
+    parameters:
+    - id: modification
+      type: System.Boolean
+    - id: partialFills
+      type: System.Boolean
+    - id: shortSelling
+      type: System.Boolean
+    - id: fractional
+      type: System.Boolean
+    - id: extendedHours
+      type: System.Boolean
+    return:
+      type: Meridian.Execution.Sdk.BrokerageCapabilities
+    content.vb: Public Shared Function UsEquity(modification As Boolean = True, partialFills As Boolean = True, shortSelling As Boolean = True, fractional As Boolean = False, extendedHours As Boolean = False) As BrokerageCapabilities
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity*
+  nameWithType.vb: BrokerageCapabilities.UsEquity(Boolean, Boolean, Boolean, Boolean, Boolean)
+  fullName.vb: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity(Boolean, Boolean, Boolean, Boolean, Boolean)
+  name.vb: UsEquity(Boolean, Boolean, Boolean, Boolean, Boolean)
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  id: UsEquityAndFixedIncome(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  parent: Meridian.Execution.Sdk.BrokerageCapabilities
+  langs:
+  - csharp
+  - vb
+  name: UsEquityAndFixedIncome(bool, bool, bool, bool, bool)
+  nameWithType: BrokerageCapabilities.UsEquityAndFixedIncome(bool, bool, bool, bool, bool)
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(bool, bool, bool, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsEquityAndFixedIncome
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: >-
+    Brokerage capabilities for brokers that support both US equities and fixed income
+
+    instruments (US Treasuries, corporate bonds, municipal bonds).
+
+    Fixed income orders may use notional (dollar-amount) sizing in addition to share qty.
+  example: []
+  syntax:
+    content: public static BrokerageCapabilities UsEquityAndFixedIncome(bool modification = true, bool partialFills = true, bool shortSelling = true, bool fractional = true, bool extendedHours = false)
+    parameters:
+    - id: modification
+      type: System.Boolean
+    - id: partialFills
+      type: System.Boolean
+    - id: shortSelling
+      type: System.Boolean
+    - id: fractional
+      type: System.Boolean
+    - id: extendedHours
+      type: System.Boolean
+    return:
+      type: Meridian.Execution.Sdk.BrokerageCapabilities
+    content.vb: Public Shared Function UsEquityAndFixedIncome(modification As Boolean = True, partialFills As Boolean = True, shortSelling As Boolean = True, fractional As Boolean = True, extendedHours As Boolean = False) As BrokerageCapabilities
+  overload: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome*
+  nameWithType.vb: BrokerageCapabilities.UsEquityAndFixedIncome(Boolean, Boolean, Boolean, Boolean, Boolean)
+  fullName.vb: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome(Boolean, Boolean, Boolean, Boolean, Boolean)
+  name.vb: UsEquityAndFixedIncome(Boolean, Boolean, Boolean, Boolean, Boolean)
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.BrokerageCapabilities}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.BrokerageCapabilities}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BrokerageCapabilities>
+  nameWithType: IEquatable<BrokerageCapabilities>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.BrokerageCapabilities>
+  nameWithType.vb: IEquatable(Of BrokerageCapabilities)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.BrokerageCapabilities)
+  name.vb: IEquatable(Of BrokerageCapabilities)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.BrokerageCapabilities
+    name: BrokerageCapabilities
+    href: Meridian.Execution.Sdk.BrokerageCapabilities.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.BrokerageCapabilities
+    name: BrokerageCapabilities
+    href: Meridian.Execution.Sdk.BrokerageCapabilities.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedOrderTypes*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.SupportedOrderTypes
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_SupportedOrderTypes
+  name: SupportedOrderTypes
+  nameWithType: BrokerageCapabilities.SupportedOrderTypes
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedOrderTypes
+- uid: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType}
+  commentId: T:System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.OrderType}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<OrderType>
+  nameWithType: IReadOnlySet<OrderType>
+  fullName: System.Collections.Generic.IReadOnlySet<Meridian.Execution.Sdk.OrderType>
+  nameWithType.vb: IReadOnlySet(Of OrderType)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of Meridian.Execution.Sdk.OrderType)
+  name.vb: IReadOnlySet(Of OrderType)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.OrderType
+    name: OrderType
+    href: Meridian.Execution.Sdk.OrderType.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.OrderType
+    name: OrderType
+    href: Meridian.Execution.Sdk.OrderType.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedTimeInForce*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.SupportedTimeInForce
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_SupportedTimeInForce
+  name: SupportedTimeInForce
+  nameWithType: BrokerageCapabilities.SupportedTimeInForce
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedTimeInForce
+- uid: System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce}
+  commentId: T:System.Collections.Generic.IReadOnlySet{Meridian.Execution.Sdk.TimeInForce}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<TimeInForce>
+  nameWithType: IReadOnlySet<TimeInForce>
+  fullName: System.Collections.Generic.IReadOnlySet<Meridian.Execution.Sdk.TimeInForce>
+  nameWithType.vb: IReadOnlySet(Of TimeInForce)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of Meridian.Execution.Sdk.TimeInForce)
+  name.vb: IReadOnlySet(Of TimeInForce)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.TimeInForce
+    name: TimeInForce
+    href: Meridian.Execution.Sdk.TimeInForce.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.TimeInForce
+    name: TimeInForce
+    href: Meridian.Execution.Sdk.TimeInForce.html
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsOrderModification*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsOrderModification
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_SupportsOrderModification
+  name: SupportsOrderModification
+  nameWithType: BrokerageCapabilities.SupportsOrderModification
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsOrderModification
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsPartialFills*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsPartialFills
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_SupportsPartialFills
+  name: SupportsPartialFills
+  nameWithType: BrokerageCapabilities.SupportsPartialFills
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsPartialFills
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsShortSelling*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsShortSelling
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_SupportsShortSelling
+  name: SupportsShortSelling
+  nameWithType: BrokerageCapabilities.SupportsShortSelling
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsShortSelling
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsFractionalShares*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsFractionalShares
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_SupportsFractionalShares
+  name: SupportsFractionalShares
+  nameWithType: BrokerageCapabilities.SupportsFractionalShares
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsFractionalShares
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsExtendedHours*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.SupportsExtendedHours
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_SupportsExtendedHours
+  name: SupportsExtendedHours
+  nameWithType: BrokerageCapabilities.SupportsExtendedHours
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportsExtendedHours
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedAssetClasses*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.SupportedAssetClasses
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_SupportedAssetClasses
+  name: SupportedAssetClasses
+  nameWithType: BrokerageCapabilities.SupportedAssetClasses
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedAssetClasses
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedMarkets*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.SupportedMarkets
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: BrokerageCapabilities.SupportedMarkets
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.SupportedMarkets
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.Extensions*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.Extensions
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_Extensions
+  name: Extensions
+  nameWithType: BrokerageCapabilities.Extensions
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.Extensions
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_UsEquity_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_
+  name: UsEquity
+  nameWithType: BrokerageCapabilities.UsEquity
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquity
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities
+  commentId: T:Meridian.Execution.Sdk.BrokerageCapabilities
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html
+  name: BrokerageCapabilities
+  nameWithType: BrokerageCapabilities
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities
+- uid: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome
+  href: Meridian.Execution.Sdk.BrokerageCapabilities.html#Meridian_Execution_Sdk_BrokerageCapabilities_UsEquityAndFixedIncome_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_
+  name: UsEquityAndFixedIncome
+  nameWithType: BrokerageCapabilities.UsEquityAndFixedIncome
+  fullName: Meridian.Execution.Sdk.BrokerageCapabilities.UsEquityAndFixedIncome

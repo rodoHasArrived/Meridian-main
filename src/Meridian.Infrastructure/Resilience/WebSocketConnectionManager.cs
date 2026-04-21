@@ -12,7 +12,7 @@ namespace Meridian.Infrastructure.Resilience;
 /// resilience, heartbeat monitoring, and automatic reconnection.
 ///
 /// This class eliminates duplicate connection management code across providers
-/// (Alpaca, Polygon, StockSharp) by centralizing:
+/// (Alpaca, Polygon, NYSE) by centralizing:
 /// - Connection with resilience pipeline (retry + circuit breaker)
 /// - Heartbeat monitoring for stale connection detection
 /// - Reconnection gating (prevents reconnection storms)

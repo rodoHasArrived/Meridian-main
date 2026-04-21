@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Tests.Support;
@@ -17,14 +18,14 @@ public sealed class QuantScriptPageTests
 {
     private sealed class StubLayoutService : IQuantScriptLayoutService
     {
-        public (double LeftWidth, double RightWidth) LoadColumnWidths() => (300, 400);
-        public void SaveColumnWidths(double leftWidth, double rightWidth) { }
+        public (double ChartHeight, double EditorHeight) LoadRowHeights() => (300, 400);
+        public void SaveRowHeights(double chartHeight, double editorHeight) { }
         public int LoadLastActiveTab() => 0;
         public void SaveLastActiveTab(int tabIndex) { }
     }
 
     [Fact]
-    public void Loaded_WhenConstructed_RestoresPersistedColumnWidths()
+    public void Loaded_WhenConstructed_RestoresPersistedRowHeights()
     {
         WpfTestThread.Run(() =>
         {
@@ -32,8 +33,8 @@ public sealed class QuantScriptPageTests
 
             page.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
 
-            page.FindName("LeftColumn").Should().BeOfType<ColumnDefinition>().Subject.Width.Value.Should().Be(300);
-            page.FindName("RightColumn").Should().BeOfType<ColumnDefinition>().Subject.Width.Value.Should().Be(400);
+            page.FindName("ChartRow").Should().BeOfType<RowDefinition>().Subject.Height.Value.Should().Be(300);
+            page.FindName("EditorRow").Should().BeOfType<RowDefinition>().Subject.Height.Value.Should().Be(400);
         });
     }
 
@@ -44,12 +45,10 @@ public sealed class QuantScriptPageTests
             new Meridian.Wpf.Tests.Support.FakeQuantScriptCompiler(),
             new PlotQueue(),
             new StubLayoutService(),
+            new QuantScriptNotebookStore(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() }),
             Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() }),
             NullLogger<QuantScriptViewModel>.Instance);
 
-        return new QuantScriptPage
-        {
-            DataContext = vm
-        };
+        return new QuantScriptPage(vm);
     }
 }

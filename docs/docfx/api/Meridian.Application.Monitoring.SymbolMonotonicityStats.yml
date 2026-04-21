@@ -1,0 +1,686 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  commentId: T:Meridian.Application.Monitoring.SymbolMonotonicityStats
+  id: SymbolMonotonicityStats
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.SymbolMonotonicityStats.#ctor(System.String,System.String,System.Int64,System.Int64,System.Int64,System.DateTimeOffset,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.SymbolMonotonicityStats.EventType
+  - Meridian.Application.Monitoring.SymbolMonotonicityStats.LastEventTimestamp
+  - Meridian.Application.Monitoring.SymbolMonotonicityStats.LastViolationTime
+  - Meridian.Application.Monitoring.SymbolMonotonicityStats.Symbol
+  - Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalEvents
+  - Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalGaps
+  - Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalViolations
+  langs:
+  - csharp
+  - vb
+  name: SymbolMonotonicityStats
+  nameWithType: SymbolMonotonicityStats
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolMonotonicityStats
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 459
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Per-symbol monotonicity statistics.
+  example: []
+  syntax:
+    content: 'public readonly record struct SymbolMonotonicityStats : IEquatable<SymbolMonotonicityStats>'
+    content.vb: Public Structure SymbolMonotonicityStats Implements IEquatable(Of SymbolMonotonicityStats)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.SymbolMonotonicityStats}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.#ctor(System.String,System.String,System.Int64,System.Int64,System.Int64,System.DateTimeOffset,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.SymbolMonotonicityStats.#ctor(System.String,System.String,System.Int64,System.Int64,System.Int64,System.DateTimeOffset,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.Int64,System.Int64,System.Int64,System.DateTimeOffset,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  langs:
+  - csharp
+  - vb
+  name: SymbolMonotonicityStats(string, string, long, long, long, DateTimeOffset, DateTimeOffset)
+  nameWithType: SymbolMonotonicityStats.SymbolMonotonicityStats(string, string, long, long, long, DateTimeOffset, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.SymbolMonotonicityStats(string, string, long, long, long, System.DateTimeOffset, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 459
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Per-symbol monotonicity statistics.
+  example: []
+  syntax:
+    content: public SymbolMonotonicityStats(string Symbol, string EventType, long TotalEvents, long TotalViolations, long TotalGaps, DateTimeOffset LastViolationTime, DateTimeOffset LastEventTimestamp)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: EventType
+      type: System.String
+    - id: TotalEvents
+      type: System.Int64
+    - id: TotalViolations
+      type: System.Int64
+    - id: TotalGaps
+      type: System.Int64
+    - id: LastViolationTime
+      type: System.DateTimeOffset
+    - id: LastEventTimestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Symbol As String, EventType As String, TotalEvents As Long, TotalViolations As Long, TotalGaps As Long, LastViolationTime As DateTimeOffset, LastEventTimestamp As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.SymbolMonotonicityStats.#ctor*
+  nameWithType.vb: SymbolMonotonicityStats.New(String, String, Long, Long, Long, DateTimeOffset, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.SymbolMonotonicityStats.New(String, String, Long, Long, Long, System.DateTimeOffset, System.DateTimeOffset)
+  name.vb: New(String, String, Long, Long, Long, DateTimeOffset, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.Symbol
+  commentId: P:Meridian.Application.Monitoring.SymbolMonotonicityStats.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolMonotonicityStats.Symbol
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 460
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.SymbolMonotonicityStats.Symbol*
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.EventType
+  commentId: P:Meridian.Application.Monitoring.SymbolMonotonicityStats.EventType
+  id: EventType
+  parent: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: SymbolMonotonicityStats.EventType
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 461
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string EventType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EventType As String
+  overload: Meridian.Application.Monitoring.SymbolMonotonicityStats.EventType*
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalEvents
+  commentId: P:Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalEvents
+  id: TotalEvents
+  parent: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  langs:
+  - csharp
+  - vb
+  name: TotalEvents
+  nameWithType: SymbolMonotonicityStats.TotalEvents
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEvents
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 462
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long TotalEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalEvents As Long
+  overload: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalEvents*
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalViolations
+  commentId: P:Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalViolations
+  id: TotalViolations
+  parent: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  langs:
+  - csharp
+  - vb
+  name: TotalViolations
+  nameWithType: SymbolMonotonicityStats.TotalViolations
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalViolations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalViolations
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 463
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long TotalViolations { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalViolations As Long
+  overload: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalViolations*
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalGaps
+  commentId: P:Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalGaps
+  id: TotalGaps
+  parent: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  langs:
+  - csharp
+  - vb
+  name: TotalGaps
+  nameWithType: SymbolMonotonicityStats.TotalGaps
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGaps
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 464
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long TotalGaps { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalGaps As Long
+  overload: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalGaps*
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastViolationTime
+  commentId: P:Meridian.Application.Monitoring.SymbolMonotonicityStats.LastViolationTime
+  id: LastViolationTime
+  parent: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  langs:
+  - csharp
+  - vb
+  name: LastViolationTime
+  nameWithType: SymbolMonotonicityStats.LastViolationTime
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastViolationTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastViolationTime
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 465
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset LastViolationTime { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastViolationTime As DateTimeOffset
+  overload: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastViolationTime*
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastEventTimestamp
+  commentId: P:Meridian.Application.Monitoring.SymbolMonotonicityStats.LastEventTimestamp
+  id: LastEventTimestamp
+  parent: Meridian.Application.Monitoring.SymbolMonotonicityStats
+  langs:
+  - csharp
+  - vb
+  name: LastEventTimestamp
+  nameWithType: SymbolMonotonicityStats.LastEventTimestamp
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastEventTimestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastEventTimestamp
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 466
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset LastEventTimestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastEventTimestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastEventTimestamp*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.SymbolMonotonicityStats}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.SymbolMonotonicityStats}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolMonotonicityStats>
+  nameWithType: IEquatable<SymbolMonotonicityStats>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.SymbolMonotonicityStats>
+  nameWithType.vb: IEquatable(Of SymbolMonotonicityStats)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.SymbolMonotonicityStats)
+  name.vb: IEquatable(Of SymbolMonotonicityStats)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.SymbolMonotonicityStats
+    name: SymbolMonotonicityStats
+    href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.SymbolMonotonicityStats
+    name: SymbolMonotonicityStats
+    href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolMonotonicityStats.#ctor
+  href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html#Meridian_Application_Monitoring_SymbolMonotonicityStats__ctor_System_String_System_String_System_Int64_System_Int64_System_Int64_System_DateTimeOffset_System_DateTimeOffset_
+  name: SymbolMonotonicityStats
+  nameWithType: SymbolMonotonicityStats.SymbolMonotonicityStats
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.SymbolMonotonicityStats
+  nameWithType.vb: SymbolMonotonicityStats.New
+  fullName.vb: Meridian.Application.Monitoring.SymbolMonotonicityStats.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolMonotonicityStats.Symbol
+  href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html#Meridian_Application_Monitoring_SymbolMonotonicityStats_Symbol
+  name: Symbol
+  nameWithType: SymbolMonotonicityStats.Symbol
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.Symbol
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.EventType*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolMonotonicityStats.EventType
+  href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html#Meridian_Application_Monitoring_SymbolMonotonicityStats_EventType
+  name: EventType
+  nameWithType: SymbolMonotonicityStats.EventType
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.EventType
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalEvents*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalEvents
+  href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html#Meridian_Application_Monitoring_SymbolMonotonicityStats_TotalEvents
+  name: TotalEvents
+  nameWithType: SymbolMonotonicityStats.TotalEvents
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalEvents
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalViolations*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalViolations
+  href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html#Meridian_Application_Monitoring_SymbolMonotonicityStats_TotalViolations
+  name: TotalViolations
+  nameWithType: SymbolMonotonicityStats.TotalViolations
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalViolations
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalGaps*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalGaps
+  href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html#Meridian_Application_Monitoring_SymbolMonotonicityStats_TotalGaps
+  name: TotalGaps
+  nameWithType: SymbolMonotonicityStats.TotalGaps
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.TotalGaps
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastViolationTime*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolMonotonicityStats.LastViolationTime
+  href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html#Meridian_Application_Monitoring_SymbolMonotonicityStats_LastViolationTime
+  name: LastViolationTime
+  nameWithType: SymbolMonotonicityStats.LastViolationTime
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastViolationTime
+- uid: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastEventTimestamp*
+  commentId: Overload:Meridian.Application.Monitoring.SymbolMonotonicityStats.LastEventTimestamp
+  href: Meridian.Application.Monitoring.SymbolMonotonicityStats.html#Meridian_Application_Monitoring_SymbolMonotonicityStats_LastEventTimestamp
+  name: LastEventTimestamp
+  nameWithType: SymbolMonotonicityStats.LastEventTimestamp
+  fullName: Meridian.Application.Monitoring.SymbolMonotonicityStats.LastEventTimestamp

@@ -1,0 +1,832 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ActivityItem
+  commentId: T:Meridian.Ui.Services.ActivityItem
+  id: ActivityItem
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ActivityItem.ColorCategory
+  - Meridian.Ui.Services.ActivityItem.Description
+  - Meridian.Ui.Services.ActivityItem.Icon
+  - Meridian.Ui.Services.ActivityItem.Id
+  - Meridian.Ui.Services.ActivityItem.Metadata
+  - Meridian.Ui.Services.ActivityItem.Provider
+  - Meridian.Ui.Services.ActivityItem.RelativeTime
+  - Meridian.Ui.Services.ActivityItem.Symbol
+  - Meridian.Ui.Services.ActivityItem.Timestamp
+  - Meridian.Ui.Services.ActivityItem.Title
+  - Meridian.Ui.Services.ActivityItem.Type
+  langs:
+  - csharp
+  - vb
+  name: ActivityItem
+  nameWithType: ActivityItem
+  fullName: Meridian.Ui.Services.ActivityItem
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActivityItem
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 531
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Individual activity item.
+  example: []
+  syntax:
+    content: public sealed class ActivityItem
+    content.vb: Public NotInheritable Class ActivityItem
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ActivityItem.Id
+  commentId: P:Meridian.Ui.Services.ActivityItem.Id
+  id: Id
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: ActivityItem.Id
+  fullName: Meridian.Ui.Services.ActivityItem.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 533
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Id { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Ui.Services.ActivityItem.Id*
+- uid: Meridian.Ui.Services.ActivityItem.Type
+  commentId: P:Meridian.Ui.Services.ActivityItem.Type
+  id: Type
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: ActivityItem.Type
+  fullName: Meridian.Ui.Services.ActivityItem.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 534
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public ActivityType Type { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ActivityType
+    content.vb: Public Property Type As ActivityType
+  overload: Meridian.Ui.Services.ActivityItem.Type*
+- uid: Meridian.Ui.Services.ActivityItem.Title
+  commentId: P:Meridian.Ui.Services.ActivityItem.Title
+  id: Title
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: Title
+  nameWithType: ActivityItem.Title
+  fullName: Meridian.Ui.Services.ActivityItem.Title
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Title
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 535
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Title { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Title As String
+  overload: Meridian.Ui.Services.ActivityItem.Title*
+- uid: Meridian.Ui.Services.ActivityItem.Description
+  commentId: P:Meridian.Ui.Services.ActivityItem.Description
+  id: Description
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: ActivityItem.Description
+  fullName: Meridian.Ui.Services.ActivityItem.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 536
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Ui.Services.ActivityItem.Description*
+- uid: Meridian.Ui.Services.ActivityItem.Symbol
+  commentId: P:Meridian.Ui.Services.ActivityItem.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: ActivityItem.Symbol
+  fullName: Meridian.Ui.Services.ActivityItem.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 537
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Services.ActivityItem.Symbol*
+- uid: Meridian.Ui.Services.ActivityItem.Provider
+  commentId: P:Meridian.Ui.Services.ActivityItem.Provider
+  id: Provider
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: ActivityItem.Provider
+  fullName: Meridian.Ui.Services.ActivityItem.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 538
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Provider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Ui.Services.ActivityItem.Provider*
+- uid: Meridian.Ui.Services.ActivityItem.Timestamp
+  commentId: P:Meridian.Ui.Services.ActivityItem.Timestamp
+  id: Timestamp
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ActivityItem.Timestamp
+  fullName: Meridian.Ui.Services.ActivityItem.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 539
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime Timestamp { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property Timestamp As Date
+  overload: Meridian.Ui.Services.ActivityItem.Timestamp*
+- uid: Meridian.Ui.Services.ActivityItem.Metadata
+  commentId: P:Meridian.Ui.Services.ActivityItem.Metadata
+  id: Metadata
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: Metadata
+  nameWithType: ActivityItem.Metadata
+  fullName: Meridian.Ui.Services.ActivityItem.Metadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metadata
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 540
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public Dictionary<string, object>? Metadata { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+    content.vb: Public Property Metadata As Dictionary(Of String, Object)
+  overload: Meridian.Ui.Services.ActivityItem.Metadata*
+- uid: Meridian.Ui.Services.ActivityItem.Icon
+  commentId: P:Meridian.Ui.Services.ActivityItem.Icon
+  id: Icon
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: Icon
+  nameWithType: ActivityItem.Icon
+  fullName: Meridian.Ui.Services.ActivityItem.Icon
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Icon
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 545
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the icon glyph for this activity type.
+  example: []
+  syntax:
+    content: public string Icon { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Icon As String
+  overload: Meridian.Ui.Services.ActivityItem.Icon*
+- uid: Meridian.Ui.Services.ActivityItem.ColorCategory
+  commentId: P:Meridian.Ui.Services.ActivityItem.ColorCategory
+  id: ColorCategory
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: ColorCategory
+  nameWithType: ActivityItem.ColorCategory
+  fullName: Meridian.Ui.Services.ActivityItem.ColorCategory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ColorCategory
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 585
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the color category for this activity type.
+  example: []
+  syntax:
+    content: public string ColorCategory { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ColorCategory As String
+  overload: Meridian.Ui.Services.ActivityItem.ColorCategory*
+- uid: Meridian.Ui.Services.ActivityItem.RelativeTime
+  commentId: P:Meridian.Ui.Services.ActivityItem.RelativeTime
+  id: RelativeTime
+  parent: Meridian.Ui.Services.ActivityItem
+  langs:
+  - csharp
+  - vb
+  name: RelativeTime
+  nameWithType: ActivityItem.RelativeTime
+  fullName: Meridian.Ui.Services.ActivityItem.RelativeTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RelativeTime
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 606
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the relative time string (e.g., "5 minutes ago").
+  example: []
+  syntax:
+    content: public string RelativeTime { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property RelativeTime As String
+  overload: Meridian.Ui.Services.ActivityItem.RelativeTime*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ActivityItem.Id*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.Id
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Id
+  name: Id
+  nameWithType: ActivityItem.Id
+  fullName: Meridian.Ui.Services.ActivityItem.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ActivityItem.Type*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.Type
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Type
+  name: Type
+  nameWithType: ActivityItem.Type
+  fullName: Meridian.Ui.Services.ActivityItem.Type
+- uid: Meridian.Ui.Services.ActivityType
+  commentId: T:Meridian.Ui.Services.ActivityType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ActivityType.html
+  name: ActivityType
+  nameWithType: ActivityType
+  fullName: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityItem.Title*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.Title
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Title
+  name: Title
+  nameWithType: ActivityItem.Title
+  fullName: Meridian.Ui.Services.ActivityItem.Title
+- uid: Meridian.Ui.Services.ActivityItem.Description*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.Description
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Description
+  name: Description
+  nameWithType: ActivityItem.Description
+  fullName: Meridian.Ui.Services.ActivityItem.Description
+- uid: Meridian.Ui.Services.ActivityItem.Symbol*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.Symbol
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Symbol
+  name: Symbol
+  nameWithType: ActivityItem.Symbol
+  fullName: Meridian.Ui.Services.ActivityItem.Symbol
+- uid: Meridian.Ui.Services.ActivityItem.Provider*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.Provider
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Provider
+  name: Provider
+  nameWithType: ActivityItem.Provider
+  fullName: Meridian.Ui.Services.ActivityItem.Provider
+- uid: Meridian.Ui.Services.ActivityItem.Timestamp*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.Timestamp
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Timestamp
+  name: Timestamp
+  nameWithType: ActivityItem.Timestamp
+  fullName: Meridian.Ui.Services.ActivityItem.Timestamp
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.ActivityItem.Metadata*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.Metadata
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Metadata
+  name: Metadata
+  nameWithType: ActivityItem.Metadata
+  fullName: Meridian.Ui.Services.ActivityItem.Metadata
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.ActivityItem.Icon*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.Icon
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_Icon
+  name: Icon
+  nameWithType: ActivityItem.Icon
+  fullName: Meridian.Ui.Services.ActivityItem.Icon
+- uid: Meridian.Ui.Services.ActivityItem.ColorCategory*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.ColorCategory
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_ColorCategory
+  name: ColorCategory
+  nameWithType: ActivityItem.ColorCategory
+  fullName: Meridian.Ui.Services.ActivityItem.ColorCategory
+- uid: Meridian.Ui.Services.ActivityItem.RelativeTime*
+  commentId: Overload:Meridian.Ui.Services.ActivityItem.RelativeTime
+  href: Meridian.Ui.Services.ActivityItem.html#Meridian_Ui_Services_ActivityItem_RelativeTime
+  name: RelativeTime
+  nameWithType: ActivityItem.RelativeTime
+  fullName: Meridian.Ui.Services.ActivityItem.RelativeTime

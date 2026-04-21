@@ -33,13 +33,15 @@ This directory contains lookup-oriented reference material: API endpoints, data 
 ## Contents
 
 | Document | Description |
-|----------|-------------|
+| --- | --- |
 | [API Reference](api-reference.md) | HTTP API endpoints, request/response schemas |
 | [Data Dictionary](data-dictionary.md) | Data field definitions and types |
 | [Data Uniformity](data-uniformity.md) | Cross-provider consistency guidelines |
 | [Environment Variables](environment-variables.md) | Credential and configuration reference |
 | [Open Source References](open-source-references.md) | Third-party library acknowledgements |
 | [Design Review Memo](design-review-memo.md) | Key design constraints and decisions |
+| [Reconciliation Break Taxonomy](reconciliation-break-taxonomy.md) | Versioned canonical break classes and reason codes used by ledger reconciliation |
+| [Research Briefing Workflow](research-briefing-workflow.md) | Shared Research workspace briefing contracts, endpoint, and shell binding flow |
 
 See also: [DEPENDENCIES.md](../DEPENDENCIES.md) — full third-party package inventory.
 
@@ -53,4 +55,4 @@ See also: [DEPENDENCIES.md](../DEPENDENCIES.md) — full third-party package inv
 
 ---
 
-*Reference docs are hand-authored and kept in sync with the codebase.*
+_Reference docs are hand-authored and kept in sync with the codebase._

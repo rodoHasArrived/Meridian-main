@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.PaletteCommandCategory
+  commentId: T:Meridian.Ui.Services.PaletteCommandCategory
+  id: PaletteCommandCategory
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.PaletteCommandCategory.Action
+  - Meridian.Ui.Services.PaletteCommandCategory.Navigation
+  - Meridian.Ui.Services.PaletteCommandCategory.Recent
+  - Meridian.Ui.Services.PaletteCommandCategory.Setting
+  langs:
+  - csharp
+  - vb
+  name: PaletteCommandCategory
+  nameWithType: PaletteCommandCategory
+  fullName: Meridian.Ui.Services.PaletteCommandCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaletteCommandCategory
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 407
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Category of a palette command.
+  example: []
+  syntax:
+    content: 'public enum PaletteCommandCategory : byte'
+    content.vb: Public Enum PaletteCommandCategory As Byte
+- uid: Meridian.Ui.Services.PaletteCommandCategory.Navigation
+  commentId: F:Meridian.Ui.Services.PaletteCommandCategory.Navigation
+  id: Navigation
+  parent: Meridian.Ui.Services.PaletteCommandCategory
+  langs:
+  - csharp
+  - vb
+  name: Navigation
+  nameWithType: PaletteCommandCategory.Navigation
+  fullName: Meridian.Ui.Services.PaletteCommandCategory.Navigation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Navigation
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 409
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Navigation = 0
+    return:
+      type: Meridian.Ui.Services.PaletteCommandCategory
+- uid: Meridian.Ui.Services.PaletteCommandCategory.Action
+  commentId: F:Meridian.Ui.Services.PaletteCommandCategory.Action
+  id: Action
+  parent: Meridian.Ui.Services.PaletteCommandCategory
+  langs:
+  - csharp
+  - vb
+  name: Action
+  nameWithType: PaletteCommandCategory.Action
+  fullName: Meridian.Ui.Services.PaletteCommandCategory.Action
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Action
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 410
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Action = 1
+    return:
+      type: Meridian.Ui.Services.PaletteCommandCategory
+- uid: Meridian.Ui.Services.PaletteCommandCategory.Setting
+  commentId: F:Meridian.Ui.Services.PaletteCommandCategory.Setting
+  id: Setting
+  parent: Meridian.Ui.Services.PaletteCommandCategory
+  langs:
+  - csharp
+  - vb
+  name: Setting
+  nameWithType: PaletteCommandCategory.Setting
+  fullName: Meridian.Ui.Services.PaletteCommandCategory.Setting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Setting
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 411
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Setting = 2
+    return:
+      type: Meridian.Ui.Services.PaletteCommandCategory
+- uid: Meridian.Ui.Services.PaletteCommandCategory.Recent
+  commentId: F:Meridian.Ui.Services.PaletteCommandCategory.Recent
+  id: Recent
+  parent: Meridian.Ui.Services.PaletteCommandCategory
+  langs:
+  - csharp
+  - vb
+  name: Recent
+  nameWithType: PaletteCommandCategory.Recent
+  fullName: Meridian.Ui.Services.PaletteCommandCategory.Recent
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Recent
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 412
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Recent = 3
+    return:
+      type: Meridian.Ui.Services.PaletteCommandCategory
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.PaletteCommandCategory
+  commentId: T:Meridian.Ui.Services.PaletteCommandCategory
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.PaletteCommandCategory.html
+  name: PaletteCommandCategory
+  nameWithType: PaletteCommandCategory
+  fullName: Meridian.Ui.Services.PaletteCommandCategory

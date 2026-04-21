@@ -7,14 +7,13 @@ Load this when working on endpoints, API clients, monitoring services, backtesti
 
 ## HTTP API Reference
 
-The application exposes a REST API when running with `--ui` or `--mode web`.
+The application exposes a REST API when running with `--mode desktop`.
 
 **Implementation Note:** 300 route constants in `UiApiRoutes.cs` across 38 endpoint files. Core endpoints (status, health, config, backfill) are fully functional. A small number of advanced endpoints may return stub responses or 501 Not Implemented.
 
 ### Core Endpoints
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/` | GET | HTML dashboard (auto-refreshing) |
 | `/api/status` | GET | Full status with metrics |
 | `/api/health` | GET | Comprehensive health status |
 | `/healthz`, `/readyz`, `/livez` | GET | Kubernetes health probes |

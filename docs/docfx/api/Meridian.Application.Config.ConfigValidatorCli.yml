@@ -1,0 +1,489 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ConfigValidatorCli
+  commentId: T:Meridian.Application.Config.ConfigValidatorCli
+  id: ConfigValidatorCli
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ConfigValidatorCli.#ctor(Serilog.ILogger,Meridian.Application.Config.ConfigurationPipeline)
+  - Meridian.Application.Config.ConfigValidatorCli.Validate(System.String)
+  - Meridian.Application.Config.ConfigValidatorCli.ValidateJson(System.String)
+  langs:
+  - csharp
+  - vb
+  name: ConfigValidatorCli
+  nameWithType: ConfigValidatorCli
+  fullName: Meridian.Application.Config.ConfigValidatorCli
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigValidatorCli.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigValidatorCli
+    path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: >-
+    CLI tool for validating configuration files without starting the collector.
+
+    Provides detailed validation output and suggestions for fixes.
+  example: []
+  syntax:
+    content: public sealed class ConfigValidatorCli
+    content.vb: Public NotInheritable Class ConfigValidatorCli
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.ConfigValidatorCli.#ctor(Serilog.ILogger,Meridian.Application.Config.ConfigurationPipeline)
+  commentId: M:Meridian.Application.Config.ConfigValidatorCli.#ctor(Serilog.ILogger,Meridian.Application.Config.ConfigurationPipeline)
+  id: '#ctor(Serilog.ILogger,Meridian.Application.Config.ConfigurationPipeline)'
+  parent: Meridian.Application.Config.ConfigValidatorCli
+  langs:
+  - csharp
+  - vb
+  name: ConfigValidatorCli(ILogger?, ConfigurationPipeline?)
+  nameWithType: ConfigValidatorCli.ConfigValidatorCli(ILogger?, ConfigurationPipeline?)
+  fullName: Meridian.Application.Config.ConfigValidatorCli.ConfigValidatorCli(Serilog.ILogger?, Meridian.Application.Config.ConfigurationPipeline?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigValidatorCli.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public ConfigValidatorCli(ILogger? log = null, ConfigurationPipeline? pipeline = null)
+    parameters:
+    - id: log
+      type: Serilog.ILogger
+    - id: pipeline
+      type: Meridian.Application.Config.ConfigurationPipeline
+    content.vb: Public Sub New(log As ILogger = Nothing, pipeline As ConfigurationPipeline = Nothing)
+  overload: Meridian.Application.Config.ConfigValidatorCli.#ctor*
+  nameWithType.vb: ConfigValidatorCli.New(ILogger, ConfigurationPipeline)
+  fullName.vb: Meridian.Application.Config.ConfigValidatorCli.New(Serilog.ILogger, Meridian.Application.Config.ConfigurationPipeline)
+  name.vb: New(ILogger, ConfigurationPipeline)
+- uid: Meridian.Application.Config.ConfigValidatorCli.Validate(System.String)
+  commentId: M:Meridian.Application.Config.ConfigValidatorCli.Validate(System.String)
+  id: Validate(System.String)
+  parent: Meridian.Application.Config.ConfigValidatorCli
+  langs:
+  - csharp
+  - vb
+  name: Validate(string)
+  nameWithType: ConfigValidatorCli.Validate(string)
+  fullName: Meridian.Application.Config.ConfigValidatorCli.Validate(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigValidatorCli.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validate
+    path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Validates a configuration file and prints results to console.
+  example: []
+  syntax:
+    content: public int Validate(string configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+      description: Path to the configuration file.
+    return:
+      type: System.Int32
+      description: 0 if valid, 1 if invalid.
+    content.vb: Public Function Validate(configPath As String) As Integer
+  overload: Meridian.Application.Config.ConfigValidatorCli.Validate*
+  nameWithType.vb: ConfigValidatorCli.Validate(String)
+  fullName.vb: Meridian.Application.Config.ConfigValidatorCli.Validate(String)
+  name.vb: Validate(String)
+- uid: Meridian.Application.Config.ConfigValidatorCli.ValidateJson(System.String)
+  commentId: M:Meridian.Application.Config.ConfigValidatorCli.ValidateJson(System.String)
+  id: ValidateJson(System.String)
+  parent: Meridian.Application.Config.ConfigValidatorCli
+  langs:
+  - csharp
+  - vb
+  name: ValidateJson(string)
+  nameWithType: ConfigValidatorCli.ValidateJson(string)
+  fullName: Meridian.Application.Config.ConfigValidatorCli.ValidateJson(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Config/ConfigValidatorCli.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateJson
+    path: ../../src/Meridian.Application/Config/ConfigValidatorCli.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Config
+  summary: Validates configuration from a JSON string.
+  example: []
+  syntax:
+    content: public ValidationResult ValidateJson(string json)
+    parameters:
+    - id: json
+      type: System.String
+    return:
+      type: FluentValidation.Results.ValidationResult
+    content.vb: Public Function ValidateJson(json As String) As ValidationResult
+  overload: Meridian.Application.Config.ConfigValidatorCli.ValidateJson*
+  nameWithType.vb: ConfigValidatorCli.ValidateJson(String)
+  fullName.vb: Meridian.Application.Config.ConfigValidatorCli.ValidateJson(String)
+  name.vb: ValidateJson(String)
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Config.ConfigValidatorCli.#ctor*
+  commentId: Overload:Meridian.Application.Config.ConfigValidatorCli.#ctor
+  href: Meridian.Application.Config.ConfigValidatorCli.html#Meridian_Application_Config_ConfigValidatorCli__ctor_Serilog_ILogger_Meridian_Application_Config_ConfigurationPipeline_
+  name: ConfigValidatorCli
+  nameWithType: ConfigValidatorCli.ConfigValidatorCli
+  fullName: Meridian.Application.Config.ConfigValidatorCli.ConfigValidatorCli
+  nameWithType.vb: ConfigValidatorCli.New
+  fullName.vb: Meridian.Application.Config.ConfigValidatorCli.New
+  name.vb: New
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Meridian.Application.Config.ConfigurationPipeline
+  commentId: T:Meridian.Application.Config.ConfigurationPipeline
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigurationPipeline.html
+  name: ConfigurationPipeline
+  nameWithType: ConfigurationPipeline
+  fullName: Meridian.Application.Config.ConfigurationPipeline
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Config.ConfigValidatorCli.Validate*
+  commentId: Overload:Meridian.Application.Config.ConfigValidatorCli.Validate
+  href: Meridian.Application.Config.ConfigValidatorCli.html#Meridian_Application_Config_ConfigValidatorCli_Validate_System_String_
+  name: Validate
+  nameWithType: ConfigValidatorCli.Validate
+  fullName: Meridian.Application.Config.ConfigValidatorCli.Validate
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Config.ConfigValidatorCli.ValidateJson*
+  commentId: Overload:Meridian.Application.Config.ConfigValidatorCli.ValidateJson
+  href: Meridian.Application.Config.ConfigValidatorCli.html#Meridian_Application_Config_ConfigValidatorCli_ValidateJson_System_String_
+  name: ValidateJson
+  nameWithType: ConfigValidatorCli.ValidateJson
+  fullName: Meridian.Application.Config.ConfigValidatorCli.ValidateJson
+- uid: FluentValidation.Results.ValidationResult
+  commentId: T:FluentValidation.Results.ValidationResult
+  parent: FluentValidation.Results
+  isExternal: true
+  name: ValidationResult
+  nameWithType: ValidationResult
+  fullName: FluentValidation.Results.ValidationResult
+- uid: FluentValidation.Results
+  commentId: N:FluentValidation.Results
+  isExternal: true
+  name: FluentValidation.Results
+  nameWithType: FluentValidation.Results
+  fullName: FluentValidation.Results
+  spec.csharp:
+  - uid: FluentValidation
+    name: FluentValidation
+    isExternal: true
+  - name: .
+  - uid: FluentValidation.Results
+    name: Results
+    isExternal: true
+  spec.vb:
+  - uid: FluentValidation
+    name: FluentValidation
+    isExternal: true
+  - name: .
+  - uid: FluentValidation.Results
+    name: Results
+    isExternal: true

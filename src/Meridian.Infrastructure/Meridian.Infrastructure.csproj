@@ -9,23 +9,33 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- StockSharp integration is optional -->
-    <EnableStockSharp Condition="'$(EnableStockSharp)' == ''">false</EnableStockSharp>
     <EnableIbApiSmoke Condition="'$(EnableIbApiSmoke)' == ''">false</EnableIbApiSmoke>
+    <EnableIbApiVendor Condition="'$(EnableIbApiVendor)' == ''">false</EnableIbApiVendor>
+    <IBApiRoot Condition="'$(IBApiRoot)' == ''">$(MSBuildThisFileDirectory)..\..\external\IBApi</IBApiRoot>
+    <IBApiProjectPath Condition="'$(IBApiProjectPath)' == ''"></IBApiProjectPath>
+    <IBApiDllPath Condition="'$(IBApiDllPath)' == ''"></IBApiDllPath>
+    <EnableIbApiLegacy>$([System.String]::Copy('$(DefineConstants)').Contains('IBAPI'))</EnableIbApiLegacy>
+    <EnableIbApiRuntime Condition="'$(EnableIbApiVendor)' == 'true' or '$(EnableIbApiLegacy)' == 'True'">true</EnableIbApiRuntime>
+    <EnableIbApiRuntime Condition="'$(EnableIbApiRuntime)' == ''">false</EnableIbApiRuntime>
+    <ResolvedIbApiProjectPath Condition="'$(EnableIbApiRuntime)' == 'true' and '$(IBApiProjectPath)' != ''">$(IBApiProjectPath)</ResolvedIbApiProjectPath>
+    <ResolvedIbApiDllPath Condition="'$(EnableIbApiRuntime)' == 'true' and '$(ResolvedIbApiProjectPath)' == '' and '$(IBApiDllPath)' != ''">$(IBApiDllPath)</ResolvedIbApiDllPath>
+    <ResolvedIbApiDllPath Condition="'$(EnableIbApiRuntime)' == 'true' and '$(ResolvedIbApiProjectPath)' == '' and '$(ResolvedIbApiDllPath)' == '' and Exists('$(IBApiRoot)\TWS API\source\CSharpClient\client\bin\$(Configuration)\net8.0\CSharpAPI.dll')">$(IBApiRoot)\TWS API\source\CSharpClient\client\bin\$(Configuration)\net8.0\CSharpAPI.dll</ResolvedIbApiDllPath>
+    <ResolvedIbApiDllPath Condition="'$(EnableIbApiRuntime)' == 'true' and '$(ResolvedIbApiProjectPath)' == '' and '$(ResolvedIbApiDllPath)' == '' and Exists('$(IBApiRoot)\TWS API\source\CSharpClient\client\bin\$(Configuration)\netstandard2.0\CSharpAPI.dll')">$(IBApiRoot)\TWS API\source\CSharpClient\client\bin\$(Configuration)\netstandard2.0\CSharpAPI.dll</ResolvedIbApiDllPath>
+    <ResolvedIbApiProjectPath Condition="'$(EnableIbApiRuntime)' == 'true' and '$(ResolvedIbApiProjectPath)' == '' and '$(ResolvedIbApiDllPath)' == '' and Exists('$(IBApiRoot)\TWS API\source\CSharpClient\client\CSharpAPI.csproj')">$(IBApiRoot)\TWS API\source\CSharpClient\client\CSharpAPI.csproj</ResolvedIbApiProjectPath>
     <!-- SFTP ETL adapter requires Renci.SshNet (>= 2024.2.0); set EnableSftp=true to include it -->
     <EnableSftp Condition="'$(EnableSftp)' == ''">false</EnableSftp>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(EnableStockSharp)' == 'true'">
-    <DefineConstants>$(DefineConstants);STOCKSHARP;STOCKSHARP_RITHMIC;STOCKSHARP_IQFEED;STOCKSHARP_CQG;STOCKSHARP_INTERACTIVEBROKERS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnableSftp)' == 'true'">
     <DefineConstants>$(DefineConstants);SFTP</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(EnableIbApiSmoke)' == 'true'">
+  <PropertyGroup Condition="'$(EnableIbApiSmoke)' == 'true' or '$(EnableIbApiRuntime)' == 'true'">
     <DefineConstants>$(DefineConstants);IBAPI</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true'">
+    <DefineConstants>$(DefineConstants);IBAPI_VENDOR</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -61,16 +71,7 @@
     <PackageReference Include="Microsoft.Extensions.ObjectPool" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="System.Threading.Channels" />
-    <PackageReference Include="Renci.SshNet" Condition="'$(EnableSftp)' == 'true'" />
-
-    <!-- StockSharp (optional) -->
-    <PackageReference Include="StockSharp.Algo" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.Messages" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.BusinessEntities" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.Rithmic" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.IQFeed" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.Cqg.Com" Condition="'$(EnableStockSharp)' == 'true'" />
-    <PackageReference Include="StockSharp.InteractiveBrokers" Condition="'$(EnableStockSharp)' == 'true'" />
+    <PackageReference Include="SSH.NET" Condition="'$(EnableSftp)' == 'true'" />
 
   </ItemGroup>
 
@@ -82,7 +83,22 @@
     <ProjectReference Include="..\Meridian.Execution.Sdk\Meridian.Execution.Sdk.csproj" />
     <ProjectReference Include="..\Meridian.Storage\Meridian.Storage.csproj" />
     <ProjectReference Include="..\Meridian.IbApi.SmokeStub\Meridian.IbApi.SmokeStub.csproj" Condition="'$(EnableIbApiSmoke)' == 'true'" />
+    <ProjectReference Include="$(ResolvedIbApiProjectPath)" Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true' and '$(ResolvedIbApiProjectPath)' != ''" AdditionalProperties="ManagePackageVersionsCentrally=false" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true' and '$(ResolvedIbApiProjectPath)' == '' and '$(ResolvedIbApiDllPath)' != ''">
+    <Reference Include="CSharpAPI">
+      <HintPath>$(ResolvedIbApiDllPath)</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="ValidateInteractiveBrokersBuildConfiguration" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(EnableIbApiSmoke)' == 'true' and '$(EnableIbApiRuntime)' == 'true'" Text="EnableIbApiSmoke=true cannot be combined with EnableIbApiVendor=true or legacy DefineConstants=IBAPI. Use one Interactive Brokers build mode at a time." />
+    <Error Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true' and '$(IBApiProjectPath)' != '' and !Exists('$(IBApiProjectPath)')" Text="IBApiProjectPath '$(IBApiProjectPath)' was provided but does not exist." />
+    <Error Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true' and '$(IBApiDllPath)' != '' and !Exists('$(IBApiDllPath)')" Text="IBApiDllPath '$(IBApiDllPath)' was provided but does not exist." />
+    <Error Condition="'$(EnableIbApiRuntime)' == 'true' and '$(EnableIbApiSmoke)' != 'true' and '$(ResolvedIbApiProjectPath)' == '' and '$(ResolvedIbApiDllPath)' == ''" Text="Interactive Brokers vendor mode was requested but no official IBApi project or DLL was resolved. Place the vendor SDK under external\IBApi, or set IBApiProjectPath/IBApiDllPath. See docs/providers/interactive-brokers-setup.md." />
+  </Target>
 
   <!-- Provider implementation templates live under docs/examples/provider-template/ and are no longer part of this project. -->
 </Project>

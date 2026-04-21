@@ -1,0 +1,2320 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  id: ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillBarsOnly
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillFullFeatured
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Brokerage(System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.FromHistoricalCapabilities(Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities,System.Nullable{System.Int32},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasCorporateActions
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasTickData
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Hybrid(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxDepthLevels
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxRequestsPerWindow
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxSymbolsPerSubscription
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinBarResolution
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinRequestDelay
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.None
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.OptionsChain(System.Boolean,System.Boolean,System.Boolean)
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.PrimaryType
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.RateLimitWindow
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming(System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32})
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedAssetTypes
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedBarIntervals
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedExchanges
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedMarkets
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAdjustedPrices
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAssetTypeFilter
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBackfill
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBrokerage
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsDividends
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsExchangeFilter
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalAuctions
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalQuotes
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalTrades
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsIntraday
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarket(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarketDepth
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsOptionsChain
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeQuotes
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeTrades
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSplits
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsStreaming
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSymbolSearch
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearch
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearchFilterable(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.ToDictionary
+  langs:
+  - csharp
+  - vb
+  name: ProviderCapabilities
+  nameWithType: ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCapabilities
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 147
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Unified capability record that consolidates capabilities across all provider types.
+
+    Replaces HistoricalDataCapabilities and extends DataSourceCapabilities
+
+    for consistent capability discovery.
+  remarks: >-
+    This record uses a flags-based approach with additional metadata to support
+
+    all provider types: streaming, backfill, and symbol search.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderCapabilities : IEquatable<ProviderCapabilities>'
+    content.vb: Public NotInheritable Class ProviderCapabilities Implements IEquatable(Of ProviderCapabilities)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsStreaming
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsStreaming
+  id: SupportsStreaming
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsStreaming
+  nameWithType: ProviderCapabilities.SupportsStreaming
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsStreaming
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsStreaming
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 151
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports real-time streaming data.
+  example: []
+  syntax:
+    content: public bool SupportsStreaming { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsStreaming As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsStreaming*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBackfill
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBackfill
+  id: SupportsBackfill
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsBackfill
+  nameWithType: ProviderCapabilities.SupportsBackfill
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBackfill
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsBackfill
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 154
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports historical data backfill.
+  example: []
+  syntax:
+    content: public bool SupportsBackfill { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsBackfill As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBackfill*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSymbolSearch
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSymbolSearch
+  id: SupportsSymbolSearch
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsSymbolSearch
+  nameWithType: ProviderCapabilities.SupportsSymbolSearch
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSymbolSearch
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsSymbolSearch
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 157
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports symbol search/lookup.
+  example: []
+  syntax:
+    content: public bool SupportsSymbolSearch { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsSymbolSearch As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSymbolSearch*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsOptionsChain
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsOptionsChain
+  id: SupportsOptionsChain
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsOptionsChain
+  nameWithType: ProviderCapabilities.SupportsOptionsChain
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsOptionsChain
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsOptionsChain
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 160
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports options chain data retrieval.
+  example: []
+  syntax:
+    content: public bool SupportsOptionsChain { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsOptionsChain As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsOptionsChain*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBrokerage
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBrokerage
+  id: SupportsBrokerage
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsBrokerage
+  nameWithType: ProviderCapabilities.SupportsBrokerage
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBrokerage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsBrokerage
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 163
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports brokerage order execution (submit, cancel, modify orders).
+  example: []
+  syntax:
+    content: public bool SupportsBrokerage { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsBrokerage As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBrokerage*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeTrades
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeTrades
+  id: SupportsRealtimeTrades
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsRealtimeTrades
+  nameWithType: ProviderCapabilities.SupportsRealtimeTrades
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsRealtimeTrades
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 168
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports real-time trade data.
+  example: []
+  syntax:
+    content: public bool SupportsRealtimeTrades { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsRealtimeTrades As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeTrades*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeQuotes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeQuotes
+  id: SupportsRealtimeQuotes
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsRealtimeQuotes
+  nameWithType: ProviderCapabilities.SupportsRealtimeQuotes
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeQuotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsRealtimeQuotes
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 171
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports real-time quote data.
+  example: []
+  syntax:
+    content: public bool SupportsRealtimeQuotes { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsRealtimeQuotes As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeQuotes*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarketDepth
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarketDepth
+  id: SupportsMarketDepth
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsMarketDepth
+  nameWithType: ProviderCapabilities.SupportsMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarketDepth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsMarketDepth
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 174
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports market depth/order book data.
+  example: []
+  syntax:
+    content: public bool SupportsMarketDepth { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsMarketDepth As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarketDepth*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxDepthLevels
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxDepthLevels
+  id: MaxDepthLevels
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: MaxDepthLevels
+  nameWithType: ProviderCapabilities.MaxDepthLevels
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxDepthLevels
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDepthLevels
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 177
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Maximum depth levels supported (null = unlimited).
+  example: []
+  syntax:
+    content: public int? MaxDepthLevels { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property MaxDepthLevels As Integer?
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxDepthLevels*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxSymbolsPerSubscription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxSymbolsPerSubscription
+  id: MaxSymbolsPerSubscription
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: MaxSymbolsPerSubscription
+  nameWithType: ProviderCapabilities.MaxSymbolsPerSubscription
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxSymbolsPerSubscription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxSymbolsPerSubscription
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 180
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Maximum symbols per subscription (null = unlimited).
+  example: []
+  syntax:
+    content: public int? MaxSymbolsPerSubscription { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property MaxSymbolsPerSubscription As Integer?
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxSymbolsPerSubscription*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAdjustedPrices
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAdjustedPrices
+  id: SupportsAdjustedPrices
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsAdjustedPrices
+  nameWithType: ProviderCapabilities.SupportsAdjustedPrices
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAdjustedPrices
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsAdjustedPrices
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 185
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Returns split/dividend adjusted prices.
+  example: []
+  syntax:
+    content: public bool SupportsAdjustedPrices { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsAdjustedPrices As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAdjustedPrices*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsIntraday
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsIntraday
+  id: SupportsIntraday
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsIntraday
+  nameWithType: ProviderCapabilities.SupportsIntraday
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsIntraday
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsIntraday
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 188
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports intraday bar data.
+  example: []
+  syntax:
+    content: public bool SupportsIntraday { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsIntraday As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsIntraday*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsDividends
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsDividends
+  id: SupportsDividends
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsDividends
+  nameWithType: ProviderCapabilities.SupportsDividends
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsDividends
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsDividends
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 191
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Includes dividend data.
+  example: []
+  syntax:
+    content: public bool SupportsDividends { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsDividends As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsDividends*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSplits
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSplits
+  id: SupportsSplits
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsSplits
+  nameWithType: ProviderCapabilities.SupportsSplits
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSplits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsSplits
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 194
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Includes split data.
+  example: []
+  syntax:
+    content: public bool SupportsSplits { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsSplits As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSplits*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalQuotes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalQuotes
+  id: SupportsHistoricalQuotes
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsHistoricalQuotes
+  nameWithType: ProviderCapabilities.SupportsHistoricalQuotes
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalQuotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsHistoricalQuotes
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 197
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports historical quote (NBBO) data.
+  example: []
+  syntax:
+    content: public bool SupportsHistoricalQuotes { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsHistoricalQuotes As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalQuotes*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalTrades
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalTrades
+  id: SupportsHistoricalTrades
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsHistoricalTrades
+  nameWithType: ProviderCapabilities.SupportsHistoricalTrades
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsHistoricalTrades
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 200
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports historical trade data.
+  example: []
+  syntax:
+    content: public bool SupportsHistoricalTrades { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsHistoricalTrades As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalTrades*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalAuctions
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalAuctions
+  id: SupportsHistoricalAuctions
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsHistoricalAuctions
+  nameWithType: ProviderCapabilities.SupportsHistoricalAuctions
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalAuctions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsHistoricalAuctions
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 203
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports historical auction data.
+  example: []
+  syntax:
+    content: public bool SupportsHistoricalAuctions { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsHistoricalAuctions As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalAuctions*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinBarResolution
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinBarResolution
+  id: MinBarResolution
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: MinBarResolution
+  nameWithType: ProviderCapabilities.MinBarResolution
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinBarResolution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinBarResolution
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 206
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Minimum bar resolution supported.
+  example: []
+  syntax:
+    content: public TimeSpan? MinBarResolution { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Property MinBarResolution As TimeSpan?
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinBarResolution*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedBarIntervals
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedBarIntervals
+  id: SupportedBarIntervals
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedBarIntervals
+  nameWithType: ProviderCapabilities.SupportedBarIntervals
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedBarIntervals
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedBarIntervals
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 209
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supported bar intervals (e.g., "1m", "5m", "1h", "1d").
+  example: []
+  syntax:
+    content: public IReadOnlyList<string>? SupportedBarIntervals { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property SupportedBarIntervals As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedBarIntervals*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAssetTypeFilter
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAssetTypeFilter
+  id: SupportsAssetTypeFilter
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsAssetTypeFilter
+  nameWithType: ProviderCapabilities.SupportsAssetTypeFilter
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAssetTypeFilter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsAssetTypeFilter
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 214
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports filtering by asset type.
+  example: []
+  syntax:
+    content: public bool SupportsAssetTypeFilter { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsAssetTypeFilter As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAssetTypeFilter*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsExchangeFilter
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsExchangeFilter
+  id: SupportsExchangeFilter
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsExchangeFilter
+  nameWithType: ProviderCapabilities.SupportsExchangeFilter
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsExchangeFilter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsExchangeFilter
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 217
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supports filtering by exchange.
+  example: []
+  syntax:
+    content: public bool SupportsExchangeFilter { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsExchangeFilter As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsExchangeFilter*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedAssetTypes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedAssetTypes
+  id: SupportedAssetTypes
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedAssetTypes
+  nameWithType: ProviderCapabilities.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedAssetTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedAssetTypes
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 220
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supported asset types for filtering (e.g., "stock", "etf", "crypto").
+  example: []
+  syntax:
+    content: public IReadOnlyList<string>? SupportedAssetTypes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property SupportedAssetTypes As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedAssetTypes*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedExchanges
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedExchanges
+  id: SupportedExchanges
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedExchanges
+  nameWithType: ProviderCapabilities.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedExchanges
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedExchanges
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 223
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supported exchanges for filtering.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string>? SupportedExchanges { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property SupportedExchanges As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedExchanges*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedMarkets
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedMarkets
+  id: SupportedMarkets
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportedMarkets
+  nameWithType: ProviderCapabilities.SupportedMarkets
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedMarkets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedMarkets
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 228
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Supported market regions (e.g., "US", "UK", "DE").
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SupportedMarkets { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property SupportedMarkets As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedMarkets*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxRequestsPerWindow
+  id: MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestsPerWindow
+  nameWithType: ProviderCapabilities.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxRequestsPerWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestsPerWindow
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 233
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Maximum requests per time window.
+  example: []
+  syntax:
+    content: public int? MaxRequestsPerWindow { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property MaxRequestsPerWindow As Integer?
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxRequestsPerWindow*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.RateLimitWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.RateLimitWindow
+  id: RateLimitWindow
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: RateLimitWindow
+  nameWithType: ProviderCapabilities.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.RateLimitWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitWindow
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 236
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Rate limit time window.
+  example: []
+  syntax:
+    content: public TimeSpan? RateLimitWindow { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Property RateLimitWindow As TimeSpan?
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.RateLimitWindow*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinRequestDelay
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinRequestDelay
+  id: MinRequestDelay
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: MinRequestDelay
+  nameWithType: ProviderCapabilities.MinRequestDelay
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinRequestDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinRequestDelay
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 239
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Minimum delay between requests.
+  example: []
+  syntax:
+    content: public TimeSpan? MinRequestDelay { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Property MinRequestDelay As TimeSpan?
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinRequestDelay*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.None
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.None
+  id: None
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: ProviderCapabilities.None
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.None
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 244
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Default empty capabilities.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities None { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared ReadOnly Property None As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.None*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming(System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming(System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32})
+  id: Streaming(System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32})
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: Streaming(bool, bool, bool, int?)
+  nameWithType: ProviderCapabilities.Streaming(bool, bool, bool, int?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming(bool, bool, bool, int?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Streaming
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 247
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Basic streaming provider capabilities.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities Streaming(bool trades = true, bool quotes = true, bool depth = false, int? maxDepthLevels = null)
+    parameters:
+    - id: trades
+      type: System.Boolean
+    - id: quotes
+      type: System.Boolean
+    - id: depth
+      type: System.Boolean
+    - id: maxDepthLevels
+      type: System.Nullable{System.Int32}
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared Function Streaming(trades As Boolean = True, quotes As Boolean = True, depth As Boolean = False, maxDepthLevels As Integer? = Nothing) As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming*
+  nameWithType.vb: ProviderCapabilities.Streaming(Boolean, Boolean, Boolean, Integer?)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming(Boolean, Boolean, Boolean, Integer?)
+  name.vb: Streaming(Boolean, Boolean, Boolean, Integer?)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillBarsOnly
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillBarsOnly
+  id: BackfillBarsOnly
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: BackfillBarsOnly
+  nameWithType: ProviderCapabilities.BackfillBarsOnly
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillBarsOnly
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillBarsOnly
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 261
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Basic backfill provider with daily bars only.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities BackfillBarsOnly { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared ReadOnly Property BackfillBarsOnly As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillBarsOnly*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillFullFeatured
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillFullFeatured
+  id: BackfillFullFeatured
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: BackfillFullFeatured
+  nameWithType: ProviderCapabilities.BackfillFullFeatured
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillFullFeatured
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillFullFeatured
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 270
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Full-featured backfill provider.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities BackfillFullFeatured { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared ReadOnly Property BackfillFullFeatured As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillFullFeatured*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearch
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearch
+  id: SymbolSearch
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearch
+  nameWithType: ProviderCapabilities.SymbolSearch
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearch
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearch
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 283
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Basic symbol search provider.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities SymbolSearch { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared ReadOnly Property SymbolSearch As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearch*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearchFilterable(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearchFilterable(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String})
+  id: SymbolSearchFilterable(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.String})
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearchFilterable(IReadOnlyList<string>?, IReadOnlyList<string>?)
+  nameWithType: ProviderCapabilities.SymbolSearchFilterable(IReadOnlyList<string>?, IReadOnlyList<string>?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearchFilterable(System.Collections.Generic.IReadOnlyList<string>?, System.Collections.Generic.IReadOnlyList<string>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearchFilterable
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 289
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Filterable symbol search provider.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities SymbolSearchFilterable(IReadOnlyList<string>? assetTypes = null, IReadOnlyList<string>? exchanges = null)
+    parameters:
+    - id: assetTypes
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: exchanges
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared Function SymbolSearchFilterable(assetTypes As IReadOnlyList(Of String) = Nothing, exchanges As IReadOnlyList(Of String) = Nothing) As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearchFilterable*
+  nameWithType.vb: ProviderCapabilities.SymbolSearchFilterable(IReadOnlyList(Of String), IReadOnlyList(Of String))
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearchFilterable(System.Collections.Generic.IReadOnlyList(Of String), System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: SymbolSearchFilterable(IReadOnlyList(Of String), IReadOnlyList(Of String))
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.OptionsChain(System.Boolean,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.OptionsChain(System.Boolean,System.Boolean,System.Boolean)
+  id: OptionsChain(System.Boolean,System.Boolean,System.Boolean)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: OptionsChain(bool, bool, bool)
+  nameWithType: ProviderCapabilities.OptionsChain(bool, bool, bool)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.OptionsChain(bool, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionsChain
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 301
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Options chain provider capabilities.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities OptionsChain(bool greeks = true, bool openInterest = true, bool streaming = false)
+    parameters:
+    - id: greeks
+      type: System.Boolean
+    - id: openInterest
+      type: System.Boolean
+    - id: streaming
+      type: System.Boolean
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared Function OptionsChain(greeks As Boolean = True, openInterest As Boolean = True, streaming As Boolean = False) As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.OptionsChain*
+  nameWithType.vb: ProviderCapabilities.OptionsChain(Boolean, Boolean, Boolean)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.OptionsChain(Boolean, Boolean, Boolean)
+  name.vb: OptionsChain(Boolean, Boolean, Boolean)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Brokerage(System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Brokerage(System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  id: Brokerage(System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: Brokerage(bool, bool, bool, bool)
+  nameWithType: ProviderCapabilities.Brokerage(bool, bool, bool, bool)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Brokerage(bool, bool, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Brokerage
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 312
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Brokerage provider supporting order execution.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities Brokerage(bool streaming = false, bool backfill = false, bool trades = true, bool quotes = true)
+    parameters:
+    - id: streaming
+      type: System.Boolean
+    - id: backfill
+      type: System.Boolean
+    - id: trades
+      type: System.Boolean
+    - id: quotes
+      type: System.Boolean
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared Function Brokerage(streaming As Boolean = False, backfill As Boolean = False, trades As Boolean = True, quotes As Boolean = True) As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Brokerage*
+  nameWithType.vb: ProviderCapabilities.Brokerage(Boolean, Boolean, Boolean, Boolean)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Brokerage(Boolean, Boolean, Boolean, Boolean)
+  name.vb: Brokerage(Boolean, Boolean, Boolean, Boolean)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Hybrid(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Hybrid(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  id: Hybrid(System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Boolean)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: Hybrid(bool, bool, bool, bool, bool)
+  nameWithType: ProviderCapabilities.Hybrid(bool, bool, bool, bool, bool)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Hybrid(bool, bool, bool, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hybrid
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 326
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Hybrid provider supporting both streaming and backfill.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities Hybrid(bool trades = true, bool quotes = true, bool depth = false, bool adjustedPrices = true, bool intraday = true)
+    parameters:
+    - id: trades
+      type: System.Boolean
+    - id: quotes
+      type: System.Boolean
+    - id: depth
+      type: System.Boolean
+    - id: adjustedPrices
+      type: System.Boolean
+    - id: intraday
+      type: System.Boolean
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared Function Hybrid(trades As Boolean = True, quotes As Boolean = True, depth As Boolean = False, adjustedPrices As Boolean = True, intraday As Boolean = True) As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Hybrid*
+  nameWithType.vb: ProviderCapabilities.Hybrid(Boolean, Boolean, Boolean, Boolean, Boolean)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Hybrid(Boolean, Boolean, Boolean, Boolean, Boolean)
+  name.vb: Hybrid(Boolean, Boolean, Boolean, Boolean, Boolean)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.FromHistoricalCapabilities(Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities,System.Nullable{System.Int32},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.FromHistoricalCapabilities(Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities,System.Nullable{System.Int32},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})
+  id: FromHistoricalCapabilities(Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities,System.Nullable{System.Int32},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan})
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: FromHistoricalCapabilities(HistoricalDataCapabilities, int?, TimeSpan?, TimeSpan?)
+  nameWithType: ProviderCapabilities.FromHistoricalCapabilities(HistoricalDataCapabilities, int?, TimeSpan?, TimeSpan?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.FromHistoricalCapabilities(Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities, int?, System.TimeSpan?, System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromHistoricalCapabilities
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 349
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Creates capabilities from legacy HistoricalDataCapabilities.
+  example: []
+  syntax:
+    content: public static ProviderCapabilities FromHistoricalCapabilities(HistoricalDataCapabilities caps, int? maxRequestsPerWindow = null, TimeSpan? rateLimitWindow = null, TimeSpan? minDelay = null)
+    parameters:
+    - id: caps
+      type: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+    - id: maxRequestsPerWindow
+      type: System.Nullable{System.Int32}
+    - id: rateLimitWindow
+      type: System.Nullable{System.TimeSpan}
+    - id: minDelay
+      type: System.Nullable{System.TimeSpan}
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Shared Function FromHistoricalCapabilities(caps As HistoricalDataCapabilities, maxRequestsPerWindow As Integer? = Nothing, rateLimitWindow As TimeSpan? = Nothing, minDelay As TimeSpan? = Nothing) As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.FromHistoricalCapabilities*
+  nameWithType.vb: ProviderCapabilities.FromHistoricalCapabilities(HistoricalDataCapabilities, Integer?, TimeSpan?, TimeSpan?)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.FromHistoricalCapabilities(Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities, Integer?, System.TimeSpan?, System.TimeSpan?)
+  name.vb: FromHistoricalCapabilities(HistoricalDataCapabilities, Integer?, TimeSpan?, TimeSpan?)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.ToDictionary
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.ToDictionary
+  id: ToDictionary
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: ToDictionary()
+  nameWithType: ProviderCapabilities.ToDictionary()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.ToDictionary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDictionary
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 372
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Converts to dictionary for JSON serialization and UI consumption.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, object> ToDictionary()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    content.vb: Public Function ToDictionary() As IReadOnlyDictionary(Of String, Object)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.ToDictionary*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.PrimaryType
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.PrimaryType
+  id: PrimaryType
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: PrimaryType
+  nameWithType: ProviderCapabilities.PrimaryType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.PrimaryType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryType
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 444
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Determines the primary provider type based on capabilities.
+  example: []
+  syntax:
+    content: public ProviderType PrimaryType { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderType
+    content.vb: Public ReadOnly Property PrimaryType As ProviderType
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.PrimaryType*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasTickData
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasTickData
+  id: HasTickData
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HasTickData
+  nameWithType: ProviderCapabilities.HasTickData
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasTickData
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasTickData
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 452
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Whether the provider has any tick-level historical data.
+  example: []
+  syntax:
+    content: public bool HasTickData { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property HasTickData As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasTickData*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasCorporateActions
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasCorporateActions
+  id: HasCorporateActions
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HasCorporateActions
+  nameWithType: ProviderCapabilities.HasCorporateActions
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasCorporateActions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasCorporateActions
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 455
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Whether the provider has corporate action data.
+  example: []
+  syntax:
+    content: public bool HasCorporateActions { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property HasCorporateActions As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasCorporateActions*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarket(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarket(System.String)
+  id: SupportsMarket(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsMarket(string)
+  nameWithType: ProviderCapabilities.SupportsMarket(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarket(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsMarket
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 458
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Whether the provider supports a specific market.
+  example: []
+  syntax:
+    content: public bool SupportsMarket(string market)
+    parameters:
+    - id: market
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function SupportsMarket(market As String) As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarket*
+  nameWithType.vb: ProviderCapabilities.SupportsMarket(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarket(String)
+  name.vb: SupportsMarket(String)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderCapabilities>
+  nameWithType: IEquatable<ProviderCapabilities>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.ProviderCapabilities>
+  nameWithType.vb: IEquatable(Of ProviderCapabilities)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.ProviderCapabilities)
+  name.vb: IEquatable(Of ProviderCapabilities)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    name: ProviderCapabilities
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    name: ProviderCapabilities
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsStreaming*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsStreaming
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsStreaming
+  name: SupportsStreaming
+  nameWithType: ProviderCapabilities.SupportsStreaming
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsStreaming
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBackfill*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBackfill
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsBackfill
+  name: SupportsBackfill
+  nameWithType: ProviderCapabilities.SupportsBackfill
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBackfill
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSymbolSearch*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSymbolSearch
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsSymbolSearch
+  name: SupportsSymbolSearch
+  nameWithType: ProviderCapabilities.SupportsSymbolSearch
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSymbolSearch
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsOptionsChain*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsOptionsChain
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsOptionsChain
+  name: SupportsOptionsChain
+  nameWithType: ProviderCapabilities.SupportsOptionsChain
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsOptionsChain
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBrokerage*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBrokerage
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsBrokerage
+  name: SupportsBrokerage
+  nameWithType: ProviderCapabilities.SupportsBrokerage
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsBrokerage
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeTrades
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsRealtimeTrades
+  name: SupportsRealtimeTrades
+  nameWithType: ProviderCapabilities.SupportsRealtimeTrades
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeTrades
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeQuotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeQuotes
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsRealtimeQuotes
+  name: SupportsRealtimeQuotes
+  nameWithType: ProviderCapabilities.SupportsRealtimeQuotes
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsRealtimeQuotes
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarketDepth
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsMarketDepth
+  name: SupportsMarketDepth
+  nameWithType: ProviderCapabilities.SupportsMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarketDepth
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxDepthLevels*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxDepthLevels
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_MaxDepthLevels
+  name: MaxDepthLevels
+  nameWithType: ProviderCapabilities.MaxDepthLevels
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxDepthLevels
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxSymbolsPerSubscription*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxSymbolsPerSubscription
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_MaxSymbolsPerSubscription
+  name: MaxSymbolsPerSubscription
+  nameWithType: ProviderCapabilities.MaxSymbolsPerSubscription
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxSymbolsPerSubscription
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAdjustedPrices*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAdjustedPrices
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsAdjustedPrices
+  name: SupportsAdjustedPrices
+  nameWithType: ProviderCapabilities.SupportsAdjustedPrices
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAdjustedPrices
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsIntraday*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsIntraday
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsIntraday
+  name: SupportsIntraday
+  nameWithType: ProviderCapabilities.SupportsIntraday
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsIntraday
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsDividends*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsDividends
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsDividends
+  name: SupportsDividends
+  nameWithType: ProviderCapabilities.SupportsDividends
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsDividends
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSplits*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSplits
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsSplits
+  name: SupportsSplits
+  nameWithType: ProviderCapabilities.SupportsSplits
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsSplits
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalQuotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalQuotes
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsHistoricalQuotes
+  name: SupportsHistoricalQuotes
+  nameWithType: ProviderCapabilities.SupportsHistoricalQuotes
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalQuotes
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalTrades
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsHistoricalTrades
+  name: SupportsHistoricalTrades
+  nameWithType: ProviderCapabilities.SupportsHistoricalTrades
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalTrades
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalAuctions*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalAuctions
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsHistoricalAuctions
+  name: SupportsHistoricalAuctions
+  nameWithType: ProviderCapabilities.SupportsHistoricalAuctions
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsHistoricalAuctions
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinBarResolution*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinBarResolution
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_MinBarResolution
+  name: MinBarResolution
+  nameWithType: ProviderCapabilities.MinBarResolution
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinBarResolution
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedBarIntervals*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedBarIntervals
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportedBarIntervals
+  name: SupportedBarIntervals
+  nameWithType: ProviderCapabilities.SupportedBarIntervals
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedBarIntervals
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAssetTypeFilter*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAssetTypeFilter
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsAssetTypeFilter
+  name: SupportsAssetTypeFilter
+  nameWithType: ProviderCapabilities.SupportsAssetTypeFilter
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsAssetTypeFilter
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsExchangeFilter*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsExchangeFilter
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsExchangeFilter
+  name: SupportsExchangeFilter
+  nameWithType: ProviderCapabilities.SupportsExchangeFilter
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsExchangeFilter
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedAssetTypes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedAssetTypes
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportedAssetTypes
+  name: SupportedAssetTypes
+  nameWithType: ProviderCapabilities.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedAssetTypes
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedExchanges*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedExchanges
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportedExchanges
+  name: SupportedExchanges
+  nameWithType: ProviderCapabilities.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedExchanges
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedMarkets*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedMarkets
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: ProviderCapabilities.SupportedMarkets
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportedMarkets
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxRequestsPerWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxRequestsPerWindow
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: ProviderCapabilities.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.RateLimitWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.RateLimitWindow
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_RateLimitWindow
+  name: RateLimitWindow
+  nameWithType: ProviderCapabilities.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.RateLimitWindow
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinRequestDelay*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinRequestDelay
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_MinRequestDelay
+  name: MinRequestDelay
+  nameWithType: ProviderCapabilities.MinRequestDelay
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.MinRequestDelay
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.None*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.None
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_None
+  name: None
+  nameWithType: ProviderCapabilities.None
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.None
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities
+  nameWithType: ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_Streaming_System_Boolean_System_Boolean_System_Boolean_System_Nullable_System_Int32__
+  name: Streaming
+  nameWithType: ProviderCapabilities.Streaming
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Streaming
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillBarsOnly*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillBarsOnly
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_BackfillBarsOnly
+  name: BackfillBarsOnly
+  nameWithType: ProviderCapabilities.BackfillBarsOnly
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillBarsOnly
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillFullFeatured*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillFullFeatured
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_BackfillFullFeatured
+  name: BackfillFullFeatured
+  nameWithType: ProviderCapabilities.BackfillFullFeatured
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.BackfillFullFeatured
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearch*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearch
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SymbolSearch
+  name: SymbolSearch
+  nameWithType: ProviderCapabilities.SymbolSearch
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearch
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearchFilterable*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearchFilterable
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SymbolSearchFilterable_System_Collections_Generic_IReadOnlyList_System_String__System_Collections_Generic_IReadOnlyList_System_String__
+  name: SymbolSearchFilterable
+  nameWithType: ProviderCapabilities.SymbolSearchFilterable
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SymbolSearchFilterable
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.OptionsChain*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.OptionsChain
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_OptionsChain_System_Boolean_System_Boolean_System_Boolean_
+  name: OptionsChain
+  nameWithType: ProviderCapabilities.OptionsChain
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.OptionsChain
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Brokerage*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Brokerage
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_Brokerage_System_Boolean_System_Boolean_System_Boolean_System_Boolean_
+  name: Brokerage
+  nameWithType: ProviderCapabilities.Brokerage
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Brokerage
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Hybrid*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Hybrid
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_Hybrid_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Boolean_
+  name: Hybrid
+  nameWithType: ProviderCapabilities.Hybrid
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.Hybrid
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.FromHistoricalCapabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.FromHistoricalCapabilities
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_FromHistoricalCapabilities_Meridian_Infrastructure_Adapters_Core_HistoricalDataCapabilities_System_Nullable_System_Int32__System_Nullable_System_TimeSpan__System_Nullable_System_TimeSpan__
+  name: FromHistoricalCapabilities
+  nameWithType: ProviderCapabilities.FromHistoricalCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.FromHistoricalCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.html
+  name: HistoricalDataCapabilities
+  nameWithType: HistoricalDataCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.ToDictionary*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.ToDictionary
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_ToDictionary
+  name: ToDictionary
+  nameWithType: ProviderCapabilities.ToDictionary
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.ToDictionary
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, object>
+  nameWithType: IReadOnlyDictionary<string, object>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, object>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Object)
+  name.vb: IReadOnlyDictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.PrimaryType*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.PrimaryType
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_PrimaryType
+  name: PrimaryType
+  nameWithType: ProviderCapabilities.PrimaryType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.PrimaryType
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderType
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderType
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderType.html
+  name: ProviderType
+  nameWithType: ProviderType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderType
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasTickData*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasTickData
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_HasTickData
+  name: HasTickData
+  nameWithType: ProviderCapabilities.HasTickData
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasTickData
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasCorporateActions*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasCorporateActions
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_HasCorporateActions
+  name: HasCorporateActions
+  nameWithType: ProviderCapabilities.HasCorporateActions
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.HasCorporateActions
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarket*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarket
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html#Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_SupportsMarket_System_String_
+  name: SupportsMarket
+  nameWithType: ProviderCapabilities.SupportsMarket
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.SupportsMarket
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

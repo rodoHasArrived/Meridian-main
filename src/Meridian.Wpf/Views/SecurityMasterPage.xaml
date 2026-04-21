@@ -5,9 +5,11 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
       mc:Ignorable="d"
-      d:DesignHeight="800" d:DesignWidth="1200"
+      d:DesignHeight="800"
+      d:DesignWidth="1200"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
-      AutomationProperties.Name="Security Master">
+      AutomationProperties.Name="Security Master"
+      AutomationProperties.AutomationId="SecurityMasterPage">
 
     <Page.Resources>
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
@@ -16,36 +18,43 @@
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
-        <StackPanel MaxWidth="1400">
-
-            <!-- Header -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+        <StackPanel MaxWidth="1500">
+            <Border Style="{StaticResource EmbeddedShellCompactHeaderCardStyle}" Margin="0,0,0,20">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Orientation="Horizontal">
-                        <Border Width="44" Height="44" CornerRadius="14"
+                    <StackPanel Grid.Column="0"
+                                Orientation="Horizontal"
+                                Style="{StaticResource EmbeddedShellHeaderIdentityStackPanelStyle}">
+                        <Border Width="44"
+                                Height="44"
+                                CornerRadius="14"
                                 Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                            <TextBlock Text="&#xE8D7;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                       FontSize="24" Foreground="{StaticResource InfoColorBrush}"
-                                       VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                BorderBrush="{StaticResource InfoColorBrush}"
+                                BorderThickness="1">
+                            <TextBlock Text="&#xE8D7;"
+                                       FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                       FontSize="24"
+                                       Foreground="{StaticResource InfoColorBrush}"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center" />
                         </Border>
                         <StackPanel Margin="12,0,0,0">
-                            <TextBlock Text="Security Master" Style="{StaticResource PageTitleStyle}"/>
-                            <TextBlock Text="Search, inspect, review, and manage securities registered in the Security Master."
-                                       Style="{StaticResource CardDescriptionStyle}"/>
+                            <TextBlock Text="Security Master" Style="{StaticResource PageTitleStyle}" />
+                            <TextBlock Text="Search, inspect, enrich, and govern the workstation security universe from a single review surface."
+                                       Style="{StaticResource CardDescriptionStyle}" />
                         </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                         <TextBlock Text="{Binding StatusText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   VerticalAlignment="Center" Margin="0,0,16,0" FontSize="12"/>
-                        <!-- Conflict badge: visible when open conflicts exist -->
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,16,0"
+                                   FontSize="12" />
                         <Border Background="{StaticResource WarningColorBrush}"
                                 CornerRadius="10"
                                 Padding="8,2"
@@ -55,100 +64,133 @@
                                 Cursor="Hand">
                             <Border.InputBindings>
                                 <MouseBinding MouseAction="LeftClick"
-                                              Command="{Binding RefreshConflictCountCommand}"/>
+                                              Command="{Binding RefreshConflictCountCommand}" />
                             </Border.InputBindings>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="⚠ " Foreground="#333" FontWeight="Bold" FontSize="12"
-                                           VerticalAlignment="Center"/>
+                                <TextBlock Text="⚠ "
+                                           Foreground="#333"
+                                           FontWeight="Bold"
+                                           FontSize="12"
+                                           VerticalAlignment="Center" />
                                 <TextBlock Text="{Binding OpenConflictCount}"
-                                           Foreground="#333" FontWeight="Bold" FontSize="12"
-                                           VerticalAlignment="Center"/>
-                                <TextBlock Text=" conflicts" Foreground="#333" FontSize="12"
-                                           VerticalAlignment="Center"/>
+                                           Foreground="#333"
+                                           FontWeight="Bold"
+                                           FontSize="12"
+                                           VerticalAlignment="Center" />
+                                <TextBlock Text=" conflicts"
+                                           Foreground="#333"
+                                           FontSize="12"
+                                           VerticalAlignment="Center" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <!-- Toolbar: Create/Edit/Deactivate buttons -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource WorkspaceContextStripStyle}" Margin="0,0,0,20">
+                <UniformGrid Columns="4">
+                    <Border Style="{StaticResource WorkspaceContextBadgeStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Search Scope" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding SearchScopeText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource WorkspaceContextBadgeStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Runtime" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding RuntimeStatusLabel}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                            <TextBlock Text="{Binding RuntimeStatusDetail}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource WorkspaceContextBadgeStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Conflicts" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding ConflictSummaryText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource WorkspaceContextBadgeStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Import Session" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding ImportSessionText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
+            </Border>
+
+            <Border Style="{StaticResource WorkspaceCommandBarSurfaceStyle}" Margin="0,0,0,20">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
-                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <WrapPanel Grid.Column="0">
                         <Button Content="+ New Security"
                                 Command="{Binding CreateNewCommand}"
                                 Style="{StaticResource PrimaryButtonStyle}"
-                                Margin="0,0,8,0"/>
-
-                        <Button Content="✏ Edit"
+                                Margin="0,0,8,8" />
+                        <Button Content="Edit Selected"
                                 Command="{Binding EditSelectedCommand}"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Margin="0,0,8,0"/>
-
-                        <Button Content="✕ Deactivate"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,8,8" />
+                        <Button Content="Deactivate Selected"
                                 Command="{Binding DeactivateSelectedCommand}"
-                                Style="{StaticResource DangerButtonStyle}"/>
-
-                        <Button Content="⬇ Import..."
+                                Style="{StaticResource DangerButtonStyle}"
+                                Margin="0,0,8,8" />
+                        <Button Content="Import Universe"
                                 Command="{Binding ImportFromFileCommand}"
                                 IsEnabled="{Binding IsImporting, Converter={StaticResource InvertBoolConverter}}"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Margin="8,0,0,0"/>
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,8,8" />
+                    </WrapPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                        <Button Content="Refresh Workflow"
+                                Command="{Binding RefreshWorkflowCommand}"
+                                Style="{StaticResource GhostButtonStyle}"
+                                Margin="0,0,8,8" />
+                        <Button Content="Backfill Trading Parameters"
+                                Command="{Binding BackfillTradingParamsCommand}"
+                                IsEnabled="{Binding IsBackfillingTradingParams, Converter={StaticResource InvertBoolConverter}}"
+                                Style="{StaticResource SecondaryButtonStyle}"
+                                Margin="0,0,8,8" />
+                        <TextBlock Text="{Binding BackfillStatus}"
+                                   VerticalAlignment="Center"
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   MaxWidth="260" />
                     </StackPanel>
-
-                    <Button Grid.Column="3"
-                            Content="Backfill Parameters"
-                            Command="{Binding BackfillTradingParamsCommand}"
-                            IsEnabled="{Binding IsBackfillingTradingParams, Converter={StaticResource InvertBoolConverter}}"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            HorizontalAlignment="Right"
-                            Margin="0,0,8,0"/>
-
-                    <TextBlock Grid.Column="4"
-                               Text="{Binding BackfillStatus}"
-                               VerticalAlignment="Center"
-                               Margin="8,0,0,0"
-                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               FontSize="12"/>
                 </Grid>
             </Border>
-
-            <!-- Import Progress Panel -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24"
+            <Border Style="{StaticResource SectionCardStyle}"
+                    Margin="0,0,0,20"
                     Visibility="{Binding IsImporting, Converter={StaticResource BoolToVisibilityConverter}}">
-                <StackPanel Orientation="Vertical">
+                <StackPanel>
                     <TextBlock Text="Importing securities from file..."
                                Style="{StaticResource CardHeaderStyle}"
-                               Margin="0,0,0,12"/>
+                               Margin="0,0,0,12" />
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="200"/>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="240" />
                         </Grid.ColumnDefinitions>
-                        
+
                         <TextBlock Grid.Column="0"
                                    Text="{Binding ImportStatus}"
                                    VerticalAlignment="Center"
-                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}"/>
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                         <ProgressBar Grid.Column="1"
-                                     Value="{Binding ImportProcessed}"
-                                     Maximum="{Binding ImportTotal}"
+                                     Value="{Binding ImportProcessed, Mode=OneWay}"
+                                     Maximum="{Binding ImportTotal, Mode=OneWay}"
                                      Height="16"
-                                     Margin="12,0,0,0"/>
+                                     Margin="16,0,0,0" />
                     </Grid>
                 </StackPanel>
             </Border>
 
-            <!-- Import Result Panel -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24"
+            <Border Style="{StaticResource SectionCardStyle}"
+                    Margin="0,0,0,20"
                     Visibility="{Binding IsImportResultVisible, Converter={StaticResource BoolToVisibilityConverter}}"
                     Background="{StaticResource ConsoleBackgroundDarkBrush}">
                 <DockPanel>
@@ -156,23 +198,23 @@
                             Content="×"
                             Command="{Binding CloseImportResultCommand}"
                             Style="{StaticResource SecondaryButtonStyle}"
-                            Width="32" Height="32"
-                            Margin="12,0,0,0"/>
+                            Width="32"
+                            Height="32"
+                            Margin="12,0,0,0" />
                     <TextBlock Text="{Binding ImportResultSummary}"
                                Style="{StaticResource CardDescriptionStyle}"
                                TextWrapping="Wrap"
-                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"/>
+                               Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
                 </DockPanel>
             </Border>
 
-            <!-- Search bar -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <TextBox x:Name="SearchBox"
@@ -181,88 +223,84 @@
                              Style="{StaticResource FormTextBoxStyle}"
                              Margin="0,0,12,0"
                              KeyDown="SearchBox_KeyDown"
-                             VerticalAlignment="Center"/>
+                             VerticalAlignment="Center"
+                             AutomationProperties.AutomationId="SecurityMasterSearchBox" />
 
                     <CheckBox Grid.Column="1"
                               Content="Active only"
                               IsChecked="{Binding ActiveOnly}"
                               VerticalAlignment="Center"
                               Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                              Margin="0,0,12,0"/>
+                              Margin="0,0,12,0" />
 
-                    <Button Grid.Column="2"
+                    <TextBlock Grid.Column="2"
+                               Text="{Binding ResultCount, StringFormat=Results {0}}"
+                               VerticalAlignment="Center"
+                               Foreground="{StaticResource ConsoleTextMutedBrush}"
+                               Margin="0,0,12,0" />
+
+                    <Button Grid.Column="3"
                             Content="Search"
                             Click="Search_Click"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Margin="0,0,8,0"/>
+                            Style="{StaticResource PrimaryButtonStyle}" />
                 </Grid>
             </Border>
 
-            <!-- Edit panel -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24"
+            <Border Style="{StaticResource SectionCardStyle}"
+                    Margin="0,0,0,20"
                     Visibility="{Binding IsEditPanelVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="500">
                     <StackPanel>
                         <TextBlock Text="{Binding EditVm.IsEditMode, Converter={StaticResource BoolToStringConverter}, ConverterParameter='Edit Security|Create Security'}"
-                                   Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16"/>
+                                   Style="{StaticResource CardHeaderStyle}"
+                                   Margin="0,0,0,16" />
 
-                        <!-- Display Name -->
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Display Name" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding EditVm.DisplayName, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource FormTextBoxStyle}"
-                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
-                        </StackPanel>
+                        <UniformGrid Columns="2">
+                            <StackPanel Margin="0,0,12,12">
+                                <TextBlock Text="Display Name" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding EditVm.DisplayName, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBoxStyle}"
+                                         IsReadOnly="{Binding EditVm.IsBusy}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Asset Class" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{Binding EditVm.AssetClasses}"
+                                          SelectedItem="{Binding EditVm.AssetClass, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,12">
+                                <TextBlock Text="Currency" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding EditVm.Currency, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBoxStyle}"
+                                         IsReadOnly="{Binding EditVm.IsBusy}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Identifier Kind" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                <ComboBox ItemsSource="{Binding EditVm.IdentifierKinds}"
+                                          SelectedItem="{Binding EditVm.PrimaryIdentifierKind, UpdateSourceTrigger=PropertyChanged}"
+                                          IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,12,12">
+                                <TextBlock Text="Identifier Value" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding EditVm.PrimaryIdentifierValue, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBoxStyle}"
+                                         IsReadOnly="{Binding EditVm.IsBusy}" />
+                            </StackPanel>
+                            <StackPanel Margin="0,0,0,12">
+                                <TextBlock Text="Exchange (Optional)" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                <TextBox Text="{Binding EditVm.Exchange, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource FormTextBoxStyle}"
+                                         IsReadOnly="{Binding EditVm.IsBusy}" />
+                            </StackPanel>
+                        </UniformGrid>
 
-                        <!-- Asset Class -->
                         <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Asset Class" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
-                            <ComboBox ItemsSource="{Binding EditVm.AssetClasses}"
-                                      SelectedItem="{Binding EditVm.AssetClass, UpdateSourceTrigger=PropertyChanged}"
-                                      IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"/>
-                        </StackPanel>
-
-                        <!-- Currency -->
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Currency" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding EditVm.Currency, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource FormTextBoxStyle}"
-                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
-                        </StackPanel>
-
-                        <!-- Primary Identifier Kind -->
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Identifier Kind" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
-                            <ComboBox ItemsSource="{Binding EditVm.IdentifierKinds}"
-                                      SelectedItem="{Binding EditVm.PrimaryIdentifierKind, UpdateSourceTrigger=PropertyChanged}"
-                                      IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"/>
-                        </StackPanel>
-
-                        <!-- Primary Identifier Value -->
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Identifier Value" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding EditVm.PrimaryIdentifierValue, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource FormTextBoxStyle}"
-                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
-                        </StackPanel>
-
-                        <!-- Exchange (optional) -->
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Exchange (Optional)" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
-                            <TextBox Text="{Binding EditVm.Exchange, UpdateSourceTrigger=PropertyChanged}"
-                                     Style="{StaticResource FormTextBoxStyle}"
-                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
-                        </StackPanel>
-
-                        <!-- Issuer Name (optional) -->
-                        <StackPanel Margin="0,0,0,12">
-                            <TextBlock Text="Issuer Name (Optional)" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                            <TextBlock Text="Issuer Name (Optional)" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
                             <TextBox Text="{Binding EditVm.IssuerName, UpdateSourceTrigger=PropertyChanged}"
                                      Style="{StaticResource FormTextBoxStyle}"
-                                     IsReadOnly="{Binding EditVm.IsBusy}"/>
+                                     IsReadOnly="{Binding EditVm.IsBusy}" />
                         </StackPanel>
 
-                        <!-- Validation Errors -->
                         <ItemsControl ItemsSource="{Binding EditVm.ValidationErrors}"
                                       Visibility="{Binding EditVm.HasErrors, Converter={StaticResource BoolToVisibilityConverter}}"
                                       Margin="0,0,0,12">
@@ -270,398 +308,420 @@
                                 <DataTemplate>
                                     <TextBlock Text="{Binding}"
                                                Foreground="{StaticResource ErrorBrush}"
-                                               TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,0,4" />
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <!-- Status text -->
                         <TextBlock Text="{Binding EditVm.StatusText}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   FontSize="11" Margin="0,0,0,12"/>
+                                   FontSize="11"
+                                   Margin="0,0,0,12" />
 
-                        <!-- Save + Cancel buttons -->
                         <StackPanel Orientation="Horizontal">
                             <Button Content="Save"
                                     Command="{Binding EditVm.SaveCommand}"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"
-                                    Margin="0,0,8,0"/>
+                                    Margin="0,0,8,0" />
                             <Button Content="Cancel"
                                     Command="{Binding EditVm.CancelCommand}"
                                     Style="{StaticResource GhostButtonStyle}"
-                                    IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"/>
+                                    IsEnabled="{Binding EditVm.IsBusy, Converter={StaticResource InvertBoolConverter}}" />
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
             </Border>
 
-            <!-- Deactivate panel -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24"
+            <Border Style="{StaticResource SectionCardStyle}"
+                    Margin="0,0,0,20"
                     Visibility="{Binding IsDeactivatePanelVisible, Converter={StaticResource BoolToVisibilityConverter}}">
                 <StackPanel>
-                    <TextBlock Text="Deactivate Security" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16"/>
-
+                    <TextBlock Text="Deactivate Security" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
                     <TextBlock Text="{Binding DeactivateVm.SecurityName, StringFormat='Are you sure you want to deactivate &quot;{0}&quot;? This action cannot be undone.'}"
-                               TextWrapping="Wrap" Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                               Margin="0,0,0,12"/>
-
-                    <!-- Reason (optional) -->
+                               TextWrapping="Wrap"
+                               Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                               Margin="0,0,0,12" />
                     <StackPanel Margin="0,0,0,12">
-                        <TextBlock Text="Reason (Optional)" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
+                        <TextBlock Text="Reason (Optional)" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
                         <TextBox Text="{Binding DeactivateVm.Reason, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource FormTextBoxStyle}"
                                  IsReadOnly="{Binding DeactivateVm.IsBusy}"
-                                 TextWrapping="Wrap" MaxHeight="80"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+                                 TextWrapping="Wrap"
+                                 MaxHeight="80"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto" />
                     </StackPanel>
-
-                    <!-- Status text -->
                     <TextBlock Text="{Binding DeactivateVm.StatusText}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}"
-                               FontSize="11" Margin="0,0,0,12"/>
-
-                    <!-- Confirm + Cancel buttons -->
+                               FontSize="11"
+                               Margin="0,0,0,12" />
                     <StackPanel Orientation="Horizontal">
                         <Button Content="Confirm Deactivation"
                                 Command="{Binding DeactivateVm.ConfirmCommand}"
                                 Style="{StaticResource DangerButtonStyle}"
                                 IsEnabled="{Binding DeactivateVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"
-                                Margin="0,0,8,0"/>
+                                Margin="0,0,8,0" />
                         <Button Content="Cancel"
                                 Command="{Binding DeactivateVm.CancelCommand}"
                                 Style="{StaticResource GhostButtonStyle}"
-                                IsEnabled="{Binding DeactivateVm.IsBusy, Converter={StaticResource InvertBoolConverter}}"/>
+                                IsEnabled="{Binding DeactivateVm.IsBusy, Converter={StaticResource InvertBoolConverter}}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
-
-            <!-- Results + detail split -->
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="3*"/>
+                    <ColumnDefinition Width="2.3*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="3.2*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="1.7*" />
                 </Grid.ColumnDefinitions>
 
-                <!-- Results list -->
-                <Border Grid.Column="0" Style="{StaticResource SectionCardStyle}">
+                <Border Grid.Column="0"
+                        Style="{StaticResource WorkspaceWorkbenchCardStyle}"
+                        AutomationProperties.AutomationId="SecurityMasterResultsWorkbench">
                     <StackPanel>
-                        <TextBlock Text="Results" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12"/>
-
+                        <TextBlock Text="Search Results" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding StatusText}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,6,0,12"
+                                   TextWrapping="Wrap" />
                         <TextBlock Text="Loading…"
                                    Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   Margin="0,0,0,8"/>
-
+                                   Margin="0,0,0,8" />
                         <ListBox x:Name="ResultsList"
                                  ItemsSource="{Binding Results}"
                                  SelectedItem="{Binding SelectedSecurity, Mode=TwoWay}"
                                  SelectionChanged="ResultsList_SelectionChanged"
                                  Background="Transparent"
                                  BorderThickness="0"
-                                 MaxHeight="520"
-                                 ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                 MaxHeight="620"
+                                 ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                 AutomationProperties.AutomationId="SecurityMasterResultsList">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Margin="4,6">
-                                        <TextBlock Text="{Binding DisplayName}"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"/>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding Classification.AssetClass}"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                            <TextBlock Text=" · "
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                            <TextBlock Text="{Binding Status}"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource ConsoleTextMutedBrush}"/>
-                                        </StackPanel>
-                                    </StackPanel>
+                                    <Border Style="{StaticResource WorkspaceQueueItemCardStyle}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                                <TextBlock Text="{Binding Classification.PrimaryIdentifierValue, StringFormat=Identifier {0}}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,4,0,0" />
+                                                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                                    <TextBlock Text="{Binding Classification.AssetClass}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                    <TextBlock Text=" • " FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                    <TextBlock Text="{Binding EconomicDefinition.Currency}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Style="{StaticResource InfoBadgeInlineStyle}" VerticalAlignment="Top">
+                                                <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource InfoColorBrush}" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
                     </StackPanel>
                 </Border>
 
-                <!-- Detail panel -->
-                <Border Grid.Column="2" Style="{StaticResource SectionCardStyle}"
+                <Border Grid.Column="2"
+                        Style="{StaticResource WorkspaceWorkbenchCardStyle}"
+                        AutomationProperties.AutomationId="SecurityMasterDetailWorkbench"
                         Visibility="{Binding HasSelectedSecurity, Converter={StaticResource BoolToVisibilityConverter}}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
                         <StackPanel>
-                            <TextBlock Text="Security Detail" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16"/>
-
-                            <!-- Name + status -->
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                                 <TextBlock Text="{Binding SelectedSecurity.DisplayName}"
-                                           FontSize="18" FontWeight="Bold"
+                                           FontSize="20"
+                                           FontWeight="Bold"
                                            Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                           VerticalAlignment="Center"/>
-                                <Border Background="{StaticResource InfoColorBrush}"
-                                        CornerRadius="999" Padding="10,3"
-                                        Margin="12,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding SelectedStatusBadge}"
-                                               FontSize="11" Foreground="White" FontWeight="SemiBold"/>
+                                           VerticalAlignment="Center" />
+                                <Border Style="{StaticResource InfoBadgeInlineStyle}" Margin="12,0,0,0" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding SelectedStatusBadge}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource InfoColorBrush}" />
                                 </Border>
                             </StackPanel>
-
                             <TextBlock Text="{Binding SelectedIdentifier}"
                                        FontSize="12"
                                        Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                       Margin="0,0,0,16"/>
-
-                            <!-- TabControl for Details/History/Corporate Actions -->
-                            <TabControl SelectedIndex="{Binding SelectedDetailTab}" Margin="0,0,0,0">
-                                <!-- Tab 0: Details -->
+                                       Margin="0,0,0,16" />
+                            <TabControl SelectedIndex="{Binding SelectedDetailTab}">
                                 <TabItem Header="Details">
-                                    <TabItem.Content>
-                                        <StackPanel Margin="12,12,12,12">
-                                            <!-- Classification grid -->
-                                            <Grid Margin="0,0,0,16">
+                                    <StackPanel Margin="12">
+                                        <UniformGrid Columns="2" Margin="0,0,0,16">
+                                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,8">
+                                                <StackPanel>
+                                                    <TextBlock Text="Asset Class" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                    <TextBlock Text="{Binding SelectedAssetClass}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,8">
+                                                <StackPanel>
+                                                    <TextBlock Text="Currency" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                    <TextBlock Text="{Binding SelectedCurrency}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,8,0">
+                                                <StackPanel>
+                                                    <TextBlock Text="Version" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                    <TextBlock Text="{Binding SelectedSecurity.EconomicDefinition.Version}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4,0,0" />
+                                                </StackPanel>
+                                            </Border>
+                                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                                <StackPanel>
+                                                    <TextBlock Text="Primary Identifier" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                                    <TextBlock Text="{Binding SelectedIdentifier}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,4,0,0" TextWrapping="Wrap" />
+                                                </StackPanel>
+                                            </Border>
+                                        </UniformGrid>
+                                    </StackPanel>
+                                </TabItem>
+
+                                <TabItem Header="History">
+                                    <StackPanel Margin="12">
+                                        <TextBlock Text="{Binding HistoryText}" FontFamily="Consolas" FontSize="11" Foreground="{StaticResource ConsoleTextSecondaryBrush}" TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </TabItem>
+
+                                <TabItem Header="Conflict Queue">
+                                    <Grid Margin="12">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="Auto" />
+                                            <RowDefinition Height="*" />
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Text="{Binding SelectedConflictSummaryText}"
+                                                   Style="{StaticResource CardDescriptionStyle}"
+                                                   TextWrapping="Wrap" />
+
+                                        <Grid Grid.Row="1" Margin="0,12,0,12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="190" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                                <TextBlock Text="Resolved By" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                                <TextBox Text="{Binding ConflictOperatorText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                                <TextBlock Text="Resolution Note" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4" />
+                                                <TextBox Text="{Binding ConflictNoteText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Bottom">
+                                                <Button Content="Accept A"
+                                                        Command="{Binding AcceptPrimaryConflictCommand}"
+                                                        Style="{StaticResource GhostButtonStyle}"
+                                                        Margin="0,0,8,0" />
+                                                <Button Content="Accept B"
+                                                        Command="{Binding AcceptSecondaryConflictCommand}"
+                                                        Style="{StaticResource SecondaryButtonStyle}"
+                                                        Margin="0,0,8,0" />
+                                                <Button Content="Dismiss"
+                                                        Command="{Binding DismissConflictCommand}"
+                                                        Style="{StaticResource SecondaryButtonStyle}" />
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <DataGrid Grid.Row="2"
+                                                  ItemsSource="{Binding OpenConflicts}"
+                                                  SelectedItem="{Binding SelectedConflict, Mode=TwoWay}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  CanUserAddRows="False"
+                                                  Background="Transparent"
+                                                  BorderThickness="0">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Field" Binding="{Binding FieldPath}" Width="150" />
+                                                <DataGridTextColumn Header="Provider A" Binding="{Binding ProviderA}" Width="120" />
+                                                <DataGridTextColumn Header="Value A" Binding="{Binding ValueA}" Width="*" />
+                                                <DataGridTextColumn Header="Provider B" Binding="{Binding ProviderB}" Width="120" />
+                                                <DataGridTextColumn Header="Value B" Binding="{Binding ValueB}" Width="*" />
+                                                <DataGridTextColumn Header="Detected" Binding="{Binding DetectedAt, StringFormat='{}{0:g}'}" Width="130" />
+                                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="90" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </Grid>
+                                </TabItem>
+
+                                <TabItem Header="Corporate Actions">
+                                    <DockPanel Margin="12">
+                                        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                                            <Button Content="+ Record" Command="{Binding ShowRecordCorpActionCommand}" IsEnabled="{Binding HasSelectedSecurity}" Style="{StaticResource PrimaryButtonStyle}" />
+                                        </StackPanel>
+
+                                        <Border DockPanel.Dock="Top"
+                                                Padding="8"
+                                                Margin="0,0,0,8"
+                                                Visibility="{Binding IsRecordCorpActionVisible, Converter={StaticResource BoolToVisibilityConverter}}"
+                                                BorderBrush="{StaticResource ConsoleTextMutedBrush}"
+                                                BorderThickness="1">
+                                            <Grid>
                                                 <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <Grid.RowDefinitions>
-                                                    <RowDefinition/>
-                                                    <RowDefinition/>
-                                                    <RowDefinition/>
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                    <RowDefinition />
                                                 </Grid.RowDefinitions>
-
-                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Asset Class"
-                                                           Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
-                                                <TextBlock Grid.Row="0" Grid.Column="1"
-                                                           Text="{Binding SelectedAssetClass}"
-                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,4"/>
-
-                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Currency"
-                                                           Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
-                                                <TextBlock Grid.Row="1" Grid.Column="1"
-                                                           Text="{Binding SelectedCurrency}"
-                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,4"/>
-
-                                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Version"
-                                                           Style="{StaticResource CardDescriptionStyle}" Margin="0,0,0,4"/>
-                                                <TextBlock Grid.Row="2" Grid.Column="1"
-                                                           Text="{Binding SelectedSecurity.EconomicDefinition.Version}"
-                                                           Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,0,0,4"/>
+                                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Type" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,8,4" VerticalAlignment="Center" />
+                                                <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding CorpActTypes}" SelectedItem="{Binding CorpActType, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,12,0" />
+                                                <TextBlock Grid.Row="0" Grid.Column="2" Text="Ex-Date" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,8,4" VerticalAlignment="Center" />
+                                                <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding CorpActExDate, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" />
+                                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Amount/Ratio" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,8,4" VerticalAlignment="Center" />
+                                                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CorpActAmount, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" Margin="0,0,12,0" />
+                                                <TextBlock Grid.Row="1" Grid.Column="2" Text="Currency" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,8,4" VerticalAlignment="Center" />
+                                                <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding CorpActCurrency, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource FormTextBoxStyle}" IsEnabled="{Binding CorpActType, Converter={StaticResource BoolToStringConverter}, ConverterParameter=Dividend}" />
+                                                <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" Margin="0,8,0,0">
+                                                    <Button Content="Save" Command="{Binding RecordCorpActionCommand}" Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,8,0" />
+                                                    <Button Content="Cancel" Command="{Binding CancelRecordCorpActionCommand}" Style="{StaticResource GhostButtonStyle}" />
+                                                </StackPanel>
                                             </Grid>
+                                        </Border>
 
-                                            <!-- Primary Identifier -->
-                                            <TextBlock Text="Primary Identifier" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,8"/>
-                                            <TextBlock Text="{Binding SelectedIdentifier}"
-                                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
-                                                       Margin="0,0,0,16"/>
-                                        </StackPanel>
-                                    </TabItem.Content>
-                                </TabItem>
+                                        <TextBlock DockPanel.Dock="Top" Text="Timeline" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,6" />
+                                        <Border DockPanel.Dock="Top" Margin="0,0,0,12" Height="80" Background="{StaticResource ConsoleBackgroundDarkBrush}" CornerRadius="4">
+                                            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Padding="8,0">
+                                                <ItemsControl ItemsSource="{Binding CorporateActions}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,4,0">
+                                                                <Border x:Name="EventBadge" CornerRadius="4" Padding="7,5" Background="{StaticResource SuccessColorBrush}" ToolTip="{Binding EventType}">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="{Binding EventType}" FontSize="10" FontWeight="SemiBold" Foreground="White" />
+                                                                        <TextBlock Text="{Binding ExDate, StringFormat='{}{0:yyyy-MM-dd}'}" FontSize="9" Foreground="White" Opacity="0.85" />
+                                                                        <TextBlock x:Name="DividendAmountBadge" Text="{Binding DividendPerShare, StringFormat='${0:F2}'}" FontSize="9" Foreground="White" Opacity="0.85" />
+                                                                        <TextBlock x:Name="SplitRatioBadge" Text="{Binding SplitRatio, StringFormat='×{0:G}'}" FontSize="9" Foreground="White" Opacity="0.85" Visibility="Collapsed" />
+                                                                    </StackPanel>
+                                                                </Border>
+                                                                <TextBlock Text="›" FontSize="14" VerticalAlignment="Center" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="3,0" />
+                                                            </StackPanel>
+                                                            <DataTemplate.Triggers>
+                                                                <DataTrigger Binding="{Binding EventType}" Value="StockSplit">
+                                                                    <Setter TargetName="EventBadge" Property="Background" Value="{StaticResource WarningColorBrush}" />
+                                                                    <Setter TargetName="DividendAmountBadge" Property="Visibility" Value="Collapsed" />
+                                                                    <Setter TargetName="SplitRatioBadge" Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </DataTemplate.Triggers>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </ScrollViewer>
+                                        </Border>
 
-                                <!-- Tab 1: History -->
-                                <TabItem Header="History">
-                                    <TabItem.Content>
-                                        <StackPanel Margin="12,12,12,12">
-                                            <TextBlock Text="{Binding HistoryText, Mode=OneWay}"
-                                                       FontFamily="Consolas"
-                                                       FontSize="11"
-                                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
-                                                       TextWrapping="Wrap"/>
-                                        </StackPanel>
-                                    </TabItem.Content>
-                                </TabItem>
-
-                                <!-- Tab 2: Corporate Actions -->
-                                <TabItem Header="Corporate Actions">
-                                    <TabItem.Content>
-                                        <DockPanel Margin="12,12,12,12">
-                                            <!-- Toolbar -->
-                                            <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
-                                                <Button Content="+ Record" Command="{Binding ShowRecordCorpActionCommand}"
-                                                        IsEnabled="{Binding HasSelectedSecurity}"
-                                                        Style="{StaticResource PrimaryButtonStyle}"/>
-                                            </StackPanel>
-
-                                            <!-- Record form (collapsed by default) -->
-                                            <Border DockPanel.Dock="Top" Padding="8" Margin="0,0,0,8"
-                                                    Visibility="{Binding IsRecordCorpActionVisible, Converter={StaticResource BoolToVisibilityConverter}}"
-                                                    BorderBrush="{StaticResource ConsoleTextMutedBrush}" BorderThickness="1">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
-                                                    <Grid.RowDefinitions>
-                                                        <RowDefinition/>
-                                                        <RowDefinition/>
-                                                        <RowDefinition/>
-                                                    </Grid.RowDefinitions>
-
-                                                    <!-- Type -->
-                                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Type" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,8,4" VerticalAlignment="Center"/>
-                                                    <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding CorpActTypes}"
-                                                              SelectedItem="{Binding CorpActType, UpdateSourceTrigger=PropertyChanged}"
-                                                              Margin="0,0,12,0"/>
-
-                                                    <!-- ExDate -->
-                                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="Ex-Date" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,8,4" VerticalAlignment="Center"/>
-                                                    <TextBox Grid.Row="0" Grid.Column="3" Text="{Binding CorpActExDate, UpdateSourceTrigger=PropertyChanged}"
-                                                             Style="{StaticResource FormTextBoxStyle}"
-                                                             Margin="0,0,0,0"/>
-
-                                                    <!-- Amount/Ratio -->
-                                                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Amount/Ratio" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,8,4" VerticalAlignment="Center"/>
-                                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding CorpActAmount, UpdateSourceTrigger=PropertyChanged}"
-                                                             Style="{StaticResource FormTextBoxStyle}"
-                                                             Margin="0,0,12,0"/>
-
-                                                    <!-- Currency (only for Dividend) -->
-                                                    <TextBlock Grid.Row="1" Grid.Column="2" Text="Currency" Style="{StaticResource CardDescriptionStyle}" Margin="0,0,8,4" VerticalAlignment="Center"/>
-                                                    <TextBox Grid.Row="1" Grid.Column="3" Text="{Binding CorpActCurrency, UpdateSourceTrigger=PropertyChanged}"
-                                                             Style="{StaticResource FormTextBoxStyle}"
-                                                             IsEnabled="{Binding CorpActType, Converter={StaticResource BoolToStringConverter}, ConverterParameter=Dividend}"
-                                                             Margin="0,0,0,0"/>
-
-                                                    <!-- Buttons -->
-                                                    <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4" Orientation="Horizontal" Margin="0,8,0,0">
-                                                        <Button Content="Save" Command="{Binding RecordCorpActionCommand}"
-                                                                Style="{StaticResource PrimaryButtonStyle}"
-                                                                Margin="0,0,8,0"/>
-                                                        <Button Content="Cancel" Command="{Binding CancelRecordCorpActionCommand}"
-                                                                Style="{StaticResource GhostButtonStyle}"/>
-                                                    </StackPanel>
-                                                </Grid>
-                                            </Border>
-
-                                            <!-- Corporate Actions Timeline Strip -->
-                                            <TextBlock DockPanel.Dock="Top"
-                                                       Text="Timeline"
-                                                       Style="{StaticResource CardHeaderStyle}"
-                                                       Margin="0,0,0,6"/>
-                                            <Border DockPanel.Dock="Top" Margin="0,0,0,12"
-                                                    Height="80"
-                                                    Background="{StaticResource ConsoleBackgroundDarkBrush}"
-                                                    CornerRadius="4">
-                                                <ScrollViewer HorizontalScrollBarVisibility="Auto"
-                                                              VerticalScrollBarVisibility="Disabled"
-                                                              Padding="8,0">
-                                                    <ItemsControl ItemsSource="{Binding CorporateActions}">
-                                                        <ItemsControl.ItemsPanel>
-                                                            <ItemsPanelTemplate>
-                                                                <StackPanel Orientation="Horizontal"
-                                                                            VerticalAlignment="Center"/>
-                                                            </ItemsPanelTemplate>
-                                                        </ItemsControl.ItemsPanel>
-                                                        <ItemsControl.ItemTemplate>
-                                                            <DataTemplate>
-                                                                <StackPanel Orientation="Horizontal"
-                                                                            VerticalAlignment="Center"
-                                                                            Margin="0,0,4,0">
-                                                                    <!-- Event badge -->
-                                                                    <Border x:Name="EventBadge"
-                                                                            CornerRadius="4"
-                                                                            Padding="7,5"
-                                                                            Background="{StaticResource SuccessColorBrush}"
-                                                                            ToolTip="{Binding EventType}">
-                                                                        <StackPanel>
-                                                                            <TextBlock Text="{Binding EventType}"
-                                                                                       FontSize="10"
-                                                                                       FontWeight="SemiBold"
-                                                                                       Foreground="White"/>
-                                                                            <TextBlock Text="{Binding ExDate, StringFormat='{}{0:yyyy-MM-dd}'}"
-                                                                                       FontSize="9"
-                                                                                       Foreground="White"
-                                                                                       Opacity="0.85"/>
-                                                                            <!-- Two text blocks — only one shown at a time via DataTrigger visibility -->
-                                                                            <TextBlock x:Name="DividendAmountBadge"
-                                                                                       Text="{Binding DividendPerShare, StringFormat='${0:F2}'}"
-                                                                                       FontSize="9"
-                                                                                       Foreground="White"
-                                                                                       Opacity="0.85"/>
-                                                                            <TextBlock x:Name="SplitRatioBadge"
-                                                                                       Text="{Binding SplitRatio, StringFormat='×{0:G}'}"
-                                                                                       FontSize="9"
-                                                                                       Foreground="White"
-                                                                                       Opacity="0.85"
-                                                                                       Visibility="Collapsed"/>
-                                                                        </StackPanel>
-                                                                    </Border>
-                                                                    <!-- Connector arrow -->
-                                                                    <TextBlock Text="›"
-                                                                               FontSize="14"
-                                                                               VerticalAlignment="Center"
-                                                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                                                               Margin="3,0"/>
-                                                                </StackPanel>
-                                                                <DataTemplate.Triggers>
-                                                                    <DataTrigger Binding="{Binding EventType}" Value="StockSplit">
-                                                                        <Setter TargetName="EventBadge" Property="Background"
-                                                                                Value="{StaticResource WarningColorBrush}"/>
-                                                                        <Setter TargetName="DividendAmountBadge" Property="Visibility"
-                                                                                Value="Collapsed"/>
-                                                                        <Setter TargetName="SplitRatioBadge" Property="Visibility"
-                                                                                Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                </DataTemplate.Triggers>
-                                                            </DataTemplate>
-                                                        </ItemsControl.ItemTemplate>
-                                                    </ItemsControl>
-                                                </ScrollViewer>
-                                            </Border>
-
-                                            <!-- DataGrid -->
-                                            <DataGrid ItemsSource="{Binding CorporateActions}" AutoGenerateColumns="False"
-                                                      IsReadOnly="True" CanUserAddRows="False"
-                                                      Background="Transparent" BorderThickness="0">
-                                                <DataGrid.Columns>
-                                                    <DataGridTextColumn Header="Type" Binding="{Binding EventType}" Width="80"/>
-                                                    <DataGridTextColumn Header="Ex-Date" Binding="{Binding ExDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="90"/>
-                                                    <DataGridTemplateColumn Header="Amount/Ratio" Width="*">
-                                                        <DataGridTemplateColumn.CellTemplate>
-                                                            <DataTemplate>
-                                                                <Grid>
-                                                                    <TextBlock x:Name="DividendAmount"
-                                                                               Text="{Binding DividendPerShare}"/>
-                                                                    <TextBlock x:Name="SplitRatio"
-                                                                               Text="{Binding SplitRatio}"
-                                                                               Visibility="Collapsed"/>
-                                                                </Grid>
-                                                                <DataTemplate.Triggers>
-                                                                    <DataTrigger Binding="{Binding EventType}" Value="StockSplit">
-                                                                        <Setter TargetName="DividendAmount" Property="Visibility" Value="Collapsed"/>
-                                                                        <Setter TargetName="SplitRatio" Property="Visibility" Value="Visible"/>
-                                                                    </DataTrigger>
-                                                                </DataTemplate.Triggers>
-                                                            </DataTemplate>
-                                                        </DataGridTemplateColumn.CellTemplate>
-                                                    </DataGridTemplateColumn>
-                                                    <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="60"/>
-                                                </DataGrid.Columns>
-                                            </DataGrid>
-                                        </DockPanel>
-                                    </TabItem.Content>
+                                        <DataGrid ItemsSource="{Binding CorporateActions}"
+                                                  AutoGenerateColumns="False"
+                                                  IsReadOnly="True"
+                                                  CanUserAddRows="False"
+                                                  Background="Transparent"
+                                                  BorderThickness="0">
+                                            <DataGrid.Columns>
+                                                <DataGridTextColumn Header="Type" Binding="{Binding EventType}" Width="100" />
+                                                <DataGridTextColumn Header="Ex-Date" Binding="{Binding ExDate, StringFormat='{}{0:yyyy-MM-dd}'}" Width="110" />
+                                                <DataGridTemplateColumn Header="Amount/Ratio" Width="*">
+                                                    <DataGridTemplateColumn.CellTemplate>
+                                                        <DataTemplate>
+                                                            <Grid>
+                                                                <TextBlock x:Name="DividendAmount" Text="{Binding DividendPerShare}" />
+                                                                <TextBlock x:Name="SplitRatio" Text="{Binding SplitRatio}" Visibility="Collapsed" />
+                                                            </Grid>
+                                                            <DataTemplate.Triggers>
+                                                                <DataTrigger Binding="{Binding EventType}" Value="StockSplit">
+                                                                    <Setter TargetName="DividendAmount" Property="Visibility" Value="Collapsed" />
+                                                                    <Setter TargetName="SplitRatio" Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                            </DataTemplate.Triggers>
+                                                        </DataTemplate>
+                                                    </DataGridTemplateColumn.CellTemplate>
+                                                </DataGridTemplateColumn>
+                                                <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="90" />
+                                            </DataGrid.Columns>
+                                        </DataGrid>
+                                    </DockPanel>
                                 </TabItem>
                             </TabControl>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
 
-                <!-- Placeholder when nothing selected -->
-                <Border Grid.Column="2" Style="{StaticResource SectionCardStyle}"
+                <Border Grid.Column="2"
+                        Style="{StaticResource WorkspaceEmptyStateCardStyle}"
                         Visibility="{Binding HasSelectedSecurity, Converter={StaticResource BoolToVisibilityConverter}, ConverterParameter=Invert}">
                     <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,40">
-                        <TextBlock Text="&#xE8D7;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="40" HorizontalAlignment="Center"
-                                   Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,12"/>
-                        <TextBlock Text="Select a security to view details."
+                        <TextBlock Text="&#xE8D7;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="40"
+                                   HorizontalAlignment="Center"
                                    Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                   HorizontalAlignment="Center"/>
+                                   Margin="0,0,0,12" />
+                        <TextBlock Text="Select a security to inspect identifiers, history, and corporate actions."
+                                   Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                   HorizontalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center" />
                     </StackPanel>
                 </Border>
-            </Grid>
 
+                <StackPanel Grid.Column="4">
+                    <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                            AutomationProperties.AutomationId="SecurityMasterRuntimeInspector">
+                        <StackPanel>
+                            <TextBlock Text="Runtime &amp; Conflict Posture" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding RuntimeStatusLabel}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" />
+                            <TextBlock Text="{Binding RuntimeStatusDetail}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding WorkflowRetrievedAtText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" />
+                            <Rectangle Style="{StaticResource HorizontalDividerStyle}" Margin="0,14,0,14" />
+                            <TextBlock Text="{Binding ConflictSummaryText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ImportSessionText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                            AutomationProperties.AutomationId="SecurityMasterSelectionInspector">
+                        <StackPanel>
+                            <TextBlock Text="Selection Inspector" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding SelectionSummaryText}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" Margin="0,8,0,4" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding SelectionLifecycleText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,10" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding SelectedIdentifier}" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" Margin="0,0,0,12" />
+                            <TextBlock Text="Latest History Event" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding LatestHistoryEventText}" FontSize="12" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" Margin="0,4,0,12" />
+                            <TextBlock Text="{Binding CorporateActionSummaryText}" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                            AutomationProperties.AutomationId="SecurityMasterActionInspector">
+                        <StackPanel>
+                            <TextBlock Text="Operator Next Steps" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Promote conflicts, fund review, and report-pack work into explicit operator paths from the Security Master surface."
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       Margin="0,8,0,14"
+                                       TextWrapping="Wrap" />
+                            <Button Content="Open Fund Portfolio" Command="{Binding OpenFundPortfolioCommand}" Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Open Fund Ledger" Command="{Binding OpenFundLedgerCommand}" Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Open Reconciliation Queue" Command="{Binding OpenFundReconciliationCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Open Cash &amp; Financing" Command="{Binding OpenFundCashFlowCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Open Report Pack" Command="{Binding OpenFundReportPackCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Edit Selected Security" Command="{Binding EditSelectedCommand}" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Deactivate Selected Security" Command="{Binding DeactivateSelectedCommand}" Style="{StaticResource DangerButtonStyle}" HorizontalAlignment="Stretch" Margin="0,0,0,8" />
+                            <Button Content="Backfill Trading Parameters" Command="{Binding BackfillTradingParamsCommand}" Style="{StaticResource GhostButtonStyle}" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </Page>

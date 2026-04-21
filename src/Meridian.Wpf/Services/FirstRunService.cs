@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Meridian.Contracts.Configuration;
 
 namespace Meridian.Wpf.Services;
 
@@ -43,10 +44,9 @@ public sealed class FirstRunService
 
     private FirstRunService()
     {
-        var appDataRoot = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        AppDataPath = Path.Combine(appDataRoot, "Meridian");
-        ConfigFilePath = Path.Combine(AppDataPath, "appsettings.json");
-        FirstRunMarkerPath = Path.Combine(AppDataPath, ".initialized");
+        AppDataPath = MeridianPathDefaults.GetLocalApplicationDataRoot();
+        ConfigFilePath = MeridianPathDefaults.GetDesktopConfigPath();
+        FirstRunMarkerPath = MeridianPathDefaults.GetFirstRunMarkerPath();
     }
 
     /// <summary>
@@ -188,10 +188,10 @@ public sealed class FirstRunService
     {
         var defaultConfig = """
             {
+              "DataRoot": "data",
               "DataSource": "NoOp",
               "Symbols": [],
               "Storage": {
-                "BaseDirectory": "data",
                 "NamingConvention": "BySymbol",
                 "CompressionProfile": "Standard"
               },

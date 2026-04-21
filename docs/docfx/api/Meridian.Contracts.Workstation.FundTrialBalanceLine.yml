@@ -1,0 +1,649 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine
+  commentId: T:Meridian.Contracts.Workstation.FundTrialBalanceLine
+  id: FundTrialBalanceLine
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundTrialBalanceLine.#ctor(System.String,System.String,System.String,System.String,System.Decimal,System.Int32)
+  - Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountName
+  - Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountType
+  - Meridian.Contracts.Workstation.FundTrialBalanceLine.Balance
+  - Meridian.Contracts.Workstation.FundTrialBalanceLine.EntryCount
+  - Meridian.Contracts.Workstation.FundTrialBalanceLine.FinancialAccountId
+  - Meridian.Contracts.Workstation.FundTrialBalanceLine.Symbol
+  langs:
+  - csharp
+  - vb
+  name: FundTrialBalanceLine
+  nameWithType: FundTrialBalanceLine
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundTrialBalanceLine
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Trial-balance row for a fund ledger view.
+  example: []
+  syntax:
+    content: 'public sealed record FundTrialBalanceLine : IEquatable<FundTrialBalanceLine>'
+    content.vb: Public NotInheritable Class FundTrialBalanceLine Implements IEquatable(Of FundTrialBalanceLine)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundTrialBalanceLine}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.#ctor(System.String,System.String,System.String,System.String,System.Decimal,System.Int32)
+  commentId: M:Meridian.Contracts.Workstation.FundTrialBalanceLine.#ctor(System.String,System.String,System.String,System.String,System.Decimal,System.Int32)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.Decimal,System.Int32)'
+  parent: Meridian.Contracts.Workstation.FundTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: FundTrialBalanceLine(string, string, string?, string?, decimal, int)
+  nameWithType: FundTrialBalanceLine.FundTrialBalanceLine(string, string, string?, string?, decimal, int)
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.FundTrialBalanceLine(string, string, string?, string?, decimal, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Trial-balance row for a fund ledger view.
+  example: []
+  syntax:
+    content: public FundTrialBalanceLine(string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal Balance, int EntryCount)
+    parameters:
+    - id: AccountName
+      type: System.String
+    - id: AccountType
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: FinancialAccountId
+      type: System.String
+    - id: Balance
+      type: System.Decimal
+    - id: EntryCount
+      type: System.Int32
+    content.vb: Public Sub New(AccountName As String, AccountType As String, Symbol As String, FinancialAccountId As String, Balance As Decimal, EntryCount As Integer)
+  overload: Meridian.Contracts.Workstation.FundTrialBalanceLine.#ctor*
+  nameWithType.vb: FundTrialBalanceLine.New(String, String, String, String, Decimal, Integer)
+  fullName.vb: Meridian.Contracts.Workstation.FundTrialBalanceLine.New(String, String, String, String, Decimal, Integer)
+  name.vb: New(String, String, String, String, Decimal, Integer)
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountName
+  commentId: P:Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountName
+  id: AccountName
+  parent: Meridian.Contracts.Workstation.FundTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: AccountName
+  nameWithType: FundTrialBalanceLine.AccountName
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountName
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AccountName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountName As String
+  overload: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountName*
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountType
+  commentId: P:Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountType
+  id: AccountType
+  parent: Meridian.Contracts.Workstation.FundTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: AccountType
+  nameWithType: FundTrialBalanceLine.AccountType
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountType
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AccountType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountType As String
+  overload: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountType*
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.Symbol
+  commentId: P:Meridian.Contracts.Workstation.FundTrialBalanceLine.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Workstation.FundTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: FundTrialBalanceLine.Symbol
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Contracts.Workstation.FundTrialBalanceLine.Symbol*
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.FinancialAccountId
+  commentId: P:Meridian.Contracts.Workstation.FundTrialBalanceLine.FinancialAccountId
+  id: FinancialAccountId
+  parent: Meridian.Contracts.Workstation.FundTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: FinancialAccountId
+  nameWithType: FundTrialBalanceLine.FinancialAccountId
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.FinancialAccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancialAccountId
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? FinancialAccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FinancialAccountId As String
+  overload: Meridian.Contracts.Workstation.FundTrialBalanceLine.FinancialAccountId*
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.Balance
+  commentId: P:Meridian.Contracts.Workstation.FundTrialBalanceLine.Balance
+  id: Balance
+  parent: Meridian.Contracts.Workstation.FundTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: Balance
+  nameWithType: FundTrialBalanceLine.Balance
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.Balance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Balance
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal Balance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Balance As Decimal
+  overload: Meridian.Contracts.Workstation.FundTrialBalanceLine.Balance*
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.EntryCount
+  commentId: P:Meridian.Contracts.Workstation.FundTrialBalanceLine.EntryCount
+  id: EntryCount
+  parent: Meridian.Contracts.Workstation.FundTrialBalanceLine
+  langs:
+  - csharp
+  - vb
+  name: EntryCount
+  nameWithType: FundTrialBalanceLine.EntryCount
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.EntryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryCount
+    path: ../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int EntryCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property EntryCount As Integer
+  overload: Meridian.Contracts.Workstation.FundTrialBalanceLine.EntryCount*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundTrialBalanceLine}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundTrialBalanceLine}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundTrialBalanceLine>
+  nameWithType: IEquatable<FundTrialBalanceLine>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundTrialBalanceLine>
+  nameWithType.vb: IEquatable(Of FundTrialBalanceLine)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundTrialBalanceLine)
+  name.vb: IEquatable(Of FundTrialBalanceLine)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundTrialBalanceLine
+    name: FundTrialBalanceLine
+    href: Meridian.Contracts.Workstation.FundTrialBalanceLine.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundTrialBalanceLine
+    name: FundTrialBalanceLine
+    href: Meridian.Contracts.Workstation.FundTrialBalanceLine.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundTrialBalanceLine.#ctor
+  href: Meridian.Contracts.Workstation.FundTrialBalanceLine.html#Meridian_Contracts_Workstation_FundTrialBalanceLine__ctor_System_String_System_String_System_String_System_String_System_Decimal_System_Int32_
+  name: FundTrialBalanceLine
+  nameWithType: FundTrialBalanceLine.FundTrialBalanceLine
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.FundTrialBalanceLine
+  nameWithType.vb: FundTrialBalanceLine.New
+  fullName.vb: Meridian.Contracts.Workstation.FundTrialBalanceLine.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountName*
+  commentId: Overload:Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountName
+  href: Meridian.Contracts.Workstation.FundTrialBalanceLine.html#Meridian_Contracts_Workstation_FundTrialBalanceLine_AccountName
+  name: AccountName
+  nameWithType: FundTrialBalanceLine.AccountName
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountName
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountType*
+  commentId: Overload:Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountType
+  href: Meridian.Contracts.Workstation.FundTrialBalanceLine.html#Meridian_Contracts_Workstation_FundTrialBalanceLine_AccountType
+  name: AccountType
+  nameWithType: FundTrialBalanceLine.AccountType
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.AccountType
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.Symbol*
+  commentId: Overload:Meridian.Contracts.Workstation.FundTrialBalanceLine.Symbol
+  href: Meridian.Contracts.Workstation.FundTrialBalanceLine.html#Meridian_Contracts_Workstation_FundTrialBalanceLine_Symbol
+  name: Symbol
+  nameWithType: FundTrialBalanceLine.Symbol
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.Symbol
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.FinancialAccountId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundTrialBalanceLine.FinancialAccountId
+  href: Meridian.Contracts.Workstation.FundTrialBalanceLine.html#Meridian_Contracts_Workstation_FundTrialBalanceLine_FinancialAccountId
+  name: FinancialAccountId
+  nameWithType: FundTrialBalanceLine.FinancialAccountId
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.FinancialAccountId
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.Balance*
+  commentId: Overload:Meridian.Contracts.Workstation.FundTrialBalanceLine.Balance
+  href: Meridian.Contracts.Workstation.FundTrialBalanceLine.html#Meridian_Contracts_Workstation_FundTrialBalanceLine_Balance
+  name: Balance
+  nameWithType: FundTrialBalanceLine.Balance
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.Balance
+- uid: Meridian.Contracts.Workstation.FundTrialBalanceLine.EntryCount*
+  commentId: Overload:Meridian.Contracts.Workstation.FundTrialBalanceLine.EntryCount
+  href: Meridian.Contracts.Workstation.FundTrialBalanceLine.html#Meridian_Contracts_Workstation_FundTrialBalanceLine_EntryCount
+  name: EntryCount
+  nameWithType: FundTrialBalanceLine.EntryCount
+  fullName: Meridian.Contracts.Workstation.FundTrialBalanceLine.EntryCount

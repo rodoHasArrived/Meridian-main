@@ -1,0 +1,638 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions
+  commentId: T:Meridian.Storage.Sinks.JsonlBatchOptions
+  id: JsonlBatchOptions
+  parent: Meridian.Storage.Sinks
+  children:
+  - Meridian.Storage.Sinks.JsonlBatchOptions.BatchSize
+  - Meridian.Storage.Sinks.JsonlBatchOptions.Default
+  - Meridian.Storage.Sinks.JsonlBatchOptions.Enabled
+  - Meridian.Storage.Sinks.JsonlBatchOptions.FlushInterval
+  - Meridian.Storage.Sinks.JsonlBatchOptions.HighThroughput
+  - Meridian.Storage.Sinks.JsonlBatchOptions.LowLatency
+  - Meridian.Storage.Sinks.JsonlBatchOptions.NoBatching
+  - Meridian.Storage.Sinks.JsonlBatchOptions.ParallelSerializationThreshold
+  langs:
+  - csharp
+  - vb
+  name: JsonlBatchOptions
+  nameWithType: JsonlBatchOptions
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JsonlBatchOptions
+    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Configuration options for batched JSONL storage.
+  example: []
+  syntax:
+    content: public sealed class JsonlBatchOptions
+    content.vb: Public NotInheritable Class JsonlBatchOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.BatchSize
+  commentId: P:Meridian.Storage.Sinks.JsonlBatchOptions.BatchSize
+  id: BatchSize
+  parent: Meridian.Storage.Sinks.JsonlBatchOptions
+  langs:
+  - csharp
+  - vb
+  name: BatchSize
+  nameWithType: JsonlBatchOptions.BatchSize
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.BatchSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BatchSize
+    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: >-
+    Number of events to buffer before writing to disk.
+
+    Default is 1000 events.
+  example: []
+  syntax:
+    content: public int BatchSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BatchSize As Integer
+  overload: Meridian.Storage.Sinks.JsonlBatchOptions.BatchSize*
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.FlushInterval
+  commentId: P:Meridian.Storage.Sinks.JsonlBatchOptions.FlushInterval
+  id: FlushInterval
+  parent: Meridian.Storage.Sinks.JsonlBatchOptions
+  langs:
+  - csharp
+  - vb
+  name: FlushInterval
+  nameWithType: JsonlBatchOptions.FlushInterval
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.FlushInterval
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FlushInterval
+    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: >-
+    Maximum time between flushes.
+
+    Default is 5 seconds.
+  example: []
+  syntax:
+    content: public TimeSpan FlushInterval { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property FlushInterval As TimeSpan
+  overload: Meridian.Storage.Sinks.JsonlBatchOptions.FlushInterval*
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.Enabled
+  commentId: P:Meridian.Storage.Sinks.JsonlBatchOptions.Enabled
+  id: Enabled
+  parent: Meridian.Storage.Sinks.JsonlBatchOptions
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: JsonlBatchOptions.Enabled
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: >-
+    Whether batching is enabled. When disabled, writes occur immediately per event.
+
+    Default is true.
+  example: []
+  syntax:
+    content: public bool Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Storage.Sinks.JsonlBatchOptions.Enabled*
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.ParallelSerializationThreshold
+  commentId: P:Meridian.Storage.Sinks.JsonlBatchOptions.ParallelSerializationThreshold
+  id: ParallelSerializationThreshold
+  parent: Meridian.Storage.Sinks.JsonlBatchOptions
+  langs:
+  - csharp
+  - vb
+  name: ParallelSerializationThreshold
+  nameWithType: JsonlBatchOptions.ParallelSerializationThreshold
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.ParallelSerializationThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParallelSerializationThreshold
+    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: >-
+    Pre-serialize events in parallel when batch size exceeds this threshold.
+
+    Default is 5000 events — below this, the context-switching overhead of
+
+    Parallel.For exceeds the serialization savings.
+  example: []
+  syntax:
+    content: public int ParallelSerializationThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ParallelSerializationThreshold As Integer
+  overload: Meridian.Storage.Sinks.JsonlBatchOptions.ParallelSerializationThreshold*
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.Default
+  commentId: P:Meridian.Storage.Sinks.JsonlBatchOptions.Default
+  id: Default
+  parent: Meridian.Storage.Sinks.JsonlBatchOptions
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: JsonlBatchOptions.Default
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Default options with batching enabled.
+  example: []
+  syntax:
+    content: public static JsonlBatchOptions Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Sinks.JsonlBatchOptions
+    content.vb: Public Shared ReadOnly Property [Default] As JsonlBatchOptions
+  overload: Meridian.Storage.Sinks.JsonlBatchOptions.Default*
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.HighThroughput
+  commentId: P:Meridian.Storage.Sinks.JsonlBatchOptions.HighThroughput
+  id: HighThroughput
+  parent: Meridian.Storage.Sinks.JsonlBatchOptions
+  langs:
+  - csharp
+  - vb
+  name: HighThroughput
+  nameWithType: JsonlBatchOptions.HighThroughput
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.HighThroughput
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighThroughput
+    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Optimized for high throughput with larger batches.
+  example: []
+  syntax:
+    content: public static JsonlBatchOptions HighThroughput { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Sinks.JsonlBatchOptions
+    content.vb: Public Shared ReadOnly Property HighThroughput As JsonlBatchOptions
+  overload: Meridian.Storage.Sinks.JsonlBatchOptions.HighThroughput*
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.LowLatency
+  commentId: P:Meridian.Storage.Sinks.JsonlBatchOptions.LowLatency
+  id: LowLatency
+  parent: Meridian.Storage.Sinks.JsonlBatchOptions
+  langs:
+  - csharp
+  - vb
+  name: LowLatency
+  nameWithType: JsonlBatchOptions.LowLatency
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.LowLatency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LowLatency
+    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Optimized for low latency with smaller batches.
+  example: []
+  syntax:
+    content: public static JsonlBatchOptions LowLatency { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Sinks.JsonlBatchOptions
+    content.vb: Public Shared ReadOnly Property LowLatency As JsonlBatchOptions
+  overload: Meridian.Storage.Sinks.JsonlBatchOptions.LowLatency*
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.NoBatching
+  commentId: P:Meridian.Storage.Sinks.JsonlBatchOptions.NoBatching
+  id: NoBatching
+  parent: Meridian.Storage.Sinks.JsonlBatchOptions
+  langs:
+  - csharp
+  - vb
+  name: NoBatching
+  nameWithType: JsonlBatchOptions.NoBatching
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.NoBatching
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NoBatching
+    path: ../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Disable batching - write each event immediately.
+  example: []
+  syntax:
+    content: public static JsonlBatchOptions NoBatching { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Sinks.JsonlBatchOptions
+    content.vb: Public Shared ReadOnly Property NoBatching As JsonlBatchOptions
+  overload: Meridian.Storage.Sinks.JsonlBatchOptions.NoBatching*
+references:
+- uid: Meridian.Storage.Sinks
+  commentId: N:Meridian.Storage.Sinks
+  href: Meridian.html
+  name: Meridian.Storage.Sinks
+  nameWithType: Meridian.Storage.Sinks
+  fullName: Meridian.Storage.Sinks
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.BatchSize*
+  commentId: Overload:Meridian.Storage.Sinks.JsonlBatchOptions.BatchSize
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html#Meridian_Storage_Sinks_JsonlBatchOptions_BatchSize
+  name: BatchSize
+  nameWithType: JsonlBatchOptions.BatchSize
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.BatchSize
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.FlushInterval*
+  commentId: Overload:Meridian.Storage.Sinks.JsonlBatchOptions.FlushInterval
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html#Meridian_Storage_Sinks_JsonlBatchOptions_FlushInterval
+  name: FlushInterval
+  nameWithType: JsonlBatchOptions.FlushInterval
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.FlushInterval
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.Enabled*
+  commentId: Overload:Meridian.Storage.Sinks.JsonlBatchOptions.Enabled
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html#Meridian_Storage_Sinks_JsonlBatchOptions_Enabled
+  name: Enabled
+  nameWithType: JsonlBatchOptions.Enabled
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.ParallelSerializationThreshold*
+  commentId: Overload:Meridian.Storage.Sinks.JsonlBatchOptions.ParallelSerializationThreshold
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html#Meridian_Storage_Sinks_JsonlBatchOptions_ParallelSerializationThreshold
+  name: ParallelSerializationThreshold
+  nameWithType: JsonlBatchOptions.ParallelSerializationThreshold
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.ParallelSerializationThreshold
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.Default*
+  commentId: Overload:Meridian.Storage.Sinks.JsonlBatchOptions.Default
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html#Meridian_Storage_Sinks_JsonlBatchOptions_Default
+  name: Default
+  nameWithType: JsonlBatchOptions.Default
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.Default
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions
+  commentId: T:Meridian.Storage.Sinks.JsonlBatchOptions
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html
+  name: JsonlBatchOptions
+  nameWithType: JsonlBatchOptions
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.HighThroughput*
+  commentId: Overload:Meridian.Storage.Sinks.JsonlBatchOptions.HighThroughput
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html#Meridian_Storage_Sinks_JsonlBatchOptions_HighThroughput
+  name: HighThroughput
+  nameWithType: JsonlBatchOptions.HighThroughput
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.HighThroughput
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.LowLatency*
+  commentId: Overload:Meridian.Storage.Sinks.JsonlBatchOptions.LowLatency
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html#Meridian_Storage_Sinks_JsonlBatchOptions_LowLatency
+  name: LowLatency
+  nameWithType: JsonlBatchOptions.LowLatency
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.LowLatency
+- uid: Meridian.Storage.Sinks.JsonlBatchOptions.NoBatching*
+  commentId: Overload:Meridian.Storage.Sinks.JsonlBatchOptions.NoBatching
+  href: Meridian.Storage.Sinks.JsonlBatchOptions.html#Meridian_Storage_Sinks_JsonlBatchOptions_NoBatching
+  name: NoBatching
+  nameWithType: JsonlBatchOptions.NoBatching
+  fullName: Meridian.Storage.Sinks.JsonlBatchOptions.NoBatching

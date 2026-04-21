@@ -1,0 +1,1263 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.OrderBookVisualizationService
+  commentId: T:Meridian.Ui.Services.OrderBookVisualizationService
+  id: OrderBookVisualizationService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.OrderBookVisualizationService.#ctor
+  - Meridian.Ui.Services.OrderBookVisualizationService.Dispose
+  - Meridian.Ui.Services.OrderBookVisualizationService.GetDepthChartData(System.String,System.Int32)
+  - Meridian.Ui.Services.OrderBookVisualizationService.GetHeatmapData(System.String,System.Int32)
+  - Meridian.Ui.Services.OrderBookVisualizationService.GetOrderBook(System.String)
+  - Meridian.Ui.Services.OrderBookVisualizationService.GetOrderFlowStats(System.String)
+  - Meridian.Ui.Services.OrderBookVisualizationService.GetTimeAndSales(System.String,System.Int32)
+  - Meridian.Ui.Services.OrderBookVisualizationService.OrderBookUpdated
+  - Meridian.Ui.Services.OrderBookVisualizationService.RecordTrade(System.String,System.Decimal,System.Decimal,Meridian.Ui.Services.TradeSide)
+  - Meridian.Ui.Services.OrderBookVisualizationService.SubscribeAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.OrderBookVisualizationService.TradeReceived
+  - Meridian.Ui.Services.OrderBookVisualizationService.UnsubscribeAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.OrderBookVisualizationService.UpdateAsks(System.String,System.Collections.Generic.Dictionary{System.Decimal,System.Decimal})
+  - Meridian.Ui.Services.OrderBookVisualizationService.UpdateBids(System.String,System.Collections.Generic.Dictionary{System.Decimal,System.Decimal})
+  langs:
+  - csharp
+  - vb
+  name: OrderBookVisualizationService
+  nameWithType: OrderBookVisualizationService
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderBookVisualizationService
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for live order book visualization.
+
+    Provides real-time L2 depth data processing and visualization helpers.
+  example: []
+  syntax:
+    content: 'public sealed class OrderBookVisualizationService : IDisposable'
+    content.vb: Public NotInheritable Class OrderBookVisualizationService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.OrderBookUpdated
+  commentId: E:Meridian.Ui.Services.OrderBookVisualizationService.OrderBookUpdated
+  id: OrderBookUpdated
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: OrderBookUpdated
+  nameWithType: OrderBookVisualizationService.OrderBookUpdated
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.OrderBookUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderBookUpdated
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<OrderBookUpdateEventArgs>? OrderBookUpdated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.OrderBookUpdateEventArgs}
+    content.vb: Public Event OrderBookUpdated As EventHandler(Of OrderBookUpdateEventArgs)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.TradeReceived
+  commentId: E:Meridian.Ui.Services.OrderBookVisualizationService.TradeReceived
+  id: TradeReceived
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: TradeReceived
+  nameWithType: OrderBookVisualizationService.TradeReceived
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.TradeReceived
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeReceived
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<TradeEventArgs>? TradeReceived
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.TradeEventArgs}
+    content.vb: Public Event TradeReceived As EventHandler(Of TradeEventArgs)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.#ctor
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.#ctor
+  id: '#ctor'
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: OrderBookVisualizationService()
+  nameWithType: OrderBookVisualizationService.OrderBookVisualizationService()
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.OrderBookVisualizationService()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public OrderBookVisualizationService()
+    content.vb: Public Sub New()
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.#ctor*
+  nameWithType.vb: OrderBookVisualizationService.New()
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.New()
+  name.vb: New()
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.SubscribeAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.SubscribeAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  id: SubscribeAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: SubscribeAsync(string, int, CancellationToken)
+  nameWithType: OrderBookVisualizationService.SubscribeAsync(string, int, CancellationToken)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.SubscribeAsync(string, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeAsync
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Subscribes to order book updates for a symbol.
+  example: []
+  syntax:
+    content: public Task SubscribeAsync(string symbol, int depthLevels = 10, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: depthLevels
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SubscribeAsync(symbol As String, depthLevels As Integer = 10, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.SubscribeAsync*
+  nameWithType.vb: OrderBookVisualizationService.SubscribeAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.SubscribeAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: SubscribeAsync(String, Integer, CancellationToken)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.UnsubscribeAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.UnsubscribeAsync(System.String,System.Threading.CancellationToken)
+  id: UnsubscribeAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeAsync(string, CancellationToken)
+  nameWithType: OrderBookVisualizationService.UnsubscribeAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.UnsubscribeAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeAsync
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Unsubscribes from order book updates.
+  example: []
+  syntax:
+    content: public Task UnsubscribeAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UnsubscribeAsync(symbol As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.UnsubscribeAsync*
+  nameWithType.vb: OrderBookVisualizationService.UnsubscribeAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.UnsubscribeAsync(String, System.Threading.CancellationToken)
+  name.vb: UnsubscribeAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderBook(System.String)
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.GetOrderBook(System.String)
+  id: GetOrderBook(System.String)
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: GetOrderBook(string)
+  nameWithType: OrderBookVisualizationService.GetOrderBook(string)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderBook(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOrderBook
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the current order book state for a symbol.
+  example: []
+  syntax:
+    content: public OrderBookState? GetOrderBook(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Ui.Services.OrderBookState
+    content.vb: Public Function GetOrderBook(symbol As String) As OrderBookState
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderBook*
+  nameWithType.vb: OrderBookVisualizationService.GetOrderBook(String)
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderBook(String)
+  name.vb: GetOrderBook(String)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetHeatmapData(System.String,System.Int32)
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.GetHeatmapData(System.String,System.Int32)
+  id: GetHeatmapData(System.String,System.Int32)
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: GetHeatmapData(string, int)
+  nameWithType: OrderBookVisualizationService.GetHeatmapData(string, int)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetHeatmapData(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHeatmapData
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets order book visualization data optimized for heatmap rendering.
+  example: []
+  syntax:
+    content: public OrderBookHeatmapData GetHeatmapData(string symbol, int priceLevels = 20)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: priceLevels
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.OrderBookHeatmapData
+    content.vb: Public Function GetHeatmapData(symbol As String, priceLevels As Integer = 20) As OrderBookHeatmapData
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.GetHeatmapData*
+  nameWithType.vb: OrderBookVisualizationService.GetHeatmapData(String, Integer)
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.GetHeatmapData(String, Integer)
+  name.vb: GetHeatmapData(String, Integer)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetDepthChartData(System.String,System.Int32)
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.GetDepthChartData(System.String,System.Int32)
+  id: GetDepthChartData(System.String,System.Int32)
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: GetDepthChartData(string, int)
+  nameWithType: OrderBookVisualizationService.GetDepthChartData(string, int)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetDepthChartData(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDepthChartData
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets depth chart data for bid/ask curve visualization.
+  example: []
+  syntax:
+    content: public DepthChartData GetDepthChartData(string symbol, int maxLevels = 50)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: maxLevels
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.DepthChartData
+    content.vb: Public Function GetDepthChartData(symbol As String, maxLevels As Integer = 50) As DepthChartData
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.GetDepthChartData*
+  nameWithType.vb: OrderBookVisualizationService.GetDepthChartData(String, Integer)
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.GetDepthChartData(String, Integer)
+  name.vb: GetDepthChartData(String, Integer)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetTimeAndSales(System.String,System.Int32)
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.GetTimeAndSales(System.String,System.Int32)
+  id: GetTimeAndSales(System.String,System.Int32)
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: GetTimeAndSales(string, int)
+  nameWithType: OrderBookVisualizationService.GetTimeAndSales(string, int)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetTimeAndSales(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTimeAndSales
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets time and sales data.
+  example: []
+  syntax:
+    content: public TimeAndSalesData GetTimeAndSales(string symbol, int maxTrades = 100)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: maxTrades
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.TimeAndSalesData
+    content.vb: Public Function GetTimeAndSales(symbol As String, maxTrades As Integer = 100) As TimeAndSalesData
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.GetTimeAndSales*
+  nameWithType.vb: OrderBookVisualizationService.GetTimeAndSales(String, Integer)
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.GetTimeAndSales(String, Integer)
+  name.vb: GetTimeAndSales(String, Integer)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderFlowStats(System.String)
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.GetOrderFlowStats(System.String)
+  id: GetOrderFlowStats(System.String)
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: GetOrderFlowStats(string)
+  nameWithType: OrderBookVisualizationService.GetOrderFlowStats(string)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderFlowStats(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOrderFlowStats
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets order flow statistics.
+  example: []
+  syntax:
+    content: public OrderBookFlowStats GetOrderFlowStats(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Ui.Services.OrderBookFlowStats
+    content.vb: Public Function GetOrderFlowStats(symbol As String) As OrderBookFlowStats
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderFlowStats*
+  nameWithType.vb: OrderBookVisualizationService.GetOrderFlowStats(String)
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderFlowStats(String)
+  name.vb: GetOrderFlowStats(String)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.UpdateBids(System.String,System.Collections.Generic.Dictionary{System.Decimal,System.Decimal})
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.UpdateBids(System.String,System.Collections.Generic.Dictionary{System.Decimal,System.Decimal})
+  id: UpdateBids(System.String,System.Collections.Generic.Dictionary{System.Decimal,System.Decimal})
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: UpdateBids(string, Dictionary<decimal, decimal>)
+  nameWithType: OrderBookVisualizationService.UpdateBids(string, Dictionary<decimal, decimal>)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.UpdateBids(string, System.Collections.Generic.Dictionary<decimal, decimal>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateBids
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates the order book with new bid data.
+  example: []
+  syntax:
+    content: public void UpdateBids(string symbol, Dictionary<decimal, decimal> bids)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: bids
+      type: System.Collections.Generic.Dictionary{System.Decimal,System.Decimal}
+    content.vb: Public Sub UpdateBids(symbol As String, bids As Dictionary(Of Decimal, Decimal))
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.UpdateBids*
+  nameWithType.vb: OrderBookVisualizationService.UpdateBids(String, Dictionary(Of Decimal, Decimal))
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.UpdateBids(String, System.Collections.Generic.Dictionary(Of Decimal, Decimal))
+  name.vb: UpdateBids(String, Dictionary(Of Decimal, Decimal))
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.UpdateAsks(System.String,System.Collections.Generic.Dictionary{System.Decimal,System.Decimal})
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.UpdateAsks(System.String,System.Collections.Generic.Dictionary{System.Decimal,System.Decimal})
+  id: UpdateAsks(System.String,System.Collections.Generic.Dictionary{System.Decimal,System.Decimal})
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: UpdateAsks(string, Dictionary<decimal, decimal>)
+  nameWithType: OrderBookVisualizationService.UpdateAsks(string, Dictionary<decimal, decimal>)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.UpdateAsks(string, System.Collections.Generic.Dictionary<decimal, decimal>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateAsks
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 233
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates the order book with new ask data.
+  example: []
+  syntax:
+    content: public void UpdateAsks(string symbol, Dictionary<decimal, decimal> asks)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: asks
+      type: System.Collections.Generic.Dictionary{System.Decimal,System.Decimal}
+    content.vb: Public Sub UpdateAsks(symbol As String, asks As Dictionary(Of Decimal, Decimal))
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.UpdateAsks*
+  nameWithType.vb: OrderBookVisualizationService.UpdateAsks(String, Dictionary(Of Decimal, Decimal))
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.UpdateAsks(String, System.Collections.Generic.Dictionary(Of Decimal, Decimal))
+  name.vb: UpdateAsks(String, Dictionary(Of Decimal, Decimal))
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.RecordTrade(System.String,System.Decimal,System.Decimal,Meridian.Ui.Services.TradeSide)
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.RecordTrade(System.String,System.Decimal,System.Decimal,Meridian.Ui.Services.TradeSide)
+  id: RecordTrade(System.String,System.Decimal,System.Decimal,Meridian.Ui.Services.TradeSide)
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: RecordTrade(string, decimal, decimal, TradeSide)
+  nameWithType: OrderBookVisualizationService.RecordTrade(string, decimal, decimal, TradeSide)
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.RecordTrade(string, decimal, decimal, Meridian.Ui.Services.TradeSide)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordTrade
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Records a trade for time and sales.
+  example: []
+  syntax:
+    content: public void RecordTrade(string symbol, decimal price, decimal size, TradeSide side)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: price
+      type: System.Decimal
+    - id: size
+      type: System.Decimal
+    - id: side
+      type: Meridian.Ui.Services.TradeSide
+    content.vb: Public Sub RecordTrade(symbol As String, price As Decimal, size As Decimal, side As TradeSide)
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.RecordTrade*
+  nameWithType.vb: OrderBookVisualizationService.RecordTrade(String, Decimal, Decimal, TradeSide)
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.RecordTrade(String, Decimal, Decimal, Meridian.Ui.Services.TradeSide)
+  name.vb: RecordTrade(String, Decimal, Decimal, TradeSide)
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.Dispose
+  commentId: M:Meridian.Ui.Services.OrderBookVisualizationService.Dispose
+  id: Dispose
+  parent: Meridian.Ui.Services.OrderBookVisualizationService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: OrderBookVisualizationService.Dispose()
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 365
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Ui.Services.OrderBookVisualizationService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.EventHandler{Meridian.Ui.Services.OrderBookUpdateEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.OrderBookUpdateEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<OrderBookUpdateEventArgs>
+  nameWithType: EventHandler<OrderBookUpdateEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.OrderBookUpdateEventArgs>
+  nameWithType.vb: EventHandler(Of OrderBookUpdateEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.OrderBookUpdateEventArgs)
+  name.vb: EventHandler(Of OrderBookUpdateEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.OrderBookUpdateEventArgs
+    name: OrderBookUpdateEventArgs
+    href: Meridian.Ui.Services.OrderBookUpdateEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.OrderBookUpdateEventArgs
+    name: OrderBookUpdateEventArgs
+    href: Meridian.Ui.Services.OrderBookUpdateEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.TradeEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.TradeEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TradeEventArgs>
+  nameWithType: EventHandler<TradeEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.TradeEventArgs>
+  nameWithType.vb: EventHandler(Of TradeEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.TradeEventArgs)
+  name.vb: EventHandler(Of TradeEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.TradeEventArgs
+    name: TradeEventArgs
+    href: Meridian.Ui.Services.TradeEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TradeEventArgs
+    name: TradeEventArgs
+    href: Meridian.Ui.Services.TradeEventArgs.html
+  - name: )
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.#ctor*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.#ctor
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService__ctor
+  name: OrderBookVisualizationService
+  nameWithType: OrderBookVisualizationService.OrderBookVisualizationService
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.OrderBookVisualizationService
+  nameWithType.vb: OrderBookVisualizationService.New
+  fullName.vb: Meridian.Ui.Services.OrderBookVisualizationService.New
+  name.vb: New
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.SubscribeAsync*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.SubscribeAsync
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_SubscribeAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: SubscribeAsync
+  nameWithType: OrderBookVisualizationService.SubscribeAsync
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.SubscribeAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.UnsubscribeAsync*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.UnsubscribeAsync
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_UnsubscribeAsync_System_String_System_Threading_CancellationToken_
+  name: UnsubscribeAsync
+  nameWithType: OrderBookVisualizationService.UnsubscribeAsync
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.UnsubscribeAsync
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderBook*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.GetOrderBook
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_GetOrderBook_System_String_
+  name: GetOrderBook
+  nameWithType: OrderBookVisualizationService.GetOrderBook
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderBook
+- uid: Meridian.Ui.Services.OrderBookState
+  commentId: T:Meridian.Ui.Services.OrderBookState
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.OrderBookState.html
+  name: OrderBookState
+  nameWithType: OrderBookState
+  fullName: Meridian.Ui.Services.OrderBookState
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetHeatmapData*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.GetHeatmapData
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_GetHeatmapData_System_String_System_Int32_
+  name: GetHeatmapData
+  nameWithType: OrderBookVisualizationService.GetHeatmapData
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetHeatmapData
+- uid: Meridian.Ui.Services.OrderBookHeatmapData
+  commentId: T:Meridian.Ui.Services.OrderBookHeatmapData
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.OrderBookHeatmapData.html
+  name: OrderBookHeatmapData
+  nameWithType: OrderBookHeatmapData
+  fullName: Meridian.Ui.Services.OrderBookHeatmapData
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetDepthChartData*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.GetDepthChartData
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_GetDepthChartData_System_String_System_Int32_
+  name: GetDepthChartData
+  nameWithType: OrderBookVisualizationService.GetDepthChartData
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetDepthChartData
+- uid: Meridian.Ui.Services.DepthChartData
+  commentId: T:Meridian.Ui.Services.DepthChartData
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.DepthChartData.html
+  name: DepthChartData
+  nameWithType: DepthChartData
+  fullName: Meridian.Ui.Services.DepthChartData
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetTimeAndSales*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.GetTimeAndSales
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_GetTimeAndSales_System_String_System_Int32_
+  name: GetTimeAndSales
+  nameWithType: OrderBookVisualizationService.GetTimeAndSales
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetTimeAndSales
+- uid: Meridian.Ui.Services.TimeAndSalesData
+  commentId: T:Meridian.Ui.Services.TimeAndSalesData
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TimeAndSalesData.html
+  name: TimeAndSalesData
+  nameWithType: TimeAndSalesData
+  fullName: Meridian.Ui.Services.TimeAndSalesData
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderFlowStats*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.GetOrderFlowStats
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_GetOrderFlowStats_System_String_
+  name: GetOrderFlowStats
+  nameWithType: OrderBookVisualizationService.GetOrderFlowStats
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.GetOrderFlowStats
+- uid: Meridian.Ui.Services.OrderBookFlowStats
+  commentId: T:Meridian.Ui.Services.OrderBookFlowStats
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.OrderBookFlowStats.html
+  name: OrderBookFlowStats
+  nameWithType: OrderBookFlowStats
+  fullName: Meridian.Ui.Services.OrderBookFlowStats
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.UpdateBids*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.UpdateBids
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_UpdateBids_System_String_System_Collections_Generic_Dictionary_System_Decimal_System_Decimal__
+  name: UpdateBids
+  nameWithType: OrderBookVisualizationService.UpdateBids
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.UpdateBids
+- uid: System.Collections.Generic.Dictionary{System.Decimal,System.Decimal}
+  commentId: T:System.Collections.Generic.Dictionary{System.Decimal,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<decimal, decimal>
+  nameWithType: Dictionary<decimal, decimal>
+  fullName: System.Collections.Generic.Dictionary<decimal, decimal>
+  nameWithType.vb: Dictionary(Of Decimal, Decimal)
+  fullName.vb: System.Collections.Generic.Dictionary(Of Decimal, Decimal)
+  name.vb: Dictionary(Of Decimal, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.UpdateAsks*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.UpdateAsks
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_UpdateAsks_System_String_System_Collections_Generic_Dictionary_System_Decimal_System_Decimal__
+  name: UpdateAsks
+  nameWithType: OrderBookVisualizationService.UpdateAsks
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.UpdateAsks
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.RecordTrade*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.RecordTrade
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_RecordTrade_System_String_System_Decimal_System_Decimal_Meridian_Ui_Services_TradeSide_
+  name: RecordTrade
+  nameWithType: OrderBookVisualizationService.RecordTrade
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.RecordTrade
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Ui.Services.TradeSide
+  commentId: T:Meridian.Ui.Services.TradeSide
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TradeSide.html
+  name: TradeSide
+  nameWithType: TradeSide
+  fullName: Meridian.Ui.Services.TradeSide
+- uid: Meridian.Ui.Services.OrderBookVisualizationService.Dispose*
+  commentId: Overload:Meridian.Ui.Services.OrderBookVisualizationService.Dispose
+  href: Meridian.Ui.Services.OrderBookVisualizationService.html#Meridian_Ui_Services_OrderBookVisualizationService_Dispose
+  name: Dispose
+  nameWithType: OrderBookVisualizationService.Dispose
+  fullName: Meridian.Ui.Services.OrderBookVisualizationService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

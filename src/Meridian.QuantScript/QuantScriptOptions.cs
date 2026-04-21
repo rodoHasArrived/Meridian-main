@@ -28,4 +28,10 @@ public sealed class QuantScriptOptions
 
     /// <summary>Default data root passed to BacktestProxy when not overridden in script.</summary>
     public string DefaultDataRoot { get; init; } = "./data";
+
+    /// <summary>
+    /// File extension used to identify notebook documents in the scripts directory.
+    /// Defaults to <c>.ipynb</c>.
+    /// </summary>
+    public string NotebookExtension { get; init; } = ".ipynb";
 }

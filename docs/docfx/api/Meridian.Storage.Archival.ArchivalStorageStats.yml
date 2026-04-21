@@ -1,0 +1,460 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.ArchivalStorageStats
+  commentId: T:Meridian.Storage.Archival.ArchivalStorageStats
+  id: ArchivalStorageStats
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.ArchivalStorageStats.BufferDepth
+  - Meridian.Storage.Archival.ArchivalStorageStats.LastCommittedSequence
+  - Meridian.Storage.Archival.ArchivalStorageStats.LastFlushTime
+  - Meridian.Storage.Archival.ArchivalStorageStats.PendingEvents
+  langs:
+  - csharp
+  - vb
+  name: ArchivalStorageStats
+  nameWithType: ArchivalStorageStats
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchivalStorageStats
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Statistics for the archival storage service.
+  example: []
+  syntax:
+    content: public sealed class ArchivalStorageStats
+    content.vb: Public NotInheritable Class ArchivalStorageStats
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Archival.ArchivalStorageStats.PendingEvents
+  commentId: P:Meridian.Storage.Archival.ArchivalStorageStats.PendingEvents
+  id: PendingEvents
+  parent: Meridian.Storage.Archival.ArchivalStorageStats
+  langs:
+  - csharp
+  - vb
+  name: PendingEvents
+  nameWithType: ArchivalStorageStats.PendingEvents
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats.PendingEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingEvents
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 294
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: public long PendingEvents { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property PendingEvents As Long
+  overload: Meridian.Storage.Archival.ArchivalStorageStats.PendingEvents*
+- uid: Meridian.Storage.Archival.ArchivalStorageStats.LastCommittedSequence
+  commentId: P:Meridian.Storage.Archival.ArchivalStorageStats.LastCommittedSequence
+  id: LastCommittedSequence
+  parent: Meridian.Storage.Archival.ArchivalStorageStats
+  langs:
+  - csharp
+  - vb
+  name: LastCommittedSequence
+  nameWithType: ArchivalStorageStats.LastCommittedSequence
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats.LastCommittedSequence
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastCommittedSequence
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: public long LastCommittedSequence { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property LastCommittedSequence As Long
+  overload: Meridian.Storage.Archival.ArchivalStorageStats.LastCommittedSequence*
+- uid: Meridian.Storage.Archival.ArchivalStorageStats.LastFlushTime
+  commentId: P:Meridian.Storage.Archival.ArchivalStorageStats.LastFlushTime
+  id: LastFlushTime
+  parent: Meridian.Storage.Archival.ArchivalStorageStats
+  langs:
+  - csharp
+  - vb
+  name: LastFlushTime
+  nameWithType: ArchivalStorageStats.LastFlushTime
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats.LastFlushTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastFlushTime
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: public DateTime LastFlushTime { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property LastFlushTime As Date
+  overload: Meridian.Storage.Archival.ArchivalStorageStats.LastFlushTime*
+- uid: Meridian.Storage.Archival.ArchivalStorageStats.BufferDepth
+  commentId: P:Meridian.Storage.Archival.ArchivalStorageStats.BufferDepth
+  id: BufferDepth
+  parent: Meridian.Storage.Archival.ArchivalStorageStats
+  langs:
+  - csharp
+  - vb
+  name: BufferDepth
+  nameWithType: ArchivalStorageStats.BufferDepth
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats.BufferDepth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/ArchivalStorageService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BufferDepth
+    path: ../../src/Meridian.Storage/Archival/ArchivalStorageService.cs
+    startLine: 297
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: public int BufferDepth { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BufferDepth As Integer
+  overload: Meridian.Storage.Archival.ArchivalStorageStats.BufferDepth*
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Archival.ArchivalStorageStats.PendingEvents*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageStats.PendingEvents
+  href: Meridian.Storage.Archival.ArchivalStorageStats.html#Meridian_Storage_Archival_ArchivalStorageStats_PendingEvents
+  name: PendingEvents
+  nameWithType: ArchivalStorageStats.PendingEvents
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats.PendingEvents
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Archival.ArchivalStorageStats.LastCommittedSequence*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageStats.LastCommittedSequence
+  href: Meridian.Storage.Archival.ArchivalStorageStats.html#Meridian_Storage_Archival_ArchivalStorageStats_LastCommittedSequence
+  name: LastCommittedSequence
+  nameWithType: ArchivalStorageStats.LastCommittedSequence
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats.LastCommittedSequence
+- uid: Meridian.Storage.Archival.ArchivalStorageStats.LastFlushTime*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageStats.LastFlushTime
+  href: Meridian.Storage.Archival.ArchivalStorageStats.html#Meridian_Storage_Archival_ArchivalStorageStats_LastFlushTime
+  name: LastFlushTime
+  nameWithType: ArchivalStorageStats.LastFlushTime
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats.LastFlushTime
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Storage.Archival.ArchivalStorageStats.BufferDepth*
+  commentId: Overload:Meridian.Storage.Archival.ArchivalStorageStats.BufferDepth
+  href: Meridian.Storage.Archival.ArchivalStorageStats.html#Meridian_Storage_Archival_ArchivalStorageStats_BufferDepth
+  name: BufferDepth
+  nameWithType: ArchivalStorageStats.BufferDepth
+  fullName: Meridian.Storage.Archival.ArchivalStorageStats.BufferDepth
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

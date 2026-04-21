@@ -1,0 +1,970 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  id: AlpacaCorporateActionProvider
+  parent: Meridian.Infrastructure.Adapters.Alpaca
+  children:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.#ctor(System.Net.Http.IHttpClientFactory,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider})
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.ProviderId
+  langs:
+  - csharp
+  - vb
+  name: AlpacaCorporateActionProvider
+  nameWithType: AlpacaCorporateActionProvider
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  type: Class
+  source:
+    id: AlpacaCorporateActionProvider
+    path: C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\src\Meridian.Infrastructure\obj\Release\net9.0\System.Text.Json.SourceGeneration\System.Text.Json.SourceGeneration.JsonSourceGenerator\AlpacaCorporateActionJsonContext.PropertyNames.g.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: >-
+    Fetches corporate action history (dividends and stock splits) from the Alpaca REST API.
+
+    Implements <xref href="Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider" data-throw-if-not-resolved="false"></xref> following the same attribute-based
+
+    discovery pattern as <xref href="Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider" data-throw-if-not-resolved="false"></xref> implementations.
+  remarks: >-
+    Endpoints used:
+
+
+    <ul><li><code>GET /v2/corporate-actions/announcements?ca_types=dividend&amp;symbol={ticker}</code></li><li><code>GET /v2/corporate-actions/announcements?ca_types=split&amp;symbol={ticker}</code></li></ul>
+
+
+    The Alpaca announcements endpoint requires a Broker API key pair or a standard
+
+    Alpaca data subscription.  Requests are authenticated via the <code>APCA-API-KEY-ID</code>
+
+    and <code>APCA-API-SECRET-KEY</code> headers read from the environment / configuration.
+  example: []
+  syntax:
+    content: >-
+      [DataSource("alpaca-corp-actions", "Alpaca Corporate Actions", DataSourceType.Historical, DataSourceCategory.Broker)]
+
+      [ImplementsAdr("ADR-001", "Corporate action data provider following ICorporateActionProvider contract")]
+
+      [ImplementsAdr("ADR-010", "Uses IHttpClientFactory; never instantiates HttpClient directly")]
+
+      public sealed class AlpacaCorporateActionProvider : ICorporateActionProvider
+    content.vb: >-
+      <DataSource("alpaca-corp-actions", "Alpaca Corporate Actions", DataSourceType.Historical, DataSourceCategory.Broker)>
+
+      <ImplementsAdr("ADR-001", "Corporate action data provider following ICorporateActionProvider contract")>
+
+      <ImplementsAdr("ADR-010", "Uses IHttpClientFactory; never instantiates HttpClient directly")>
+
+      Public NotInheritable Class AlpacaCorporateActionProvider Implements ICorporateActionProvider
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.DataSources.DataSourceAttribute
+    ctor: Meridian.Infrastructure.DataSources.DataSourceAttribute.#ctor(System.String,System.String,Meridian.Infrastructure.DataSources.DataSourceType,Meridian.Infrastructure.DataSources.DataSourceCategory)
+    arguments:
+    - type: System.String
+      value: alpaca-corp-actions
+    - type: System.String
+      value: Alpaca Corporate Actions
+    - type: Meridian.Infrastructure.DataSources.DataSourceType
+      value: 1
+    - type: Meridian.Infrastructure.DataSources.DataSourceCategory
+      value: 1
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Corporate action data provider following ICorporateActionProvider contract
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-010
+    - type: System.String
+      value: Uses IHttpClientFactory; never instantiates HttpClient directly
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: AlpacaCorporateActionProvider.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: >-
+    Returns the provider identifier string used to tag corporate action events when
+
+    multiple sources contribute data for the same security.
+  example: []
+  syntax:
+    content: public string ProviderId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderId As String
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.ProviderId*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.#ctor(System.Net.Http.IHttpClientFactory,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider})
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.#ctor(System.Net.Http.IHttpClientFactory,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider})
+  id: '#ctor(System.Net.Http.IHttpClientFactory,Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider})'
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  langs:
+  - csharp
+  - vb
+  name: AlpacaCorporateActionProvider(IHttpClientFactory, IConfiguration, ILogger<AlpacaCorporateActionProvider>)
+  nameWithType: AlpacaCorporateActionProvider.AlpacaCorporateActionProvider(IHttpClientFactory, IConfiguration, ILogger<AlpacaCorporateActionProvider>)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.AlpacaCorporateActionProvider(System.Net.Http.IHttpClientFactory, Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  syntax:
+    content: public AlpacaCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger<AlpacaCorporateActionProvider> logger)
+    parameters:
+    - id: httpClientFactory
+      type: System.Net.Http.IHttpClientFactory
+    - id: configuration
+      type: Microsoft.Extensions.Configuration.IConfiguration
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider}
+    content.vb: Public Sub New(httpClientFactory As IHttpClientFactory, configuration As IConfiguration, logger As ILogger(Of AlpacaCorporateActionProvider))
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.#ctor*
+  nameWithType.vb: AlpacaCorporateActionProvider.New(IHttpClientFactory, IConfiguration, ILogger(Of AlpacaCorporateActionProvider))
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.New(System.Net.Http.IHttpClientFactory, Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider))
+  name.vb: New(IHttpClientFactory, IConfiguration, ILogger(Of AlpacaCorporateActionProvider))
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  id: FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  langs:
+  - csharp
+  - vb
+  name: FetchAsync(string, Guid, CancellationToken)
+  nameWithType: AlpacaCorporateActionProvider.FetchAsync(string, Guid, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.FetchAsync(string, System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FetchAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: >-
+    Fetches all available corporate actions (dividends, splits, mergers, etc.) for
+
+    <code class="paramref">ticker</code> and <code class="paramref">securityId</code> from the upstream
+
+    data source.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(string ticker, Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: ticker
+      type: System.String
+      description: The canonical ticker string (e.g., "AAPL").
+    - id: securityId
+      type: System.Guid
+      description: The Security Master identifier for the security.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.CorporateActionCommand}}
+      description: >-
+        Zero or more <xref href="Meridian.Infrastructure.Adapters.Core.CorporateActionCommand" data-throw-if-not-resolved="false"></xref> objects ready to be dispatched
+
+        to the Security Master event store.  The caller is responsible for deduplication.
+    content.vb: Public Function FetchAsync(ticker As String, securityId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CorporateActionCommand))
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.FetchAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  nameWithType.vb: AlpacaCorporateActionProvider.FetchAsync(String, Guid, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.FetchAsync(String, System.Guid, System.Threading.CancellationToken)
+  name.vb: FetchAsync(String, Guid, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.html
+  name: ICorporateActionProvider
+  nameWithType: ICorporateActionProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  name: IHistoricalDataProvider
+  nameWithType: IHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Alpaca
+  commentId: N:Meridian.Infrastructure.Adapters.Alpaca
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Alpaca
+  nameWithType: Meridian.Infrastructure.Adapters.Alpaca
+  fullName: Meridian.Infrastructure.Adapters.Alpaca
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Alpaca
+    name: Alpaca
+    href: Meridian.Infrastructure.Adapters.Alpaca.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Alpaca
+    name: Alpaca
+    href: Meridian.Infrastructure.Adapters.Alpaca.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.ProviderId
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaCorporateActionProvider_ProviderId
+  name: ProviderId
+  nameWithType: AlpacaCorporateActionProvider.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  href: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.html#Meridian_Infrastructure_Adapters_Core_ICorporateActionProvider_ProviderId
+  name: ProviderId
+  nameWithType: ICorporateActionProvider.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.ProviderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.#ctor
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaCorporateActionProvider__ctor_System_Net_Http_IHttpClientFactory_Microsoft_Extensions_Configuration_IConfiguration_Microsoft_Extensions_Logging_ILogger_Meridian_Infrastructure_Adapters_Alpaca_AlpacaCorporateActionProvider__
+  name: AlpacaCorporateActionProvider
+  nameWithType: AlpacaCorporateActionProvider.AlpacaCorporateActionProvider
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.AlpacaCorporateActionProvider
+  nameWithType.vb: AlpacaCorporateActionProvider.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.New
+  name.vb: New
+- uid: System.Net.Http.IHttpClientFactory
+  commentId: T:System.Net.Http.IHttpClientFactory
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.ihttpclientfactory
+  name: IHttpClientFactory
+  nameWithType: IHttpClientFactory
+  fullName: System.Net.Http.IHttpClientFactory
+- uid: Microsoft.Extensions.Configuration.IConfiguration
+  commentId: T:Microsoft.Extensions.Configuration.IConfiguration
+  parent: Microsoft.Extensions.Configuration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration
+  name: IConfiguration
+  nameWithType: IConfiguration
+  fullName: Microsoft.Extensions.Configuration.IConfiguration
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<AlpacaCorporateActionProvider>
+  nameWithType: ILogger<AlpacaCorporateActionProvider>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider>
+  nameWithType.vb: ILogger(Of AlpacaCorporateActionProvider)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider)
+  name.vb: ILogger(Of AlpacaCorporateActionProvider)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+    name: AlpacaCorporateActionProvider
+    href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+    name: AlpacaCorporateActionProvider
+    href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.html
+  - name: )
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Microsoft.Extensions.Configuration
+  commentId: N:Microsoft.Extensions.Configuration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Configuration
+  nameWithType: Microsoft.Extensions.Configuration
+  fullName: Microsoft.Extensions.Configuration
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Configuration
+    name: Configuration
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Configuration
+    name: Configuration
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+  commentId: T:Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+  href: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand.html
+  name: CorporateActionCommand
+  nameWithType: CorporateActionCommand
+  fullName: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.FetchAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.FetchAsync
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaCorporateActionProvider_FetchAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  name: FetchAsync
+  nameWithType: AlpacaCorporateActionProvider.FetchAsync
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.FetchAsync
+- uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.html#Meridian_Infrastructure_Adapters_Core_ICorporateActionProvider_FetchAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  name: FetchAsync(string, Guid, CancellationToken)
+  nameWithType: ICorporateActionProvider.FetchAsync(string, Guid, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(string, System.Guid, System.Threading.CancellationToken)
+  nameWithType.vb: ICorporateActionProvider.FetchAsync(String, Guid, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(String, System.Guid, System.Threading.CancellationToken)
+  name.vb: FetchAsync(String, Guid, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+    name: FetchAsync
+    href: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.html#Meridian_Infrastructure_Adapters_Core_ICorporateActionProvider_FetchAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.FetchAsync(System.String,System.Guid,System.Threading.CancellationToken)
+    name: FetchAsync
+    href: Meridian.Infrastructure.Adapters.Core.ICorporateActionProvider.html#Meridian_Infrastructure_Adapters_Core_ICorporateActionProvider_FetchAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.CorporateActionCommand}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.CorporateActionCommand}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CorporateActionCommand>>
+  nameWithType: Task<IReadOnlyList<CorporateActionCommand>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.CorporateActionCommand>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CorporateActionCommand))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.CorporateActionCommand))
+  name.vb: Task(Of IReadOnlyList(Of CorporateActionCommand))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+    name: CorporateActionCommand
+    href: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand
+    name: CorporateActionCommand
+    href: Meridian.Infrastructure.Adapters.Core.CorporateActionCommand.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

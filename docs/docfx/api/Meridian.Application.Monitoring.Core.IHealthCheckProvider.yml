@@ -1,0 +1,327 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.IHealthCheckProvider
+  commentId: T:Meridian.Application.Monitoring.Core.IHealthCheckProvider
+  id: IHealthCheckProvider
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.IHealthCheckProvider.CheckHealthAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.Core.IHealthCheckProvider.ComponentName
+  langs:
+  - csharp
+  - vb
+  name: IHealthCheckProvider
+  nameWithType: IHealthCheckProvider
+  fullName: Meridian.Application.Monitoring.Core.IHealthCheckProvider
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IHealthCheckProvider
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: >-
+    Interface for components that provide health check capabilities.
+
+    Implementations should be lightweight and complete quickly.
+  remarks: >-
+    Health checks should:
+
+    - Complete within 5 seconds
+
+    - Not throw exceptions (return unhealthy status instead)
+
+    - Include relevant diagnostic details
+
+    - Be idempotent and side-effect free
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Unified health check interface for all components")]
+
+      public interface IHealthCheckProvider
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Unified health check interface for all components")>
+
+      Public Interface IHealthCheckProvider
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Unified health check interface for all components
+- uid: Meridian.Application.Monitoring.Core.IHealthCheckProvider.ComponentName
+  commentId: P:Meridian.Application.Monitoring.Core.IHealthCheckProvider.ComponentName
+  id: ComponentName
+  parent: Meridian.Application.Monitoring.Core.IHealthCheckProvider
+  langs:
+  - csharp
+  - vb
+  name: ComponentName
+  nameWithType: IHealthCheckProvider.ComponentName
+  fullName: Meridian.Application.Monitoring.Core.IHealthCheckProvider.ComponentName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComponentName
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Name of the component for identification.
+  example: []
+  syntax:
+    content: string ComponentName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ComponentName As String
+  overload: Meridian.Application.Monitoring.Core.IHealthCheckProvider.ComponentName*
+- uid: Meridian.Application.Monitoring.Core.IHealthCheckProvider.CheckHealthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.Core.IHealthCheckProvider.CheckHealthAsync(System.Threading.CancellationToken)
+  id: CheckHealthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.Core.IHealthCheckProvider
+  langs:
+  - csharp
+  - vb
+  name: CheckHealthAsync(CancellationToken)
+  nameWithType: IHealthCheckProvider.CheckHealthAsync(CancellationToken)
+  fullName: Meridian.Application.Monitoring.Core.IHealthCheckProvider.CheckHealthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckHealthAsync
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Performs a health check and returns the result.
+  example: []
+  syntax:
+    content: Task<HealthCheckResult> CheckHealthAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.Core.HealthCheckResult}
+      description: Health check result with status and diagnostics.
+    content.vb: Function CheckHealthAsync(ct As CancellationToken = Nothing) As Task(Of HealthCheckResult)
+  overload: Meridian.Application.Monitoring.Core.IHealthCheckProvider.CheckHealthAsync*
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: Meridian.Application.Monitoring.Core.IHealthCheckProvider.ComponentName*
+  commentId: Overload:Meridian.Application.Monitoring.Core.IHealthCheckProvider.ComponentName
+  href: Meridian.Application.Monitoring.Core.IHealthCheckProvider.html#Meridian_Application_Monitoring_Core_IHealthCheckProvider_ComponentName
+  name: ComponentName
+  nameWithType: IHealthCheckProvider.ComponentName
+  fullName: Meridian.Application.Monitoring.Core.IHealthCheckProvider.ComponentName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.Core.IHealthCheckProvider.CheckHealthAsync*
+  commentId: Overload:Meridian.Application.Monitoring.Core.IHealthCheckProvider.CheckHealthAsync
+  href: Meridian.Application.Monitoring.Core.IHealthCheckProvider.html#Meridian_Application_Monitoring_Core_IHealthCheckProvider_CheckHealthAsync_System_Threading_CancellationToken_
+  name: CheckHealthAsync
+  nameWithType: IHealthCheckProvider.CheckHealthAsync
+  fullName: Meridian.Application.Monitoring.Core.IHealthCheckProvider.CheckHealthAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Monitoring.Core.HealthCheckResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Monitoring.Core.HealthCheckResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<HealthCheckResult>
+  nameWithType: Task<HealthCheckResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Monitoring.Core.HealthCheckResult>
+  nameWithType.vb: Task(Of HealthCheckResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.Core.HealthCheckResult)
+  name.vb: Task(Of HealthCheckResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+    name: HealthCheckResult
+    href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+    name: HealthCheckResult
+    href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

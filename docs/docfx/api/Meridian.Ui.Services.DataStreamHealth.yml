@@ -1,0 +1,628 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DataStreamHealth
+  commentId: T:Meridian.Ui.Services.DataStreamHealth
+  id: DataStreamHealth
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.DataStreamHealth.ActiveStreams
+  - Meridian.Ui.Services.DataStreamHealth.HealthyStreams
+  - Meridian.Ui.Services.DataStreamHealth.IsHealthy
+  - Meridian.Ui.Services.DataStreamHealth.OverallLatencyMs
+  - Meridian.Ui.Services.DataStreamHealth.Streams
+  - Meridian.Ui.Services.DataStreamHealth.UnhealthyStreams
+  langs:
+  - csharp
+  - vb
+  name: DataStreamHealth
+  nameWithType: DataStreamHealth
+  fullName: Meridian.Ui.Services.DataStreamHealth
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataStreamHealth
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class DataStreamHealth
+    content.vb: Public NotInheritable Class DataStreamHealth
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.DataStreamHealth.IsHealthy
+  commentId: P:Meridian.Ui.Services.DataStreamHealth.IsHealthy
+  id: IsHealthy
+  parent: Meridian.Ui.Services.DataStreamHealth
+  langs:
+  - csharp
+  - vb
+  name: IsHealthy
+  nameWithType: DataStreamHealth.IsHealthy
+  fullName: Meridian.Ui.Services.DataStreamHealth.IsHealthy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHealthy
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsHealthy { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsHealthy As Boolean
+  overload: Meridian.Ui.Services.DataStreamHealth.IsHealthy*
+- uid: Meridian.Ui.Services.DataStreamHealth.ActiveStreams
+  commentId: P:Meridian.Ui.Services.DataStreamHealth.ActiveStreams
+  id: ActiveStreams
+  parent: Meridian.Ui.Services.DataStreamHealth
+  langs:
+  - csharp
+  - vb
+  name: ActiveStreams
+  nameWithType: DataStreamHealth.ActiveStreams
+  fullName: Meridian.Ui.Services.DataStreamHealth.ActiveStreams
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveStreams
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int ActiveStreams { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ActiveStreams As Integer
+  overload: Meridian.Ui.Services.DataStreamHealth.ActiveStreams*
+- uid: Meridian.Ui.Services.DataStreamHealth.HealthyStreams
+  commentId: P:Meridian.Ui.Services.DataStreamHealth.HealthyStreams
+  id: HealthyStreams
+  parent: Meridian.Ui.Services.DataStreamHealth
+  langs:
+  - csharp
+  - vb
+  name: HealthyStreams
+  nameWithType: DataStreamHealth.HealthyStreams
+  fullName: Meridian.Ui.Services.DataStreamHealth.HealthyStreams
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthyStreams
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int HealthyStreams { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HealthyStreams As Integer
+  overload: Meridian.Ui.Services.DataStreamHealth.HealthyStreams*
+- uid: Meridian.Ui.Services.DataStreamHealth.UnhealthyStreams
+  commentId: P:Meridian.Ui.Services.DataStreamHealth.UnhealthyStreams
+  id: UnhealthyStreams
+  parent: Meridian.Ui.Services.DataStreamHealth
+  langs:
+  - csharp
+  - vb
+  name: UnhealthyStreams
+  nameWithType: DataStreamHealth.UnhealthyStreams
+  fullName: Meridian.Ui.Services.DataStreamHealth.UnhealthyStreams
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnhealthyStreams
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int UnhealthyStreams { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property UnhealthyStreams As Integer
+  overload: Meridian.Ui.Services.DataStreamHealth.UnhealthyStreams*
+- uid: Meridian.Ui.Services.DataStreamHealth.OverallLatencyMs
+  commentId: P:Meridian.Ui.Services.DataStreamHealth.OverallLatencyMs
+  id: OverallLatencyMs
+  parent: Meridian.Ui.Services.DataStreamHealth
+  langs:
+  - csharp
+  - vb
+  name: OverallLatencyMs
+  nameWithType: DataStreamHealth.OverallLatencyMs
+  fullName: Meridian.Ui.Services.DataStreamHealth.OverallLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverallLatencyMs
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double OverallLatencyMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property OverallLatencyMs As Double
+  overload: Meridian.Ui.Services.DataStreamHealth.OverallLatencyMs*
+- uid: Meridian.Ui.Services.DataStreamHealth.Streams
+  commentId: P:Meridian.Ui.Services.DataStreamHealth.Streams
+  id: Streams
+  parent: Meridian.Ui.Services.DataStreamHealth
+  langs:
+  - csharp
+  - vb
+  name: Streams
+  nameWithType: DataStreamHealth.Streams
+  fullName: Meridian.Ui.Services.DataStreamHealth.Streams
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Streams
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<StreamHealthInfo> Streams { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.StreamHealthInfo}
+    content.vb: Public Property Streams As List(Of StreamHealthInfo)
+  overload: Meridian.Ui.Services.DataStreamHealth.Streams*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DataStreamHealth.IsHealthy*
+  commentId: Overload:Meridian.Ui.Services.DataStreamHealth.IsHealthy
+  href: Meridian.Ui.Services.DataStreamHealth.html#Meridian_Ui_Services_DataStreamHealth_IsHealthy
+  name: IsHealthy
+  nameWithType: DataStreamHealth.IsHealthy
+  fullName: Meridian.Ui.Services.DataStreamHealth.IsHealthy
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.DataStreamHealth.ActiveStreams*
+  commentId: Overload:Meridian.Ui.Services.DataStreamHealth.ActiveStreams
+  href: Meridian.Ui.Services.DataStreamHealth.html#Meridian_Ui_Services_DataStreamHealth_ActiveStreams
+  name: ActiveStreams
+  nameWithType: DataStreamHealth.ActiveStreams
+  fullName: Meridian.Ui.Services.DataStreamHealth.ActiveStreams
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.DataStreamHealth.HealthyStreams*
+  commentId: Overload:Meridian.Ui.Services.DataStreamHealth.HealthyStreams
+  href: Meridian.Ui.Services.DataStreamHealth.html#Meridian_Ui_Services_DataStreamHealth_HealthyStreams
+  name: HealthyStreams
+  nameWithType: DataStreamHealth.HealthyStreams
+  fullName: Meridian.Ui.Services.DataStreamHealth.HealthyStreams
+- uid: Meridian.Ui.Services.DataStreamHealth.UnhealthyStreams*
+  commentId: Overload:Meridian.Ui.Services.DataStreamHealth.UnhealthyStreams
+  href: Meridian.Ui.Services.DataStreamHealth.html#Meridian_Ui_Services_DataStreamHealth_UnhealthyStreams
+  name: UnhealthyStreams
+  nameWithType: DataStreamHealth.UnhealthyStreams
+  fullName: Meridian.Ui.Services.DataStreamHealth.UnhealthyStreams
+- uid: Meridian.Ui.Services.DataStreamHealth.OverallLatencyMs*
+  commentId: Overload:Meridian.Ui.Services.DataStreamHealth.OverallLatencyMs
+  href: Meridian.Ui.Services.DataStreamHealth.html#Meridian_Ui_Services_DataStreamHealth_OverallLatencyMs
+  name: OverallLatencyMs
+  nameWithType: DataStreamHealth.OverallLatencyMs
+  fullName: Meridian.Ui.Services.DataStreamHealth.OverallLatencyMs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.DataStreamHealth.Streams*
+  commentId: Overload:Meridian.Ui.Services.DataStreamHealth.Streams
+  href: Meridian.Ui.Services.DataStreamHealth.html#Meridian_Ui_Services_DataStreamHealth_Streams
+  name: Streams
+  nameWithType: DataStreamHealth.Streams
+  fullName: Meridian.Ui.Services.DataStreamHealth.Streams
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.StreamHealthInfo}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.StreamHealthInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<StreamHealthInfo>
+  nameWithType: List<StreamHealthInfo>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.StreamHealthInfo>
+  nameWithType.vb: List(Of StreamHealthInfo)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.StreamHealthInfo)
+  name.vb: List(Of StreamHealthInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.StreamHealthInfo
+    name: StreamHealthInfo
+    href: Meridian.Ui.Services.StreamHealthInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.StreamHealthInfo
+    name: StreamHealthInfo
+    href: Meridian.Ui.Services.StreamHealthInfo.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

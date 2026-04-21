@@ -1,0 +1,221 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  id: BackfillPriority
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.BackfillPriority.Critical
+  - Meridian.Infrastructure.Adapters.Core.BackfillPriority.Deferred
+  - Meridian.Infrastructure.Adapters.Core.BackfillPriority.High
+  - Meridian.Infrastructure.Adapters.Core.BackfillPriority.Low
+  - Meridian.Infrastructure.Adapters.Core.BackfillPriority.Normal
+  langs:
+  - csharp
+  - vb
+  name: BackfillPriority
+  nameWithType: BackfillPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillPriority
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Priority level for backfill jobs.
+  example: []
+  syntax:
+    content: 'public enum BackfillPriority : byte'
+    content.vb: Public Enum BackfillPriority As Byte
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority.Critical
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillPriority.Critical
+  id: Critical
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: BackfillPriority.Critical
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillPriority.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: System-critical gaps (highest priority).
+  example: []
+  syntax:
+    content: Critical = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority.High
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillPriority.High
+  id: High
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: BackfillPriority.High
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillPriority.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: User-requested immediate backfill.
+  example: []
+  syntax:
+    content: High = 10
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority.Normal
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillPriority.Normal
+  id: Normal
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  langs:
+  - csharp
+  - vb
+  name: Normal
+  nameWithType: BackfillPriority.Normal
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillPriority.Normal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normal
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Standard backfill operations.
+  example: []
+  syntax:
+    content: Normal = 50
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority.Low
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillPriority.Low
+  id: Low
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: BackfillPriority.Low
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillPriority.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Background fill when idle.
+  example: []
+  syntax:
+    content: Low = 100
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority.Deferred
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillPriority.Deferred
+  id: Deferred
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  langs:
+  - csharp
+  - vb
+  name: Deferred
+  nameWithType: BackfillPriority.Deferred
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillPriority.Deferred
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Deferred
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Fill when no other work is pending.
+  example: []
+  syntax:
+    content: Deferred = 200
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillPriority.html
+  name: BackfillPriority
+  nameWithType: BackfillPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillPriority

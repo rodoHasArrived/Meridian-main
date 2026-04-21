@@ -8,6 +8,17 @@ namespace Meridian.Infrastructure.Adapters.InteractiveBrokers;
 ///
 /// This is split with conditional compilation so the project still builds without IBApi.
 /// Define compilation constant IBAPI and reference IBApi to enable the real builder.
+///
+/// <para>
+/// <strong>Fixed income / bond contracts:</strong><br/>
+/// Set <see cref="SymbolConfig.InstrumentType"/> to <c>InstrumentType.Bond</c> for corporate bonds
+/// (IB SecType = <c>"BOND"</c>).  For US Treasuries and other government securities use
+/// <c>SecurityType = "GOVT"</c> explicitly — IB routes these to a dedicated government-bond
+/// desk and the <c>"BOND"</c> SecType does not apply.<br/>
+/// For both cases, set <see cref="SymbolConfig.Symbol"/> to the nine-character CUSIP, e.g.
+/// <c>"912828YY0"</c>, and <c>Exchange = "SMART"</c>.  The TWS API uses face-value in number of
+/// bonds as the order quantity: 1 bond = $1,000 par, so <c>Quantity = 5</c> submits $5,000 face value.
+/// </para>
 /// </summary>
 public static class ContractFactory
 {
@@ -58,8 +69,8 @@ public static class ContractFactory
             if (cfg.Strike is decimal strike)
                 c.Strike = (double)strike;
 
-            if (cfg.Right is Contracts.Domain.Enums.OptionRight right)
-                c.Right = right == Contracts.Domain.Enums.OptionRight.Call ? "C" : "P";
+            if (cfg.Right is OptionRight right)
+                c.Right = right == OptionRight.Call ? "C" : "P";
 
             if (!string.IsNullOrWhiteSpace(cfg.LastTradeDateOrContractMonth))
                 c.LastTradeDateOrContractMonth = cfg.LastTradeDateOrContractMonth;
@@ -86,6 +97,11 @@ public static class ContractFactory
     /// <see cref="SymbolConfig.SecurityType"/> field but falling back to
     /// <see cref="SymbolConfig.InstrumentType"/> when the caller only sets the enum.
     /// </summary>
+    /// <remarks>
+    /// For US Treasuries and government bonds, set <c>cfg.SecurityType = "GOVT"</c> explicitly
+    /// — <see cref="InstrumentType.Bond"/> maps to <c>"BOND"</c>
+    /// (corporate bonds) which uses a different IB routing desk.
+    /// </remarks>
     private static string ResolveSecType(SymbolConfig cfg)
     {
         // If the caller set an explicit SecType string (e.g. "FUT", "CASH"), honour it.
@@ -95,19 +111,19 @@ public static class ContractFactory
         // Otherwise derive from the strongly-typed InstrumentType enum.
         return cfg.InstrumentType switch
         {
-            Contracts.Domain.Enums.InstrumentType.Equity           => "STK",
-            Contracts.Domain.Enums.InstrumentType.EquityOption     => "OPT",
-            Contracts.Domain.Enums.InstrumentType.IndexOption      => "OPT",
-            Contracts.Domain.Enums.InstrumentType.Future           => "FUT",
-            Contracts.Domain.Enums.InstrumentType.SingleStockFuture=> "SSF",
-            Contracts.Domain.Enums.InstrumentType.Forex            => "CASH",
-            Contracts.Domain.Enums.InstrumentType.Commodity        => "CMDTY",
-            Contracts.Domain.Enums.InstrumentType.Crypto           => "CRYPTO",
-            Contracts.Domain.Enums.InstrumentType.Bond             => "BOND",
-            Contracts.Domain.Enums.InstrumentType.FuturesOption    => "FOP",
-            Contracts.Domain.Enums.InstrumentType.Index            => "IND",
-            Contracts.Domain.Enums.InstrumentType.CFD              => "CFD",
-            Contracts.Domain.Enums.InstrumentType.Warrant          => "WAR",
+            InstrumentType.Equity            => "STK",
+            InstrumentType.EquityOption      => "OPT",
+            InstrumentType.IndexOption       => "OPT",
+            InstrumentType.Future            => "FUT",
+            InstrumentType.SingleStockFuture => "SSF",
+            InstrumentType.Forex             => "CASH",
+            InstrumentType.Commodity         => "CMDTY",
+            InstrumentType.Crypto            => "CRYPTO",
+            InstrumentType.Bond              => "BOND",
+            InstrumentType.FuturesOption     => "FOP",
+            InstrumentType.Index             => "IND",
+            InstrumentType.CFD               => "CFD",
+            InstrumentType.Warrant           => "WAR",
             _                                                       => cfg.SecurityType
         };
     }

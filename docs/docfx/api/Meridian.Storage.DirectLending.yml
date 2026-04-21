@@ -1,0 +1,135 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.DirectLending
+  commentId: N:Meridian.Storage.DirectLending
+  id: Meridian.Storage.DirectLending
+  children:
+  - Meridian.Storage.DirectLending.DirectLendingCashTransactionWrite
+  - Meridian.Storage.DirectLending.DirectLendingEventWriteMetadata
+  - Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  - Meridian.Storage.DirectLending.DirectLendingMigrationRunner
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessageWrite
+  - Meridian.Storage.DirectLending.DirectLendingPaymentAllocationWrite
+  - Meridian.Storage.DirectLending.DirectLendingPersistenceBatch
+  - Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  - Meridian.Storage.DirectLending.IDirectLendingStateStore
+  - Meridian.Storage.DirectLending.PersistedDirectLendingState
+  - Meridian.Storage.DirectLending.PostgresDirectLendingStateStore
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Storage.DirectLending
+  nameWithType: Meridian.Storage.DirectLending
+  fullName: Meridian.Storage.DirectLending
+  type: Namespace
+  assemblies:
+  - Meridian.Storage
+references:
+- uid: Meridian.Storage.DirectLending.DirectLendingMigrationRunner
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingMigrationRunner
+  href: Meridian.Storage.DirectLending.DirectLendingMigrationRunner.html
+  name: DirectLendingMigrationRunner
+  nameWithType: DirectLendingMigrationRunner
+  fullName: Meridian.Storage.DirectLending.DirectLendingMigrationRunner
+- uid: Meridian.Storage.DirectLending.DirectLendingCashTransactionWrite
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingCashTransactionWrite
+  href: Meridian.Storage.DirectLending.DirectLendingCashTransactionWrite.html
+  name: DirectLendingCashTransactionWrite
+  nameWithType: DirectLendingCashTransactionWrite
+  fullName: Meridian.Storage.DirectLending.DirectLendingCashTransactionWrite
+- uid: Meridian.Storage.DirectLending.DirectLendingPaymentAllocationWrite
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingPaymentAllocationWrite
+  href: Meridian.Storage.DirectLending.DirectLendingPaymentAllocationWrite.html
+  name: DirectLendingPaymentAllocationWrite
+  nameWithType: DirectLendingPaymentAllocationWrite
+  fullName: Meridian.Storage.DirectLending.DirectLendingPaymentAllocationWrite
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html
+  name: DirectLendingFeeBalanceWrite
+  nameWithType: DirectLendingFeeBalanceWrite
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessageWrite
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingOutboxMessageWrite
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessageWrite.html
+  name: DirectLendingOutboxMessageWrite
+  nameWithType: DirectLendingOutboxMessageWrite
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessageWrite
+- uid: Meridian.Storage.DirectLending.DirectLendingPersistenceBatch
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingPersistenceBatch
+  parent: Meridian.Storage.DirectLending
+  href: Meridian.Storage.DirectLending.DirectLendingPersistenceBatch.html
+  name: DirectLendingPersistenceBatch
+  nameWithType: DirectLendingPersistenceBatch
+  fullName: Meridian.Storage.DirectLending.DirectLendingPersistenceBatch
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html
+  name: DirectLendingOutboxMessage
+  nameWithType: DirectLendingOutboxMessage
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+- uid: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  commentId: T:Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+  parent: Meridian.Storage.DirectLending
+  href: Meridian.Storage.DirectLending.IDirectLendingOperationsStore.html
+  name: IDirectLendingOperationsStore
+  nameWithType: IDirectLendingOperationsStore
+  fullName: Meridian.Storage.DirectLending.IDirectLendingOperationsStore
+- uid: Meridian.Storage.DirectLending.DirectLendingEventWriteMetadata
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingEventWriteMetadata
+  parent: Meridian.Storage.DirectLending
+  href: Meridian.Storage.DirectLending.DirectLendingEventWriteMetadata.html
+  name: DirectLendingEventWriteMetadata
+  nameWithType: DirectLendingEventWriteMetadata
+  fullName: Meridian.Storage.DirectLending.DirectLendingEventWriteMetadata
+- uid: Meridian.Storage.DirectLending.IDirectLendingStateStore
+  commentId: T:Meridian.Storage.DirectLending.IDirectLendingStateStore
+  parent: Meridian.Storage.DirectLending
+  href: Meridian.Storage.DirectLending.IDirectLendingStateStore.html
+  name: IDirectLendingStateStore
+  nameWithType: IDirectLendingStateStore
+  fullName: Meridian.Storage.DirectLending.IDirectLendingStateStore
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState
+  commentId: T:Meridian.Storage.DirectLending.PersistedDirectLendingState
+  parent: Meridian.Storage.DirectLending
+  href: Meridian.Storage.DirectLending.PersistedDirectLendingState.html
+  name: PersistedDirectLendingState
+  nameWithType: PersistedDirectLendingState
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState
+- uid: Meridian.Storage.DirectLending.PostgresDirectLendingStateStore
+  commentId: T:Meridian.Storage.DirectLending.PostgresDirectLendingStateStore
+  href: Meridian.Storage.DirectLending.PostgresDirectLendingStateStore.html
+  name: PostgresDirectLendingStateStore
+  nameWithType: PostgresDirectLendingStateStore
+  fullName: Meridian.Storage.DirectLending.PostgresDirectLendingStateStore
+- uid: Meridian.Storage.DirectLending
+  commentId: N:Meridian.Storage.DirectLending
+  href: Meridian.html
+  name: Meridian.Storage.DirectLending
+  nameWithType: Meridian.Storage.DirectLending
+  fullName: Meridian.Storage.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html

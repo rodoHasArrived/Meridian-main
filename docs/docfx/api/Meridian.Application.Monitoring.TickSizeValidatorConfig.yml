@@ -1,0 +1,656 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  commentId: T:Meridian.Application.Monitoring.TickSizeValidatorConfig
+  id: TickSizeValidatorConfig
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.TickSizeValidatorConfig.AlertCooldownMs
+  - Meridian.Application.Monitoring.TickSizeValidatorConfig.Default
+  - Meridian.Application.Monitoring.TickSizeValidatorConfig.DefaultTickSize
+  - Meridian.Application.Monitoring.TickSizeValidatorConfig.FuturesForex
+  - Meridian.Application.Monitoring.TickSizeValidatorConfig.Lenient
+  - Meridian.Application.Monitoring.TickSizeValidatorConfig.SubDollarTickSize
+  - Meridian.Application.Monitoring.TickSizeValidatorConfig.UseSubDollarTicks
+  langs:
+  - csharp
+  - vb
+  name: TickSizeValidatorConfig
+  nameWithType: TickSizeValidatorConfig
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TickSizeValidatorConfig
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 293
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Configuration for tick size validation.
+  example: []
+  syntax:
+    content: 'public sealed record TickSizeValidatorConfig : IEquatable<TickSizeValidatorConfig>'
+    content.vb: Public NotInheritable Class TickSizeValidatorConfig Implements IEquatable(Of TickSizeValidatorConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.TickSizeValidatorConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.DefaultTickSize
+  commentId: P:Meridian.Application.Monitoring.TickSizeValidatorConfig.DefaultTickSize
+  id: DefaultTickSize
+  parent: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  langs:
+  - csharp
+  - vb
+  name: DefaultTickSize
+  nameWithType: TickSizeValidatorConfig.DefaultTickSize
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.DefaultTickSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultTickSize
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 299
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Default tick size for prices &gt;= $1.00.
+
+    Standard US equity tick size is $0.01.
+  example: []
+  syntax:
+    content: public decimal DefaultTickSize { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property DefaultTickSize As Decimal
+  overload: Meridian.Application.Monitoring.TickSizeValidatorConfig.DefaultTickSize*
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.SubDollarTickSize
+  commentId: P:Meridian.Application.Monitoring.TickSizeValidatorConfig.SubDollarTickSize
+  id: SubDollarTickSize
+  parent: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  langs:
+  - csharp
+  - vb
+  name: SubDollarTickSize
+  nameWithType: TickSizeValidatorConfig.SubDollarTickSize
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.SubDollarTickSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubDollarTickSize
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 305
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Tick size for sub-dollar prices (&lt; $1.00).
+
+    Standard US equity sub-dollar tick size is $0.0001.
+  example: []
+  syntax:
+    content: public decimal SubDollarTickSize { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property SubDollarTickSize As Decimal
+  overload: Meridian.Application.Monitoring.TickSizeValidatorConfig.SubDollarTickSize*
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.UseSubDollarTicks
+  commentId: P:Meridian.Application.Monitoring.TickSizeValidatorConfig.UseSubDollarTicks
+  id: UseSubDollarTicks
+  parent: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  langs:
+  - csharp
+  - vb
+  name: UseSubDollarTicks
+  nameWithType: TickSizeValidatorConfig.UseSubDollarTicks
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.UseSubDollarTicks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseSubDollarTicks
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 310
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Whether to use different tick size for sub-dollar prices.
+  example: []
+  syntax:
+    content: public bool UseSubDollarTicks { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property UseSubDollarTicks As Boolean
+  overload: Meridian.Application.Monitoring.TickSizeValidatorConfig.UseSubDollarTicks*
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.AlertCooldownMs
+  commentId: P:Meridian.Application.Monitoring.TickSizeValidatorConfig.AlertCooldownMs
+  id: AlertCooldownMs
+  parent: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  langs:
+  - csharp
+  - vb
+  name: AlertCooldownMs
+  nameWithType: TickSizeValidatorConfig.AlertCooldownMs
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.AlertCooldownMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertCooldownMs
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Minimum time between alerts for the same symbol in milliseconds.
+  example: []
+  syntax:
+    content: public int AlertCooldownMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property AlertCooldownMs As Integer
+  overload: Meridian.Application.Monitoring.TickSizeValidatorConfig.AlertCooldownMs*
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.Default
+  commentId: P:Meridian.Application.Monitoring.TickSizeValidatorConfig.Default
+  id: Default
+  parent: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: TickSizeValidatorConfig.Default
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static TickSizeValidatorConfig Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.TickSizeValidatorConfig
+    content.vb: Public Shared ReadOnly Property [Default] As TickSizeValidatorConfig
+  overload: Meridian.Application.Monitoring.TickSizeValidatorConfig.Default*
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.FuturesForex
+  commentId: P:Meridian.Application.Monitoring.TickSizeValidatorConfig.FuturesForex
+  id: FuturesForex
+  parent: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  langs:
+  - csharp
+  - vb
+  name: FuturesForex
+  nameWithType: TickSizeValidatorConfig.FuturesForex
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.FuturesForex
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FuturesForex
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 322
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Configuration for futures/forex with custom tick sizes.
+  example: []
+  syntax:
+    content: public static TickSizeValidatorConfig FuturesForex { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.TickSizeValidatorConfig
+    content.vb: Public Shared ReadOnly Property FuturesForex As TickSizeValidatorConfig
+  overload: Meridian.Application.Monitoring.TickSizeValidatorConfig.FuturesForex*
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.Lenient
+  commentId: P:Meridian.Application.Monitoring.TickSizeValidatorConfig.Lenient
+  id: Lenient
+  parent: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  langs:
+  - csharp
+  - vb
+  name: Lenient
+  nameWithType: TickSizeValidatorConfig.Lenient
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.Lenient
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TickSizeValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lenient
+    path: ../../src/Meridian.Application/Monitoring/TickSizeValidator.cs
+    startLine: 332
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Lenient configuration that allows finer precision.
+  example: []
+  syntax:
+    content: public static TickSizeValidatorConfig Lenient { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.TickSizeValidatorConfig
+    content.vb: Public Shared ReadOnly Property Lenient As TickSizeValidatorConfig
+  overload: Meridian.Application.Monitoring.TickSizeValidatorConfig.Lenient*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.TickSizeValidatorConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.TickSizeValidatorConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TickSizeValidatorConfig>
+  nameWithType: IEquatable<TickSizeValidatorConfig>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.TickSizeValidatorConfig>
+  nameWithType.vb: IEquatable(Of TickSizeValidatorConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.TickSizeValidatorConfig)
+  name.vb: IEquatable(Of TickSizeValidatorConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.TickSizeValidatorConfig
+    name: TickSizeValidatorConfig
+    href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.TickSizeValidatorConfig
+    name: TickSizeValidatorConfig
+    href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.DefaultTickSize*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeValidatorConfig.DefaultTickSize
+  href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html#Meridian_Application_Monitoring_TickSizeValidatorConfig_DefaultTickSize
+  name: DefaultTickSize
+  nameWithType: TickSizeValidatorConfig.DefaultTickSize
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.DefaultTickSize
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.SubDollarTickSize*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeValidatorConfig.SubDollarTickSize
+  href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html#Meridian_Application_Monitoring_TickSizeValidatorConfig_SubDollarTickSize
+  name: SubDollarTickSize
+  nameWithType: TickSizeValidatorConfig.SubDollarTickSize
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.SubDollarTickSize
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.UseSubDollarTicks*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeValidatorConfig.UseSubDollarTicks
+  href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html#Meridian_Application_Monitoring_TickSizeValidatorConfig_UseSubDollarTicks
+  name: UseSubDollarTicks
+  nameWithType: TickSizeValidatorConfig.UseSubDollarTicks
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.UseSubDollarTicks
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.AlertCooldownMs*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeValidatorConfig.AlertCooldownMs
+  href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html#Meridian_Application_Monitoring_TickSizeValidatorConfig_AlertCooldownMs
+  name: AlertCooldownMs
+  nameWithType: TickSizeValidatorConfig.AlertCooldownMs
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.AlertCooldownMs
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.Default*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeValidatorConfig.Default
+  href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html#Meridian_Application_Monitoring_TickSizeValidatorConfig_Default
+  name: Default
+  nameWithType: TickSizeValidatorConfig.Default
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.Default
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig
+  commentId: T:Meridian.Application.Monitoring.TickSizeValidatorConfig
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html
+  name: TickSizeValidatorConfig
+  nameWithType: TickSizeValidatorConfig
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.FuturesForex*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeValidatorConfig.FuturesForex
+  href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html#Meridian_Application_Monitoring_TickSizeValidatorConfig_FuturesForex
+  name: FuturesForex
+  nameWithType: TickSizeValidatorConfig.FuturesForex
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.FuturesForex
+- uid: Meridian.Application.Monitoring.TickSizeValidatorConfig.Lenient*
+  commentId: Overload:Meridian.Application.Monitoring.TickSizeValidatorConfig.Lenient
+  href: Meridian.Application.Monitoring.TickSizeValidatorConfig.html#Meridian_Application_Monitoring_TickSizeValidatorConfig_Lenient
+  name: Lenient
+  nameWithType: TickSizeValidatorConfig.Lenient
+  fullName: Meridian.Application.Monitoring.TickSizeValidatorConfig.Lenient

@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.CircuitBreakerState
+  commentId: T:Meridian.Application.Monitoring.CircuitBreakerState
+  id: CircuitBreakerState
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.CircuitBreakerState.Closed
+  - Meridian.Application.Monitoring.CircuitBreakerState.HalfOpen
+  - Meridian.Application.Monitoring.CircuitBreakerState.Open
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerState
+  nameWithType: CircuitBreakerState
+  fullName: Meridian.Application.Monitoring.CircuitBreakerState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerState
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Circuit breaker state enum.
+  example: []
+  syntax:
+    content: 'public enum CircuitBreakerState : byte'
+    content.vb: Public Enum CircuitBreakerState As Byte
+- uid: Meridian.Application.Monitoring.CircuitBreakerState.Closed
+  commentId: F:Meridian.Application.Monitoring.CircuitBreakerState.Closed
+  id: Closed
+  parent: Meridian.Application.Monitoring.CircuitBreakerState
+  langs:
+  - csharp
+  - vb
+  name: Closed
+  nameWithType: CircuitBreakerState.Closed
+  fullName: Meridian.Application.Monitoring.CircuitBreakerState.Closed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Closed
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Closed = 0
+    return:
+      type: Meridian.Application.Monitoring.CircuitBreakerState
+- uid: Meridian.Application.Monitoring.CircuitBreakerState.Open
+  commentId: F:Meridian.Application.Monitoring.CircuitBreakerState.Open
+  id: Open
+  parent: Meridian.Application.Monitoring.CircuitBreakerState
+  langs:
+  - csharp
+  - vb
+  name: Open
+  nameWithType: CircuitBreakerState.Open
+  fullName: Meridian.Application.Monitoring.CircuitBreakerState.Open
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Open
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Open = 1
+    return:
+      type: Meridian.Application.Monitoring.CircuitBreakerState
+- uid: Meridian.Application.Monitoring.CircuitBreakerState.HalfOpen
+  commentId: F:Meridian.Application.Monitoring.CircuitBreakerState.HalfOpen
+  id: HalfOpen
+  parent: Meridian.Application.Monitoring.CircuitBreakerState
+  langs:
+  - csharp
+  - vb
+  name: HalfOpen
+  nameWithType: CircuitBreakerState.HalfOpen
+  fullName: Meridian.Application.Monitoring.CircuitBreakerState.HalfOpen
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HalfOpen
+    path: ../../src/Meridian.Application/Monitoring/CircuitBreakerStatusService.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: HalfOpen = 2
+    return:
+      type: Meridian.Application.Monitoring.CircuitBreakerState
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.CircuitBreakerState
+  commentId: T:Meridian.Application.Monitoring.CircuitBreakerState
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.CircuitBreakerState.html
+  name: CircuitBreakerState
+  nameWithType: CircuitBreakerState
+  fullName: Meridian.Application.Monitoring.CircuitBreakerState

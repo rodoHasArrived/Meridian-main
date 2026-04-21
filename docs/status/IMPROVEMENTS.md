@@ -1,9 +1,28 @@
 # Meridian - Improvement Tracking
 
-**Last Updated:** 2026-03-31
+**Last Updated:** 2026-04-21
 **Status:** Active tracking document
 
-This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into a single source of truth for tracking. For phased execution timeline, see [`ROADMAP.md`](ROADMAP.md).
+This document consolidates **functional improvements** (features, reliability, UX) and **structural improvements** (architecture, modularity, code quality) into an item-level tracking view. For the active wave-structured delivery roadmap and release gates, see [`ROADMAP.md`](ROADMAP.md) and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md).
+
+Legacy `ROADMAP:` labels below retain their original milestone wording for traceability. Use [`PROGRAM_STATE.md`](PROGRAM_STATE.md) as the canonical source for wave status labels and target dates.
+
+---
+
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
 
 ---
 
@@ -56,18 +75,19 @@ This document consolidates **functional improvements** (features, reliability, U
 - **Completion ratio:** 100% complete (35/35), 0% partial (0/35), 0% open (0/35).
 - **Core improvement themes A-G are closed** for the current platform baseline.
 - **Theme J canonicalization is closed** through J8, including drift reporting and fixture-maintenance workflow support.
-- **Recommended focus:** provider-confidence hardening, H2 multi-instance coordination design, Security Master productization, account/entity and trade-management productization, reconciliation/reporting productization, and Theme K workstation delivery on top of the now-shared run / portfolio / ledger baseline.
+- **Theme K workstation delivery active:** K0 (WPF Desktop Shell Modernization) and K2A (Security Master Productization Baseline) are complete. K1, K2, and K3 remain active, and the shell-first workstation baseline is now validated in code through metadata-driven navigation, workspace-shell pages, shared deep-page shell hosting, DI fixes, and registered-page sweep coverage.
+- **Recommended focus:** keep the closed Wave 1 trust gate synchronized around Alpaca, Robinhood, Yahoo, checkpoint reliability, and Parquet proof; harden the existing paper-trading cockpit (Wave 2); deepen workflow-native inspectors and page-body harmonization on top of the delivered shell host; and continue governance/fund-operations productization on top of the delivered Security Master baseline (K2).
 
 ### Backlog Inputs
 
 The active improvement tracker now absorbs the current-value outputs from the brainstorm/proposal set instead of treating every evaluation as an equal live backlog source.
 
 - Active backlog inputs:
-  - `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md`
   - `docs/evaluations/high-value-low-cost-improvements-brainstorm.md`
   - `docs/evaluations/nautilus-inspired-restructuring-proposal.md`
   - `docs/evaluations/2026-03-brainstorm-next-frontier.md`
 - Historical backlog input:
+  - `archive/docs/assessments/high-impact-improvement-brainstorm-2026-03.md`
   - `archive/docs/assessments/high-impact-improvements-brainstorm.md`
 
 Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active normalized backlog, and treat brainstorm documents as supporting analysis unless they are explicitly promoted here.
@@ -84,6 +104,9 @@ Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active nor
 | 6 | C1/C2, H1, H4, I1 | Provider registration unified under DI; per-provider backfill rate limiting; degradation scoring; test harness | ✅ Done |
 | 7 | C3 remainder, B3 tranche 2 | NYSE shared-lifecycle bridge lands; IB + Alpaca provider tests expand | ✅ Done |
 | 8 | G2 remainder, J8 canary | Full trace propagation and canonicalization drift detection/reporting land | ✅ Done |
+| 9 | K0, route/health reliability | WPF Fluent theme, SVG icons, LiveCharts2 charting, Synthetic provider default, workflow guide, CI screenshots, duplicate route/registration fixes | ✅ Done |
+| 10 | K1 shell consolidation, page-level redesign, Wave 1 provider confidence | `ShellNavigationCatalog`, workspace shell pages, and current WPF shell consolidation plus high-traffic page redesign (Live Data, Provider, Backfill, Data Quality); active Wave 1 gate closed around Alpaca/Robinhood/Yahoo plus checkpoint and Parquet evidence closure | ✅ Done |
+| 11 | Wave 2 cockpit hardening, governance/reporting follow-ons | Existing web paper-trading cockpit hardened across positions, orders, fills, P&L, risk, replay, sessions, and promotion; governance cash-flow/report-pack follow-ons on top of delivered Security Master productization | 🔄 Active |
 
 ---
 
@@ -120,7 +143,7 @@ Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active nor
 **Solution Implemented:**
 - Cancel disposal token first to stop new writes
 - Dispose flush timer (waiting for pending callbacks)
-- Execute guaranteed final flush under semaphore gate
+- Execute guaranteed final flush under a non-reentrant semaphore-gated core flush path
 - Then dispose writers and remaining resources
 
 **Files:**
@@ -262,6 +285,7 @@ Use this document and `FULL_IMPLEMENTATION_TODO_2026_03_20.md` as the active nor
 - JSONL format with timestamp, event type, symbol, sequence, source, drop reason
 - Integrated with `EventPipeline`
 - Tracks drop counts per symbol via `ConcurrentDictionary`
+- Dropped-event and dead-letter audit JSONL writes now append through `AtomicFileWriter.AppendLinesAsync`, so crash recovery never leaves partial audit records behind
 - **NEW**: `/api/quality/drops` HTTP endpoint exposing `DroppedEventStatistics`
 - **NEW**: `/api/quality/drops/{symbol}` for per-symbol drill-down
 - **NEW**: 10 comprehensive integration tests covering all scenarios
@@ -1337,7 +1361,7 @@ Improvements Tracker Update
 
 ## Reference Documents
 
-- **[ROADMAP.md](ROADMAP.md)** — Phased execution timeline (Phases 0-10)
+- **[ROADMAP.md](ROADMAP.md)** — Wave-structured delivery roadmap and release gates
 - **[EVALUATIONS_AND_AUDITS.md](EVALUATIONS_AND_AUDITS.md)** — Consolidated architecture evaluations, code audits, and assessments
 - **[CHANGELOG.md](CHANGELOG.md)** — Historical changes and version history
 - **[TODO.md](TODO.md)** — Auto-generated task marker tracking from code comments
@@ -1360,7 +1384,7 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-**Last Updated:** 2026-03-21
+**Last Updated:** 2026-04-14
 **Maintainer:** Project Team
 **Status:** ✅ Active tracking document — 100% of core improvements complete (35/35), Theme J canonicalization complete (8/8), Theme K delivery active
 **Next Review:** Weekly engineering sync (or immediately after any status change)
@@ -1381,6 +1405,16 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - Ensure all major capabilities are reachable from primary navigation and command palette
 - Add workflow-level entry points instead of orphan feature pages
 
+**Current signal:**
+- `ShellNavigationCatalog`, workspace shell pages, richer command-palette routing, governance aliases, and shell smoke/full-sweep coverage are now in the validated baseline
+- duplicate title chrome on many legacy deep pages now compacts away automatically when those pages are hosted inside `WorkspaceDeepPageHostPage`
+- action-heavy legacy headers on `MessagingHub`, `NotificationCenter`, `SecurityMaster`, `ServiceManager`, and `PositionBlotter` now compact correctly inside the shared host while keeping their page-specific command and trust bands
+- `PositionBlotter`, `SecurityMaster`, and `ServiceManager` now expose richer page-body workbenches and workflow-native inspector rails instead of only inheriting the shared host chrome
+- the Trading shell now keeps portfolio drill-ins inside the cockpit by routing operators to the active run portfolio when a run is selected and to the account portfolio when no active run is bound, reinforcing Wave 3 shared-model continuity without bouncing back to `Research`
+- the mixed `MainPageUiWorkflowTests` bundle is stable again through isolated workspace persistence in the automation facade and shell-contract assertions that avoid unrelated singleton drift
+- `MainPageSmokeTests`, `MainPageUiWorkflowTests`, `RunMatUiSmokeTests`, `NavigationPageSmokeTests`, `WorkstationPageSmokeTests`, `NavigationServiceTests`, and `FullNavigationSweepTests` now run under `NavigationServiceSerialCollection`, keeping the mixed shell bundle deterministic while still validating full registered-page reachability
+- remaining K1 work is now concentrated in untouched high-traffic page-body harmonization and broader workstation refinements on pages such as `OrderBook`, `DataQuality`, and `LiveDataViewer`, rather than shell-foundation plumbing or the three newly harmonized workbenches
+
 **ROADMAP:** Phase 11
 
 ---
@@ -1400,10 +1434,10 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 - shared workstation DTOs exist for run summaries/details, portfolio summaries/positions, ledger summaries, journal rows, trial balance rows, and run comparison views
 - `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` are in code
 - WPF now exposes a first `StrategyRuns` browser plus `RunDetail`, `RunPortfolio`, and `RunLedger` drill-ins
+- governance fund operations now exposes explicit fund cash-flow projection ladders/events plus consolidated and account-linked multi-ledger views
 
 **Next expansion:**
-- add cash-flow modeling and projection views to governance-grade portfolio/ledger workflows
-- expose trial-balance and multi-ledger tracking explicitly, not only as supporting read models
+- deepen per-entity / per-sleeve / per-vehicle ledger posting fidelity beyond the current account-linked multi-ledger filters
 - integrate Security Master metadata so portfolio, ledger, and governance surfaces use one authoritative instrument layer
 - add a reconciliation engine with break queues and governed exception handling
 - add report generation tools for fund-ops, investor, compliance, and board-style reporting packs
@@ -1413,19 +1447,22 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 ---
 
-### K2A. 📝 Security Master Productization
+### K2A. ✅ Security Master Productization Baseline
 
-**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** 🔄 IN PROGRESS
+**Impact:** High | **Effort:** High | **Priority:** P1 | **Status:** ✅ COMPLETE (baseline delivered; downstream governance follow-ons remain active)
 
-**Problem:** Security Master implementation now exists in contracts, services, storage, migrations, and F# domain models, but it is still underrepresented in the active product roadmap and not yet treated as a first-class platform capability for workstation workflows.
+**Problem solved:** Security Master needed to move from a backend capability into an explicit product/platform seam for workstation workflows.
 
-**Planned Solution:**
-- elevate Security Master into an explicit product/platform track
-- use Security Master as the authoritative instrument-definition layer for research, portfolio, ledger, and governance experiences
-- connect security identifiers, classifications, and economic definitions to downstream cash-flow and multi-ledger workflows
-- use Security Master metadata to improve reconciliation matching quality and reporting classification
+**Delivered baseline:**
+- Security Master now acts as the authoritative instrument-definition layer across research, trading, portfolio, ledger, reconciliation, governance, and WPF drill-ins
+- workstation/read-model propagation is in place through shared `WorkstationSecurityReference` coverage and provenance
+- WPF, shared DTOs, conflict handling, corporate actions, trading parameters, and ingest seams are materially in code
 
-**ROADMAP:** Phase 12A
+**Remaining follow-on work:**
+- deepen governance and fund-operations workflows built on top of the delivered baseline through K2 and Wave 4 work
+- reuse Security Master metadata in account/entity, cash-flow, multi-ledger, reconciliation, and reporting workflows instead of creating a parallel governance seam
+
+**ROADMAP:** Phase 12A baseline delivered; follow-ons continue in Phase 12 / Wave 4
 
 ---
 
@@ -1437,7 +1474,16 @@ See [`https://github.com/rodoHasArrived/Meridian/blob/main/archive/docs/INDEX.md
 
 **Planned Solution:**
 - Build a unified Backtest Studio with engine selection and run comparison
-- Promote paper-trading infrastructure into a real trading cockpit
+- Harden the existing paper-trading infrastructure into a real trading cockpit
 - Add explicit promotion flow from Backtest → Paper → Live with safety guardrails
 
+**Current baseline:**
+- Paper trading gateway, risk rules, order abstractions, and brokerage gateway framework are implemented
+- REST endpoints for account, orders, sessions, health, and promotion are wired
+- Brokerage gateway adapters for Alpaca, Robinhood, IB, and StockSharp are in place
+
+**Remaining scope (Wave 2):**
+- Web dashboard: live positions, open orders, fills, P&L, and risk state panels wired to brokerage gateways
+- `Backtest → Paper` promotion: explicit lifecycle step, audit trail, and safety gate
+- Paper session persistence and replay
 **ROADMAP:** Phase 13

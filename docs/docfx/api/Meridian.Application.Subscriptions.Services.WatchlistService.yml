@@ -1,0 +1,1419 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService
+  commentId: T:Meridian.Application.Subscriptions.Services.WatchlistService
+  id: WatchlistService
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.WatchlistService.#ctor(Meridian.Application.UI.ConfigStore,System.String)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.AddSymbolsAsync(Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.CreateWatchlistAsync(Meridian.Application.Subscriptions.Models.CreateWatchlistRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.DeleteWatchlistAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.ExportWatchlistAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.GetAllWatchlistsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistSummariesAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistsForSymbolAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.ImportWatchlistAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.RemoveSymbolsAsync(Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.ReorderWatchlistsAsync(System.String[],System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.SubscribeWatchlistAsync(Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.UnsubscribeWatchlistAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.WatchlistService.UpdateWatchlistAsync(System.String,Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: WatchlistService
+  nameWithType: WatchlistService
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WatchlistService
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Service for managing symbol watchlists (groups of symbols for organization and bulk operations).
+  example: []
+  syntax:
+    content: public sealed class WatchlistService
+    content.vb: Public NotInheritable Class WatchlistService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.#ctor(Meridian.Application.UI.ConfigStore,System.String)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.#ctor(Meridian.Application.UI.ConfigStore,System.String)
+  id: '#ctor(Meridian.Application.UI.ConfigStore,System.String)'
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: WatchlistService(ConfigStore, string?)
+  nameWithType: WatchlistService.WatchlistService(ConfigStore, string?)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.WatchlistService(Meridian.Application.UI.ConfigStore, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public WatchlistService(ConfigStore configStore, string? watchlistsPath = null)
+    parameters:
+    - id: configStore
+      type: Meridian.Application.UI.ConfigStore
+    - id: watchlistsPath
+      type: System.String
+    content.vb: Public Sub New(configStore As ConfigStore, watchlistsPath As String = Nothing)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.#ctor*
+  nameWithType.vb: WatchlistService.New(ConfigStore, String)
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.New(Meridian.Application.UI.ConfigStore, String)
+  name.vb: New(ConfigStore, String)
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.GetAllWatchlistsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.GetAllWatchlistsAsync(System.Threading.CancellationToken)
+  id: GetAllWatchlistsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: GetAllWatchlistsAsync(CancellationToken)
+  nameWithType: WatchlistService.GetAllWatchlistsAsync(CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.GetAllWatchlistsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllWatchlistsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get all watchlists.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<Watchlist>> GetAllWatchlistsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.Watchlist}}
+    content.vb: Public Function GetAllWatchlistsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of Watchlist))
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.GetAllWatchlistsAsync*
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistSummariesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistSummariesAsync(System.Threading.CancellationToken)
+  id: GetWatchlistSummariesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: GetWatchlistSummariesAsync(CancellationToken)
+  nameWithType: WatchlistService.GetWatchlistSummariesAsync(CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistSummariesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetWatchlistSummariesAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get watchlist summaries with subscription counts.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<WatchlistSummary>> GetWatchlistSummariesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.WatchlistSummary}}
+    content.vb: Public Function GetWatchlistSummariesAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of WatchlistSummary))
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistSummariesAsync*
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistAsync(System.String,System.Threading.CancellationToken)
+  id: GetWatchlistAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: GetWatchlistAsync(string, CancellationToken)
+  nameWithType: WatchlistService.GetWatchlistAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetWatchlistAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get a specific watchlist by ID.
+  example: []
+  syntax:
+    content: public Task<Watchlist?> GetWatchlistAsync(string watchlistId, CancellationToken ct = default)
+    parameters:
+    - id: watchlistId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.Watchlist}
+    content.vb: Public Function GetWatchlistAsync(watchlistId As String, ct As CancellationToken = Nothing) As Task(Of Watchlist)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistAsync*
+  nameWithType.vb: WatchlistService.GetWatchlistAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistAsync(String, System.Threading.CancellationToken)
+  name.vb: GetWatchlistAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.CreateWatchlistAsync(Meridian.Application.Subscriptions.Models.CreateWatchlistRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.CreateWatchlistAsync(Meridian.Application.Subscriptions.Models.CreateWatchlistRequest,System.Threading.CancellationToken)
+  id: CreateWatchlistAsync(Meridian.Application.Subscriptions.Models.CreateWatchlistRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: CreateWatchlistAsync(CreateWatchlistRequest, CancellationToken)
+  nameWithType: WatchlistService.CreateWatchlistAsync(CreateWatchlistRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.CreateWatchlistAsync(Meridian.Application.Subscriptions.Models.CreateWatchlistRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateWatchlistAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Create a new watchlist.
+  example: []
+  syntax:
+    content: public Task<Watchlist> CreateWatchlistAsync(CreateWatchlistRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.CreateWatchlistRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.Watchlist}
+    content.vb: Public Function CreateWatchlistAsync(request As CreateWatchlistRequest, ct As CancellationToken = Nothing) As Task(Of Watchlist)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.CreateWatchlistAsync*
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.UpdateWatchlistAsync(System.String,Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.UpdateWatchlistAsync(System.String,Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest,System.Threading.CancellationToken)
+  id: UpdateWatchlistAsync(System.String,Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: UpdateWatchlistAsync(string, UpdateWatchlistRequest, CancellationToken)
+  nameWithType: WatchlistService.UpdateWatchlistAsync(string, UpdateWatchlistRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.UpdateWatchlistAsync(string, Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateWatchlistAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Update an existing watchlist.
+  example: []
+  syntax:
+    content: public Task<Watchlist?> UpdateWatchlistAsync(string watchlistId, UpdateWatchlistRequest request, CancellationToken ct = default)
+    parameters:
+    - id: watchlistId
+      type: System.String
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.Watchlist}
+    content.vb: Public Function UpdateWatchlistAsync(watchlistId As String, request As UpdateWatchlistRequest, ct As CancellationToken = Nothing) As Task(Of Watchlist)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.UpdateWatchlistAsync*
+  nameWithType.vb: WatchlistService.UpdateWatchlistAsync(String, UpdateWatchlistRequest, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.UpdateWatchlistAsync(String, Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest, System.Threading.CancellationToken)
+  name.vb: UpdateWatchlistAsync(String, UpdateWatchlistRequest, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.DeleteWatchlistAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.DeleteWatchlistAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteWatchlistAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: DeleteWatchlistAsync(string, CancellationToken)
+  nameWithType: WatchlistService.DeleteWatchlistAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.DeleteWatchlistAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteWatchlistAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Delete a watchlist.
+  example: []
+  syntax:
+    content: public Task<bool> DeleteWatchlistAsync(string watchlistId, CancellationToken ct = default)
+    parameters:
+    - id: watchlistId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteWatchlistAsync(watchlistId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.DeleteWatchlistAsync*
+  nameWithType.vb: WatchlistService.DeleteWatchlistAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.DeleteWatchlistAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteWatchlistAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.AddSymbolsAsync(Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.AddSymbolsAsync(Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest,System.Threading.CancellationToken)
+  id: AddSymbolsAsync(Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: AddSymbolsAsync(AddSymbolsToWatchlistRequest, CancellationToken)
+  nameWithType: WatchlistService.AddSymbolsAsync(AddSymbolsToWatchlistRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.AddSymbolsAsync(Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Add symbols to a watchlist.
+  example: []
+  syntax:
+    content: public Task<WatchlistOperationResult> AddSymbolsAsync(AddSymbolsToWatchlistRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.WatchlistOperationResult}
+    content.vb: Public Function AddSymbolsAsync(request As AddSymbolsToWatchlistRequest, ct As CancellationToken = Nothing) As Task(Of WatchlistOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.AddSymbolsAsync*
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.RemoveSymbolsAsync(Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.RemoveSymbolsAsync(Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest,System.Threading.CancellationToken)
+  id: RemoveSymbolsAsync(Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: RemoveSymbolsAsync(RemoveSymbolsFromWatchlistRequest, CancellationToken)
+  nameWithType: WatchlistService.RemoveSymbolsAsync(RemoveSymbolsFromWatchlistRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.RemoveSymbolsAsync(Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Remove symbols from a watchlist.
+  example: []
+  syntax:
+    content: public Task<WatchlistOperationResult> RemoveSymbolsAsync(RemoveSymbolsFromWatchlistRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.WatchlistOperationResult}
+    content.vb: Public Function RemoveSymbolsAsync(request As RemoveSymbolsFromWatchlistRequest, ct As CancellationToken = Nothing) As Task(Of WatchlistOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.RemoveSymbolsAsync*
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.SubscribeWatchlistAsync(Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.SubscribeWatchlistAsync(Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest,System.Threading.CancellationToken)
+  id: SubscribeWatchlistAsync(Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: SubscribeWatchlistAsync(WatchlistSubscriptionRequest, CancellationToken)
+  nameWithType: WatchlistService.SubscribeWatchlistAsync(WatchlistSubscriptionRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.SubscribeWatchlistAsync(Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeWatchlistAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Subscribe to all symbols in a watchlist.
+  example: []
+  syntax:
+    content: public Task<WatchlistOperationResult> SubscribeWatchlistAsync(WatchlistSubscriptionRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.WatchlistOperationResult}
+    content.vb: Public Function SubscribeWatchlistAsync(request As WatchlistSubscriptionRequest, ct As CancellationToken = Nothing) As Task(Of WatchlistOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.SubscribeWatchlistAsync*
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.UnsubscribeWatchlistAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.UnsubscribeWatchlistAsync(System.String,System.Threading.CancellationToken)
+  id: UnsubscribeWatchlistAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeWatchlistAsync(string, CancellationToken)
+  nameWithType: WatchlistService.UnsubscribeWatchlistAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.UnsubscribeWatchlistAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeWatchlistAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 263
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Unsubscribe from all symbols in a watchlist.
+  example: []
+  syntax:
+    content: public Task<WatchlistOperationResult> UnsubscribeWatchlistAsync(string watchlistId, CancellationToken ct = default)
+    parameters:
+    - id: watchlistId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.WatchlistOperationResult}
+    content.vb: Public Function UnsubscribeWatchlistAsync(watchlistId As String, ct As CancellationToken = Nothing) As Task(Of WatchlistOperationResult)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.UnsubscribeWatchlistAsync*
+  nameWithType.vb: WatchlistService.UnsubscribeWatchlistAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.UnsubscribeWatchlistAsync(String, System.Threading.CancellationToken)
+  name.vb: UnsubscribeWatchlistAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistsForSymbolAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistsForSymbolAsync(System.String,System.Threading.CancellationToken)
+  id: GetWatchlistsForSymbolAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: GetWatchlistsForSymbolAsync(string, CancellationToken)
+  nameWithType: WatchlistService.GetWatchlistsForSymbolAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistsForSymbolAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetWatchlistsForSymbolAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 280
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get all watchlists that contain a specific symbol.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<Watchlist>> GetWatchlistsForSymbolAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.Watchlist}}
+    content.vb: Public Function GetWatchlistsForSymbolAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of Watchlist))
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistsForSymbolAsync*
+  nameWithType.vb: WatchlistService.GetWatchlistsForSymbolAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistsForSymbolAsync(String, System.Threading.CancellationToken)
+  name.vb: GetWatchlistsForSymbolAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.ImportWatchlistAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.ImportWatchlistAsync(System.String,System.Threading.CancellationToken)
+  id: ImportWatchlistAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: ImportWatchlistAsync(string, CancellationToken)
+  nameWithType: WatchlistService.ImportWatchlistAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.ImportWatchlistAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportWatchlistAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Import watchlist from JSON.
+  example: []
+  syntax:
+    content: public Task<Watchlist?> ImportWatchlistAsync(string json, CancellationToken ct = default)
+    parameters:
+    - id: json
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.Watchlist}
+    content.vb: Public Function ImportWatchlistAsync(json As String, ct As CancellationToken = Nothing) As Task(Of Watchlist)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.ImportWatchlistAsync*
+  nameWithType.vb: WatchlistService.ImportWatchlistAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.ImportWatchlistAsync(String, System.Threading.CancellationToken)
+  name.vb: ImportWatchlistAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.ExportWatchlistAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.ExportWatchlistAsync(System.String,System.Threading.CancellationToken)
+  id: ExportWatchlistAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: ExportWatchlistAsync(string, CancellationToken)
+  nameWithType: WatchlistService.ExportWatchlistAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.ExportWatchlistAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportWatchlistAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Export watchlist to JSON.
+  example: []
+  syntax:
+    content: public Task<string?> ExportWatchlistAsync(string watchlistId, CancellationToken ct = default)
+    parameters:
+    - id: watchlistId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Function ExportWatchlistAsync(watchlistId As String, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.ExportWatchlistAsync*
+  nameWithType.vb: WatchlistService.ExportWatchlistAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.ExportWatchlistAsync(String, System.Threading.CancellationToken)
+  name.vb: ExportWatchlistAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.ReorderWatchlistsAsync(System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.WatchlistService.ReorderWatchlistsAsync(System.String[],System.Threading.CancellationToken)
+  id: ReorderWatchlistsAsync(System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.WatchlistService
+  langs:
+  - csharp
+  - vb
+  name: ReorderWatchlistsAsync(string[], CancellationToken)
+  nameWithType: WatchlistService.ReorderWatchlistsAsync(string[], CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.ReorderWatchlistsAsync(string[], System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReorderWatchlistsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/WatchlistService.cs
+    startLine: 337
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Reorder watchlists.
+  example: []
+  syntax:
+    content: public Task ReorderWatchlistsAsync(string[] watchlistIds, CancellationToken ct = default)
+    parameters:
+    - id: watchlistIds
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ReorderWatchlistsAsync(watchlistIds As String(), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Subscriptions.Services.WatchlistService.ReorderWatchlistsAsync*
+  nameWithType.vb: WatchlistService.ReorderWatchlistsAsync(String(), CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.ReorderWatchlistsAsync(String(), System.Threading.CancellationToken)
+  name.vb: ReorderWatchlistsAsync(String(), CancellationToken)
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.#ctor
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService__ctor_Meridian_Application_UI_ConfigStore_System_String_
+  name: WatchlistService
+  nameWithType: WatchlistService.WatchlistService
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.WatchlistService
+  nameWithType.vb: WatchlistService.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.WatchlistService.New
+  name.vb: New
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.GetAllWatchlistsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.GetAllWatchlistsAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_GetAllWatchlistsAsync_System_Threading_CancellationToken_
+  name: GetAllWatchlistsAsync
+  nameWithType: WatchlistService.GetAllWatchlistsAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.GetAllWatchlistsAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.Watchlist}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.Watchlist}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<Watchlist>>
+  nameWithType: Task<IReadOnlyList<Watchlist>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.Watchlist>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of Watchlist))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.Watchlist))
+  name.vb: Task(Of IReadOnlyList(Of Watchlist))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.Watchlist
+    name: Watchlist
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.Watchlist
+    name: Watchlist
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistSummariesAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistSummariesAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_GetWatchlistSummariesAsync_System_Threading_CancellationToken_
+  name: GetWatchlistSummariesAsync
+  nameWithType: WatchlistService.GetWatchlistSummariesAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistSummariesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.WatchlistSummary}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.WatchlistSummary}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<WatchlistSummary>>
+  nameWithType: Task<IReadOnlyList<WatchlistSummary>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.WatchlistSummary>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of WatchlistSummary))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.WatchlistSummary))
+  name.vb: Task(Of IReadOnlyList(Of WatchlistSummary))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.WatchlistSummary
+    name: WatchlistSummary
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.WatchlistSummary
+    name: WatchlistSummary
+  - name: )
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_GetWatchlistAsync_System_String_System_Threading_CancellationToken_
+  name: GetWatchlistAsync
+  nameWithType: WatchlistService.GetWatchlistAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.Watchlist}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.Watchlist}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<Watchlist>
+  nameWithType: Task<Watchlist>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.Watchlist>
+  nameWithType.vb: Task(Of Watchlist)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.Watchlist)
+  name.vb: Task(Of Watchlist)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.Watchlist
+    name: Watchlist
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.Watchlist
+    name: Watchlist
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.CreateWatchlistAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.CreateWatchlistAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_CreateWatchlistAsync_Meridian_Application_Subscriptions_Models_CreateWatchlistRequest_System_Threading_CancellationToken_
+  name: CreateWatchlistAsync
+  nameWithType: WatchlistService.CreateWatchlistAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.CreateWatchlistAsync
+- uid: Meridian.Application.Subscriptions.Models.CreateWatchlistRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.CreateWatchlistRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.CreateWatchlistRequest.html
+  name: CreateWatchlistRequest
+  nameWithType: CreateWatchlistRequest
+  fullName: Meridian.Application.Subscriptions.Models.CreateWatchlistRequest
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.UpdateWatchlistAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.UpdateWatchlistAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_UpdateWatchlistAsync_System_String_Meridian_Application_Subscriptions_Models_UpdateWatchlistRequest_System_Threading_CancellationToken_
+  name: UpdateWatchlistAsync
+  nameWithType: WatchlistService.UpdateWatchlistAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.UpdateWatchlistAsync
+- uid: Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest.html
+  name: UpdateWatchlistRequest
+  nameWithType: UpdateWatchlistRequest
+  fullName: Meridian.Application.Subscriptions.Models.UpdateWatchlistRequest
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.DeleteWatchlistAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.DeleteWatchlistAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_DeleteWatchlistAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteWatchlistAsync
+  nameWithType: WatchlistService.DeleteWatchlistAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.DeleteWatchlistAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.AddSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.AddSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_AddSymbolsAsync_Meridian_Application_Subscriptions_Models_AddSymbolsToWatchlistRequest_System_Threading_CancellationToken_
+  name: AddSymbolsAsync
+  nameWithType: WatchlistService.AddSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.AddSymbolsAsync
+- uid: Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest.html
+  name: AddSymbolsToWatchlistRequest
+  nameWithType: AddSymbolsToWatchlistRequest
+  fullName: Meridian.Application.Subscriptions.Models.AddSymbolsToWatchlistRequest
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.WatchlistOperationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.WatchlistOperationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<WatchlistOperationResult>
+  nameWithType: Task<WatchlistOperationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.WatchlistOperationResult>
+  nameWithType.vb: Task(Of WatchlistOperationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.WatchlistOperationResult)
+  name.vb: Task(Of WatchlistOperationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.WatchlistOperationResult
+    name: WatchlistOperationResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.WatchlistOperationResult
+    name: WatchlistOperationResult
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.RemoveSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.RemoveSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_RemoveSymbolsAsync_Meridian_Application_Subscriptions_Models_RemoveSymbolsFromWatchlistRequest_System_Threading_CancellationToken_
+  name: RemoveSymbolsAsync
+  nameWithType: WatchlistService.RemoveSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.RemoveSymbolsAsync
+- uid: Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest.html
+  name: RemoveSymbolsFromWatchlistRequest
+  nameWithType: RemoveSymbolsFromWatchlistRequest
+  fullName: Meridian.Application.Subscriptions.Models.RemoveSymbolsFromWatchlistRequest
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.SubscribeWatchlistAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.SubscribeWatchlistAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_SubscribeWatchlistAsync_Meridian_Application_Subscriptions_Models_WatchlistSubscriptionRequest_System_Threading_CancellationToken_
+  name: SubscribeWatchlistAsync
+  nameWithType: WatchlistService.SubscribeWatchlistAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.SubscribeWatchlistAsync
+- uid: Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest.html
+  name: WatchlistSubscriptionRequest
+  nameWithType: WatchlistSubscriptionRequest
+  fullName: Meridian.Application.Subscriptions.Models.WatchlistSubscriptionRequest
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.UnsubscribeWatchlistAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.UnsubscribeWatchlistAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_UnsubscribeWatchlistAsync_System_String_System_Threading_CancellationToken_
+  name: UnsubscribeWatchlistAsync
+  nameWithType: WatchlistService.UnsubscribeWatchlistAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.UnsubscribeWatchlistAsync
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistsForSymbolAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistsForSymbolAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_GetWatchlistsForSymbolAsync_System_String_System_Threading_CancellationToken_
+  name: GetWatchlistsForSymbolAsync
+  nameWithType: WatchlistService.GetWatchlistsForSymbolAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.GetWatchlistsForSymbolAsync
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.ImportWatchlistAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.ImportWatchlistAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_ImportWatchlistAsync_System_String_System_Threading_CancellationToken_
+  name: ImportWatchlistAsync
+  nameWithType: WatchlistService.ImportWatchlistAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.ImportWatchlistAsync
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.ExportWatchlistAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.ExportWatchlistAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_ExportWatchlistAsync_System_String_System_Threading_CancellationToken_
+  name: ExportWatchlistAsync
+  nameWithType: WatchlistService.ExportWatchlistAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.ExportWatchlistAsync
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.WatchlistService.ReorderWatchlistsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.WatchlistService.ReorderWatchlistsAsync
+  href: Meridian.Application.Subscriptions.Services.WatchlistService.html#Meridian_Application_Subscriptions_Services_WatchlistService_ReorderWatchlistsAsync_System_String___System_Threading_CancellationToken_
+  name: ReorderWatchlistsAsync
+  nameWithType: WatchlistService.ReorderWatchlistsAsync
+  fullName: Meridian.Application.Subscriptions.Services.WatchlistService.ReorderWatchlistsAsync
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task

@@ -1,0 +1,734 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.BrokerageServiceRegistration
+  commentId: T:Meridian.Execution.BrokerageServiceRegistration
+  id: BrokerageServiceRegistration
+  parent: Meridian.Execution
+  children:
+  - Meridian.Execution.BrokerageServiceRegistration.AddBrokerageExecution(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Meridian.Execution.Sdk.BrokerageConfiguration})
+  - Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Func{System.IServiceProvider,Meridian.Execution.Sdk.IBrokerageGateway})
+  - Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)
+  langs:
+  - csharp
+  - vb
+  name: BrokerageServiceRegistration
+  nameWithType: BrokerageServiceRegistration
+  fullName: Meridian.Execution.BrokerageServiceRegistration
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/BrokerageServiceRegistration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerageServiceRegistration
+    path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: >-
+    DI registration helpers for the brokerage execution layer.
+
+    Registers brokerage gateways, the OMS, and the <xref href="Meridian.Execution.Interfaces.IOrderGateway" data-throw-if-not-resolved="false"></xref>
+
+    adapter that bridges <xref href="Meridian.Execution.Sdk.IBrokerageGateway" data-throw-if-not-resolved="false"></xref> into the existing
+
+    execution framework.
+  example: []
+  syntax:
+    content: public static class BrokerageServiceRegistration
+    content.vb: Public Module BrokerageServiceRegistration
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageExecution(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Meridian.Execution.Sdk.BrokerageConfiguration})
+  commentId: M:Meridian.Execution.BrokerageServiceRegistration.AddBrokerageExecution(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Meridian.Execution.Sdk.BrokerageConfiguration})
+  id: AddBrokerageExecution(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{Meridian.Execution.Sdk.BrokerageConfiguration})
+  isExtensionMethod: true
+  parent: Meridian.Execution.BrokerageServiceRegistration
+  langs:
+  - csharp
+  - vb
+  name: AddBrokerageExecution(IServiceCollection, Action<BrokerageConfiguration>?)
+  nameWithType: BrokerageServiceRegistration.AddBrokerageExecution(IServiceCollection, Action<BrokerageConfiguration>?)
+  fullName: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageExecution(Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Action<Meridian.Execution.Sdk.BrokerageConfiguration>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/BrokerageServiceRegistration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddBrokerageExecution
+    path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Registers the brokerage execution layer services.
+  example: []
+  syntax:
+    content: public static IServiceCollection AddBrokerageExecution(this IServiceCollection services, Action<BrokerageConfiguration>? configure = null)
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+      description: The DI service collection.
+    - id: configure
+      type: System.Action{Meridian.Execution.Sdk.BrokerageConfiguration}
+      description: Optional configuration action.
+    return:
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+      description: The service collection for chaining.
+    content.vb: Public Shared Function AddBrokerageExecution(services As IServiceCollection, configure As Action(Of BrokerageConfiguration) = Nothing) As IServiceCollection
+  overload: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageExecution*
+  nameWithType.vb: BrokerageServiceRegistration.AddBrokerageExecution(IServiceCollection, Action(Of BrokerageConfiguration))
+  fullName.vb: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageExecution(Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Action(Of Meridian.Execution.Sdk.BrokerageConfiguration))
+  name.vb: AddBrokerageExecution(IServiceCollection, Action(Of BrokerageConfiguration))
+- uid: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)
+  commentId: M:Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)
+  id: AddBrokerageGateway``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String)
+  isExtensionMethod: true
+  parent: Meridian.Execution.BrokerageServiceRegistration
+  langs:
+  - csharp
+  - vb
+  name: AddBrokerageGateway<TGateway>(IServiceCollection, string)
+  nameWithType: BrokerageServiceRegistration.AddBrokerageGateway<TGateway>(IServiceCollection, string)
+  fullName: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway<TGateway>(Microsoft.Extensions.DependencyInjection.IServiceCollection, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/BrokerageServiceRegistration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddBrokerageGateway
+    path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: >-
+    Registers a specific <xref href="Meridian.Execution.Sdk.IBrokerageGateway" data-throw-if-not-resolved="false"></xref> implementation as a keyed named gateway.
+
+    Use the same <code class="paramref">gatewayId</code> when configuring <xref href="Meridian.Execution.Sdk.BrokerageConfiguration.Gateway" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public static IServiceCollection AddBrokerageGateway<TGateway>(this IServiceCollection services, string gatewayId) where TGateway : class, IBrokerageGateway'
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+      description: The DI service collection.
+    - id: gatewayId
+      type: System.String
+      description: >-
+        The gateway identifier (e.g., "alpaca", "ib"). Must match the value of
+
+        <xref href="Meridian.Execution.Sdk.BrokerageConfiguration.Gateway" data-throw-if-not-resolved="false"></xref> when this gateway should be selected.
+    typeParameters:
+    - id: TGateway
+      description: The concrete brokerage gateway type.
+    return:
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+      description: The service collection for chaining.
+    content.vb: Public Shared Function AddBrokerageGateway(Of TGateway As {Class, IBrokerageGateway})(services As IServiceCollection, gatewayId As String) As IServiceCollection
+  overload: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway*
+  nameWithType.vb: BrokerageServiceRegistration.AddBrokerageGateway(Of TGateway)(IServiceCollection, String)
+  fullName.vb: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway(Of TGateway)(Microsoft.Extensions.DependencyInjection.IServiceCollection, String)
+  name.vb: AddBrokerageGateway(Of TGateway)(IServiceCollection, String)
+- uid: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Func{System.IServiceProvider,Meridian.Execution.Sdk.IBrokerageGateway})
+  commentId: M:Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Func{System.IServiceProvider,Meridian.Execution.Sdk.IBrokerageGateway})
+  id: AddBrokerageGateway(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.String,System.Func{System.IServiceProvider,Meridian.Execution.Sdk.IBrokerageGateway})
+  isExtensionMethod: true
+  parent: Meridian.Execution.BrokerageServiceRegistration
+  langs:
+  - csharp
+  - vb
+  name: AddBrokerageGateway(IServiceCollection, string, Func<IServiceProvider, IBrokerageGateway>)
+  nameWithType: BrokerageServiceRegistration.AddBrokerageGateway(IServiceCollection, string, Func<IServiceProvider, IBrokerageGateway>)
+  fullName: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway(Microsoft.Extensions.DependencyInjection.IServiceCollection, string, System.Func<System.IServiceProvider, Meridian.Execution.Sdk.IBrokerageGateway>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/BrokerageServiceRegistration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddBrokerageGateway
+    path: ../../src/Meridian.Execution/BrokerageServiceRegistration.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Registers a factory-created <xref href="Meridian.Execution.Sdk.IBrokerageGateway" data-throw-if-not-resolved="false"></xref> as a keyed named gateway.
+  example: []
+  syntax:
+    content: public static IServiceCollection AddBrokerageGateway(this IServiceCollection services, string gatewayId, Func<IServiceProvider, IBrokerageGateway> factory)
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+      description: The DI service collection.
+    - id: gatewayId
+      type: System.String
+      description: >-
+        The gateway identifier (e.g., "alpaca", "ib"). Must match the value of
+
+        <xref href="Meridian.Execution.Sdk.BrokerageConfiguration.Gateway" data-throw-if-not-resolved="false"></xref> when this gateway should be selected.
+    - id: factory
+      type: System.Func{System.IServiceProvider,Meridian.Execution.Sdk.IBrokerageGateway}
+      description: Factory function that creates the gateway.
+    return:
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+      description: The service collection for chaining.
+    content.vb: Public Shared Function AddBrokerageGateway(services As IServiceCollection, gatewayId As String, factory As Func(Of IServiceProvider, IBrokerageGateway)) As IServiceCollection
+  overload: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway*
+  nameWithType.vb: BrokerageServiceRegistration.AddBrokerageGateway(IServiceCollection, String, Func(Of IServiceProvider, IBrokerageGateway))
+  fullName.vb: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway(Microsoft.Extensions.DependencyInjection.IServiceCollection, String, System.Func(Of System.IServiceProvider, Meridian.Execution.Sdk.IBrokerageGateway))
+  name.vb: AddBrokerageGateway(IServiceCollection, String, Func(Of IServiceProvider, IBrokerageGateway))
+references:
+- uid: Meridian.Execution.Interfaces.IOrderGateway
+  commentId: T:Meridian.Execution.Interfaces.IOrderGateway
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IOrderGateway.html
+  name: IOrderGateway
+  nameWithType: IOrderGateway
+  fullName: Meridian.Execution.Interfaces.IOrderGateway
+- uid: Meridian.Execution.Sdk.IBrokerageGateway
+  commentId: T:Meridian.Execution.Sdk.IBrokerageGateway
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.IBrokerageGateway.html
+  name: IBrokerageGateway
+  nameWithType: IBrokerageGateway
+  fullName: Meridian.Execution.Sdk.IBrokerageGateway
+- uid: Meridian.Execution
+  commentId: N:Meridian.Execution
+  href: Meridian.html
+  name: Meridian.Execution
+  nameWithType: Meridian.Execution
+  fullName: Meridian.Execution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageExecution*
+  commentId: Overload:Meridian.Execution.BrokerageServiceRegistration.AddBrokerageExecution
+  href: Meridian.Execution.BrokerageServiceRegistration.html#Meridian_Execution_BrokerageServiceRegistration_AddBrokerageExecution_Microsoft_Extensions_DependencyInjection_IServiceCollection_System_Action_Meridian_Execution_Sdk_BrokerageConfiguration__
+  name: AddBrokerageExecution
+  nameWithType: BrokerageServiceRegistration.AddBrokerageExecution
+  fullName: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageExecution
+- uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+  commentId: T:Microsoft.Extensions.DependencyInjection.IServiceCollection
+  parent: Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  name: IServiceCollection
+  nameWithType: IServiceCollection
+  fullName: Microsoft.Extensions.DependencyInjection.IServiceCollection
+- uid: System.Action{Meridian.Execution.Sdk.BrokerageConfiguration}
+  commentId: T:System.Action{Meridian.Execution.Sdk.BrokerageConfiguration}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<BrokerageConfiguration>
+  nameWithType: Action<BrokerageConfiguration>
+  fullName: System.Action<Meridian.Execution.Sdk.BrokerageConfiguration>
+  nameWithType.vb: Action(Of BrokerageConfiguration)
+  fullName.vb: System.Action(Of Meridian.Execution.Sdk.BrokerageConfiguration)
+  name.vb: Action(Of BrokerageConfiguration)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.BrokerageConfiguration
+    name: BrokerageConfiguration
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.BrokerageConfiguration
+    name: BrokerageConfiguration
+  - name: )
+- uid: Microsoft.Extensions.DependencyInjection
+  commentId: N:Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.DependencyInjection
+  nameWithType: Microsoft.Extensions.DependencyInjection
+  fullName: Microsoft.Extensions.DependencyInjection
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerageConfiguration.Gateway
+  commentId: P:Meridian.Execution.Sdk.BrokerageConfiguration.Gateway
+  name: Gateway
+  nameWithType: BrokerageConfiguration.Gateway
+  fullName: Meridian.Execution.Sdk.BrokerageConfiguration.Gateway
+- uid: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway*
+  commentId: Overload:Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway
+  href: Meridian.Execution.BrokerageServiceRegistration.html#Meridian_Execution_BrokerageServiceRegistration_AddBrokerageGateway__1_Microsoft_Extensions_DependencyInjection_IServiceCollection_System_String_
+  name: AddBrokerageGateway
+  nameWithType: BrokerageServiceRegistration.AddBrokerageGateway
+  fullName: Meridian.Execution.BrokerageServiceRegistration.AddBrokerageGateway
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Func{System.IServiceProvider,Meridian.Execution.Sdk.IBrokerageGateway}
+  commentId: T:System.Func{System.IServiceProvider,Meridian.Execution.Sdk.IBrokerageGateway}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<IServiceProvider, IBrokerageGateway>
+  nameWithType: Func<IServiceProvider, IBrokerageGateway>
+  fullName: System.Func<System.IServiceProvider, Meridian.Execution.Sdk.IBrokerageGateway>
+  nameWithType.vb: Func(Of IServiceProvider, IBrokerageGateway)
+  fullName.vb: System.Func(Of System.IServiceProvider, Meridian.Execution.Sdk.IBrokerageGateway)
+  name.vb: Func(Of IServiceProvider, IBrokerageGateway)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.IServiceProvider
+    name: IServiceProvider
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iserviceprovider
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Sdk.IBrokerageGateway
+    name: IBrokerageGateway
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.IServiceProvider
+    name: IServiceProvider
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iserviceprovider
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Sdk.IBrokerageGateway
+    name: IBrokerageGateway
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )

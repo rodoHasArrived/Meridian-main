@@ -1,0 +1,924 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  id: WebSocketConnectionConfig
+  parent: Meridian.Infrastructure.Resilience
+  children:
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerDuration
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerFailureThreshold
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatInterval
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatTimeout
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxMessageSizeBytes
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxReconnectAttempts
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetries
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetryDelay
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.OperationTimeout
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.RetryBaseDelay
+  langs:
+  - csharp
+  - vb
+  name: WebSocketConnectionConfig
+  nameWithType: WebSocketConnectionConfig
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WebSocketConnectionConfig
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Centralized configuration for WebSocket connections.
+
+    Provides sensible defaults used by all streaming providers (Alpaca, Polygon, etc.)
+
+    to eliminate duplicate configuration across providers.
+  remarks: >-
+    <p>
+
+    <b>Profile Selection Guide:</b>
+
+    </p>
+
+    <ul><li><span class="term"><xref href="Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default" data-throw-if-not-resolved="false"></xref></span>
+          Use for providers with fast reconnection (Alpaca, Polygon).
+          5 retries with 2s base delay provides ~62s total retry time.
+          Suitable for providers with reliable infrastructure.
+        </li><li><span class="term"><xref href="Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient" data-throw-if-not-resolved="false"></xref></span>
+          Use for providers with slower reconnection or on unreliable networks (IB Gateway).
+          10 retries with 3s base delay and longer circuit breaker duration.
+          Suitable when provider infrastructure is slower or network is unstable.
+        </li><li><span class="term"><xref href="Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency" data-throw-if-not-resolved="false"></xref></span>
+          Use for tick-by-tick data where latency is critical.
+          Shorter timeouts (15s) ensure faster failure detection.
+          Trade-off: May disconnect more frequently on slow networks.
+        </li></ul>
+    <p>
+
+    <b>Current Provider Assignments:</b>
+
+    </p>
+
+    <ul><li>Alpaca: Default (fast cloud infrastructure)</li><li>Polygon: Default (fast cloud infrastructure)</li><li>Interactive Brokers: Resilient (TWS/Gateway may have delays)</li></ul>
+  example: []
+  syntax:
+    content: 'public sealed record WebSocketConnectionConfig : IEquatable<WebSocketConnectionConfig>'
+    content.vb: Public NotInheritable Class WebSocketConnectionConfig Implements IEquatable(Of WebSocketConnectionConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Resilience.WebSocketConnectionConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetries
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetries
+  id: MaxRetries
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxRetries
+  nameWithType: WebSocketConnectionConfig.MaxRetries
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRetries
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Maximum number of connection retry attempts.
+  example: []
+  syntax:
+    content: public int MaxRetries { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxRetries As Integer
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetries*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.RetryBaseDelay
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.RetryBaseDelay
+  id: RetryBaseDelay
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: RetryBaseDelay
+  nameWithType: WebSocketConnectionConfig.RetryBaseDelay
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.RetryBaseDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetryBaseDelay
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Base delay for exponential backoff between retries.
+  example: []
+  syntax:
+    content: public TimeSpan RetryBaseDelay { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property RetryBaseDelay As TimeSpan
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.RetryBaseDelay*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetryDelay
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetryDelay
+  id: MaxRetryDelay
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxRetryDelay
+  nameWithType: WebSocketConnectionConfig.MaxRetryDelay
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetryDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRetryDelay
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Maximum delay between retries (caps exponential backoff).
+  example: []
+  syntax:
+    content: public TimeSpan MaxRetryDelay { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MaxRetryDelay As TimeSpan
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetryDelay*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerFailureThreshold
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerFailureThreshold
+  id: CircuitBreakerFailureThreshold
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerFailureThreshold
+  nameWithType: WebSocketConnectionConfig.CircuitBreakerFailureThreshold
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerFailureThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerFailureThreshold
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Number of failures before circuit breaker opens.
+  example: []
+  syntax:
+    content: public int CircuitBreakerFailureThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CircuitBreakerFailureThreshold As Integer
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerFailureThreshold*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerDuration
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerDuration
+  id: CircuitBreakerDuration
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerDuration
+  nameWithType: WebSocketConnectionConfig.CircuitBreakerDuration
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerDuration
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Duration circuit breaker stays open before allowing retry.
+  example: []
+  syntax:
+    content: public TimeSpan CircuitBreakerDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property CircuitBreakerDuration As TimeSpan
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerDuration*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.OperationTimeout
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.OperationTimeout
+  id: OperationTimeout
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: OperationTimeout
+  nameWithType: WebSocketConnectionConfig.OperationTimeout
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.OperationTimeout
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OperationTimeout
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Timeout for individual connection operations.
+  example: []
+  syntax:
+    content: public TimeSpan OperationTimeout { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property OperationTimeout As TimeSpan
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.OperationTimeout*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatInterval
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatInterval
+  id: HeartbeatInterval
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: HeartbeatInterval
+  nameWithType: WebSocketConnectionConfig.HeartbeatInterval
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatInterval
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeartbeatInterval
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Interval between heartbeat pings.
+  example: []
+  syntax:
+    content: public TimeSpan HeartbeatInterval { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property HeartbeatInterval As TimeSpan
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatInterval*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatTimeout
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatTimeout
+  id: HeartbeatTimeout
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: HeartbeatTimeout
+  nameWithType: WebSocketConnectionConfig.HeartbeatTimeout
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatTimeout
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeartbeatTimeout
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Timeout waiting for heartbeat response before considering connection stale.
+  example: []
+  syntax:
+    content: public TimeSpan HeartbeatTimeout { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property HeartbeatTimeout As TimeSpan
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatTimeout*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxReconnectAttempts
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxReconnectAttempts
+  id: MaxReconnectAttempts
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxReconnectAttempts
+  nameWithType: WebSocketConnectionConfig.MaxReconnectAttempts
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxReconnectAttempts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxReconnectAttempts
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Maximum number of reconnection attempts after connection loss.
+  example: []
+  syntax:
+    content: public int MaxReconnectAttempts { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxReconnectAttempts As Integer
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxReconnectAttempts*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxMessageSizeBytes
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxMessageSizeBytes
+  id: MaxMessageSizeBytes
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxMessageSizeBytes
+  nameWithType: WebSocketConnectionConfig.MaxMessageSizeBytes
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxMessageSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxMessageSizeBytes
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Maximum total size (bytes) of a single WebSocket message after all frames are
+
+    assembled. Messages exceeding this limit are discarded and a warning is logged.
+
+    Default is 10 MiB — large enough for any normal market data payload.
+  example: []
+  syntax:
+    content: public int MaxMessageSizeBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxMessageSizeBytes As Integer
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxMessageSizeBytes*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default
+  id: Default
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: WebSocketConnectionConfig.Default
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: >-
+    Default configuration used by all streaming providers.
+
+    These values match the previously duplicated settings in Alpaca and Polygon clients.
+  example: []
+  syntax:
+    content: public static WebSocketConnectionConfig Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+    content.vb: Public Shared ReadOnly Property [Default] As WebSocketConnectionConfig
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency
+  id: HighFrequency
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: HighFrequency
+  nameWithType: WebSocketConnectionConfig.HighFrequency
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighFrequency
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Configuration optimized for high-frequency data (shorter timeouts).
+  example: []
+  syntax:
+    content: public static WebSocketConnectionConfig HighFrequency { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+    content.vb: Public Shared ReadOnly Property HighFrequency As WebSocketConnectionConfig
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency*
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient
+  id: Resilient
+  parent: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: Resilient
+  nameWithType: WebSocketConnectionConfig.Resilient
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Resilient
+    path: ../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Resilience
+  summary: Configuration optimized for unreliable networks (more retries, longer timeouts).
+  example: []
+  syntax:
+    content: public static WebSocketConnectionConfig Resilient { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+    content.vb: Public Shared ReadOnly Property Resilient As WebSocketConnectionConfig
+  overload: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient*
+references:
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_Default
+  name: Default
+  nameWithType: WebSocketConnectionConfig.Default
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_Resilient
+  name: Resilient
+  nameWithType: WebSocketConnectionConfig.Resilient
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency
+  commentId: P:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_HighFrequency
+  name: HighFrequency
+  nameWithType: WebSocketConnectionConfig.HighFrequency
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency
+- uid: Meridian.Infrastructure.Resilience
+  commentId: N:Meridian.Infrastructure.Resilience
+  href: Meridian.html
+  name: Meridian.Infrastructure.Resilience
+  nameWithType: Meridian.Infrastructure.Resilience
+  fullName: Meridian.Infrastructure.Resilience
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Resilience.WebSocketConnectionConfig}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Resilience.WebSocketConnectionConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<WebSocketConnectionConfig>
+  nameWithType: IEquatable<WebSocketConnectionConfig>
+  fullName: System.IEquatable<Meridian.Infrastructure.Resilience.WebSocketConnectionConfig>
+  nameWithType.vb: IEquatable(Of WebSocketConnectionConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Resilience.WebSocketConnectionConfig)
+  name.vb: IEquatable(Of WebSocketConnectionConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+    name: WebSocketConnectionConfig
+    href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+    name: WebSocketConnectionConfig
+    href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetries*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetries
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_MaxRetries
+  name: MaxRetries
+  nameWithType: WebSocketConnectionConfig.MaxRetries
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetries
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.RetryBaseDelay*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.RetryBaseDelay
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_RetryBaseDelay
+  name: RetryBaseDelay
+  nameWithType: WebSocketConnectionConfig.RetryBaseDelay
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.RetryBaseDelay
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetryDelay*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetryDelay
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_MaxRetryDelay
+  name: MaxRetryDelay
+  nameWithType: WebSocketConnectionConfig.MaxRetryDelay
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxRetryDelay
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerFailureThreshold*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerFailureThreshold
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_CircuitBreakerFailureThreshold
+  name: CircuitBreakerFailureThreshold
+  nameWithType: WebSocketConnectionConfig.CircuitBreakerFailureThreshold
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerFailureThreshold
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerDuration*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerDuration
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_CircuitBreakerDuration
+  name: CircuitBreakerDuration
+  nameWithType: WebSocketConnectionConfig.CircuitBreakerDuration
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.CircuitBreakerDuration
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.OperationTimeout*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.OperationTimeout
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_OperationTimeout
+  name: OperationTimeout
+  nameWithType: WebSocketConnectionConfig.OperationTimeout
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.OperationTimeout
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatInterval*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatInterval
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_HeartbeatInterval
+  name: HeartbeatInterval
+  nameWithType: WebSocketConnectionConfig.HeartbeatInterval
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatInterval
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatTimeout*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatTimeout
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_HeartbeatTimeout
+  name: HeartbeatTimeout
+  nameWithType: WebSocketConnectionConfig.HeartbeatTimeout
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HeartbeatTimeout
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxReconnectAttempts*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxReconnectAttempts
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_MaxReconnectAttempts
+  name: MaxReconnectAttempts
+  nameWithType: WebSocketConnectionConfig.MaxReconnectAttempts
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxReconnectAttempts
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxMessageSizeBytes*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxMessageSizeBytes
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_MaxMessageSizeBytes
+  name: MaxMessageSizeBytes
+  nameWithType: WebSocketConnectionConfig.MaxMessageSizeBytes
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.MaxMessageSizeBytes
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_Default
+  name: Default
+  nameWithType: WebSocketConnectionConfig.Default
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Default
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  parent: Meridian.Infrastructure.Resilience
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html
+  name: WebSocketConnectionConfig
+  nameWithType: WebSocketConnectionConfig
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_HighFrequency
+  name: HighFrequency
+  nameWithType: WebSocketConnectionConfig.HighFrequency
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.HighFrequency
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient*
+  commentId: Overload:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html#Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_Resilient
+  name: Resilient
+  nameWithType: WebSocketConnectionConfig.Resilient
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.Resilient

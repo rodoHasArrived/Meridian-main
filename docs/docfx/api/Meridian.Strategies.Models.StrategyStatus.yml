@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Models.StrategyStatus
+  commentId: T:Meridian.Strategies.Models.StrategyStatus
+  id: StrategyStatus
+  parent: Meridian.Strategies.Models
+  children:
+  - Meridian.Strategies.Models.StrategyStatus.Faulted
+  - Meridian.Strategies.Models.StrategyStatus.Paused
+  - Meridian.Strategies.Models.StrategyStatus.Registered
+  - Meridian.Strategies.Models.StrategyStatus.Running
+  - Meridian.Strategies.Models.StrategyStatus.Stopped
+  - Meridian.Strategies.Models.StrategyStatus.WarmingUp
+  langs:
+  - csharp
+  - vb
+  name: StrategyStatus
+  nameWithType: StrategyStatus
+  fullName: Meridian.Strategies.Models.StrategyStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyStatus
+    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: The lifecycle state of a registered strategy.
+  example: []
+  syntax:
+    content: public enum StrategyStatus
+    content.vb: Public Enum StrategyStatus
+- uid: Meridian.Strategies.Models.StrategyStatus.Registered
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.Registered
+  id: Registered
+  parent: Meridian.Strategies.Models.StrategyStatus
+  langs:
+  - csharp
+  - vb
+  name: Registered
+  nameWithType: StrategyStatus.Registered
+  fullName: Meridian.Strategies.Models.StrategyStatus.Registered
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Registered
+    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Strategy is registered but not yet started.
+  example: []
+  syntax:
+    content: Registered = 0
+    return:
+      type: Meridian.Strategies.Models.StrategyStatus
+- uid: Meridian.Strategies.Models.StrategyStatus.WarmingUp
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.WarmingUp
+  id: WarmingUp
+  parent: Meridian.Strategies.Models.StrategyStatus
+  langs:
+  - csharp
+  - vb
+  name: WarmingUp
+  nameWithType: StrategyStatus.WarmingUp
+  fullName: Meridian.Strategies.Models.StrategyStatus.WarmingUp
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WarmingUp
+    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Strategy is initialising or loading historical data for warm-up.
+  example: []
+  syntax:
+    content: WarmingUp = 1
+    return:
+      type: Meridian.Strategies.Models.StrategyStatus
+- uid: Meridian.Strategies.Models.StrategyStatus.Running
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.Running
+  id: Running
+  parent: Meridian.Strategies.Models.StrategyStatus
+  langs:
+  - csharp
+  - vb
+  name: Running
+  nameWithType: StrategyStatus.Running
+  fullName: Meridian.Strategies.Models.StrategyStatus.Running
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Running
+    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Strategy is running and actively processing market events.
+  example: []
+  syntax:
+    content: Running = 2
+    return:
+      type: Meridian.Strategies.Models.StrategyStatus
+- uid: Meridian.Strategies.Models.StrategyStatus.Paused
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.Paused
+  id: Paused
+  parent: Meridian.Strategies.Models.StrategyStatus
+  langs:
+  - csharp
+  - vb
+  name: Paused
+  nameWithType: StrategyStatus.Paused
+  fullName: Meridian.Strategies.Models.StrategyStatus.Paused
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Paused
+    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Strategy has been paused; it is not processing events but retains its state.
+  example: []
+  syntax:
+    content: Paused = 3
+    return:
+      type: Meridian.Strategies.Models.StrategyStatus
+- uid: Meridian.Strategies.Models.StrategyStatus.Stopped
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.Stopped
+  id: Stopped
+  parent: Meridian.Strategies.Models.StrategyStatus
+  langs:
+  - csharp
+  - vb
+  name: Stopped
+  nameWithType: StrategyStatus.Stopped
+  fullName: Meridian.Strategies.Models.StrategyStatus.Stopped
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stopped
+    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Strategy has been cleanly stopped and its state has been finalised.
+  example: []
+  syntax:
+    content: Stopped = 4
+    return:
+      type: Meridian.Strategies.Models.StrategyStatus
+- uid: Meridian.Strategies.Models.StrategyStatus.Faulted
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.Faulted
+  id: Faulted
+  parent: Meridian.Strategies.Models.StrategyStatus
+  langs:
+  - csharp
+  - vb
+  name: Faulted
+  nameWithType: StrategyStatus.Faulted
+  fullName: Meridian.Strategies.Models.StrategyStatus.Faulted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Faulted
+    path: ../../src/Meridian.Strategies/Models/StrategyStatus.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Strategy encountered a fatal error and is no longer running.
+  example: []
+  syntax:
+    content: Faulted = 5
+    return:
+      type: Meridian.Strategies.Models.StrategyStatus
+references:
+- uid: Meridian.Strategies.Models
+  commentId: N:Meridian.Strategies.Models
+  href: Meridian.html
+  name: Meridian.Strategies.Models
+  nameWithType: Meridian.Strategies.Models
+  fullName: Meridian.Strategies.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+- uid: Meridian.Strategies.Models.StrategyStatus
+  commentId: T:Meridian.Strategies.Models.StrategyStatus
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.StrategyStatus.html
+  name: StrategyStatus
+  nameWithType: StrategyStatus
+  fullName: Meridian.Strategies.Models.StrategyStatus

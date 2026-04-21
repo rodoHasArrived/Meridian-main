@@ -1,0 +1,750 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Sinks.SinkHealth
+  commentId: T:Meridian.Storage.Sinks.SinkHealth
+  id: SinkHealth
+  parent: Meridian.Storage.Sinks
+  children:
+  - Meridian.Storage.Sinks.SinkHealth.#ctor(System.String,System.Int32,Meridian.Storage.Sinks.SinkHealthState,System.Int32,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Int64)
+  - Meridian.Storage.Sinks.SinkHealth.CircuitResetTime
+  - Meridian.Storage.Sinks.SinkHealth.ConsecutiveFailures
+  - Meridian.Storage.Sinks.SinkHealth.LastFailureTime
+  - Meridian.Storage.Sinks.SinkHealth.SinkIndex
+  - Meridian.Storage.Sinks.SinkHealth.SinkType
+  - Meridian.Storage.Sinks.SinkHealth.State
+  - Meridian.Storage.Sinks.SinkHealth.TotalFailures
+  langs:
+  - csharp
+  - vb
+  name: SinkHealth
+  nameWithType: SinkHealth
+  fullName: Meridian.Storage.Sinks.SinkHealth
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SinkHealth
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Immutable snapshot of per-sink health information, suitable for metrics and diagnostics.
+  example: []
+  syntax:
+    content: 'public sealed record SinkHealth : IEquatable<SinkHealth>'
+    content.vb: Public NotInheritable Class SinkHealth Implements IEquatable(Of SinkHealth)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Sinks.SinkHealth}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Sinks.SinkHealth.#ctor(System.String,System.Int32,Meridian.Storage.Sinks.SinkHealthState,System.Int32,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Int64)
+  commentId: M:Meridian.Storage.Sinks.SinkHealth.#ctor(System.String,System.Int32,Meridian.Storage.Sinks.SinkHealthState,System.Int32,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Int64)
+  id: '#ctor(System.String,System.Int32,Meridian.Storage.Sinks.SinkHealthState,System.Int32,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Int64)'
+  parent: Meridian.Storage.Sinks.SinkHealth
+  langs:
+  - csharp
+  - vb
+  name: SinkHealth(string, int, SinkHealthState, int, DateTimeOffset, DateTimeOffset?, long)
+  nameWithType: SinkHealth.SinkHealth(string, int, SinkHealthState, int, DateTimeOffset, DateTimeOffset?, long)
+  fullName: Meridian.Storage.Sinks.SinkHealth.SinkHealth(string, int, Meridian.Storage.Sinks.SinkHealthState, int, System.DateTimeOffset, System.DateTimeOffset?, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Immutable snapshot of per-sink health information, suitable for metrics and diagnostics.
+  example: []
+  syntax:
+    content: public SinkHealth(string SinkType, int SinkIndex, SinkHealthState State, int ConsecutiveFailures, DateTimeOffset LastFailureTime, DateTimeOffset? CircuitResetTime, long TotalFailures)
+    parameters:
+    - id: SinkType
+      type: System.String
+    - id: SinkIndex
+      type: System.Int32
+    - id: State
+      type: Meridian.Storage.Sinks.SinkHealthState
+    - id: ConsecutiveFailures
+      type: System.Int32
+    - id: LastFailureTime
+      type: System.DateTimeOffset
+    - id: CircuitResetTime
+      type: System.Nullable{System.DateTimeOffset}
+    - id: TotalFailures
+      type: System.Int64
+    content.vb: Public Sub New(SinkType As String, SinkIndex As Integer, State As SinkHealthState, ConsecutiveFailures As Integer, LastFailureTime As DateTimeOffset, CircuitResetTime As DateTimeOffset?, TotalFailures As Long)
+  overload: Meridian.Storage.Sinks.SinkHealth.#ctor*
+  nameWithType.vb: SinkHealth.New(String, Integer, SinkHealthState, Integer, DateTimeOffset, DateTimeOffset?, Long)
+  fullName.vb: Meridian.Storage.Sinks.SinkHealth.New(String, Integer, Meridian.Storage.Sinks.SinkHealthState, Integer, System.DateTimeOffset, System.DateTimeOffset?, Long)
+  name.vb: New(String, Integer, SinkHealthState, Integer, DateTimeOffset, DateTimeOffset?, Long)
+- uid: Meridian.Storage.Sinks.SinkHealth.SinkType
+  commentId: P:Meridian.Storage.Sinks.SinkHealth.SinkType
+  id: SinkType
+  parent: Meridian.Storage.Sinks.SinkHealth
+  langs:
+  - csharp
+  - vb
+  name: SinkType
+  nameWithType: SinkHealth.SinkType
+  fullName: Meridian.Storage.Sinks.SinkHealth.SinkType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SinkType
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  syntax:
+    content: public string SinkType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SinkType As String
+  overload: Meridian.Storage.Sinks.SinkHealth.SinkType*
+- uid: Meridian.Storage.Sinks.SinkHealth.SinkIndex
+  commentId: P:Meridian.Storage.Sinks.SinkHealth.SinkIndex
+  id: SinkIndex
+  parent: Meridian.Storage.Sinks.SinkHealth
+  langs:
+  - csharp
+  - vb
+  name: SinkIndex
+  nameWithType: SinkHealth.SinkIndex
+  fullName: Meridian.Storage.Sinks.SinkHealth.SinkIndex
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SinkIndex
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  syntax:
+    content: public int SinkIndex { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SinkIndex As Integer
+  overload: Meridian.Storage.Sinks.SinkHealth.SinkIndex*
+- uid: Meridian.Storage.Sinks.SinkHealth.State
+  commentId: P:Meridian.Storage.Sinks.SinkHealth.State
+  id: State
+  parent: Meridian.Storage.Sinks.SinkHealth
+  langs:
+  - csharp
+  - vb
+  name: State
+  nameWithType: SinkHealth.State
+  fullName: Meridian.Storage.Sinks.SinkHealth.State
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: State
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  syntax:
+    content: public SinkHealthState State { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Sinks.SinkHealthState
+    content.vb: Public Property State As SinkHealthState
+  overload: Meridian.Storage.Sinks.SinkHealth.State*
+- uid: Meridian.Storage.Sinks.SinkHealth.ConsecutiveFailures
+  commentId: P:Meridian.Storage.Sinks.SinkHealth.ConsecutiveFailures
+  id: ConsecutiveFailures
+  parent: Meridian.Storage.Sinks.SinkHealth
+  langs:
+  - csharp
+  - vb
+  name: ConsecutiveFailures
+  nameWithType: SinkHealth.ConsecutiveFailures
+  fullName: Meridian.Storage.Sinks.SinkHealth.ConsecutiveFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsecutiveFailures
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  syntax:
+    content: public int ConsecutiveFailures { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ConsecutiveFailures As Integer
+  overload: Meridian.Storage.Sinks.SinkHealth.ConsecutiveFailures*
+- uid: Meridian.Storage.Sinks.SinkHealth.LastFailureTime
+  commentId: P:Meridian.Storage.Sinks.SinkHealth.LastFailureTime
+  id: LastFailureTime
+  parent: Meridian.Storage.Sinks.SinkHealth
+  langs:
+  - csharp
+  - vb
+  name: LastFailureTime
+  nameWithType: SinkHealth.LastFailureTime
+  fullName: Meridian.Storage.Sinks.SinkHealth.LastFailureTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastFailureTime
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  syntax:
+    content: public DateTimeOffset LastFailureTime { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastFailureTime As DateTimeOffset
+  overload: Meridian.Storage.Sinks.SinkHealth.LastFailureTime*
+- uid: Meridian.Storage.Sinks.SinkHealth.CircuitResetTime
+  commentId: P:Meridian.Storage.Sinks.SinkHealth.CircuitResetTime
+  id: CircuitResetTime
+  parent: Meridian.Storage.Sinks.SinkHealth
+  langs:
+  - csharp
+  - vb
+  name: CircuitResetTime
+  nameWithType: SinkHealth.CircuitResetTime
+  fullName: Meridian.Storage.Sinks.SinkHealth.CircuitResetTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitResetTime
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  syntax:
+    content: public DateTimeOffset? CircuitResetTime { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CircuitResetTime As DateTimeOffset?
+  overload: Meridian.Storage.Sinks.SinkHealth.CircuitResetTime*
+- uid: Meridian.Storage.Sinks.SinkHealth.TotalFailures
+  commentId: P:Meridian.Storage.Sinks.SinkHealth.TotalFailures
+  id: TotalFailures
+  parent: Meridian.Storage.Sinks.SinkHealth
+  langs:
+  - csharp
+  - vb
+  name: TotalFailures
+  nameWithType: SinkHealth.TotalFailures
+  fullName: Meridian.Storage.Sinks.SinkHealth.TotalFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFailures
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  syntax:
+    content: public long TotalFailures { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalFailures As Long
+  overload: Meridian.Storage.Sinks.SinkHealth.TotalFailures*
+references:
+- uid: Meridian.Storage.Sinks
+  commentId: N:Meridian.Storage.Sinks
+  href: Meridian.html
+  name: Meridian.Storage.Sinks
+  nameWithType: Meridian.Storage.Sinks
+  fullName: Meridian.Storage.Sinks
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Sinks.SinkHealth}
+  commentId: T:System.IEquatable{Meridian.Storage.Sinks.SinkHealth}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SinkHealth>
+  nameWithType: IEquatable<SinkHealth>
+  fullName: System.IEquatable<Meridian.Storage.Sinks.SinkHealth>
+  nameWithType.vb: IEquatable(Of SinkHealth)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Sinks.SinkHealth)
+  name.vb: IEquatable(Of SinkHealth)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Sinks.SinkHealth
+    name: SinkHealth
+    href: Meridian.Storage.Sinks.SinkHealth.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Sinks.SinkHealth
+    name: SinkHealth
+    href: Meridian.Storage.Sinks.SinkHealth.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Sinks.SinkHealth.#ctor*
+  commentId: Overload:Meridian.Storage.Sinks.SinkHealth.#ctor
+  href: Meridian.Storage.Sinks.SinkHealth.html#Meridian_Storage_Sinks_SinkHealth__ctor_System_String_System_Int32_Meridian_Storage_Sinks_SinkHealthState_System_Int32_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_Int64_
+  name: SinkHealth
+  nameWithType: SinkHealth.SinkHealth
+  fullName: Meridian.Storage.Sinks.SinkHealth.SinkHealth
+  nameWithType.vb: SinkHealth.New
+  fullName.vb: Meridian.Storage.Sinks.SinkHealth.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Sinks.SinkHealthState
+  commentId: T:Meridian.Storage.Sinks.SinkHealthState
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.SinkHealthState.html
+  name: SinkHealthState
+  nameWithType: SinkHealthState
+  fullName: Meridian.Storage.Sinks.SinkHealthState
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Sinks.SinkHealth.SinkType*
+  commentId: Overload:Meridian.Storage.Sinks.SinkHealth.SinkType
+  href: Meridian.Storage.Sinks.SinkHealth.html#Meridian_Storage_Sinks_SinkHealth_SinkType
+  name: SinkType
+  nameWithType: SinkHealth.SinkType
+  fullName: Meridian.Storage.Sinks.SinkHealth.SinkType
+- uid: Meridian.Storage.Sinks.SinkHealth.SinkIndex*
+  commentId: Overload:Meridian.Storage.Sinks.SinkHealth.SinkIndex
+  href: Meridian.Storage.Sinks.SinkHealth.html#Meridian_Storage_Sinks_SinkHealth_SinkIndex
+  name: SinkIndex
+  nameWithType: SinkHealth.SinkIndex
+  fullName: Meridian.Storage.Sinks.SinkHealth.SinkIndex
+- uid: Meridian.Storage.Sinks.SinkHealth.State*
+  commentId: Overload:Meridian.Storage.Sinks.SinkHealth.State
+  href: Meridian.Storage.Sinks.SinkHealth.html#Meridian_Storage_Sinks_SinkHealth_State
+  name: State
+  nameWithType: SinkHealth.State
+  fullName: Meridian.Storage.Sinks.SinkHealth.State
+- uid: Meridian.Storage.Sinks.SinkHealth.ConsecutiveFailures*
+  commentId: Overload:Meridian.Storage.Sinks.SinkHealth.ConsecutiveFailures
+  href: Meridian.Storage.Sinks.SinkHealth.html#Meridian_Storage_Sinks_SinkHealth_ConsecutiveFailures
+  name: ConsecutiveFailures
+  nameWithType: SinkHealth.ConsecutiveFailures
+  fullName: Meridian.Storage.Sinks.SinkHealth.ConsecutiveFailures
+- uid: Meridian.Storage.Sinks.SinkHealth.LastFailureTime*
+  commentId: Overload:Meridian.Storage.Sinks.SinkHealth.LastFailureTime
+  href: Meridian.Storage.Sinks.SinkHealth.html#Meridian_Storage_Sinks_SinkHealth_LastFailureTime
+  name: LastFailureTime
+  nameWithType: SinkHealth.LastFailureTime
+  fullName: Meridian.Storage.Sinks.SinkHealth.LastFailureTime
+- uid: Meridian.Storage.Sinks.SinkHealth.CircuitResetTime*
+  commentId: Overload:Meridian.Storage.Sinks.SinkHealth.CircuitResetTime
+  href: Meridian.Storage.Sinks.SinkHealth.html#Meridian_Storage_Sinks_SinkHealth_CircuitResetTime
+  name: CircuitResetTime
+  nameWithType: SinkHealth.CircuitResetTime
+  fullName: Meridian.Storage.Sinks.SinkHealth.CircuitResetTime
+- uid: Meridian.Storage.Sinks.SinkHealth.TotalFailures*
+  commentId: Overload:Meridian.Storage.Sinks.SinkHealth.TotalFailures
+  href: Meridian.Storage.Sinks.SinkHealth.html#Meridian_Storage_Sinks_SinkHealth_TotalFailures
+  name: TotalFailures
+  nameWithType: SinkHealth.TotalFailures
+  fullName: Meridian.Storage.Sinks.SinkHealth.TotalFailures

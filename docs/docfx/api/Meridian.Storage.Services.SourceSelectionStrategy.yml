@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.SourceSelectionStrategy
+  commentId: T:Meridian.Storage.Services.SourceSelectionStrategy
+  id: SourceSelectionStrategy
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.SourceSelectionStrategy.HighestQualityScore
+  - Meridian.Storage.Services.SourceSelectionStrategy.LowestLatency
+  - Meridian.Storage.Services.SourceSelectionStrategy.Merge
+  - Meridian.Storage.Services.SourceSelectionStrategy.MostComplete
+  - Meridian.Storage.Services.SourceSelectionStrategy.MostConsistent
+  langs:
+  - csharp
+  - vb
+  name: SourceSelectionStrategy
+  nameWithType: SourceSelectionStrategy
+  fullName: Meridian.Storage.Services.SourceSelectionStrategy
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceSelectionStrategy
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 652
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum SourceSelectionStrategy : byte'
+    content.vb: Public Enum SourceSelectionStrategy As Byte
+- uid: Meridian.Storage.Services.SourceSelectionStrategy.HighestQualityScore
+  commentId: F:Meridian.Storage.Services.SourceSelectionStrategy.HighestQualityScore
+  id: HighestQualityScore
+  parent: Meridian.Storage.Services.SourceSelectionStrategy
+  langs:
+  - csharp
+  - vb
+  name: HighestQualityScore
+  nameWithType: SourceSelectionStrategy.HighestQualityScore
+  fullName: Meridian.Storage.Services.SourceSelectionStrategy.HighestQualityScore
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighestQualityScore
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 654
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: HighestQualityScore = 0
+    return:
+      type: Meridian.Storage.Services.SourceSelectionStrategy
+- uid: Meridian.Storage.Services.SourceSelectionStrategy.MostComplete
+  commentId: F:Meridian.Storage.Services.SourceSelectionStrategy.MostComplete
+  id: MostComplete
+  parent: Meridian.Storage.Services.SourceSelectionStrategy
+  langs:
+  - csharp
+  - vb
+  name: MostComplete
+  nameWithType: SourceSelectionStrategy.MostComplete
+  fullName: Meridian.Storage.Services.SourceSelectionStrategy.MostComplete
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MostComplete
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 655
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: MostComplete = 1
+    return:
+      type: Meridian.Storage.Services.SourceSelectionStrategy
+- uid: Meridian.Storage.Services.SourceSelectionStrategy.LowestLatency
+  commentId: F:Meridian.Storage.Services.SourceSelectionStrategy.LowestLatency
+  id: LowestLatency
+  parent: Meridian.Storage.Services.SourceSelectionStrategy
+  langs:
+  - csharp
+  - vb
+  name: LowestLatency
+  nameWithType: SourceSelectionStrategy.LowestLatency
+  fullName: Meridian.Storage.Services.SourceSelectionStrategy.LowestLatency
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LowestLatency
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 656
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: LowestLatency = 2
+    return:
+      type: Meridian.Storage.Services.SourceSelectionStrategy
+- uid: Meridian.Storage.Services.SourceSelectionStrategy.MostConsistent
+  commentId: F:Meridian.Storage.Services.SourceSelectionStrategy.MostConsistent
+  id: MostConsistent
+  parent: Meridian.Storage.Services.SourceSelectionStrategy
+  langs:
+  - csharp
+  - vb
+  name: MostConsistent
+  nameWithType: SourceSelectionStrategy.MostConsistent
+  fullName: Meridian.Storage.Services.SourceSelectionStrategy.MostConsistent
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MostConsistent
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 657
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: MostConsistent = 3
+    return:
+      type: Meridian.Storage.Services.SourceSelectionStrategy
+- uid: Meridian.Storage.Services.SourceSelectionStrategy.Merge
+  commentId: F:Meridian.Storage.Services.SourceSelectionStrategy.Merge
+  id: Merge
+  parent: Meridian.Storage.Services.SourceSelectionStrategy
+  langs:
+  - csharp
+  - vb
+  name: Merge
+  nameWithType: SourceSelectionStrategy.Merge
+  fullName: Meridian.Storage.Services.SourceSelectionStrategy.Merge
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Merge
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 658
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Merge = 4
+    return:
+      type: Meridian.Storage.Services.SourceSelectionStrategy
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.SourceSelectionStrategy
+  commentId: T:Meridian.Storage.Services.SourceSelectionStrategy
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.SourceSelectionStrategy.html
+  name: SourceSelectionStrategy
+  nameWithType: SourceSelectionStrategy
+  fullName: Meridian.Storage.Services.SourceSelectionStrategy

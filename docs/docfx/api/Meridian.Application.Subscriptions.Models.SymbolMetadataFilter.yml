@@ -1,0 +1,879 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  commentId: T:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  id: SymbolMetadataFilter
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.#ctor(System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Meridian.Application.Subscriptions.Models.MarketCapCategory},System.String,System.String,System.String,System.String,System.Nullable{System.Boolean})
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.AssetType
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Country
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Exchange
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.IndexMembership
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Industry
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MarketCapCategory
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MaxMarketCap
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MinMarketCap
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.PaysDividend
+  - Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Sector
+  langs:
+  - csharp
+  - vb
+  name: SymbolMetadataFilter
+  nameWithType: SymbolMetadataFilter
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolMetadataFilter
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Filter criteria for symbol metadata queries.
+  example: []
+  syntax:
+    content: 'public sealed record SymbolMetadataFilter : IEquatable<SymbolMetadataFilter>'
+    content.vb: Public NotInheritable Class SymbolMetadataFilter Implements IEquatable(Of SymbolMetadataFilter)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.SymbolMetadataFilter}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.#ctor(System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Meridian.Application.Subscriptions.Models.MarketCapCategory},System.String,System.String,System.String,System.String,System.Nullable{System.Boolean})
+  commentId: M:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.#ctor(System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Meridian.Application.Subscriptions.Models.MarketCapCategory},System.String,System.String,System.String,System.String,System.Nullable{System.Boolean})
+  id: '#ctor(System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Meridian.Application.Subscriptions.Models.MarketCapCategory},System.String,System.String,System.String,System.String,System.Nullable{System.Boolean})'
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: SymbolMetadataFilter(string?, string?, decimal?, decimal?, MarketCapCategory?, string?, string?, string?, string?, bool?)
+  nameWithType: SymbolMetadataFilter.SymbolMetadataFilter(string?, string?, decimal?, decimal?, MarketCapCategory?, string?, string?, string?, string?, bool?)
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.SymbolMetadataFilter(string?, string?, decimal?, decimal?, Meridian.Application.Subscriptions.Models.MarketCapCategory?, string?, string?, string?, string?, bool?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Filter criteria for symbol metadata queries.
+  example: []
+  syntax:
+    content: public SymbolMetadataFilter(string? Sector = null, string? Industry = null, decimal? MinMarketCap = null, decimal? MaxMarketCap = null, MarketCapCategory? MarketCapCategory = null, string? Exchange = null, string? Country = null, string? AssetType = null, string? IndexMembership = null, bool? PaysDividend = null)
+    parameters:
+    - id: Sector
+      type: System.String
+    - id: Industry
+      type: System.String
+    - id: MinMarketCap
+      type: System.Nullable{System.Decimal}
+    - id: MaxMarketCap
+      type: System.Nullable{System.Decimal}
+    - id: MarketCapCategory
+      type: System.Nullable{Meridian.Application.Subscriptions.Models.MarketCapCategory}
+    - id: Exchange
+      type: System.String
+    - id: Country
+      type: System.String
+    - id: AssetType
+      type: System.String
+    - id: IndexMembership
+      type: System.String
+    - id: PaysDividend
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Sub New(Sector As String = Nothing, Industry As String = Nothing, MinMarketCap As Decimal? = Nothing, MaxMarketCap As Decimal? = Nothing, MarketCapCategory As MarketCapCategory? = Nothing, Exchange As String = Nothing, Country As String = Nothing, AssetType As String = Nothing, IndexMembership As String = Nothing, PaysDividend As Boolean? = Nothing)
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.#ctor*
+  nameWithType.vb: SymbolMetadataFilter.New(String, String, Decimal?, Decimal?, MarketCapCategory?, String, String, String, String, Boolean?)
+  fullName.vb: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.New(String, String, Decimal?, Decimal?, Meridian.Application.Subscriptions.Models.MarketCapCategory?, String, String, String, String, Boolean?)
+  name.vb: New(String, String, Decimal?, Decimal?, MarketCapCategory?, String, String, String, String, Boolean?)
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Sector
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Sector
+  id: Sector
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: Sector
+  nameWithType: SymbolMetadataFilter.Sector
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Sector
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sector
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Sector { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Sector As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Sector*
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Industry
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Industry
+  id: Industry
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: Industry
+  nameWithType: SymbolMetadataFilter.Industry
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Industry
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Industry
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Industry { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Industry As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Industry*
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MinMarketCap
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MinMarketCap
+  id: MinMarketCap
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: MinMarketCap
+  nameWithType: SymbolMetadataFilter.MinMarketCap
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MinMarketCap
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinMarketCap
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? MinMarketCap { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property MinMarketCap As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MinMarketCap*
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MaxMarketCap
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MaxMarketCap
+  id: MaxMarketCap
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: MaxMarketCap
+  nameWithType: SymbolMetadataFilter.MaxMarketCap
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MaxMarketCap
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxMarketCap
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public decimal? MaxMarketCap { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property MaxMarketCap As Decimal?
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MaxMarketCap*
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MarketCapCategory
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MarketCapCategory
+  id: MarketCapCategory
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: MarketCapCategory
+  nameWithType: SymbolMetadataFilter.MarketCapCategory
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MarketCapCategory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketCapCategory
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public MarketCapCategory? MarketCapCategory { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Application.Subscriptions.Models.MarketCapCategory}
+    content.vb: Public Property MarketCapCategory As MarketCapCategory?
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MarketCapCategory*
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Exchange
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Exchange
+  id: Exchange
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: SymbolMetadataFilter.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Exchange*
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Country
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Country
+  id: Country
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: Country
+  nameWithType: SymbolMetadataFilter.Country
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Country
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Country
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Country { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Country As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Country*
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.AssetType
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.AssetType
+  id: AssetType
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: AssetType
+  nameWithType: SymbolMetadataFilter.AssetType
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.AssetType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetType
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? AssetType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetType As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.AssetType*
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.IndexMembership
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.IndexMembership
+  id: IndexMembership
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: IndexMembership
+  nameWithType: SymbolMetadataFilter.IndexMembership
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.IndexMembership
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexMembership
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? IndexMembership { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IndexMembership As String
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.IndexMembership*
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.PaysDividend
+  commentId: P:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.PaysDividend
+  id: PaysDividend
+  parent: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  langs:
+  - csharp
+  - vb
+  name: PaysDividend
+  nameWithType: SymbolMetadataFilter.PaysDividend
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.PaysDividend
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaysDividend
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public bool? PaysDividend { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property PaysDividend As Boolean?
+  overload: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.PaysDividend*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.SymbolMetadataFilter}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.SymbolMetadataFilter}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SymbolMetadataFilter>
+  nameWithType: IEquatable<SymbolMetadataFilter>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.SymbolMetadataFilter>
+  nameWithType.vb: IEquatable(Of SymbolMetadataFilter)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.SymbolMetadataFilter)
+  name.vb: IEquatable(Of SymbolMetadataFilter)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+    name: SymbolMetadataFilter
+    href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+    name: SymbolMetadataFilter
+    href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.#ctor
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter__ctor_System_String_System_String_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_Meridian_Application_Subscriptions_Models_MarketCapCategory__System_String_System_String_System_String_System_String_System_Nullable_System_Boolean__
+  name: SymbolMetadataFilter
+  nameWithType: SymbolMetadataFilter.SymbolMetadataFilter
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.SymbolMetadataFilter
+  nameWithType.vb: SymbolMetadataFilter.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{Meridian.Application.Subscriptions.Models.MarketCapCategory}
+  commentId: T:System.Nullable{Meridian.Application.Subscriptions.Models.MarketCapCategory}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Application.Subscriptions.Models.MarketCapCategory.html
+  name: MarketCapCategory?
+  nameWithType: MarketCapCategory?
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory?
+  spec.csharp:
+  - uid: Meridian.Application.Subscriptions.Models.MarketCapCategory
+    name: MarketCapCategory
+    href: Meridian.Application.Subscriptions.Models.MarketCapCategory.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Application.Subscriptions.Models.MarketCapCategory
+    name: MarketCapCategory
+    href: Meridian.Application.Subscriptions.Models.MarketCapCategory.html
+  - name: '?'
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Sector*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Sector
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_Sector
+  name: Sector
+  nameWithType: SymbolMetadataFilter.Sector
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Sector
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Industry*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Industry
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_Industry
+  name: Industry
+  nameWithType: SymbolMetadataFilter.Industry
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Industry
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MinMarketCap*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MinMarketCap
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_MinMarketCap
+  name: MinMarketCap
+  nameWithType: SymbolMetadataFilter.MinMarketCap
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MinMarketCap
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MaxMarketCap*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MaxMarketCap
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_MaxMarketCap
+  name: MaxMarketCap
+  nameWithType: SymbolMetadataFilter.MaxMarketCap
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MaxMarketCap
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MarketCapCategory*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MarketCapCategory
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_MarketCapCategory
+  name: MarketCapCategory
+  nameWithType: SymbolMetadataFilter.MarketCapCategory
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.MarketCapCategory
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Exchange*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Exchange
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_Exchange
+  name: Exchange
+  nameWithType: SymbolMetadataFilter.Exchange
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Exchange
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Country*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Country
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_Country
+  name: Country
+  nameWithType: SymbolMetadataFilter.Country
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.Country
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.AssetType*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.AssetType
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_AssetType
+  name: AssetType
+  nameWithType: SymbolMetadataFilter.AssetType
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.AssetType
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.IndexMembership*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.IndexMembership
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_IndexMembership
+  name: IndexMembership
+  nameWithType: SymbolMetadataFilter.IndexMembership
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.IndexMembership
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.PaysDividend*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.PaysDividend
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html#Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_PaysDividend
+  name: PaysDividend
+  nameWithType: SymbolMetadataFilter.PaysDividend
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.PaysDividend

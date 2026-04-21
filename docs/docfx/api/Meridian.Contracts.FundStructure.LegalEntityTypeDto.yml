@@ -1,0 +1,321 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  commentId: T:Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  id: LegalEntityTypeDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.LegalEntityTypeDto.Broker
+  - Meridian.Contracts.FundStructure.LegalEntityTypeDto.Counterparty
+  - Meridian.Contracts.FundStructure.LegalEntityTypeDto.Custodian
+  - Meridian.Contracts.FundStructure.LegalEntityTypeDto.Fund
+  - Meridian.Contracts.FundStructure.LegalEntityTypeDto.GeneralPartner
+  - Meridian.Contracts.FundStructure.LegalEntityTypeDto.LimitedPartner
+  - Meridian.Contracts.FundStructure.LegalEntityTypeDto.ManagementCompany
+  - Meridian.Contracts.FundStructure.LegalEntityTypeDto.Other
+  - Meridian.Contracts.FundStructure.LegalEntityTypeDto.Vehicle
+  langs:
+  - csharp
+  - vb
+  name: LegalEntityTypeDto
+  nameWithType: LegalEntityTypeDto
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LegalEntityTypeDto
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<LegalEntityTypeDto>))]
+
+      public enum LegalEntityTypeDto
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of LegalEntityTypeDto)))>
+
+      Public Enum LegalEntityTypeDto
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.FundStructure.LegalEntityTypeDto}
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Fund
+  commentId: F:Meridian.Contracts.FundStructure.LegalEntityTypeDto.Fund
+  id: Fund
+  parent: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Fund
+  nameWithType: LegalEntityTypeDto.Fund
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Fund
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fund
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Fund = 0
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto.ManagementCompany
+  commentId: F:Meridian.Contracts.FundStructure.LegalEntityTypeDto.ManagementCompany
+  id: ManagementCompany
+  parent: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  langs:
+  - csharp
+  - vb
+  name: ManagementCompany
+  nameWithType: LegalEntityTypeDto.ManagementCompany
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto.ManagementCompany
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManagementCompany
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: ManagementCompany = 1
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto.GeneralPartner
+  commentId: F:Meridian.Contracts.FundStructure.LegalEntityTypeDto.GeneralPartner
+  id: GeneralPartner
+  parent: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  langs:
+  - csharp
+  - vb
+  name: GeneralPartner
+  nameWithType: LegalEntityTypeDto.GeneralPartner
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto.GeneralPartner
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GeneralPartner
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: GeneralPartner = 2
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto.LimitedPartner
+  commentId: F:Meridian.Contracts.FundStructure.LegalEntityTypeDto.LimitedPartner
+  id: LimitedPartner
+  parent: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  langs:
+  - csharp
+  - vb
+  name: LimitedPartner
+  nameWithType: LegalEntityTypeDto.LimitedPartner
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto.LimitedPartner
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LimitedPartner
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: LimitedPartner = 3
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Vehicle
+  commentId: F:Meridian.Contracts.FundStructure.LegalEntityTypeDto.Vehicle
+  id: Vehicle
+  parent: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Vehicle
+  nameWithType: LegalEntityTypeDto.Vehicle
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Vehicle
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vehicle
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Vehicle = 4
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Custodian
+  commentId: F:Meridian.Contracts.FundStructure.LegalEntityTypeDto.Custodian
+  id: Custodian
+  parent: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Custodian
+  nameWithType: LegalEntityTypeDto.Custodian
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Custodian
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custodian
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Custodian = 5
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Broker
+  commentId: F:Meridian.Contracts.FundStructure.LegalEntityTypeDto.Broker
+  id: Broker
+  parent: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Broker
+  nameWithType: LegalEntityTypeDto.Broker
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Broker
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Broker
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Broker = 6
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Counterparty
+  commentId: F:Meridian.Contracts.FundStructure.LegalEntityTypeDto.Counterparty
+  id: Counterparty
+  parent: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Counterparty
+  nameWithType: LegalEntityTypeDto.Counterparty
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Counterparty
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Counterparty
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Counterparty = 7
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Other
+  commentId: F:Meridian.Contracts.FundStructure.LegalEntityTypeDto.Other
+  id: Other
+  parent: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  langs:
+  - csharp
+  - vb
+  name: Other
+  nameWithType: LegalEntityTypeDto.Other
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto.Other
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Other
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Other = 8
+    return:
+      type: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  commentId: T:Meridian.Contracts.FundStructure.LegalEntityTypeDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.LegalEntityTypeDto.html
+  name: LegalEntityTypeDto
+  nameWithType: LegalEntityTypeDto
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto

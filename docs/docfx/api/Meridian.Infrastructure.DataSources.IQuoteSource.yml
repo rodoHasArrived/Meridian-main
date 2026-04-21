@@ -1,0 +1,296 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.IQuoteSource
+  commentId: T:Meridian.Infrastructure.DataSources.IQuoteSource
+  id: IQuoteSource
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.IQuoteSource.Quotes
+  - Meridian.Infrastructure.DataSources.IQuoteSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.DataSources.IQuoteSource.UnsubscribeQuotes(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: IQuoteSource
+  nameWithType: IQuoteSource
+  fullName: Meridian.Infrastructure.DataSources.IQuoteSource
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IQuoteSource
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 129
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Interface for sources that provide quote data.
+  example: []
+  syntax:
+    content: public interface IQuoteSource
+    content.vb: Public Interface IQuoteSource
+- uid: Meridian.Infrastructure.DataSources.IQuoteSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.IQuoteSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.DataSources.IQuoteSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribeQuotes(SymbolConfig)
+  nameWithType: IQuoteSource.SubscribeQuotes(SymbolConfig)
+  fullName: Meridian.Infrastructure.DataSources.IQuoteSource.SubscribeQuotes(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeQuotes
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 134
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Subscribes to BBO quotes for the given symbol.
+  example: []
+  syntax:
+    content: int SubscribeQuotes(SymbolConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Function SubscribeQuotes(config As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.DataSources.IQuoteSource.SubscribeQuotes*
+- uid: Meridian.Infrastructure.DataSources.IQuoteSource.UnsubscribeQuotes(System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.IQuoteSource.UnsubscribeQuotes(System.Int32)
+  id: UnsubscribeQuotes(System.Int32)
+  parent: Meridian.Infrastructure.DataSources.IQuoteSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeQuotes(int)
+  nameWithType: IQuoteSource.UnsubscribeQuotes(int)
+  fullName: Meridian.Infrastructure.DataSources.IQuoteSource.UnsubscribeQuotes(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeQuotes
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 139
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Unsubscribes from a quote subscription.
+  example: []
+  syntax:
+    content: void UnsubscribeQuotes(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Sub UnsubscribeQuotes(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.DataSources.IQuoteSource.UnsubscribeQuotes*
+  nameWithType.vb: IQuoteSource.UnsubscribeQuotes(Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.IQuoteSource.UnsubscribeQuotes(Integer)
+  name.vb: UnsubscribeQuotes(Integer)
+- uid: Meridian.Infrastructure.DataSources.IQuoteSource.Quotes
+  commentId: P:Meridian.Infrastructure.DataSources.IQuoteSource.Quotes
+  id: Quotes
+  parent: Meridian.Infrastructure.DataSources.IQuoteSource
+  langs:
+  - csharp
+  - vb
+  name: Quotes
+  nameWithType: IQuoteSource.Quotes
+  fullName: Meridian.Infrastructure.DataSources.IQuoteSource.Quotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quotes
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 144
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Observable stream of quote events.
+  example: []
+  syntax:
+    content: IObservable<RealtimeQuote> Quotes { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+    content.vb: ReadOnly Property Quotes As IObservable(Of RealtimeQuote)
+  overload: Meridian.Infrastructure.DataSources.IQuoteSource.Quotes*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.IQuoteSource.SubscribeQuotes*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IQuoteSource.SubscribeQuotes
+  href: Meridian.Infrastructure.DataSources.IQuoteSource.html#Meridian_Infrastructure_DataSources_IQuoteSource_SubscribeQuotes_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeQuotes
+  nameWithType: IQuoteSource.SubscribeQuotes
+  fullName: Meridian.Infrastructure.DataSources.IQuoteSource.SubscribeQuotes
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.DataSources.IQuoteSource.UnsubscribeQuotes*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IQuoteSource.UnsubscribeQuotes
+  href: Meridian.Infrastructure.DataSources.IQuoteSource.html#Meridian_Infrastructure_DataSources_IQuoteSource_UnsubscribeQuotes_System_Int32_
+  name: UnsubscribeQuotes
+  nameWithType: IQuoteSource.UnsubscribeQuotes
+  fullName: Meridian.Infrastructure.DataSources.IQuoteSource.UnsubscribeQuotes
+- uid: Meridian.Infrastructure.DataSources.IQuoteSource.Quotes*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IQuoteSource.Quotes
+  href: Meridian.Infrastructure.DataSources.IQuoteSource.html#Meridian_Infrastructure_DataSources_IQuoteSource_Quotes
+  name: Quotes
+  nameWithType: IQuoteSource.Quotes
+  fullName: Meridian.Infrastructure.DataSources.IQuoteSource.Quotes
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<RealtimeQuote>
+  nameWithType: IObservable<RealtimeQuote>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.RealtimeQuote>
+  nameWithType.vb: IObservable(Of RealtimeQuote)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.RealtimeQuote)
+  name.vb: IObservable(Of RealtimeQuote)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeQuote
+    name: RealtimeQuote
+    href: Meridian.Infrastructure.DataSources.RealtimeQuote.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeQuote
+    name: RealtimeQuote
+    href: Meridian.Infrastructure.DataSources.RealtimeQuote.html
+  - name: )
+- uid: System.IObservable`1
+  commentId: T:System.IObservable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<T>
+  nameWithType: IObservable<T>
+  fullName: System.IObservable<T>
+  nameWithType.vb: IObservable(Of T)
+  fullName.vb: System.IObservable(Of T)
+  name.vb: IObservable(Of T)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

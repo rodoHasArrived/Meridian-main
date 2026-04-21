@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  id: DiscrepancySeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Critical
+  - Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.High
+  - Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Low
+  - Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Medium
+  langs:
+  - csharp
+  - vb
+  name: DiscrepancySeverity
+  nameWithType: DiscrepancySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiscrepancySeverity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Discrepancy severity.
+  example: []
+  syntax:
+    content: 'public enum DiscrepancySeverity : byte'
+    content.vb: Public Enum DiscrepancySeverity As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Low
+  commentId: F:Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Low
+  id: Low
+  parent: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: DiscrepancySeverity.Low
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Low = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Medium
+  commentId: F:Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Medium
+  id: Medium
+  parent: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  langs:
+  - csharp
+  - vb
+  name: Medium
+  nameWithType: DiscrepancySeverity.Medium
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Medium
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Medium
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Medium = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.High
+  commentId: F:Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.High
+  id: High
+  parent: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: DiscrepancySeverity.High
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: High = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+- uid: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Critical
+  commentId: F:Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: DiscrepancySeverity.Critical
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Critical = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity.html
+  name: DiscrepancySeverity
+  nameWithType: DiscrepancySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.DiscrepancySeverity

@@ -1,0 +1,1769 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.PackageOptions
+  commentId: T:Meridian.Storage.Packaging.PackageOptions
+  id: PackageOptions
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.PackageOptions.CompressionLevel
+  - Meridian.Storage.Packaging.PackageOptions.ConvertToFormat
+  - Meridian.Storage.Packaging.PackageOptions.CustomMetadata
+  - Meridian.Storage.Packaging.PackageOptions.DecompressFiles
+  - Meridian.Storage.Packaging.PackageOptions.Description
+  - Meridian.Storage.Packaging.PackageOptions.EndDate
+  - Meridian.Storage.Packaging.PackageOptions.EventTypes
+  - Meridian.Storage.Packaging.PackageOptions.Format
+  - Meridian.Storage.Packaging.PackageOptions.GenerateImportScripts
+  - Meridian.Storage.Packaging.PackageOptions.ImportScriptTargets
+  - Meridian.Storage.Packaging.PackageOptions.IncludeDataDictionary
+  - Meridian.Storage.Packaging.PackageOptions.IncludeLoaderScripts
+  - Meridian.Storage.Packaging.PackageOptions.IncludeQualityReport
+  - Meridian.Storage.Packaging.PackageOptions.IncludeSchemas
+  - Meridian.Storage.Packaging.PackageOptions.InternalLayout
+  - Meridian.Storage.Packaging.PackageOptions.MaxPackageBytes
+  - Meridian.Storage.Packaging.PackageOptions.Name
+  - Meridian.Storage.Packaging.PackageOptions.OutputDirectory
+  - Meridian.Storage.Packaging.PackageOptions.Password
+  - Meridian.Storage.Packaging.PackageOptions.Sources
+  - Meridian.Storage.Packaging.PackageOptions.StartDate
+  - Meridian.Storage.Packaging.PackageOptions.Symbols
+  - Meridian.Storage.Packaging.PackageOptions.Tags
+  - Meridian.Storage.Packaging.PackageOptions.VerifyChecksums
+  langs:
+  - csharp
+  - vb
+  name: PackageOptions
+  nameWithType: PackageOptions
+  fullName: Meridian.Storage.Packaging.PackageOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageOptions
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Options for creating portable data packages.
+  example: []
+  syntax:
+    content: public sealed class PackageOptions
+    content.vb: Public NotInheritable Class PackageOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Packaging.PackageOptions.Name
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.Name
+  id: Name
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: PackageOptions.Name
+  fullName: Meridian.Storage.Packaging.PackageOptions.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Name for the package (used in file name and manifest).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("name")]
+
+      public string Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("name")>
+
+      Public Property Name As String
+  overload: Meridian.Storage.Packaging.PackageOptions.Name*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: name
+- uid: Meridian.Storage.Packaging.PackageOptions.Description
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.Description
+  id: Description
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: PackageOptions.Description
+  fullName: Meridian.Storage.Packaging.PackageOptions.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Description of the package contents.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string? Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Storage.Packaging.PackageOptions.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+- uid: Meridian.Storage.Packaging.PackageOptions.Format
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.Format
+  id: Format
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: Format
+  nameWithType: PackageOptions.Format
+  fullName: Meridian.Storage.Packaging.PackageOptions.Format
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Package format (Zip or TarGz).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("format")]
+
+      public PackageFormat Format { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Packaging.PackageFormat
+    content.vb: >-
+      <JsonPropertyName("format")>
+
+      Public Property Format As PackageFormat
+  overload: Meridian.Storage.Packaging.PackageOptions.Format*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: format
+- uid: Meridian.Storage.Packaging.PackageOptions.CompressionLevel
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.CompressionLevel
+  id: CompressionLevel
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: CompressionLevel
+  nameWithType: PackageOptions.CompressionLevel
+  fullName: Meridian.Storage.Packaging.PackageOptions.CompressionLevel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionLevel
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Compression level for the package archive.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("compressionLevel")]
+
+      public PackageCompressionLevel CompressionLevel { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Packaging.PackageCompressionLevel
+    content.vb: >-
+      <JsonPropertyName("compressionLevel")>
+
+      Public Property CompressionLevel As PackageCompressionLevel
+  overload: Meridian.Storage.Packaging.PackageOptions.CompressionLevel*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: compressionLevel
+- uid: Meridian.Storage.Packaging.PackageOptions.Symbols
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.Symbols
+  id: Symbols
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: PackageOptions.Symbols
+  fullName: Meridian.Storage.Packaging.PackageOptions.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Symbols to include (null = all symbols).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbols")]
+
+      public string[]? Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("symbols")>
+
+      Public Property Symbols As String()
+  overload: Meridian.Storage.Packaging.PackageOptions.Symbols*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbols
+- uid: Meridian.Storage.Packaging.PackageOptions.EventTypes
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.EventTypes
+  id: EventTypes
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: EventTypes
+  nameWithType: PackageOptions.EventTypes
+  fullName: Meridian.Storage.Packaging.PackageOptions.EventTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypes
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Event types to include (Trade, BboQuote, L2Snapshot, etc.).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("eventTypes")]
+
+      public string[]? EventTypes { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("eventTypes")>
+
+      Public Property EventTypes As String()
+  overload: Meridian.Storage.Packaging.PackageOptions.EventTypes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventTypes
+- uid: Meridian.Storage.Packaging.PackageOptions.StartDate
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.StartDate
+  id: StartDate
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: StartDate
+  nameWithType: PackageOptions.StartDate
+  fullName: Meridian.Storage.Packaging.PackageOptions.StartDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartDate
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Start date for data selection.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("startDate")]
+
+      public DateTime? StartDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("startDate")>
+
+      Public Property StartDate As Date?
+  overload: Meridian.Storage.Packaging.PackageOptions.StartDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: startDate
+- uid: Meridian.Storage.Packaging.PackageOptions.EndDate
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.EndDate
+  id: EndDate
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: EndDate
+  nameWithType: PackageOptions.EndDate
+  fullName: Meridian.Storage.Packaging.PackageOptions.EndDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndDate
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: End date for data selection.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("endDate")]
+
+      public DateTime? EndDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("endDate")>
+
+      Public Property EndDate As Date?
+  overload: Meridian.Storage.Packaging.PackageOptions.EndDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: endDate
+- uid: Meridian.Storage.Packaging.PackageOptions.Sources
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.Sources
+  id: Sources
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: PackageOptions.Sources
+  fullName: Meridian.Storage.Packaging.PackageOptions.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Data sources to include (null = all sources).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("sources")]
+
+      public string[]? Sources { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("sources")>
+
+      Public Property Sources As String()
+  overload: Meridian.Storage.Packaging.PackageOptions.Sources*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sources
+- uid: Meridian.Storage.Packaging.PackageOptions.OutputDirectory
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.OutputDirectory
+  id: OutputDirectory
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: OutputDirectory
+  nameWithType: PackageOptions.OutputDirectory
+  fullName: Meridian.Storage.Packaging.PackageOptions.OutputDirectory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutputDirectory
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Output directory for the package file.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("outputDirectory")]
+
+      public string OutputDirectory { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("outputDirectory")>
+
+      Public Property OutputDirectory As String
+  overload: Meridian.Storage.Packaging.PackageOptions.OutputDirectory*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: outputDirectory
+- uid: Meridian.Storage.Packaging.PackageOptions.IncludeQualityReport
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.IncludeQualityReport
+  id: IncludeQualityReport
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeQualityReport
+  nameWithType: PackageOptions.IncludeQualityReport
+  fullName: Meridian.Storage.Packaging.PackageOptions.IncludeQualityReport
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeQualityReport
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Whether to include data quality report in the package.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeQualityReport")]
+
+      public bool IncludeQualityReport { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeQualityReport")>
+
+      Public Property IncludeQualityReport As Boolean
+  overload: Meridian.Storage.Packaging.PackageOptions.IncludeQualityReport*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeQualityReport
+- uid: Meridian.Storage.Packaging.PackageOptions.IncludeDataDictionary
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.IncludeDataDictionary
+  id: IncludeDataDictionary
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeDataDictionary
+  nameWithType: PackageOptions.IncludeDataDictionary
+  fullName: Meridian.Storage.Packaging.PackageOptions.IncludeDataDictionary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeDataDictionary
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Whether to include data dictionary documentation.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeDataDictionary")]
+
+      public bool IncludeDataDictionary { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeDataDictionary")>
+
+      Public Property IncludeDataDictionary As Boolean
+  overload: Meridian.Storage.Packaging.PackageOptions.IncludeDataDictionary*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeDataDictionary
+- uid: Meridian.Storage.Packaging.PackageOptions.IncludeLoaderScripts
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.IncludeLoaderScripts
+  id: IncludeLoaderScripts
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeLoaderScripts
+  nameWithType: PackageOptions.IncludeLoaderScripts
+  fullName: Meridian.Storage.Packaging.PackageOptions.IncludeLoaderScripts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeLoaderScripts
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Whether to include sample loader scripts.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeLoaderScripts")]
+
+      public bool IncludeLoaderScripts { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeLoaderScripts")>
+
+      Public Property IncludeLoaderScripts As Boolean
+  overload: Meridian.Storage.Packaging.PackageOptions.IncludeLoaderScripts*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeLoaderScripts
+- uid: Meridian.Storage.Packaging.PackageOptions.VerifyChecksums
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.VerifyChecksums
+  id: VerifyChecksums
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: VerifyChecksums
+  nameWithType: PackageOptions.VerifyChecksums
+  fullName: Meridian.Storage.Packaging.PackageOptions.VerifyChecksums
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifyChecksums
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Whether to verify checksums during packaging.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("verifyChecksums")]
+
+      public bool VerifyChecksums { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("verifyChecksums")>
+
+      Public Property VerifyChecksums As Boolean
+  overload: Meridian.Storage.Packaging.PackageOptions.VerifyChecksums*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: verifyChecksums
+- uid: Meridian.Storage.Packaging.PackageOptions.DecompressFiles
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.DecompressFiles
+  id: DecompressFiles
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: DecompressFiles
+  nameWithType: PackageOptions.DecompressFiles
+  fullName: Meridian.Storage.Packaging.PackageOptions.DecompressFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DecompressFiles
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Whether to decompress files before packaging (for universal compatibility).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("decompressFiles")]
+
+      public bool DecompressFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("decompressFiles")>
+
+      Public Property DecompressFiles As Boolean
+  overload: Meridian.Storage.Packaging.PackageOptions.DecompressFiles*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: decompressFiles
+- uid: Meridian.Storage.Packaging.PackageOptions.ConvertToFormat
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.ConvertToFormat
+  id: ConvertToFormat
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: ConvertToFormat
+  nameWithType: PackageOptions.ConvertToFormat
+  fullName: Meridian.Storage.Packaging.PackageOptions.ConvertToFormat
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConvertToFormat
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Convert files to a specific format before packaging.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("convertToFormat")]
+
+      public PackageDataFormat ConvertToFormat { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Packaging.PackageDataFormat
+    content.vb: >-
+      <JsonPropertyName("convertToFormat")>
+
+      Public Property ConvertToFormat As PackageDataFormat
+  overload: Meridian.Storage.Packaging.PackageOptions.ConvertToFormat*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: convertToFormat
+- uid: Meridian.Storage.Packaging.PackageOptions.MaxPackageBytes
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.MaxPackageBytes
+  id: MaxPackageBytes
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxPackageBytes
+  nameWithType: PackageOptions.MaxPackageBytes
+  fullName: Meridian.Storage.Packaging.PackageOptions.MaxPackageBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxPackageBytes
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Maximum package size in bytes (split into multiple parts if exceeded).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("maxPackageBytes")]
+
+      public long? MaxPackageBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: >-
+      <JsonPropertyName("maxPackageBytes")>
+
+      Public Property MaxPackageBytes As Long?
+  overload: Meridian.Storage.Packaging.PackageOptions.MaxPackageBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: maxPackageBytes
+- uid: Meridian.Storage.Packaging.PackageOptions.Password
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.Password
+  id: Password
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: Password
+  nameWithType: PackageOptions.Password
+  fullName: Meridian.Storage.Packaging.PackageOptions.Password
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Password
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Password for encrypted packages (null = no encryption).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("password")]
+
+      public string? Password { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("password")>
+
+      Public Property Password As String
+  overload: Meridian.Storage.Packaging.PackageOptions.Password*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: password
+- uid: Meridian.Storage.Packaging.PackageOptions.Tags
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.Tags
+  id: Tags
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: PackageOptions.Tags
+  fullName: Meridian.Storage.Packaging.PackageOptions.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Tags for categorizing the package.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("tags")]
+
+      public string[]? Tags { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("tags")>
+
+      Public Property Tags As String()
+  overload: Meridian.Storage.Packaging.PackageOptions.Tags*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: tags
+- uid: Meridian.Storage.Packaging.PackageOptions.CustomMetadata
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.CustomMetadata
+  id: CustomMetadata
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: CustomMetadata
+  nameWithType: PackageOptions.CustomMetadata
+  fullName: Meridian.Storage.Packaging.PackageOptions.CustomMetadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CustomMetadata
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Custom metadata to include in the manifest.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("customMetadata")]
+
+      public Dictionary<string, string>? CustomMetadata { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: >-
+      <JsonPropertyName("customMetadata")>
+
+      Public Property CustomMetadata As Dictionary(Of String, String)
+  overload: Meridian.Storage.Packaging.PackageOptions.CustomMetadata*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: customMetadata
+- uid: Meridian.Storage.Packaging.PackageOptions.InternalLayout
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.InternalLayout
+  id: InternalLayout
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: InternalLayout
+  nameWithType: PackageOptions.InternalLayout
+  fullName: Meridian.Storage.Packaging.PackageOptions.InternalLayout
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InternalLayout
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Internal file organization within the package.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("internalLayout")]
+
+      public PackageLayout InternalLayout { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Packaging.PackageLayout
+    content.vb: >-
+      <JsonPropertyName("internalLayout")>
+
+      Public Property InternalLayout As PackageLayout
+  overload: Meridian.Storage.Packaging.PackageOptions.InternalLayout*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: internalLayout
+- uid: Meridian.Storage.Packaging.PackageOptions.IncludeSchemas
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.IncludeSchemas
+  id: IncludeSchemas
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: IncludeSchemas
+  nameWithType: PackageOptions.IncludeSchemas
+  fullName: Meridian.Storage.Packaging.PackageOptions.IncludeSchemas
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeSchemas
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Whether to include schema definitions for data validation.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeSchemas")]
+
+      public bool IncludeSchemas { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeSchemas")>
+
+      Public Property IncludeSchemas As Boolean
+  overload: Meridian.Storage.Packaging.PackageOptions.IncludeSchemas*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeSchemas
+- uid: Meridian.Storage.Packaging.PackageOptions.GenerateImportScripts
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.GenerateImportScripts
+  id: GenerateImportScripts
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: GenerateImportScripts
+  nameWithType: PackageOptions.GenerateImportScripts
+  fullName: Meridian.Storage.Packaging.PackageOptions.GenerateImportScripts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateImportScripts
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Whether to generate import scripts for various databases.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("generateImportScripts")]
+
+      public bool GenerateImportScripts { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("generateImportScripts")>
+
+      Public Property GenerateImportScripts As Boolean
+  overload: Meridian.Storage.Packaging.PackageOptions.GenerateImportScripts*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: generateImportScripts
+- uid: Meridian.Storage.Packaging.PackageOptions.ImportScriptTargets
+  commentId: P:Meridian.Storage.Packaging.PackageOptions.ImportScriptTargets
+  id: ImportScriptTargets
+  parent: Meridian.Storage.Packaging.PackageOptions
+  langs:
+  - csharp
+  - vb
+  name: ImportScriptTargets
+  nameWithType: PackageOptions.ImportScriptTargets
+  fullName: Meridian.Storage.Packaging.PackageOptions.ImportScriptTargets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportScriptTargets
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Target platforms for import scripts.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("importScriptTargets")]
+
+      public ImportScriptTarget[]? ImportScriptTargets { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Packaging.ImportScriptTarget[]
+    content.vb: >-
+      <JsonPropertyName("importScriptTargets")>
+
+      Public Property ImportScriptTargets As ImportScriptTarget()
+  overload: Meridian.Storage.Packaging.PackageOptions.ImportScriptTargets*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: importScriptTargets
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Packaging.PackageOptions.Name*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.Name
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_Name
+  name: Name
+  nameWithType: PackageOptions.Name
+  fullName: Meridian.Storage.Packaging.PackageOptions.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Packaging.PackageOptions.Description*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.Description
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_Description
+  name: Description
+  nameWithType: PackageOptions.Description
+  fullName: Meridian.Storage.Packaging.PackageOptions.Description
+- uid: Meridian.Storage.Packaging.PackageOptions.Format*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.Format
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_Format
+  name: Format
+  nameWithType: PackageOptions.Format
+  fullName: Meridian.Storage.Packaging.PackageOptions.Format
+- uid: Meridian.Storage.Packaging.PackageFormat
+  commentId: T:Meridian.Storage.Packaging.PackageFormat
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageFormat.html
+  name: PackageFormat
+  nameWithType: PackageFormat
+  fullName: Meridian.Storage.Packaging.PackageFormat
+- uid: Meridian.Storage.Packaging.PackageOptions.CompressionLevel*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.CompressionLevel
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_CompressionLevel
+  name: CompressionLevel
+  nameWithType: PackageOptions.CompressionLevel
+  fullName: Meridian.Storage.Packaging.PackageOptions.CompressionLevel
+- uid: Meridian.Storage.Packaging.PackageCompressionLevel
+  commentId: T:Meridian.Storage.Packaging.PackageCompressionLevel
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageCompressionLevel.html
+  name: PackageCompressionLevel
+  nameWithType: PackageCompressionLevel
+  fullName: Meridian.Storage.Packaging.PackageCompressionLevel
+- uid: Meridian.Storage.Packaging.PackageOptions.Symbols*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.Symbols
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_Symbols
+  name: Symbols
+  nameWithType: PackageOptions.Symbols
+  fullName: Meridian.Storage.Packaging.PackageOptions.Symbols
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Packaging.PackageOptions.EventTypes*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.EventTypes
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_EventTypes
+  name: EventTypes
+  nameWithType: PackageOptions.EventTypes
+  fullName: Meridian.Storage.Packaging.PackageOptions.EventTypes
+- uid: Meridian.Storage.Packaging.PackageOptions.StartDate*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.StartDate
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_StartDate
+  name: StartDate
+  nameWithType: PackageOptions.StartDate
+  fullName: Meridian.Storage.Packaging.PackageOptions.StartDate
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Packaging.PackageOptions.EndDate*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.EndDate
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_EndDate
+  name: EndDate
+  nameWithType: PackageOptions.EndDate
+  fullName: Meridian.Storage.Packaging.PackageOptions.EndDate
+- uid: Meridian.Storage.Packaging.PackageOptions.Sources*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.Sources
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_Sources
+  name: Sources
+  nameWithType: PackageOptions.Sources
+  fullName: Meridian.Storage.Packaging.PackageOptions.Sources
+- uid: Meridian.Storage.Packaging.PackageOptions.OutputDirectory*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.OutputDirectory
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_OutputDirectory
+  name: OutputDirectory
+  nameWithType: PackageOptions.OutputDirectory
+  fullName: Meridian.Storage.Packaging.PackageOptions.OutputDirectory
+- uid: Meridian.Storage.Packaging.PackageOptions.IncludeQualityReport*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.IncludeQualityReport
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_IncludeQualityReport
+  name: IncludeQualityReport
+  nameWithType: PackageOptions.IncludeQualityReport
+  fullName: Meridian.Storage.Packaging.PackageOptions.IncludeQualityReport
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Packaging.PackageOptions.IncludeDataDictionary*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.IncludeDataDictionary
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_IncludeDataDictionary
+  name: IncludeDataDictionary
+  nameWithType: PackageOptions.IncludeDataDictionary
+  fullName: Meridian.Storage.Packaging.PackageOptions.IncludeDataDictionary
+- uid: Meridian.Storage.Packaging.PackageOptions.IncludeLoaderScripts*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.IncludeLoaderScripts
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_IncludeLoaderScripts
+  name: IncludeLoaderScripts
+  nameWithType: PackageOptions.IncludeLoaderScripts
+  fullName: Meridian.Storage.Packaging.PackageOptions.IncludeLoaderScripts
+- uid: Meridian.Storage.Packaging.PackageOptions.VerifyChecksums*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.VerifyChecksums
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_VerifyChecksums
+  name: VerifyChecksums
+  nameWithType: PackageOptions.VerifyChecksums
+  fullName: Meridian.Storage.Packaging.PackageOptions.VerifyChecksums
+- uid: Meridian.Storage.Packaging.PackageOptions.DecompressFiles*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.DecompressFiles
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_DecompressFiles
+  name: DecompressFiles
+  nameWithType: PackageOptions.DecompressFiles
+  fullName: Meridian.Storage.Packaging.PackageOptions.DecompressFiles
+- uid: Meridian.Storage.Packaging.PackageOptions.ConvertToFormat*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.ConvertToFormat
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_ConvertToFormat
+  name: ConvertToFormat
+  nameWithType: PackageOptions.ConvertToFormat
+  fullName: Meridian.Storage.Packaging.PackageOptions.ConvertToFormat
+- uid: Meridian.Storage.Packaging.PackageDataFormat
+  commentId: T:Meridian.Storage.Packaging.PackageDataFormat
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageDataFormat.html
+  name: PackageDataFormat
+  nameWithType: PackageDataFormat
+  fullName: Meridian.Storage.Packaging.PackageDataFormat
+- uid: Meridian.Storage.Packaging.PackageOptions.MaxPackageBytes*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.MaxPackageBytes
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_MaxPackageBytes
+  name: MaxPackageBytes
+  nameWithType: PackageOptions.MaxPackageBytes
+  fullName: Meridian.Storage.Packaging.PackageOptions.MaxPackageBytes
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Storage.Packaging.PackageOptions.Password*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.Password
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_Password
+  name: Password
+  nameWithType: PackageOptions.Password
+  fullName: Meridian.Storage.Packaging.PackageOptions.Password
+- uid: Meridian.Storage.Packaging.PackageOptions.Tags*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.Tags
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_Tags
+  name: Tags
+  nameWithType: PackageOptions.Tags
+  fullName: Meridian.Storage.Packaging.PackageOptions.Tags
+- uid: Meridian.Storage.Packaging.PackageOptions.CustomMetadata*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.CustomMetadata
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_CustomMetadata
+  name: CustomMetadata
+  nameWithType: PackageOptions.CustomMetadata
+  fullName: Meridian.Storage.Packaging.PackageOptions.CustomMetadata
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Packaging.PackageOptions.InternalLayout*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.InternalLayout
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_InternalLayout
+  name: InternalLayout
+  nameWithType: PackageOptions.InternalLayout
+  fullName: Meridian.Storage.Packaging.PackageOptions.InternalLayout
+- uid: Meridian.Storage.Packaging.PackageLayout
+  commentId: T:Meridian.Storage.Packaging.PackageLayout
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageLayout.html
+  name: PackageLayout
+  nameWithType: PackageLayout
+  fullName: Meridian.Storage.Packaging.PackageLayout
+- uid: Meridian.Storage.Packaging.PackageOptions.IncludeSchemas*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.IncludeSchemas
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_IncludeSchemas
+  name: IncludeSchemas
+  nameWithType: PackageOptions.IncludeSchemas
+  fullName: Meridian.Storage.Packaging.PackageOptions.IncludeSchemas
+- uid: Meridian.Storage.Packaging.PackageOptions.GenerateImportScripts*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.GenerateImportScripts
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_GenerateImportScripts
+  name: GenerateImportScripts
+  nameWithType: PackageOptions.GenerateImportScripts
+  fullName: Meridian.Storage.Packaging.PackageOptions.GenerateImportScripts
+- uid: Meridian.Storage.Packaging.PackageOptions.ImportScriptTargets*
+  commentId: Overload:Meridian.Storage.Packaging.PackageOptions.ImportScriptTargets
+  href: Meridian.Storage.Packaging.PackageOptions.html#Meridian_Storage_Packaging_PackageOptions_ImportScriptTargets
+  name: ImportScriptTargets
+  nameWithType: PackageOptions.ImportScriptTargets
+  fullName: Meridian.Storage.Packaging.PackageOptions.ImportScriptTargets
+- uid: Meridian.Storage.Packaging.ImportScriptTarget[]
+  isExternal: true
+  href: Meridian.Storage.Packaging.ImportScriptTarget.html
+  name: ImportScriptTarget[]
+  nameWithType: ImportScriptTarget[]
+  fullName: Meridian.Storage.Packaging.ImportScriptTarget[]
+  nameWithType.vb: ImportScriptTarget()
+  fullName.vb: Meridian.Storage.Packaging.ImportScriptTarget()
+  name.vb: ImportScriptTarget()
+  spec.csharp:
+  - uid: Meridian.Storage.Packaging.ImportScriptTarget
+    name: ImportScriptTarget
+    href: Meridian.Storage.Packaging.ImportScriptTarget.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Storage.Packaging.ImportScriptTarget
+    name: ImportScriptTarget
+    href: Meridian.Storage.Packaging.ImportScriptTarget.html
+  - name: (
+  - name: )

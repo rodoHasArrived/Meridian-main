@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ErrorLevel
+  commentId: T:Meridian.Application.Monitoring.ErrorLevel
+  id: ErrorLevel
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ErrorLevel.Critical
+  - Meridian.Application.Monitoring.ErrorLevel.Error
+  - Meridian.Application.Monitoring.ErrorLevel.Warning
+  langs:
+  - csharp
+  - vb
+  name: ErrorLevel
+  nameWithType: ErrorLevel
+  fullName: Meridian.Application.Monitoring.ErrorLevel
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorLevel
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Error severity level.
+  example: []
+  syntax:
+    content: 'public enum ErrorLevel : byte'
+    content.vb: Public Enum ErrorLevel As Byte
+- uid: Meridian.Application.Monitoring.ErrorLevel.Warning
+  commentId: F:Meridian.Application.Monitoring.ErrorLevel.Warning
+  id: Warning
+  parent: Meridian.Application.Monitoring.ErrorLevel
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: ErrorLevel.Warning
+  fullName: Meridian.Application.Monitoring.ErrorLevel.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 255
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Monitoring.ErrorLevel
+- uid: Meridian.Application.Monitoring.ErrorLevel.Error
+  commentId: F:Meridian.Application.Monitoring.ErrorLevel.Error
+  id: Error
+  parent: Meridian.Application.Monitoring.ErrorLevel
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: ErrorLevel.Error
+  fullName: Meridian.Application.Monitoring.ErrorLevel.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Application.Monitoring.ErrorLevel
+- uid: Meridian.Application.Monitoring.ErrorLevel.Critical
+  commentId: F:Meridian.Application.Monitoring.ErrorLevel.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.ErrorLevel
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: ErrorLevel.Critical
+  fullName: Meridian.Application.Monitoring.ErrorLevel.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Critical = 3
+    return:
+      type: Meridian.Application.Monitoring.ErrorLevel
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.ErrorLevel
+  commentId: T:Meridian.Application.Monitoring.ErrorLevel
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ErrorLevel.html
+  name: ErrorLevel
+  nameWithType: ErrorLevel
+  fullName: Meridian.Application.Monitoring.ErrorLevel

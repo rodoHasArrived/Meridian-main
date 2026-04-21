@@ -1,0 +1,970 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.CommandPaletteService
+  commentId: T:Meridian.Ui.Services.CommandPaletteService
+  id: CommandPaletteService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.CommandPaletteService.ClearActiveContext
+  - Meridian.Ui.Services.CommandPaletteService.CommandExecuted
+  - Meridian.Ui.Services.CommandPaletteService.CommandsChanged
+  - Meridian.Ui.Services.CommandPaletteService.Execute(System.String)
+  - Meridian.Ui.Services.CommandPaletteService.GetAllCommands
+  - Meridian.Ui.Services.CommandPaletteService.Instance
+  - Meridian.Ui.Services.CommandPaletteService.RegisterCommand(Meridian.Ui.Services.PaletteCommand)
+  - Meridian.Ui.Services.CommandPaletteService.RegisterContextualProvider(System.String,System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.CommandEntry}})
+  - Meridian.Ui.Services.CommandPaletteService.Search(System.String)
+  - Meridian.Ui.Services.CommandPaletteService.SetActiveContext(System.String)
+  - Meridian.Ui.Services.CommandPaletteService.UnregisterContextualProvider(System.String)
+  langs:
+  - csharp
+  - vb
+  name: CommandPaletteService
+  nameWithType: CommandPaletteService
+  fullName: Meridian.Ui.Services.CommandPaletteService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommandPaletteService
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service providing a command palette (Ctrl+K) for quick navigation and action execution.
+
+    Supports fuzzy search across all registered pages, actions, and settings.
+
+    Also supports contextual commands registered per ViewModel.
+  example: []
+  syntax:
+    content: public sealed class CommandPaletteService
+    content.vb: Public NotInheritable Class CommandPaletteService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.CommandPaletteService.Instance
+  commentId: P:Meridian.Ui.Services.CommandPaletteService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: CommandPaletteService.Instance
+  fullName: Meridian.Ui.Services.CommandPaletteService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static CommandPaletteService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.CommandPaletteService
+    content.vb: Public Shared ReadOnly Property Instance As CommandPaletteService
+  overload: Meridian.Ui.Services.CommandPaletteService.Instance*
+- uid: Meridian.Ui.Services.CommandPaletteService.CommandExecuted
+  commentId: E:Meridian.Ui.Services.CommandPaletteService.CommandExecuted
+  id: CommandExecuted
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: CommandExecuted
+  nameWithType: CommandPaletteService.CommandExecuted
+  fullName: Meridian.Ui.Services.CommandPaletteService.CommandExecuted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommandExecuted
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a command is executed through the palette.
+  example: []
+  syntax:
+    content: public event EventHandler<PaletteCommandEventArgs>? CommandExecuted
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.PaletteCommandEventArgs}
+    content.vb: Public Event CommandExecuted As EventHandler(Of PaletteCommandEventArgs)
+- uid: Meridian.Ui.Services.CommandPaletteService.CommandsChanged
+  commentId: E:Meridian.Ui.Services.CommandPaletteService.CommandsChanged
+  id: CommandsChanged
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: CommandsChanged
+  nameWithType: CommandPaletteService.CommandsChanged
+  fullName: Meridian.Ui.Services.CommandPaletteService.CommandsChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommandsChanged
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when available commands change (context switch or provider registration).
+  example: []
+  syntax:
+    content: public event EventHandler? CommandsChanged
+    return:
+      type: System.EventHandler
+    content.vb: Public Event CommandsChanged As EventHandler
+- uid: Meridian.Ui.Services.CommandPaletteService.Search(System.String)
+  commentId: M:Meridian.Ui.Services.CommandPaletteService.Search(System.String)
+  id: Search(System.String)
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: Search(string)
+  nameWithType: CommandPaletteService.Search(string)
+  fullName: Meridian.Ui.Services.CommandPaletteService.Search(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Search
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Searches commands using fuzzy matching.
+  example: []
+  syntax:
+    content: public IReadOnlyList<PaletteCommand> Search(string query)
+    parameters:
+    - id: query
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.PaletteCommand}
+    content.vb: Public Function Search(query As String) As IReadOnlyList(Of PaletteCommand)
+  overload: Meridian.Ui.Services.CommandPaletteService.Search*
+  nameWithType.vb: CommandPaletteService.Search(String)
+  fullName.vb: Meridian.Ui.Services.CommandPaletteService.Search(String)
+  name.vb: Search(String)
+- uid: Meridian.Ui.Services.CommandPaletteService.Execute(System.String)
+  commentId: M:Meridian.Ui.Services.CommandPaletteService.Execute(System.String)
+  id: Execute(System.String)
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: Execute(string)
+  nameWithType: CommandPaletteService.Execute(string)
+  fullName: Meridian.Ui.Services.CommandPaletteService.Execute(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Execute
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Executes a command by its ID.
+  example: []
+  syntax:
+    content: public void Execute(string commandId)
+    parameters:
+    - id: commandId
+      type: System.String
+    content.vb: Public Sub Execute(commandId As String)
+  overload: Meridian.Ui.Services.CommandPaletteService.Execute*
+  nameWithType.vb: CommandPaletteService.Execute(String)
+  fullName.vb: Meridian.Ui.Services.CommandPaletteService.Execute(String)
+  name.vb: Execute(String)
+- uid: Meridian.Ui.Services.CommandPaletteService.RegisterCommand(Meridian.Ui.Services.PaletteCommand)
+  commentId: M:Meridian.Ui.Services.CommandPaletteService.RegisterCommand(Meridian.Ui.Services.PaletteCommand)
+  id: RegisterCommand(Meridian.Ui.Services.PaletteCommand)
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: RegisterCommand(PaletteCommand)
+  nameWithType: CommandPaletteService.RegisterCommand(PaletteCommand)
+  fullName: Meridian.Ui.Services.CommandPaletteService.RegisterCommand(Meridian.Ui.Services.PaletteCommand)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterCommand
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Registers a custom command in the palette.
+  example: []
+  syntax:
+    content: public void RegisterCommand(PaletteCommand command)
+    parameters:
+    - id: command
+      type: Meridian.Ui.Services.PaletteCommand
+    content.vb: Public Sub RegisterCommand(command As PaletteCommand)
+  overload: Meridian.Ui.Services.CommandPaletteService.RegisterCommand*
+- uid: Meridian.Ui.Services.CommandPaletteService.GetAllCommands
+  commentId: M:Meridian.Ui.Services.CommandPaletteService.GetAllCommands
+  id: GetAllCommands
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: GetAllCommands()
+  nameWithType: CommandPaletteService.GetAllCommands()
+  fullName: Meridian.Ui.Services.CommandPaletteService.GetAllCommands()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllCommands
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all registered commands.
+  example: []
+  syntax:
+    content: public IReadOnlyList<PaletteCommand> GetAllCommands()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.PaletteCommand}
+    content.vb: Public Function GetAllCommands() As IReadOnlyList(Of PaletteCommand)
+  overload: Meridian.Ui.Services.CommandPaletteService.GetAllCommands*
+- uid: Meridian.Ui.Services.CommandPaletteService.RegisterContextualProvider(System.String,System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.CommandEntry}})
+  commentId: M:Meridian.Ui.Services.CommandPaletteService.RegisterContextualProvider(System.String,System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.CommandEntry}})
+  id: RegisterContextualProvider(System.String,System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.CommandEntry}})
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: RegisterContextualProvider(string, Func<IReadOnlyList<CommandEntry>>)
+  nameWithType: CommandPaletteService.RegisterContextualProvider(string, Func<IReadOnlyList<CommandEntry>>)
+  fullName: Meridian.Ui.Services.CommandPaletteService.RegisterContextualProvider(string, System.Func<System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.CommandEntry>>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterContextualProvider
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Registers a contextual command provider for a specific context key.
+  example: []
+  syntax:
+    content: public void RegisterContextualProvider(string contextKey, Func<IReadOnlyList<CommandEntry>> provider)
+    parameters:
+    - id: contextKey
+      type: System.String
+    - id: provider
+      type: System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.CommandEntry}}
+    content.vb: Public Sub RegisterContextualProvider(contextKey As String, provider As Func(Of IReadOnlyList(Of CommandEntry)))
+  overload: Meridian.Ui.Services.CommandPaletteService.RegisterContextualProvider*
+  nameWithType.vb: CommandPaletteService.RegisterContextualProvider(String, Func(Of IReadOnlyList(Of CommandEntry)))
+  fullName.vb: Meridian.Ui.Services.CommandPaletteService.RegisterContextualProvider(String, System.Func(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.CommandEntry)))
+  name.vb: RegisterContextualProvider(String, Func(Of IReadOnlyList(Of CommandEntry)))
+- uid: Meridian.Ui.Services.CommandPaletteService.UnregisterContextualProvider(System.String)
+  commentId: M:Meridian.Ui.Services.CommandPaletteService.UnregisterContextualProvider(System.String)
+  id: UnregisterContextualProvider(System.String)
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: UnregisterContextualProvider(string)
+  nameWithType: CommandPaletteService.UnregisterContextualProvider(string)
+  fullName: Meridian.Ui.Services.CommandPaletteService.UnregisterContextualProvider(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnregisterContextualProvider
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Unregisters a contextual command provider.
+  example: []
+  syntax:
+    content: public void UnregisterContextualProvider(string contextKey)
+    parameters:
+    - id: contextKey
+      type: System.String
+    content.vb: Public Sub UnregisterContextualProvider(contextKey As String)
+  overload: Meridian.Ui.Services.CommandPaletteService.UnregisterContextualProvider*
+  nameWithType.vb: CommandPaletteService.UnregisterContextualProvider(String)
+  fullName.vb: Meridian.Ui.Services.CommandPaletteService.UnregisterContextualProvider(String)
+  name.vb: UnregisterContextualProvider(String)
+- uid: Meridian.Ui.Services.CommandPaletteService.SetActiveContext(System.String)
+  commentId: M:Meridian.Ui.Services.CommandPaletteService.SetActiveContext(System.String)
+  id: SetActiveContext(System.String)
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: SetActiveContext(string)
+  nameWithType: CommandPaletteService.SetActiveContext(string)
+  fullName: Meridian.Ui.Services.CommandPaletteService.SetActiveContext(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetActiveContext
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Sets the active context, enabling contextual commands from that context's provider.
+  example: []
+  syntax:
+    content: public void SetActiveContext(string contextKey)
+    parameters:
+    - id: contextKey
+      type: System.String
+    content.vb: Public Sub SetActiveContext(contextKey As String)
+  overload: Meridian.Ui.Services.CommandPaletteService.SetActiveContext*
+  nameWithType.vb: CommandPaletteService.SetActiveContext(String)
+  fullName.vb: Meridian.Ui.Services.CommandPaletteService.SetActiveContext(String)
+  name.vb: SetActiveContext(String)
+- uid: Meridian.Ui.Services.CommandPaletteService.ClearActiveContext
+  commentId: M:Meridian.Ui.Services.CommandPaletteService.ClearActiveContext
+  id: ClearActiveContext
+  parent: Meridian.Ui.Services.CommandPaletteService
+  langs:
+  - csharp
+  - vb
+  name: ClearActiveContext()
+  nameWithType: CommandPaletteService.ClearActiveContext()
+  fullName: Meridian.Ui.Services.CommandPaletteService.ClearActiveContext()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearActiveContext
+    path: ../../src/Meridian.Ui.Services/Services/CommandPaletteService.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Clears the active context, disabling contextual commands.
+  example: []
+  syntax:
+    content: public void ClearActiveContext()
+    content.vb: Public Sub ClearActiveContext()
+  overload: Meridian.Ui.Services.CommandPaletteService.ClearActiveContext*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.CommandPaletteService.Instance*
+  commentId: Overload:Meridian.Ui.Services.CommandPaletteService.Instance
+  href: Meridian.Ui.Services.CommandPaletteService.html#Meridian_Ui_Services_CommandPaletteService_Instance
+  name: Instance
+  nameWithType: CommandPaletteService.Instance
+  fullName: Meridian.Ui.Services.CommandPaletteService.Instance
+- uid: Meridian.Ui.Services.CommandPaletteService
+  commentId: T:Meridian.Ui.Services.CommandPaletteService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.CommandPaletteService.html
+  name: CommandPaletteService
+  nameWithType: CommandPaletteService
+  fullName: Meridian.Ui.Services.CommandPaletteService
+- uid: System.EventHandler{Meridian.Ui.Services.PaletteCommandEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.PaletteCommandEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<PaletteCommandEventArgs>
+  nameWithType: EventHandler<PaletteCommandEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.PaletteCommandEventArgs>
+  nameWithType.vb: EventHandler(Of PaletteCommandEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.PaletteCommandEventArgs)
+  name.vb: EventHandler(Of PaletteCommandEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.PaletteCommandEventArgs
+    name: PaletteCommandEventArgs
+    href: Meridian.Ui.Services.PaletteCommandEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PaletteCommandEventArgs
+    name: PaletteCommandEventArgs
+    href: Meridian.Ui.Services.PaletteCommandEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler
+- uid: Meridian.Ui.Services.CommandPaletteService.Search*
+  commentId: Overload:Meridian.Ui.Services.CommandPaletteService.Search
+  href: Meridian.Ui.Services.CommandPaletteService.html#Meridian_Ui_Services_CommandPaletteService_Search_System_String_
+  name: Search
+  nameWithType: CommandPaletteService.Search
+  fullName: Meridian.Ui.Services.CommandPaletteService.Search
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.PaletteCommand}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.PaletteCommand}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<PaletteCommand>
+  nameWithType: IReadOnlyList<PaletteCommand>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.PaletteCommand>
+  nameWithType.vb: IReadOnlyList(Of PaletteCommand)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.PaletteCommand)
+  name.vb: IReadOnlyList(Of PaletteCommand)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.PaletteCommand
+    name: PaletteCommand
+    href: Meridian.Ui.Services.PaletteCommand.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PaletteCommand
+    name: PaletteCommand
+    href: Meridian.Ui.Services.PaletteCommand.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.CommandPaletteService.Execute*
+  commentId: Overload:Meridian.Ui.Services.CommandPaletteService.Execute
+  href: Meridian.Ui.Services.CommandPaletteService.html#Meridian_Ui_Services_CommandPaletteService_Execute_System_String_
+  name: Execute
+  nameWithType: CommandPaletteService.Execute
+  fullName: Meridian.Ui.Services.CommandPaletteService.Execute
+- uid: Meridian.Ui.Services.CommandPaletteService.RegisterCommand*
+  commentId: Overload:Meridian.Ui.Services.CommandPaletteService.RegisterCommand
+  href: Meridian.Ui.Services.CommandPaletteService.html#Meridian_Ui_Services_CommandPaletteService_RegisterCommand_Meridian_Ui_Services_PaletteCommand_
+  name: RegisterCommand
+  nameWithType: CommandPaletteService.RegisterCommand
+  fullName: Meridian.Ui.Services.CommandPaletteService.RegisterCommand
+- uid: Meridian.Ui.Services.PaletteCommand
+  commentId: T:Meridian.Ui.Services.PaletteCommand
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.PaletteCommand.html
+  name: PaletteCommand
+  nameWithType: PaletteCommand
+  fullName: Meridian.Ui.Services.PaletteCommand
+- uid: Meridian.Ui.Services.CommandPaletteService.GetAllCommands*
+  commentId: Overload:Meridian.Ui.Services.CommandPaletteService.GetAllCommands
+  href: Meridian.Ui.Services.CommandPaletteService.html#Meridian_Ui_Services_CommandPaletteService_GetAllCommands
+  name: GetAllCommands
+  nameWithType: CommandPaletteService.GetAllCommands
+  fullName: Meridian.Ui.Services.CommandPaletteService.GetAllCommands
+- uid: Meridian.Ui.Services.CommandPaletteService.RegisterContextualProvider*
+  commentId: Overload:Meridian.Ui.Services.CommandPaletteService.RegisterContextualProvider
+  href: Meridian.Ui.Services.CommandPaletteService.html#Meridian_Ui_Services_CommandPaletteService_RegisterContextualProvider_System_String_System_Func_System_Collections_Generic_IReadOnlyList_Meridian_Ui_Services_CommandEntry___
+  name: RegisterContextualProvider
+  nameWithType: CommandPaletteService.RegisterContextualProvider
+  fullName: Meridian.Ui.Services.CommandPaletteService.RegisterContextualProvider
+- uid: System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.CommandEntry}}
+  commentId: T:System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.CommandEntry}}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<IReadOnlyList<CommandEntry>>
+  nameWithType: Func<IReadOnlyList<CommandEntry>>
+  fullName: System.Func<System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.CommandEntry>>
+  nameWithType.vb: Func(Of IReadOnlyList(Of CommandEntry))
+  fullName.vb: System.Func(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.CommandEntry))
+  name.vb: Func(Of IReadOnlyList(Of CommandEntry))
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.CommandEntry
+    name: CommandEntry
+    href: Meridian.Ui.Services.CommandEntry.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.CommandEntry
+    name: CommandEntry
+    href: Meridian.Ui.Services.CommandEntry.html
+  - name: )
+  - name: )
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Ui.Services.CommandPaletteService.UnregisterContextualProvider*
+  commentId: Overload:Meridian.Ui.Services.CommandPaletteService.UnregisterContextualProvider
+  href: Meridian.Ui.Services.CommandPaletteService.html#Meridian_Ui_Services_CommandPaletteService_UnregisterContextualProvider_System_String_
+  name: UnregisterContextualProvider
+  nameWithType: CommandPaletteService.UnregisterContextualProvider
+  fullName: Meridian.Ui.Services.CommandPaletteService.UnregisterContextualProvider
+- uid: Meridian.Ui.Services.CommandPaletteService.SetActiveContext*
+  commentId: Overload:Meridian.Ui.Services.CommandPaletteService.SetActiveContext
+  href: Meridian.Ui.Services.CommandPaletteService.html#Meridian_Ui_Services_CommandPaletteService_SetActiveContext_System_String_
+  name: SetActiveContext
+  nameWithType: CommandPaletteService.SetActiveContext
+  fullName: Meridian.Ui.Services.CommandPaletteService.SetActiveContext
+- uid: Meridian.Ui.Services.CommandPaletteService.ClearActiveContext*
+  commentId: Overload:Meridian.Ui.Services.CommandPaletteService.ClearActiveContext
+  href: Meridian.Ui.Services.CommandPaletteService.html#Meridian_Ui_Services_CommandPaletteService_ClearActiveContext
+  name: ClearActiveContext
+  nameWithType: CommandPaletteService.ClearActiveContext
+  fullName: Meridian.Ui.Services.CommandPaletteService.ClearActiveContext

@@ -27,9 +27,9 @@ public sealed class ScriptRunnerTests
             compiler,
             dataContext,
             plotQueue ?? new PlotQueue(),
-            null!,
             Options.Create(new QuantScriptOptions { RunTimeoutSeconds = 10 }),
-            NullLogger<ScriptRunner>.Instance);
+            NullLogger<ScriptRunner>.Instance,
+            null);
     }
 
     private static IReadOnlyDictionary<string, object?> NoParams =>
@@ -196,9 +196,9 @@ public sealed class ScriptRunnerTests
             compiler,
             dataContext,
             new PlotQueue(),
-            null!,
             Options.Create(shortTimeout),
-            NullLogger<ScriptRunner>.Instance);
+            NullLogger<ScriptRunner>.Instance,
+            null);
 
         // Use a tight spin-loop that respects the thread-pool cancellation token
         // (Thread.Sleep cannot be interrupted, but a spin check can)
@@ -251,6 +251,29 @@ public sealed class ScriptRunnerTests
         result.ConsoleOutput.Should().Contain("Lookback=50");
     }
 
+    [Fact]
+    public async Task RunAsync_ContextHelpers_ReadToolbarContext()
+    {
+        var runner = BuildRunner();
+        const string source = """
+            var from = ContextFrom.HasValue ? ContextFrom.Value.ToString("yyyy-MM-dd") : "none";
+            var to = ContextTo.HasValue ? ContextTo.Value.ToString("yyyy-MM-dd") : "none";
+            Print($"ctx={ContextSymbol}|{from}|{to}|{ContextInterval}");
+            """;
+        var parameters = new Dictionary<string, object?>
+        {
+            ["symbol"] = "SPY",
+            ["from"] = new DateOnly(2024, 1, 2),
+            ["to"] = new DateOnly(2024, 2, 3),
+            ["interval"] = "daily"
+        };
+
+        var result = await runner.RunAsync(source, parameters);
+
+        result.Success.Should().BeTrue();
+        result.ConsoleOutput.Should().Contain("ctx=SPY|2024-01-02|2024-02-03|daily");
+    }
+
     // ── Null-parameters coercion ──────────────────────────────────────────────
 
     [Fact]
@@ -261,5 +284,31 @@ public sealed class ScriptRunnerTests
         var result = await runner.RunAsync("Print(\"ok\");", null!);
 
         result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ContinueWithAsync_ReusesPriorScriptState()
+    {
+        var runner = BuildRunner();
+
+        var first = await runner.RunAsync("var x = 41;", NoParams);
+        var second = await runner.ContinueWithAsync("x += 1; Print(x);", first.Checkpoint!, NoParams);
+
+        first.Checkpoint.Should().NotBeNull();
+        second.Success.Should().BeTrue();
+        second.ConsoleOutput.Should().Contain("42");
+    }
+
+    [Fact]
+    public async Task ContinueWithAsync_CompilationFailure_PreservesPreviousCheckpoint()
+    {
+        var runner = BuildRunner();
+
+        var first = await runner.RunAsync("var x = 41;", NoParams);
+        var second = await runner.ContinueWithAsync("x = ;", first.Checkpoint!, NoParams);
+
+        second.Success.Should().BeFalse();
+        second.CompilationErrors.Should().NotBeEmpty();
+        second.Checkpoint.Should().BeSameAs(first.Checkpoint);
     }
 }

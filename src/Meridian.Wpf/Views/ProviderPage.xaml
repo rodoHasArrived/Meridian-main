@@ -16,7 +16,7 @@
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
         <StackPanel MaxWidth="1200">
 
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -173,22 +173,7 @@
                                 </Grid>
                             </Border>
 
-                            <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource CompactCardStyle}" Margin="0,0,0,12">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="StockSharp" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
-                                        <TextBlock Text="Unified access to many connectors through one provider layer."
-                                                   Style="{StaticResource CardDescriptionStyle}" Margin="0,6,0,0" />
-                                    </StackPanel>
-                                    <Button Grid.Column="1" Content="Configure" Style="{StaticResource SecondaryButtonStyle}" Click="ConfigureProvider_Click" Margin="12,0,0,0" VerticalAlignment="Center" />
-                                </Grid>
-                            </Border>
-
-                            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource CompactCardStyle}">
+                            <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource CompactCardStyle}">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -569,7 +554,6 @@
                                 <ComboBoxItem Content="Interactive Brokers" Tag="IB" />
                                 <ComboBoxItem Content="Alpaca" Tag="Alpaca" />
                                 <ComboBoxItem Content="Polygon" Tag="Polygon" />
-                                <ComboBoxItem Content="StockSharp" Tag="StockSharp" />
                                 <ComboBoxItem Content="NYSE" Tag="NYSE" />
                             </ComboBox>
                         </StackPanel>

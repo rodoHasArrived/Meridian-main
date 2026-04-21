@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.ProviderTier
+  commentId: T:Meridian.Ui.Services.Services.ProviderTier
+  id: ProviderTier
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.ProviderTier.Free
+  - Meridian.Ui.Services.Services.ProviderTier.FreeWithAccount
+  - Meridian.Ui.Services.Services.ProviderTier.LimitedFree
+  - Meridian.Ui.Services.Services.ProviderTier.Premium
+  langs:
+  - csharp
+  - vb
+  name: ProviderTier
+  nameWithType: ProviderTier
+  fullName: Meridian.Ui.Services.Services.ProviderTier
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderTier
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Provider tier classification.
+  example: []
+  syntax:
+    content: 'public enum ProviderTier : byte'
+    content.vb: Public Enum ProviderTier As Byte
+- uid: Meridian.Ui.Services.Services.ProviderTier.Free
+  commentId: F:Meridian.Ui.Services.Services.ProviderTier.Free
+  id: Free
+  parent: Meridian.Ui.Services.Services.ProviderTier
+  langs:
+  - csharp
+  - vb
+  name: Free
+  nameWithType: ProviderTier.Free
+  fullName: Meridian.Ui.Services.Services.ProviderTier.Free
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Free
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 318
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Free = 0
+    return:
+      type: Meridian.Ui.Services.Services.ProviderTier
+- uid: Meridian.Ui.Services.Services.ProviderTier.FreeWithAccount
+  commentId: F:Meridian.Ui.Services.Services.ProviderTier.FreeWithAccount
+  id: FreeWithAccount
+  parent: Meridian.Ui.Services.Services.ProviderTier
+  langs:
+  - csharp
+  - vb
+  name: FreeWithAccount
+  nameWithType: ProviderTier.FreeWithAccount
+  fullName: Meridian.Ui.Services.Services.ProviderTier.FreeWithAccount
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FreeWithAccount
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: FreeWithAccount = 1
+    return:
+      type: Meridian.Ui.Services.Services.ProviderTier
+- uid: Meridian.Ui.Services.Services.ProviderTier.LimitedFree
+  commentId: F:Meridian.Ui.Services.Services.ProviderTier.LimitedFree
+  id: LimitedFree
+  parent: Meridian.Ui.Services.Services.ProviderTier
+  langs:
+  - csharp
+  - vb
+  name: LimitedFree
+  nameWithType: ProviderTier.LimitedFree
+  fullName: Meridian.Ui.Services.Services.ProviderTier.LimitedFree
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LimitedFree
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 320
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: LimitedFree = 2
+    return:
+      type: Meridian.Ui.Services.Services.ProviderTier
+- uid: Meridian.Ui.Services.Services.ProviderTier.Premium
+  commentId: F:Meridian.Ui.Services.Services.ProviderTier.Premium
+  id: Premium
+  parent: Meridian.Ui.Services.Services.ProviderTier
+  langs:
+  - csharp
+  - vb
+  name: Premium
+  nameWithType: ProviderTier.Premium
+  fullName: Meridian.Ui.Services.Services.ProviderTier.Premium
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Premium
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: Premium = 3
+    return:
+      type: Meridian.Ui.Services.Services.ProviderTier
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: Meridian.Ui.Services.Services.ProviderTier
+  commentId: T:Meridian.Ui.Services.Services.ProviderTier
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.ProviderTier.html
+  name: ProviderTier
+  nameWithType: ProviderTier
+  fullName: Meridian.Ui.Services.Services.ProviderTier

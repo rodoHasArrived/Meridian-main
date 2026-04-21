@@ -1,0 +1,765 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.BackfillRecommendations
+  commentId: T:Meridian.Ui.Services.BackfillRecommendations
+  id: BackfillRecommendations
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.BackfillRecommendations.DataQualityIssues
+  - Meridian.Ui.Services.BackfillRecommendations.ErrorMessage
+  - Meridian.Ui.Services.BackfillRecommendations.GeneratedAt
+  - Meridian.Ui.Services.BackfillRecommendations.Insights
+  - Meridian.Ui.Services.BackfillRecommendations.IsStale
+  - Meridian.Ui.Services.BackfillRecommendations.QuickActions
+  - Meridian.Ui.Services.BackfillRecommendations.SuggestedBackfills
+  langs:
+  - csharp
+  - vb
+  name: BackfillRecommendations
+  nameWithType: BackfillRecommendations
+  fullName: Meridian.Ui.Services.BackfillRecommendations
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillRecommendations
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 558
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Container for all backfill recommendations.
+  example: []
+  syntax:
+    content: public sealed class BackfillRecommendations
+    content.vb: Public NotInheritable Class BackfillRecommendations
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.BackfillRecommendations.GeneratedAt
+  commentId: P:Meridian.Ui.Services.BackfillRecommendations.GeneratedAt
+  id: GeneratedAt
+  parent: Meridian.Ui.Services.BackfillRecommendations
+  langs:
+  - csharp
+  - vb
+  name: GeneratedAt
+  nameWithType: BackfillRecommendations.GeneratedAt
+  fullName: Meridian.Ui.Services.BackfillRecommendations.GeneratedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GeneratedAt
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 560
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime GeneratedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property GeneratedAt As Date
+  overload: Meridian.Ui.Services.BackfillRecommendations.GeneratedAt*
+- uid: Meridian.Ui.Services.BackfillRecommendations.IsStale
+  commentId: P:Meridian.Ui.Services.BackfillRecommendations.IsStale
+  id: IsStale
+  parent: Meridian.Ui.Services.BackfillRecommendations
+  langs:
+  - csharp
+  - vb
+  name: IsStale
+  nameWithType: BackfillRecommendations.IsStale
+  fullName: Meridian.Ui.Services.BackfillRecommendations.IsStale
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsStale
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 561
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IsStale { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsStale As Boolean
+  overload: Meridian.Ui.Services.BackfillRecommendations.IsStale*
+- uid: Meridian.Ui.Services.BackfillRecommendations.ErrorMessage
+  commentId: P:Meridian.Ui.Services.BackfillRecommendations.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Ui.Services.BackfillRecommendations
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: BackfillRecommendations.ErrorMessage
+  fullName: Meridian.Ui.Services.BackfillRecommendations.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 562
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? ErrorMessage { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorMessage As String
+  overload: Meridian.Ui.Services.BackfillRecommendations.ErrorMessage*
+- uid: Meridian.Ui.Services.BackfillRecommendations.QuickActions
+  commentId: P:Meridian.Ui.Services.BackfillRecommendations.QuickActions
+  id: QuickActions
+  parent: Meridian.Ui.Services.BackfillRecommendations
+  langs:
+  - csharp
+  - vb
+  name: QuickActions
+  nameWithType: BackfillRecommendations.QuickActions
+  fullName: Meridian.Ui.Services.BackfillRecommendations.QuickActions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuickActions
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 564
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<QuickAction> QuickActions { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.QuickAction}
+    content.vb: Public Property QuickActions As List(Of QuickAction)
+  overload: Meridian.Ui.Services.BackfillRecommendations.QuickActions*
+- uid: Meridian.Ui.Services.BackfillRecommendations.SuggestedBackfills
+  commentId: P:Meridian.Ui.Services.BackfillRecommendations.SuggestedBackfills
+  id: SuggestedBackfills
+  parent: Meridian.Ui.Services.BackfillRecommendations
+  langs:
+  - csharp
+  - vb
+  name: SuggestedBackfills
+  nameWithType: BackfillRecommendations.SuggestedBackfills
+  fullName: Meridian.Ui.Services.BackfillRecommendations.SuggestedBackfills
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuggestedBackfills
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 565
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<SuggestedBackfill> SuggestedBackfills { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.SuggestedBackfill}
+    content.vb: Public Property SuggestedBackfills As List(Of SuggestedBackfill)
+  overload: Meridian.Ui.Services.BackfillRecommendations.SuggestedBackfills*
+- uid: Meridian.Ui.Services.BackfillRecommendations.DataQualityIssues
+  commentId: P:Meridian.Ui.Services.BackfillRecommendations.DataQualityIssues
+  id: DataQualityIssues
+  parent: Meridian.Ui.Services.BackfillRecommendations
+  langs:
+  - csharp
+  - vb
+  name: DataQualityIssues
+  nameWithType: BackfillRecommendations.DataQualityIssues
+  fullName: Meridian.Ui.Services.BackfillRecommendations.DataQualityIssues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityIssues
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 566
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<DataQualityIssue> DataQualityIssues { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.DataQualityIssue}
+    content.vb: Public Property DataQualityIssues As List(Of DataQualityIssue)
+  overload: Meridian.Ui.Services.BackfillRecommendations.DataQualityIssues*
+- uid: Meridian.Ui.Services.BackfillRecommendations.Insights
+  commentId: P:Meridian.Ui.Services.BackfillRecommendations.Insights
+  id: Insights
+  parent: Meridian.Ui.Services.BackfillRecommendations
+  langs:
+  - csharp
+  - vb
+  name: Insights
+  nameWithType: BackfillRecommendations.Insights
+  fullName: Meridian.Ui.Services.BackfillRecommendations.Insights
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Insights
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 567
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<InsightMessage> Insights { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.InsightMessage}
+    content.vb: Public Property Insights As List(Of InsightMessage)
+  overload: Meridian.Ui.Services.BackfillRecommendations.Insights*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.BackfillRecommendations.GeneratedAt*
+  commentId: Overload:Meridian.Ui.Services.BackfillRecommendations.GeneratedAt
+  href: Meridian.Ui.Services.BackfillRecommendations.html#Meridian_Ui_Services_BackfillRecommendations_GeneratedAt
+  name: GeneratedAt
+  nameWithType: BackfillRecommendations.GeneratedAt
+  fullName: Meridian.Ui.Services.BackfillRecommendations.GeneratedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.BackfillRecommendations.IsStale*
+  commentId: Overload:Meridian.Ui.Services.BackfillRecommendations.IsStale
+  href: Meridian.Ui.Services.BackfillRecommendations.html#Meridian_Ui_Services_BackfillRecommendations_IsStale
+  name: IsStale
+  nameWithType: BackfillRecommendations.IsStale
+  fullName: Meridian.Ui.Services.BackfillRecommendations.IsStale
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.BackfillRecommendations.ErrorMessage*
+  commentId: Overload:Meridian.Ui.Services.BackfillRecommendations.ErrorMessage
+  href: Meridian.Ui.Services.BackfillRecommendations.html#Meridian_Ui_Services_BackfillRecommendations_ErrorMessage
+  name: ErrorMessage
+  nameWithType: BackfillRecommendations.ErrorMessage
+  fullName: Meridian.Ui.Services.BackfillRecommendations.ErrorMessage
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.BackfillRecommendations.QuickActions*
+  commentId: Overload:Meridian.Ui.Services.BackfillRecommendations.QuickActions
+  href: Meridian.Ui.Services.BackfillRecommendations.html#Meridian_Ui_Services_BackfillRecommendations_QuickActions
+  name: QuickActions
+  nameWithType: BackfillRecommendations.QuickActions
+  fullName: Meridian.Ui.Services.BackfillRecommendations.QuickActions
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.QuickAction}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.QuickAction}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<QuickAction>
+  nameWithType: List<QuickAction>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.QuickAction>
+  nameWithType.vb: List(Of QuickAction)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.QuickAction)
+  name.vb: List(Of QuickAction)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.QuickAction
+    name: QuickAction
+    href: Meridian.Ui.Services.QuickAction.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.QuickAction
+    name: QuickAction
+    href: Meridian.Ui.Services.QuickAction.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.BackfillRecommendations.SuggestedBackfills*
+  commentId: Overload:Meridian.Ui.Services.BackfillRecommendations.SuggestedBackfills
+  href: Meridian.Ui.Services.BackfillRecommendations.html#Meridian_Ui_Services_BackfillRecommendations_SuggestedBackfills
+  name: SuggestedBackfills
+  nameWithType: BackfillRecommendations.SuggestedBackfills
+  fullName: Meridian.Ui.Services.BackfillRecommendations.SuggestedBackfills
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.SuggestedBackfill}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.SuggestedBackfill}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<SuggestedBackfill>
+  nameWithType: List<SuggestedBackfill>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.SuggestedBackfill>
+  nameWithType.vb: List(Of SuggestedBackfill)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.SuggestedBackfill)
+  name.vb: List(Of SuggestedBackfill)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.SuggestedBackfill
+    name: SuggestedBackfill
+    href: Meridian.Ui.Services.SuggestedBackfill.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SuggestedBackfill
+    name: SuggestedBackfill
+    href: Meridian.Ui.Services.SuggestedBackfill.html
+  - name: )
+- uid: Meridian.Ui.Services.BackfillRecommendations.DataQualityIssues*
+  commentId: Overload:Meridian.Ui.Services.BackfillRecommendations.DataQualityIssues
+  href: Meridian.Ui.Services.BackfillRecommendations.html#Meridian_Ui_Services_BackfillRecommendations_DataQualityIssues
+  name: DataQualityIssues
+  nameWithType: BackfillRecommendations.DataQualityIssues
+  fullName: Meridian.Ui.Services.BackfillRecommendations.DataQualityIssues
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.DataQualityIssue}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.DataQualityIssue}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<DataQualityIssue>
+  nameWithType: List<DataQualityIssue>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.DataQualityIssue>
+  nameWithType.vb: List(Of DataQualityIssue)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.DataQualityIssue)
+  name.vb: List(Of DataQualityIssue)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQualityIssue
+    name: DataQualityIssue
+    href: Meridian.Ui.Services.DataQualityIssue.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQualityIssue
+    name: DataQualityIssue
+    href: Meridian.Ui.Services.DataQualityIssue.html
+  - name: )
+- uid: Meridian.Ui.Services.BackfillRecommendations.Insights*
+  commentId: Overload:Meridian.Ui.Services.BackfillRecommendations.Insights
+  href: Meridian.Ui.Services.BackfillRecommendations.html#Meridian_Ui_Services_BackfillRecommendations_Insights
+  name: Insights
+  nameWithType: BackfillRecommendations.Insights
+  fullName: Meridian.Ui.Services.BackfillRecommendations.Insights
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.InsightMessage}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.InsightMessage}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<InsightMessage>
+  nameWithType: List<InsightMessage>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.InsightMessage>
+  nameWithType.vb: List(Of InsightMessage)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.InsightMessage)
+  name.vb: List(Of InsightMessage)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.InsightMessage
+    name: InsightMessage
+    href: Meridian.Ui.Services.InsightMessage.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.InsightMessage
+    name: InsightMessage
+    href: Meridian.Ui.Services.InsightMessage.html
+  - name: )

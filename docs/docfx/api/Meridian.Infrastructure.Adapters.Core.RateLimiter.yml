@@ -1,0 +1,842 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter
+  commentId: T:Meridian.Infrastructure.Adapters.Core.RateLimiter
+  id: RateLimiter
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.RateLimiter.#ctor(System.Int32,System.TimeSpan,System.Nullable{System.TimeSpan},Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Core.RateLimiter.Dispose
+  - Meridian.Infrastructure.Adapters.Core.RateLimiter.GetStatus
+  - Meridian.Infrastructure.Adapters.Core.RateLimiter.RecordRequest
+  - Meridian.Infrastructure.Adapters.Core.RateLimiter.WaitForSlotAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: RateLimiter
+  nameWithType: RateLimiter
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimiter
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Thread-safe rate limiter for API calls with sliding window support.
+  example: []
+  syntax:
+    content: 'public sealed class RateLimiter : IDisposable'
+    content.vb: Public NotInheritable Class RateLimiter Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.#ctor(System.Int32,System.TimeSpan,System.Nullable{System.TimeSpan},Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.RateLimiter.#ctor(System.Int32,System.TimeSpan,System.Nullable{System.TimeSpan},Serilog.ILogger)
+  id: '#ctor(System.Int32,System.TimeSpan,System.Nullable{System.TimeSpan},Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Core.RateLimiter
+  langs:
+  - csharp
+  - vb
+  name: RateLimiter(int, TimeSpan, TimeSpan?, ILogger?)
+  nameWithType: RateLimiter.RateLimiter(int, TimeSpan, TimeSpan?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.RateLimiter(int, System.TimeSpan, System.TimeSpan?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public RateLimiter(int maxRequestsPerWindow, TimeSpan window, TimeSpan? minDelayBetweenRequests = null, ILogger? log = null)
+    parameters:
+    - id: maxRequestsPerWindow
+      type: System.Int32
+    - id: window
+      type: System.TimeSpan
+    - id: minDelayBetweenRequests
+      type: System.Nullable{System.TimeSpan}
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(maxRequestsPerWindow As Integer, window As TimeSpan, minDelayBetweenRequests As TimeSpan? = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.RateLimiter.#ctor*
+  nameWithType.vb: RateLimiter.New(Integer, TimeSpan, TimeSpan?, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.RateLimiter.New(Integer, System.TimeSpan, System.TimeSpan?, Serilog.ILogger)
+  name.vb: New(Integer, TimeSpan, TimeSpan?, ILogger)
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.WaitForSlotAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.RateLimiter.WaitForSlotAsync(System.Threading.CancellationToken)
+  id: WaitForSlotAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.RateLimiter
+  langs:
+  - csharp
+  - vb
+  name: WaitForSlotAsync(CancellationToken)
+  nameWithType: RateLimiter.WaitForSlotAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.WaitForSlotAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WaitForSlotAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Wait until a request can be made within rate limits.
+
+    Returns the time waited.
+  example: []
+  syntax:
+    content: public Task<TimeSpan> WaitForSlotAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.TimeSpan}
+    content.vb: Public Function WaitForSlotAsync(ct As CancellationToken = Nothing) As Task(Of TimeSpan)
+  overload: Meridian.Infrastructure.Adapters.Core.RateLimiter.WaitForSlotAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.RecordRequest
+  commentId: M:Meridian.Infrastructure.Adapters.Core.RateLimiter.RecordRequest
+  id: RecordRequest
+  parent: Meridian.Infrastructure.Adapters.Core.RateLimiter
+  langs:
+  - csharp
+  - vb
+  name: RecordRequest()
+  nameWithType: RateLimiter.RecordRequest()
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.RecordRequest()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordRequest
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Record a request without waiting (for tracking external calls).
+  example: []
+  syntax:
+    content: public void RecordRequest()
+    content.vb: Public Sub RecordRequest()
+  overload: Meridian.Infrastructure.Adapters.Core.RateLimiter.RecordRequest*
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.GetStatus
+  commentId: M:Meridian.Infrastructure.Adapters.Core.RateLimiter.GetStatus
+  id: GetStatus
+  parent: Meridian.Infrastructure.Adapters.Core.RateLimiter
+  langs:
+  - csharp
+  - vb
+  name: GetStatus()
+  nameWithType: RateLimiter.GetStatus()
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.GetStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatus
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Get current usage statistics.
+  example: []
+  syntax:
+    content: public (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining) GetStatus()
+    return:
+      type: System.ValueTuple{System.Int32,System.Int32,System.TimeSpan}
+    content.vb: Public Function GetStatus() As (RequestsInWindow As Integer, MaxRequests As Integer, WindowRemaining As TimeSpan)
+  overload: Meridian.Infrastructure.Adapters.Core.RateLimiter.GetStatus*
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Core.RateLimiter.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.Core.RateLimiter
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: RateLimiter.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/RateLimiting/RateLimiter.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.Core.RateLimiter.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.RateLimiter.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.RateLimiter.html#Meridian_Infrastructure_Adapters_Core_RateLimiter__ctor_System_Int32_System_TimeSpan_System_Nullable_System_TimeSpan__Serilog_ILogger_
+  name: RateLimiter
+  nameWithType: RateLimiter.RateLimiter
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.RateLimiter
+  nameWithType.vb: RateLimiter.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.RateLimiter.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.WaitForSlotAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.RateLimiter.WaitForSlotAsync
+  href: Meridian.Infrastructure.Adapters.Core.RateLimiter.html#Meridian_Infrastructure_Adapters_Core_RateLimiter_WaitForSlotAsync_System_Threading_CancellationToken_
+  name: WaitForSlotAsync
+  nameWithType: RateLimiter.WaitForSlotAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.WaitForSlotAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.TimeSpan}
+  commentId: T:System.Threading.Tasks.Task{System.TimeSpan}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TimeSpan>
+  nameWithType: Task<TimeSpan>
+  fullName: System.Threading.Tasks.Task<System.TimeSpan>
+  nameWithType.vb: Task(Of TimeSpan)
+  fullName.vb: System.Threading.Tasks.Task(Of System.TimeSpan)
+  name.vb: Task(Of TimeSpan)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.RecordRequest*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.RateLimiter.RecordRequest
+  href: Meridian.Infrastructure.Adapters.Core.RateLimiter.html#Meridian_Infrastructure_Adapters_Core_RateLimiter_RecordRequest
+  name: RecordRequest
+  nameWithType: RateLimiter.RecordRequest
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.RecordRequest
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.GetStatus*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.RateLimiter.GetStatus
+  href: Meridian.Infrastructure.Adapters.Core.RateLimiter.html#Meridian_Infrastructure_Adapters_Core_RateLimiter_GetStatus
+  name: GetStatus
+  nameWithType: RateLimiter.GetStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.GetStatus
+- uid: System.ValueTuple{System.Int32,System.Int32,System.TimeSpan}
+  commentId: T:System.ValueTuple{System.Int32,System.Int32,System.TimeSpan}
+  parent: System
+  definition: System.ValueTuple`3
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining)
+  nameWithType: (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining)
+  fullName: (int RequestsInWindow, int MaxRequests, System.TimeSpan WindowRemaining)
+  nameWithType.vb: (RequestsInWindow As Integer, MaxRequests As Integer, WindowRemaining As TimeSpan)
+  fullName.vb: (RequestsInWindow As Integer, MaxRequests As Integer, WindowRemaining As System.TimeSpan)
+  name.vb: (RequestsInWindow As Integer, MaxRequests As Integer, WindowRemaining As TimeSpan)
+  spec.csharp:
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.Int32,System.TimeSpan}.RequestsInWindow
+    name: RequestsInWindow
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.int32,system.timespan-.requestsinwindow
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.Int32,System.TimeSpan}.MaxRequests
+    name: MaxRequests
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.int32,system.timespan-.maxrequests
+  - name: ','
+  - name: " "
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.Int32,System.TimeSpan}.WindowRemaining
+    name: WindowRemaining
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.int32,system.timespan-.windowremaining
+  - name: )
+  spec.vb:
+  - name: (
+  - uid: System.ValueTuple{System.Int32,System.Int32,System.TimeSpan}.RequestsInWindow
+    name: RequestsInWindow
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.int32,system.timespan-.requestsinwindow
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.Int32,System.TimeSpan}.MaxRequests
+    name: MaxRequests
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.int32,system.timespan-.maxrequests
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.Int32,System.TimeSpan}.WindowRemaining
+    name: WindowRemaining
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.int32,system.timespan-.windowremaining
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: )
+- uid: System.ValueTuple`3
+  commentId: T:System.ValueTuple`3
+  name: (T1, T2, T3)
+  nameWithType: (T1, T2, T3)
+  fullName: (T1, T2, T3)
+  spec.csharp:
+  - name: (
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: )
+  spec.vb:
+  - name: (
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.RateLimiter.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.RateLimiter.Dispose
+  href: Meridian.Infrastructure.Adapters.Core.RateLimiter.html#Meridian_Infrastructure_Adapters_Core_RateLimiter_Dispose
+  name: Dispose
+  nameWithType: RateLimiter.Dispose
+  fullName: Meridian.Infrastructure.Adapters.Core.RateLimiter.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

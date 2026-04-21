@@ -27,7 +27,7 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 [DataSource("alpaca-corp-actions", "Alpaca Corporate Actions", DataSourceType.Historical, DataSourceCategory.Broker)]
 [ImplementsAdr("ADR-001", "Corporate action data provider following ICorporateActionProvider contract")]
 [ImplementsAdr("ADR-010", "Uses IHttpClientFactory; never instantiates HttpClient directly")]
-public sealed class AlpacaCorporateActionProvider : ICorporateActionProvider
+public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProvider
 {
     private const string BaseUrl = "https://api.alpaca.markets";
 
@@ -77,20 +77,17 @@ public sealed class AlpacaCorporateActionProvider : ICorporateActionProvider
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);
 
-        var results = new List<CorporateActionCommand>();
-
         // Fetch dividends and splits in parallel.
-        var dividendTask = FetchAnnouncementsAsync(client, ticker, securityId, "dividend", ct);
-        var splitTask = FetchAnnouncementsAsync(client, ticker, securityId, "split", ct);
-
-        await Task.WhenAll(dividendTask, splitTask).ConfigureAwait(false);
-
-        results.AddRange(dividendTask.Result);
-        results.AddRange(splitTask.Result);
+        var results = (await Task.WhenAll(
+                FetchAnnouncementsAsync(client, ticker, securityId, "dividend", ct),
+                FetchAnnouncementsAsync(client, ticker, securityId, "split", ct))
+            .ConfigureAwait(false))
+            .SelectMany(static batch => batch)
+            .ToArray();
 
         _logger.LogDebug(
             "Fetched {Count} corporate action(s) for {Ticker} from Alpaca.",
-            results.Count, ticker);
+            results.Length, ticker);
 
         return results;
     }
@@ -117,9 +114,13 @@ public sealed class AlpacaCorporateActionProvider : ICorporateActionProvider
                 return [];
             }
 
-            var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
-            var announcements = JsonSerializer.Deserialize<List<AlpacaAnnouncement>>(json, _jsonOptions)
-                                ?? [];
+            await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
+            var announcements = await JsonSerializer.DeserializeAsync(
+                    jsonStream,
+                    AlpacaCorporateActionJsonContext.Default.AlpacaAnnouncementArray,
+                    ct)
+                .ConfigureAwait(false)
+                ?? [];
 
             return announcements
                 .Select(a => MapToCommand(a, securityId))
@@ -203,6 +204,10 @@ public sealed class AlpacaCorporateActionProvider : ICorporateActionProvider
         public decimal? NewRate { get; init; }
     }
 
-    private static readonly JsonSerializerOptions _jsonOptions =
-        new() { PropertyNameCaseInsensitive = true };
+    [JsonSourceGenerationOptions(
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNameCaseInsensitive = true)]
+    [JsonSerializable(typeof(AlpacaAnnouncement[]))]
+    private sealed partial class AlpacaCorporateActionJsonContext : JsonSerializerContext;
 }

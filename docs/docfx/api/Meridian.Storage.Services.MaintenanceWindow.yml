@@ -1,0 +1,731 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.MaintenanceWindow
+  commentId: T:Meridian.Storage.Services.MaintenanceWindow
+  id: MaintenanceWindow
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.MaintenanceWindow.#ctor(System.String,System.TimeSpan,System.TimeSpan,System.DayOfWeek[],Meridian.Storage.Services.MaintenanceType[],System.Int32,Meridian.Storage.Services.ResourceLimits)
+  - Meridian.Storage.Services.MaintenanceWindow.AllowedOperations
+  - Meridian.Storage.Services.MaintenanceWindow.Days
+  - Meridian.Storage.Services.MaintenanceWindow.End
+  - Meridian.Storage.Services.MaintenanceWindow.Limits
+  - Meridian.Storage.Services.MaintenanceWindow.MaxConcurrentJobs
+  - Meridian.Storage.Services.MaintenanceWindow.Name
+  - Meridian.Storage.Services.MaintenanceWindow.Start
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceWindow
+  nameWithType: MaintenanceWindow
+  fullName: Meridian.Storage.Services.MaintenanceWindow
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceWindow
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 595
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record MaintenanceWindow : IEquatable<MaintenanceWindow>'
+    content.vb: Public NotInheritable Class MaintenanceWindow Implements IEquatable(Of MaintenanceWindow)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.MaintenanceWindow}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.MaintenanceWindow.#ctor(System.String,System.TimeSpan,System.TimeSpan,System.DayOfWeek[],Meridian.Storage.Services.MaintenanceType[],System.Int32,Meridian.Storage.Services.ResourceLimits)
+  commentId: M:Meridian.Storage.Services.MaintenanceWindow.#ctor(System.String,System.TimeSpan,System.TimeSpan,System.DayOfWeek[],Meridian.Storage.Services.MaintenanceType[],System.Int32,Meridian.Storage.Services.ResourceLimits)
+  id: '#ctor(System.String,System.TimeSpan,System.TimeSpan,System.DayOfWeek[],Meridian.Storage.Services.MaintenanceType[],System.Int32,Meridian.Storage.Services.ResourceLimits)'
+  parent: Meridian.Storage.Services.MaintenanceWindow
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceWindow(string, TimeSpan, TimeSpan, DayOfWeek[], MaintenanceType[], int, ResourceLimits)
+  nameWithType: MaintenanceWindow.MaintenanceWindow(string, TimeSpan, TimeSpan, DayOfWeek[], MaintenanceType[], int, ResourceLimits)
+  fullName: Meridian.Storage.Services.MaintenanceWindow.MaintenanceWindow(string, System.TimeSpan, System.TimeSpan, System.DayOfWeek[], Meridian.Storage.Services.MaintenanceType[], int, Meridian.Storage.Services.ResourceLimits)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 595
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MaintenanceWindow(string Name, TimeSpan Start, TimeSpan End, DayOfWeek[] Days, MaintenanceType[] AllowedOperations, int MaxConcurrentJobs = 4, ResourceLimits Limits = null)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: Start
+      type: System.TimeSpan
+    - id: End
+      type: System.TimeSpan
+    - id: Days
+      type: System.DayOfWeek[]
+    - id: AllowedOperations
+      type: Meridian.Storage.Services.MaintenanceType[]
+    - id: MaxConcurrentJobs
+      type: System.Int32
+    - id: Limits
+      type: Meridian.Storage.Services.ResourceLimits
+    content.vb: Public Sub New(Name As String, Start As TimeSpan, [End] As TimeSpan, Days As DayOfWeek(), AllowedOperations As MaintenanceType(), MaxConcurrentJobs As Integer = 4, Limits As ResourceLimits = Nothing)
+  overload: Meridian.Storage.Services.MaintenanceWindow.#ctor*
+  nameWithType.vb: MaintenanceWindow.New(String, TimeSpan, TimeSpan, DayOfWeek(), MaintenanceType(), Integer, ResourceLimits)
+  fullName.vb: Meridian.Storage.Services.MaintenanceWindow.New(String, System.TimeSpan, System.TimeSpan, System.DayOfWeek(), Meridian.Storage.Services.MaintenanceType(), Integer, Meridian.Storage.Services.ResourceLimits)
+  name.vb: New(String, TimeSpan, TimeSpan, DayOfWeek(), MaintenanceType(), Integer, ResourceLimits)
+- uid: Meridian.Storage.Services.MaintenanceWindow.Name
+  commentId: P:Meridian.Storage.Services.MaintenanceWindow.Name
+  id: Name
+  parent: Meridian.Storage.Services.MaintenanceWindow
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: MaintenanceWindow.Name
+  fullName: Meridian.Storage.Services.MaintenanceWindow.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 596
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Storage.Services.MaintenanceWindow.Name*
+- uid: Meridian.Storage.Services.MaintenanceWindow.Start
+  commentId: P:Meridian.Storage.Services.MaintenanceWindow.Start
+  id: Start
+  parent: Meridian.Storage.Services.MaintenanceWindow
+  langs:
+  - csharp
+  - vb
+  name: Start
+  nameWithType: MaintenanceWindow.Start
+  fullName: Meridian.Storage.Services.MaintenanceWindow.Start
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 597
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan Start { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Start As TimeSpan
+  overload: Meridian.Storage.Services.MaintenanceWindow.Start*
+- uid: Meridian.Storage.Services.MaintenanceWindow.End
+  commentId: P:Meridian.Storage.Services.MaintenanceWindow.End
+  id: End
+  parent: Meridian.Storage.Services.MaintenanceWindow
+  langs:
+  - csharp
+  - vb
+  name: End
+  nameWithType: MaintenanceWindow.End
+  fullName: Meridian.Storage.Services.MaintenanceWindow.End
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: End
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 598
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public TimeSpan End { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property [End] As TimeSpan
+  overload: Meridian.Storage.Services.MaintenanceWindow.End*
+- uid: Meridian.Storage.Services.MaintenanceWindow.Days
+  commentId: P:Meridian.Storage.Services.MaintenanceWindow.Days
+  id: Days
+  parent: Meridian.Storage.Services.MaintenanceWindow
+  langs:
+  - csharp
+  - vb
+  name: Days
+  nameWithType: MaintenanceWindow.Days
+  fullName: Meridian.Storage.Services.MaintenanceWindow.Days
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Days
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 599
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DayOfWeek[] Days { get; init; }
+    parameters: []
+    return:
+      type: System.DayOfWeek[]
+    content.vb: Public Property Days As DayOfWeek()
+  overload: Meridian.Storage.Services.MaintenanceWindow.Days*
+- uid: Meridian.Storage.Services.MaintenanceWindow.AllowedOperations
+  commentId: P:Meridian.Storage.Services.MaintenanceWindow.AllowedOperations
+  id: AllowedOperations
+  parent: Meridian.Storage.Services.MaintenanceWindow
+  langs:
+  - csharp
+  - vb
+  name: AllowedOperations
+  nameWithType: MaintenanceWindow.AllowedOperations
+  fullName: Meridian.Storage.Services.MaintenanceWindow.AllowedOperations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllowedOperations
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 600
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MaintenanceType[] AllowedOperations { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.MaintenanceType[]
+    content.vb: Public Property AllowedOperations As MaintenanceType()
+  overload: Meridian.Storage.Services.MaintenanceWindow.AllowedOperations*
+- uid: Meridian.Storage.Services.MaintenanceWindow.MaxConcurrentJobs
+  commentId: P:Meridian.Storage.Services.MaintenanceWindow.MaxConcurrentJobs
+  id: MaxConcurrentJobs
+  parent: Meridian.Storage.Services.MaintenanceWindow
+  langs:
+  - csharp
+  - vb
+  name: MaxConcurrentJobs
+  nameWithType: MaintenanceWindow.MaxConcurrentJobs
+  fullName: Meridian.Storage.Services.MaintenanceWindow.MaxConcurrentJobs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxConcurrentJobs
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 601
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int MaxConcurrentJobs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxConcurrentJobs As Integer
+  overload: Meridian.Storage.Services.MaintenanceWindow.MaxConcurrentJobs*
+- uid: Meridian.Storage.Services.MaintenanceWindow.Limits
+  commentId: P:Meridian.Storage.Services.MaintenanceWindow.Limits
+  id: Limits
+  parent: Meridian.Storage.Services.MaintenanceWindow
+  langs:
+  - csharp
+  - vb
+  name: Limits
+  nameWithType: MaintenanceWindow.Limits
+  fullName: Meridian.Storage.Services.MaintenanceWindow.Limits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Limits
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 602
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public ResourceLimits Limits { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.ResourceLimits
+    content.vb: Public Property Limits As ResourceLimits
+  overload: Meridian.Storage.Services.MaintenanceWindow.Limits*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.MaintenanceWindow}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.MaintenanceWindow}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MaintenanceWindow>
+  nameWithType: IEquatable<MaintenanceWindow>
+  fullName: System.IEquatable<Meridian.Storage.Services.MaintenanceWindow>
+  nameWithType.vb: IEquatable(Of MaintenanceWindow)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.MaintenanceWindow)
+  name.vb: IEquatable(Of MaintenanceWindow)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.MaintenanceWindow
+    name: MaintenanceWindow
+    href: Meridian.Storage.Services.MaintenanceWindow.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.MaintenanceWindow
+    name: MaintenanceWindow
+    href: Meridian.Storage.Services.MaintenanceWindow.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.MaintenanceWindow.#ctor*
+  commentId: Overload:Meridian.Storage.Services.MaintenanceWindow.#ctor
+  href: Meridian.Storage.Services.MaintenanceWindow.html#Meridian_Storage_Services_MaintenanceWindow__ctor_System_String_System_TimeSpan_System_TimeSpan_System_DayOfWeek___Meridian_Storage_Services_MaintenanceType___System_Int32_Meridian_Storage_Services_ResourceLimits_
+  name: MaintenanceWindow
+  nameWithType: MaintenanceWindow.MaintenanceWindow
+  fullName: Meridian.Storage.Services.MaintenanceWindow.MaintenanceWindow
+  nameWithType.vb: MaintenanceWindow.New
+  fullName.vb: Meridian.Storage.Services.MaintenanceWindow.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.DayOfWeek[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dayofweek
+  name: DayOfWeek[]
+  nameWithType: DayOfWeek[]
+  fullName: System.DayOfWeek[]
+  nameWithType.vb: DayOfWeek()
+  fullName.vb: System.DayOfWeek()
+  name.vb: DayOfWeek()
+  spec.csharp:
+  - uid: System.DayOfWeek
+    name: DayOfWeek
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dayofweek
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.DayOfWeek
+    name: DayOfWeek
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dayofweek
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.MaintenanceType[]
+  isExternal: true
+  href: Meridian.Storage.Services.MaintenanceType.html
+  name: MaintenanceType[]
+  nameWithType: MaintenanceType[]
+  fullName: Meridian.Storage.Services.MaintenanceType[]
+  nameWithType.vb: MaintenanceType()
+  fullName.vb: Meridian.Storage.Services.MaintenanceType()
+  name.vb: MaintenanceType()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.MaintenanceType
+    name: MaintenanceType
+    href: Meridian.Storage.Services.MaintenanceType.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Storage.Services.MaintenanceType
+    name: MaintenanceType
+    href: Meridian.Storage.Services.MaintenanceType.html
+  - name: (
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Services.ResourceLimits
+  commentId: T:Meridian.Storage.Services.ResourceLimits
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.ResourceLimits.html
+  name: ResourceLimits
+  nameWithType: ResourceLimits
+  fullName: Meridian.Storage.Services.ResourceLimits
+- uid: Meridian.Storage.Services.MaintenanceWindow.Name*
+  commentId: Overload:Meridian.Storage.Services.MaintenanceWindow.Name
+  href: Meridian.Storage.Services.MaintenanceWindow.html#Meridian_Storage_Services_MaintenanceWindow_Name
+  name: Name
+  nameWithType: MaintenanceWindow.Name
+  fullName: Meridian.Storage.Services.MaintenanceWindow.Name
+- uid: Meridian.Storage.Services.MaintenanceWindow.Start*
+  commentId: Overload:Meridian.Storage.Services.MaintenanceWindow.Start
+  href: Meridian.Storage.Services.MaintenanceWindow.html#Meridian_Storage_Services_MaintenanceWindow_Start
+  name: Start
+  nameWithType: MaintenanceWindow.Start
+  fullName: Meridian.Storage.Services.MaintenanceWindow.Start
+- uid: Meridian.Storage.Services.MaintenanceWindow.End*
+  commentId: Overload:Meridian.Storage.Services.MaintenanceWindow.End
+  href: Meridian.Storage.Services.MaintenanceWindow.html#Meridian_Storage_Services_MaintenanceWindow_End
+  name: End
+  nameWithType: MaintenanceWindow.End
+  fullName: Meridian.Storage.Services.MaintenanceWindow.End
+- uid: Meridian.Storage.Services.MaintenanceWindow.Days*
+  commentId: Overload:Meridian.Storage.Services.MaintenanceWindow.Days
+  href: Meridian.Storage.Services.MaintenanceWindow.html#Meridian_Storage_Services_MaintenanceWindow_Days
+  name: Days
+  nameWithType: MaintenanceWindow.Days
+  fullName: Meridian.Storage.Services.MaintenanceWindow.Days
+- uid: Meridian.Storage.Services.MaintenanceWindow.AllowedOperations*
+  commentId: Overload:Meridian.Storage.Services.MaintenanceWindow.AllowedOperations
+  href: Meridian.Storage.Services.MaintenanceWindow.html#Meridian_Storage_Services_MaintenanceWindow_AllowedOperations
+  name: AllowedOperations
+  nameWithType: MaintenanceWindow.AllowedOperations
+  fullName: Meridian.Storage.Services.MaintenanceWindow.AllowedOperations
+- uid: Meridian.Storage.Services.MaintenanceWindow.MaxConcurrentJobs*
+  commentId: Overload:Meridian.Storage.Services.MaintenanceWindow.MaxConcurrentJobs
+  href: Meridian.Storage.Services.MaintenanceWindow.html#Meridian_Storage_Services_MaintenanceWindow_MaxConcurrentJobs
+  name: MaxConcurrentJobs
+  nameWithType: MaintenanceWindow.MaxConcurrentJobs
+  fullName: Meridian.Storage.Services.MaintenanceWindow.MaxConcurrentJobs
+- uid: Meridian.Storage.Services.MaintenanceWindow.Limits*
+  commentId: Overload:Meridian.Storage.Services.MaintenanceWindow.Limits
+  href: Meridian.Storage.Services.MaintenanceWindow.html#Meridian_Storage_Services_MaintenanceWindow_Limits
+  name: Limits
+  nameWithType: MaintenanceWindow.Limits
+  fullName: Meridian.Storage.Services.MaintenanceWindow.Limits

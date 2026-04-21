@@ -10,3 +10,7 @@ dotnet build "src/Meridian.Infrastructure/Meridian.Infrastructure.csproj" `
     -p:EnableWindowsTargeting=true `
     -p:EnableIbApiSmoke=true `
     -maxcpucount:1
+
+if ($LASTEXITCODE -ne 0) {
+    throw "IBApi smoke build failed with exit code $LASTEXITCODE."
+}

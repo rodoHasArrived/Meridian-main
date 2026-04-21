@@ -22,6 +22,7 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
     private readonly LeanIntegrationService _leanService;
     private readonly DispatcherTimer _backtestPollTimer;
     private readonly CancellationTokenSource _cts = new();
+    private bool _isDisposed;
 
     // Cached brushes (resolved once at construction so FindResource is never called in update paths).
     private readonly Brush _successBrush;
@@ -746,8 +747,23 @@ public sealed class LeanIntegrationViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
         _backtestPollTimer.Stop();
-        _cts.Cancel();
+
+        try
+        {
+            _cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Shutdown can reach the page after another lifetime path already disposed its CTS.
+        }
+
         _cts.Dispose();
     }
 }

@@ -609,7 +609,7 @@ public sealed class AnalysisExportWizardService
         {
             // Load configuration to get data root path
             var appConfig = await _configService.LoadConfigAsync();
-            var dataRoot = appConfig?.DataRoot ?? "data";
+            var dataRoot = _configService.ResolveDataRoot(appConfig);
 
             // Determine source files based on data types requested
             var sourceFiles = new List<string>();

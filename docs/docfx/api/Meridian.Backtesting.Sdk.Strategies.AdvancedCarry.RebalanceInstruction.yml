@@ -1,0 +1,710 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  id: RebalanceInstruction
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.#ctor(System.String,System.Double,System.Double,System.Int64,System.Int64,System.Int64,System.Decimal)
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentQuantity
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentWeight
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.DeltaQuantity
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.EstimatedNotional
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.Symbol
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetQuantity
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetWeight
+  langs:
+  - csharp
+  - vb
+  name: RebalanceInstruction
+  nameWithType: RebalanceInstruction
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RebalanceInstruction
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: 'public sealed record RebalanceInstruction : IEquatable<RebalanceInstruction>'
+    content.vb: Public NotInheritable Class RebalanceInstruction Implements IEquatable(Of RebalanceInstruction)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.#ctor(System.String,System.Double,System.Double,System.Int64,System.Int64,System.Int64,System.Decimal)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.#ctor(System.String,System.Double,System.Double,System.Int64,System.Int64,System.Int64,System.Decimal)
+  id: '#ctor(System.String,System.Double,System.Double,System.Int64,System.Int64,System.Int64,System.Decimal)'
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  langs:
+  - csharp
+  - vb
+  name: RebalanceInstruction(string, double, double, long, long, long, decimal)
+  nameWithType: RebalanceInstruction.RebalanceInstruction(string, double, double, long, long, long, decimal)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.RebalanceInstruction(string, double, double, long, long, long, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public RebalanceInstruction(string Symbol, double CurrentWeight, double TargetWeight, long CurrentQuantity, long TargetQuantity, long DeltaQuantity, decimal EstimatedNotional)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: CurrentWeight
+      type: System.Double
+    - id: TargetWeight
+      type: System.Double
+    - id: CurrentQuantity
+      type: System.Int64
+    - id: TargetQuantity
+      type: System.Int64
+    - id: DeltaQuantity
+      type: System.Int64
+    - id: EstimatedNotional
+      type: System.Decimal
+    content.vb: Public Sub New(Symbol As String, CurrentWeight As Double, TargetWeight As Double, CurrentQuantity As Long, TargetQuantity As Long, DeltaQuantity As Long, EstimatedNotional As Decimal)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.#ctor*
+  nameWithType.vb: RebalanceInstruction.New(String, Double, Double, Long, Long, Long, Decimal)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.New(String, Double, Double, Long, Long, Long, Decimal)
+  name.vb: New(String, Double, Double, Long, Long, Long, Decimal)
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: RebalanceInstruction.Symbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.Symbol*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentWeight
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentWeight
+  id: CurrentWeight
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  langs:
+  - csharp
+  - vb
+  name: CurrentWeight
+  nameWithType: RebalanceInstruction.CurrentWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentWeight
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double CurrentWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CurrentWeight As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentWeight*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetWeight
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetWeight
+  id: TargetWeight
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  langs:
+  - csharp
+  - vb
+  name: TargetWeight
+  nameWithType: RebalanceInstruction.TargetWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetWeight
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double TargetWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property TargetWeight As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetWeight*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentQuantity
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentQuantity
+  id: CurrentQuantity
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  langs:
+  - csharp
+  - vb
+  name: CurrentQuantity
+  nameWithType: RebalanceInstruction.CurrentQuantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentQuantity
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public long CurrentQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property CurrentQuantity As Long
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentQuantity*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetQuantity
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetQuantity
+  id: TargetQuantity
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  langs:
+  - csharp
+  - vb
+  name: TargetQuantity
+  nameWithType: RebalanceInstruction.TargetQuantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetQuantity
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public long TargetQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TargetQuantity As Long
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetQuantity*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.DeltaQuantity
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.DeltaQuantity
+  id: DeltaQuantity
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  langs:
+  - csharp
+  - vb
+  name: DeltaQuantity
+  nameWithType: RebalanceInstruction.DeltaQuantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.DeltaQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeltaQuantity
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public long DeltaQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DeltaQuantity As Long
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.DeltaQuantity*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.EstimatedNotional
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.EstimatedNotional
+  id: EstimatedNotional
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+  langs:
+  - csharp
+  - vb
+  name: EstimatedNotional
+  nameWithType: RebalanceInstruction.EstimatedNotional
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.EstimatedNotional
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedNotional
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public decimal EstimatedNotional { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property EstimatedNotional As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.EstimatedNotional*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RebalanceInstruction>
+  nameWithType: IEquatable<RebalanceInstruction>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction>
+  nameWithType.vb: IEquatable(Of RebalanceInstruction)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction)
+  name.vb: IEquatable(Of RebalanceInstruction)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+    name: RebalanceInstruction
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+    name: RebalanceInstruction
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_RebalanceInstruction__ctor_System_String_System_Double_System_Double_System_Int64_System_Int64_System_Int64_System_Decimal_
+  name: RebalanceInstruction
+  nameWithType: RebalanceInstruction.RebalanceInstruction
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.RebalanceInstruction
+  nameWithType.vb: RebalanceInstruction.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.Symbol
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_RebalanceInstruction_Symbol
+  name: Symbol
+  nameWithType: RebalanceInstruction.Symbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.Symbol
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentWeight*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentWeight
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_RebalanceInstruction_CurrentWeight
+  name: CurrentWeight
+  nameWithType: RebalanceInstruction.CurrentWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentWeight
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetWeight*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetWeight
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_RebalanceInstruction_TargetWeight
+  name: TargetWeight
+  nameWithType: RebalanceInstruction.TargetWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetWeight
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentQuantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentQuantity
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_RebalanceInstruction_CurrentQuantity
+  name: CurrentQuantity
+  nameWithType: RebalanceInstruction.CurrentQuantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.CurrentQuantity
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetQuantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetQuantity
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_RebalanceInstruction_TargetQuantity
+  name: TargetQuantity
+  nameWithType: RebalanceInstruction.TargetQuantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.TargetQuantity
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.DeltaQuantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.DeltaQuantity
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_RebalanceInstruction_DeltaQuantity
+  name: DeltaQuantity
+  nameWithType: RebalanceInstruction.DeltaQuantity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.DeltaQuantity
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.EstimatedNotional*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.EstimatedNotional
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_RebalanceInstruction_EstimatedNotional
+  name: EstimatedNotional
+  nameWithType: RebalanceInstruction.EstimatedNotional
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.EstimatedNotional

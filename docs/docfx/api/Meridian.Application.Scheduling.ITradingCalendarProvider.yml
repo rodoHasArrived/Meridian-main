@@ -1,0 +1,448 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.ITradingCalendarProvider
+  commentId: T:Meridian.Application.Scheduling.ITradingCalendarProvider
+  id: ITradingCalendarProvider
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.ITradingCalendarProvider.GetHolidays(System.Int32,System.String)
+  - Meridian.Application.Scheduling.ITradingCalendarProvider.GetNextTradingDay(System.DateOnly,System.String)
+  - Meridian.Application.Scheduling.ITradingCalendarProvider.GetTradingSessions(System.DateOnly,System.String)
+  - Meridian.Application.Scheduling.ITradingCalendarProvider.IsTradingDay(System.DateOnly,System.String)
+  langs:
+  - csharp
+  - vb
+  name: ITradingCalendarProvider
+  nameWithType: ITradingCalendarProvider
+  fullName: Meridian.Application.Scheduling.ITradingCalendarProvider
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ITradingCalendarProvider
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Provides trading calendar information.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Trading calendar provider")]
+
+      public interface ITradingCalendarProvider
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Trading calendar provider")>
+
+      Public Interface ITradingCalendarProvider
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Trading calendar provider
+- uid: Meridian.Application.Scheduling.ITradingCalendarProvider.IsTradingDay(System.DateOnly,System.String)
+  commentId: M:Meridian.Application.Scheduling.ITradingCalendarProvider.IsTradingDay(System.DateOnly,System.String)
+  id: IsTradingDay(System.DateOnly,System.String)
+  parent: Meridian.Application.Scheduling.ITradingCalendarProvider
+  langs:
+  - csharp
+  - vb
+  name: IsTradingDay(DateOnly, string)
+  nameWithType: ITradingCalendarProvider.IsTradingDay(DateOnly, string)
+  fullName: Meridian.Application.Scheduling.ITradingCalendarProvider.IsTradingDay(System.DateOnly, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsTradingDay
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Checks if a specific date is a trading day.
+  example: []
+  syntax:
+    content: bool IsTradingDay(DateOnly date, string market = "US")
+    parameters:
+    - id: date
+      type: System.DateOnly
+      description: Date to check.
+    - id: market
+      type: System.String
+      description: 'Market to check (default: "US").'
+    return:
+      type: System.Boolean
+      description: True if the date is a trading day.
+    content.vb: Function IsTradingDay([date] As DateOnly, market As String = "US") As Boolean
+  overload: Meridian.Application.Scheduling.ITradingCalendarProvider.IsTradingDay*
+  nameWithType.vb: ITradingCalendarProvider.IsTradingDay(DateOnly, String)
+  fullName.vb: Meridian.Application.Scheduling.ITradingCalendarProvider.IsTradingDay(System.DateOnly, String)
+  name.vb: IsTradingDay(DateOnly, String)
+- uid: Meridian.Application.Scheduling.ITradingCalendarProvider.GetTradingSessions(System.DateOnly,System.String)
+  commentId: M:Meridian.Application.Scheduling.ITradingCalendarProvider.GetTradingSessions(System.DateOnly,System.String)
+  id: GetTradingSessions(System.DateOnly,System.String)
+  parent: Meridian.Application.Scheduling.ITradingCalendarProvider
+  langs:
+  - csharp
+  - vb
+  name: GetTradingSessions(DateOnly, string)
+  nameWithType: ITradingCalendarProvider.GetTradingSessions(DateOnly, string)
+  fullName: Meridian.Application.Scheduling.ITradingCalendarProvider.GetTradingSessions(System.DateOnly, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTradingSessions
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Gets trading hours for a specific date.
+  example: []
+  syntax:
+    content: IReadOnlyList<TradingSession> GetTradingSessions(DateOnly date, string market = "US")
+    parameters:
+    - id: date
+      type: System.DateOnly
+      description: Date to check.
+    - id: market
+      type: System.String
+      description: Market to check.
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.TradingSession}
+      description: List of trading sessions for the date.
+    content.vb: Function GetTradingSessions([date] As DateOnly, market As String = "US") As IReadOnlyList(Of TradingSession)
+  overload: Meridian.Application.Scheduling.ITradingCalendarProvider.GetTradingSessions*
+  nameWithType.vb: ITradingCalendarProvider.GetTradingSessions(DateOnly, String)
+  fullName.vb: Meridian.Application.Scheduling.ITradingCalendarProvider.GetTradingSessions(System.DateOnly, String)
+  name.vb: GetTradingSessions(DateOnly, String)
+- uid: Meridian.Application.Scheduling.ITradingCalendarProvider.GetNextTradingDay(System.DateOnly,System.String)
+  commentId: M:Meridian.Application.Scheduling.ITradingCalendarProvider.GetNextTradingDay(System.DateOnly,System.String)
+  id: GetNextTradingDay(System.DateOnly,System.String)
+  parent: Meridian.Application.Scheduling.ITradingCalendarProvider
+  langs:
+  - csharp
+  - vb
+  name: GetNextTradingDay(DateOnly, string)
+  nameWithType: ITradingCalendarProvider.GetNextTradingDay(DateOnly, string)
+  fullName: Meridian.Application.Scheduling.ITradingCalendarProvider.GetNextTradingDay(System.DateOnly, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetNextTradingDay
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Gets the next trading day.
+  example: []
+  syntax:
+    content: DateOnly GetNextTradingDay(DateOnly after, string market = "US")
+    parameters:
+    - id: after
+      type: System.DateOnly
+      description: Date to start searching from.
+    - id: market
+      type: System.String
+      description: Market to check.
+    return:
+      type: System.DateOnly
+      description: Next trading day.
+    content.vb: Function GetNextTradingDay(after As DateOnly, market As String = "US") As DateOnly
+  overload: Meridian.Application.Scheduling.ITradingCalendarProvider.GetNextTradingDay*
+  nameWithType.vb: ITradingCalendarProvider.GetNextTradingDay(DateOnly, String)
+  fullName.vb: Meridian.Application.Scheduling.ITradingCalendarProvider.GetNextTradingDay(System.DateOnly, String)
+  name.vb: GetNextTradingDay(DateOnly, String)
+- uid: Meridian.Application.Scheduling.ITradingCalendarProvider.GetHolidays(System.Int32,System.String)
+  commentId: M:Meridian.Application.Scheduling.ITradingCalendarProvider.GetHolidays(System.Int32,System.String)
+  id: GetHolidays(System.Int32,System.String)
+  parent: Meridian.Application.Scheduling.ITradingCalendarProvider
+  langs:
+  - csharp
+  - vb
+  name: GetHolidays(int, string)
+  nameWithType: ITradingCalendarProvider.GetHolidays(int, string)
+  fullName: Meridian.Application.Scheduling.ITradingCalendarProvider.GetHolidays(int, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHolidays
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Gets market holidays for a year.
+  example: []
+  syntax:
+    content: IReadOnlyList<DateOnly> GetHolidays(int year, string market = "US")
+    parameters:
+    - id: year
+      type: System.Int32
+      description: Year to get holidays for.
+    - id: market
+      type: System.String
+      description: Market to check.
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.DateOnly}
+      description: List of holiday dates.
+    content.vb: Function GetHolidays(year As Integer, market As String = "US") As IReadOnlyList(Of DateOnly)
+  overload: Meridian.Application.Scheduling.ITradingCalendarProvider.GetHolidays*
+  nameWithType.vb: ITradingCalendarProvider.GetHolidays(Integer, String)
+  fullName.vb: Meridian.Application.Scheduling.ITradingCalendarProvider.GetHolidays(Integer, String)
+  name.vb: GetHolidays(Integer, String)
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: Meridian.Application.Scheduling.ITradingCalendarProvider.IsTradingDay*
+  commentId: Overload:Meridian.Application.Scheduling.ITradingCalendarProvider.IsTradingDay
+  href: Meridian.Application.Scheduling.ITradingCalendarProvider.html#Meridian_Application_Scheduling_ITradingCalendarProvider_IsTradingDay_System_DateOnly_System_String_
+  name: IsTradingDay
+  nameWithType: ITradingCalendarProvider.IsTradingDay
+  fullName: Meridian.Application.Scheduling.ITradingCalendarProvider.IsTradingDay
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Scheduling.ITradingCalendarProvider.GetTradingSessions*
+  commentId: Overload:Meridian.Application.Scheduling.ITradingCalendarProvider.GetTradingSessions
+  href: Meridian.Application.Scheduling.ITradingCalendarProvider.html#Meridian_Application_Scheduling_ITradingCalendarProvider_GetTradingSessions_System_DateOnly_System_String_
+  name: GetTradingSessions
+  nameWithType: ITradingCalendarProvider.GetTradingSessions
+  fullName: Meridian.Application.Scheduling.ITradingCalendarProvider.GetTradingSessions
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.TradingSession}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Scheduling.TradingSession}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<TradingSession>
+  nameWithType: IReadOnlyList<TradingSession>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Scheduling.TradingSession>
+  nameWithType.vb: IReadOnlyList(Of TradingSession)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Scheduling.TradingSession)
+  name.vb: IReadOnlyList(Of TradingSession)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.TradingSession
+    name: TradingSession
+    href: Meridian.Application.Scheduling.TradingSession.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.TradingSession
+    name: TradingSession
+    href: Meridian.Application.Scheduling.TradingSession.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Scheduling.ITradingCalendarProvider.GetNextTradingDay*
+  commentId: Overload:Meridian.Application.Scheduling.ITradingCalendarProvider.GetNextTradingDay
+  href: Meridian.Application.Scheduling.ITradingCalendarProvider.html#Meridian_Application_Scheduling_ITradingCalendarProvider_GetNextTradingDay_System_DateOnly_System_String_
+  name: GetNextTradingDay
+  nameWithType: ITradingCalendarProvider.GetNextTradingDay
+  fullName: Meridian.Application.Scheduling.ITradingCalendarProvider.GetNextTradingDay
+- uid: Meridian.Application.Scheduling.ITradingCalendarProvider.GetHolidays*
+  commentId: Overload:Meridian.Application.Scheduling.ITradingCalendarProvider.GetHolidays
+  href: Meridian.Application.Scheduling.ITradingCalendarProvider.html#Meridian_Application_Scheduling_ITradingCalendarProvider_GetHolidays_System_Int32_System_String_
+  name: GetHolidays
+  nameWithType: ITradingCalendarProvider.GetHolidays
+  fullName: Meridian.Application.Scheduling.ITradingCalendarProvider.GetHolidays
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{System.DateOnly}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.DateOnly}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DateOnly>
+  nameWithType: IReadOnlyList<DateOnly>
+  fullName: System.Collections.Generic.IReadOnlyList<System.DateOnly>
+  nameWithType.vb: IReadOnlyList(Of DateOnly)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of System.DateOnly)
+  name.vb: IReadOnlyList(Of DateOnly)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: )

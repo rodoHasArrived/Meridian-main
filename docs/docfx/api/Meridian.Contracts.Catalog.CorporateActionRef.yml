@@ -1,0 +1,555 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Catalog.CorporateActionRef
+  commentId: T:Meridian.Contracts.Catalog.CorporateActionRef
+  id: CorporateActionRef
+  parent: Meridian.Contracts.Catalog
+  children:
+  - Meridian.Contracts.Catalog.CorporateActionRef.Description
+  - Meridian.Contracts.Catalog.CorporateActionRef.EffectiveDate
+  - Meridian.Contracts.Catalog.CorporateActionRef.PreviousSymbol
+  - Meridian.Contracts.Catalog.CorporateActionRef.SplitRatio
+  - Meridian.Contracts.Catalog.CorporateActionRef.Type
+  langs:
+  - csharp
+  - vb
+  name: CorporateActionRef
+  nameWithType: CorporateActionRef
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorporateActionRef
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Reference to a corporate action affecting the symbol.
+  example: []
+  syntax:
+    content: public sealed class CorporateActionRef
+    content.vb: Public NotInheritable Class CorporateActionRef
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.Type
+  commentId: P:Meridian.Contracts.Catalog.CorporateActionRef.Type
+  id: Type
+  parent: Meridian.Contracts.Catalog.CorporateActionRef
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: CorporateActionRef.Type
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 320
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Type of corporate action (split, merger, spinoff, rename).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("type")]
+
+      public string Type { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("type")>
+
+      Public Property Type As String
+  overload: Meridian.Contracts.Catalog.CorporateActionRef.Type*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: type
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.EffectiveDate
+  commentId: P:Meridian.Contracts.Catalog.CorporateActionRef.EffectiveDate
+  id: EffectiveDate
+  parent: Meridian.Contracts.Catalog.CorporateActionRef
+  langs:
+  - csharp
+  - vb
+  name: EffectiveDate
+  nameWithType: CorporateActionRef.EffectiveDate
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.EffectiveDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveDate
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 326
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Effective date of the action.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("effectiveDate")]
+
+      public DateTime EffectiveDate { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("effectiveDate")>
+
+      Public Property EffectiveDate As Date
+  overload: Meridian.Contracts.Catalog.CorporateActionRef.EffectiveDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: effectiveDate
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.Description
+  commentId: P:Meridian.Contracts.Catalog.CorporateActionRef.Description
+  id: Description
+  parent: Meridian.Contracts.Catalog.CorporateActionRef
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: CorporateActionRef.Description
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 332
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Description of the action.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string? Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Contracts.Catalog.CorporateActionRef.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.PreviousSymbol
+  commentId: P:Meridian.Contracts.Catalog.CorporateActionRef.PreviousSymbol
+  id: PreviousSymbol
+  parent: Meridian.Contracts.Catalog.CorporateActionRef
+  langs:
+  - csharp
+  - vb
+  name: PreviousSymbol
+  nameWithType: CorporateActionRef.PreviousSymbol
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.PreviousSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviousSymbol
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 338
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Previous symbol (for renames).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("previousSymbol")]
+
+      public string? PreviousSymbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("previousSymbol")>
+
+      Public Property PreviousSymbol As String
+  overload: Meridian.Contracts.Catalog.CorporateActionRef.PreviousSymbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: previousSymbol
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.SplitRatio
+  commentId: P:Meridian.Contracts.Catalog.CorporateActionRef.SplitRatio
+  id: SplitRatio
+  parent: Meridian.Contracts.Catalog.CorporateActionRef
+  langs:
+  - csharp
+  - vb
+  name: SplitRatio
+  nameWithType: CorporateActionRef.SplitRatio
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.SplitRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SplitRatio
+    path: ../../src/Meridian.Contracts/Catalog/SymbolRegistry.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Catalog
+  summary: Split ratio (e.g., "4:1" for 4-for-1 split).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("splitRatio")]
+
+      public string? SplitRatio { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("splitRatio")>
+
+      Public Property SplitRatio As String
+  overload: Meridian.Contracts.Catalog.CorporateActionRef.SplitRatio*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: splitRatio
+references:
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.Type*
+  commentId: Overload:Meridian.Contracts.Catalog.CorporateActionRef.Type
+  href: Meridian.Contracts.Catalog.CorporateActionRef.html#Meridian_Contracts_Catalog_CorporateActionRef_Type
+  name: Type
+  nameWithType: CorporateActionRef.Type
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.Type
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.EffectiveDate*
+  commentId: Overload:Meridian.Contracts.Catalog.CorporateActionRef.EffectiveDate
+  href: Meridian.Contracts.Catalog.CorporateActionRef.html#Meridian_Contracts_Catalog_CorporateActionRef_EffectiveDate
+  name: EffectiveDate
+  nameWithType: CorporateActionRef.EffectiveDate
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.EffectiveDate
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.Description*
+  commentId: Overload:Meridian.Contracts.Catalog.CorporateActionRef.Description
+  href: Meridian.Contracts.Catalog.CorporateActionRef.html#Meridian_Contracts_Catalog_CorporateActionRef_Description
+  name: Description
+  nameWithType: CorporateActionRef.Description
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.Description
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.PreviousSymbol*
+  commentId: Overload:Meridian.Contracts.Catalog.CorporateActionRef.PreviousSymbol
+  href: Meridian.Contracts.Catalog.CorporateActionRef.html#Meridian_Contracts_Catalog_CorporateActionRef_PreviousSymbol
+  name: PreviousSymbol
+  nameWithType: CorporateActionRef.PreviousSymbol
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.PreviousSymbol
+- uid: Meridian.Contracts.Catalog.CorporateActionRef.SplitRatio*
+  commentId: Overload:Meridian.Contracts.Catalog.CorporateActionRef.SplitRatio
+  href: Meridian.Contracts.Catalog.CorporateActionRef.html#Meridian_Contracts_Catalog_CorporateActionRef_SplitRatio
+  name: SplitRatio
+  nameWithType: CorporateActionRef.SplitRatio
+  fullName: Meridian.Contracts.Catalog.CorporateActionRef.SplitRatio

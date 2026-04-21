@@ -1,0 +1,743 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary
+  commentId: T:Meridian.Contracts.Workstation.RunAttributionSummary
+  id: RunAttributionSummary
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.RunAttributionSummary.#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunMode,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.SymbolAttributionEntry})
+  - Meridian.Contracts.Workstation.RunAttributionSummary.BySymbol
+  - Meridian.Contracts.Workstation.RunAttributionSummary.Mode
+  - Meridian.Contracts.Workstation.RunAttributionSummary.RunId
+  - Meridian.Contracts.Workstation.RunAttributionSummary.TotalCommissions
+  - Meridian.Contracts.Workstation.RunAttributionSummary.TotalRealizedPnl
+  - Meridian.Contracts.Workstation.RunAttributionSummary.TotalUnrealizedPnl
+  langs:
+  - csharp
+  - vb
+  name: RunAttributionSummary
+  nameWithType: RunAttributionSummary
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunAttributionSummary
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 378
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Complete attribution breakdown for one run.
+  example: []
+  syntax:
+    content: 'public sealed record RunAttributionSummary : IEquatable<RunAttributionSummary>'
+    content.vb: Public NotInheritable Class RunAttributionSummary Implements IEquatable(Of RunAttributionSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.RunAttributionSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunMode,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.SymbolAttributionEntry})
+  commentId: M:Meridian.Contracts.Workstation.RunAttributionSummary.#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunMode,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.SymbolAttributionEntry})
+  id: '#ctor(System.String,Meridian.Contracts.Workstation.StrategyRunMode,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.SymbolAttributionEntry})'
+  parent: Meridian.Contracts.Workstation.RunAttributionSummary
+  langs:
+  - csharp
+  - vb
+  name: RunAttributionSummary(string, StrategyRunMode, decimal, decimal, decimal, IReadOnlyList<SymbolAttributionEntry>)
+  nameWithType: RunAttributionSummary.RunAttributionSummary(string, StrategyRunMode, decimal, decimal, decimal, IReadOnlyList<SymbolAttributionEntry>)
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.RunAttributionSummary(string, Meridian.Contracts.Workstation.StrategyRunMode, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.SymbolAttributionEntry>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 378
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Complete attribution breakdown for one run.
+  example: []
+  syntax:
+    content: public RunAttributionSummary(string RunId, StrategyRunMode Mode, decimal TotalRealizedPnl, decimal TotalUnrealizedPnl, decimal TotalCommissions, IReadOnlyList<SymbolAttributionEntry> BySymbol)
+    parameters:
+    - id: RunId
+      type: System.String
+    - id: Mode
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+    - id: TotalRealizedPnl
+      type: System.Decimal
+    - id: TotalUnrealizedPnl
+      type: System.Decimal
+    - id: TotalCommissions
+      type: System.Decimal
+    - id: BySymbol
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.SymbolAttributionEntry}
+    content.vb: Public Sub New(RunId As String, Mode As StrategyRunMode, TotalRealizedPnl As Decimal, TotalUnrealizedPnl As Decimal, TotalCommissions As Decimal, BySymbol As IReadOnlyList(Of SymbolAttributionEntry))
+  overload: Meridian.Contracts.Workstation.RunAttributionSummary.#ctor*
+  nameWithType.vb: RunAttributionSummary.New(String, StrategyRunMode, Decimal, Decimal, Decimal, IReadOnlyList(Of SymbolAttributionEntry))
+  fullName.vb: Meridian.Contracts.Workstation.RunAttributionSummary.New(String, Meridian.Contracts.Workstation.StrategyRunMode, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.SymbolAttributionEntry))
+  name.vb: New(String, StrategyRunMode, Decimal, Decimal, Decimal, IReadOnlyList(Of SymbolAttributionEntry))
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.RunId
+  commentId: P:Meridian.Contracts.Workstation.RunAttributionSummary.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.RunAttributionSummary
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: RunAttributionSummary.RunId
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 379
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.RunAttributionSummary.RunId*
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.Mode
+  commentId: P:Meridian.Contracts.Workstation.RunAttributionSummary.Mode
+  id: Mode
+  parent: Meridian.Contracts.Workstation.RunAttributionSummary
+  langs:
+  - csharp
+  - vb
+  name: Mode
+  nameWithType: RunAttributionSummary.Mode
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.Mode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mode
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public StrategyRunMode Mode { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+    content.vb: Public Property Mode As StrategyRunMode
+  overload: Meridian.Contracts.Workstation.RunAttributionSummary.Mode*
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.TotalRealizedPnl
+  commentId: P:Meridian.Contracts.Workstation.RunAttributionSummary.TotalRealizedPnl
+  id: TotalRealizedPnl
+  parent: Meridian.Contracts.Workstation.RunAttributionSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalRealizedPnl
+  nameWithType: RunAttributionSummary.TotalRealizedPnl
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.TotalRealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRealizedPnl
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalRealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalRealizedPnl As Decimal
+  overload: Meridian.Contracts.Workstation.RunAttributionSummary.TotalRealizedPnl*
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.TotalUnrealizedPnl
+  commentId: P:Meridian.Contracts.Workstation.RunAttributionSummary.TotalUnrealizedPnl
+  id: TotalUnrealizedPnl
+  parent: Meridian.Contracts.Workstation.RunAttributionSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalUnrealizedPnl
+  nameWithType: RunAttributionSummary.TotalUnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.TotalUnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalUnrealizedPnl
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalUnrealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalUnrealizedPnl As Decimal
+  overload: Meridian.Contracts.Workstation.RunAttributionSummary.TotalUnrealizedPnl*
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.TotalCommissions
+  commentId: P:Meridian.Contracts.Workstation.RunAttributionSummary.TotalCommissions
+  id: TotalCommissions
+  parent: Meridian.Contracts.Workstation.RunAttributionSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalCommissions
+  nameWithType: RunAttributionSummary.TotalCommissions
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.TotalCommissions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCommissions
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 383
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalCommissions { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalCommissions As Decimal
+  overload: Meridian.Contracts.Workstation.RunAttributionSummary.TotalCommissions*
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.BySymbol
+  commentId: P:Meridian.Contracts.Workstation.RunAttributionSummary.BySymbol
+  id: BySymbol
+  parent: Meridian.Contracts.Workstation.RunAttributionSummary
+  langs:
+  - csharp
+  - vb
+  name: BySymbol
+  nameWithType: RunAttributionSummary.BySymbol
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.BySymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BySymbol
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 384
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<SymbolAttributionEntry> BySymbol { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.SymbolAttributionEntry}
+    content.vb: Public Property BySymbol As IReadOnlyList(Of SymbolAttributionEntry)
+  overload: Meridian.Contracts.Workstation.RunAttributionSummary.BySymbol*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.RunAttributionSummary}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.RunAttributionSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RunAttributionSummary>
+  nameWithType: IEquatable<RunAttributionSummary>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.RunAttributionSummary>
+  nameWithType.vb: IEquatable(Of RunAttributionSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.RunAttributionSummary)
+  name.vb: IEquatable(Of RunAttributionSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.RunAttributionSummary
+    name: RunAttributionSummary
+    href: Meridian.Contracts.Workstation.RunAttributionSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.RunAttributionSummary
+    name: RunAttributionSummary
+    href: Meridian.Contracts.Workstation.RunAttributionSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.RunAttributionSummary.#ctor
+  href: Meridian.Contracts.Workstation.RunAttributionSummary.html#Meridian_Contracts_Workstation_RunAttributionSummary__ctor_System_String_Meridian_Contracts_Workstation_StrategyRunMode_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_SymbolAttributionEntry__
+  name: RunAttributionSummary
+  nameWithType: RunAttributionSummary.RunAttributionSummary
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.RunAttributionSummary
+  nameWithType.vb: RunAttributionSummary.New
+  fullName.vb: Meridian.Contracts.Workstation.RunAttributionSummary.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Workstation.StrategyRunMode
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunMode
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunMode.html
+  name: StrategyRunMode
+  nameWithType: StrategyRunMode
+  fullName: Meridian.Contracts.Workstation.StrategyRunMode
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.SymbolAttributionEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.SymbolAttributionEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SymbolAttributionEntry>
+  nameWithType: IReadOnlyList<SymbolAttributionEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.SymbolAttributionEntry>
+  nameWithType.vb: IReadOnlyList(Of SymbolAttributionEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.SymbolAttributionEntry)
+  name.vb: IReadOnlyList(Of SymbolAttributionEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.SymbolAttributionEntry
+    name: SymbolAttributionEntry
+    href: Meridian.Contracts.Workstation.SymbolAttributionEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.SymbolAttributionEntry
+    name: SymbolAttributionEntry
+    href: Meridian.Contracts.Workstation.SymbolAttributionEntry.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.RunAttributionSummary.RunId
+  href: Meridian.Contracts.Workstation.RunAttributionSummary.html#Meridian_Contracts_Workstation_RunAttributionSummary_RunId
+  name: RunId
+  nameWithType: RunAttributionSummary.RunId
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.RunId
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.Mode*
+  commentId: Overload:Meridian.Contracts.Workstation.RunAttributionSummary.Mode
+  href: Meridian.Contracts.Workstation.RunAttributionSummary.html#Meridian_Contracts_Workstation_RunAttributionSummary_Mode
+  name: Mode
+  nameWithType: RunAttributionSummary.Mode
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.Mode
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.TotalRealizedPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.RunAttributionSummary.TotalRealizedPnl
+  href: Meridian.Contracts.Workstation.RunAttributionSummary.html#Meridian_Contracts_Workstation_RunAttributionSummary_TotalRealizedPnl
+  name: TotalRealizedPnl
+  nameWithType: RunAttributionSummary.TotalRealizedPnl
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.TotalRealizedPnl
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.TotalUnrealizedPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.RunAttributionSummary.TotalUnrealizedPnl
+  href: Meridian.Contracts.Workstation.RunAttributionSummary.html#Meridian_Contracts_Workstation_RunAttributionSummary_TotalUnrealizedPnl
+  name: TotalUnrealizedPnl
+  nameWithType: RunAttributionSummary.TotalUnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.TotalUnrealizedPnl
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.TotalCommissions*
+  commentId: Overload:Meridian.Contracts.Workstation.RunAttributionSummary.TotalCommissions
+  href: Meridian.Contracts.Workstation.RunAttributionSummary.html#Meridian_Contracts_Workstation_RunAttributionSummary_TotalCommissions
+  name: TotalCommissions
+  nameWithType: RunAttributionSummary.TotalCommissions
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.TotalCommissions
+- uid: Meridian.Contracts.Workstation.RunAttributionSummary.BySymbol*
+  commentId: Overload:Meridian.Contracts.Workstation.RunAttributionSummary.BySymbol
+  href: Meridian.Contracts.Workstation.RunAttributionSummary.html#Meridian_Contracts_Workstation_RunAttributionSummary_BySymbol
+  name: BySymbol
+  nameWithType: RunAttributionSummary.BySymbol
+  fullName: Meridian.Contracts.Workstation.RunAttributionSummary.BySymbol

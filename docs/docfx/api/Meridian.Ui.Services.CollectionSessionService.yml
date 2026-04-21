@@ -1,0 +1,1635 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.CollectionSessionService
+  commentId: T:Meridian.Ui.Services.CollectionSessionService
+  id: CollectionSessionService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.CollectionSessionService.CreateDailySessionAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.CreateSessionAsync(System.String,System.String,System.String[],System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.DeleteSessionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.GenerateSessionSummary(Meridian.Contracts.Session.CollectionSession)
+  - Meridian.Ui.Services.CollectionSessionService.GetActiveSessionAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.GetSessionsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.Instance
+  - Meridian.Ui.Services.CollectionSessionService.LoadSessionsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.PauseSessionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.RecordGapDetectedAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.RecordSequenceErrorAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.ResumeSessionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.SaveSessionsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.SessionCompleted
+  - Meridian.Ui.Services.CollectionSessionService.SessionCreated
+  - Meridian.Ui.Services.CollectionSessionService.SessionDeleted
+  - Meridian.Ui.Services.CollectionSessionService.SessionPaused
+  - Meridian.Ui.Services.CollectionSessionService.SessionResumed
+  - Meridian.Ui.Services.CollectionSessionService.SessionStarted
+  - Meridian.Ui.Services.CollectionSessionService.StartSessionAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.StatisticsUpdated
+  - Meridian.Ui.Services.CollectionSessionService.StopSessionAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.UpdateSessionNotesAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.UpdateSessionStatisticsAsync(System.String,System.Int64,System.Int64,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.CollectionSessionService.UpdateSessionTagsAsync(System.String,System.String[],System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: CollectionSessionService
+  nameWithType: CollectionSessionService
+  fullName: Meridian.Ui.Services.CollectionSessionService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollectionSessionService
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for managing collection sessions (#65/27 - P0 Critical).
+
+    Tracks discrete data collection sessions with comprehensive statistics.
+  example: []
+  syntax:
+    content: public sealed class CollectionSessionService
+    content.vb: Public NotInheritable Class CollectionSessionService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.CollectionSessionService.Instance
+  commentId: P:Meridian.Ui.Services.CollectionSessionService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: CollectionSessionService.Instance
+  fullName: Meridian.Ui.Services.CollectionSessionService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static CollectionSessionService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.CollectionSessionService
+    content.vb: Public Shared ReadOnly Property Instance As CollectionSessionService
+  overload: Meridian.Ui.Services.CollectionSessionService.Instance*
+- uid: Meridian.Ui.Services.CollectionSessionService.LoadSessionsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.LoadSessionsAsync(System.Threading.CancellationToken)
+  id: LoadSessionsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: LoadSessionsAsync(CancellationToken)
+  nameWithType: CollectionSessionService.LoadSessionsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.LoadSessionsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadSessionsAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Loads all sessions from storage.
+  example: []
+  syntax:
+    content: public Task<CollectionSessionsConfig> LoadSessionsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSessionsConfig}
+    content.vb: Public Function LoadSessionsAsync(ct As CancellationToken = Nothing) As Task(Of CollectionSessionsConfig)
+  overload: Meridian.Ui.Services.CollectionSessionService.LoadSessionsAsync*
+- uid: Meridian.Ui.Services.CollectionSessionService.SaveSessionsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.SaveSessionsAsync(System.Threading.CancellationToken)
+  id: SaveSessionsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: SaveSessionsAsync(CancellationToken)
+  nameWithType: CollectionSessionService.SaveSessionsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.SaveSessionsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveSessionsAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Saves sessions to storage.
+  example: []
+  syntax:
+    content: public Task SaveSessionsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SaveSessionsAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.SaveSessionsAsync*
+- uid: Meridian.Ui.Services.CollectionSessionService.GetSessionsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.GetSessionsAsync(System.Threading.CancellationToken)
+  id: GetSessionsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: GetSessionsAsync(CancellationToken)
+  nameWithType: CollectionSessionService.GetSessionsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.GetSessionsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSessionsAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all sessions.
+  example: []
+  syntax:
+    content: public Task<CollectionSession[]> GetSessionsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSession[]}
+    content.vb: Public Function GetSessionsAsync(ct As CancellationToken = Nothing) As Task(Of CollectionSession())
+  overload: Meridian.Ui.Services.CollectionSessionService.GetSessionsAsync*
+- uid: Meridian.Ui.Services.CollectionSessionService.GetActiveSessionAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.GetActiveSessionAsync(System.Threading.CancellationToken)
+  id: GetActiveSessionAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: GetActiveSessionAsync(CancellationToken)
+  nameWithType: CollectionSessionService.GetActiveSessionAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.GetActiveSessionAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetActiveSessionAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the currently active session, if any.
+  example: []
+  syntax:
+    content: public Task<CollectionSession?> GetActiveSessionAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSession}
+    content.vb: Public Function GetActiveSessionAsync(ct As CancellationToken = Nothing) As Task(Of CollectionSession)
+  overload: Meridian.Ui.Services.CollectionSessionService.GetActiveSessionAsync*
+- uid: Meridian.Ui.Services.CollectionSessionService.CreateSessionAsync(System.String,System.String,System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.CreateSessionAsync(System.String,System.String,System.String[],System.Threading.CancellationToken)
+  id: CreateSessionAsync(System.String,System.String,System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: CreateSessionAsync(string, string?, string[]?, CancellationToken)
+  nameWithType: CollectionSessionService.CreateSessionAsync(string, string?, string[]?, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.CreateSessionAsync(string, string?, string[]?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateSessionAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a new collection session.
+  example: []
+  syntax:
+    content: public Task<CollectionSession> CreateSessionAsync(string name, string? description = null, string[]? tags = null, CancellationToken ct = default)
+    parameters:
+    - id: name
+      type: System.String
+    - id: description
+      type: System.String
+    - id: tags
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSession}
+    content.vb: Public Function CreateSessionAsync(name As String, description As String = Nothing, tags As String() = Nothing, ct As CancellationToken = Nothing) As Task(Of CollectionSession)
+  overload: Meridian.Ui.Services.CollectionSessionService.CreateSessionAsync*
+  nameWithType.vb: CollectionSessionService.CreateSessionAsync(String, String, String(), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.CreateSessionAsync(String, String, String(), System.Threading.CancellationToken)
+  name.vb: CreateSessionAsync(String, String, String(), CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.CreateDailySessionAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.CreateDailySessionAsync(System.Threading.CancellationToken)
+  id: CreateDailySessionAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: CreateDailySessionAsync(CancellationToken)
+  nameWithType: CollectionSessionService.CreateDailySessionAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.CreateDailySessionAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateDailySessionAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a daily session with auto-generated name.
+  example: []
+  syntax:
+    content: public Task<CollectionSession> CreateDailySessionAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSession}
+    content.vb: Public Function CreateDailySessionAsync(ct As CancellationToken = Nothing) As Task(Of CollectionSession)
+  overload: Meridian.Ui.Services.CollectionSessionService.CreateDailySessionAsync*
+- uid: Meridian.Ui.Services.CollectionSessionService.StartSessionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.StartSessionAsync(System.String,System.Threading.CancellationToken)
+  id: StartSessionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: StartSessionAsync(string, CancellationToken)
+  nameWithType: CollectionSessionService.StartSessionAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.StartSessionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartSessionAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Starts a collection session.
+  example: []
+  syntax:
+    content: public Task StartSessionAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StartSessionAsync(sessionId As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.StartSessionAsync*
+  nameWithType.vb: CollectionSessionService.StartSessionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.StartSessionAsync(String, System.Threading.CancellationToken)
+  name.vb: StartSessionAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.StopSessionAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.StopSessionAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: StopSessionAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: StopSessionAsync(string, bool, CancellationToken)
+  nameWithType: CollectionSessionService.StopSessionAsync(string, bool, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.StopSessionAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopSessionAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Stops a collection session.
+  example: []
+  syntax:
+    content: public Task StopSessionAsync(string sessionId, bool generateManifest = true, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: generateManifest
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StopSessionAsync(sessionId As String, generateManifest As Boolean = True, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.StopSessionAsync*
+  nameWithType.vb: CollectionSessionService.StopSessionAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.StopSessionAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: StopSessionAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.PauseSessionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.PauseSessionAsync(System.String,System.Threading.CancellationToken)
+  id: PauseSessionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: PauseSessionAsync(string, CancellationToken)
+  nameWithType: CollectionSessionService.PauseSessionAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.PauseSessionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PauseSessionAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 276
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Pauses a collection session.
+  example: []
+  syntax:
+    content: public Task PauseSessionAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function PauseSessionAsync(sessionId As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.PauseSessionAsync*
+  nameWithType.vb: CollectionSessionService.PauseSessionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.PauseSessionAsync(String, System.Threading.CancellationToken)
+  name.vb: PauseSessionAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.ResumeSessionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.ResumeSessionAsync(System.String,System.Threading.CancellationToken)
+  id: ResumeSessionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: ResumeSessionAsync(string, CancellationToken)
+  nameWithType: CollectionSessionService.ResumeSessionAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.ResumeSessionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResumeSessionAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Resumes a paused collection session.
+  example: []
+  syntax:
+    content: public Task ResumeSessionAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ResumeSessionAsync(sessionId As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.ResumeSessionAsync*
+  nameWithType.vb: CollectionSessionService.ResumeSessionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.ResumeSessionAsync(String, System.Threading.CancellationToken)
+  name.vb: ResumeSessionAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.UpdateSessionStatisticsAsync(System.String,System.Int64,System.Int64,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.UpdateSessionStatisticsAsync(System.String,System.Int64,System.Int64,System.String,System.Threading.CancellationToken)
+  id: UpdateSessionStatisticsAsync(System.String,System.Int64,System.Int64,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: UpdateSessionStatisticsAsync(string, long, long, string, CancellationToken)
+  nameWithType: CollectionSessionService.UpdateSessionStatisticsAsync(string, long, long, string, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.UpdateSessionStatisticsAsync(string, long, long, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateSessionStatisticsAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates session statistics with new event data.
+  example: []
+  syntax:
+    content: public Task UpdateSessionStatisticsAsync(string sessionId, long newEvents, long newBytes, string eventType, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: newEvents
+      type: System.Int64
+    - id: newBytes
+      type: System.Int64
+    - id: eventType
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateSessionStatisticsAsync(sessionId As String, newEvents As Long, newBytes As Long, eventType As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.UpdateSessionStatisticsAsync*
+  nameWithType.vb: CollectionSessionService.UpdateSessionStatisticsAsync(String, Long, Long, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.UpdateSessionStatisticsAsync(String, Long, Long, String, System.Threading.CancellationToken)
+  name.vb: UpdateSessionStatisticsAsync(String, Long, Long, String, CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.RecordGapDetectedAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.RecordGapDetectedAsync(System.String,System.Threading.CancellationToken)
+  id: RecordGapDetectedAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: RecordGapDetectedAsync(string, CancellationToken)
+  nameWithType: CollectionSessionService.RecordGapDetectedAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.RecordGapDetectedAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordGapDetectedAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 362
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Records a gap detected during collection.
+  example: []
+  syntax:
+    content: public Task RecordGapDetectedAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordGapDetectedAsync(sessionId As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.RecordGapDetectedAsync*
+  nameWithType.vb: CollectionSessionService.RecordGapDetectedAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.RecordGapDetectedAsync(String, System.Threading.CancellationToken)
+  name.vb: RecordGapDetectedAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.RecordSequenceErrorAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.RecordSequenceErrorAsync(System.String,System.Threading.CancellationToken)
+  id: RecordSequenceErrorAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: RecordSequenceErrorAsync(string, CancellationToken)
+  nameWithType: CollectionSessionService.RecordSequenceErrorAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.RecordSequenceErrorAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordSequenceErrorAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 378
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Records a sequence error detected during collection.
+  example: []
+  syntax:
+    content: public Task RecordSequenceErrorAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordSequenceErrorAsync(sessionId As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.RecordSequenceErrorAsync*
+  nameWithType.vb: CollectionSessionService.RecordSequenceErrorAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.RecordSequenceErrorAsync(String, System.Threading.CancellationToken)
+  name.vb: RecordSequenceErrorAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.DeleteSessionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.DeleteSessionAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteSessionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: DeleteSessionAsync(string, CancellationToken)
+  nameWithType: CollectionSessionService.DeleteSessionAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.DeleteSessionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteSessionAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 394
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Deletes a session.
+  example: []
+  syntax:
+    content: public Task DeleteSessionAsync(string sessionId, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DeleteSessionAsync(sessionId As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.DeleteSessionAsync*
+  nameWithType.vb: CollectionSessionService.DeleteSessionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.DeleteSessionAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteSessionAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.UpdateSessionNotesAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.UpdateSessionNotesAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: UpdateSessionNotesAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: UpdateSessionNotesAsync(string, string?, CancellationToken)
+  nameWithType: CollectionSessionService.UpdateSessionNotesAsync(string, string?, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.UpdateSessionNotesAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateSessionNotesAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 423
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates session notes.
+  example: []
+  syntax:
+    content: public Task UpdateSessionNotesAsync(string sessionId, string? notes, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: notes
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateSessionNotesAsync(sessionId As String, notes As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.UpdateSessionNotesAsync*
+  nameWithType.vb: CollectionSessionService.UpdateSessionNotesAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.UpdateSessionNotesAsync(String, String, System.Threading.CancellationToken)
+  name.vb: UpdateSessionNotesAsync(String, String, CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.UpdateSessionTagsAsync(System.String,System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.UpdateSessionTagsAsync(System.String,System.String[],System.Threading.CancellationToken)
+  id: UpdateSessionTagsAsync(System.String,System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: UpdateSessionTagsAsync(string, string[]?, CancellationToken)
+  nameWithType: CollectionSessionService.UpdateSessionTagsAsync(string, string[]?, CancellationToken)
+  fullName: Meridian.Ui.Services.CollectionSessionService.UpdateSessionTagsAsync(string, string[]?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateSessionTagsAsync
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 439
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates session tags.
+  example: []
+  syntax:
+    content: public Task UpdateSessionTagsAsync(string sessionId, string[]? tags, CancellationToken ct = default)
+    parameters:
+    - id: sessionId
+      type: System.String
+    - id: tags
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateSessionTagsAsync(sessionId As String, tags As String(), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.CollectionSessionService.UpdateSessionTagsAsync*
+  nameWithType.vb: CollectionSessionService.UpdateSessionTagsAsync(String, String(), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.CollectionSessionService.UpdateSessionTagsAsync(String, String(), System.Threading.CancellationToken)
+  name.vb: UpdateSessionTagsAsync(String, String(), CancellationToken)
+- uid: Meridian.Ui.Services.CollectionSessionService.GenerateSessionSummary(Meridian.Contracts.Session.CollectionSession)
+  commentId: M:Meridian.Ui.Services.CollectionSessionService.GenerateSessionSummary(Meridian.Contracts.Session.CollectionSession)
+  id: GenerateSessionSummary(Meridian.Contracts.Session.CollectionSession)
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: GenerateSessionSummary(CollectionSession)
+  nameWithType: CollectionSessionService.GenerateSessionSummary(CollectionSession)
+  fullName: Meridian.Ui.Services.CollectionSessionService.GenerateSessionSummary(Meridian.Contracts.Session.CollectionSession)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateSessionSummary
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 455
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets session summary report as formatted text.
+  example: []
+  syntax:
+    content: public string GenerateSessionSummary(CollectionSession session)
+    parameters:
+    - id: session
+      type: Meridian.Contracts.Session.CollectionSession
+    return:
+      type: System.String
+    content.vb: Public Function GenerateSessionSummary(session As CollectionSession) As String
+  overload: Meridian.Ui.Services.CollectionSessionService.GenerateSessionSummary*
+- uid: Meridian.Ui.Services.CollectionSessionService.SessionCreated
+  commentId: E:Meridian.Ui.Services.CollectionSessionService.SessionCreated
+  id: SessionCreated
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: SessionCreated
+  nameWithType: CollectionSessionService.SessionCreated
+  fullName: Meridian.Ui.Services.CollectionSessionService.SessionCreated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionCreated
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 579
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<CollectionSessionEventArgs>? SessionCreated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.CollectionSessionEventArgs}
+    content.vb: Public Event SessionCreated As EventHandler(Of CollectionSessionEventArgs)
+- uid: Meridian.Ui.Services.CollectionSessionService.SessionStarted
+  commentId: E:Meridian.Ui.Services.CollectionSessionService.SessionStarted
+  id: SessionStarted
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: SessionStarted
+  nameWithType: CollectionSessionService.SessionStarted
+  fullName: Meridian.Ui.Services.CollectionSessionService.SessionStarted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionStarted
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 580
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<CollectionSessionEventArgs>? SessionStarted
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.CollectionSessionEventArgs}
+    content.vb: Public Event SessionStarted As EventHandler(Of CollectionSessionEventArgs)
+- uid: Meridian.Ui.Services.CollectionSessionService.SessionPaused
+  commentId: E:Meridian.Ui.Services.CollectionSessionService.SessionPaused
+  id: SessionPaused
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: SessionPaused
+  nameWithType: CollectionSessionService.SessionPaused
+  fullName: Meridian.Ui.Services.CollectionSessionService.SessionPaused
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionPaused
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 581
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<CollectionSessionEventArgs>? SessionPaused
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.CollectionSessionEventArgs}
+    content.vb: Public Event SessionPaused As EventHandler(Of CollectionSessionEventArgs)
+- uid: Meridian.Ui.Services.CollectionSessionService.SessionResumed
+  commentId: E:Meridian.Ui.Services.CollectionSessionService.SessionResumed
+  id: SessionResumed
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: SessionResumed
+  nameWithType: CollectionSessionService.SessionResumed
+  fullName: Meridian.Ui.Services.CollectionSessionService.SessionResumed
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionResumed
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 582
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<CollectionSessionEventArgs>? SessionResumed
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.CollectionSessionEventArgs}
+    content.vb: Public Event SessionResumed As EventHandler(Of CollectionSessionEventArgs)
+- uid: Meridian.Ui.Services.CollectionSessionService.SessionCompleted
+  commentId: E:Meridian.Ui.Services.CollectionSessionService.SessionCompleted
+  id: SessionCompleted
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: SessionCompleted
+  nameWithType: CollectionSessionService.SessionCompleted
+  fullName: Meridian.Ui.Services.CollectionSessionService.SessionCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionCompleted
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 583
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<CollectionSessionEventArgs>? SessionCompleted
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.CollectionSessionEventArgs}
+    content.vb: Public Event SessionCompleted As EventHandler(Of CollectionSessionEventArgs)
+- uid: Meridian.Ui.Services.CollectionSessionService.SessionDeleted
+  commentId: E:Meridian.Ui.Services.CollectionSessionService.SessionDeleted
+  id: SessionDeleted
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: SessionDeleted
+  nameWithType: CollectionSessionService.SessionDeleted
+  fullName: Meridian.Ui.Services.CollectionSessionService.SessionDeleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionDeleted
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 584
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<CollectionSessionEventArgs>? SessionDeleted
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.CollectionSessionEventArgs}
+    content.vb: Public Event SessionDeleted As EventHandler(Of CollectionSessionEventArgs)
+- uid: Meridian.Ui.Services.CollectionSessionService.StatisticsUpdated
+  commentId: E:Meridian.Ui.Services.CollectionSessionService.StatisticsUpdated
+  id: StatisticsUpdated
+  parent: Meridian.Ui.Services.CollectionSessionService
+  langs:
+  - csharp
+  - vb
+  name: StatisticsUpdated
+  nameWithType: CollectionSessionService.StatisticsUpdated
+  fullName: Meridian.Ui.Services.CollectionSessionService.StatisticsUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StatisticsUpdated
+    path: ../../src/Meridian.Ui.Services/Services/CollectionSessionService.cs
+    startLine: 585
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler<CollectionSessionEventArgs>? StatisticsUpdated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.CollectionSessionEventArgs}
+    content.vb: Public Event StatisticsUpdated As EventHandler(Of CollectionSessionEventArgs)
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.CollectionSessionService.Instance*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.Instance
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_Instance
+  name: Instance
+  nameWithType: CollectionSessionService.Instance
+  fullName: Meridian.Ui.Services.CollectionSessionService.Instance
+- uid: Meridian.Ui.Services.CollectionSessionService
+  commentId: T:Meridian.Ui.Services.CollectionSessionService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.CollectionSessionService.html
+  name: CollectionSessionService
+  nameWithType: CollectionSessionService
+  fullName: Meridian.Ui.Services.CollectionSessionService
+- uid: Meridian.Ui.Services.CollectionSessionService.LoadSessionsAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.LoadSessionsAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_LoadSessionsAsync_System_Threading_CancellationToken_
+  name: LoadSessionsAsync
+  nameWithType: CollectionSessionService.LoadSessionsAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.LoadSessionsAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSessionsConfig}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSessionsConfig}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CollectionSessionsConfig>
+  nameWithType: Task<CollectionSessionsConfig>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Session.CollectionSessionsConfig>
+  nameWithType.vb: Task(Of CollectionSessionsConfig)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Session.CollectionSessionsConfig)
+  name.vb: Task(Of CollectionSessionsConfig)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Session.CollectionSessionsConfig
+    name: CollectionSessionsConfig
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Session.CollectionSessionsConfig
+    name: CollectionSessionsConfig
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.CollectionSessionService.SaveSessionsAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.SaveSessionsAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_SaveSessionsAsync_System_Threading_CancellationToken_
+  name: SaveSessionsAsync
+  nameWithType: CollectionSessionService.SaveSessionsAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.SaveSessionsAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Ui.Services.CollectionSessionService.GetSessionsAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.GetSessionsAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_GetSessionsAsync_System_Threading_CancellationToken_
+  name: GetSessionsAsync
+  nameWithType: CollectionSessionService.GetSessionsAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.GetSessionsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSession[]}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSession[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CollectionSession[]>
+  nameWithType: Task<CollectionSession[]>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Session.CollectionSession[]>
+  nameWithType.vb: Task(Of CollectionSession())
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Session.CollectionSession())
+  name.vb: Task(Of CollectionSession())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Session.CollectionSession
+    name: CollectionSession
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Session.CollectionSession
+    name: CollectionSession
+  - name: (
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.CollectionSessionService.GetActiveSessionAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.GetActiveSessionAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_GetActiveSessionAsync_System_Threading_CancellationToken_
+  name: GetActiveSessionAsync
+  nameWithType: CollectionSessionService.GetActiveSessionAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.GetActiveSessionAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSession}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Session.CollectionSession}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CollectionSession>
+  nameWithType: Task<CollectionSession>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Session.CollectionSession>
+  nameWithType.vb: Task(Of CollectionSession)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Session.CollectionSession)
+  name.vb: Task(Of CollectionSession)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Session.CollectionSession
+    name: CollectionSession
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Session.CollectionSession
+    name: CollectionSession
+  - name: )
+- uid: Meridian.Ui.Services.CollectionSessionService.CreateSessionAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.CreateSessionAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_CreateSessionAsync_System_String_System_String_System_String___System_Threading_CancellationToken_
+  name: CreateSessionAsync
+  nameWithType: CollectionSessionService.CreateSessionAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.CreateSessionAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.CollectionSessionService.CreateDailySessionAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.CreateDailySessionAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_CreateDailySessionAsync_System_Threading_CancellationToken_
+  name: CreateDailySessionAsync
+  nameWithType: CollectionSessionService.CreateDailySessionAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.CreateDailySessionAsync
+- uid: Meridian.Ui.Services.CollectionSessionService.StartSessionAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.StartSessionAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_StartSessionAsync_System_String_System_Threading_CancellationToken_
+  name: StartSessionAsync
+  nameWithType: CollectionSessionService.StartSessionAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.StartSessionAsync
+- uid: Meridian.Ui.Services.CollectionSessionService.StopSessionAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.StopSessionAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_StopSessionAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: StopSessionAsync
+  nameWithType: CollectionSessionService.StopSessionAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.StopSessionAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.CollectionSessionService.PauseSessionAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.PauseSessionAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_PauseSessionAsync_System_String_System_Threading_CancellationToken_
+  name: PauseSessionAsync
+  nameWithType: CollectionSessionService.PauseSessionAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.PauseSessionAsync
+- uid: Meridian.Ui.Services.CollectionSessionService.ResumeSessionAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.ResumeSessionAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_ResumeSessionAsync_System_String_System_Threading_CancellationToken_
+  name: ResumeSessionAsync
+  nameWithType: CollectionSessionService.ResumeSessionAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.ResumeSessionAsync
+- uid: Meridian.Ui.Services.CollectionSessionService.UpdateSessionStatisticsAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.UpdateSessionStatisticsAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_UpdateSessionStatisticsAsync_System_String_System_Int64_System_Int64_System_String_System_Threading_CancellationToken_
+  name: UpdateSessionStatisticsAsync
+  nameWithType: CollectionSessionService.UpdateSessionStatisticsAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.UpdateSessionStatisticsAsync
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.CollectionSessionService.RecordGapDetectedAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.RecordGapDetectedAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_RecordGapDetectedAsync_System_String_System_Threading_CancellationToken_
+  name: RecordGapDetectedAsync
+  nameWithType: CollectionSessionService.RecordGapDetectedAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.RecordGapDetectedAsync
+- uid: Meridian.Ui.Services.CollectionSessionService.RecordSequenceErrorAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.RecordSequenceErrorAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_RecordSequenceErrorAsync_System_String_System_Threading_CancellationToken_
+  name: RecordSequenceErrorAsync
+  nameWithType: CollectionSessionService.RecordSequenceErrorAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.RecordSequenceErrorAsync
+- uid: Meridian.Ui.Services.CollectionSessionService.DeleteSessionAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.DeleteSessionAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_DeleteSessionAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteSessionAsync
+  nameWithType: CollectionSessionService.DeleteSessionAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.DeleteSessionAsync
+- uid: Meridian.Ui.Services.CollectionSessionService.UpdateSessionNotesAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.UpdateSessionNotesAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_UpdateSessionNotesAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: UpdateSessionNotesAsync
+  nameWithType: CollectionSessionService.UpdateSessionNotesAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.UpdateSessionNotesAsync
+- uid: Meridian.Ui.Services.CollectionSessionService.UpdateSessionTagsAsync*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.UpdateSessionTagsAsync
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_UpdateSessionTagsAsync_System_String_System_String___System_Threading_CancellationToken_
+  name: UpdateSessionTagsAsync
+  nameWithType: CollectionSessionService.UpdateSessionTagsAsync
+  fullName: Meridian.Ui.Services.CollectionSessionService.UpdateSessionTagsAsync
+- uid: Meridian.Ui.Services.CollectionSessionService.GenerateSessionSummary*
+  commentId: Overload:Meridian.Ui.Services.CollectionSessionService.GenerateSessionSummary
+  href: Meridian.Ui.Services.CollectionSessionService.html#Meridian_Ui_Services_CollectionSessionService_GenerateSessionSummary_Meridian_Contracts_Session_CollectionSession_
+  name: GenerateSessionSummary
+  nameWithType: CollectionSessionService.GenerateSessionSummary
+  fullName: Meridian.Ui.Services.CollectionSessionService.GenerateSessionSummary
+- uid: Meridian.Contracts.Session.CollectionSession
+  commentId: T:Meridian.Contracts.Session.CollectionSession
+  parent: Meridian.Contracts.Session
+  href: Meridian.Contracts.Session.CollectionSession.html
+  name: CollectionSession
+  nameWithType: CollectionSession
+  fullName: Meridian.Contracts.Session.CollectionSession
+- uid: Meridian.Contracts.Session
+  commentId: N:Meridian.Contracts.Session
+  href: Meridian.html
+  name: Meridian.Contracts.Session
+  nameWithType: Meridian.Contracts.Session
+  fullName: Meridian.Contracts.Session
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Session
+    name: Session
+    href: Meridian.Contracts.Session.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Session
+    name: Session
+    href: Meridian.Contracts.Session.html
+- uid: System.EventHandler{Meridian.Ui.Services.CollectionSessionEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.CollectionSessionEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<CollectionSessionEventArgs>
+  nameWithType: EventHandler<CollectionSessionEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.CollectionSessionEventArgs>
+  nameWithType.vb: EventHandler(Of CollectionSessionEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.CollectionSessionEventArgs)
+  name.vb: EventHandler(Of CollectionSessionEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.CollectionSessionEventArgs
+    name: CollectionSessionEventArgs
+    href: Meridian.Ui.Services.CollectionSessionEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.CollectionSessionEventArgs
+    name: CollectionSessionEventArgs
+    href: Meridian.Ui.Services.CollectionSessionEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )

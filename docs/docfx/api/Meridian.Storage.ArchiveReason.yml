@@ -1,0 +1,205 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.ArchiveReason
+  commentId: T:Meridian.Storage.ArchiveReason
+  id: ArchiveReason
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.ArchiveReason.Compliance
+  - Meridian.Storage.ArchiveReason.Historical
+  - Meridian.Storage.ArchiveReason.Legal
+  - Meridian.Storage.ArchiveReason.Regulatory
+  - Meridian.Storage.ArchiveReason.Research
+  langs:
+  - csharp
+  - vb
+  name: ArchiveReason
+  nameWithType: ArchiveReason
+  fullName: Meridian.Storage.ArchiveReason
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchiveReason
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 272
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Archive reason for perpetual data.
+  example: []
+  syntax:
+    content: 'public enum ArchiveReason : byte'
+    content.vb: Public Enum ArchiveReason As Byte
+- uid: Meridian.Storage.ArchiveReason.Regulatory
+  commentId: F:Meridian.Storage.ArchiveReason.Regulatory
+  id: Regulatory
+  parent: Meridian.Storage.ArchiveReason
+  langs:
+  - csharp
+  - vb
+  name: Regulatory
+  nameWithType: ArchiveReason.Regulatory
+  fullName: Meridian.Storage.ArchiveReason.Regulatory
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Regulatory
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: SEC Rule 17a-4, MiFID II.
+  example: []
+  syntax:
+    content: Regulatory = 0
+    return:
+      type: Meridian.Storage.ArchiveReason
+- uid: Meridian.Storage.ArchiveReason.Compliance
+  commentId: F:Meridian.Storage.ArchiveReason.Compliance
+  id: Compliance
+  parent: Meridian.Storage.ArchiveReason
+  langs:
+  - csharp
+  - vb
+  name: Compliance
+  nameWithType: ArchiveReason.Compliance
+  fullName: Meridian.Storage.ArchiveReason.Compliance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compliance
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 277
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Internal audit requirements.
+  example: []
+  syntax:
+    content: Compliance = 1
+    return:
+      type: Meridian.Storage.ArchiveReason
+- uid: Meridian.Storage.ArchiveReason.Research
+  commentId: F:Meridian.Storage.ArchiveReason.Research
+  id: Research
+  parent: Meridian.Storage.ArchiveReason
+  langs:
+  - csharp
+  - vb
+  name: Research
+  nameWithType: ArchiveReason.Research
+  fullName: Meridian.Storage.ArchiveReason.Research
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Research
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: ML training datasets.
+  example: []
+  syntax:
+    content: Research = 2
+    return:
+      type: Meridian.Storage.ArchiveReason
+- uid: Meridian.Storage.ArchiveReason.Legal
+  commentId: F:Meridian.Storage.ArchiveReason.Legal
+  id: Legal
+  parent: Meridian.Storage.ArchiveReason
+  langs:
+  - csharp
+  - vb
+  name: Legal
+  nameWithType: ArchiveReason.Legal
+  fullName: Meridian.Storage.ArchiveReason.Legal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Legal
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 281
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Litigation hold.
+  example: []
+  syntax:
+    content: Legal = 3
+    return:
+      type: Meridian.Storage.ArchiveReason
+- uid: Meridian.Storage.ArchiveReason.Historical
+  commentId: F:Meridian.Storage.ArchiveReason.Historical
+  id: Historical
+  parent: Meridian.Storage.ArchiveReason
+  langs:
+  - csharp
+  - vb
+  name: Historical
+  nameWithType: ArchiveReason.Historical
+  fullName: Meridian.Storage.ArchiveReason.Historical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Historical
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Reference data.
+  example: []
+  syntax:
+    content: Historical = 4
+    return:
+      type: Meridian.Storage.ArchiveReason
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.ArchiveReason
+  commentId: T:Meridian.Storage.ArchiveReason
+  parent: Meridian.Storage
+  href: Meridian.Storage.ArchiveReason.html
+  name: ArchiveReason
+  nameWithType: ArchiveReason
+  fullName: Meridian.Storage.ArchiveReason

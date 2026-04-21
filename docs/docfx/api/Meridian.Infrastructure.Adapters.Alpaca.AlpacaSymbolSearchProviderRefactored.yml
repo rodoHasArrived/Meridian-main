@@ -1,0 +1,2223 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  id: AlpacaSymbolSearchProviderRefactored
+  parent: Meridian.Infrastructure.Adapters.Alpaca
+  children:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.#ctor(System.String,System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BaseUrl
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl(System.String)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildSearchUrl(System.String,System.String,System.String)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults(System.String,System.String)
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DisplayName
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HasValidCredentials
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HttpClientName
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MinRequestDelay
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Name
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Priority
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.RateLimitWindow
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedExchanges
+  langs:
+  - csharp
+  - vb
+  name: AlpacaSymbolSearchProviderRefactored
+  nameWithType: AlpacaSymbolSearchProviderRefactored
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlpacaSymbolSearchProviderRefactored
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: >-
+    Refactored symbol search provider using Alpaca Markets API, now extending BaseSymbolSearchProvider.
+
+    Provides asset search for US equities with trading status information.
+  remarks: >-
+    This refactored version eliminates ~150 lines of boilerplate code by leveraging
+
+    the BaseSymbolSearchProvider abstract class for common functionality.
+
+
+    Key differences from original:
+
+    - Uses base class for HTTP client, rate limiting, and disposal
+
+    - Cleaner separation between API-specific and common logic
+
+    - Consistent error handling via base class
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Alpaca symbol search provider implementation")]
+
+      public sealed class AlpacaSymbolSearchProviderRefactored : BaseSymbolSearchProvider, IFilterableSymbolSearchProvider, ISymbolSearchProvider, IProviderMetadata, IDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Alpaca symbol search provider implementation")>
+
+      Public NotInheritable Class AlpacaSymbolSearchProviderRefactored Inherits BaseSymbolSearchProvider Implements IFilterableSymbolSearchProvider, ISymbolSearchProvider, IProviderMetadata, IDisposable
+  inheritance:
+  - System.Object
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - System.IDisposable
+  inheritedMembers:
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Alpaca symbol search provider implementation
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: AlpacaSymbolSearchProviderRefactored.Name
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Unique identifier for the provider (e.g., "alpaca", "finnhub").
+  example: []
+  syntax:
+    content: public override string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property Name As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Name*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: AlpacaSymbolSearchProviderRefactored.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Human-readable display name for the provider.
+  example: []
+  syntax:
+    content: public override string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property DisplayName As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DisplayName*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: AlpacaSymbolSearchProviderRefactored.Priority
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: >-
+    Priority for this provider (lower = higher priority).
+
+    Default is 50.
+  example: []
+  syntax:
+    content: public override int Priority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Overrides ReadOnly Property Priority As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Priority*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HttpClientName
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HttpClientName
+  id: HttpClientName
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: HttpClientName
+  nameWithType: AlpacaSymbolSearchProviderRefactored.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HttpClientName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HttpClientName
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Named HTTP client identifier from HttpClientNames.
+  example: []
+  syntax:
+    content: protected override string HttpClientName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Protected Overrides ReadOnly Property HttpClientName As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HttpClientName*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BaseUrl
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BaseUrl
+  id: BaseUrl
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: BaseUrl
+  nameWithType: AlpacaSymbolSearchProviderRefactored.BaseUrl
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BaseUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Base URL for the provider's API.
+  example: []
+  syntax:
+    content: protected override string BaseUrl { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Protected Overrides ReadOnly Property BaseUrl As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BaseUrl*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar
+  id: ApiKeyEnvVar
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: ApiKeyEnvVar
+  nameWithType: AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApiKeyEnvVar
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Environment variable name for the API key.
+  example: []
+  syntax:
+    content: protected override string ApiKeyEnvVar { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Protected Overrides ReadOnly Property ApiKeyEnvVar As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars
+  id: AlternateApiKeyEnvVars
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: AlternateApiKeyEnvVars
+  nameWithType: AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlternateApiKeyEnvVars
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Alternate environment variable names for the API key (using __ notation).
+  example: []
+  syntax:
+    content: protected override IReadOnlyList<string> AlternateApiKeyEnvVars { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Protected Overrides ReadOnly Property AlternateApiKeyEnvVars As IReadOnlyList(Of String)
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow
+  id: MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestsPerWindow
+  nameWithType: AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestsPerWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Maximum requests allowed per rate limit window.
+  example: []
+  syntax:
+    content: protected override int MaxRequestsPerWindow { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Protected Overrides ReadOnly Property MaxRequestsPerWindow As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.RateLimitWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.RateLimitWindow
+  id: RateLimitWindow
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: RateLimitWindow
+  nameWithType: AlpacaSymbolSearchProviderRefactored.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.RateLimitWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Duration of the rate limit window.
+  example: []
+  syntax:
+    content: protected override TimeSpan RateLimitWindow { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Protected Overrides ReadOnly Property RateLimitWindow As TimeSpan
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.RateLimitWindow*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MinRequestDelay
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MinRequestDelay
+  id: MinRequestDelay
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: MinRequestDelay
+  nameWithType: AlpacaSymbolSearchProviderRefactored.MinRequestDelay
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MinRequestDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinRequestDelay
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Minimum delay between requests.
+  example: []
+  syntax:
+    content: protected override TimeSpan MinRequestDelay { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Protected Overrides ReadOnly Property MinRequestDelay As TimeSpan
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MinRequestDelay*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes
+  id: SupportedAssetTypes
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: SupportedAssetTypes
+  nameWithType: AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedAssetTypes
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Supported asset types for filtering.
+  example: []
+  syntax:
+    content: public override IReadOnlyList<string> SupportedAssetTypes { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Overrides ReadOnly Property SupportedAssetTypes As IReadOnlyList(Of String)
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedExchanges
+  commentId: P:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedExchanges
+  id: SupportedExchanges
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: SupportedExchanges
+  nameWithType: AlpacaSymbolSearchProviderRefactored.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedExchanges
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedExchanges
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Supported exchanges for filtering.
+  example: []
+  syntax:
+    content: public override IReadOnlyList<string> SupportedExchanges { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Overrides ReadOnly Property SupportedExchanges As IReadOnlyList(Of String)
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedExchanges*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.#ctor(System.String,System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.#ctor(System.String,System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  id: '#ctor(System.String,System.String,System.Net.Http.HttpClient,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: AlpacaSymbolSearchProviderRefactored(string?, string?, HttpClient?, ILogger?)
+  nameWithType: AlpacaSymbolSearchProviderRefactored.AlpacaSymbolSearchProviderRefactored(string?, string?, HttpClient?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlpacaSymbolSearchProviderRefactored(string?, string?, System.Net.Http.HttpClient?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  syntax:
+    content: public AlpacaSymbolSearchProviderRefactored(string? keyId = null, string? secretKey = null, HttpClient? httpClient = null, ILogger? log = null)
+    parameters:
+    - id: keyId
+      type: System.String
+    - id: secretKey
+      type: System.String
+    - id: httpClient
+      type: System.Net.Http.HttpClient
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(keyId As String = Nothing, secretKey As String = Nothing, httpClient As HttpClient = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.#ctor*
+  nameWithType.vb: AlpacaSymbolSearchProviderRefactored.New(String, String, HttpClient, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.New(String, String, System.Net.Http.HttpClient, Serilog.ILogger)
+  name.vb: New(String, String, HttpClient, ILogger)
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HasValidCredentials
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HasValidCredentials
+  id: HasValidCredentials
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: HasValidCredentials()
+  nameWithType: AlpacaSymbolSearchProviderRefactored.HasValidCredentials()
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HasValidCredentials()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasValidCredentials
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Check if the provider has valid credentials configured.
+  example: []
+  syntax:
+    content: protected override bool HasValidCredentials()
+    return:
+      type: System.Boolean
+    content.vb: Protected Overrides Function HasValidCredentials() As Boolean
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HasValidCredentials*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders
+  id: ConfigureHttpClientHeaders
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: ConfigureHttpClientHeaders()
+  nameWithType: AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders()
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureHttpClientHeaders
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Configure HTTP client headers. Override to add provider-specific headers.
+  example: []
+  syntax:
+    content: protected override void ConfigureHttpClientHeaders()
+    content.vb: Protected Overrides Sub ConfigureHttpClientHeaders()
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders*
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildSearchUrl(System.String,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildSearchUrl(System.String,System.String,System.String)
+  id: BuildSearchUrl(System.String,System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: BuildSearchUrl(string, string?, string?)
+  nameWithType: AlpacaSymbolSearchProviderRefactored.BuildSearchUrl(string, string?, string?)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildSearchUrl(string, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildSearchUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Build the URL for a search request.
+  example: []
+  syntax:
+    content: protected override string BuildSearchUrl(string query, string? assetType, string? exchange)
+    parameters:
+    - id: query
+      type: System.String
+      description: Search query.
+    - id: assetType
+      type: System.String
+      description: Optional asset type filter.
+    - id: exchange
+      type: System.String
+      description: Optional exchange filter.
+    return:
+      type: System.String
+      description: Complete URL for the search request.
+    content.vb: Protected Overrides Function BuildSearchUrl(query As String, assetType As String, exchange As String) As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(System.String,System.String,System.String)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildSearchUrl*
+  nameWithType.vb: AlpacaSymbolSearchProviderRefactored.BuildSearchUrl(String, String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildSearchUrl(String, String, String)
+  name.vb: BuildSearchUrl(String, String, String)
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl(System.String)
+  id: BuildDetailsUrl(System.String)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: BuildDetailsUrl(string)
+  nameWithType: AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl(string)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildDetailsUrl
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Build the URL for a symbol details request.
+  example: []
+  syntax:
+    content: protected override string BuildDetailsUrl(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Normalized symbol.
+    return:
+      type: System.String
+      description: Complete URL for the details request.
+    content.vb: Protected Overrides Function BuildDetailsUrl(symbol As String) As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(System.String)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl*
+  nameWithType.vb: AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl(String)
+  name.vb: BuildDetailsUrl(String)
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults(System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults(System.String,System.String)
+  id: DeserializeSearchResults(System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: DeserializeSearchResults(string, string)
+  nameWithType: AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults(string, string)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeserializeSearchResults
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Deserialize the search response JSON into results.
+  example: []
+  syntax:
+    content: protected override IEnumerable<SymbolSearchResult> DeserializeSearchResults(string json, string query)
+    parameters:
+    - id: json
+      type: System.String
+      description: Response JSON.
+    - id: query
+      type: System.String
+      description: Original search query (for match scoring).
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+      description: List of search results.
+    content.vb: Protected Overrides Function DeserializeSearchResults(json As String, query As String) As IEnumerable(Of SymbolSearchResult)
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(System.String,System.String)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults*
+  nameWithType.vb: AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults(String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults(String, String)
+  name.vb: DeserializeSearchResults(String, String)
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: DeserializeDetailsAsync(string, string, CancellationToken)
+  nameWithType: AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync(string, string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeserializeDetailsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Deserialize the details response JSON into a SymbolDetails object.
+  example: []
+  syntax:
+    content: protected override Task<SymbolDetails?> DeserializeDetailsAsync(string json, string symbol, CancellationToken ct)
+    parameters:
+    - id: json
+      type: System.String
+      description: Response JSON.
+    - id: symbol
+      type: System.String
+      description: Normalized symbol.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+      description: Symbol details or null if not found.
+    content.vb: Protected Overrides Function DeserializeDetailsAsync(json As String, symbol As String, ct As CancellationToken) As Task(Of SymbolDetails)
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync*
+  nameWithType.vb: AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync(String, String, System.Threading.CancellationToken)
+  name.vb: DeserializeDetailsAsync(String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  id: ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: ApplyFilters(IEnumerable<SymbolSearchResult>, string?, string?)
+  nameWithType: AlpacaSymbolSearchProviderRefactored.ApplyFilters(IEnumerable<SymbolSearchResult>, string?, string?)
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApplyFilters(System.Collections.Generic.IEnumerable<Meridian.Application.Subscriptions.Models.SymbolSearchResult>, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyFilters
+    path: ../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Alpaca
+  summary: Alpaca supports filtering natively via URL parameters, so we skip client-side filtering.
+  example: []
+  syntax:
+    content: protected override IEnumerable<SymbolSearchResult> ApplyFilters(IEnumerable<SymbolSearchResult> results, string? assetType, string? exchange)
+    parameters:
+    - id: results
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+    - id: assetType
+      type: System.String
+    - id: exchange
+      type: System.String
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+    content.vb: Protected Overrides Function ApplyFilters(results As IEnumerable(Of SymbolSearchResult), assetType As String, exchange As String) As IEnumerable(Of SymbolSearchResult)
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  overload: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApplyFilters*
+  nameWithType.vb: AlpacaSymbolSearchProviderRefactored.ApplyFilters(IEnumerable(Of SymbolSearchResult), String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApplyFilters(System.Collections.Generic.IEnumerable(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult), String, String)
+  name.vb: ApplyFilters(IEnumerable(Of SymbolSearchResult), String, String)
+references:
+- uid: Meridian.Infrastructure.Adapters.Alpaca
+  commentId: N:Meridian.Infrastructure.Adapters.Alpaca
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Alpaca
+  nameWithType: Meridian.Infrastructure.Adapters.Alpaca
+  fullName: Meridian.Infrastructure.Adapters.Alpaca
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Alpaca
+    name: Alpaca
+    href: Meridian.Infrastructure.Adapters.Alpaca.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Alpaca
+    name: Alpaca
+    href: Meridian.Infrastructure.Adapters.Alpaca.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html
+  name: BaseSymbolSearchProvider
+  nameWithType: BaseSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html
+  name: IFilterableSymbolSearchProvider
+  nameWithType: IFilterableSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html
+  name: ISymbolSearchProvider
+  nameWithType: ISymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: SearchAsync(string, int, CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.SearchAsync(string, int, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(string, int, System.Threading.CancellationToken)
+  nameWithType.vb: BaseSymbolSearchProvider.SearchAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  name: SearchAsync(string, int, string, string, CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.SearchAsync(string, int, string, string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(string, int, string, string, System.Threading.CancellationToken)
+  nameWithType.vb: BaseSymbolSearchProvider.SearchAsync(String, Integer, String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(String, Integer, String, String, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, String, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  name: GetDetailsAsync(SymbolId, CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.GetDetailsAsync(SymbolId, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+    name: GetDetailsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Domain.SymbolId
+    name: SymbolId
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+    name: GetDetailsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Domain.SymbolId
+    name: SymbolId
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_Dispose
+  name: Dispose()
+  nameWithType: BaseSymbolSearchProvider.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+    name: Dispose
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_Dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Dispose
+    name: Dispose
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_Dispose
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_Name
+  name: Name
+  nameWithType: BaseSymbolSearchProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Name
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Name
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_Name
+  name: Name
+  nameWithType: AlpacaSymbolSearchProviderRefactored.Name
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DisplayName
+  name: DisplayName
+  nameWithType: BaseSymbolSearchProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DisplayName
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_DisplayName
+  name: DisplayName
+  nameWithType: AlpacaSymbolSearchProviderRefactored.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_Priority
+  name: Priority
+  nameWithType: BaseSymbolSearchProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.Priority
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Priority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Priority
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_Priority
+  name: Priority
+  nameWithType: AlpacaSymbolSearchProviderRefactored.Priority
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.Priority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_HttpClientName
+  name: HttpClientName
+  nameWithType: BaseSymbolSearchProvider.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HttpClientName
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HttpClientName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HttpClientName
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_HttpClientName
+  name: HttpClientName
+  nameWithType: AlpacaSymbolSearchProviderRefactored.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HttpClientName
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BaseUrl
+  name: BaseUrl
+  nameWithType: BaseSymbolSearchProvider.BaseUrl
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BaseUrl
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BaseUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BaseUrl
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_BaseUrl
+  name: BaseUrl
+  nameWithType: AlpacaSymbolSearchProviderRefactored.BaseUrl
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BaseUrl
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ApiKeyEnvVar
+  name: ApiKeyEnvVar
+  nameWithType: BaseSymbolSearchProvider.ApiKeyEnvVar
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApiKeyEnvVar
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_ApiKeyEnvVar
+  name: ApiKeyEnvVar
+  nameWithType: AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApiKeyEnvVar
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_AlternateApiKeyEnvVars
+  name: AlternateApiKeyEnvVars
+  nameWithType: BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.AlternateApiKeyEnvVars
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_AlternateApiKeyEnvVars
+  name: AlternateApiKeyEnvVars
+  nameWithType: AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlternateApiKeyEnvVars
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: BaseSymbolSearchProvider.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_RateLimitWindow
+  name: RateLimitWindow
+  nameWithType: BaseSymbolSearchProvider.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.RateLimitWindow
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.RateLimitWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.RateLimitWindow
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_RateLimitWindow
+  name: RateLimitWindow
+  nameWithType: AlpacaSymbolSearchProviderRefactored.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.RateLimitWindow
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_MinRequestDelay
+  name: MinRequestDelay
+  nameWithType: BaseSymbolSearchProvider.MinRequestDelay
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.MinRequestDelay
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MinRequestDelay*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MinRequestDelay
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_MinRequestDelay
+  name: MinRequestDelay
+  nameWithType: AlpacaSymbolSearchProviderRefactored.MinRequestDelay
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.MinRequestDelay
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SupportedAssetTypes
+  name: SupportedAssetTypes
+  nameWithType: BaseSymbolSearchProvider.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedAssetTypes
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_SupportedAssetTypes
+  name: SupportedAssetTypes
+  nameWithType: AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedAssetTypes
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_SupportedExchanges
+  name: SupportedExchanges
+  nameWithType: BaseSymbolSearchProvider.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.SupportedExchanges
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedExchanges*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedExchanges
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_SupportedExchanges
+  name: SupportedExchanges
+  nameWithType: AlpacaSymbolSearchProviderRefactored.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.SupportedExchanges
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.#ctor
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored__ctor_System_String_System_String_System_Net_Http_HttpClient_Serilog_ILogger_
+  name: AlpacaSymbolSearchProviderRefactored
+  nameWithType: AlpacaSymbolSearchProviderRefactored.AlpacaSymbolSearchProviderRefactored
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.AlpacaSymbolSearchProviderRefactored
+  nameWithType.vb: AlpacaSymbolSearchProviderRefactored.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.New
+  name.vb: New
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_HasValidCredentials
+  name: HasValidCredentials()
+  nameWithType: BaseSymbolSearchProvider.HasValidCredentials()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+    name: HasValidCredentials
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_HasValidCredentials
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.HasValidCredentials
+    name: HasValidCredentials
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_HasValidCredentials
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HasValidCredentials*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HasValidCredentials
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_HasValidCredentials
+  name: HasValidCredentials
+  nameWithType: AlpacaSymbolSearchProviderRefactored.HasValidCredentials
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.HasValidCredentials
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ConfigureHttpClientHeaders
+  name: ConfigureHttpClientHeaders()
+  nameWithType: BaseSymbolSearchProvider.ConfigureHttpClientHeaders()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+    name: ConfigureHttpClientHeaders
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ConfigureHttpClientHeaders
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ConfigureHttpClientHeaders
+    name: ConfigureHttpClientHeaders
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ConfigureHttpClientHeaders
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_ConfigureHttpClientHeaders
+  name: ConfigureHttpClientHeaders
+  nameWithType: AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ConfigureHttpClientHeaders
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(System.String,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(System.String,System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BuildSearchUrl_System_String_System_String_System_String_
+  name: BuildSearchUrl(string, string, string)
+  nameWithType: BaseSymbolSearchProvider.BuildSearchUrl(string, string, string)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(string, string, string)
+  nameWithType.vb: BaseSymbolSearchProvider.BuildSearchUrl(String, String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(String, String, String)
+  name.vb: BuildSearchUrl(String, String, String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(System.String,System.String,System.String)
+    name: BuildSearchUrl
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BuildSearchUrl_System_String_System_String_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildSearchUrl(System.String,System.String,System.String)
+    name: BuildSearchUrl
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BuildSearchUrl_System_String_System_String_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildSearchUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildSearchUrl
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_BuildSearchUrl_System_String_System_String_System_String_
+  name: BuildSearchUrl
+  nameWithType: AlpacaSymbolSearchProviderRefactored.BuildSearchUrl
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildSearchUrl
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BuildDetailsUrl_System_String_
+  name: BuildDetailsUrl(string)
+  nameWithType: BaseSymbolSearchProvider.BuildDetailsUrl(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(string)
+  nameWithType.vb: BaseSymbolSearchProvider.BuildDetailsUrl(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(String)
+  name.vb: BuildDetailsUrl(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(System.String)
+    name: BuildDetailsUrl
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BuildDetailsUrl_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.BuildDetailsUrl(System.String)
+    name: BuildDetailsUrl
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_BuildDetailsUrl_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_BuildDetailsUrl_System_String_
+  name: BuildDetailsUrl
+  nameWithType: AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.BuildDetailsUrl
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DeserializeSearchResults_System_String_System_String_
+  name: DeserializeSearchResults(string, string)
+  nameWithType: BaseSymbolSearchProvider.DeserializeSearchResults(string, string)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(string, string)
+  nameWithType.vb: BaseSymbolSearchProvider.DeserializeSearchResults(String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(String, String)
+  name.vb: DeserializeSearchResults(String, String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(System.String,System.String)
+    name: DeserializeSearchResults
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DeserializeSearchResults_System_String_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeSearchResults(System.String,System.String)
+    name: DeserializeSearchResults
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DeserializeSearchResults_System_String_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_DeserializeSearchResults_System_String_System_String_
+  name: DeserializeSearchResults
+  nameWithType: AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeSearchResults
+- uid: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<SymbolSearchResult>
+  nameWithType: IEnumerable<SymbolSearchResult>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Application.Subscriptions.Models.SymbolSearchResult>
+  nameWithType.vb: IEnumerable(Of SymbolSearchResult)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult)
+  name.vb: IEnumerable(Of SymbolSearchResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DeserializeDetailsAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: DeserializeDetailsAsync(string, string, CancellationToken)
+  nameWithType: BaseSymbolSearchProvider.DeserializeDetailsAsync(string, string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(string, string, System.Threading.CancellationToken)
+  nameWithType.vb: BaseSymbolSearchProvider.DeserializeDetailsAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(String, String, System.Threading.CancellationToken)
+  name.vb: DeserializeDetailsAsync(String, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+    name: DeserializeDetailsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DeserializeDetailsAsync_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.DeserializeDetailsAsync(System.String,System.String,System.Threading.CancellationToken)
+    name: DeserializeDetailsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_DeserializeDetailsAsync_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_DeserializeDetailsAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: DeserializeDetailsAsync
+  nameWithType: AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.DeserializeDetailsAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolDetails>
+  nameWithType: Task<SymbolDetails>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.SymbolDetails>
+  nameWithType.vb: Task(Of SymbolDetails)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.SymbolDetails)
+  name.vb: Task(Of SymbolDetails)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ApplyFilters_System_Collections_Generic_IEnumerable_Meridian_Application_Subscriptions_Models_SymbolSearchResult__System_String_System_String_
+  name: ApplyFilters(IEnumerable<SymbolSearchResult>, string, string)
+  nameWithType: BaseSymbolSearchProvider.ApplyFilters(IEnumerable<SymbolSearchResult>, string, string)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable<Meridian.Application.Subscriptions.Models.SymbolSearchResult>, string, string)
+  nameWithType.vb: BaseSymbolSearchProvider.ApplyFilters(IEnumerable(Of SymbolSearchResult), String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult), String, String)
+  name.vb: ApplyFilters(IEnumerable(Of SymbolSearchResult), String, String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+    name: ApplyFilters
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ApplyFilters_System_Collections_Generic_IEnumerable_Meridian_Application_Subscriptions_Models_SymbolSearchResult__System_String_System_String_
+  - name: (
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.ApplyFilters(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolSearchResult},System.String,System.String)
+    name: ApplyFilters
+    href: Meridian.Infrastructure.Adapters.Core.BaseSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_BaseSymbolSearchProvider_ApplyFilters_System_Collections_Generic_IEnumerable_Meridian_Application_Subscriptions_Models_SymbolSearchResult__System_String_System_String_
+  - name: (
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApplyFilters*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApplyFilters
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html#Meridian_Infrastructure_Adapters_Alpaca_AlpacaSymbolSearchProviderRefactored_ApplyFilters_System_Collections_Generic_IEnumerable_Meridian_Application_Subscriptions_Models_SymbolSearchResult__System_String_System_String_
+  name: ApplyFilters
+  nameWithType: AlpacaSymbolSearchProviderRefactored.ApplyFilters
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.ApplyFilters

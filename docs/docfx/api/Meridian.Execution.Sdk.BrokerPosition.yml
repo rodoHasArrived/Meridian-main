@@ -1,0 +1,1136 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.BrokerPosition
+  commentId: T:Meridian.Execution.Sdk.BrokerPosition
+  id: BrokerPosition
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.BrokerPosition.AccruedInterest
+  - Meridian.Execution.Sdk.BrokerPosition.AssetClass
+  - Meridian.Execution.Sdk.BrokerPosition.AverageEntryPrice
+  - Meridian.Execution.Sdk.BrokerPosition.Description
+  - Meridian.Execution.Sdk.BrokerPosition.Expiration
+  - Meridian.Execution.Sdk.BrokerPosition.MarketPrice
+  - Meridian.Execution.Sdk.BrokerPosition.MarketValue
+  - Meridian.Execution.Sdk.BrokerPosition.Metadata
+  - Meridian.Execution.Sdk.BrokerPosition.PositionId
+  - Meridian.Execution.Sdk.BrokerPosition.Quantity
+  - Meridian.Execution.Sdk.BrokerPosition.Right
+  - Meridian.Execution.Sdk.BrokerPosition.Strike
+  - Meridian.Execution.Sdk.BrokerPosition.Symbol
+  - Meridian.Execution.Sdk.BrokerPosition.UnderlyingSymbol
+  - Meridian.Execution.Sdk.BrokerPosition.UnrealizedPnl
+  langs:
+  - csharp
+  - vb
+  name: BrokerPosition
+  nameWithType: BrokerPosition
+  fullName: Meridian.Execution.Sdk.BrokerPosition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerPosition
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: A position held at the broker.
+  example: []
+  syntax:
+    content: 'public sealed record BrokerPosition : IEquatable<BrokerPosition>'
+    content.vb: Public NotInheritable Class BrokerPosition Implements IEquatable(Of BrokerPosition)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.BrokerPosition}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.BrokerPosition.PositionId
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.PositionId
+  id: PositionId
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: PositionId
+  nameWithType: BrokerPosition.PositionId
+  fullName: Meridian.Execution.Sdk.BrokerPosition.PositionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionId
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Stable provider-side identifier for this position.
+  example: []
+  syntax:
+    content: public string? PositionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PositionId As String
+  overload: Meridian.Execution.Sdk.BrokerPosition.PositionId*
+- uid: Meridian.Execution.Sdk.BrokerPosition.Symbol
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: BrokerPosition.Symbol
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Ticker symbol.
+  example: []
+  syntax:
+    content: public required string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Execution.Sdk.BrokerPosition.Symbol*
+- uid: Meridian.Execution.Sdk.BrokerPosition.UnderlyingSymbol
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: BrokerPosition.UnderlyingSymbol
+  fullName: Meridian.Execution.Sdk.BrokerPosition.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Underlying symbol for derivatives; defaults to <xref href="Meridian.Execution.Sdk.BrokerPosition.Symbol" data-throw-if-not-resolved="false"></xref> for spot assets.
+  example: []
+  syntax:
+    content: public string? UnderlyingSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property UnderlyingSymbol As String
+  overload: Meridian.Execution.Sdk.BrokerPosition.UnderlyingSymbol*
+- uid: Meridian.Execution.Sdk.BrokerPosition.Description
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.Description
+  id: Description
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: BrokerPosition.Description
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Human-readable description suitable for blotter-style UIs.
+  example: []
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Execution.Sdk.BrokerPosition.Description*
+- uid: Meridian.Execution.Sdk.BrokerPosition.Quantity
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.Quantity
+  id: Quantity
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: BrokerPosition.Quantity
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Signed quantity (negative for short positions).
+  example: []
+  syntax:
+    content: public decimal Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Quantity As Decimal
+  overload: Meridian.Execution.Sdk.BrokerPosition.Quantity*
+- uid: Meridian.Execution.Sdk.BrokerPosition.AverageEntryPrice
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.AverageEntryPrice
+  id: AverageEntryPrice
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: AverageEntryPrice
+  nameWithType: BrokerPosition.AverageEntryPrice
+  fullName: Meridian.Execution.Sdk.BrokerPosition.AverageEntryPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageEntryPrice
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Average entry price.
+  example: []
+  syntax:
+    content: public decimal AverageEntryPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AverageEntryPrice As Decimal
+  overload: Meridian.Execution.Sdk.BrokerPosition.AverageEntryPrice*
+- uid: Meridian.Execution.Sdk.BrokerPosition.MarketPrice
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.MarketPrice
+  id: MarketPrice
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: MarketPrice
+  nameWithType: BrokerPosition.MarketPrice
+  fullName: Meridian.Execution.Sdk.BrokerPosition.MarketPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketPrice
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Current market price.
+  example: []
+  syntax:
+    content: public decimal MarketPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarketPrice As Decimal
+  overload: Meridian.Execution.Sdk.BrokerPosition.MarketPrice*
+- uid: Meridian.Execution.Sdk.BrokerPosition.MarketValue
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.MarketValue
+  id: MarketValue
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: MarketValue
+  nameWithType: BrokerPosition.MarketValue
+  fullName: Meridian.Execution.Sdk.BrokerPosition.MarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketValue
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Market value (absolute quantity * market price).
+  example: []
+  syntax:
+    content: public decimal MarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarketValue As Decimal
+  overload: Meridian.Execution.Sdk.BrokerPosition.MarketValue*
+- uid: Meridian.Execution.Sdk.BrokerPosition.UnrealizedPnl
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.UnrealizedPnl
+  id: UnrealizedPnl
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl
+  nameWithType: BrokerPosition.UnrealizedPnl
+  fullName: Meridian.Execution.Sdk.BrokerPosition.UnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Unrealized P&amp;L.
+  example: []
+  syntax:
+    content: public decimal UnrealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnrealizedPnl As Decimal
+  overload: Meridian.Execution.Sdk.BrokerPosition.UnrealizedPnl*
+- uid: Meridian.Execution.Sdk.BrokerPosition.AssetClass
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.AssetClass
+  id: AssetClass
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: BrokerPosition.AssetClass
+  fullName: Meridian.Execution.Sdk.BrokerPosition.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Asset class (e.g., "equity", "us_treasury", "bond").
+  example: []
+  syntax:
+    content: public string AssetClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetClass As String
+  overload: Meridian.Execution.Sdk.BrokerPosition.AssetClass*
+- uid: Meridian.Execution.Sdk.BrokerPosition.Expiration
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.Expiration
+  id: Expiration
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: Expiration
+  nameWithType: BrokerPosition.Expiration
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Expiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expiration
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Expiration date for derivative positions when available.
+  example: []
+  syntax:
+    content: public DateOnly? Expiration { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property Expiration As DateOnly?
+  overload: Meridian.Execution.Sdk.BrokerPosition.Expiration*
+- uid: Meridian.Execution.Sdk.BrokerPosition.Strike
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.Strike
+  id: Strike
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: Strike
+  nameWithType: BrokerPosition.Strike
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Strike
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strike
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Strike price for option positions when available.
+  example: []
+  syntax:
+    content: public decimal? Strike { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property Strike As Decimal?
+  overload: Meridian.Execution.Sdk.BrokerPosition.Strike*
+- uid: Meridian.Execution.Sdk.BrokerPosition.Right
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.Right
+  id: Right
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: Right
+  nameWithType: BrokerPosition.Right
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Right
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Right
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Option right or derivative-side classification (e.g., "call", "put").
+  example: []
+  syntax:
+    content: public string? Right { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Right As String
+  overload: Meridian.Execution.Sdk.BrokerPosition.Right*
+- uid: Meridian.Execution.Sdk.BrokerPosition.Metadata
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.Metadata
+  id: Metadata
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: Metadata
+  nameWithType: BrokerPosition.Metadata
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Metadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metadata
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Provider-specific metadata required to manage the position.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property Metadata As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Execution.Sdk.BrokerPosition.Metadata*
+- uid: Meridian.Execution.Sdk.BrokerPosition.AccruedInterest
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.AccruedInterest
+  id: AccruedInterest
+  parent: Meridian.Execution.Sdk.BrokerPosition
+  langs:
+  - csharp
+  - vb
+  name: AccruedInterest
+  nameWithType: BrokerPosition.AccruedInterest
+  fullName: Meridian.Execution.Sdk.BrokerPosition.AccruedInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccruedInterest
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: >-
+    Accrued interest for fixed income positions (bonds, treasuries).
+
+    Null for non-fixed-income positions.
+  example: []
+  syntax:
+    content: public decimal? AccruedInterest { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property AccruedInterest As Decimal?
+  overload: Meridian.Execution.Sdk.BrokerPosition.AccruedInterest*
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.BrokerPosition}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.BrokerPosition}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BrokerPosition>
+  nameWithType: IEquatable<BrokerPosition>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.BrokerPosition>
+  nameWithType.vb: IEquatable(Of BrokerPosition)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.BrokerPosition)
+  name.vb: IEquatable(Of BrokerPosition)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.BrokerPosition
+    name: BrokerPosition
+    href: Meridian.Execution.Sdk.BrokerPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.BrokerPosition
+    name: BrokerPosition
+    href: Meridian.Execution.Sdk.BrokerPosition.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerPosition.PositionId*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.PositionId
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_PositionId
+  name: PositionId
+  nameWithType: BrokerPosition.PositionId
+  fullName: Meridian.Execution.Sdk.BrokerPosition.PositionId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Sdk.BrokerPosition.Symbol*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.Symbol
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_Symbol
+  name: Symbol
+  nameWithType: BrokerPosition.Symbol
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Symbol
+- uid: Meridian.Execution.Sdk.BrokerPosition.Symbol
+  commentId: P:Meridian.Execution.Sdk.BrokerPosition.Symbol
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_Symbol
+  name: Symbol
+  nameWithType: BrokerPosition.Symbol
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Symbol
+- uid: Meridian.Execution.Sdk.BrokerPosition.UnderlyingSymbol*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.UnderlyingSymbol
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: BrokerPosition.UnderlyingSymbol
+  fullName: Meridian.Execution.Sdk.BrokerPosition.UnderlyingSymbol
+- uid: Meridian.Execution.Sdk.BrokerPosition.Description*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.Description
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_Description
+  name: Description
+  nameWithType: BrokerPosition.Description
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Description
+- uid: Meridian.Execution.Sdk.BrokerPosition.Quantity*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.Quantity
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_Quantity
+  name: Quantity
+  nameWithType: BrokerPosition.Quantity
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Quantity
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Sdk.BrokerPosition.AverageEntryPrice*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.AverageEntryPrice
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_AverageEntryPrice
+  name: AverageEntryPrice
+  nameWithType: BrokerPosition.AverageEntryPrice
+  fullName: Meridian.Execution.Sdk.BrokerPosition.AverageEntryPrice
+- uid: Meridian.Execution.Sdk.BrokerPosition.MarketPrice*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.MarketPrice
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_MarketPrice
+  name: MarketPrice
+  nameWithType: BrokerPosition.MarketPrice
+  fullName: Meridian.Execution.Sdk.BrokerPosition.MarketPrice
+- uid: Meridian.Execution.Sdk.BrokerPosition.MarketValue*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.MarketValue
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_MarketValue
+  name: MarketValue
+  nameWithType: BrokerPosition.MarketValue
+  fullName: Meridian.Execution.Sdk.BrokerPosition.MarketValue
+- uid: Meridian.Execution.Sdk.BrokerPosition.UnrealizedPnl*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.UnrealizedPnl
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: BrokerPosition.UnrealizedPnl
+  fullName: Meridian.Execution.Sdk.BrokerPosition.UnrealizedPnl
+- uid: Meridian.Execution.Sdk.BrokerPosition.AssetClass*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.AssetClass
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_AssetClass
+  name: AssetClass
+  nameWithType: BrokerPosition.AssetClass
+  fullName: Meridian.Execution.Sdk.BrokerPosition.AssetClass
+- uid: Meridian.Execution.Sdk.BrokerPosition.Expiration*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.Expiration
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_Expiration
+  name: Expiration
+  nameWithType: BrokerPosition.Expiration
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Expiration
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.BrokerPosition.Strike*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.Strike
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_Strike
+  name: Strike
+  nameWithType: BrokerPosition.Strike
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Strike
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: Meridian.Execution.Sdk.BrokerPosition.Right*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.Right
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_Right
+  name: Right
+  nameWithType: BrokerPosition.Right
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Right
+- uid: Meridian.Execution.Sdk.BrokerPosition.Metadata*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.Metadata
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_Metadata
+  name: Metadata
+  nameWithType: BrokerPosition.Metadata
+  fullName: Meridian.Execution.Sdk.BrokerPosition.Metadata
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Sdk.BrokerPosition.AccruedInterest*
+  commentId: Overload:Meridian.Execution.Sdk.BrokerPosition.AccruedInterest
+  href: Meridian.Execution.Sdk.BrokerPosition.html#Meridian_Execution_Sdk_BrokerPosition_AccruedInterest
+  name: AccruedInterest
+  nameWithType: BrokerPosition.AccruedInterest
+  fullName: Meridian.Execution.Sdk.BrokerPosition.AccruedInterest

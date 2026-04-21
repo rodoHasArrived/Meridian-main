@@ -372,7 +372,7 @@ public sealed class DryRunService
                 section.AddCheck("IB Configuration", true,
                     "IB Gateway/TWS required",
                     "");
-                section.Warnings.Add("Ensure IB Gateway or TWS is running on port 7497/7496");
+                section.Warnings.Add("Ensure IB Gateway or TWS is running on the configured socket port (paper TWS defaults to 7497, live TWS to 7496).");
                 break;
 
             case DataSourceKind.Polygon:

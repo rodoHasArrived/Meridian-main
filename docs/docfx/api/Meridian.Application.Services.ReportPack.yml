@@ -1,0 +1,868 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ReportPack
+  commentId: T:Meridian.Application.Services.ReportPack
+  id: ReportPack
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ReportPack.#ctor(System.Guid,System.String,Meridian.Application.Services.ReportKind,System.DateTimeOffset,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.EnrichedLedgerRow},System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AssetClassSection},System.Decimal)
+  - Meridian.Application.Services.ReportPack.AsOf
+  - Meridian.Application.Services.ReportPack.AssetClassSections
+  - Meridian.Application.Services.ReportPack.FundId
+  - Meridian.Application.Services.ReportPack.GeneratedAt
+  - Meridian.Application.Services.ReportPack.ReportId
+  - Meridian.Application.Services.ReportPack.ReportKind
+  - Meridian.Application.Services.ReportPack.TotalNetAssets
+  - Meridian.Application.Services.ReportPack.TrialBalance
+  langs:
+  - csharp
+  - vb
+  name: ReportPack
+  nameWithType: ReportPack
+  fullName: Meridian.Application.Services.ReportPack
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportPack
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: A complete report pack ready for distribution or storage.
+  example: []
+  syntax:
+    content: 'public sealed record ReportPack : IEquatable<ReportPack>'
+    content.vb: Public NotInheritable Class ReportPack Implements IEquatable(Of ReportPack)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Services.ReportPack}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.ReportPack.#ctor(System.Guid,System.String,Meridian.Application.Services.ReportKind,System.DateTimeOffset,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.EnrichedLedgerRow},System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AssetClassSection},System.Decimal)
+  commentId: M:Meridian.Application.Services.ReportPack.#ctor(System.Guid,System.String,Meridian.Application.Services.ReportKind,System.DateTimeOffset,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.EnrichedLedgerRow},System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AssetClassSection},System.Decimal)
+  id: '#ctor(System.Guid,System.String,Meridian.Application.Services.ReportKind,System.DateTimeOffset,System.DateTimeOffset,System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.EnrichedLedgerRow},System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AssetClassSection},System.Decimal)'
+  parent: Meridian.Application.Services.ReportPack
+  langs:
+  - csharp
+  - vb
+  name: ReportPack(Guid, string, ReportKind, DateTimeOffset, DateTimeOffset, IReadOnlyList<EnrichedLedgerRow>, IReadOnlyList<AssetClassSection>, decimal)
+  nameWithType: ReportPack.ReportPack(Guid, string, ReportKind, DateTimeOffset, DateTimeOffset, IReadOnlyList<EnrichedLedgerRow>, IReadOnlyList<AssetClassSection>, decimal)
+  fullName: Meridian.Application.Services.ReportPack.ReportPack(System.Guid, string, Meridian.Application.Services.ReportKind, System.DateTimeOffset, System.DateTimeOffset, System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.EnrichedLedgerRow>, System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.AssetClassSection>, decimal)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: A complete report pack ready for distribution or storage.
+  example: []
+  syntax:
+    content: public ReportPack(Guid ReportId, string FundId, ReportKind ReportKind, DateTimeOffset AsOf, DateTimeOffset GeneratedAt, IReadOnlyList<EnrichedLedgerRow> TrialBalance, IReadOnlyList<AssetClassSection> AssetClassSections, decimal TotalNetAssets)
+    parameters:
+    - id: ReportId
+      type: System.Guid
+    - id: FundId
+      type: System.String
+    - id: ReportKind
+      type: Meridian.Application.Services.ReportKind
+    - id: AsOf
+      type: System.DateTimeOffset
+    - id: GeneratedAt
+      type: System.DateTimeOffset
+    - id: TrialBalance
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.EnrichedLedgerRow}
+    - id: AssetClassSections
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AssetClassSection}
+    - id: TotalNetAssets
+      type: System.Decimal
+    content.vb: Public Sub New(ReportId As Guid, FundId As String, ReportKind As ReportKind, AsOf As DateTimeOffset, GeneratedAt As DateTimeOffset, TrialBalance As IReadOnlyList(Of EnrichedLedgerRow), AssetClassSections As IReadOnlyList(Of AssetClassSection), TotalNetAssets As Decimal)
+  overload: Meridian.Application.Services.ReportPack.#ctor*
+  nameWithType.vb: ReportPack.New(Guid, String, ReportKind, DateTimeOffset, DateTimeOffset, IReadOnlyList(Of EnrichedLedgerRow), IReadOnlyList(Of AssetClassSection), Decimal)
+  fullName.vb: Meridian.Application.Services.ReportPack.New(System.Guid, String, Meridian.Application.Services.ReportKind, System.DateTimeOffset, System.DateTimeOffset, System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.EnrichedLedgerRow), System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.AssetClassSection), Decimal)
+  name.vb: New(Guid, String, ReportKind, DateTimeOffset, DateTimeOffset, IReadOnlyList(Of EnrichedLedgerRow), IReadOnlyList(Of AssetClassSection), Decimal)
+- uid: Meridian.Application.Services.ReportPack.ReportId
+  commentId: P:Meridian.Application.Services.ReportPack.ReportId
+  id: ReportId
+  parent: Meridian.Application.Services.ReportPack
+  langs:
+  - csharp
+  - vb
+  name: ReportId
+  nameWithType: ReportPack.ReportId
+  fullName: Meridian.Application.Services.ReportPack.ReportId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportId
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public Guid ReportId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ReportId As Guid
+  overload: Meridian.Application.Services.ReportPack.ReportId*
+- uid: Meridian.Application.Services.ReportPack.FundId
+  commentId: P:Meridian.Application.Services.ReportPack.FundId
+  id: FundId
+  parent: Meridian.Application.Services.ReportPack
+  langs:
+  - csharp
+  - vb
+  name: FundId
+  nameWithType: ReportPack.FundId
+  fullName: Meridian.Application.Services.ReportPack.FundId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundId
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string FundId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FundId As String
+  overload: Meridian.Application.Services.ReportPack.FundId*
+- uid: Meridian.Application.Services.ReportPack.ReportKind
+  commentId: P:Meridian.Application.Services.ReportPack.ReportKind
+  id: ReportKind
+  parent: Meridian.Application.Services.ReportPack
+  langs:
+  - csharp
+  - vb
+  name: ReportKind
+  nameWithType: ReportPack.ReportKind
+  fullName: Meridian.Application.Services.ReportPack.ReportKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportKind
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public ReportKind ReportKind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.ReportKind
+    content.vb: Public Property ReportKind As ReportKind
+  overload: Meridian.Application.Services.ReportPack.ReportKind*
+- uid: Meridian.Application.Services.ReportPack.AsOf
+  commentId: P:Meridian.Application.Services.ReportPack.AsOf
+  id: AsOf
+  parent: Meridian.Application.Services.ReportPack
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: ReportPack.AsOf
+  fullName: Meridian.Application.Services.ReportPack.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Application.Services.ReportPack.AsOf*
+- uid: Meridian.Application.Services.ReportPack.GeneratedAt
+  commentId: P:Meridian.Application.Services.ReportPack.GeneratedAt
+  id: GeneratedAt
+  parent: Meridian.Application.Services.ReportPack
+  langs:
+  - csharp
+  - vb
+  name: GeneratedAt
+  nameWithType: ReportPack.GeneratedAt
+  fullName: Meridian.Application.Services.ReportPack.GeneratedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GeneratedAt
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset GeneratedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property GeneratedAt As DateTimeOffset
+  overload: Meridian.Application.Services.ReportPack.GeneratedAt*
+- uid: Meridian.Application.Services.ReportPack.TrialBalance
+  commentId: P:Meridian.Application.Services.ReportPack.TrialBalance
+  id: TrialBalance
+  parent: Meridian.Application.Services.ReportPack
+  langs:
+  - csharp
+  - vb
+  name: TrialBalance
+  nameWithType: ReportPack.TrialBalance
+  fullName: Meridian.Application.Services.ReportPack.TrialBalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrialBalance
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public IReadOnlyList<EnrichedLedgerRow> TrialBalance { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.EnrichedLedgerRow}
+    content.vb: Public Property TrialBalance As IReadOnlyList(Of EnrichedLedgerRow)
+  overload: Meridian.Application.Services.ReportPack.TrialBalance*
+- uid: Meridian.Application.Services.ReportPack.AssetClassSections
+  commentId: P:Meridian.Application.Services.ReportPack.AssetClassSections
+  id: AssetClassSections
+  parent: Meridian.Application.Services.ReportPack
+  langs:
+  - csharp
+  - vb
+  name: AssetClassSections
+  nameWithType: ReportPack.AssetClassSections
+  fullName: Meridian.Application.Services.ReportPack.AssetClassSections
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClassSections
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public IReadOnlyList<AssetClassSection> AssetClassSections { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AssetClassSection}
+    content.vb: Public Property AssetClassSections As IReadOnlyList(Of AssetClassSection)
+  overload: Meridian.Application.Services.ReportPack.AssetClassSections*
+- uid: Meridian.Application.Services.ReportPack.TotalNetAssets
+  commentId: P:Meridian.Application.Services.ReportPack.TotalNetAssets
+  id: TotalNetAssets
+  parent: Meridian.Application.Services.ReportPack
+  langs:
+  - csharp
+  - vb
+  name: TotalNetAssets
+  nameWithType: ReportPack.TotalNetAssets
+  fullName: Meridian.Application.Services.ReportPack.TotalNetAssets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReportGenerationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalNetAssets
+    path: ../../src/Meridian.Application/Services/ReportGenerationService.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public decimal TotalNetAssets { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalNetAssets As Decimal
+  overload: Meridian.Application.Services.ReportPack.TotalNetAssets*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Services.ReportPack}
+  commentId: T:System.IEquatable{Meridian.Application.Services.ReportPack}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ReportPack>
+  nameWithType: IEquatable<ReportPack>
+  fullName: System.IEquatable<Meridian.Application.Services.ReportPack>
+  nameWithType.vb: IEquatable(Of ReportPack)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.ReportPack)
+  name.vb: IEquatable(Of ReportPack)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.ReportPack
+    name: ReportPack
+    href: Meridian.Application.Services.ReportPack.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ReportPack
+    name: ReportPack
+    href: Meridian.Application.Services.ReportPack.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.ReportPack.#ctor*
+  commentId: Overload:Meridian.Application.Services.ReportPack.#ctor
+  href: Meridian.Application.Services.ReportPack.html#Meridian_Application_Services_ReportPack__ctor_System_Guid_System_String_Meridian_Application_Services_ReportKind_System_DateTimeOffset_System_DateTimeOffset_System_Collections_Generic_IReadOnlyList_Meridian_Application_Services_EnrichedLedgerRow__System_Collections_Generic_IReadOnlyList_Meridian_Application_Services_AssetClassSection__System_Decimal_
+  name: ReportPack
+  nameWithType: ReportPack.ReportPack
+  fullName: Meridian.Application.Services.ReportPack.ReportPack
+  nameWithType.vb: ReportPack.New
+  fullName.vb: Meridian.Application.Services.ReportPack.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.ReportKind
+  commentId: T:Meridian.Application.Services.ReportKind
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ReportKind.html
+  name: ReportKind
+  nameWithType: ReportKind
+  fullName: Meridian.Application.Services.ReportKind
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.EnrichedLedgerRow}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.EnrichedLedgerRow}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<EnrichedLedgerRow>
+  nameWithType: IReadOnlyList<EnrichedLedgerRow>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.EnrichedLedgerRow>
+  nameWithType.vb: IReadOnlyList(Of EnrichedLedgerRow)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.EnrichedLedgerRow)
+  name.vb: IReadOnlyList(Of EnrichedLedgerRow)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.EnrichedLedgerRow
+    name: EnrichedLedgerRow
+    href: Meridian.Application.Services.EnrichedLedgerRow.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.EnrichedLedgerRow
+    name: EnrichedLedgerRow
+    href: Meridian.Application.Services.EnrichedLedgerRow.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AssetClassSection}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AssetClassSection}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AssetClassSection>
+  nameWithType: IReadOnlyList<AssetClassSection>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.AssetClassSection>
+  nameWithType.vb: IReadOnlyList(Of AssetClassSection)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.AssetClassSection)
+  name.vb: IReadOnlyList(Of AssetClassSection)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.AssetClassSection
+    name: AssetClassSection
+    href: Meridian.Application.Services.AssetClassSection.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.AssetClassSection
+    name: AssetClassSection
+    href: Meridian.Application.Services.AssetClassSection.html
+  - name: )
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.ReportPack.ReportId*
+  commentId: Overload:Meridian.Application.Services.ReportPack.ReportId
+  href: Meridian.Application.Services.ReportPack.html#Meridian_Application_Services_ReportPack_ReportId
+  name: ReportId
+  nameWithType: ReportPack.ReportId
+  fullName: Meridian.Application.Services.ReportPack.ReportId
+- uid: Meridian.Application.Services.ReportPack.FundId*
+  commentId: Overload:Meridian.Application.Services.ReportPack.FundId
+  href: Meridian.Application.Services.ReportPack.html#Meridian_Application_Services_ReportPack_FundId
+  name: FundId
+  nameWithType: ReportPack.FundId
+  fullName: Meridian.Application.Services.ReportPack.FundId
+- uid: Meridian.Application.Services.ReportPack.ReportKind*
+  commentId: Overload:Meridian.Application.Services.ReportPack.ReportKind
+  href: Meridian.Application.Services.ReportPack.html#Meridian_Application_Services_ReportPack_ReportKind
+  name: ReportKind
+  nameWithType: ReportPack.ReportKind
+  fullName: Meridian.Application.Services.ReportPack.ReportKind
+- uid: Meridian.Application.Services.ReportPack.AsOf*
+  commentId: Overload:Meridian.Application.Services.ReportPack.AsOf
+  href: Meridian.Application.Services.ReportPack.html#Meridian_Application_Services_ReportPack_AsOf
+  name: AsOf
+  nameWithType: ReportPack.AsOf
+  fullName: Meridian.Application.Services.ReportPack.AsOf
+- uid: Meridian.Application.Services.ReportPack.GeneratedAt*
+  commentId: Overload:Meridian.Application.Services.ReportPack.GeneratedAt
+  href: Meridian.Application.Services.ReportPack.html#Meridian_Application_Services_ReportPack_GeneratedAt
+  name: GeneratedAt
+  nameWithType: ReportPack.GeneratedAt
+  fullName: Meridian.Application.Services.ReportPack.GeneratedAt
+- uid: Meridian.Application.Services.ReportPack.TrialBalance*
+  commentId: Overload:Meridian.Application.Services.ReportPack.TrialBalance
+  href: Meridian.Application.Services.ReportPack.html#Meridian_Application_Services_ReportPack_TrialBalance
+  name: TrialBalance
+  nameWithType: ReportPack.TrialBalance
+  fullName: Meridian.Application.Services.ReportPack.TrialBalance
+- uid: Meridian.Application.Services.ReportPack.AssetClassSections*
+  commentId: Overload:Meridian.Application.Services.ReportPack.AssetClassSections
+  href: Meridian.Application.Services.ReportPack.html#Meridian_Application_Services_ReportPack_AssetClassSections
+  name: AssetClassSections
+  nameWithType: ReportPack.AssetClassSections
+  fullName: Meridian.Application.Services.ReportPack.AssetClassSections
+- uid: Meridian.Application.Services.ReportPack.TotalNetAssets*
+  commentId: Overload:Meridian.Application.Services.ReportPack.TotalNetAssets
+  href: Meridian.Application.Services.ReportPack.html#Meridian_Application_Services_ReportPack_TotalNetAssets
+  name: TotalNetAssets
+  nameWithType: ReportPack.TotalNetAssets
+  fullName: Meridian.Application.Services.ReportPack.TotalNetAssets

@@ -1,0 +1,952 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.AnalysisExportService
+  commentId: T:Meridian.Storage.Export.AnalysisExportService
+  id: AnalysisExportService
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.AnalysisExportService.#ctor(System.String)
+  - Meridian.Storage.Export.AnalysisExportService.ExportAsync(Meridian.Storage.Export.ExportRequest,System.Threading.CancellationToken)
+  - Meridian.Storage.Export.AnalysisExportService.GenerateStandaloneLoaderAsync(System.String,System.String,System.String[],System.Threading.CancellationToken)
+  - Meridian.Storage.Export.AnalysisExportService.GetProfile(System.String)
+  - Meridian.Storage.Export.AnalysisExportService.GetProfiles
+  - Meridian.Storage.Export.AnalysisExportService.PreviewAsync(Meridian.Storage.Export.ExportRequest,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Storage.Export.AnalysisExportService.RegisterProfile(Meridian.Storage.Export.ExportProfile)
+  langs:
+  - csharp
+  - vb
+  name: AnalysisExportService
+  nameWithType: AnalysisExportService
+  fullName: Meridian.Storage.Export.AnalysisExportService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisExportService.IO.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnalysisExportService
+    path: ../../src/Meridian.Storage/Export/AnalysisExportService.IO.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: >-
+    Service for exporting collected market data in analysis-ready formats.
+
+    Split into partial classes: Formats (CSV/Parquet/JSONL/Lean/SQL/XLSX), IO (documentation/loaders/utilities).
+  example: []
+  syntax:
+    content: public sealed class AnalysisExportService
+    content.vb: Public NotInheritable Class AnalysisExportService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Export.AnalysisExportService.#ctor(System.String)
+  commentId: M:Meridian.Storage.Export.AnalysisExportService.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Storage.Export.AnalysisExportService
+  langs:
+  - csharp
+  - vb
+  name: AnalysisExportService(string)
+  nameWithType: AnalysisExportService.AnalysisExportService(string)
+  fullName: Meridian.Storage.Export.AnalysisExportService.AnalysisExportService(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: public AnalysisExportService(string dataRoot)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    content.vb: Public Sub New(dataRoot As String)
+  overload: Meridian.Storage.Export.AnalysisExportService.#ctor*
+  nameWithType.vb: AnalysisExportService.New(String)
+  fullName.vb: Meridian.Storage.Export.AnalysisExportService.New(String)
+  name.vb: New(String)
+- uid: Meridian.Storage.Export.AnalysisExportService.GetProfiles
+  commentId: M:Meridian.Storage.Export.AnalysisExportService.GetProfiles
+  id: GetProfiles
+  parent: Meridian.Storage.Export.AnalysisExportService
+  langs:
+  - csharp
+  - vb
+  name: GetProfiles()
+  nameWithType: AnalysisExportService.GetProfiles()
+  fullName: Meridian.Storage.Export.AnalysisExportService.GetProfiles()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProfiles
+    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Get all available export profiles.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ExportProfile> GetProfiles()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Export.ExportProfile}
+    content.vb: Public Function GetProfiles() As IReadOnlyList(Of ExportProfile)
+  overload: Meridian.Storage.Export.AnalysisExportService.GetProfiles*
+- uid: Meridian.Storage.Export.AnalysisExportService.GetProfile(System.String)
+  commentId: M:Meridian.Storage.Export.AnalysisExportService.GetProfile(System.String)
+  id: GetProfile(System.String)
+  parent: Meridian.Storage.Export.AnalysisExportService
+  langs:
+  - csharp
+  - vb
+  name: GetProfile(string)
+  nameWithType: AnalysisExportService.GetProfile(string)
+  fullName: Meridian.Storage.Export.AnalysisExportService.GetProfile(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProfile
+    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Get a specific profile by ID.
+  example: []
+  syntax:
+    content: public ExportProfile? GetProfile(string profileId)
+    parameters:
+    - id: profileId
+      type: System.String
+    return:
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Function GetProfile(profileId As String) As ExportProfile
+  overload: Meridian.Storage.Export.AnalysisExportService.GetProfile*
+  nameWithType.vb: AnalysisExportService.GetProfile(String)
+  fullName.vb: Meridian.Storage.Export.AnalysisExportService.GetProfile(String)
+  name.vb: GetProfile(String)
+- uid: Meridian.Storage.Export.AnalysisExportService.RegisterProfile(Meridian.Storage.Export.ExportProfile)
+  commentId: M:Meridian.Storage.Export.AnalysisExportService.RegisterProfile(Meridian.Storage.Export.ExportProfile)
+  id: RegisterProfile(Meridian.Storage.Export.ExportProfile)
+  parent: Meridian.Storage.Export.AnalysisExportService
+  langs:
+  - csharp
+  - vb
+  name: RegisterProfile(ExportProfile)
+  nameWithType: AnalysisExportService.RegisterProfile(ExportProfile)
+  fullName: Meridian.Storage.Export.AnalysisExportService.RegisterProfile(Meridian.Storage.Export.ExportProfile)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterProfile
+    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Register a custom export profile.
+  example: []
+  syntax:
+    content: public void RegisterProfile(ExportProfile profile)
+    parameters:
+    - id: profile
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Sub RegisterProfile(profile As ExportProfile)
+  overload: Meridian.Storage.Export.AnalysisExportService.RegisterProfile*
+- uid: Meridian.Storage.Export.AnalysisExportService.PreviewAsync(Meridian.Storage.Export.ExportRequest,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Export.AnalysisExportService.PreviewAsync(Meridian.Storage.Export.ExportRequest,System.Int32,System.Threading.CancellationToken)
+  id: PreviewAsync(Meridian.Storage.Export.ExportRequest,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Export.AnalysisExportService
+  langs:
+  - csharp
+  - vb
+  name: PreviewAsync(ExportRequest, int, CancellationToken)
+  nameWithType: AnalysisExportService.PreviewAsync(ExportRequest, int, CancellationToken)
+  fullName: Meridian.Storage.Export.AnalysisExportService.PreviewAsync(Meridian.Storage.Export.ExportRequest, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviewAsync
+    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: >-
+    Preview an export without writing any files.
+
+    Returns record counts, file sizes, date ranges, and sample records.
+  example: []
+  syntax:
+    content: public Task<ExportPreviewResult> PreviewAsync(ExportRequest request, int sampleSize = 5, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Storage.Export.ExportRequest
+    - id: sampleSize
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Export.ExportPreviewResult}
+    content.vb: Public Function PreviewAsync(request As ExportRequest, sampleSize As Integer = 5, ct As CancellationToken = Nothing) As Task(Of ExportPreviewResult)
+  overload: Meridian.Storage.Export.AnalysisExportService.PreviewAsync*
+  nameWithType.vb: AnalysisExportService.PreviewAsync(ExportRequest, Integer, CancellationToken)
+  fullName.vb: Meridian.Storage.Export.AnalysisExportService.PreviewAsync(Meridian.Storage.Export.ExportRequest, Integer, System.Threading.CancellationToken)
+  name.vb: PreviewAsync(ExportRequest, Integer, CancellationToken)
+- uid: Meridian.Storage.Export.AnalysisExportService.GenerateStandaloneLoaderAsync(System.String,System.String,System.String[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Export.AnalysisExportService.GenerateStandaloneLoaderAsync(System.String,System.String,System.String[],System.Threading.CancellationToken)
+  id: GenerateStandaloneLoaderAsync(System.String,System.String,System.String[],System.Threading.CancellationToken)
+  parent: Meridian.Storage.Export.AnalysisExportService
+  langs:
+  - csharp
+  - vb
+  name: GenerateStandaloneLoaderAsync(string, string, string[]?, CancellationToken)
+  nameWithType: AnalysisExportService.GenerateStandaloneLoaderAsync(string, string, string[]?, CancellationToken)
+  fullName: Meridian.Storage.Export.AnalysisExportService.GenerateStandaloneLoaderAsync(string, string, string[]?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GenerateStandaloneLoaderAsync
+    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Generate a standalone loader script without performing a full export.
+  example: []
+  syntax:
+    content: public Task<string> GenerateStandaloneLoaderAsync(string outputDir, string targetTool, string[]? symbols = null, CancellationToken ct = default)
+    parameters:
+    - id: outputDir
+      type: System.String
+    - id: targetTool
+      type: System.String
+    - id: symbols
+      type: System.String[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Function GenerateStandaloneLoaderAsync(outputDir As String, targetTool As String, symbols As String() = Nothing, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Storage.Export.AnalysisExportService.GenerateStandaloneLoaderAsync*
+  nameWithType.vb: AnalysisExportService.GenerateStandaloneLoaderAsync(String, String, String(), CancellationToken)
+  fullName.vb: Meridian.Storage.Export.AnalysisExportService.GenerateStandaloneLoaderAsync(String, String, String(), System.Threading.CancellationToken)
+  name.vb: GenerateStandaloneLoaderAsync(String, String, String(), CancellationToken)
+- uid: Meridian.Storage.Export.AnalysisExportService.ExportAsync(Meridian.Storage.Export.ExportRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Export.AnalysisExportService.ExportAsync(Meridian.Storage.Export.ExportRequest,System.Threading.CancellationToken)
+  id: ExportAsync(Meridian.Storage.Export.ExportRequest,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Export.AnalysisExportService
+  langs:
+  - csharp
+  - vb
+  name: ExportAsync(ExportRequest, CancellationToken)
+  nameWithType: AnalysisExportService.ExportAsync(ExportRequest, CancellationToken)
+  fullName: Meridian.Storage.Export.AnalysisExportService.ExportAsync(Meridian.Storage.Export.ExportRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportAsync
+    path: ../../src/Meridian.Storage/Export/AnalysisExportService.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Export data according to the request.
+  example: []
+  syntax:
+    content: public Task<ExportResult> ExportAsync(ExportRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Storage.Export.ExportRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Export.ExportResult}
+    content.vb: Public Function ExportAsync(request As ExportRequest, ct As CancellationToken = Nothing) As Task(Of ExportResult)
+  overload: Meridian.Storage.Export.AnalysisExportService.ExportAsync*
+references:
+- uid: Meridian.Storage.Export.FeatureSettings
+  commentId: T:Meridian.Storage.Export.FeatureSettings
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.FeatureSettings.html
+  name: FeatureSettings
+  nameWithType: FeatureSettings
+  fullName: Meridian.Storage.Export.FeatureSettings
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Export.AnalysisExportService.#ctor*
+  commentId: Overload:Meridian.Storage.Export.AnalysisExportService.#ctor
+  href: Meridian.Storage.Export.AnalysisExportService.html#Meridian_Storage_Export_AnalysisExportService__ctor_System_String_
+  name: AnalysisExportService
+  nameWithType: AnalysisExportService.AnalysisExportService
+  fullName: Meridian.Storage.Export.AnalysisExportService.AnalysisExportService
+  nameWithType.vb: AnalysisExportService.New
+  fullName.vb: Meridian.Storage.Export.AnalysisExportService.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Export.AnalysisExportService.GetProfiles*
+  commentId: Overload:Meridian.Storage.Export.AnalysisExportService.GetProfiles
+  href: Meridian.Storage.Export.AnalysisExportService.html#Meridian_Storage_Export_AnalysisExportService_GetProfiles
+  name: GetProfiles
+  nameWithType: AnalysisExportService.GetProfiles
+  fullName: Meridian.Storage.Export.AnalysisExportService.GetProfiles
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Export.ExportProfile}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Export.ExportProfile}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ExportProfile>
+  nameWithType: IReadOnlyList<ExportProfile>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Export.ExportProfile>
+  nameWithType.vb: IReadOnlyList(Of ExportProfile)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Export.ExportProfile)
+  name.vb: IReadOnlyList(Of ExportProfile)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Export.ExportProfile
+    name: ExportProfile
+    href: Meridian.Storage.Export.ExportProfile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Export.ExportProfile
+    name: ExportProfile
+    href: Meridian.Storage.Export.ExportProfile.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Export.AnalysisExportService.GetProfile*
+  commentId: Overload:Meridian.Storage.Export.AnalysisExportService.GetProfile
+  href: Meridian.Storage.Export.AnalysisExportService.html#Meridian_Storage_Export_AnalysisExportService_GetProfile_System_String_
+  name: GetProfile
+  nameWithType: AnalysisExportService.GetProfile
+  fullName: Meridian.Storage.Export.AnalysisExportService.GetProfile
+- uid: Meridian.Storage.Export.ExportProfile
+  commentId: T:Meridian.Storage.Export.ExportProfile
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.ExportProfile.html
+  name: ExportProfile
+  nameWithType: ExportProfile
+  fullName: Meridian.Storage.Export.ExportProfile
+- uid: Meridian.Storage.Export.AnalysisExportService.RegisterProfile*
+  commentId: Overload:Meridian.Storage.Export.AnalysisExportService.RegisterProfile
+  href: Meridian.Storage.Export.AnalysisExportService.html#Meridian_Storage_Export_AnalysisExportService_RegisterProfile_Meridian_Storage_Export_ExportProfile_
+  name: RegisterProfile
+  nameWithType: AnalysisExportService.RegisterProfile
+  fullName: Meridian.Storage.Export.AnalysisExportService.RegisterProfile
+- uid: Meridian.Storage.Export.AnalysisExportService.PreviewAsync*
+  commentId: Overload:Meridian.Storage.Export.AnalysisExportService.PreviewAsync
+  href: Meridian.Storage.Export.AnalysisExportService.html#Meridian_Storage_Export_AnalysisExportService_PreviewAsync_Meridian_Storage_Export_ExportRequest_System_Int32_System_Threading_CancellationToken_
+  name: PreviewAsync
+  nameWithType: AnalysisExportService.PreviewAsync
+  fullName: Meridian.Storage.Export.AnalysisExportService.PreviewAsync
+- uid: Meridian.Storage.Export.ExportRequest
+  commentId: T:Meridian.Storage.Export.ExportRequest
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.ExportRequest.html
+  name: ExportRequest
+  nameWithType: ExportRequest
+  fullName: Meridian.Storage.Export.ExportRequest
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Export.ExportPreviewResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Export.ExportPreviewResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ExportPreviewResult>
+  nameWithType: Task<ExportPreviewResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Export.ExportPreviewResult>
+  nameWithType.vb: Task(Of ExportPreviewResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Export.ExportPreviewResult)
+  name.vb: Task(Of ExportPreviewResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Export.ExportPreviewResult
+    name: ExportPreviewResult
+    href: Meridian.Storage.Export.ExportPreviewResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Export.ExportPreviewResult
+    name: ExportPreviewResult
+    href: Meridian.Storage.Export.ExportPreviewResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Export.AnalysisExportService.GenerateStandaloneLoaderAsync*
+  commentId: Overload:Meridian.Storage.Export.AnalysisExportService.GenerateStandaloneLoaderAsync
+  href: Meridian.Storage.Export.AnalysisExportService.html#Meridian_Storage_Export_AnalysisExportService_GenerateStandaloneLoaderAsync_System_String_System_String_System_String___System_Threading_CancellationToken_
+  name: GenerateStandaloneLoaderAsync
+  nameWithType: AnalysisExportService.GenerateStandaloneLoaderAsync
+  fullName: Meridian.Storage.Export.AnalysisExportService.GenerateStandaloneLoaderAsync
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Storage.Export.AnalysisExportService.ExportAsync*
+  commentId: Overload:Meridian.Storage.Export.AnalysisExportService.ExportAsync
+  href: Meridian.Storage.Export.AnalysisExportService.html#Meridian_Storage_Export_AnalysisExportService_ExportAsync_Meridian_Storage_Export_ExportRequest_System_Threading_CancellationToken_
+  name: ExportAsync
+  nameWithType: AnalysisExportService.ExportAsync
+  fullName: Meridian.Storage.Export.AnalysisExportService.ExportAsync
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Export.ExportResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Export.ExportResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ExportResult>
+  nameWithType: Task<ExportResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Export.ExportResult>
+  nameWithType.vb: Task(Of ExportResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Export.ExportResult)
+  name.vb: Task(Of ExportResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Export.ExportResult
+    name: ExportResult
+    href: Meridian.Storage.Export.ExportResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Export.ExportResult
+    name: ExportResult
+    href: Meridian.Storage.Export.ExportResult.html
+  - name: )

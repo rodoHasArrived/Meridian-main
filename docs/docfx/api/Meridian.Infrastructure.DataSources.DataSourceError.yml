@@ -1,0 +1,597 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DataSourceError
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceError
+  id: DataSourceError
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DataSourceError.#ctor(System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  - Meridian.Infrastructure.DataSources.DataSourceError.ExceptionType
+  - Meridian.Infrastructure.DataSources.DataSourceError.Message
+  - Meridian.Infrastructure.DataSources.DataSourceError.OccurredAt
+  - Meridian.Infrastructure.DataSources.DataSourceError.Operation
+  - Meridian.Infrastructure.DataSources.DataSourceError.StackTrace
+  langs:
+  - csharp
+  - vb
+  name: DataSourceError
+  nameWithType: DataSourceError
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceError
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 348
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Record of a data source error for diagnostic purposes.
+  example: []
+  syntax:
+    content: 'public sealed record DataSourceError : IEquatable<DataSourceError>'
+    content.vb: Public NotInheritable Class DataSourceError Implements IEquatable(Of DataSourceError)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.DataSourceError}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.#ctor(System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceError.#ctor(System.String,System.String,System.DateTimeOffset,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.DateTimeOffset,System.String,System.String)'
+  parent: Meridian.Infrastructure.DataSources.DataSourceError
+  langs:
+  - csharp
+  - vb
+  name: DataSourceError(string, string, DateTimeOffset, string?, string?)
+  nameWithType: DataSourceError.DataSourceError(string, string, DateTimeOffset, string?, string?)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.DataSourceError(string, string, System.DateTimeOffset, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 348
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Record of a data source error for diagnostic purposes.
+  example: []
+  syntax:
+    content: public DataSourceError(string Operation, string Message, DateTimeOffset OccurredAt, string? ExceptionType = null, string? StackTrace = null)
+    parameters:
+    - id: Operation
+      type: System.String
+    - id: Message
+      type: System.String
+    - id: OccurredAt
+      type: System.DateTimeOffset
+    - id: ExceptionType
+      type: System.String
+    - id: StackTrace
+      type: System.String
+    content.vb: Public Sub New(Operation As String, Message As String, OccurredAt As DateTimeOffset, ExceptionType As String = Nothing, StackTrace As String = Nothing)
+  overload: Meridian.Infrastructure.DataSources.DataSourceError.#ctor*
+  nameWithType.vb: DataSourceError.New(String, String, DateTimeOffset, String, String)
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceError.New(String, String, System.DateTimeOffset, String, String)
+  name.vb: New(String, String, DateTimeOffset, String, String)
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.Operation
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceError.Operation
+  id: Operation
+  parent: Meridian.Infrastructure.DataSources.DataSourceError
+  langs:
+  - csharp
+  - vb
+  name: Operation
+  nameWithType: DataSourceError.Operation
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.Operation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Operation
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 349
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Operation { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Operation As String
+  overload: Meridian.Infrastructure.DataSources.DataSourceError.Operation*
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.Message
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceError.Message
+  id: Message
+  parent: Meridian.Infrastructure.DataSources.DataSourceError
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: DataSourceError.Message
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 350
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Infrastructure.DataSources.DataSourceError.Message*
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.OccurredAt
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceError.OccurredAt
+  id: OccurredAt
+  parent: Meridian.Infrastructure.DataSources.DataSourceError
+  langs:
+  - csharp
+  - vb
+  name: OccurredAt
+  nameWithType: DataSourceError.OccurredAt
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.OccurredAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OccurredAt
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 351
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateTimeOffset OccurredAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property OccurredAt As DateTimeOffset
+  overload: Meridian.Infrastructure.DataSources.DataSourceError.OccurredAt*
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.ExceptionType
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceError.ExceptionType
+  id: ExceptionType
+  parent: Meridian.Infrastructure.DataSources.DataSourceError
+  langs:
+  - csharp
+  - vb
+  name: ExceptionType
+  nameWithType: DataSourceError.ExceptionType
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.ExceptionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExceptionType
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 352
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string? ExceptionType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExceptionType As String
+  overload: Meridian.Infrastructure.DataSources.DataSourceError.ExceptionType*
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.StackTrace
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceError.StackTrace
+  id: StackTrace
+  parent: Meridian.Infrastructure.DataSources.DataSourceError
+  langs:
+  - csharp
+  - vb
+  name: StackTrace
+  nameWithType: DataSourceError.StackTrace
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.StackTrace
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StackTrace
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 353
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string? StackTrace { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StackTrace As String
+  overload: Meridian.Infrastructure.DataSources.DataSourceError.StackTrace*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.DataSourceError}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.DataSourceError}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataSourceError>
+  nameWithType: IEquatable<DataSourceError>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.DataSourceError>
+  nameWithType.vb: IEquatable(Of DataSourceError)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.DataSourceError)
+  name.vb: IEquatable(Of DataSourceError)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DataSourceError
+    name: DataSourceError
+    href: Meridian.Infrastructure.DataSources.DataSourceError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DataSourceError
+    name: DataSourceError
+    href: Meridian.Infrastructure.DataSources.DataSourceError.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.#ctor*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceError.#ctor
+  href: Meridian.Infrastructure.DataSources.DataSourceError.html#Meridian_Infrastructure_DataSources_DataSourceError__ctor_System_String_System_String_System_DateTimeOffset_System_String_System_String_
+  name: DataSourceError
+  nameWithType: DataSourceError.DataSourceError
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.DataSourceError
+  nameWithType.vb: DataSourceError.New
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceError.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.Operation*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceError.Operation
+  href: Meridian.Infrastructure.DataSources.DataSourceError.html#Meridian_Infrastructure_DataSources_DataSourceError_Operation
+  name: Operation
+  nameWithType: DataSourceError.Operation
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.Operation
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.Message*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceError.Message
+  href: Meridian.Infrastructure.DataSources.DataSourceError.html#Meridian_Infrastructure_DataSources_DataSourceError_Message
+  name: Message
+  nameWithType: DataSourceError.Message
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.Message
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.OccurredAt*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceError.OccurredAt
+  href: Meridian.Infrastructure.DataSources.DataSourceError.html#Meridian_Infrastructure_DataSources_DataSourceError_OccurredAt
+  name: OccurredAt
+  nameWithType: DataSourceError.OccurredAt
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.OccurredAt
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.ExceptionType*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceError.ExceptionType
+  href: Meridian.Infrastructure.DataSources.DataSourceError.html#Meridian_Infrastructure_DataSources_DataSourceError_ExceptionType
+  name: ExceptionType
+  nameWithType: DataSourceError.ExceptionType
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.ExceptionType
+- uid: Meridian.Infrastructure.DataSources.DataSourceError.StackTrace*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceError.StackTrace
+  href: Meridian.Infrastructure.DataSources.DataSourceError.html#Meridian_Infrastructure_DataSources_DataSourceError_StackTrace
+  name: StackTrace
+  nameWithType: DataSourceError.StackTrace
+  fullName: Meridian.Infrastructure.DataSources.DataSourceError.StackTrace

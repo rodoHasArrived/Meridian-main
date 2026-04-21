@@ -1,0 +1,163 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderType
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderType
+  id: ProviderType
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ProviderType.Backfill
+  - Meridian.Infrastructure.Adapters.Core.ProviderType.Streaming
+  - Meridian.Infrastructure.Adapters.Core.ProviderType.SymbolSearch
+  langs:
+  - csharp
+  - vb
+  name: ProviderType
+  nameWithType: ProviderType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderType
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 7
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Types of market data providers.
+  example: []
+  syntax:
+    content: 'public enum ProviderType : byte'
+    content.vb: Public Enum ProviderType As Byte
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderType.Streaming
+  commentId: F:Meridian.Infrastructure.Adapters.Core.ProviderType.Streaming
+  id: Streaming
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderType
+  langs:
+  - csharp
+  - vb
+  name: Streaming
+  nameWithType: ProviderType.Streaming
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderType.Streaming
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Streaming
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 10
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Real-time streaming data provider.
+  example: []
+  syntax:
+    content: Streaming = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderType
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderType.Backfill
+  commentId: F:Meridian.Infrastructure.Adapters.Core.ProviderType.Backfill
+  id: Backfill
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderType
+  langs:
+  - csharp
+  - vb
+  name: Backfill
+  nameWithType: ProviderType.Backfill
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderType.Backfill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backfill
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 13
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Historical backfill data provider.
+  example: []
+  syntax:
+    content: Backfill = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderType
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderType.SymbolSearch
+  commentId: F:Meridian.Infrastructure.Adapters.Core.ProviderType.SymbolSearch
+  id: SymbolSearch
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderType
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearch
+  nameWithType: ProviderType.SymbolSearch
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderType.SymbolSearch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearch
+    path: ../../src/Meridian.ProviderSdk/IProviderMetadata.cs
+    startLine: 16
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Symbol search/lookup provider.
+  example: []
+  syntax:
+    content: SymbolSearch = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderType
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderType
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderType
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderType.html
+  name: ProviderType
+  nameWithType: ProviderType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderType

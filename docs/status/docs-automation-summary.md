@@ -6,40 +6,15 @@
 
 | Script | Status | Duration (s) | Output |
 |--------|--------|--------------|--------|
-| `scan-todos` | `success` | `175.615` | `docs/status/TODO.md` |
-| `generate-structure-docs` | `success` | `0.921` | `docs/generated/repository-structure.md` |
-| `generate-health-dashboard` | `failed` | `23.770` | `docs/status/health-dashboard.md` |
-| `repair-links` | `failed` | `1.349` | `docs/status/link-repair-report.md` |
-| `validate-examples` | `failed` | `0.735` | `docs/status/example-validation.md` |
-| `generate-coverage` | `success` | `6.746` | `docs/status/coverage-report.md` |
-| `generate-changelog` | `success` | `0.553` | `docs/status/CHANGELOG.md` |
-| `rules-engine` | `failed` | `2.047` | `docs/status/rules-report.md` |
-| `validate-api-docs` | `success` | `2.420` | `docs/status/api-docs-report.md` |
-| `generate-dependency-graph` | `success` | `1.952` | `docs/generated/project-dependencies.md` |
-| `sync-readme-badges` | `success` | `0.775` | `docs/status/badge-sync-report.md` |
-| `generate-metrics-dashboard` | `success` | `0.484` | `docs/status/metrics-dashboard.md` |
-
-## Failures
-
-- `generate-health-dashboard`: Error during analysis: [WinError 123] The filename, directory name, or volume label syntax is incorrect: 'C:\\Users\\Andrew James Rowden\\OneDrive\\Documents\\OneDrive\\Documents\\Desktop\\Meridian-main\\.github\\agents\\.*\\.md'
-- `repair-links`: Scanning markdown files under C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\docs ...
-Report written to docs\status\link-repair-report.md
-Link check complete: 740 links checked, 30 broken, 0 auto-fixed (155 files scanned).
-- `validate-examples`: Report written to docs\status\example-validation.md
-Validation complete: 156 files, 1045 blocks (759 valid, 13 invalid, 273 skipped)
-
-Invalid examples:
-  docs\architecture\crystallized-storage-format.md:233 [json] JSON error - Extra data (line 2, col 1)
-  docs\architecture\crystallized-storage-format.md:534 [json] JSON error - Extra data (line 1, col 10)
-  docs\evaluations\high-value-low-cost-improvements-brainstorm.md:223 [json] JSON error - Expecting property name enclosed in double quotes (line 3, col 3)
-  docs\operations\operator-runbook.md:292 [json] JSON error - Extra data (line 1, col 9)
-  docs\plans\l3-inference-implementation-plan.md:140 [json] JSON error - Expecting value (line 1, col 1)
-  docs\plans\l3-inference-implementation-plan.md:498 [jsonc] JSON error - Expecting value (line 1, col 1)
-  docs\plans\l3-inference-implementation-plan.md:586 [jsonc] JSON error - Expecting property name enclosed in double quotes (line 9, col 40)
-  docs\plans\l3-inference-implementation-plan.md:604 [jsonc] JSON error - Expecting property name enclosed in double quotes (line 14, col 43)
-  docs\plans\l3-inference-implementation-plan.md:658 [jsonc] JSON error - Expecting property name enclosed in double quotes (line 3, col 41)
-  docs\plans\l3-inference-implementation-plan.md:703 [jsonc] JSON error - Expecting value (line 6, col 15)
-  docs\plans\quant-script-environment-blueprint.md:625 [json] JSON error - Expecting value (line 1, col 1)
-  docs\reference\api-reference.md:178 [bash] Bash issues - line 4: unmatched single quote; line 9: unmatched single quote
-  docs\reference\data-dictionary.md:63 [json] JSON error - Expecting property name enclosed in double quotes (line 9, col 16)
-- `rules-engine`: Report written to C:\Users\Andrew James Rowden\OneDrive\Documents\OneDrive\Documents\Desktop\Meridian-main\docs\status\rules-report.md
+| `scan-todos` | `success` | `89.454` | `docs/status/TODO.md` |
+| `generate-structure-docs` | `success` | `0.732` | `docs/generated/repository-structure.md` |
+| `generate-health-dashboard` | `success` | `118.919` | `docs/status/health-dashboard.md` |
+| `repair-links` | `success` | `1.282` | `docs/status/link-repair-report.md` |
+| `validate-examples` | `success` | `1.111` | `docs/status/example-validation.md` |
+| `generate-coverage` | `success` | `88.306` | `docs/status/coverage-report.md` |
+| `generate-changelog` | `success` | `0.919` | `docs/status/CHANGELOG.md` |
+| `rules-engine` | `success` | `4.104` | `docs/status/rules-report.md` |
+| `validate-api-docs` | `success` | `5.987` | `docs/status/api-docs-report.md` |
+| `generate-dependency-graph` | `success` | `2.654` | `docs/generated/project-dependencies.md` |
+| `sync-readme-badges` | `success` | `0.916` | `docs/status/badge-sync-report.md` |
+| `generate-metrics-dashboard` | `success` | `0.488` | `docs/status/metrics-dashboard.md` |

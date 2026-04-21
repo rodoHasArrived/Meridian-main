@@ -1,0 +1,892 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery
+  commentId: T:Meridian.Contracts.FundStructure.AccountStructureQuery
+  id: AccountStructureQuery
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.#ctor(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.Nullable{System.DateTimeOffset})
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.AccountId
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.ActiveOnly
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.AsOf
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.EntityId
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.FundId
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.LedgerReference
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.PortfolioId
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.RunId
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.SleeveId
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.StrategyId
+  - Meridian.Contracts.FundStructure.AccountStructureQuery.VehicleId
+  langs:
+  - csharp
+  - vb
+  name: AccountStructureQuery
+  nameWithType: AccountStructureQuery
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountStructureQuery
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record AccountStructureQuery : IEquatable<AccountStructureQuery>'
+    content.vb: Public NotInheritable Class AccountStructureQuery Implements IEquatable(Of AccountStructureQuery)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.AccountStructureQuery}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.#ctor(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Contracts.FundStructure.AccountStructureQuery.#ctor(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.Nullable{System.DateTimeOffset})
+  id: '#ctor(System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String,System.String,System.String,System.String,System.Boolean,System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: AccountStructureQuery(Guid?, Guid?, Guid?, Guid?, Guid?, string?, string?, string?, string?, bool, DateTimeOffset?)
+  nameWithType: AccountStructureQuery.AccountStructureQuery(Guid?, Guid?, Guid?, Guid?, Guid?, string?, string?, string?, string?, bool, DateTimeOffset?)
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.AccountStructureQuery(System.Guid?, System.Guid?, System.Guid?, System.Guid?, System.Guid?, string?, string?, string?, string?, bool, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public AccountStructureQuery(Guid? AccountId = null, Guid? EntityId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, string? PortfolioId = null, string? LedgerReference = null, string? StrategyId = null, string? RunId = null, bool ActiveOnly = true, DateTimeOffset? AsOf = null)
+    parameters:
+    - id: AccountId
+      type: System.Nullable{System.Guid}
+    - id: EntityId
+      type: System.Nullable{System.Guid}
+    - id: FundId
+      type: System.Nullable{System.Guid}
+    - id: SleeveId
+      type: System.Nullable{System.Guid}
+    - id: VehicleId
+      type: System.Nullable{System.Guid}
+    - id: PortfolioId
+      type: System.String
+    - id: LedgerReference
+      type: System.String
+    - id: StrategyId
+      type: System.String
+    - id: RunId
+      type: System.String
+    - id: ActiveOnly
+      type: System.Boolean
+    - id: AsOf
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(AccountId As Guid? = Nothing, EntityId As Guid? = Nothing, FundId As Guid? = Nothing, SleeveId As Guid? = Nothing, VehicleId As Guid? = Nothing, PortfolioId As String = Nothing, LedgerReference As String = Nothing, StrategyId As String = Nothing, RunId As String = Nothing, ActiveOnly As Boolean = True, AsOf As DateTimeOffset? = Nothing)
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.#ctor*
+  nameWithType.vb: AccountStructureQuery.New(Guid?, Guid?, Guid?, Guid?, Guid?, String, String, String, String, Boolean, DateTimeOffset?)
+  fullName.vb: Meridian.Contracts.FundStructure.AccountStructureQuery.New(System.Guid?, System.Guid?, System.Guid?, System.Guid?, System.Guid?, String, String, String, String, Boolean, System.DateTimeOffset?)
+  name.vb: New(Guid?, Guid?, Guid?, Guid?, Guid?, String, String, String, String, Boolean, DateTimeOffset?)
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.AccountId
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.AccountId
+  id: AccountId
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: AccountStructureQuery.AccountId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property AccountId As Guid?
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.AccountId*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.EntityId
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.EntityId
+  id: EntityId
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: EntityId
+  nameWithType: AccountStructureQuery.EntityId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.EntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? EntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property EntityId As Guid?
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.EntityId*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.FundId
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.FundId
+  id: FundId
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: FundId
+  nameWithType: AccountStructureQuery.FundId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.FundId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? FundId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property FundId As Guid?
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.FundId*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.SleeveId
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.SleeveId
+  id: SleeveId
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: SleeveId
+  nameWithType: AccountStructureQuery.SleeveId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.SleeveId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SleeveId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? SleeveId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property SleeveId As Guid?
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.SleeveId*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.VehicleId
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.VehicleId
+  id: VehicleId
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: VehicleId
+  nameWithType: AccountStructureQuery.VehicleId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.VehicleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VehicleId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? VehicleId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property VehicleId As Guid?
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.VehicleId*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.PortfolioId
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.PortfolioId
+  id: PortfolioId
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: PortfolioId
+  nameWithType: AccountStructureQuery.PortfolioId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.PortfolioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? PortfolioId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PortfolioId As String
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.PortfolioId*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.LedgerReference
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.LedgerReference
+  id: LedgerReference
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: LedgerReference
+  nameWithType: AccountStructureQuery.LedgerReference
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.LedgerReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerReference
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? LedgerReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LedgerReference As String
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.LedgerReference*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.StrategyId
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.StrategyId
+  id: StrategyId
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: AccountStructureQuery.StrategyId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.StrategyId*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.RunId
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.RunId
+  id: RunId
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: AccountStructureQuery.RunId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.RunId*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.ActiveOnly
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.ActiveOnly
+  id: ActiveOnly
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: ActiveOnly
+  nameWithType: AccountStructureQuery.ActiveOnly
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.ActiveOnly
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveOnly
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public bool ActiveOnly { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property ActiveOnly As Boolean
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.ActiveOnly*
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.AsOf
+  commentId: P:Meridian.Contracts.FundStructure.AccountStructureQuery.AsOf
+  id: AsOf
+  parent: Meridian.Contracts.FundStructure.AccountStructureQuery
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: AccountStructureQuery.AsOf
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset? AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property AsOf As DateTimeOffset?
+  overload: Meridian.Contracts.FundStructure.AccountStructureQuery.AsOf*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.AccountStructureQuery}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.AccountStructureQuery}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AccountStructureQuery>
+  nameWithType: IEquatable<AccountStructureQuery>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.AccountStructureQuery>
+  nameWithType.vb: IEquatable(Of AccountStructureQuery)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.AccountStructureQuery)
+  name.vb: IEquatable(Of AccountStructureQuery)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountStructureQuery
+    name: AccountStructureQuery
+    href: Meridian.Contracts.FundStructure.AccountStructureQuery.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountStructureQuery
+    name: AccountStructureQuery
+    href: Meridian.Contracts.FundStructure.AccountStructureQuery.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.#ctor
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery__ctor_System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_String_System_String_System_String_System_String_System_Boolean_System_Nullable_System_DateTimeOffset__
+  name: AccountStructureQuery
+  nameWithType: AccountStructureQuery.AccountStructureQuery
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.AccountStructureQuery
+  nameWithType.vb: AccountStructureQuery.New
+  fullName.vb: Meridian.Contracts.FundStructure.AccountStructureQuery.New
+  name.vb: New
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.AccountId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.AccountId
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_AccountId
+  name: AccountId
+  nameWithType: AccountStructureQuery.AccountId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.AccountId
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.EntityId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.EntityId
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_EntityId
+  name: EntityId
+  nameWithType: AccountStructureQuery.EntityId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.EntityId
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.FundId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.FundId
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_FundId
+  name: FundId
+  nameWithType: AccountStructureQuery.FundId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.FundId
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.SleeveId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.SleeveId
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_SleeveId
+  name: SleeveId
+  nameWithType: AccountStructureQuery.SleeveId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.SleeveId
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.VehicleId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.VehicleId
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_VehicleId
+  name: VehicleId
+  nameWithType: AccountStructureQuery.VehicleId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.VehicleId
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.PortfolioId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.PortfolioId
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_PortfolioId
+  name: PortfolioId
+  nameWithType: AccountStructureQuery.PortfolioId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.PortfolioId
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.LedgerReference*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.LedgerReference
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_LedgerReference
+  name: LedgerReference
+  nameWithType: AccountStructureQuery.LedgerReference
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.LedgerReference
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.StrategyId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.StrategyId
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_StrategyId
+  name: StrategyId
+  nameWithType: AccountStructureQuery.StrategyId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.StrategyId
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.RunId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.RunId
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_RunId
+  name: RunId
+  nameWithType: AccountStructureQuery.RunId
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.RunId
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.ActiveOnly*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.ActiveOnly
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_ActiveOnly
+  name: ActiveOnly
+  nameWithType: AccountStructureQuery.ActiveOnly
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.ActiveOnly
+- uid: Meridian.Contracts.FundStructure.AccountStructureQuery.AsOf*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountStructureQuery.AsOf
+  href: Meridian.Contracts.FundStructure.AccountStructureQuery.html#Meridian_Contracts_FundStructure_AccountStructureQuery_AsOf
+  name: AsOf
+  nameWithType: AccountStructureQuery.AsOf
+  fullName: Meridian.Contracts.FundStructure.AccountStructureQuery.AsOf

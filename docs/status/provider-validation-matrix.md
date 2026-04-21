@@ -1,51 +1,40 @@
-# Provider Validation Matrix (Polygon, IB, StockSharp, NYSE)
+# Provider Validation Matrix
 
-**Last Updated:** 2026-04-01  
-**Scope:** Replay scenarios, reconnect behavior, cancellation handling, auth failure behavior, and rate-limit handling.
+**Last Updated:** 2026-04-17  
+**Scope:** Active Wave 1 provider confidence, checkpoint resumability, and Parquet Level 2 flush proof
 
-This matrix is the execution checklist referenced by `production-status.md` and `FEATURE_INVENTORY.md` for provider readiness gating.
+This matrix is Meridian's active Wave 1 evidence gate. Every row must point to executable repo evidence or committed runtime artifacts. Deferred providers stay out of the active gate even when they remain in the broader provider strategy.
 
 ## Legend
 
-- ✅ Validated in-repo with executable evidence link(s)
-- ⚠️ Partially validated (coverage exists, but not full live-vendor runtime proof)
-- ❌ Not yet validated
+- ✅ Closed with executable repo evidence
+- ⚠️ Bounded: meaningful evidence exists, but at least one vendor or runtime condition remains manual
 
-## Validation Matrix
+## Wave 1 Matrix
 
-| Provider | Replay Scenarios | Reconnect Behavior | Cancellation | Auth Failure | Rate-Limit Handling | Evidence |
-|---|---|---|---|---|---|---|
-| Polygon | ✅ | ⚠️ | ✅ | ✅ | ⚠️ | `PolygonRecordedSessionReplayTests`, `PolygonMarketDataClientTests`, fixtures under `Fixtures/Polygon` |
-| Interactive Brokers (IB) | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ | `IBRuntimeGuidanceTests`, `IBSimulationClientContractTests`, `build-ibapi-smoke.ps1` |
-| StockSharp | ⚠️ | ⚠️ | ⚠️ | ⚠️ | ❌ | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests` |
-| NYSE | ⚠️ | ✅ | ⚠️ | ⚠️ | ❌ | `NyseMarketDataClientTests`, `NYSEMessageParsingTests`, `NyseTaqCollectorIntegrationTests` |
+| Scope | Offline / CI evidence | Manual / runtime evidence | Status | Bounded by |
+|---|---|---|---|---|
+| Alpaca core provider confidence | `AlpacaBrokerageGatewayTests`, `AlpacaCorporateActionProviderTests`, `AlpacaCredentialAndReconnectTests`, `AlpacaMessageParsingTests`, `AlpacaQuotePipelineGoldenTests`, `AlpacaQuoteRoutingTests`, `ExecutionGovernanceEndpointsTests.AlpacaExecutionPath_SubmitsOrderThroughStableExecutionSeam` | Not required for the active Wave 1 claim | ✅ | n/a |
+| Robinhood supported surface | `RobinhoodBrokerageGatewayTests`, `RobinhoodMarketDataClientTests`, `RobinhoodHistoricalDataProviderTests`, `RobinhoodSymbolSearchProviderTests`, `ExecutionGovernanceEndpointsTests.RobinhoodExecutionPath_SubmitsOrderThroughStableExecutionSeam` | `artifacts/provider-validation/robinhood/2026-04-09/` with `auth-session`, `quote-polling`, `order-submit-cancel`, and `throttling-reconnect` scenario folders | ⚠️ | Unofficial API plus manual broker-session and runtime requirements |
+| Yahoo historical and fallback confidence | `YahooFinanceHistoricalDataProviderTests`, `YahooFinanceIntradayContractTests` | Not required for the active Wave 1 claim; existing live Yahoo integration suites are optional developer reference only | ✅ | n/a |
+| Checkpoint reliability | `BackfillStatusStoreTests`, `ParallelBackfillServiceTests`, `GapBackfillServiceTests`, `CheckpointEndpointTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
+| Parquet L2 flush behavior | `ParquetStorageSinkTests`, `ParquetConversionServiceTests` | Not required; the Wave 1 claim is closed in repo tests | ✅ | n/a |
 
-## Scenario Notes
+## Primary Validation Command
 
-### Polygon
+Run the committed Wave 1 command matrix with:
 
-- **Replay scenarios** are validated with recorded-session fixtures that include trades, quotes, second/minute aggregates, and status frames through the production parser path.
-- **Reconnect behavior** currently has provider-level baseline coverage, but no committed Polygon live reconnect replay transcript yet.
-- **Cancellation** is covered at provider client level (`ConnectAsync`/`DisconnectAsync` and cancellation token paths).
-- **Auth failure** is validated by status-frame fixtures (`auth_failed`) and missing-key connection exception tests.
-- **Rate-limit handling** exists for Polygon REST ingest paths; WebSocket runtime throttling still needs live verification evidence.
+```powershell
+./scripts/dev/run-wave1-provider-validation.ps1
+```
 
-### Interactive Brokers (IB)
+The script writes:
 
-- Current repo baseline is mostly **guidance/smoke validation**, not full live runtime:
-  - Non-`IBAPI` guidance tests
-  - compile-only smoke build
-  - simulated client contract tests
-- Missing evidence for sustained reconnect/cancellation/auth/rate-limit behavior against a real TWS/IB Gateway session transcript in CI artifacts.
+- `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.json`
+- `artifacts/provider-validation/_automation/<yyyy-mm-dd>/wave1-validation-summary.md`
 
-### StockSharp
+## Notes
 
-- Current baseline validates:
-  - stub guidance and setup messaging when packages are missing
-  - connector factory support and conversion contracts
-- At least one connector profile can be validated end-to-end in local environments, but this is not yet represented as CI-captured evidence in repo artifacts.
-
-### NYSE
-
-- Reconnect lifecycle behavior is covered in unit/integration tests for connection-loss handling and subscription intent retention.
-- Auth-failure and rate-limit evidence are not yet represented as explicit pass/fail fixtures in the NYSE test suite.
+- Robinhood remains polling-oriented and unofficial. Do not describe it as websocket-validated.
+- Yahoo is active only as a historical and fallback provider row for Wave 1.
+- `Polygon`, `Interactive Brokers`, `NYSE`, and `StockSharp` are deferred from the active Wave 1 gate.

@@ -9,6 +9,7 @@ skipped code examples to help maintain documentation quality.
 Supported languages:
 - Python: Full AST parse validation
 - JSON: Full json.loads() validation
+- JSONC: JSON validation after stripping comments and trailing commas
 - YAML/YML: Indentation consistency and basic structure checks
 - Bash/Shell/SH: Unmatched quotes, common syntax issues
 - C#/CS: Brace matching and syntax heuristics
@@ -50,7 +51,8 @@ LANGUAGE_ALIASES: dict[str, str] = {
     "python3": "python",
     "py": "python",
     "json": "json",
-    "jsonc": "json",
+    "jsonc": "jsonc",
+    "jsonl": "jsonl",
     "yaml": "yaml",
     "yml": "yaml",
     "bash": "bash",
@@ -67,7 +69,15 @@ LANGUAGE_ALIASES: dict[str, str] = {
 }
 
 # Languages we can validate.
-VALIDATABLE_LANGUAGES: set[str] = {"python", "json", "yaml", "bash", "csharp", "xml"}
+VALIDATABLE_LANGUAGES: set[str] = {
+    "python",
+    "json",
+    "jsonc",
+    "yaml",
+    "bash",
+    "csharp",
+    "xml",
+}
 
 # Regex for the opening fence of a code block: ``` optionally followed by a language tag.
 _FENCE_OPEN_RE = re.compile(r"^(?P<indent>\s*)```(?P<lang>[a-zA-Z0-9_#+-]*)\s*$")
@@ -216,6 +226,85 @@ def _validate_json(source: str) -> tuple[bool, str]:
         return True, ""
     except json.JSONDecodeError as exc:
         return False, f"JSON error - {exc.msg} (line {exc.lineno}, col {exc.colno})"
+
+
+def _strip_jsonc_comments(source: str) -> str:
+    """Remove JSONC comments while preserving quoted strings."""
+    result: list[str] = []
+    i = 0
+    in_string = False
+    escape = False
+    in_line_comment = False
+    in_block_comment = False
+
+    while i < len(source):
+        ch = source[i]
+        nxt = source[i + 1] if i + 1 < len(source) else ""
+
+        if in_line_comment:
+            if ch == "\n":
+                in_line_comment = False
+                result.append(ch)
+            i += 1
+            continue
+
+        if in_block_comment:
+            if ch == "*" and nxt == "/":
+                in_block_comment = False
+                i += 2
+                continue
+            if ch == "\n":
+                result.append(ch)
+            i += 1
+            continue
+
+        if in_string:
+            result.append(ch)
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_string = False
+            i += 1
+            continue
+
+        if ch == '"':
+            in_string = True
+            result.append(ch)
+            i += 1
+            continue
+
+        if ch == "/" and nxt == "/":
+            in_line_comment = True
+            i += 2
+            continue
+
+        if ch == "/" and nxt == "*":
+            in_block_comment = True
+            i += 2
+            continue
+
+        result.append(ch)
+        i += 1
+
+    return "".join(result)
+
+
+def _strip_jsonc_trailing_commas(source: str) -> str:
+    """Remove trailing commas before closing braces and brackets."""
+    previous = None
+    current = source
+    while previous != current:
+        previous = current
+        current = re.sub(r",(\s*[}\]])", r"\1", current)
+    return current
+
+
+def _validate_jsonc(source: str) -> tuple[bool, str]:
+    """Validate JSONC by normalizing to strict JSON first."""
+    normalized = _strip_jsonc_trailing_commas(_strip_jsonc_comments(source))
+    return _validate_json(normalized)
 
 
 def _validate_yaml(source: str) -> tuple[bool, str]:
@@ -518,6 +607,7 @@ def _validate_xml(source: str) -> tuple[bool, str]:  # noqa: C901
 _VALIDATORS: dict[str, object] = {
     "python": _validate_python,
     "json": _validate_json,
+    "jsonc": _validate_jsonc,
     "yaml": _validate_yaml,
     "bash": _validate_bash,
     "csharp": _validate_csharp,

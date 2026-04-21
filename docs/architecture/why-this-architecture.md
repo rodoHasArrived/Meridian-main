@@ -9,7 +9,7 @@ It collects:
 - **Depth:** Level 2 order book updates with integrity checks
 - **Backfill:** historical bars and supplemental data from multiple providers
 
-It also provides **monitoring dashboards**, **Prometheus metrics**, and **export tooling** for downstream analysis.
+It also provides **desktop monitoring surfaces**, **Prometheus metrics**, and **export tooling** for downstream analysis.
 
 ---
 
@@ -41,7 +41,7 @@ This is the orchestration layer that wires everything together and exposes tooli
 - CLI modes for **wizard setup**, **auto-config**, and **credential validation**
 - Subscription management and backfill scheduling
 - Health checks, data quality checks, and alerting hooks
-- HTTP status server for dashboard and metrics endpoints
+- HTTP status and local API server for desktop and metrics endpoints
 
 ### 4) Pipeline + Storage (the “transport and memory”)
 All domain events flow through a bounded, backpressured pipeline to prevent runaway memory use:
@@ -51,9 +51,9 @@ All domain events flow through a bounded, backpressured pipeline to prevent runa
 - **Compression profiles**, **schema versioning**, **retention policies**, and **replay tooling**
 - Export profiles for analytics (Python/R/Lean/SQL-friendly exports)
 
-### 5) Presentation + Monitoring (the “eyes and dashboard”)
+### 5) Presentation + Monitoring (the “eyes and control surfaces”)
 The system exposes status and monitoring through:
-- Web dashboard (HTTP status server + UI)
+- Desktop-local API host for status, Swagger, and workstation endpoints
 - Prometheus metrics endpoint ([ADR-012](../adr/012-monitoring-and-alerting-pipeline.md))
 - Native Windows WPF desktop app for monitoring and configuration
 
@@ -64,7 +64,7 @@ The system exposes status and monitoring through:
 - **Data quality enforcement:** integrity events, spread checks, timestamp checks, and tick-size validation
 - **Provider isolation:** adapters can fail or be replaced without corrupting core logic
 - **Backpressure protection:** bounded queues prevent memory runaway under load
-- **Operational visibility:** live metrics, status endpoints, and UI dashboards
+- **Operational visibility:** live metrics, status endpoints, and desktop/local API surfaces
 
 ---
 
@@ -80,7 +80,7 @@ The system exposes status and monitoring through:
 - Data replay and export tooling for downstream analysis
 - Ingestion orchestration: unified job model, scheduled backfills, checkpoint/resume, deduplication
 - Data quality monitoring with SLA enforcement, anomaly detection, and gap analysis
-- Monitoring via Prometheus metrics, status JSON, and web/WPF dashboards
+- Monitoring via Prometheus metrics, status JSON, and desktop-local API plus WPF surfaces
 - QuantConnect Lean integration for backtesting
 
 ### Notes on provider maturity
@@ -97,10 +97,10 @@ We evaluated a microservices decomposition ([ADR-003](../adr/003-microservices-d
 - **Operational cost**: Microservices demand service mesh, distributed tracing, and container orchestration — overhead that doesn't justify the scale of a meridian.
 - **Shared state**: Collectors, pipeline, and storage share event models directly; splitting them would require contract duplication and version management.
 
-The monolith supports optional UI projects (web dashboard, WPF desktop) as separate entry points that compose the same library assemblies.
+The monolith supports multiple operator entry points (WPF desktop, CLI, and localhost API surfaces) that compose the same library assemblies.
 
 ---
 
 **Version:** 1.7.0
-**Last Updated:** 2026-03-18
+**Last Updated:** 2026-04-09
 **See Also:** [Architecture Overview](overview.md) | [Domains](domains.md) | [C4 Diagrams](c4-diagrams.md) | [ADR Index](../adr/README.md) | [Lean Integration](../integrations/lean-integration.md) | [Canonicalization Design](deterministic-canonicalization.md)

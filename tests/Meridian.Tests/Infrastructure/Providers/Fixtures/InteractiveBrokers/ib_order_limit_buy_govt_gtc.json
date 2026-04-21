@@ -1,0 +1,13 @@
+{
+  "description": "IB limit buy order for a US Treasury note (CUSIP 912828YY0 - 2-Year Note). secType=GOVT routes to the IB government bond desk. Quantity is face value (par amount) in USD.",
+  "orderId": 2002,
+  "symbol": "912828YY0",
+  "secType": "GOVT",
+  "orderType": "LMT",
+  "side": "BUY",
+  "quantity": 10000,
+  "tif": "GTC",
+  "price": 99.875,
+  "exchange": "SMART",
+  "currency": "USD"
+}

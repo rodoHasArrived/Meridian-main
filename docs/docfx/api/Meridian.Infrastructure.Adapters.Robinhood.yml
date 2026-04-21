@@ -1,0 +1,51 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Robinhood
+  commentId: N:Meridian.Infrastructure.Adapters.Robinhood
+  id: Meridian.Infrastructure.Adapters.Robinhood
+  children:
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodBrokerageGateway
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
+  - Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Robinhood
+  nameWithType: Meridian.Infrastructure.Adapters.Robinhood
+  fullName: Meridian.Infrastructure.Adapters.Robinhood
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodBrokerageGateway
+  commentId: T:Meridian.Infrastructure.Adapters.Robinhood.RobinhoodBrokerageGateway
+  href: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodBrokerageGateway.html
+  name: RobinhoodBrokerageGateway
+  nameWithType: RobinhoodBrokerageGateway
+  fullName: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodBrokerageGateway
+- uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider.html
+  name: RobinhoodHistoricalDataProvider
+  nameWithType: RobinhoodHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
+  href: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient.html
+  name: RobinhoodMarketDataClient
+  nameWithType: RobinhoodMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
+  href: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider.html
+  name: RobinhoodOptionsChainProvider
+  nameWithType: RobinhoodOptionsChainProvider
+  fullName: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodOptionsChainProvider
+- uid: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider.html
+  name: RobinhoodSymbolSearchProvider
+  nameWithType: RobinhoodSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Robinhood.RobinhoodSymbolSearchProvider

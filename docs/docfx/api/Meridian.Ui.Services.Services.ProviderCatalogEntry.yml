@@ -1,0 +1,934 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  commentId: T:Meridian.Ui.Services.Services.ProviderCatalogEntry
+  id: ProviderCatalogEntry
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[],System.Boolean,System.Boolean)
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.Description
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.DisplayName
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.Id
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.RateLimitPerMinute
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsHistorical
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsStreaming
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsSymbolSearch
+  - Meridian.Ui.Services.Services.ProviderCatalogEntry.Tier
+  langs:
+  - csharp
+  - vb
+  name: ProviderCatalogEntry
+  nameWithType: ProviderCatalogEntry
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCatalogEntry
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Provider catalog entry for the provider marketplace display.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderCatalogEntry : IEquatable<ProviderCatalogEntry>'
+    content.vb: Public NotInheritable Class ProviderCatalogEntry Implements IEquatable(Of ProviderCatalogEntry)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Services.Services.ProviderCatalogEntry}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[],System.Boolean,System.Boolean)
+  commentId: M:Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[],System.Boolean,System.Boolean)
+  id: '#ctor(System.String,System.String,Meridian.Ui.Services.Services.ProviderTier,System.Boolean,System.Boolean,System.Boolean,System.String,System.Int32,Meridian.Contracts.Api.CredentialFieldInfo[],System.Boolean,System.Boolean)'
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: ProviderCatalogEntry(string, string, ProviderTier, bool, bool, bool, string, int, CredentialFieldInfo[], bool, bool)
+  nameWithType: ProviderCatalogEntry.ProviderCatalogEntry(string, string, ProviderTier, bool, bool, bool, string, int, CredentialFieldInfo[], bool, bool)
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.ProviderCatalogEntry(string, string, Meridian.Ui.Services.Services.ProviderTier, bool, bool, bool, string, int, Meridian.Contracts.Api.CredentialFieldInfo[], bool, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Provider catalog entry for the provider marketplace display.
+  example: []
+  syntax:
+    content: public ProviderCatalogEntry(string Id, string DisplayName, ProviderTier Tier, bool SupportsStreaming, bool SupportsHistorical, bool SupportsSymbolSearch, string Description, int RateLimitPerMinute, CredentialFieldInfo[] CredentialFields, bool SupportsOptions = false, bool SupportsBrokerage = false)
+    parameters:
+    - id: Id
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: Tier
+      type: Meridian.Ui.Services.Services.ProviderTier
+    - id: SupportsStreaming
+      type: System.Boolean
+    - id: SupportsHistorical
+      type: System.Boolean
+    - id: SupportsSymbolSearch
+      type: System.Boolean
+    - id: Description
+      type: System.String
+    - id: RateLimitPerMinute
+      type: System.Int32
+    - id: CredentialFields
+      type: Meridian.Contracts.Api.CredentialFieldInfo[]
+    - id: SupportsOptions
+      type: System.Boolean
+    - id: SupportsBrokerage
+      type: System.Boolean
+    content.vb: Public Sub New(Id As String, DisplayName As String, Tier As ProviderTier, SupportsStreaming As Boolean, SupportsHistorical As Boolean, SupportsSymbolSearch As Boolean, Description As String, RateLimitPerMinute As Integer, CredentialFields As CredentialFieldInfo(), SupportsOptions As Boolean = False, SupportsBrokerage As Boolean = False)
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor*
+  nameWithType.vb: ProviderCatalogEntry.New(String, String, ProviderTier, Boolean, Boolean, Boolean, String, Integer, CredentialFieldInfo(), Boolean, Boolean)
+  fullName.vb: Meridian.Ui.Services.Services.ProviderCatalogEntry.New(String, String, Meridian.Ui.Services.Services.ProviderTier, Boolean, Boolean, Boolean, String, Integer, Meridian.Contracts.Api.CredentialFieldInfo(), Boolean, Boolean)
+  name.vb: New(String, String, ProviderTier, Boolean, Boolean, Boolean, String, Integer, CredentialFieldInfo(), Boolean, Boolean)
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.Id
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.Id
+  id: Id
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: ProviderCatalogEntry.Id
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Id { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.Id*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.DisplayName
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.DisplayName
+  id: DisplayName
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: ProviderCatalogEntry.DisplayName
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 297
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.DisplayName*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.Tier
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.Tier
+  id: Tier
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: Tier
+  nameWithType: ProviderCatalogEntry.Tier
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.Tier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tier
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 298
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public ProviderTier Tier { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Services.ProviderTier
+    content.vb: Public Property Tier As ProviderTier
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.Tier*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsStreaming
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsStreaming
+  id: SupportsStreaming
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: SupportsStreaming
+  nameWithType: ProviderCatalogEntry.SupportsStreaming
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsStreaming
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsStreaming
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 299
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool SupportsStreaming { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsStreaming As Boolean
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsStreaming*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsHistorical
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsHistorical
+  id: SupportsHistorical
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: SupportsHistorical
+  nameWithType: ProviderCatalogEntry.SupportsHistorical
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsHistorical
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsHistorical
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 300
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool SupportsHistorical { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsHistorical As Boolean
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsHistorical*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsSymbolSearch
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsSymbolSearch
+  id: SupportsSymbolSearch
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: SupportsSymbolSearch
+  nameWithType: ProviderCatalogEntry.SupportsSymbolSearch
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsSymbolSearch
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsSymbolSearch
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool SupportsSymbolSearch { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsSymbolSearch As Boolean
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsSymbolSearch*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.Description
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.Description
+  id: Description
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: ProviderCatalogEntry.Description
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 302
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.Description*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.RateLimitPerMinute
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.RateLimitPerMinute
+  id: RateLimitPerMinute
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: RateLimitPerMinute
+  nameWithType: ProviderCatalogEntry.RateLimitPerMinute
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.RateLimitPerMinute
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitPerMinute
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 303
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public int RateLimitPerMinute { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RateLimitPerMinute As Integer
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.RateLimitPerMinute*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields
+  id: CredentialFields
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: CredentialFields
+  nameWithType: ProviderCatalogEntry.CredentialFields
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialFields
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 304
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public CredentialFieldInfo[] CredentialFields { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Api.CredentialFieldInfo[]
+    content.vb: Public Property CredentialFields As CredentialFieldInfo()
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+  id: SupportsOptions
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: SupportsOptions
+  nameWithType: ProviderCatalogEntry.SupportsOptions
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsOptions
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 305
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool SupportsOptions { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsOptions As Boolean
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+  id: SupportsBrokerage
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: SupportsBrokerage
+  nameWithType: ProviderCatalogEntry.SupportsBrokerage
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsBrokerage
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 306
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public bool SupportsBrokerage { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SupportsBrokerage As Boolean
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage*
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
+  commentId: P:Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
+  id: RequiredEnvVars
+  parent: Meridian.Ui.Services.Services.ProviderCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: RequiredEnvVars
+  nameWithType: ProviderCatalogEntry.RequiredEnvVars
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequiredEnvVars
+    path: ../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs
+    startLine: 308
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public string[] RequiredEnvVars { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property RequiredEnvVars As String()
+  overload: Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Services.Services.ProviderCatalogEntry}
+  commentId: T:System.IEquatable{Meridian.Ui.Services.Services.ProviderCatalogEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderCatalogEntry>
+  nameWithType: IEquatable<ProviderCatalogEntry>
+  fullName: System.IEquatable<Meridian.Ui.Services.Services.ProviderCatalogEntry>
+  nameWithType.vb: IEquatable(Of ProviderCatalogEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Services.Services.ProviderCatalogEntry)
+  name.vb: IEquatable(Of ProviderCatalogEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Services.Services.ProviderCatalogEntry
+    name: ProviderCatalogEntry
+    href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Services.ProviderCatalogEntry
+    name: ProviderCatalogEntry
+    href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.#ctor
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry__ctor_System_String_System_String_Meridian_Ui_Services_Services_ProviderTier_System_Boolean_System_Boolean_System_Boolean_System_String_System_Int32_Meridian_Contracts_Api_CredentialFieldInfo___System_Boolean_System_Boolean_
+  name: ProviderCatalogEntry
+  nameWithType: ProviderCatalogEntry.ProviderCatalogEntry
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.ProviderCatalogEntry
+  nameWithType.vb: ProviderCatalogEntry.New
+  fullName.vb: Meridian.Ui.Services.Services.ProviderCatalogEntry.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.ProviderTier
+  commentId: T:Meridian.Ui.Services.Services.ProviderTier
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.ProviderTier.html
+  name: ProviderTier
+  nameWithType: ProviderTier
+  fullName: Meridian.Ui.Services.Services.ProviderTier
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.CredentialFieldInfo[]
+  isExternal: true
+  href: Meridian.Contracts.Api.CredentialFieldInfo.html
+  name: CredentialFieldInfo[]
+  nameWithType: CredentialFieldInfo[]
+  fullName: Meridian.Contracts.Api.CredentialFieldInfo[]
+  nameWithType.vb: CredentialFieldInfo()
+  fullName.vb: Meridian.Contracts.Api.CredentialFieldInfo()
+  name.vb: CredentialFieldInfo()
+  spec.csharp:
+  - uid: Meridian.Contracts.Api.CredentialFieldInfo
+    name: CredentialFieldInfo
+    href: Meridian.Contracts.Api.CredentialFieldInfo.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Api.CredentialFieldInfo
+    name: CredentialFieldInfo
+    href: Meridian.Contracts.Api.CredentialFieldInfo.html
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.Id*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.Id
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_Id
+  name: Id
+  nameWithType: ProviderCatalogEntry.Id
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.Id
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.DisplayName*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.DisplayName
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_DisplayName
+  name: DisplayName
+  nameWithType: ProviderCatalogEntry.DisplayName
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.DisplayName
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.Tier*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.Tier
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_Tier
+  name: Tier
+  nameWithType: ProviderCatalogEntry.Tier
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.Tier
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsStreaming*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsStreaming
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_SupportsStreaming
+  name: SupportsStreaming
+  nameWithType: ProviderCatalogEntry.SupportsStreaming
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsStreaming
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsHistorical*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsHistorical
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_SupportsHistorical
+  name: SupportsHistorical
+  nameWithType: ProviderCatalogEntry.SupportsHistorical
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsHistorical
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsSymbolSearch*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsSymbolSearch
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_SupportsSymbolSearch
+  name: SupportsSymbolSearch
+  nameWithType: ProviderCatalogEntry.SupportsSymbolSearch
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsSymbolSearch
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.Description*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.Description
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_Description
+  name: Description
+  nameWithType: ProviderCatalogEntry.Description
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.Description
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.RateLimitPerMinute*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.RateLimitPerMinute
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_RateLimitPerMinute
+  name: RateLimitPerMinute
+  nameWithType: ProviderCatalogEntry.RateLimitPerMinute
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.RateLimitPerMinute
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_CredentialFields
+  name: CredentialFields
+  nameWithType: ProviderCatalogEntry.CredentialFields
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.CredentialFields
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_SupportsOptions
+  name: SupportsOptions
+  nameWithType: ProviderCatalogEntry.SupportsOptions
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsOptions
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_SupportsBrokerage
+  name: SupportsBrokerage
+  nameWithType: ProviderCatalogEntry.SupportsBrokerage
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.SupportsBrokerage
+- uid: Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars*
+  commentId: Overload:Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
+  href: Meridian.Ui.Services.Services.ProviderCatalogEntry.html#Meridian_Ui_Services_Services_ProviderCatalogEntry_RequiredEnvVars
+  name: RequiredEnvVars
+  nameWithType: ProviderCatalogEntry.RequiredEnvVars
+  fullName: Meridian.Ui.Services.Services.ProviderCatalogEntry.RequiredEnvVars
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )

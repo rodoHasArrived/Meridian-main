@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.TradeSide
+  commentId: T:Meridian.Ui.Services.TradeSide
+  id: TradeSide
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.TradeSide.Buy
+  - Meridian.Ui.Services.TradeSide.Sell
+  - Meridian.Ui.Services.TradeSide.Unknown
+  langs:
+  - csharp
+  - vb
+  name: TradeSide
+  nameWithType: TradeSide
+  fullName: Meridian.Ui.Services.TradeSide
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeSide
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 491
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Trade side indicator.
+  example: []
+  syntax:
+    content: 'public enum TradeSide : byte'
+    content.vb: Public Enum TradeSide As Byte
+- uid: Meridian.Ui.Services.TradeSide.Unknown
+  commentId: F:Meridian.Ui.Services.TradeSide.Unknown
+  id: Unknown
+  parent: Meridian.Ui.Services.TradeSide
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: TradeSide.Unknown
+  fullName: Meridian.Ui.Services.TradeSide.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 493
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Unknown = 0
+    return:
+      type: Meridian.Ui.Services.TradeSide
+- uid: Meridian.Ui.Services.TradeSide.Buy
+  commentId: F:Meridian.Ui.Services.TradeSide.Buy
+  id: Buy
+  parent: Meridian.Ui.Services.TradeSide
+  langs:
+  - csharp
+  - vb
+  name: Buy
+  nameWithType: TradeSide.Buy
+  fullName: Meridian.Ui.Services.TradeSide.Buy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Buy
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 494
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Buy = 1
+    return:
+      type: Meridian.Ui.Services.TradeSide
+- uid: Meridian.Ui.Services.TradeSide.Sell
+  commentId: F:Meridian.Ui.Services.TradeSide.Sell
+  id: Sell
+  parent: Meridian.Ui.Services.TradeSide
+  langs:
+  - csharp
+  - vb
+  name: Sell
+  nameWithType: TradeSide.Sell
+  fullName: Meridian.Ui.Services.TradeSide.Sell
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sell
+    path: ../../src/Meridian.Ui.Services/Services/OrderBookVisualizationService.cs
+    startLine: 495
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Sell = 2
+    return:
+      type: Meridian.Ui.Services.TradeSide
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.TradeSide
+  commentId: T:Meridian.Ui.Services.TradeSide
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TradeSide.html
+  name: TradeSide
+  nameWithType: TradeSide
+  fullName: Meridian.Ui.Services.TradeSide

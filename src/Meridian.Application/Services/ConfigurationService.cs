@@ -2,6 +2,7 @@ using Meridian.Application.Config;
 using Meridian.Application.Config.Credentials;
 using Meridian.Application.Logging;
 using Meridian.Application.UI;
+using Meridian.Contracts.Configuration;
 using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.AlphaVantage;
 using Meridian.Infrastructure.Adapters.Finnhub;
@@ -673,6 +674,11 @@ public sealed class ConfigurationService : IAsyncDisposable
             }
         }
 
+        config = config with
+        {
+            DataRoot = MeridianPathDefaults.ResolveDataRoot(configPath, config.DataRoot)
+        };
+
         return config;
     }
 
@@ -777,6 +783,7 @@ public sealed class ConfigurationService : IAsyncDisposable
             Symbols = overlay.Symbols?.Length > 0 ? overlay.Symbols : baseConfig.Symbols,
             Alpaca = overlay.Alpaca ?? baseConfig.Alpaca,
             IB = overlay.IB ?? baseConfig.IB,
+            IBClientPortal = overlay.IBClientPortal ?? baseConfig.IBClientPortal,
             Polygon = overlay.Polygon ?? baseConfig.Polygon,
             Storage = overlay.Storage ?? baseConfig.Storage,
             Backfill = overlay.Backfill ?? baseConfig.Backfill

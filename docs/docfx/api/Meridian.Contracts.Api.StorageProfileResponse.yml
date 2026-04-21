@@ -1,0 +1,549 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.StorageProfileResponse
+  commentId: T:Meridian.Contracts.Api.StorageProfileResponse
+  id: StorageProfileResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.StorageProfileResponse.#ctor(System.String,System.String,System.String)
+  - Meridian.Contracts.Api.StorageProfileResponse.Description
+  - Meridian.Contracts.Api.StorageProfileResponse.Label
+  - Meridian.Contracts.Api.StorageProfileResponse.Profile
+  langs:
+  - csharp
+  - vb
+  name: StorageProfileResponse
+  nameWithType: StorageProfileResponse
+  fullName: Meridian.Contracts.Api.StorageProfileResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageProfileResponse
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response for setting storage profiles.
+  example: []
+  syntax:
+    content: 'public sealed record StorageProfileResponse : IEquatable<StorageProfileResponse>'
+    content.vb: Public NotInheritable Class StorageProfileResponse Implements IEquatable(Of StorageProfileResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.StorageProfileResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.StorageProfileResponse.#ctor(System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.Api.StorageProfileResponse.#ctor(System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String)'
+  parent: Meridian.Contracts.Api.StorageProfileResponse
+  langs:
+  - csharp
+  - vb
+  name: StorageProfileResponse(string, string, string)
+  nameWithType: StorageProfileResponse.StorageProfileResponse(string, string, string)
+  fullName: Meridian.Contracts.Api.StorageProfileResponse.StorageProfileResponse(string, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response for setting storage profiles.
+  example: []
+  syntax:
+    content: public StorageProfileResponse(string Profile, string Label, string Description)
+    parameters:
+    - id: Profile
+      type: System.String
+    - id: Label
+      type: System.String
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(Profile As String, Label As String, Description As String)
+  overload: Meridian.Contracts.Api.StorageProfileResponse.#ctor*
+  nameWithType.vb: StorageProfileResponse.New(String, String, String)
+  fullName.vb: Meridian.Contracts.Api.StorageProfileResponse.New(String, String, String)
+  name.vb: New(String, String, String)
+- uid: Meridian.Contracts.Api.StorageProfileResponse.Profile
+  commentId: P:Meridian.Contracts.Api.StorageProfileResponse.Profile
+  id: Profile
+  parent: Meridian.Contracts.Api.StorageProfileResponse
+  langs:
+  - csharp
+  - vb
+  name: Profile
+  nameWithType: StorageProfileResponse.Profile
+  fullName: Meridian.Contracts.Api.StorageProfileResponse.Profile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Profile
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("profile")]
+
+      public string Profile { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("profile")>
+
+      Public Property Profile As String
+  overload: Meridian.Contracts.Api.StorageProfileResponse.Profile*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: profile
+- uid: Meridian.Contracts.Api.StorageProfileResponse.Label
+  commentId: P:Meridian.Contracts.Api.StorageProfileResponse.Label
+  id: Label
+  parent: Meridian.Contracts.Api.StorageProfileResponse
+  langs:
+  - csharp
+  - vb
+  name: Label
+  nameWithType: StorageProfileResponse.Label
+  fullName: Meridian.Contracts.Api.StorageProfileResponse.Label
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Label
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("label")]
+
+      public string Label { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("label")>
+
+      Public Property Label As String
+  overload: Meridian.Contracts.Api.StorageProfileResponse.Label*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: label
+- uid: Meridian.Contracts.Api.StorageProfileResponse.Description
+  commentId: P:Meridian.Contracts.Api.StorageProfileResponse.Description
+  id: Description
+  parent: Meridian.Contracts.Api.StorageProfileResponse
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: StorageProfileResponse.Description
+  fullName: Meridian.Contracts.Api.StorageProfileResponse.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Contracts.Api.StorageProfileResponse.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.StorageProfileResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.StorageProfileResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StorageProfileResponse>
+  nameWithType: IEquatable<StorageProfileResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.StorageProfileResponse>
+  nameWithType.vb: IEquatable(Of StorageProfileResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.StorageProfileResponse)
+  name.vb: IEquatable(Of StorageProfileResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.StorageProfileResponse
+    name: StorageProfileResponse
+    href: Meridian.Contracts.Api.StorageProfileResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.StorageProfileResponse
+    name: StorageProfileResponse
+    href: Meridian.Contracts.Api.StorageProfileResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.StorageProfileResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.StorageProfileResponse.#ctor
+  href: Meridian.Contracts.Api.StorageProfileResponse.html#Meridian_Contracts_Api_StorageProfileResponse__ctor_System_String_System_String_System_String_
+  name: StorageProfileResponse
+  nameWithType: StorageProfileResponse.StorageProfileResponse
+  fullName: Meridian.Contracts.Api.StorageProfileResponse.StorageProfileResponse
+  nameWithType.vb: StorageProfileResponse.New
+  fullName.vb: Meridian.Contracts.Api.StorageProfileResponse.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.StorageProfileResponse.Profile*
+  commentId: Overload:Meridian.Contracts.Api.StorageProfileResponse.Profile
+  href: Meridian.Contracts.Api.StorageProfileResponse.html#Meridian_Contracts_Api_StorageProfileResponse_Profile
+  name: Profile
+  nameWithType: StorageProfileResponse.Profile
+  fullName: Meridian.Contracts.Api.StorageProfileResponse.Profile
+- uid: Meridian.Contracts.Api.StorageProfileResponse.Label*
+  commentId: Overload:Meridian.Contracts.Api.StorageProfileResponse.Label
+  href: Meridian.Contracts.Api.StorageProfileResponse.html#Meridian_Contracts_Api_StorageProfileResponse_Label
+  name: Label
+  nameWithType: StorageProfileResponse.Label
+  fullName: Meridian.Contracts.Api.StorageProfileResponse.Label
+- uid: Meridian.Contracts.Api.StorageProfileResponse.Description*
+  commentId: Overload:Meridian.Contracts.Api.StorageProfileResponse.Description
+  href: Meridian.Contracts.Api.StorageProfileResponse.html#Meridian_Contracts_Api_StorageProfileResponse_Description
+  name: Description
+  nameWithType: StorageProfileResponse.Description
+  fullName: Meridian.Contracts.Api.StorageProfileResponse.Description

@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.InsightSeverity
+  commentId: T:Meridian.Storage.Services.InsightSeverity
+  id: InsightSeverity
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.InsightSeverity.Critical
+  - Meridian.Storage.Services.InsightSeverity.Info
+  - Meridian.Storage.Services.InsightSeverity.Notable
+  - Meridian.Storage.Services.InsightSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: InsightSeverity
+  nameWithType: InsightSeverity
+  fullName: Meridian.Storage.Services.InsightSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsightSeverity
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 463
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Severity level for data insights.
+  example: []
+  syntax:
+    content: 'public enum InsightSeverity : byte'
+    content.vb: Public Enum InsightSeverity As Byte
+- uid: Meridian.Storage.Services.InsightSeverity.Info
+  commentId: F:Meridian.Storage.Services.InsightSeverity.Info
+  id: Info
+  parent: Meridian.Storage.Services.InsightSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: InsightSeverity.Info
+  fullName: Meridian.Storage.Services.InsightSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 465
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Storage.Services.InsightSeverity
+- uid: Meridian.Storage.Services.InsightSeverity.Notable
+  commentId: F:Meridian.Storage.Services.InsightSeverity.Notable
+  id: Notable
+  parent: Meridian.Storage.Services.InsightSeverity
+  langs:
+  - csharp
+  - vb
+  name: Notable
+  nameWithType: InsightSeverity.Notable
+  fullName: Meridian.Storage.Services.InsightSeverity.Notable
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notable
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 466
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Notable = 1
+    return:
+      type: Meridian.Storage.Services.InsightSeverity
+- uid: Meridian.Storage.Services.InsightSeverity.Warning
+  commentId: F:Meridian.Storage.Services.InsightSeverity.Warning
+  id: Warning
+  parent: Meridian.Storage.Services.InsightSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: InsightSeverity.Warning
+  fullName: Meridian.Storage.Services.InsightSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 467
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Warning = 2
+    return:
+      type: Meridian.Storage.Services.InsightSeverity
+- uid: Meridian.Storage.Services.InsightSeverity.Critical
+  commentId: F:Meridian.Storage.Services.InsightSeverity.Critical
+  id: Critical
+  parent: Meridian.Storage.Services.InsightSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: InsightSeverity.Critical
+  fullName: Meridian.Storage.Services.InsightSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MetadataTagService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Storage/Services/MetadataTagService.cs
+    startLine: 468
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Critical = 3
+    return:
+      type: Meridian.Storage.Services.InsightSeverity
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.InsightSeverity
+  commentId: T:Meridian.Storage.Services.InsightSeverity
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.InsightSeverity.html
+  name: InsightSeverity
+  nameWithType: InsightSeverity
+  fullName: Meridian.Storage.Services.InsightSeverity

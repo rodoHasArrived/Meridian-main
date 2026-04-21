@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.YahooFinance
+  commentId: N:Meridian.Infrastructure.Adapters.YahooFinance
+  id: Meridian.Infrastructure.Adapters.YahooFinance
+  children:
+  - Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.YahooFinance
+  nameWithType: Meridian.Infrastructure.Adapters.YahooFinance
+  fullName: Meridian.Infrastructure.Adapters.YahooFinance
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider.html
+  name: YahooFinanceHistoricalDataProvider
+  nameWithType: YahooFinanceHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.YahooFinance.YahooFinanceHistoricalDataProvider

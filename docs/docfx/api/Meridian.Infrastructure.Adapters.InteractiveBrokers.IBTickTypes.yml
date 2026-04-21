@@ -1,0 +1,1335 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  id: IBTickTypes
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AskPrice
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AskSize
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionImbalance
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionPrice
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionVolume
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.BidPrice
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.BidSize
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ClosePrice
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Dividends
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Halted
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.High
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.HistoricalVolatility
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ImpliedVolatility
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastPrice
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastRTHTrade
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastSize
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastTimestamp
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Low
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.MarkPrice
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Open
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionCallOpenInterest
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionCallVolume
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionPutOpenInterest
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionPutVolume
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTHistoricalVolatility
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTTradeVolume
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTVolume
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume10Min
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume3Min
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume5Min
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Shortable
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortableShares
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.TradeCount
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.TradeRate
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Volume
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.VolumeRate
+  langs:
+  - csharp
+  - vb
+  name: IBTickTypes
+  nameWithType: IBTickTypes
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBTickTypes
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Standard tick type IDs returned by reqMktData without genericTickList.
+  example: []
+  syntax:
+    content: public static class IBTickTypes
+    content.vb: Public Module IBTickTypes
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.BidSize
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.BidSize
+  id: BidSize
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: BidSize
+  nameWithType: IBTickTypes.BidSize
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.BidSize
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidSize
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int BidSize = 0
+    return:
+      type: System.Int32
+    content.vb: Public Const BidSize As Integer = 0
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.BidPrice
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.BidPrice
+  id: BidPrice
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: BidPrice
+  nameWithType: IBTickTypes.BidPrice
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.BidPrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidPrice
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int BidPrice = 1
+    return:
+      type: System.Int32
+    content.vb: Public Const BidPrice As Integer = 1
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AskPrice
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AskPrice
+  id: AskPrice
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: AskPrice
+  nameWithType: IBTickTypes.AskPrice
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AskPrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskPrice
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int AskPrice = 2
+    return:
+      type: System.Int32
+    content.vb: Public Const AskPrice As Integer = 2
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AskSize
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AskSize
+  id: AskSize
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: AskSize
+  nameWithType: IBTickTypes.AskSize
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AskSize
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskSize
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int AskSize = 3
+    return:
+      type: System.Int32
+    content.vb: Public Const AskSize As Integer = 3
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastPrice
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastPrice
+  id: LastPrice
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: LastPrice
+  nameWithType: IBTickTypes.LastPrice
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastPrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastPrice
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int LastPrice = 4
+    return:
+      type: System.Int32
+    content.vb: Public Const LastPrice As Integer = 4
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastSize
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastSize
+  id: LastSize
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: LastSize
+  nameWithType: IBTickTypes.LastSize
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastSize
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastSize
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int LastSize = 5
+    return:
+      type: System.Int32
+    content.vb: Public Const LastSize As Integer = 5
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.High
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.High
+  id: High
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: IBTickTypes.High
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int High = 6
+    return:
+      type: System.Int32
+    content.vb: Public Const High As Integer = 6
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Low
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Low
+  id: Low
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: IBTickTypes.Low
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int Low = 7
+    return:
+      type: System.Int32
+    content.vb: Public Const Low As Integer = 7
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Volume
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Volume
+  id: Volume
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: Volume
+  nameWithType: IBTickTypes.Volume
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Volume
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Volume
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int Volume = 8
+    return:
+      type: System.Int32
+    content.vb: Public Const Volume As Integer = 8
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ClosePrice
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ClosePrice
+  id: ClosePrice
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: ClosePrice
+  nameWithType: IBTickTypes.ClosePrice
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ClosePrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClosePrice
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int ClosePrice = 9
+    return:
+      type: System.Int32
+    content.vb: Public Const ClosePrice As Integer = 9
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Open
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Open
+  id: Open
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: Open
+  nameWithType: IBTickTypes.Open
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Open
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Open
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int Open = 14
+    return:
+      type: System.Int32
+    content.vb: Public Const Open As Integer = 14
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastTimestamp
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastTimestamp
+  id: LastTimestamp
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: LastTimestamp
+  nameWithType: IBTickTypes.LastTimestamp
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastTimestamp
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastTimestamp
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int LastTimestamp = 45
+    return:
+      type: System.Int32
+    content.vb: Public Const LastTimestamp As Integer = 45
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Halted
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Halted
+  id: Halted
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: Halted
+  nameWithType: IBTickTypes.Halted
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Halted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Halted
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int Halted = 49
+    return:
+      type: System.Int32
+    content.vb: Public Const Halted As Integer = 49
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.HistoricalVolatility
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.HistoricalVolatility
+  id: HistoricalVolatility
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: HistoricalVolatility
+  nameWithType: IBTickTypes.HistoricalVolatility
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.HistoricalVolatility
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalVolatility
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int HistoricalVolatility = 23
+    return:
+      type: System.Int32
+    content.vb: Public Const HistoricalVolatility As Integer = 23
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ImpliedVolatility
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ImpliedVolatility
+  id: ImpliedVolatility
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: ImpliedVolatility
+  nameWithType: IBTickTypes.ImpliedVolatility
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ImpliedVolatility
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImpliedVolatility
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int ImpliedVolatility = 24
+    return:
+      type: System.Int32
+    content.vb: Public Const ImpliedVolatility As Integer = 24
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionCallOpenInterest
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionCallOpenInterest
+  id: OptionCallOpenInterest
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: OptionCallOpenInterest
+  nameWithType: IBTickTypes.OptionCallOpenInterest
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionCallOpenInterest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionCallOpenInterest
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int OptionCallOpenInterest = 27
+    return:
+      type: System.Int32
+    content.vb: Public Const OptionCallOpenInterest As Integer = 27
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionPutOpenInterest
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionPutOpenInterest
+  id: OptionPutOpenInterest
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: OptionPutOpenInterest
+  nameWithType: IBTickTypes.OptionPutOpenInterest
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionPutOpenInterest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionPutOpenInterest
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int OptionPutOpenInterest = 28
+    return:
+      type: System.Int32
+    content.vb: Public Const OptionPutOpenInterest As Integer = 28
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionCallVolume
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionCallVolume
+  id: OptionCallVolume
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: OptionCallVolume
+  nameWithType: IBTickTypes.OptionCallVolume
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionCallVolume
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionCallVolume
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int OptionCallVolume = 29
+    return:
+      type: System.Int32
+    content.vb: Public Const OptionCallVolume As Integer = 29
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionPutVolume
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionPutVolume
+  id: OptionPutVolume
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: OptionPutVolume
+  nameWithType: IBTickTypes.OptionPutVolume
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.OptionPutVolume
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionPutVolume
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int OptionPutVolume = 30
+    return:
+      type: System.Int32
+    content.vb: Public Const OptionPutVolume As Integer = 30
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionVolume
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionVolume
+  id: AuctionVolume
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: AuctionVolume
+  nameWithType: IBTickTypes.AuctionVolume
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionVolume
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuctionVolume
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int AuctionVolume = 34
+    return:
+      type: System.Int32
+    content.vb: Public Const AuctionVolume As Integer = 34
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionPrice
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionPrice
+  id: AuctionPrice
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: AuctionPrice
+  nameWithType: IBTickTypes.AuctionPrice
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionPrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuctionPrice
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int AuctionPrice = 35
+    return:
+      type: System.Int32
+    content.vb: Public Const AuctionPrice As Integer = 35
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionImbalance
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionImbalance
+  id: AuctionImbalance
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: AuctionImbalance
+  nameWithType: IBTickTypes.AuctionImbalance
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.AuctionImbalance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuctionImbalance
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int AuctionImbalance = 36
+    return:
+      type: System.Int32
+    content.vb: Public Const AuctionImbalance As Integer = 36
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.MarkPrice
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.MarkPrice
+  id: MarkPrice
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: MarkPrice
+  nameWithType: IBTickTypes.MarkPrice
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.MarkPrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkPrice
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int MarkPrice = 37
+    return:
+      type: System.Int32
+    content.vb: Public Const MarkPrice As Integer = 37
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Shortable
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Shortable
+  id: Shortable
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: Shortable
+  nameWithType: IBTickTypes.Shortable
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Shortable
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Shortable
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int Shortable = 46
+    return:
+      type: System.Int32
+    content.vb: Public Const Shortable As Integer = 46
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTVolume
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTVolume
+  id: RTVolume
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: RTVolume
+  nameWithType: IBTickTypes.RTVolume
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTVolume
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RTVolume
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int RTVolume = 48
+    return:
+      type: System.Int32
+    content.vb: Public Const RTVolume As Integer = 48
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.TradeCount
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.TradeCount
+  id: TradeCount
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: TradeCount
+  nameWithType: IBTickTypes.TradeCount
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.TradeCount
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeCount
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int TradeCount = 54
+    return:
+      type: System.Int32
+    content.vb: Public Const TradeCount As Integer = 54
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.TradeRate
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.TradeRate
+  id: TradeRate
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: TradeRate
+  nameWithType: IBTickTypes.TradeRate
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.TradeRate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeRate
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int TradeRate = 55
+    return:
+      type: System.Int32
+    content.vb: Public Const TradeRate As Integer = 55
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.VolumeRate
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.VolumeRate
+  id: VolumeRate
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: VolumeRate
+  nameWithType: IBTickTypes.VolumeRate
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.VolumeRate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolumeRate
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int VolumeRate = 56
+    return:
+      type: System.Int32
+    content.vb: Public Const VolumeRate As Integer = 56
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastRTHTrade
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastRTHTrade
+  id: LastRTHTrade
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: LastRTHTrade
+  nameWithType: IBTickTypes.LastRTHTrade
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.LastRTHTrade
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastRTHTrade
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int LastRTHTrade = 57
+    return:
+      type: System.Int32
+    content.vb: Public Const LastRTHTrade As Integer = 57
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTHistoricalVolatility
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTHistoricalVolatility
+  id: RTHistoricalVolatility
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: RTHistoricalVolatility
+  nameWithType: IBTickTypes.RTHistoricalVolatility
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTHistoricalVolatility
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RTHistoricalVolatility
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int RTHistoricalVolatility = 58
+    return:
+      type: System.Int32
+    content.vb: Public Const RTHistoricalVolatility As Integer = 58
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Dividends
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Dividends
+  id: Dividends
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: Dividends
+  nameWithType: IBTickTypes.Dividends
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.Dividends
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dividends
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int Dividends = 59
+    return:
+      type: System.Int32
+    content.vb: Public Const Dividends As Integer = 59
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume3Min
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume3Min
+  id: ShortTermVolume3Min
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: ShortTermVolume3Min
+  nameWithType: IBTickTypes.ShortTermVolume3Min
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume3Min
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortTermVolume3Min
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int ShortTermVolume3Min = 63
+    return:
+      type: System.Int32
+    content.vb: Public Const ShortTermVolume3Min As Integer = 63
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume5Min
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume5Min
+  id: ShortTermVolume5Min
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: ShortTermVolume5Min
+  nameWithType: IBTickTypes.ShortTermVolume5Min
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume5Min
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortTermVolume5Min
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int ShortTermVolume5Min = 64
+    return:
+      type: System.Int32
+    content.vb: Public Const ShortTermVolume5Min As Integer = 64
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume10Min
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume10Min
+  id: ShortTermVolume10Min
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: ShortTermVolume10Min
+  nameWithType: IBTickTypes.ShortTermVolume10Min
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortTermVolume10Min
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortTermVolume10Min
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int ShortTermVolume10Min = 65
+    return:
+      type: System.Int32
+    content.vb: Public Const ShortTermVolume10Min As Integer = 65
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTTradeVolume
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTTradeVolume
+  id: RTTradeVolume
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: RTTradeVolume
+  nameWithType: IBTickTypes.RTTradeVolume
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.RTTradeVolume
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RTTradeVolume
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int RTTradeVolume = 77
+    return:
+      type: System.Int32
+    content.vb: Public Const RTTradeVolume As Integer = 77
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortableShares
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortableShares
+  id: ShortableShares
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes
+  langs:
+  - csharp
+  - vb
+  name: ShortableShares
+  nameWithType: IBTickTypes.ShortableShares
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBTickTypes.ShortableShares
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortableShares
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: public const int ShortableShares = 89
+    return:
+      type: System.Int32
+    content.vb: Public Const ShortableShares As Integer = 89
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

@@ -1,0 +1,174 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.IEventValidator
+  commentId: T:Meridian.Application.Pipeline.IEventValidator
+  id: IEventValidator
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+  langs:
+  - csharp
+  - vb
+  name: IEventValidator
+  nameWithType: IEventValidator
+  fullName: Meridian.Application.Pipeline.IEventValidator
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IEventValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IEventValidator
+    path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Validates <xref href="Meridian.Domain.Events.MarketEvent" data-throw-if-not-resolved="false"></xref> instances before they are persisted to the WAL or
+
+    storage sinks. Implementations should be stateless and thread-safe so they can be
+
+    invoked concurrently from the pipeline consumer.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-007", "Event validation gate before WAL/sink persistence")]
+
+      public interface IEventValidator
+    content.vb: >-
+      <ImplementsAdr("ADR-007", "Event validation gate before WAL/sink persistence")>
+
+      Public Interface IEventValidator
+  derivedClasses:
+  - Meridian.Application.Pipeline.FSharpEventValidator
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-007
+    - type: System.String
+      value: Event validation gate before WAL/sink persistence
+- uid: Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent@)
+  id: Validate(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Application.Pipeline.IEventValidator
+  langs:
+  - csharp
+  - vb
+  name: Validate(in MarketEvent)
+  nameWithType: IEventValidator.Validate(in MarketEvent)
+  fullName: Meridian.Application.Pipeline.IEventValidator.Validate(in Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/IEventValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validate
+    path: ../../src/Meridian.Application/Pipeline/IEventValidator.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Validates a market event and returns a result indicating whether the event is
+
+    acceptable for persistence. Invalid events should be routed to a dead-letter sink.
+  example: []
+  syntax:
+    content: ValidationResult Validate(in MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+      description: The market event to validate (passed by readonly reference for zero-copy).
+    return:
+      type: Meridian.Application.Pipeline.ValidationResult
+      description: A <xref href="Meridian.Application.Pipeline.ValidationResult" data-throw-if-not-resolved="false"></xref> describing validity and any errors.
+    content.vb: Function Validate(evt As MarketEvent) As ValidationResult
+  overload: Meridian.Application.Pipeline.IEventValidator.Validate*
+  nameWithType.vb: IEventValidator.Validate(MarketEvent)
+  fullName.vb: Meridian.Application.Pipeline.IEventValidator.Validate(Meridian.Domain.Events.MarketEvent)
+  name.vb: Validate(MarketEvent)
+references:
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Application.Pipeline.ValidationResult
+  commentId: T:Meridian.Application.Pipeline.ValidationResult
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.ValidationResult.html
+  name: ValidationResult
+  nameWithType: ValidationResult
+  fullName: Meridian.Application.Pipeline.ValidationResult
+- uid: Meridian.Application.Pipeline.IEventValidator.Validate*
+  commentId: Overload:Meridian.Application.Pipeline.IEventValidator.Validate
+  href: Meridian.Application.Pipeline.IEventValidator.html#Meridian_Application_Pipeline_IEventValidator_Validate_Meridian_Domain_Events_MarketEvent__
+  name: Validate
+  nameWithType: IEventValidator.Validate
+  fullName: Meridian.Application.Pipeline.IEventValidator.Validate

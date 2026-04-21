@@ -1,0 +1,703 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.McpServer.Tools.BackfillTools
+  commentId: T:Meridian.McpServer.Tools.BackfillTools
+  id: BackfillTools
+  parent: Meridian.McpServer.Tools
+  children:
+  - Meridian.McpServer.Tools.BackfillTools.#ctor(Meridian.Application.UI.BackfillCoordinator,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.BackfillTools})
+  - Meridian.McpServer.Tools.BackfillTools.RunBackfill(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BackfillTools
+  nameWithType: BackfillTools
+  fullName: Meridian.McpServer.Tools.BackfillTools
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/BackfillTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillTools
+    path: ../../src/Meridian.McpServer/Tools/BackfillTools.cs
+    startLine: 8
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  summary: MCP tools for running and inspecting historical data backfill operations.
+  example: []
+  syntax:
+    content: >-
+      [McpServerToolType]
+
+      [ImplementsAdr("ADR-001", "Wraps BackfillCoordinator for MCP-initiated backfill")]
+
+      [ImplementsAdr("ADR-004", "All async methods accept CancellationToken")]
+
+      public sealed class BackfillTools
+    content.vb: >-
+      <McpServerToolType>
+
+      <ImplementsAdr("ADR-001", "Wraps BackfillCoordinator for MCP-initiated backfill")>
+
+      <ImplementsAdr("ADR-004", "All async methods accept CancellationToken")>
+
+      Public NotInheritable Class BackfillTools
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolTypeAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolTypeAttribute.#ctor
+    arguments: []
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Wraps BackfillCoordinator for MCP-initiated backfill
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods accept CancellationToken
+- uid: Meridian.McpServer.Tools.BackfillTools.#ctor(Meridian.Application.UI.BackfillCoordinator,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.BackfillTools})
+  commentId: M:Meridian.McpServer.Tools.BackfillTools.#ctor(Meridian.Application.UI.BackfillCoordinator,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.BackfillTools})
+  id: '#ctor(Meridian.Application.UI.BackfillCoordinator,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.BackfillTools})'
+  parent: Meridian.McpServer.Tools.BackfillTools
+  langs:
+  - csharp
+  - vb
+  name: BackfillTools(BackfillCoordinator, ILogger<BackfillTools>)
+  nameWithType: BackfillTools.BackfillTools(BackfillCoordinator, ILogger<BackfillTools>)
+  fullName: Meridian.McpServer.Tools.BackfillTools.BackfillTools(Meridian.Application.UI.BackfillCoordinator, Microsoft.Extensions.Logging.ILogger<Meridian.McpServer.Tools.BackfillTools>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/BackfillTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.McpServer/Tools/BackfillTools.cs
+    startLine: 26
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  summary: Initialises with the composition-root-supplied <xref href="Meridian.Application.UI.BackfillCoordinator" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public BackfillTools(BackfillCoordinator coordinator, ILogger<BackfillTools> log)
+    parameters:
+    - id: coordinator
+      type: Meridian.Application.UI.BackfillCoordinator
+    - id: log
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.BackfillTools}
+    content.vb: Public Sub New(coordinator As BackfillCoordinator, log As ILogger(Of BackfillTools))
+  overload: Meridian.McpServer.Tools.BackfillTools.#ctor*
+  nameWithType.vb: BackfillTools.New(BackfillCoordinator, ILogger(Of BackfillTools))
+  fullName.vb: Meridian.McpServer.Tools.BackfillTools.New(Meridian.Application.UI.BackfillCoordinator, Microsoft.Extensions.Logging.ILogger(Of Meridian.McpServer.Tools.BackfillTools))
+  name.vb: New(BackfillCoordinator, ILogger(Of BackfillTools))
+- uid: Meridian.McpServer.Tools.BackfillTools.RunBackfill(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.McpServer.Tools.BackfillTools.RunBackfill(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: RunBackfill(System.String,System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.McpServer.Tools.BackfillTools
+  langs:
+  - csharp
+  - vb
+  name: RunBackfill(string, string, string?, string?, CancellationToken)
+  nameWithType: BackfillTools.RunBackfill(string, string, string?, string?, CancellationToken)
+  fullName: Meridian.McpServer.Tools.BackfillTools.RunBackfill(string, string, string?, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/BackfillTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunBackfill
+    path: ../../src/Meridian.McpServer/Tools/BackfillTools.cs
+    startLine: 35
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  summary: Executes a historical data backfill and returns the result as JSON.
+  example: []
+  syntax:
+    content: >-
+      [McpServerTool]
+
+      public Task<string> RunBackfill(string symbols, string provider = "stooq", string? from = null, string? to = null, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.String
+    - id: provider
+      type: System.String
+    - id: from
+      type: System.String
+    - id: to
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: >-
+      <McpServerTool>
+
+      Public Function RunBackfill(symbols As String, provider As String = "stooq", from As String = Nothing, [to] As String = Nothing, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.McpServer.Tools.BackfillTools.RunBackfill*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+  nameWithType.vb: BackfillTools.RunBackfill(String, String, String, String, CancellationToken)
+  fullName.vb: Meridian.McpServer.Tools.BackfillTools.RunBackfill(String, String, String, String, System.Threading.CancellationToken)
+  name.vb: RunBackfill(String, String, String, String, CancellationToken)
+references:
+- uid: Meridian.McpServer.Tools
+  commentId: N:Meridian.McpServer.Tools
+  href: Meridian.html
+  name: Meridian.McpServer.Tools
+  nameWithType: Meridian.McpServer.Tools
+  fullName: Meridian.McpServer.Tools
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Tools
+    name: Tools
+    href: Meridian.McpServer.Tools.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Tools
+    name: Tools
+    href: Meridian.McpServer.Tools.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.UI.BackfillCoordinator
+  commentId: T:Meridian.Application.UI.BackfillCoordinator
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.BackfillCoordinator.html
+  name: BackfillCoordinator
+  nameWithType: BackfillCoordinator
+  fullName: Meridian.Application.UI.BackfillCoordinator
+- uid: Meridian.McpServer.Tools.BackfillTools.#ctor*
+  commentId: Overload:Meridian.McpServer.Tools.BackfillTools.#ctor
+  href: Meridian.McpServer.Tools.BackfillTools.html#Meridian_McpServer_Tools_BackfillTools__ctor_Meridian_Application_UI_BackfillCoordinator_Microsoft_Extensions_Logging_ILogger_Meridian_McpServer_Tools_BackfillTools__
+  name: BackfillTools
+  nameWithType: BackfillTools.BackfillTools
+  fullName: Meridian.McpServer.Tools.BackfillTools.BackfillTools
+  nameWithType.vb: BackfillTools.New
+  fullName.vb: Meridian.McpServer.Tools.BackfillTools.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.BackfillTools}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.BackfillTools}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<BackfillTools>
+  nameWithType: ILogger<BackfillTools>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.McpServer.Tools.BackfillTools>
+  nameWithType.vb: ILogger(Of BackfillTools)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.McpServer.Tools.BackfillTools)
+  name.vb: ILogger(Of BackfillTools)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.McpServer.Tools.BackfillTools
+    name: BackfillTools
+    href: Meridian.McpServer.Tools.BackfillTools.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.McpServer.Tools.BackfillTools
+    name: BackfillTools
+    href: Meridian.McpServer.Tools.BackfillTools.html
+  - name: )
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.McpServer.Tools.BackfillTools.RunBackfill*
+  commentId: Overload:Meridian.McpServer.Tools.BackfillTools.RunBackfill
+  href: Meridian.McpServer.Tools.BackfillTools.html#Meridian_McpServer_Tools_BackfillTools_RunBackfill_System_String_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: RunBackfill
+  nameWithType: BackfillTools.RunBackfill
+  fullName: Meridian.McpServer.Tools.BackfillTools.RunBackfill
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

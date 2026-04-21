@@ -1,0 +1,1166 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.OAuthRefreshService
+  commentId: T:Meridian.Ui.Services.OAuthRefreshService
+  id: OAuthRefreshService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.OAuthRefreshService.CheckIntervalMs
+  - Meridian.Ui.Services.OAuthRefreshService.Dispose
+  - Meridian.Ui.Services.OAuthRefreshService.GetTokenStatuses
+  - Meridian.Ui.Services.OAuthRefreshService.Instance
+  - Meridian.Ui.Services.OAuthRefreshService.RefreshThresholdMinutes
+  - Meridian.Ui.Services.OAuthRefreshService.RefreshTokenAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.OAuthRefreshService.SetAutoRefreshAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.OAuthRefreshService.Start
+  - Meridian.Ui.Services.OAuthRefreshService.Stop
+  - Meridian.Ui.Services.OAuthRefreshService.TokenExpirationWarning
+  - Meridian.Ui.Services.OAuthRefreshService.TokenRefreshFailed
+  - Meridian.Ui.Services.OAuthRefreshService.TokenRefreshed
+  langs:
+  - csharp
+  - vb
+  name: OAuthRefreshService
+  nameWithType: OAuthRefreshService
+  fullName: Meridian.Ui.Services.OAuthRefreshService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OAuthRefreshService
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Background service that automatically refreshes OAuth tokens before they expire.
+
+    Monitors credential metadata and proactively refreshes tokens based on configured thresholds.
+  example: []
+  syntax:
+    content: 'public sealed class OAuthRefreshService : IDisposable'
+    content.vb: Public NotInheritable Class OAuthRefreshService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.OAuthRefreshService.Instance
+  commentId: P:Meridian.Ui.Services.OAuthRefreshService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: OAuthRefreshService.Instance
+  fullName: Meridian.Ui.Services.OAuthRefreshService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the singleton instance of the OAuth refresh service.
+  example: []
+  syntax:
+    content: public static OAuthRefreshService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.OAuthRefreshService
+    content.vb: Public Shared ReadOnly Property Instance As OAuthRefreshService
+  overload: Meridian.Ui.Services.OAuthRefreshService.Instance*
+- uid: Meridian.Ui.Services.OAuthRefreshService.RefreshThresholdMinutes
+  commentId: P:Meridian.Ui.Services.OAuthRefreshService.RefreshThresholdMinutes
+  id: RefreshThresholdMinutes
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: RefreshThresholdMinutes
+  nameWithType: OAuthRefreshService.RefreshThresholdMinutes
+  fullName: Meridian.Ui.Services.OAuthRefreshService.RefreshThresholdMinutes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RefreshThresholdMinutes
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Default refresh threshold in minutes before token expiration.
+  example: []
+  syntax:
+    content: public int RefreshThresholdMinutes { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RefreshThresholdMinutes As Integer
+  overload: Meridian.Ui.Services.OAuthRefreshService.RefreshThresholdMinutes*
+- uid: Meridian.Ui.Services.OAuthRefreshService.CheckIntervalMs
+  commentId: P:Meridian.Ui.Services.OAuthRefreshService.CheckIntervalMs
+  id: CheckIntervalMs
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: CheckIntervalMs
+  nameWithType: OAuthRefreshService.CheckIntervalMs
+  fullName: Meridian.Ui.Services.OAuthRefreshService.CheckIntervalMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckIntervalMs
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Interval between expiration checks in milliseconds.
+  example: []
+  syntax:
+    content: public int CheckIntervalMs { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CheckIntervalMs As Integer
+  overload: Meridian.Ui.Services.OAuthRefreshService.CheckIntervalMs*
+- uid: Meridian.Ui.Services.OAuthRefreshService.TokenRefreshed
+  commentId: E:Meridian.Ui.Services.OAuthRefreshService.TokenRefreshed
+  id: TokenRefreshed
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: TokenRefreshed
+  nameWithType: OAuthRefreshService.TokenRefreshed
+  fullName: Meridian.Ui.Services.OAuthRefreshService.TokenRefreshed
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TokenRefreshed
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a token is successfully refreshed.
+  example: []
+  syntax:
+    content: public event EventHandler<TokenRefreshEventArgs>? TokenRefreshed
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.TokenRefreshEventArgs}
+    content.vb: Public Event TokenRefreshed As EventHandler(Of TokenRefreshEventArgs)
+- uid: Meridian.Ui.Services.OAuthRefreshService.TokenRefreshFailed
+  commentId: E:Meridian.Ui.Services.OAuthRefreshService.TokenRefreshFailed
+  id: TokenRefreshFailed
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: TokenRefreshFailed
+  nameWithType: OAuthRefreshService.TokenRefreshFailed
+  fullName: Meridian.Ui.Services.OAuthRefreshService.TokenRefreshFailed
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TokenRefreshFailed
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a token refresh fails.
+  example: []
+  syntax:
+    content: public event EventHandler<TokenRefreshFailedEventArgs>? TokenRefreshFailed
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.TokenRefreshFailedEventArgs}
+    content.vb: Public Event TokenRefreshFailed As EventHandler(Of TokenRefreshFailedEventArgs)
+- uid: Meridian.Ui.Services.OAuthRefreshService.TokenExpirationWarning
+  commentId: E:Meridian.Ui.Services.OAuthRefreshService.TokenExpirationWarning
+  id: TokenExpirationWarning
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: TokenExpirationWarning
+  nameWithType: OAuthRefreshService.TokenExpirationWarning
+  fullName: Meridian.Ui.Services.OAuthRefreshService.TokenExpirationWarning
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TokenExpirationWarning
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a token is about to expire and cannot be auto-refreshed.
+  example: []
+  syntax:
+    content: public event EventHandler<TokenExpirationWarningEventArgs>? TokenExpirationWarning
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.TokenExpirationWarningEventArgs}
+    content.vb: Public Event TokenExpirationWarning As EventHandler(Of TokenExpirationWarningEventArgs)
+- uid: Meridian.Ui.Services.OAuthRefreshService.Start
+  commentId: M:Meridian.Ui.Services.OAuthRefreshService.Start
+  id: Start
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: Start()
+  nameWithType: OAuthRefreshService.Start()
+  fullName: Meridian.Ui.Services.OAuthRefreshService.Start()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Starts the automatic OAuth token refresh service.
+  example: []
+  syntax:
+    content: public void Start()
+    content.vb: Public Sub Start()
+  overload: Meridian.Ui.Services.OAuthRefreshService.Start*
+- uid: Meridian.Ui.Services.OAuthRefreshService.Stop
+  commentId: M:Meridian.Ui.Services.OAuthRefreshService.Stop
+  id: Stop
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: Stop()
+  nameWithType: OAuthRefreshService.Stop()
+  fullName: Meridian.Ui.Services.OAuthRefreshService.Stop()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stop
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Stops the automatic OAuth token refresh service.
+  example: []
+  syntax:
+    content: public void Stop()
+    content.vb: Public Sub [Stop]()
+  overload: Meridian.Ui.Services.OAuthRefreshService.Stop*
+- uid: Meridian.Ui.Services.OAuthRefreshService.GetTokenStatuses
+  commentId: M:Meridian.Ui.Services.OAuthRefreshService.GetTokenStatuses
+  id: GetTokenStatuses
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: GetTokenStatuses()
+  nameWithType: OAuthRefreshService.GetTokenStatuses()
+  fullName: Meridian.Ui.Services.OAuthRefreshService.GetTokenStatuses()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTokenStatuses
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the status of all OAuth tokens.
+  example: []
+  syntax:
+    content: public List<OAuthTokenStatus> GetTokenStatuses()
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.OAuthTokenStatus}
+    content.vb: Public Function GetTokenStatuses() As List(Of OAuthTokenStatus)
+  overload: Meridian.Ui.Services.OAuthRefreshService.GetTokenStatuses*
+- uid: Meridian.Ui.Services.OAuthRefreshService.RefreshTokenAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.OAuthRefreshService.RefreshTokenAsync(System.String,System.Threading.CancellationToken)
+  id: RefreshTokenAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: RefreshTokenAsync(string, CancellationToken)
+  nameWithType: OAuthRefreshService.RefreshTokenAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.OAuthRefreshService.RefreshTokenAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RefreshTokenAsync
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Manually triggers a refresh for a specific provider.
+  example: []
+  syntax:
+    content: public Task<bool> RefreshTokenAsync(string providerId, CancellationToken ct = default)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function RefreshTokenAsync(providerId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.OAuthRefreshService.RefreshTokenAsync*
+  nameWithType.vb: OAuthRefreshService.RefreshTokenAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.OAuthRefreshService.RefreshTokenAsync(String, System.Threading.CancellationToken)
+  name.vb: RefreshTokenAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.OAuthRefreshService.SetAutoRefreshAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.OAuthRefreshService.SetAutoRefreshAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: SetAutoRefreshAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: SetAutoRefreshAsync(string, bool, CancellationToken)
+  nameWithType: OAuthRefreshService.SetAutoRefreshAsync(string, bool, CancellationToken)
+  fullName: Meridian.Ui.Services.OAuthRefreshService.SetAutoRefreshAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetAutoRefreshAsync
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Enables or disables auto-refresh for a specific provider.
+  example: []
+  syntax:
+    content: public Task SetAutoRefreshAsync(string providerId, bool enabled, CancellationToken ct = default)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: enabled
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SetAutoRefreshAsync(providerId As String, enabled As Boolean, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.OAuthRefreshService.SetAutoRefreshAsync*
+  nameWithType.vb: OAuthRefreshService.SetAutoRefreshAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.OAuthRefreshService.SetAutoRefreshAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: SetAutoRefreshAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Ui.Services.OAuthRefreshService.Dispose
+  commentId: M:Meridian.Ui.Services.OAuthRefreshService.Dispose
+  id: Dispose
+  parent: Meridian.Ui.Services.OAuthRefreshService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: OAuthRefreshService.Dispose()
+  fullName: Meridian.Ui.Services.OAuthRefreshService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs
+    startLine: 272
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Ui.Services.OAuthRefreshService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.OAuthRefreshService.Instance*
+  commentId: Overload:Meridian.Ui.Services.OAuthRefreshService.Instance
+  href: Meridian.Ui.Services.OAuthRefreshService.html#Meridian_Ui_Services_OAuthRefreshService_Instance
+  name: Instance
+  nameWithType: OAuthRefreshService.Instance
+  fullName: Meridian.Ui.Services.OAuthRefreshService.Instance
+- uid: Meridian.Ui.Services.OAuthRefreshService
+  commentId: T:Meridian.Ui.Services.OAuthRefreshService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.OAuthRefreshService.html
+  name: OAuthRefreshService
+  nameWithType: OAuthRefreshService
+  fullName: Meridian.Ui.Services.OAuthRefreshService
+- uid: Meridian.Ui.Services.OAuthRefreshService.RefreshThresholdMinutes*
+  commentId: Overload:Meridian.Ui.Services.OAuthRefreshService.RefreshThresholdMinutes
+  href: Meridian.Ui.Services.OAuthRefreshService.html#Meridian_Ui_Services_OAuthRefreshService_RefreshThresholdMinutes
+  name: RefreshThresholdMinutes
+  nameWithType: OAuthRefreshService.RefreshThresholdMinutes
+  fullName: Meridian.Ui.Services.OAuthRefreshService.RefreshThresholdMinutes
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.OAuthRefreshService.CheckIntervalMs*
+  commentId: Overload:Meridian.Ui.Services.OAuthRefreshService.CheckIntervalMs
+  href: Meridian.Ui.Services.OAuthRefreshService.html#Meridian_Ui_Services_OAuthRefreshService_CheckIntervalMs
+  name: CheckIntervalMs
+  nameWithType: OAuthRefreshService.CheckIntervalMs
+  fullName: Meridian.Ui.Services.OAuthRefreshService.CheckIntervalMs
+- uid: System.EventHandler{Meridian.Ui.Services.TokenRefreshEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.TokenRefreshEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TokenRefreshEventArgs>
+  nameWithType: EventHandler<TokenRefreshEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.TokenRefreshEventArgs>
+  nameWithType.vb: EventHandler(Of TokenRefreshEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.TokenRefreshEventArgs)
+  name.vb: EventHandler(Of TokenRefreshEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.TokenRefreshEventArgs
+    name: TokenRefreshEventArgs
+    href: Meridian.Ui.Services.TokenRefreshEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TokenRefreshEventArgs
+    name: TokenRefreshEventArgs
+    href: Meridian.Ui.Services.TokenRefreshEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.TokenRefreshFailedEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.TokenRefreshFailedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TokenRefreshFailedEventArgs>
+  nameWithType: EventHandler<TokenRefreshFailedEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.TokenRefreshFailedEventArgs>
+  nameWithType.vb: EventHandler(Of TokenRefreshFailedEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.TokenRefreshFailedEventArgs)
+  name.vb: EventHandler(Of TokenRefreshFailedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.TokenRefreshFailedEventArgs
+    name: TokenRefreshFailedEventArgs
+    href: Meridian.Ui.Services.TokenRefreshFailedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TokenRefreshFailedEventArgs
+    name: TokenRefreshFailedEventArgs
+    href: Meridian.Ui.Services.TokenRefreshFailedEventArgs.html
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.TokenExpirationWarningEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.TokenExpirationWarningEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TokenExpirationWarningEventArgs>
+  nameWithType: EventHandler<TokenExpirationWarningEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.TokenExpirationWarningEventArgs>
+  nameWithType.vb: EventHandler(Of TokenExpirationWarningEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.TokenExpirationWarningEventArgs)
+  name.vb: EventHandler(Of TokenExpirationWarningEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.TokenExpirationWarningEventArgs
+    name: TokenExpirationWarningEventArgs
+    href: Meridian.Ui.Services.TokenExpirationWarningEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TokenExpirationWarningEventArgs
+    name: TokenExpirationWarningEventArgs
+    href: Meridian.Ui.Services.TokenExpirationWarningEventArgs.html
+  - name: )
+- uid: Meridian.Ui.Services.OAuthRefreshService.Start*
+  commentId: Overload:Meridian.Ui.Services.OAuthRefreshService.Start
+  href: Meridian.Ui.Services.OAuthRefreshService.html#Meridian_Ui_Services_OAuthRefreshService_Start
+  name: Start
+  nameWithType: OAuthRefreshService.Start
+  fullName: Meridian.Ui.Services.OAuthRefreshService.Start
+- uid: Meridian.Ui.Services.OAuthRefreshService.Stop*
+  commentId: Overload:Meridian.Ui.Services.OAuthRefreshService.Stop
+  href: Meridian.Ui.Services.OAuthRefreshService.html#Meridian_Ui_Services_OAuthRefreshService_Stop
+  name: Stop
+  nameWithType: OAuthRefreshService.Stop
+  fullName: Meridian.Ui.Services.OAuthRefreshService.Stop
+- uid: Meridian.Ui.Services.OAuthRefreshService.GetTokenStatuses*
+  commentId: Overload:Meridian.Ui.Services.OAuthRefreshService.GetTokenStatuses
+  href: Meridian.Ui.Services.OAuthRefreshService.html#Meridian_Ui_Services_OAuthRefreshService_GetTokenStatuses
+  name: GetTokenStatuses
+  nameWithType: OAuthRefreshService.GetTokenStatuses
+  fullName: Meridian.Ui.Services.OAuthRefreshService.GetTokenStatuses
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.OAuthTokenStatus}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.OAuthTokenStatus}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<OAuthTokenStatus>
+  nameWithType: List<OAuthTokenStatus>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.OAuthTokenStatus>
+  nameWithType.vb: List(Of OAuthTokenStatus)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.OAuthTokenStatus)
+  name.vb: List(Of OAuthTokenStatus)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.OAuthTokenStatus
+    name: OAuthTokenStatus
+    href: Meridian.Ui.Services.OAuthTokenStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.OAuthTokenStatus
+    name: OAuthTokenStatus
+    href: Meridian.Ui.Services.OAuthTokenStatus.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.OAuthRefreshService.RefreshTokenAsync*
+  commentId: Overload:Meridian.Ui.Services.OAuthRefreshService.RefreshTokenAsync
+  href: Meridian.Ui.Services.OAuthRefreshService.html#Meridian_Ui_Services_OAuthRefreshService_RefreshTokenAsync_System_String_System_Threading_CancellationToken_
+  name: RefreshTokenAsync
+  nameWithType: OAuthRefreshService.RefreshTokenAsync
+  fullName: Meridian.Ui.Services.OAuthRefreshService.RefreshTokenAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.OAuthRefreshService.SetAutoRefreshAsync*
+  commentId: Overload:Meridian.Ui.Services.OAuthRefreshService.SetAutoRefreshAsync
+  href: Meridian.Ui.Services.OAuthRefreshService.html#Meridian_Ui_Services_OAuthRefreshService_SetAutoRefreshAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: SetAutoRefreshAsync
+  nameWithType: OAuthRefreshService.SetAutoRefreshAsync
+  fullName: Meridian.Ui.Services.OAuthRefreshService.SetAutoRefreshAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Ui.Services.OAuthRefreshService.Dispose*
+  commentId: Overload:Meridian.Ui.Services.OAuthRefreshService.Dispose
+  href: Meridian.Ui.Services.OAuthRefreshService.html#Meridian_Ui_Services_OAuthRefreshService_Dispose
+  name: Dispose
+  nameWithType: OAuthRefreshService.Dispose
+  fullName: Meridian.Ui.Services.OAuthRefreshService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

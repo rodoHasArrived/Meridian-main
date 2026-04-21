@@ -1,0 +1,207 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.ProviderSafetyMode
+  commentId: T:Meridian.ProviderSdk.ProviderSafetyMode
+  id: ProviderSafetyMode
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.ProviderSafetyMode.HealthAwareFailover
+  - Meridian.ProviderSdk.ProviderSafetyMode.ManualApprovalRequired
+  - Meridian.ProviderSdk.ProviderSafetyMode.NoAutomaticFailover
+  - Meridian.ProviderSdk.ProviderSafetyMode.ResearchOnly
+  - Meridian.ProviderSdk.ProviderSafetyMode.SameInstitutionOnly
+  langs:
+  - csharp
+  - vb
+  name: ProviderSafetyMode
+  nameWithType: ProviderSafetyMode
+  fullName: Meridian.ProviderSdk.ProviderSafetyMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderSafetyMode
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 31
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Safety modes applied when routing a capability.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<ProviderSafetyMode>))]
+
+      public enum ProviderSafetyMode : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of ProviderSafetyMode)))>
+
+      Public Enum ProviderSafetyMode As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.ProviderSdk.ProviderSafetyMode}
+- uid: Meridian.ProviderSdk.ProviderSafetyMode.HealthAwareFailover
+  commentId: F:Meridian.ProviderSdk.ProviderSafetyMode.HealthAwareFailover
+  id: HealthAwareFailover
+  parent: Meridian.ProviderSdk.ProviderSafetyMode
+  langs:
+  - csharp
+  - vb
+  name: HealthAwareFailover
+  nameWithType: ProviderSafetyMode.HealthAwareFailover
+  fullName: Meridian.ProviderSdk.ProviderSafetyMode.HealthAwareFailover
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthAwareFailover
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 34
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: HealthAwareFailover = 0
+    return:
+      type: Meridian.ProviderSdk.ProviderSafetyMode
+- uid: Meridian.ProviderSdk.ProviderSafetyMode.NoAutomaticFailover
+  commentId: F:Meridian.ProviderSdk.ProviderSafetyMode.NoAutomaticFailover
+  id: NoAutomaticFailover
+  parent: Meridian.ProviderSdk.ProviderSafetyMode
+  langs:
+  - csharp
+  - vb
+  name: NoAutomaticFailover
+  nameWithType: ProviderSafetyMode.NoAutomaticFailover
+  fullName: Meridian.ProviderSdk.ProviderSafetyMode.NoAutomaticFailover
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NoAutomaticFailover
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: NoAutomaticFailover = 1
+    return:
+      type: Meridian.ProviderSdk.ProviderSafetyMode
+- uid: Meridian.ProviderSdk.ProviderSafetyMode.SameInstitutionOnly
+  commentId: F:Meridian.ProviderSdk.ProviderSafetyMode.SameInstitutionOnly
+  id: SameInstitutionOnly
+  parent: Meridian.ProviderSdk.ProviderSafetyMode
+  langs:
+  - csharp
+  - vb
+  name: SameInstitutionOnly
+  nameWithType: ProviderSafetyMode.SameInstitutionOnly
+  fullName: Meridian.ProviderSdk.ProviderSafetyMode.SameInstitutionOnly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SameInstitutionOnly
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 36
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: SameInstitutionOnly = 2
+    return:
+      type: Meridian.ProviderSdk.ProviderSafetyMode
+- uid: Meridian.ProviderSdk.ProviderSafetyMode.ManualApprovalRequired
+  commentId: F:Meridian.ProviderSdk.ProviderSafetyMode.ManualApprovalRequired
+  id: ManualApprovalRequired
+  parent: Meridian.ProviderSdk.ProviderSafetyMode
+  langs:
+  - csharp
+  - vb
+  name: ManualApprovalRequired
+  nameWithType: ProviderSafetyMode.ManualApprovalRequired
+  fullName: Meridian.ProviderSdk.ProviderSafetyMode.ManualApprovalRequired
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManualApprovalRequired
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 37
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: ManualApprovalRequired = 3
+    return:
+      type: Meridian.ProviderSdk.ProviderSafetyMode
+- uid: Meridian.ProviderSdk.ProviderSafetyMode.ResearchOnly
+  commentId: F:Meridian.ProviderSdk.ProviderSafetyMode.ResearchOnly
+  id: ResearchOnly
+  parent: Meridian.ProviderSdk.ProviderSafetyMode
+  langs:
+  - csharp
+  - vb
+  name: ResearchOnly
+  nameWithType: ProviderSafetyMode.ResearchOnly
+  fullName: Meridian.ProviderSdk.ProviderSafetyMode.ResearchOnly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResearchOnly
+    path: ../../src/Meridian.ProviderSdk/ProviderRoutingModels.cs
+    startLine: 38
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: ResearchOnly = 4
+    return:
+      type: Meridian.ProviderSdk.ProviderSafetyMode
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.ProviderSdk.ProviderSafetyMode
+  commentId: T:Meridian.ProviderSdk.ProviderSafetyMode
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderSafetyMode.html
+  name: ProviderSafetyMode
+  nameWithType: ProviderSafetyMode
+  fullName: Meridian.ProviderSdk.ProviderSafetyMode

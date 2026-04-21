@@ -108,7 +108,7 @@ public sealed class ConnectivityTestService : IAsyncDisposable
         if (config.DataSource == DataSourceKind.IB || config.IB != null)
         {
             var host = config.IB?.Host ?? "127.0.0.1";
-            var port = config.IB?.Port ?? 7496;
+            var port = config.IB?.Port ?? 7497;
             providerTests.Add(($"Interactive Brokers ({host}:{port})", ct => TestIBGatewayAsync(host, port, ct)));
         }
 

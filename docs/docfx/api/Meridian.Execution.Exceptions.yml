@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Exceptions
+  commentId: N:Meridian.Execution.Exceptions
+  id: Meridian.Execution.Exceptions
+  children:
+  - Meridian.Execution.Exceptions.UnsupportedOrderRequestException
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.Exceptions
+  nameWithType: Meridian.Execution.Exceptions
+  fullName: Meridian.Execution.Exceptions
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.Exceptions.UnsupportedOrderRequestException
+  commentId: T:Meridian.Execution.Exceptions.UnsupportedOrderRequestException
+  href: Meridian.Execution.Exceptions.UnsupportedOrderRequestException.html
+  name: UnsupportedOrderRequestException
+  nameWithType: UnsupportedOrderRequestException
+  fullName: Meridian.Execution.Exceptions.UnsupportedOrderRequestException

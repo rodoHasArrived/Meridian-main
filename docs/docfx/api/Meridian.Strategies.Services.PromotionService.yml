@@ -1,0 +1,1057 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.PromotionService
+  commentId: T:Meridian.Strategies.Services.PromotionService
+  id: PromotionService
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.PromotionService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration)
+  - Meridian.Strategies.Services.PromotionService.ApproveAsync(Meridian.Strategies.Services.PromotionApprovalRequest,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.PromotionService.EvaluateAsync(System.String,Meridian.Strategies.Promotions.PromotionCriteria,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.PromotionService.GetPromotionHistory
+  - Meridian.Strategies.Services.PromotionService.RejectAsync(Meridian.Strategies.Services.PromotionRejectionRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: PromotionService
+  nameWithType: PromotionService
+  fullName: Meridian.Strategies.Services.PromotionService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/PromotionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PromotionService
+    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Orchestrates the strategy promotion workflow: evaluates eligibility,
+
+    records promotion decisions, and creates new run entries for the target mode.
+
+    Bridges the gap between promotion evaluation (F# policy) and operational execution.
+  example: []
+  syntax:
+    content: public sealed class PromotionService
+    content.vb: Public NotInheritable Class PromotionService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Services.PromotionService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration)
+  commentId: M:Meridian.Strategies.Services.PromotionService.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration)
+  id: '#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Meridian.Strategies.Promotions.BacktestToLivePromoter,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService},Meridian.Execution.Services.ExecutionOperatorControlService,Meridian.Execution.Services.ExecutionAuditTrailService,Meridian.Execution.Sdk.BrokerageConfiguration)'
+  parent: Meridian.Strategies.Services.PromotionService
+  langs:
+  - csharp
+  - vb
+  name: PromotionService(IStrategyRepository, BacktestToLivePromoter, ILogger<PromotionService>, ExecutionOperatorControlService?, ExecutionAuditTrailService?, BrokerageConfiguration?)
+  nameWithType: PromotionService.PromotionService(IStrategyRepository, BacktestToLivePromoter, ILogger<PromotionService>, ExecutionOperatorControlService?, ExecutionAuditTrailService?, BrokerageConfiguration?)
+  fullName: Meridian.Strategies.Services.PromotionService.PromotionService(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Promotions.BacktestToLivePromoter, Microsoft.Extensions.Logging.ILogger<Meridian.Strategies.Services.PromotionService>, Meridian.Execution.Services.ExecutionOperatorControlService?, Meridian.Execution.Services.ExecutionAuditTrailService?, Meridian.Execution.Sdk.BrokerageConfiguration?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/PromotionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: public PromotionService(IStrategyRepository repository, BacktestToLivePromoter promoter, ILogger<PromotionService> logger, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null)
+    parameters:
+    - id: repository
+      type: Meridian.Strategies.Interfaces.IStrategyRepository
+    - id: promoter
+      type: Meridian.Strategies.Promotions.BacktestToLivePromoter
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService}
+    - id: operatorControls
+      type: Meridian.Execution.Services.ExecutionOperatorControlService
+    - id: auditTrail
+      type: Meridian.Execution.Services.ExecutionAuditTrailService
+    - id: brokerageConfiguration
+      type: Meridian.Execution.Sdk.BrokerageConfiguration
+    content.vb: Public Sub New(repository As IStrategyRepository, promoter As BacktestToLivePromoter, logger As ILogger(Of PromotionService), operatorControls As ExecutionOperatorControlService = Nothing, auditTrail As ExecutionAuditTrailService = Nothing, brokerageConfiguration As BrokerageConfiguration = Nothing)
+  overload: Meridian.Strategies.Services.PromotionService.#ctor*
+  nameWithType.vb: PromotionService.New(IStrategyRepository, BacktestToLivePromoter, ILogger(Of PromotionService), ExecutionOperatorControlService, ExecutionAuditTrailService, BrokerageConfiguration)
+  fullName.vb: Meridian.Strategies.Services.PromotionService.New(Meridian.Strategies.Interfaces.IStrategyRepository, Meridian.Strategies.Promotions.BacktestToLivePromoter, Microsoft.Extensions.Logging.ILogger(Of Meridian.Strategies.Services.PromotionService), Meridian.Execution.Services.ExecutionOperatorControlService, Meridian.Execution.Services.ExecutionAuditTrailService, Meridian.Execution.Sdk.BrokerageConfiguration)
+  name.vb: New(IStrategyRepository, BacktestToLivePromoter, ILogger(Of PromotionService), ExecutionOperatorControlService, ExecutionAuditTrailService, BrokerageConfiguration)
+- uid: Meridian.Strategies.Services.PromotionService.EvaluateAsync(System.String,Meridian.Strategies.Promotions.PromotionCriteria,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.PromotionService.EvaluateAsync(System.String,Meridian.Strategies.Promotions.PromotionCriteria,System.Threading.CancellationToken)
+  id: EvaluateAsync(System.String,Meridian.Strategies.Promotions.PromotionCriteria,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.PromotionService
+  langs:
+  - csharp
+  - vb
+  name: EvaluateAsync(string, PromotionCriteria?, CancellationToken)
+  nameWithType: PromotionService.EvaluateAsync(string, PromotionCriteria?, CancellationToken)
+  fullName: Meridian.Strategies.Services.PromotionService.EvaluateAsync(string, Meridian.Strategies.Promotions.PromotionCriteria?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/PromotionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EvaluateAsync
+    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Evaluates whether a completed run is eligible for promotion to the next mode.
+  example: []
+  syntax:
+    content: public Task<PromotionEvaluationResult> EvaluateAsync(string runId, PromotionCriteria? criteria = null, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: criteria
+      type: Meridian.Strategies.Promotions.PromotionCriteria
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Strategies.Services.PromotionEvaluationResult}
+    content.vb: Public Function EvaluateAsync(runId As String, criteria As PromotionCriteria = Nothing, ct As CancellationToken = Nothing) As Task(Of PromotionEvaluationResult)
+  overload: Meridian.Strategies.Services.PromotionService.EvaluateAsync*
+  nameWithType.vb: PromotionService.EvaluateAsync(String, PromotionCriteria, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.PromotionService.EvaluateAsync(String, Meridian.Strategies.Promotions.PromotionCriteria, System.Threading.CancellationToken)
+  name.vb: EvaluateAsync(String, PromotionCriteria, CancellationToken)
+- uid: Meridian.Strategies.Services.PromotionService.ApproveAsync(Meridian.Strategies.Services.PromotionApprovalRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.PromotionService.ApproveAsync(Meridian.Strategies.Services.PromotionApprovalRequest,System.Threading.CancellationToken)
+  id: ApproveAsync(Meridian.Strategies.Services.PromotionApprovalRequest,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.PromotionService
+  langs:
+  - csharp
+  - vb
+  name: ApproveAsync(PromotionApprovalRequest, CancellationToken)
+  nameWithType: PromotionService.ApproveAsync(PromotionApprovalRequest, CancellationToken)
+  fullName: Meridian.Strategies.Services.PromotionService.ApproveAsync(Meridian.Strategies.Services.PromotionApprovalRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/PromotionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApproveAsync
+    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: 'Approves a promotion: creates a new run entry for the target mode and records the audit trail.'
+  example: []
+  syntax:
+    content: public Task<PromotionDecisionResult> ApproveAsync(PromotionApprovalRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Strategies.Services.PromotionApprovalRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Strategies.Services.PromotionDecisionResult}
+    content.vb: Public Function ApproveAsync(request As PromotionApprovalRequest, ct As CancellationToken = Nothing) As Task(Of PromotionDecisionResult)
+  overload: Meridian.Strategies.Services.PromotionService.ApproveAsync*
+- uid: Meridian.Strategies.Services.PromotionService.RejectAsync(Meridian.Strategies.Services.PromotionRejectionRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.PromotionService.RejectAsync(Meridian.Strategies.Services.PromotionRejectionRequest,System.Threading.CancellationToken)
+  id: RejectAsync(Meridian.Strategies.Services.PromotionRejectionRequest,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.PromotionService
+  langs:
+  - csharp
+  - vb
+  name: RejectAsync(PromotionRejectionRequest, CancellationToken)
+  nameWithType: PromotionService.RejectAsync(PromotionRejectionRequest, CancellationToken)
+  fullName: Meridian.Strategies.Services.PromotionService.RejectAsync(Meridian.Strategies.Services.PromotionRejectionRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/PromotionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RejectAsync
+    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 288
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Rejects a promotion with a recorded reason.
+  example: []
+  syntax:
+    content: public Task<PromotionDecisionResult> RejectAsync(PromotionRejectionRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Strategies.Services.PromotionRejectionRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Strategies.Services.PromotionDecisionResult}
+    content.vb: Public Function RejectAsync(request As PromotionRejectionRequest, ct As CancellationToken = Nothing) As Task(Of PromotionDecisionResult)
+  overload: Meridian.Strategies.Services.PromotionService.RejectAsync*
+- uid: Meridian.Strategies.Services.PromotionService.GetPromotionHistory
+  commentId: M:Meridian.Strategies.Services.PromotionService.GetPromotionHistory
+  id: GetPromotionHistory
+  parent: Meridian.Strategies.Services.PromotionService
+  langs:
+  - csharp
+  - vb
+  name: GetPromotionHistory()
+  nameWithType: PromotionService.GetPromotionHistory()
+  fullName: Meridian.Strategies.Services.PromotionService.GetPromotionHistory()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/PromotionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPromotionHistory
+    path: ../../src/Meridian.Strategies/Services/PromotionService.cs
+    startLine: 306
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Returns the full promotion audit trail.
+  example: []
+  syntax:
+    content: public IReadOnlyList<StrategyPromotionRecord> GetPromotionHistory()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}
+    content.vb: Public Function GetPromotionHistory() As IReadOnlyList(Of StrategyPromotionRecord)
+  overload: Meridian.Strategies.Services.PromotionService.GetPromotionHistory*
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Services.PromotionService.#ctor*
+  commentId: Overload:Meridian.Strategies.Services.PromotionService.#ctor
+  href: Meridian.Strategies.Services.PromotionService.html#Meridian_Strategies_Services_PromotionService__ctor_Meridian_Strategies_Interfaces_IStrategyRepository_Meridian_Strategies_Promotions_BacktestToLivePromoter_Microsoft_Extensions_Logging_ILogger_Meridian_Strategies_Services_PromotionService__Meridian_Execution_Services_ExecutionOperatorControlService_Meridian_Execution_Services_ExecutionAuditTrailService_Meridian_Execution_Sdk_BrokerageConfiguration_
+  name: PromotionService
+  nameWithType: PromotionService.PromotionService
+  fullName: Meridian.Strategies.Services.PromotionService.PromotionService
+  nameWithType.vb: PromotionService.New
+  fullName.vb: Meridian.Strategies.Services.PromotionService.New
+  name.vb: New
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyRepository
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html
+  name: IStrategyRepository
+  nameWithType: IStrategyRepository
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository
+- uid: Meridian.Strategies.Promotions.BacktestToLivePromoter
+  commentId: T:Meridian.Strategies.Promotions.BacktestToLivePromoter
+  parent: Meridian.Strategies.Promotions
+  href: Meridian.Strategies.Promotions.BacktestToLivePromoter.html
+  name: BacktestToLivePromoter
+  nameWithType: BacktestToLivePromoter
+  fullName: Meridian.Strategies.Promotions.BacktestToLivePromoter
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.PromotionService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<PromotionService>
+  nameWithType: ILogger<PromotionService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Strategies.Services.PromotionService>
+  nameWithType.vb: ILogger(Of PromotionService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Strategies.Services.PromotionService)
+  name.vb: ILogger(Of PromotionService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Strategies.Services.PromotionService
+    name: PromotionService
+    href: Meridian.Strategies.Services.PromotionService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Services.PromotionService
+    name: PromotionService
+    href: Meridian.Strategies.Services.PromotionService.html
+  - name: )
+- uid: Meridian.Execution.Services.ExecutionOperatorControlService
+  commentId: T:Meridian.Execution.Services.ExecutionOperatorControlService
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.ExecutionOperatorControlService.html
+  name: ExecutionOperatorControlService
+  nameWithType: ExecutionOperatorControlService
+  fullName: Meridian.Execution.Services.ExecutionOperatorControlService
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService
+  commentId: T:Meridian.Execution.Services.ExecutionAuditTrailService
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.ExecutionAuditTrailService.html
+  name: ExecutionAuditTrailService
+  nameWithType: ExecutionAuditTrailService
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService
+- uid: Meridian.Execution.Sdk.BrokerageConfiguration
+  commentId: T:Meridian.Execution.Sdk.BrokerageConfiguration
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.BrokerageConfiguration.html
+  name: BrokerageConfiguration
+  nameWithType: BrokerageConfiguration
+  fullName: Meridian.Execution.Sdk.BrokerageConfiguration
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+- uid: Meridian.Strategies.Promotions
+  commentId: N:Meridian.Strategies.Promotions
+  href: Meridian.html
+  name: Meridian.Strategies.Promotions
+  nameWithType: Meridian.Strategies.Promotions
+  fullName: Meridian.Strategies.Promotions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Promotions
+    name: Promotions
+    href: Meridian.Strategies.Promotions.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Strategies.Services.PromotionService.EvaluateAsync*
+  commentId: Overload:Meridian.Strategies.Services.PromotionService.EvaluateAsync
+  href: Meridian.Strategies.Services.PromotionService.html#Meridian_Strategies_Services_PromotionService_EvaluateAsync_System_String_Meridian_Strategies_Promotions_PromotionCriteria_System_Threading_CancellationToken_
+  name: EvaluateAsync
+  nameWithType: PromotionService.EvaluateAsync
+  fullName: Meridian.Strategies.Services.PromotionService.EvaluateAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Strategies.Promotions.PromotionCriteria
+  commentId: T:Meridian.Strategies.Promotions.PromotionCriteria
+  parent: Meridian.Strategies.Promotions
+  href: Meridian.Strategies.Promotions.PromotionCriteria.html
+  name: PromotionCriteria
+  nameWithType: PromotionCriteria
+  fullName: Meridian.Strategies.Promotions.PromotionCriteria
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Strategies.Services.PromotionEvaluationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Strategies.Services.PromotionEvaluationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PromotionEvaluationResult>
+  nameWithType: Task<PromotionEvaluationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Strategies.Services.PromotionEvaluationResult>
+  nameWithType.vb: Task(Of PromotionEvaluationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Strategies.Services.PromotionEvaluationResult)
+  name.vb: Task(Of PromotionEvaluationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Strategies.Services.PromotionEvaluationResult
+    name: PromotionEvaluationResult
+    href: Meridian.Strategies.Services.PromotionEvaluationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Services.PromotionEvaluationResult
+    name: PromotionEvaluationResult
+    href: Meridian.Strategies.Services.PromotionEvaluationResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Strategies.Services.PromotionService.ApproveAsync*
+  commentId: Overload:Meridian.Strategies.Services.PromotionService.ApproveAsync
+  href: Meridian.Strategies.Services.PromotionService.html#Meridian_Strategies_Services_PromotionService_ApproveAsync_Meridian_Strategies_Services_PromotionApprovalRequest_System_Threading_CancellationToken_
+  name: ApproveAsync
+  nameWithType: PromotionService.ApproveAsync
+  fullName: Meridian.Strategies.Services.PromotionService.ApproveAsync
+- uid: Meridian.Strategies.Services.PromotionApprovalRequest
+  commentId: T:Meridian.Strategies.Services.PromotionApprovalRequest
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.PromotionApprovalRequest.html
+  name: PromotionApprovalRequest
+  nameWithType: PromotionApprovalRequest
+  fullName: Meridian.Strategies.Services.PromotionApprovalRequest
+- uid: System.Threading.Tasks.Task{Meridian.Strategies.Services.PromotionDecisionResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Strategies.Services.PromotionDecisionResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PromotionDecisionResult>
+  nameWithType: Task<PromotionDecisionResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Strategies.Services.PromotionDecisionResult>
+  nameWithType.vb: Task(Of PromotionDecisionResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Strategies.Services.PromotionDecisionResult)
+  name.vb: Task(Of PromotionDecisionResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Strategies.Services.PromotionDecisionResult
+    name: PromotionDecisionResult
+    href: Meridian.Strategies.Services.PromotionDecisionResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Services.PromotionDecisionResult
+    name: PromotionDecisionResult
+    href: Meridian.Strategies.Services.PromotionDecisionResult.html
+  - name: )
+- uid: Meridian.Strategies.Services.PromotionService.RejectAsync*
+  commentId: Overload:Meridian.Strategies.Services.PromotionService.RejectAsync
+  href: Meridian.Strategies.Services.PromotionService.html#Meridian_Strategies_Services_PromotionService_RejectAsync_Meridian_Strategies_Services_PromotionRejectionRequest_System_Threading_CancellationToken_
+  name: RejectAsync
+  nameWithType: PromotionService.RejectAsync
+  fullName: Meridian.Strategies.Services.PromotionService.RejectAsync
+- uid: Meridian.Strategies.Services.PromotionRejectionRequest
+  commentId: T:Meridian.Strategies.Services.PromotionRejectionRequest
+  parent: Meridian.Strategies.Services
+  href: Meridian.Strategies.Services.PromotionRejectionRequest.html
+  name: PromotionRejectionRequest
+  nameWithType: PromotionRejectionRequest
+  fullName: Meridian.Strategies.Services.PromotionRejectionRequest
+- uid: Meridian.Strategies.Services.PromotionService.GetPromotionHistory*
+  commentId: Overload:Meridian.Strategies.Services.PromotionService.GetPromotionHistory
+  href: Meridian.Strategies.Services.PromotionService.html#Meridian_Strategies_Services_PromotionService_GetPromotionHistory
+  name: GetPromotionHistory
+  nameWithType: PromotionService.GetPromotionHistory
+  fullName: Meridian.Strategies.Services.PromotionService.GetPromotionHistory
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Strategies.Promotions.StrategyPromotionRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<StrategyPromotionRecord>
+  nameWithType: IReadOnlyList<StrategyPromotionRecord>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Strategies.Promotions.StrategyPromotionRecord>
+  nameWithType.vb: IReadOnlyList(Of StrategyPromotionRecord)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Strategies.Promotions.StrategyPromotionRecord)
+  name.vb: IReadOnlyList(Of StrategyPromotionRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    name: StrategyPromotionRecord
+    href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Promotions.StrategyPromotionRecord
+    name: StrategyPromotionRecord
+    href: Meridian.Strategies.Promotions.StrategyPromotionRecord.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

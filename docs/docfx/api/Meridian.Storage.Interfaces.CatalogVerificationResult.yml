@@ -1,0 +1,677 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult
+  commentId: T:Meridian.Storage.Interfaces.CatalogVerificationResult
+  id: CatalogVerificationResult
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.CatalogVerificationResult.ChecksumMismatches
+  - Meridian.Storage.Interfaces.CatalogVerificationResult.CountMismatches
+  - Meridian.Storage.Interfaces.CatalogVerificationResult.Duration
+  - Meridian.Storage.Interfaces.CatalogVerificationResult.FilesPassed
+  - Meridian.Storage.Interfaces.CatalogVerificationResult.IsValid
+  - Meridian.Storage.Interfaces.CatalogVerificationResult.Issues
+  - Meridian.Storage.Interfaces.CatalogVerificationResult.MissingFiles
+  langs:
+  - csharp
+  - vb
+  name: CatalogVerificationResult
+  nameWithType: CatalogVerificationResult
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatalogVerificationResult
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 280
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Result of catalog verification.
+  example: []
+  syntax:
+    content: public sealed class CatalogVerificationResult
+    content.vb: Public NotInheritable Class CatalogVerificationResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.IsValid
+  commentId: P:Meridian.Storage.Interfaces.CatalogVerificationResult.IsValid
+  id: IsValid
+  parent: Meridian.Storage.Interfaces.CatalogVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: IsValid
+  nameWithType: CatalogVerificationResult.IsValid
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.IsValid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValid
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 285
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Overall verification success.
+  example: []
+  syntax:
+    content: public bool IsValid { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsValid As Boolean
+  overload: Meridian.Storage.Interfaces.CatalogVerificationResult.IsValid*
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.FilesPassed
+  commentId: P:Meridian.Storage.Interfaces.CatalogVerificationResult.FilesPassed
+  id: FilesPassed
+  parent: Meridian.Storage.Interfaces.CatalogVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: FilesPassed
+  nameWithType: CatalogVerificationResult.FilesPassed
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.FilesPassed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilesPassed
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Files that passed verification.
+  example: []
+  syntax:
+    content: public int FilesPassed { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FilesPassed As Integer
+  overload: Meridian.Storage.Interfaces.CatalogVerificationResult.FilesPassed*
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.ChecksumMismatches
+  commentId: P:Meridian.Storage.Interfaces.CatalogVerificationResult.ChecksumMismatches
+  id: ChecksumMismatches
+  parent: Meridian.Storage.Interfaces.CatalogVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: ChecksumMismatches
+  nameWithType: CatalogVerificationResult.ChecksumMismatches
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.ChecksumMismatches
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChecksumMismatches
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 295
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Files with checksum mismatches.
+  example: []
+  syntax:
+    content: public int ChecksumMismatches { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ChecksumMismatches As Integer
+  overload: Meridian.Storage.Interfaces.CatalogVerificationResult.ChecksumMismatches*
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.MissingFiles
+  commentId: P:Meridian.Storage.Interfaces.CatalogVerificationResult.MissingFiles
+  id: MissingFiles
+  parent: Meridian.Storage.Interfaces.CatalogVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: MissingFiles
+  nameWithType: CatalogVerificationResult.MissingFiles
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.MissingFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingFiles
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 300
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Files that are missing.
+  example: []
+  syntax:
+    content: public int MissingFiles { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MissingFiles As Integer
+  overload: Meridian.Storage.Interfaces.CatalogVerificationResult.MissingFiles*
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.CountMismatches
+  commentId: P:Meridian.Storage.Interfaces.CatalogVerificationResult.CountMismatches
+  id: CountMismatches
+  parent: Meridian.Storage.Interfaces.CatalogVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: CountMismatches
+  nameWithType: CatalogVerificationResult.CountMismatches
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.CountMismatches
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CountMismatches
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 305
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Files with count mismatches.
+  example: []
+  syntax:
+    content: public int CountMismatches { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CountMismatches As Integer
+  overload: Meridian.Storage.Interfaces.CatalogVerificationResult.CountMismatches*
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.Duration
+  commentId: P:Meridian.Storage.Interfaces.CatalogVerificationResult.Duration
+  id: Duration
+  parent: Meridian.Storage.Interfaces.CatalogVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: Duration
+  nameWithType: CatalogVerificationResult.Duration
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.Duration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duration
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 310
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Verification duration.
+  example: []
+  syntax:
+    content: public TimeSpan Duration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Duration As TimeSpan
+  overload: Meridian.Storage.Interfaces.CatalogVerificationResult.Duration*
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.Issues
+  commentId: P:Meridian.Storage.Interfaces.CatalogVerificationResult.Issues
+  id: Issues
+  parent: Meridian.Storage.Interfaces.CatalogVerificationResult
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: CatalogVerificationResult.Issues
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Detailed issues found.
+  example: []
+  syntax:
+    content: public List<CatalogIntegrityIssue> Issues { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Contracts.Catalog.CatalogIntegrityIssue}
+    content.vb: Public Property Issues As List(Of CatalogIntegrityIssue)
+  overload: Meridian.Storage.Interfaces.CatalogVerificationResult.Issues*
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.IsValid*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogVerificationResult.IsValid
+  href: Meridian.Storage.Interfaces.CatalogVerificationResult.html#Meridian_Storage_Interfaces_CatalogVerificationResult_IsValid
+  name: IsValid
+  nameWithType: CatalogVerificationResult.IsValid
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.IsValid
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.FilesPassed*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogVerificationResult.FilesPassed
+  href: Meridian.Storage.Interfaces.CatalogVerificationResult.html#Meridian_Storage_Interfaces_CatalogVerificationResult_FilesPassed
+  name: FilesPassed
+  nameWithType: CatalogVerificationResult.FilesPassed
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.FilesPassed
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.ChecksumMismatches*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogVerificationResult.ChecksumMismatches
+  href: Meridian.Storage.Interfaces.CatalogVerificationResult.html#Meridian_Storage_Interfaces_CatalogVerificationResult_ChecksumMismatches
+  name: ChecksumMismatches
+  nameWithType: CatalogVerificationResult.ChecksumMismatches
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.ChecksumMismatches
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.MissingFiles*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogVerificationResult.MissingFiles
+  href: Meridian.Storage.Interfaces.CatalogVerificationResult.html#Meridian_Storage_Interfaces_CatalogVerificationResult_MissingFiles
+  name: MissingFiles
+  nameWithType: CatalogVerificationResult.MissingFiles
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.MissingFiles
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.CountMismatches*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogVerificationResult.CountMismatches
+  href: Meridian.Storage.Interfaces.CatalogVerificationResult.html#Meridian_Storage_Interfaces_CatalogVerificationResult_CountMismatches
+  name: CountMismatches
+  nameWithType: CatalogVerificationResult.CountMismatches
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.CountMismatches
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.Duration*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogVerificationResult.Duration
+  href: Meridian.Storage.Interfaces.CatalogVerificationResult.html#Meridian_Storage_Interfaces_CatalogVerificationResult_Duration
+  name: Duration
+  nameWithType: CatalogVerificationResult.Duration
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.Duration
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Storage.Interfaces.CatalogVerificationResult.Issues*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogVerificationResult.Issues
+  href: Meridian.Storage.Interfaces.CatalogVerificationResult.html#Meridian_Storage_Interfaces_CatalogVerificationResult_Issues
+  name: Issues
+  nameWithType: CatalogVerificationResult.Issues
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationResult.Issues
+- uid: System.Collections.Generic.List{Meridian.Contracts.Catalog.CatalogIntegrityIssue}
+  commentId: T:System.Collections.Generic.List{Meridian.Contracts.Catalog.CatalogIntegrityIssue}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<CatalogIntegrityIssue>
+  nameWithType: List<CatalogIntegrityIssue>
+  fullName: System.Collections.Generic.List<Meridian.Contracts.Catalog.CatalogIntegrityIssue>
+  nameWithType.vb: List(Of CatalogIntegrityIssue)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Contracts.Catalog.CatalogIntegrityIssue)
+  name.vb: List(Of CatalogIntegrityIssue)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Contracts.Catalog.CatalogIntegrityIssue
+    name: CatalogIntegrityIssue
+    href: Meridian.Contracts.Catalog.CatalogIntegrityIssue.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.CatalogIntegrityIssue
+    name: CatalogIntegrityIssue
+    href: Meridian.Contracts.Catalog.CatalogIntegrityIssue.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

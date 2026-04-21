@@ -79,6 +79,8 @@ OPTIONS:
     --backfill-symbols <list>       Comma-separated symbols (e.g., AAPL,MSFT)
     --backfill-from <date>          Start date (YYYY-MM-DD)
     --backfill-to <date>            End date (YYYY-MM-DD)
+    --backfill-granularity <value>  Granularity: Daily, Hourly, 1Min, 5Min,
+                                    15Min, 30Min, 4Hour
     --resume                        Resume an interrupted backfill from the last
                                     saved checkpoint (skips already-completed symbols)
 
@@ -91,12 +93,17 @@ EXAMPLES:
     Meridian --backfill --backfill-provider alpaca \
         --backfill-symbols SPY --backfill-from 2024-01-01
 
+    # Intraday Yahoo backfill
+    Meridian --backfill --backfill-provider yahoo \
+        --backfill-symbols AAPL --backfill-from 2024-04-01 \
+        --backfill-to 2024-04-05 --backfill-granularity 15Min
+
     # Backfill multiple symbols
     Meridian --backfill --backfill-symbols AAPL,MSFT,GOOGL,AMZN,META
 
 PROVIDERS (by rate limit tolerance):
     stooq           Free, no API key, low rate limits
-    yahoo           Free, unofficial, moderate limits
+    yahoo           Free, unofficial, daily + intraday bars (1m-4h)
     tiingo          Free tier, 500/hour
     finnhub         Free tier, 60/min
     alphavantage    Free tier, 5/min
@@ -193,7 +200,7 @@ FIRST-TIME SETUP:
     --detect-providers      Show available providers and their status
     --generate-config       Generate a config template
     --generate-config-schema Generate JSON Schema for appsettings.json
-    --template <name>       Template: minimal, full, alpaca, stocksharp,
+    --template <name>       Template: minimal, full, alpaca,
                             backfill, production, docker
 
 EXAMPLES:
@@ -318,12 +325,11 @@ STREAMING PROVIDERS:
     alpaca          WebSocket streaming, trades + quotes
     polygon         WebSocket streaming, trades + quotes + depth
     ib              Interactive Brokers TWS/Gateway, full L2
-    stocksharp      90+ data sources via StockSharp connectors
     nyse            NYSE hybrid streaming + historical
 
 HISTORICAL (BACKFILL) PROVIDERS:
     stooq           Free daily bars, no API key needed
-    yahoo           Free daily bars (unofficial API)
+    yahoo           Free daily + intraday bars (1m, 5m, 15m, 30m, 1h, 4h synthetic)
     tiingo          Free tier: 500 req/hour
     finnhub         Free tier: 60 req/min
     alphavantage    Free tier: 5 req/min
@@ -337,8 +343,6 @@ SYMBOL SEARCH PROVIDERS:
     finnhub         US + international exchanges
     polygon         US equities
     openfigi        Global identifier mapping
-    stocksharp      Multi-exchange search
-
 FAILOVER:
     The system supports automatic provider failover. Configure failover
     rules via the web API at /api/failover/config.
@@ -371,8 +375,7 @@ HELP TOPICS:
     --help providers      Data provider information
 
 MODES:
-    --mode <web|desktop|headless> Unified deployment mode selector
-    --ui                    Start web dashboard (http://localhost:8080) [legacy]
+    --mode <desktop|headless> Unified deployment mode selector
     --backfill              Run historical data backfill
     --replay <path>         Replay events from JSONL file
     --package               Create a portable data package
@@ -439,6 +442,7 @@ BACKFILL OPTIONS:
     --backfill-symbols <list>       Comma-separated symbols (e.g., AAPL,MSFT)
     --backfill-from <date>          Start date (YYYY-MM-DD)
     --backfill-to <date>            End date (YYYY-MM-DD)
+    --backfill-granularity <value>  Daily, Hourly, 1Min, 5Min, 15Min, 30Min, 4Hour
     --resume                        Resume interrupted backfill from last checkpoint
 
 PACKAGING OPTIONS:
@@ -469,23 +473,28 @@ DATA QUERY & EXPORT TOOLS:
 
 AUTO-CONFIGURATION OPTIONS:
     --template <name>       Template for --generate-config: minimal, full, alpaca,
-                            stocksharp, backfill, production, docker (default: minimal)
+                            backfill, production, docker (default: minimal)
     --output <path>         Output path for generated config/schema
                             (config/appsettings.generated.json or config/appsettings.schema.json)
 
 EXAMPLES:
-    # Start web dashboard on default port
-    Meridian --mode web
+    # Start the desktop-local API host on the default port
+    Meridian --mode desktop
 
-    # Start web dashboard on custom port
-    Meridian --mode web --http-port 9000
+    # Start the desktop-local API host on a custom port
+    Meridian --mode desktop --http-port 9000
 
-    # Desktop mode (collector + UI server) with hot-reload
+    # Desktop mode (collector + local API host) with hot-reload
     Meridian --mode desktop --watch-config
 
     # Run historical backfill
     Meridian --backfill --backfill-symbols AAPL,MSFT,GOOGL \
         --backfill-from 2024-01-01 --backfill-to 2024-12-31
+
+    # Run Yahoo intraday backfill
+    Meridian --backfill --backfill-provider yahoo --backfill-symbols SPY \
+        --backfill-from 2024-04-01 --backfill-to 2024-04-05 \
+        --backfill-granularity 5Min
 
     # Run self-tests
     Meridian --selftest
@@ -605,8 +614,8 @@ SUPPORT:
 ║  QUICKSTART:   Run: ./Meridian --quickstart                ║
 ║  NEW USER?     Run: ./Meridian --wizard                   ║
 ║  QUICK CHECK:  Run: ./Meridian --quick-check              ║
-║  START UI:     Run: ./Meridian --mode web                 ║
-║  Then open http://localhost:8080 in your browser                     ║
+║  START API:    Run: ./Meridian --mode desktop             ║
+║  Local API:    http://localhost:8080                                 ║
 ╚══════════════════════════════════════════════════════════════════════╝
 ");
     }
@@ -638,7 +647,7 @@ BULK INGEST:
       Skipped   : duplicate records that already exist
       Failed    : records that could not be imported (errors listed below)
 
-HTTP API ENDPOINTS (when running --mode web):
+HTTP API ENDPOINTS (when running --mode desktop):
     GET  /api/security-master/conflicts
          Returns all open golden record conflicts detected between providers.
 

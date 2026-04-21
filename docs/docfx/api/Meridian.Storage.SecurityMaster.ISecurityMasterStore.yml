@@ -1,0 +1,1043 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  id: ISecurityMasterStore
+  parent: Meridian.Storage.SecurityMaster
+  children:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.DeactivateProjectionAsync(System.Guid,System.DateTimeOffset,System.Int64,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.DateTimeOffset,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetCheckpointAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetDetailAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetProjectionAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.LoadAllAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.PersistProjectionBatchAsync(System.String,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord},System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.SaveCheckpointAsync(System.String,System.Int64,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertAliasAsync(Meridian.Contracts.SecurityMaster.SecurityAliasDto,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISecurityMasterStore
+  nameWithType: ISecurityMasterStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISecurityMasterStore
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public interface ISecurityMasterStore
+    content.vb: Public Interface ISecurityMasterStore
+  derivedClasses:
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterStore
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  id: UpsertProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: UpsertProjectionAsync(SecurityProjectionRecord, CancellationToken)
+  nameWithType: ISecurityMasterStore.UpsertProjectionAsync(SecurityProjectionRecord, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertProjectionAsync(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpsertProjectionAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task UpsertProjectionAsync(SecurityProjectionRecord record, CancellationToken ct = default)
+    parameters:
+    - id: record
+      type: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function UpsertProjectionAsync(record As SecurityProjectionRecord, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertProjectionAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.PersistProjectionBatchAsync(System.String,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.PersistProjectionBatchAsync(System.String,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord},System.Threading.CancellationToken)
+  id: PersistProjectionBatchAsync(System.String,System.Int64,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord},System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: PersistProjectionBatchAsync(string, long, IReadOnlyList<SecurityProjectionRecord>, CancellationToken)
+  nameWithType: ISecurityMasterStore.PersistProjectionBatchAsync(string, long, IReadOnlyList<SecurityProjectionRecord>, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.PersistProjectionBatchAsync(string, long, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PersistProjectionBatchAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task PersistProjectionBatchAsync(string projectionName, long lastGlobalSequence, IReadOnlyList<SecurityProjectionRecord> records, CancellationToken ct = default)
+    parameters:
+    - id: projectionName
+      type: System.String
+    - id: lastGlobalSequence
+      type: System.Int64
+    - id: records
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function PersistProjectionBatchAsync(projectionName As String, lastGlobalSequence As Long, records As IReadOnlyList(Of SecurityProjectionRecord), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.PersistProjectionBatchAsync*
+  nameWithType.vb: ISecurityMasterStore.PersistProjectionBatchAsync(String, Long, IReadOnlyList(Of SecurityProjectionRecord), CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.ISecurityMasterStore.PersistProjectionBatchAsync(String, Long, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord), System.Threading.CancellationToken)
+  name.vb: PersistProjectionBatchAsync(String, Long, IReadOnlyList(Of SecurityProjectionRecord), CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertAliasAsync(Meridian.Contracts.SecurityMaster.SecurityAliasDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertAliasAsync(Meridian.Contracts.SecurityMaster.SecurityAliasDto,System.Threading.CancellationToken)
+  id: UpsertAliasAsync(Meridian.Contracts.SecurityMaster.SecurityAliasDto,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: UpsertAliasAsync(SecurityAliasDto, CancellationToken)
+  nameWithType: ISecurityMasterStore.UpsertAliasAsync(SecurityAliasDto, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertAliasAsync(Meridian.Contracts.SecurityMaster.SecurityAliasDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpsertAliasAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task UpsertAliasAsync(SecurityAliasDto alias, CancellationToken ct = default)
+    parameters:
+    - id: alias
+      type: Meridian.Contracts.SecurityMaster.SecurityAliasDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function UpsertAliasAsync([alias] As SecurityAliasDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertAliasAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.DeactivateProjectionAsync(System.Guid,System.DateTimeOffset,System.Int64,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.DeactivateProjectionAsync(System.Guid,System.DateTimeOffset,System.Int64,System.Threading.CancellationToken)
+  id: DeactivateProjectionAsync(System.Guid,System.DateTimeOffset,System.Int64,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: DeactivateProjectionAsync(Guid, DateTimeOffset, long, CancellationToken)
+  nameWithType: ISecurityMasterStore.DeactivateProjectionAsync(Guid, DateTimeOffset, long, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.DeactivateProjectionAsync(System.Guid, System.DateTimeOffset, long, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeactivateProjectionAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task DeactivateProjectionAsync(Guid securityId, DateTimeOffset effectiveTo, long version, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: effectiveTo
+      type: System.DateTimeOffset
+    - id: version
+      type: System.Int64
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function DeactivateProjectionAsync(securityId As Guid, effectiveTo As DateTimeOffset, version As Long, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.DeactivateProjectionAsync*
+  nameWithType.vb: ISecurityMasterStore.DeactivateProjectionAsync(Guid, DateTimeOffset, Long, CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.ISecurityMasterStore.DeactivateProjectionAsync(System.Guid, System.DateTimeOffset, Long, System.Threading.CancellationToken)
+  name.vb: DeactivateProjectionAsync(Guid, DateTimeOffset, Long, CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetDetailAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetDetailAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetDetailAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: GetDetailAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterStore.GetDetailAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetDetailAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDetailAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<SecurityDetailDto?> GetDetailAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+    content.vb: Function GetDetailAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of SecurityDetailDto)
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetDetailAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetProjectionAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetProjectionAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetProjectionAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: GetProjectionAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterStore.GetProjectionAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetProjectionAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProjectionAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<SecurityProjectionRecord?> GetProjectionAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+    content.vb: Function GetProjectionAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of SecurityProjectionRecord)
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetProjectionAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.DateTimeOffset,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.DateTimeOffset,System.Boolean,System.Threading.CancellationToken)
+  id: GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind,System.String,System.String,System.DateTimeOffset,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: GetByIdentifierAsync(SecurityIdentifierKind, string, string?, DateTimeOffset, bool, CancellationToken)
+  nameWithType: ISecurityMasterStore.GetByIdentifierAsync(SecurityIdentifierKind, string, string?, DateTimeOffset, bool, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind, string, string?, System.DateTimeOffset, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByIdentifierAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<SecurityProjectionRecord?> GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default)
+    parameters:
+    - id: kind
+      type: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+    - id: value
+      type: System.String
+    - id: provider
+      type: System.String
+    - id: asOfUtc
+      type: System.DateTimeOffset
+    - id: includeInactive
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+    content.vb: Function GetByIdentifierAsync(kind As SecurityIdentifierKind, value As String, provider As String, asOfUtc As DateTimeOffset, includeInactive As Boolean, ct As CancellationToken = Nothing) As Task(Of SecurityProjectionRecord)
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetByIdentifierAsync*
+  nameWithType.vb: ISecurityMasterStore.GetByIdentifierAsync(SecurityIdentifierKind, String, String, DateTimeOffset, Boolean, CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetByIdentifierAsync(Meridian.Contracts.SecurityMaster.SecurityIdentifierKind, String, String, System.DateTimeOffset, Boolean, System.Threading.CancellationToken)
+  name.vb: GetByIdentifierAsync(SecurityIdentifierKind, String, String, DateTimeOffset, Boolean, CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  id: SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(SecuritySearchRequest, CancellationToken)
+  nameWithType: ISecurityMasterStore.SearchAsync(SecuritySearchRequest, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SearchAsync(Meridian.Contracts.SecurityMaster.SecuritySearchRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<IReadOnlyList<SecuritySummaryDto>> SearchAsync(SecuritySearchRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecuritySummaryDto}}
+    content.vb: Function SearchAsync(request As SecuritySearchRequest, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SecuritySummaryDto))
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SearchAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.LoadAllAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.LoadAllAsync(System.Threading.CancellationToken)
+  id: LoadAllAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: LoadAllAsync(CancellationToken)
+  nameWithType: ISecurityMasterStore.LoadAllAsync(CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.LoadAllAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadAllAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<IReadOnlyList<SecurityProjectionRecord>> LoadAllAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}}
+    content.vb: Function LoadAllAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SecurityProjectionRecord))
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.LoadAllAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetCheckpointAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetCheckpointAsync(System.String,System.Threading.CancellationToken)
+  id: GetCheckpointAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: GetCheckpointAsync(string, CancellationToken)
+  nameWithType: ISecurityMasterStore.GetCheckpointAsync(string, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetCheckpointAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCheckpointAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<long?> GetCheckpointAsync(string projectionName, CancellationToken ct = default)
+    parameters:
+    - id: projectionName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Nullable{System.Int64}}
+    content.vb: Function GetCheckpointAsync(projectionName As String, ct As CancellationToken = Nothing) As Task(Of Long?)
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetCheckpointAsync*
+  nameWithType.vb: ISecurityMasterStore.GetCheckpointAsync(String, CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetCheckpointAsync(String, System.Threading.CancellationToken)
+  name.vb: GetCheckpointAsync(String, CancellationToken)
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SaveCheckpointAsync(System.String,System.Int64,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterStore.SaveCheckpointAsync(System.String,System.Int64,System.Threading.CancellationToken)
+  id: SaveCheckpointAsync(System.String,System.Int64,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterStore
+  langs:
+  - csharp
+  - vb
+  name: SaveCheckpointAsync(string, long, CancellationToken)
+  nameWithType: ISecurityMasterStore.SaveCheckpointAsync(string, long, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SaveCheckpointAsync(string, long, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveCheckpointAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default)
+    parameters:
+    - id: projectionName
+      type: System.String
+    - id: lastGlobalSequence
+      type: System.Int64
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveCheckpointAsync(projectionName As String, lastGlobalSequence As Long, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SaveCheckpointAsync*
+  nameWithType.vb: ISecurityMasterStore.SaveCheckpointAsync(String, Long, CancellationToken)
+  fullName.vb: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SaveCheckpointAsync(String, Long, System.Threading.CancellationToken)
+  name.vb: SaveCheckpointAsync(String, Long, CancellationToken)
+references:
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertProjectionAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertProjectionAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_UpsertProjectionAsync_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_System_Threading_CancellationToken_
+  name: UpsertProjectionAsync
+  nameWithType: ISecurityMasterStore.UpsertProjectionAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertProjectionAsync
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html
+  name: SecurityProjectionRecord
+  nameWithType: SecurityProjectionRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.PersistProjectionBatchAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.PersistProjectionBatchAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_PersistProjectionBatchAsync_System_String_System_Int64_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord__System_Threading_CancellationToken_
+  name: PersistProjectionBatchAsync
+  nameWithType: ISecurityMasterStore.PersistProjectionBatchAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.PersistProjectionBatchAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SecurityProjectionRecord>
+  nameWithType: IReadOnlyList<SecurityProjectionRecord>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>
+  nameWithType.vb: IReadOnlyList(Of SecurityProjectionRecord)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  name.vb: IReadOnlyList(Of SecurityProjectionRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertAliasAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertAliasAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_UpsertAliasAsync_Meridian_Contracts_SecurityMaster_SecurityAliasDto_System_Threading_CancellationToken_
+  name: UpsertAliasAsync
+  nameWithType: ISecurityMasterStore.UpsertAliasAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.UpsertAliasAsync
+- uid: Meridian.Contracts.SecurityMaster.SecurityAliasDto
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityAliasDto
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityAliasDto.html
+  name: SecurityAliasDto
+  nameWithType: SecurityAliasDto
+  fullName: Meridian.Contracts.SecurityMaster.SecurityAliasDto
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.DeactivateProjectionAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.DeactivateProjectionAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_DeactivateProjectionAsync_System_Guid_System_DateTimeOffset_System_Int64_System_Threading_CancellationToken_
+  name: DeactivateProjectionAsync
+  nameWithType: ISecurityMasterStore.DeactivateProjectionAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.DeactivateProjectionAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetDetailAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetDetailAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_GetDetailAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetDetailAsync
+  nameWithType: ISecurityMasterStore.GetDetailAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetDetailAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityDetailDto>
+  nameWithType: Task<SecurityDetailDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.SecurityDetailDto>
+  nameWithType.vb: Task(Of SecurityDetailDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.SecurityDetailDto)
+  name.vb: Task(Of SecurityDetailDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+    name: SecurityDetailDto
+    href: Meridian.Contracts.SecurityMaster.SecurityDetailDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+    name: SecurityDetailDto
+    href: Meridian.Contracts.SecurityMaster.SecurityDetailDto.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetProjectionAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetProjectionAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_GetProjectionAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetProjectionAsync
+  nameWithType: ISecurityMasterStore.GetProjectionAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetProjectionAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityProjectionRecord>
+  nameWithType: Task<SecurityProjectionRecord>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>
+  nameWithType.vb: Task(Of SecurityProjectionRecord)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  name.vb: Task(Of SecurityProjectionRecord)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: )
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetByIdentifierAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetByIdentifierAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_GetByIdentifierAsync_Meridian_Contracts_SecurityMaster_SecurityIdentifierKind_System_String_System_String_System_DateTimeOffset_System_Boolean_System_Threading_CancellationToken_
+  name: GetByIdentifierAsync
+  nameWithType: ISecurityMasterStore.GetByIdentifierAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetByIdentifierAsync
+- uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind.html
+  name: SecurityIdentifierKind
+  nameWithType: SecurityIdentifierKind
+  fullName: Meridian.Contracts.SecurityMaster.SecurityIdentifierKind
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SearchAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.SearchAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_SearchAsync_Meridian_Contracts_SecurityMaster_SecuritySearchRequest_System_Threading_CancellationToken_
+  name: SearchAsync
+  nameWithType: ISecurityMasterStore.SearchAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SearchAsync
+- uid: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecuritySearchRequest.html
+  name: SecuritySearchRequest
+  nameWithType: SecuritySearchRequest
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySearchRequest
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecuritySummaryDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecuritySummaryDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SecuritySummaryDto>>
+  nameWithType: Task<IReadOnlyList<SecuritySummaryDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecuritySummaryDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SecuritySummaryDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecuritySummaryDto))
+  name.vb: Task(Of IReadOnlyList(Of SecuritySummaryDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySummaryDto
+    name: SecuritySummaryDto
+    href: Meridian.Contracts.SecurityMaster.SecuritySummaryDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySummaryDto
+    name: SecuritySummaryDto
+    href: Meridian.Contracts.SecurityMaster.SecuritySummaryDto.html
+  - name: )
+  - name: )
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.LoadAllAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.LoadAllAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_LoadAllAsync_System_Threading_CancellationToken_
+  name: LoadAllAsync
+  nameWithType: ISecurityMasterStore.LoadAllAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.LoadAllAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SecurityProjectionRecord>>
+  nameWithType: Task<IReadOnlyList<SecurityProjectionRecord>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SecurityProjectionRecord))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord))
+  name.vb: Task(Of IReadOnlyList(Of SecurityProjectionRecord))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: )
+  - name: )
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetCheckpointAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetCheckpointAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_GetCheckpointAsync_System_String_System_Threading_CancellationToken_
+  name: GetCheckpointAsync
+  nameWithType: ISecurityMasterStore.GetCheckpointAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.GetCheckpointAsync
+- uid: System.Threading.Tasks.Task{System.Nullable{System.Int64}}
+  commentId: T:System.Threading.Tasks.Task{System.Nullable{System.Int64}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<long?>
+  nameWithType: Task<long?>
+  fullName: System.Threading.Tasks.Task<long?>
+  nameWithType.vb: Task(Of Long?)
+  fullName.vb: System.Threading.Tasks.Task(Of Long?)
+  name.vb: Task(Of Long?)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  - name: )
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SaveCheckpointAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterStore.SaveCheckpointAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterStore_SaveCheckpointAsync_System_String_System_Int64_System_Threading_CancellationToken_
+  name: SaveCheckpointAsync
+  nameWithType: ISecurityMasterStore.SaveCheckpointAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterStore.SaveCheckpointAsync

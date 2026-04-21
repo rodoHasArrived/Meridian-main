@@ -1,0 +1,966 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.EventSearchQuery
+  commentId: T:Meridian.Storage.Services.EventSearchQuery
+  id: EventSearchQuery
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.EventSearchQuery.#ctor(System.String,Meridian.Contracts.Domain.Enums.MarketEventType,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{Meridian.Contracts.Domain.Enums.AggressorSide},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Int32)
+  - Meridian.Storage.Services.EventSearchQuery.From
+  - Meridian.Storage.Services.EventSearchQuery.Limit
+  - Meridian.Storage.Services.EventSearchQuery.MaxPrice
+  - Meridian.Storage.Services.EventSearchQuery.MinPrice
+  - Meridian.Storage.Services.EventSearchQuery.MinVolume
+  - Meridian.Storage.Services.EventSearchQuery.SequenceFrom
+  - Meridian.Storage.Services.EventSearchQuery.SequenceTo
+  - Meridian.Storage.Services.EventSearchQuery.Side
+  - Meridian.Storage.Services.EventSearchQuery.Symbol
+  - Meridian.Storage.Services.EventSearchQuery.To
+  - Meridian.Storage.Services.EventSearchQuery.Type
+  langs:
+  - csharp
+  - vb
+  name: EventSearchQuery
+  nameWithType: EventSearchQuery
+  fullName: Meridian.Storage.Services.EventSearchQuery
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventSearchQuery
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 624
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record EventSearchQuery : IEquatable<EventSearchQuery>'
+    content.vb: Public NotInheritable Class EventSearchQuery Implements IEquatable(Of EventSearchQuery)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.EventSearchQuery}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.EventSearchQuery.#ctor(System.String,Meridian.Contracts.Domain.Enums.MarketEventType,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{Meridian.Contracts.Domain.Enums.AggressorSide},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Int32)
+  commentId: M:Meridian.Storage.Services.EventSearchQuery.#ctor(System.String,Meridian.Contracts.Domain.Enums.MarketEventType,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{Meridian.Contracts.Domain.Enums.AggressorSide},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Int32)
+  id: '#ctor(System.String,Meridian.Contracts.Domain.Enums.MarketEventType,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Int64},System.Nullable{Meridian.Contracts.Domain.Enums.AggressorSide},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Int32)'
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: EventSearchQuery(string, MarketEventType, DateTimeOffset, DateTimeOffset, decimal?, decimal?, long?, AggressorSide?, long?, long?, int)
+  nameWithType: EventSearchQuery.EventSearchQuery(string, MarketEventType, DateTimeOffset, DateTimeOffset, decimal?, decimal?, long?, AggressorSide?, long?, long?, int)
+  fullName: Meridian.Storage.Services.EventSearchQuery.EventSearchQuery(string, Meridian.Contracts.Domain.Enums.MarketEventType, System.DateTimeOffset, System.DateTimeOffset, decimal?, decimal?, long?, Meridian.Contracts.Domain.Enums.AggressorSide?, long?, long?, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 624
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public EventSearchQuery(string Symbol, MarketEventType Type, DateTimeOffset From, DateTimeOffset To, decimal? MinPrice = null, decimal? MaxPrice = null, long? MinVolume = null, AggressorSide? Side = null, long? SequenceFrom = null, long? SequenceTo = null, int Limit = 1000)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Type
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+    - id: From
+      type: System.DateTimeOffset
+    - id: To
+      type: System.DateTimeOffset
+    - id: MinPrice
+      type: System.Nullable{System.Decimal}
+    - id: MaxPrice
+      type: System.Nullable{System.Decimal}
+    - id: MinVolume
+      type: System.Nullable{System.Int64}
+    - id: Side
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.AggressorSide}
+    - id: SequenceFrom
+      type: System.Nullable{System.Int64}
+    - id: SequenceTo
+      type: System.Nullable{System.Int64}
+    - id: Limit
+      type: System.Int32
+    content.vb: Public Sub New(Symbol As String, Type As MarketEventType, From As DateTimeOffset, [To] As DateTimeOffset, MinPrice As Decimal? = Nothing, MaxPrice As Decimal? = Nothing, MinVolume As Long? = Nothing, Side As AggressorSide? = Nothing, SequenceFrom As Long? = Nothing, SequenceTo As Long? = Nothing, Limit As Integer = 1000)
+  overload: Meridian.Storage.Services.EventSearchQuery.#ctor*
+  nameWithType.vb: EventSearchQuery.New(String, MarketEventType, DateTimeOffset, DateTimeOffset, Decimal?, Decimal?, Long?, AggressorSide?, Long?, Long?, Integer)
+  fullName.vb: Meridian.Storage.Services.EventSearchQuery.New(String, Meridian.Contracts.Domain.Enums.MarketEventType, System.DateTimeOffset, System.DateTimeOffset, Decimal?, Decimal?, Long?, Meridian.Contracts.Domain.Enums.AggressorSide?, Long?, Long?, Integer)
+  name.vb: New(String, MarketEventType, DateTimeOffset, DateTimeOffset, Decimal?, Decimal?, Long?, AggressorSide?, Long?, Long?, Integer)
+- uid: Meridian.Storage.Services.EventSearchQuery.Symbol
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.Symbol
+  id: Symbol
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: EventSearchQuery.Symbol
+  fullName: Meridian.Storage.Services.EventSearchQuery.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 625
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Storage.Services.EventSearchQuery.Symbol*
+- uid: Meridian.Storage.Services.EventSearchQuery.Type
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.Type
+  id: Type
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: EventSearchQuery.Type
+  fullName: Meridian.Storage.Services.EventSearchQuery.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 626
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MarketEventType Type { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+    content.vb: Public Property Type As MarketEventType
+  overload: Meridian.Storage.Services.EventSearchQuery.Type*
+- uid: Meridian.Storage.Services.EventSearchQuery.From
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.From
+  id: From
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: From
+  nameWithType: EventSearchQuery.From
+  fullName: Meridian.Storage.Services.EventSearchQuery.From
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: From
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 627
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset From { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property From As DateTimeOffset
+  overload: Meridian.Storage.Services.EventSearchQuery.From*
+- uid: Meridian.Storage.Services.EventSearchQuery.To
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.To
+  id: To
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: To
+  nameWithType: EventSearchQuery.To
+  fullName: Meridian.Storage.Services.EventSearchQuery.To
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: To
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 628
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset To { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property [To] As DateTimeOffset
+  overload: Meridian.Storage.Services.EventSearchQuery.To*
+- uid: Meridian.Storage.Services.EventSearchQuery.MinPrice
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.MinPrice
+  id: MinPrice
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: MinPrice
+  nameWithType: EventSearchQuery.MinPrice
+  fullName: Meridian.Storage.Services.EventSearchQuery.MinPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinPrice
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 629
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public decimal? MinPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property MinPrice As Decimal?
+  overload: Meridian.Storage.Services.EventSearchQuery.MinPrice*
+- uid: Meridian.Storage.Services.EventSearchQuery.MaxPrice
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.MaxPrice
+  id: MaxPrice
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: MaxPrice
+  nameWithType: EventSearchQuery.MaxPrice
+  fullName: Meridian.Storage.Services.EventSearchQuery.MaxPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxPrice
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 630
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public decimal? MaxPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property MaxPrice As Decimal?
+  overload: Meridian.Storage.Services.EventSearchQuery.MaxPrice*
+- uid: Meridian.Storage.Services.EventSearchQuery.MinVolume
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.MinVolume
+  id: MinVolume
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: MinVolume
+  nameWithType: EventSearchQuery.MinVolume
+  fullName: Meridian.Storage.Services.EventSearchQuery.MinVolume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinVolume
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 631
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long? MinVolume { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property MinVolume As Long?
+  overload: Meridian.Storage.Services.EventSearchQuery.MinVolume*
+- uid: Meridian.Storage.Services.EventSearchQuery.Side
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.Side
+  id: Side
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Side
+  nameWithType: EventSearchQuery.Side
+  fullName: Meridian.Storage.Services.EventSearchQuery.Side
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Side
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 632
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public AggressorSide? Side { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.Domain.Enums.AggressorSide}
+    content.vb: Public Property Side As AggressorSide?
+  overload: Meridian.Storage.Services.EventSearchQuery.Side*
+- uid: Meridian.Storage.Services.EventSearchQuery.SequenceFrom
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.SequenceFrom
+  id: SequenceFrom
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: SequenceFrom
+  nameWithType: EventSearchQuery.SequenceFrom
+  fullName: Meridian.Storage.Services.EventSearchQuery.SequenceFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceFrom
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 633
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long? SequenceFrom { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property SequenceFrom As Long?
+  overload: Meridian.Storage.Services.EventSearchQuery.SequenceFrom*
+- uid: Meridian.Storage.Services.EventSearchQuery.SequenceTo
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.SequenceTo
+  id: SequenceTo
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: SequenceTo
+  nameWithType: EventSearchQuery.SequenceTo
+  fullName: Meridian.Storage.Services.EventSearchQuery.SequenceTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceTo
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 634
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long? SequenceTo { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property SequenceTo As Long?
+  overload: Meridian.Storage.Services.EventSearchQuery.SequenceTo*
+- uid: Meridian.Storage.Services.EventSearchQuery.Limit
+  commentId: P:Meridian.Storage.Services.EventSearchQuery.Limit
+  id: Limit
+  parent: Meridian.Storage.Services.EventSearchQuery
+  langs:
+  - csharp
+  - vb
+  name: Limit
+  nameWithType: EventSearchQuery.Limit
+  fullName: Meridian.Storage.Services.EventSearchQuery.Limit
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Limit
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 635
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int Limit { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Limit As Integer
+  overload: Meridian.Storage.Services.EventSearchQuery.Limit*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.EventSearchQuery}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.EventSearchQuery}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<EventSearchQuery>
+  nameWithType: IEquatable<EventSearchQuery>
+  fullName: System.IEquatable<Meridian.Storage.Services.EventSearchQuery>
+  nameWithType.vb: IEquatable(Of EventSearchQuery)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.EventSearchQuery)
+  name.vb: IEquatable(Of EventSearchQuery)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.EventSearchQuery
+    name: EventSearchQuery
+    href: Meridian.Storage.Services.EventSearchQuery.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.EventSearchQuery
+    name: EventSearchQuery
+    href: Meridian.Storage.Services.EventSearchQuery.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.EventSearchQuery.#ctor*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.#ctor
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery__ctor_System_String_Meridian_Contracts_Domain_Enums_MarketEventType_System_DateTimeOffset_System_DateTimeOffset_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Int64__System_Nullable_Meridian_Contracts_Domain_Enums_AggressorSide__System_Nullable_System_Int64__System_Nullable_System_Int64__System_Int32_
+  name: EventSearchQuery
+  nameWithType: EventSearchQuery.EventSearchQuery
+  fullName: Meridian.Storage.Services.EventSearchQuery.EventSearchQuery
+  nameWithType.vb: EventSearchQuery.New
+  fullName.vb: Meridian.Storage.Services.EventSearchQuery.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketEventType.html
+  name: MarketEventType
+  nameWithType: MarketEventType
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.Domain.Enums.AggressorSide}
+  commentId: T:System.Nullable{Meridian.Contracts.Domain.Enums.AggressorSide}
+  parent: System
+  definition: System.Nullable`1
+  name: AggressorSide?
+  nameWithType: AggressorSide?
+  fullName: Meridian.Contracts.Domain.Enums.AggressorSide?
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.Enums.AggressorSide
+    name: AggressorSide
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.Enums.AggressorSide
+    name: AggressorSide
+  - name: '?'
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.EventSearchQuery.Symbol*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.Symbol
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_Symbol
+  name: Symbol
+  nameWithType: EventSearchQuery.Symbol
+  fullName: Meridian.Storage.Services.EventSearchQuery.Symbol
+- uid: Meridian.Storage.Services.EventSearchQuery.Type*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.Type
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_Type
+  name: Type
+  nameWithType: EventSearchQuery.Type
+  fullName: Meridian.Storage.Services.EventSearchQuery.Type
+- uid: Meridian.Storage.Services.EventSearchQuery.From*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.From
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_From
+  name: From
+  nameWithType: EventSearchQuery.From
+  fullName: Meridian.Storage.Services.EventSearchQuery.From
+- uid: Meridian.Storage.Services.EventSearchQuery.To*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.To
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_To
+  name: To
+  nameWithType: EventSearchQuery.To
+  fullName: Meridian.Storage.Services.EventSearchQuery.To
+- uid: Meridian.Storage.Services.EventSearchQuery.MinPrice*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.MinPrice
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_MinPrice
+  name: MinPrice
+  nameWithType: EventSearchQuery.MinPrice
+  fullName: Meridian.Storage.Services.EventSearchQuery.MinPrice
+- uid: Meridian.Storage.Services.EventSearchQuery.MaxPrice*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.MaxPrice
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_MaxPrice
+  name: MaxPrice
+  nameWithType: EventSearchQuery.MaxPrice
+  fullName: Meridian.Storage.Services.EventSearchQuery.MaxPrice
+- uid: Meridian.Storage.Services.EventSearchQuery.MinVolume*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.MinVolume
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_MinVolume
+  name: MinVolume
+  nameWithType: EventSearchQuery.MinVolume
+  fullName: Meridian.Storage.Services.EventSearchQuery.MinVolume
+- uid: Meridian.Storage.Services.EventSearchQuery.Side*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.Side
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_Side
+  name: Side
+  nameWithType: EventSearchQuery.Side
+  fullName: Meridian.Storage.Services.EventSearchQuery.Side
+- uid: Meridian.Storage.Services.EventSearchQuery.SequenceFrom*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.SequenceFrom
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_SequenceFrom
+  name: SequenceFrom
+  nameWithType: EventSearchQuery.SequenceFrom
+  fullName: Meridian.Storage.Services.EventSearchQuery.SequenceFrom
+- uid: Meridian.Storage.Services.EventSearchQuery.SequenceTo*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.SequenceTo
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_SequenceTo
+  name: SequenceTo
+  nameWithType: EventSearchQuery.SequenceTo
+  fullName: Meridian.Storage.Services.EventSearchQuery.SequenceTo
+- uid: Meridian.Storage.Services.EventSearchQuery.Limit*
+  commentId: Overload:Meridian.Storage.Services.EventSearchQuery.Limit
+  href: Meridian.Storage.Services.EventSearchQuery.html#Meridian_Storage_Services_EventSearchQuery_Limit
+  name: Limit
+  nameWithType: EventSearchQuery.Limit
+  fullName: Meridian.Storage.Services.EventSearchQuery.Limit

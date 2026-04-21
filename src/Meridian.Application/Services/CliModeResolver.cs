@@ -13,8 +13,6 @@ public static class CliModeResolver
     {
         /// <summary>Headless mode - no UI, command-line only.</summary>
         Headless,
-        /// <summary>Web mode - HTTP server with web dashboard.</summary>
-        Web,
         /// <summary>Desktop mode - native desktop application with embedded server.</summary>
         Desktop
     }
@@ -24,8 +22,7 @@ public static class CliModeResolver
     /// This provides backwards compatibility while funneling all modes through a single code path.
     /// </summary>
     /// <remarks>
-    /// Legacy flag mappings:
-    /// - --ui → --mode web
+    /// Legacy flag mappings that still participate in mode resolution.
     /// </remarks>
     /// <param name="args">Command line arguments.</param>
     /// <returns>The effective mode string, or null for headless.</returns>
@@ -35,10 +32,6 @@ public static class CliModeResolver
         var explicitMode = GetArgValue(args, "--mode");
         if (!string.IsNullOrWhiteSpace(explicitMode))
             return explicitMode;
-
-        // Translate legacy flags to mode values
-        if (args.Any(a => a.Equals("--ui", StringComparison.OrdinalIgnoreCase)))
-            return "web";
 
         return null;
     }
@@ -61,6 +54,11 @@ public static class CliModeResolver
     /// <returns>Tuple of resolved mode and any error message.</returns>
     public static (RunMode Mode, string? Error) ResolveWithError(string[] args)
     {
+        if (HasFlag(args, "--ui"))
+        {
+            return (RunMode.Headless, BuildRemovedWebMessage("--ui"));
+        }
+
         var modeArg = TranslateLegacyFlags(args);
         if (string.IsNullOrWhiteSpace(modeArg))
             return (RunMode.Headless, null);
@@ -68,12 +66,15 @@ public static class CliModeResolver
         var normalized = modeArg.Trim().ToLowerInvariant();
         return normalized switch
         {
-            "web" => (RunMode.Web, null),
             "desktop" => (RunMode.Desktop, null),
             "headless" => (RunMode.Headless, null),
-            _ => (RunMode.Headless, $"Unknown mode '{normalized}'. Use web, desktop, or headless.")
+            "web" => (RunMode.Headless, BuildRemovedWebMessage("--mode web")),
+            _ => (RunMode.Headless, $"Unknown mode '{normalized}'. Use desktop or headless.")
         };
     }
+
+    private static string BuildRemovedWebMessage(string flag)
+        => $"The web dashboard has been removed; use desktop or headless mode instead of '{flag}'.";
 
     /// <summary>
     /// Checks if a specific flag is present in the arguments.

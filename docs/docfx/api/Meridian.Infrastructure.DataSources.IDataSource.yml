@@ -1,0 +1,1171 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.IDataSource
+  commentId: T:Meridian.Infrastructure.DataSources.IDataSource
+  id: IDataSource
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  - Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  - Meridian.Infrastructure.DataSources.IDataSource.Category
+  - Meridian.Infrastructure.DataSources.IDataSource.Description
+  - Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  - Meridian.Infrastructure.DataSources.IDataSource.Health
+  - Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  - Meridian.Infrastructure.DataSources.IDataSource.Id
+  - Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IDataSource.Priority
+  - Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  - Meridian.Infrastructure.DataSources.IDataSource.Status
+  - Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  - Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  - Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.DataSources.IDataSource.Type
+  - Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IDataSource
+  nameWithType: IDataSource
+  fullName: Meridian.Infrastructure.DataSources.IDataSource
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IDataSource
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 10
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: >-
+    Unified base interface for all data sources (real-time and historical).
+
+    Provides a common abstraction for provider discovery, health monitoring,
+
+    and lifecycle management.
+  example: []
+  syntax:
+    content: 'public interface IDataSource : IAsyncDisposable'
+    content.vb: Public Interface IDataSource Inherits IAsyncDisposable
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  - Meridian.Infrastructure.DataSources.DataSourceBase
+  inheritedMembers:
+  - System.IAsyncDisposable.DisposeAsync
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Id
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Id
+  id: Id
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: IDataSource.Id
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 16
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Unique identifier for this data source (e.g., "alpaca", "yahoo", "ib").
+  example: []
+  syntax:
+    content: string Id { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Id As String
+  overload: Meridian.Infrastructure.DataSources.IDataSource.Id*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: IDataSource.DisplayName
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 21
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property DisplayName As String
+  overload: Meridian.Infrastructure.DataSources.IDataSource.DisplayName*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Description
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Description
+  id: Description
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: IDataSource.Description
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 26
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Description of the data source and its capabilities.
+  example: []
+  syntax:
+    content: string Description { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Description As String
+  overload: Meridian.Infrastructure.DataSources.IDataSource.Description*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Type
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Type
+  id: Type
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: IDataSource.Type
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 33
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: 'Type of data provided: Realtime, Historical, or Hybrid.'
+  example: []
+  syntax:
+    content: DataSourceType Type { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceType
+    content.vb: ReadOnly Property Type As DataSourceType
+  overload: Meridian.Infrastructure.DataSources.IDataSource.Type*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Category
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Category
+  id: Category
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: IDataSource.Category
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 38
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: 'Category of the data source: Exchange, Broker, Aggregator, Free, Premium.'
+  example: []
+  syntax:
+    content: DataSourceCategory Category { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCategory
+    content.vb: ReadOnly Property Category As DataSourceCategory
+  overload: Meridian.Infrastructure.DataSources.IDataSource.Category*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Priority
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: IDataSource.Priority
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 43
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Priority for source selection (lower = higher priority, tried first).
+  example: []
+  syntax:
+    content: int Priority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property Priority As Integer
+  overload: Meridian.Infrastructure.DataSources.IDataSource.Priority*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  id: Capabilities
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: IDataSource.Capabilities
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 50
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Bitwise capabilities supported by this source.
+  example: []
+  syntax:
+    content: DataSourceCapabilities Capabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+    content.vb: ReadOnly Property Capabilities As DataSourceCapabilities
+  overload: Meridian.Infrastructure.DataSources.IDataSource.Capabilities*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  id: CapabilityInfo
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: CapabilityInfo
+  nameWithType: IDataSource.CapabilityInfo
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CapabilityInfo
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 55
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Detailed capability information including limits and supported features.
+  example: []
+  syntax:
+    content: DataSourceCapabilityInfo CapabilityInfo { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo
+    content.vb: ReadOnly Property CapabilityInfo As DataSourceCapabilityInfo
+  overload: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  id: SupportedMarkets
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportedMarkets
+  nameWithType: IDataSource.SupportedMarkets
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedMarkets
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 60
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Market regions/countries supported (e.g., "US", "UK", "DE").
+  example: []
+  syntax:
+    content: IReadOnlySet<string> SupportedMarkets { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{System.String}
+    content.vb: ReadOnly Property SupportedMarkets As IReadOnlySet(Of String)
+  overload: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  id: SupportedAssetClasses
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: SupportedAssetClasses
+  nameWithType: IDataSource.SupportedAssetClasses
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedAssetClasses
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 65
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Asset classes supported by this source.
+  example: []
+  syntax:
+    content: IReadOnlySet<AssetClass> SupportedAssetClasses { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlySet{Meridian.Infrastructure.DataSources.AssetClass}
+    content.vb: ReadOnly Property SupportedAssetClasses As IReadOnlySet(Of AssetClass)
+  overload: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Health
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Health
+  id: Health
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: Health
+  nameWithType: IDataSource.Health
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Health
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Health
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 72
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Current health status including score and recent errors.
+  example: []
+  syntax:
+    content: DataSourceHealth Health { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceHealth
+    content.vb: ReadOnly Property Health As DataSourceHealth
+  overload: Meridian.Infrastructure.DataSources.IDataSource.Health*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Status
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.Status
+  id: Status
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: IDataSource.Status
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 77
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Current connection/availability status.
+  example: []
+  syntax:
+    content: DataSourceStatus Status { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceStatus
+    content.vb: ReadOnly Property Status As DataSourceStatus
+  overload: Meridian.Infrastructure.DataSources.IDataSource.Status*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  id: RateLimitState
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: RateLimitState
+  nameWithType: IDataSource.RateLimitState
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitState
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 82
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Current rate limit state for this source.
+  example: []
+  syntax:
+    content: RateLimitState RateLimitState { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.RateLimitState
+    content.vb: ReadOnly Property RateLimitState As RateLimitState
+  overload: Meridian.Infrastructure.DataSources.IDataSource.RateLimitState*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  commentId: P:Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  id: HealthChanges
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: HealthChanges
+  nameWithType: IDataSource.HealthChanges
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthChanges
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 87
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Observable stream of health changes for this source.
+  example: []
+  syntax:
+    content: IObservable<DataSourceHealthChanged> HealthChanges { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.DataSourceHealthChanged}
+    content.vb: ReadOnly Property HealthChanges As IObservable(Of DataSourceHealthChanged)
+  overload: Meridian.Infrastructure.DataSources.IDataSource.HealthChanges*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: IDataSource.InitializeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 94
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Initializes the data source, validates credentials, and tests connectivity.
+  example: []
+  syntax:
+    content: Task InitializeAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function InitializeAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  id: ValidateCredentialsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: ValidateCredentialsAsync(CancellationToken)
+  nameWithType: IDataSource.ValidateCredentialsAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateCredentialsAsync
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 100
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: >-
+    Validates that credentials are properly configured.
+
+    Returns true if no credentials are required or if they are valid.
+  example: []
+  syntax:
+    content: Task<bool> ValidateCredentialsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Function ValidateCredentialsAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync*
+- uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  id: TestConnectivityAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.DataSources.IDataSource
+  langs:
+  - csharp
+  - vb
+  name: TestConnectivityAsync(CancellationToken)
+  nameWithType: IDataSource.TestConnectivityAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestConnectivityAsync
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 105
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Tests connectivity to the data source.
+  example: []
+  syntax:
+    content: Task<bool> TestConnectivityAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Function TestConnectivityAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Id*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.Id
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Id
+  name: Id
+  nameWithType: IDataSource.Id
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.DataSources.IDataSource.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_DisplayName
+  name: DisplayName
+  nameWithType: IDataSource.DisplayName
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.DisplayName
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Description*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.Description
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Description
+  name: Description
+  nameWithType: IDataSource.Description
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Description
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Type*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.Type
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Type
+  name: Type
+  nameWithType: IDataSource.Type
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Type
+- uid: Meridian.Infrastructure.DataSources.DataSourceType
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceType
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceType.html
+  name: DataSourceType
+  nameWithType: DataSourceType
+  fullName: Meridian.Infrastructure.DataSources.DataSourceType
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Category*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.Category
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Category
+  name: Category
+  nameWithType: IDataSource.Category
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Category
+- uid: Meridian.Infrastructure.DataSources.DataSourceCategory
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCategory
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceCategory.html
+  name: DataSourceCategory
+  nameWithType: DataSourceCategory
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCategory
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Priority*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.Priority
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Priority
+  name: Priority
+  nameWithType: IDataSource.Priority
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Priority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Capabilities*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Capabilities
+  name: Capabilities
+  nameWithType: IDataSource.Capabilities
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Capabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceCapabilities.html
+  name: DataSourceCapabilities
+  nameWithType: DataSourceCapabilities
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_CapabilityInfo
+  name: CapabilityInfo
+  nameWithType: IDataSource.CapabilityInfo
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.CapabilityInfo
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo.html
+  name: DataSourceCapabilityInfo
+  nameWithType: DataSourceCapabilityInfo
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilityInfo
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: IDataSource.SupportedMarkets
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedMarkets
+- uid: System.Collections.Generic.IReadOnlySet{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlySet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<string>
+  nameWithType: IReadOnlySet<string>
+  fullName: System.Collections.Generic.IReadOnlySet<string>
+  nameWithType.vb: IReadOnlySet(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of String)
+  name.vb: IReadOnlySet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlySet`1
+  commentId: T:System.Collections.Generic.IReadOnlySet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<T>
+  nameWithType: IReadOnlySet<T>
+  fullName: System.Collections.Generic.IReadOnlySet<T>
+  nameWithType.vb: IReadOnlySet(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of T)
+  name.vb: IReadOnlySet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_SupportedAssetClasses
+  name: SupportedAssetClasses
+  nameWithType: IDataSource.SupportedAssetClasses
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.SupportedAssetClasses
+- uid: System.Collections.Generic.IReadOnlySet{Meridian.Infrastructure.DataSources.AssetClass}
+  commentId: T:System.Collections.Generic.IReadOnlySet{Meridian.Infrastructure.DataSources.AssetClass}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlySet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  name: IReadOnlySet<AssetClass>
+  nameWithType: IReadOnlySet<AssetClass>
+  fullName: System.Collections.Generic.IReadOnlySet<Meridian.Infrastructure.DataSources.AssetClass>
+  nameWithType.vb: IReadOnlySet(Of AssetClass)
+  fullName.vb: System.Collections.Generic.IReadOnlySet(Of Meridian.Infrastructure.DataSources.AssetClass)
+  name.vb: IReadOnlySet(Of AssetClass)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.AssetClass
+    name: AssetClass
+    href: Meridian.Infrastructure.DataSources.AssetClass.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlySet`1
+    name: IReadOnlySet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlyset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.AssetClass
+    name: AssetClass
+    href: Meridian.Infrastructure.DataSources.AssetClass.html
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Health*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.Health
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Health
+  name: Health
+  nameWithType: IDataSource.Health
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Health
+- uid: Meridian.Infrastructure.DataSources.DataSourceHealth
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceHealth
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceHealth.html
+  name: DataSourceHealth
+  nameWithType: DataSourceHealth
+  fullName: Meridian.Infrastructure.DataSources.DataSourceHealth
+- uid: Meridian.Infrastructure.DataSources.IDataSource.Status*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.Status
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_Status
+  name: Status
+  nameWithType: IDataSource.Status
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.Status
+- uid: Meridian.Infrastructure.DataSources.DataSourceStatus
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceStatus
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceStatus.html
+  name: DataSourceStatus
+  nameWithType: DataSourceStatus
+  fullName: Meridian.Infrastructure.DataSources.DataSourceStatus
+- uid: Meridian.Infrastructure.DataSources.IDataSource.RateLimitState*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_RateLimitState
+  name: RateLimitState
+  nameWithType: IDataSource.RateLimitState
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.RateLimitState
+- uid: Meridian.Infrastructure.DataSources.RateLimitState
+  commentId: T:Meridian.Infrastructure.DataSources.RateLimitState
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.RateLimitState.html
+  name: RateLimitState
+  nameWithType: RateLimitState
+  fullName: Meridian.Infrastructure.DataSources.RateLimitState
+- uid: Meridian.Infrastructure.DataSources.IDataSource.HealthChanges*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_HealthChanges
+  name: HealthChanges
+  nameWithType: IDataSource.HealthChanges
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.HealthChanges
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.DataSourceHealthChanged}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.DataSourceHealthChanged}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<DataSourceHealthChanged>
+  nameWithType: IObservable<DataSourceHealthChanged>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.DataSourceHealthChanged>
+  nameWithType.vb: IObservable(Of DataSourceHealthChanged)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.DataSourceHealthChanged)
+  name.vb: IObservable(Of DataSourceHealthChanged)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DataSourceHealthChanged
+    name: DataSourceHealthChanged
+    href: Meridian.Infrastructure.DataSources.DataSourceHealthChanged.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DataSourceHealthChanged
+    name: DataSourceHealthChanged
+    href: Meridian.Infrastructure.DataSources.DataSourceHealthChanged.html
+  - name: )
+- uid: System.IObservable`1
+  commentId: T:System.IObservable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<T>
+  nameWithType: IObservable<T>
+  fullName: System.IObservable<T>
+  nameWithType.vb: IObservable(Of T)
+  fullName.vb: System.IObservable(Of T)
+  name.vb: IObservable(Of T)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: IDataSource.InitializeAsync
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.InitializeAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_ValidateCredentialsAsync_System_Threading_CancellationToken_
+  name: ValidateCredentialsAsync
+  nameWithType: IDataSource.ValidateCredentialsAsync
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.ValidateCredentialsAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync
+  href: Meridian.Infrastructure.DataSources.IDataSource.html#Meridian_Infrastructure_DataSources_IDataSource_TestConnectivityAsync_System_Threading_CancellationToken_
+  name: TestConnectivityAsync
+  nameWithType: IDataSource.TestConnectivityAsync
+  fullName: Meridian.Infrastructure.DataSources.IDataSource.TestConnectivityAsync

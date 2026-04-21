@@ -1,0 +1,580 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Http.HttpClientConfiguration
+  commentId: T:Meridian.Infrastructure.Http.HttpClientConfiguration
+  id: HttpClientConfiguration
+  parent: Meridian.Infrastructure.Http
+  children:
+  - Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClients(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  - Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClientsTracked(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{System.String,System.String,System.String})
+  langs:
+  - csharp
+  - vb
+  name: HttpClientConfiguration
+  nameWithType: HttpClientConfiguration
+  fullName: Meridian.Infrastructure.Http.HttpClientConfiguration
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HttpClientConfiguration
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  summary: Extension methods for configuring HttpClient instances via IHttpClientFactory.
+  remarks: >-
+    Implements TD-10: Replace instance HttpClient with IHttpClientFactory.
+
+    Benefits:
+
+    - Proper connection pooling and DNS refresh
+
+    - Prevents socket exhaustion
+
+    - Centralized configuration for timeouts, headers, retry policies
+
+    - Better testability through DI
+
+
+    Resilience policies (retry, circuit breaker) are provided by SharedResiliencePolicies
+
+    to eliminate duplication and ensure consistent behavior across all HttpClients.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-010", "HttpClientFactory for proper HTTP client lifecycle management")]
+
+      public static class HttpClientConfiguration
+    content.vb: >-
+      <ImplementsAdr("ADR-010", "HttpClientFactory for proper HTTP client lifecycle management")>
+
+      Public Module HttpClientConfiguration
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-010
+    - type: System.String
+      value: HttpClientFactory for proper HTTP client lifecycle management
+- uid: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClients(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  commentId: M:Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClients(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  id: AddMarketDataHttpClients(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Http.HttpClientConfiguration
+  langs:
+  - csharp
+  - vb
+  name: AddMarketDataHttpClients(IServiceCollection)
+  nameWithType: HttpClientConfiguration.AddMarketDataHttpClients(IServiceCollection)
+  fullName: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClients(Microsoft.Extensions.DependencyInjection.IServiceCollection)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddMarketDataHttpClients
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  summary: Registers all named HttpClient configurations with the DI container.
+  example: []
+  syntax:
+    content: public static IServiceCollection AddMarketDataHttpClients(this IServiceCollection services)
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    return:
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    content.vb: Public Shared Function AddMarketDataHttpClients(services As IServiceCollection) As IServiceCollection
+  overload: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClients*
+- uid: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClientsTracked(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{System.String,System.String,System.String})
+  commentId: M:Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClientsTracked(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{System.String,System.String,System.String})
+  id: AddMarketDataHttpClientsTracked(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Action{System.String,System.String,System.String})
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Http.HttpClientConfiguration
+  langs:
+  - csharp
+  - vb
+  name: AddMarketDataHttpClientsTracked(IServiceCollection, Action<string, string, string?>)
+  nameWithType: HttpClientConfiguration.AddMarketDataHttpClientsTracked(IServiceCollection, Action<string, string, string?>)
+  fullName: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClientsTracked(Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Action<string, string, string?>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddMarketDataHttpClientsTracked
+    path: ../../src/Meridian.Infrastructure/Http/HttpClientConfiguration.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Http
+  summary: >-
+    Registers all named HttpClient configurations with circuit breaker state-change reporting.
+
+    Each HTTP circuit breaker calls <code class="paramref">onStateChanged</code> when it transitions state,
+
+    enabling the <code>CircuitBreakerStatusService</code> to surface breaker health in the dashboard.
+  example: []
+  syntax:
+    content: public static IServiceCollection AddMarketDataHttpClientsTracked(this IServiceCollection services, Action<string, string, string?> onStateChanged)
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+      description: The service collection to configure.
+    - id: onStateChanged
+      type: System.Action{System.String,System.String,System.String}
+      description: >-
+        Callback invoked on every circuit breaker state transition.
+
+        Parameters: (breakerName, newState "Open"|"Closed"|"HalfOpen", lastError or null).
+    return:
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    content.vb: Public Shared Function AddMarketDataHttpClientsTracked(services As IServiceCollection, onStateChanged As Action(Of String, String, String)) As IServiceCollection
+  overload: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClientsTracked*
+  nameWithType.vb: HttpClientConfiguration.AddMarketDataHttpClientsTracked(IServiceCollection, Action(Of String, String, String))
+  fullName.vb: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClientsTracked(Microsoft.Extensions.DependencyInjection.IServiceCollection, System.Action(Of String, String, String))
+  name.vb: AddMarketDataHttpClientsTracked(IServiceCollection, Action(Of String, String, String))
+references:
+- uid: Meridian.Infrastructure.Http
+  commentId: N:Meridian.Infrastructure.Http
+  href: Meridian.html
+  name: Meridian.Infrastructure.Http
+  nameWithType: Meridian.Infrastructure.Http
+  fullName: Meridian.Infrastructure.Http
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Http
+    name: Http
+    href: Meridian.Infrastructure.Http.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Http
+    name: Http
+    href: Meridian.Infrastructure.Http.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClients*
+  commentId: Overload:Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClients
+  href: Meridian.Infrastructure.Http.HttpClientConfiguration.html#Meridian_Infrastructure_Http_HttpClientConfiguration_AddMarketDataHttpClients_Microsoft_Extensions_DependencyInjection_IServiceCollection_
+  name: AddMarketDataHttpClients
+  nameWithType: HttpClientConfiguration.AddMarketDataHttpClients
+  fullName: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClients
+- uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+  commentId: T:Microsoft.Extensions.DependencyInjection.IServiceCollection
+  parent: Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  name: IServiceCollection
+  nameWithType: IServiceCollection
+  fullName: Microsoft.Extensions.DependencyInjection.IServiceCollection
+- uid: Microsoft.Extensions.DependencyInjection
+  commentId: N:Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.DependencyInjection
+  nameWithType: Microsoft.Extensions.DependencyInjection
+  fullName: Microsoft.Extensions.DependencyInjection
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+- uid: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClientsTracked*
+  commentId: Overload:Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClientsTracked
+  href: Meridian.Infrastructure.Http.HttpClientConfiguration.html#Meridian_Infrastructure_Http_HttpClientConfiguration_AddMarketDataHttpClientsTracked_Microsoft_Extensions_DependencyInjection_IServiceCollection_System_Action_System_String_System_String_System_String__
+  name: AddMarketDataHttpClientsTracked
+  nameWithType: HttpClientConfiguration.AddMarketDataHttpClientsTracked
+  fullName: Meridian.Infrastructure.Http.HttpClientConfiguration.AddMarketDataHttpClientsTracked
+- uid: System.Action{System.String,System.String,System.String}
+  commentId: T:System.Action{System.String,System.String,System.String}
+  parent: System
+  definition: System.Action`3
+  href: https://learn.microsoft.com/dotnet/api/system.action-3
+  name: Action<string, string, string>
+  nameWithType: Action<string, string, string>
+  fullName: System.Action<string, string, string>
+  nameWithType.vb: Action(Of String, String, String)
+  fullName.vb: System.Action(Of String, String, String)
+  name.vb: Action(Of String, String, String)
+  spec.csharp:
+  - uid: System.Action`3
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-3
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`3
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Action`3
+  commentId: T:System.Action`3
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-3
+  name: Action<T1, T2, T3>
+  nameWithType: Action<T1, T2, T3>
+  fullName: System.Action<T1, T2, T3>
+  nameWithType.vb: Action(Of T1, T2, T3)
+  fullName.vb: System.Action(Of T1, T2, T3)
+  name.vb: Action(Of T1, T2, T3)
+  spec.csharp:
+  - uid: System.Action`3
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-3
+  - name: <
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`3
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-3
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: )

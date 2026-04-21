@@ -1,0 +1,192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  commentId: T:Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  id: PriceContinuityResult
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.Gap
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.InvalidBar
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.LargeGap
+  - Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.Ok
+  langs:
+  - csharp
+  - vb
+  name: PriceContinuityResult
+  nameWithType: PriceContinuityResult
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceContinuityResult
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 422
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Result of a price continuity check.
+  example: []
+  syntax:
+    content: 'public enum PriceContinuityResult : byte'
+    content.vb: Public Enum PriceContinuityResult As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.Ok
+  commentId: F:Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.Ok
+  id: Ok
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  langs:
+  - csharp
+  - vb
+  name: Ok
+  nameWithType: PriceContinuityResult.Ok
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.Ok
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ok
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 425
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Price is within normal range.
+  example: []
+  syntax:
+    content: Ok = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.Gap
+  commentId: F:Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.Gap
+  id: Gap
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  langs:
+  - csharp
+  - vb
+  name: Gap
+  nameWithType: PriceContinuityResult.Gap
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.Gap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gap
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 428
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Price gap detected.
+  example: []
+  syntax:
+    content: Gap = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.LargeGap
+  commentId: F:Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.LargeGap
+  id: LargeGap
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  langs:
+  - csharp
+  - vb
+  name: LargeGap
+  nameWithType: PriceContinuityResult.LargeGap
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.LargeGap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LargeGap
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 431
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Large price gap detected.
+  example: []
+  syntax:
+    content: LargeGap = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.InvalidBar
+  commentId: F:Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.InvalidBar
+  id: InvalidBar
+  parent: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  langs:
+  - csharp
+  - vb
+  name: InvalidBar
+  nameWithType: PriceContinuityResult.InvalidBar
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.InvalidBar
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidBar
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/PriceContinuityChecker.cs
+    startLine: 434
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Invalid bar data (high/low inconsistency).
+  example: []
+  syntax:
+    content: InvalidBar = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  commentId: T:Meridian.Application.Monitoring.DataQuality.PriceContinuityResult
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult.html
+  name: PriceContinuityResult
+  nameWithType: PriceContinuityResult
+  fullName: Meridian.Application.Monitoring.DataQuality.PriceContinuityResult

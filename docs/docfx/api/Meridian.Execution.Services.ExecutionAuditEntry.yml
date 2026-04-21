@@ -1,0 +1,1019 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.ExecutionAuditEntry
+  commentId: T:Meridian.Execution.Services.ExecutionAuditEntry
+  id: ExecutionAuditEntry
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.ExecutionAuditEntry.#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  - Meridian.Execution.Services.ExecutionAuditEntry.Action
+  - Meridian.Execution.Services.ExecutionAuditEntry.Actor
+  - Meridian.Execution.Services.ExecutionAuditEntry.AuditId
+  - Meridian.Execution.Services.ExecutionAuditEntry.BrokerName
+  - Meridian.Execution.Services.ExecutionAuditEntry.Category
+  - Meridian.Execution.Services.ExecutionAuditEntry.CorrelationId
+  - Meridian.Execution.Services.ExecutionAuditEntry.Message
+  - Meridian.Execution.Services.ExecutionAuditEntry.Metadata
+  - Meridian.Execution.Services.ExecutionAuditEntry.OccurredAt
+  - Meridian.Execution.Services.ExecutionAuditEntry.OrderId
+  - Meridian.Execution.Services.ExecutionAuditEntry.Outcome
+  - Meridian.Execution.Services.ExecutionAuditEntry.RunId
+  - Meridian.Execution.Services.ExecutionAuditEntry.Symbol
+  langs:
+  - csharp
+  - vb
+  name: ExecutionAuditEntry
+  nameWithType: ExecutionAuditEntry
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionAuditEntry
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Durable audit record for live-execution operations, approvals, and control changes.
+  example: []
+  syntax:
+    content: 'public sealed record ExecutionAuditEntry : IEquatable<ExecutionAuditEntry>'
+    content.vb: Public NotInheritable Class ExecutionAuditEntry Implements IEquatable(Of ExecutionAuditEntry)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Services.ExecutionAuditEntry}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Execution.Services.ExecutionAuditEntry.#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: '#ctor(System.String,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})'
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: ExecutionAuditEntry(string, string, string, string, DateTimeOffset, string?, string?, string?, string?, string?, string?, string?, IReadOnlyDictionary<string, string>?)
+  nameWithType: ExecutionAuditEntry.ExecutionAuditEntry(string, string, string, string, DateTimeOffset, string?, string?, string?, string?, string?, string?, string?, IReadOnlyDictionary<string, string>?)
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.ExecutionAuditEntry(string, string, string, string, System.DateTimeOffset, string?, string?, string?, string?, string?, string?, string?, System.Collections.Generic.IReadOnlyDictionary<string, string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Durable audit record for live-execution operations, approvals, and control changes.
+  example: []
+  syntax:
+    content: public ExecutionAuditEntry(string AuditId, string Category, string Action, string Outcome, DateTimeOffset OccurredAt, string? Actor = null, string? BrokerName = null, string? OrderId = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Message = null, IReadOnlyDictionary<string, string>? Metadata = null)
+    parameters:
+    - id: AuditId
+      type: System.String
+    - id: Category
+      type: System.String
+    - id: Action
+      type: System.String
+    - id: Outcome
+      type: System.String
+    - id: OccurredAt
+      type: System.DateTimeOffset
+    - id: Actor
+      type: System.String
+    - id: BrokerName
+      type: System.String
+    - id: OrderId
+      type: System.String
+    - id: RunId
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: CorrelationId
+      type: System.String
+    - id: Message
+      type: System.String
+    - id: Metadata
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Sub New(AuditId As String, Category As String, Action As String, Outcome As String, OccurredAt As DateTimeOffset, Actor As String = Nothing, BrokerName As String = Nothing, OrderId As String = Nothing, RunId As String = Nothing, Symbol As String = Nothing, CorrelationId As String = Nothing, Message As String = Nothing, Metadata As IReadOnlyDictionary(Of String, String) = Nothing)
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.#ctor*
+  nameWithType.vb: ExecutionAuditEntry.New(String, String, String, String, DateTimeOffset, String, String, String, String, String, String, String, IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Execution.Services.ExecutionAuditEntry.New(String, String, String, String, System.DateTimeOffset, String, String, String, String, String, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: New(String, String, String, String, DateTimeOffset, String, String, String, String, String, String, String, IReadOnlyDictionary(Of String, String))
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.AuditId
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.AuditId
+  id: AuditId
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: AuditId
+  nameWithType: ExecutionAuditEntry.AuditId
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.AuditId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditId
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string AuditId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AuditId As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.AuditId*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Category
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.Category
+  id: Category
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: ExecutionAuditEntry.Category
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string Category { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Category As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.Category*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Action
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.Action
+  id: Action
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Action
+  nameWithType: ExecutionAuditEntry.Action
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Action
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Action
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string Action { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Action As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.Action*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Outcome
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.Outcome
+  id: Outcome
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Outcome
+  nameWithType: ExecutionAuditEntry.Outcome
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Outcome
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Outcome
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string Outcome { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Outcome As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.Outcome*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.OccurredAt
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.OccurredAt
+  id: OccurredAt
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: OccurredAt
+  nameWithType: ExecutionAuditEntry.OccurredAt
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.OccurredAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OccurredAt
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public DateTimeOffset OccurredAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property OccurredAt As DateTimeOffset
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.OccurredAt*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Actor
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.Actor
+  id: Actor
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Actor
+  nameWithType: ExecutionAuditEntry.Actor
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Actor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Actor
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? Actor { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Actor As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.Actor*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.BrokerName
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.BrokerName
+  id: BrokerName
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: BrokerName
+  nameWithType: ExecutionAuditEntry.BrokerName
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.BrokerName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerName
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? BrokerName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BrokerName As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.BrokerName*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.OrderId
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.OrderId
+  id: OrderId
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: OrderId
+  nameWithType: ExecutionAuditEntry.OrderId
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.OrderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderId
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? OrderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OrderId As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.OrderId*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.RunId
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.RunId
+  id: RunId
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: ExecutionAuditEntry.RunId
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.RunId*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Symbol
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: ExecutionAuditEntry.Symbol
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.Symbol*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.CorrelationId
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.CorrelationId
+  id: CorrelationId
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: CorrelationId
+  nameWithType: ExecutionAuditEntry.CorrelationId
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.CorrelationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorrelationId
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? CorrelationId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CorrelationId As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.CorrelationId*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Message
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.Message
+  id: Message
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: ExecutionAuditEntry.Message
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string? Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.Message*
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Metadata
+  commentId: P:Meridian.Execution.Services.ExecutionAuditEntry.Metadata
+  id: Metadata
+  parent: Meridian.Execution.Services.ExecutionAuditEntry
+  langs:
+  - csharp
+  - vb
+  name: Metadata
+  nameWithType: ExecutionAuditEntry.Metadata
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Metadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metadata
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property Metadata As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Execution.Services.ExecutionAuditEntry.Metadata*
+references:
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Services.ExecutionAuditEntry}
+  commentId: T:System.IEquatable{Meridian.Execution.Services.ExecutionAuditEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExecutionAuditEntry>
+  nameWithType: IEquatable<ExecutionAuditEntry>
+  fullName: System.IEquatable<Meridian.Execution.Services.ExecutionAuditEntry>
+  nameWithType.vb: IEquatable(Of ExecutionAuditEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Services.ExecutionAuditEntry)
+  name.vb: IEquatable(Of ExecutionAuditEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionAuditEntry
+    name: ExecutionAuditEntry
+    href: Meridian.Execution.Services.ExecutionAuditEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionAuditEntry
+    name: ExecutionAuditEntry
+    href: Meridian.Execution.Services.ExecutionAuditEntry.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.#ctor*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.#ctor
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry__ctor_System_String_System_String_System_String_System_String_System_DateTimeOffset_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__
+  name: ExecutionAuditEntry
+  nameWithType: ExecutionAuditEntry.ExecutionAuditEntry
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.ExecutionAuditEntry
+  nameWithType.vb: ExecutionAuditEntry.New
+  fullName.vb: Meridian.Execution.Services.ExecutionAuditEntry.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.AuditId*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.AuditId
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_AuditId
+  name: AuditId
+  nameWithType: ExecutionAuditEntry.AuditId
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.AuditId
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Category*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.Category
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_Category
+  name: Category
+  nameWithType: ExecutionAuditEntry.Category
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Category
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Action*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.Action
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_Action
+  name: Action
+  nameWithType: ExecutionAuditEntry.Action
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Action
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Outcome*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.Outcome
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_Outcome
+  name: Outcome
+  nameWithType: ExecutionAuditEntry.Outcome
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Outcome
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.OccurredAt*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.OccurredAt
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_OccurredAt
+  name: OccurredAt
+  nameWithType: ExecutionAuditEntry.OccurredAt
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.OccurredAt
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Actor*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.Actor
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_Actor
+  name: Actor
+  nameWithType: ExecutionAuditEntry.Actor
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Actor
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.BrokerName*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.BrokerName
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_BrokerName
+  name: BrokerName
+  nameWithType: ExecutionAuditEntry.BrokerName
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.BrokerName
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.OrderId*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.OrderId
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_OrderId
+  name: OrderId
+  nameWithType: ExecutionAuditEntry.OrderId
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.OrderId
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.RunId*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.RunId
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_RunId
+  name: RunId
+  nameWithType: ExecutionAuditEntry.RunId
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.RunId
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Symbol*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.Symbol
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_Symbol
+  name: Symbol
+  nameWithType: ExecutionAuditEntry.Symbol
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Symbol
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.CorrelationId*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.CorrelationId
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_CorrelationId
+  name: CorrelationId
+  nameWithType: ExecutionAuditEntry.CorrelationId
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.CorrelationId
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Message*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.Message
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_Message
+  name: Message
+  nameWithType: ExecutionAuditEntry.Message
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Message
+- uid: Meridian.Execution.Services.ExecutionAuditEntry.Metadata*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditEntry.Metadata
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html#Meridian_Execution_Services_ExecutionAuditEntry_Metadata
+  name: Metadata
+  nameWithType: ExecutionAuditEntry.Metadata
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry.Metadata

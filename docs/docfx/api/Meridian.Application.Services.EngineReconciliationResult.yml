@@ -1,0 +1,978 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.EngineReconciliationResult
+  commentId: T:Meridian.Application.Services.EngineReconciliationResult
+  id: EngineReconciliationResult
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.EngineReconciliationResult.#ctor(System.Guid,System.String,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Int32,System.Int32,System.Int32,Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.SecurityMaster.SecurityDetailDto})
+  - Meridian.Application.Services.EngineReconciliationResult.AsOf
+  - Meridian.Application.Services.EngineReconciliationResult.BreakCount
+  - Meridian.Application.Services.EngineReconciliationResult.Breaks
+  - Meridian.Application.Services.EngineReconciliationResult.CompletedAt
+  - Meridian.Application.Services.EngineReconciliationResult.MatchCount
+  - Meridian.Application.Services.EngineReconciliationResult.Matches
+  - Meridian.Application.Services.EngineReconciliationResult.PortfolioId
+  - Meridian.Application.Services.EngineReconciliationResult.ResolvedSecurities
+  - Meridian.Application.Services.EngineReconciliationResult.RunId
+  - Meridian.Application.Services.EngineReconciliationResult.StartedAt
+  - Meridian.Application.Services.EngineReconciliationResult.TotalChecks
+  langs:
+  - csharp
+  - vb
+  name: EngineReconciliationResult
+  nameWithType: EngineReconciliationResult
+  fullName: Meridian.Application.Services.EngineReconciliationResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EngineReconciliationResult
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Result of a single reconciliation engine run.
+  example: []
+  syntax:
+    content: 'public sealed record EngineReconciliationResult : IEquatable<EngineReconciliationResult>'
+    content.vb: Public NotInheritable Class EngineReconciliationResult Implements IEquatable(Of EngineReconciliationResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Services.EngineReconciliationResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.EngineReconciliationResult.#ctor(System.Guid,System.String,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Int32,System.Int32,System.Int32,Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.SecurityMaster.SecurityDetailDto})
+  commentId: M:Meridian.Application.Services.EngineReconciliationResult.#ctor(System.Guid,System.String,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Int32,System.Int32,System.Int32,Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.SecurityMaster.SecurityDetailDto})
+  id: '#ctor(System.Guid,System.String,System.DateTimeOffset,System.DateTimeOffset,System.DateTimeOffset,System.Int32,System.Int32,System.Int32,Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.SecurityMaster.SecurityDetailDto})'
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: EngineReconciliationResult(Guid, string, DateTimeOffset, DateTimeOffset, DateTimeOffset, int, int, int, PortfolioLedgerCheckResultDto[], PortfolioLedgerCheckResultDto[], IReadOnlyDictionary<string, SecurityDetailDto>)
+  nameWithType: EngineReconciliationResult.EngineReconciliationResult(Guid, string, DateTimeOffset, DateTimeOffset, DateTimeOffset, int, int, int, PortfolioLedgerCheckResultDto[], PortfolioLedgerCheckResultDto[], IReadOnlyDictionary<string, SecurityDetailDto>)
+  fullName: Meridian.Application.Services.EngineReconciliationResult.EngineReconciliationResult(System.Guid, string, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, int, int, int, Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[], Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[], System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Contracts.SecurityMaster.SecurityDetailDto>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Result of a single reconciliation engine run.
+  example: []
+  syntax:
+    content: public EngineReconciliationResult(Guid RunId, string PortfolioId, DateTimeOffset AsOf, DateTimeOffset StartedAt, DateTimeOffset CompletedAt, int TotalChecks, int MatchCount, int BreakCount, PortfolioLedgerCheckResultDto[] Matches, PortfolioLedgerCheckResultDto[] Breaks, IReadOnlyDictionary<string, SecurityDetailDto> ResolvedSecurities)
+    parameters:
+    - id: RunId
+      type: System.Guid
+    - id: PortfolioId
+      type: System.String
+    - id: AsOf
+      type: System.DateTimeOffset
+    - id: StartedAt
+      type: System.DateTimeOffset
+    - id: CompletedAt
+      type: System.DateTimeOffset
+    - id: TotalChecks
+      type: System.Int32
+    - id: MatchCount
+      type: System.Int32
+    - id: BreakCount
+      type: System.Int32
+    - id: Matches
+      type: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[]
+    - id: Breaks
+      type: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[]
+    - id: ResolvedSecurities
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+    content.vb: Public Sub New(RunId As Guid, PortfolioId As String, AsOf As DateTimeOffset, StartedAt As DateTimeOffset, CompletedAt As DateTimeOffset, TotalChecks As Integer, MatchCount As Integer, BreakCount As Integer, Matches As PortfolioLedgerCheckResultDto(), Breaks As PortfolioLedgerCheckResultDto(), ResolvedSecurities As IReadOnlyDictionary(Of String, SecurityDetailDto))
+  overload: Meridian.Application.Services.EngineReconciliationResult.#ctor*
+  nameWithType.vb: EngineReconciliationResult.New(Guid, String, DateTimeOffset, DateTimeOffset, DateTimeOffset, Integer, Integer, Integer, PortfolioLedgerCheckResultDto(), PortfolioLedgerCheckResultDto(), IReadOnlyDictionary(Of String, SecurityDetailDto))
+  fullName.vb: Meridian.Application.Services.EngineReconciliationResult.New(System.Guid, String, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset, Integer, Integer, Integer, Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto(), Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto(), System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Contracts.SecurityMaster.SecurityDetailDto))
+  name.vb: New(Guid, String, DateTimeOffset, DateTimeOffset, DateTimeOffset, Integer, Integer, Integer, PortfolioLedgerCheckResultDto(), PortfolioLedgerCheckResultDto(), IReadOnlyDictionary(Of String, SecurityDetailDto))
+- uid: Meridian.Application.Services.EngineReconciliationResult.RunId
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.RunId
+  id: RunId
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: EngineReconciliationResult.RunId
+  fullName: Meridian.Application.Services.EngineReconciliationResult.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public Guid RunId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property RunId As Guid
+  overload: Meridian.Application.Services.EngineReconciliationResult.RunId*
+- uid: Meridian.Application.Services.EngineReconciliationResult.PortfolioId
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.PortfolioId
+  id: PortfolioId
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: PortfolioId
+  nameWithType: EngineReconciliationResult.PortfolioId
+  fullName: Meridian.Application.Services.EngineReconciliationResult.PortfolioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioId
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string PortfolioId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PortfolioId As String
+  overload: Meridian.Application.Services.EngineReconciliationResult.PortfolioId*
+- uid: Meridian.Application.Services.EngineReconciliationResult.AsOf
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.AsOf
+  id: AsOf
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: EngineReconciliationResult.AsOf
+  fullName: Meridian.Application.Services.EngineReconciliationResult.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Application.Services.EngineReconciliationResult.AsOf*
+- uid: Meridian.Application.Services.EngineReconciliationResult.StartedAt
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.StartedAt
+  id: StartedAt
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: EngineReconciliationResult.StartedAt
+  fullName: Meridian.Application.Services.EngineReconciliationResult.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset StartedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property StartedAt As DateTimeOffset
+  overload: Meridian.Application.Services.EngineReconciliationResult.StartedAt*
+- uid: Meridian.Application.Services.EngineReconciliationResult.CompletedAt
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: EngineReconciliationResult.CompletedAt
+  fullName: Meridian.Application.Services.EngineReconciliationResult.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset CompletedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CompletedAt As DateTimeOffset
+  overload: Meridian.Application.Services.EngineReconciliationResult.CompletedAt*
+- uid: Meridian.Application.Services.EngineReconciliationResult.TotalChecks
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.TotalChecks
+  id: TotalChecks
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: TotalChecks
+  nameWithType: EngineReconciliationResult.TotalChecks
+  fullName: Meridian.Application.Services.EngineReconciliationResult.TotalChecks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalChecks
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int TotalChecks { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalChecks As Integer
+  overload: Meridian.Application.Services.EngineReconciliationResult.TotalChecks*
+- uid: Meridian.Application.Services.EngineReconciliationResult.MatchCount
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.MatchCount
+  id: MatchCount
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: MatchCount
+  nameWithType: EngineReconciliationResult.MatchCount
+  fullName: Meridian.Application.Services.EngineReconciliationResult.MatchCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MatchCount
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int MatchCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MatchCount As Integer
+  overload: Meridian.Application.Services.EngineReconciliationResult.MatchCount*
+- uid: Meridian.Application.Services.EngineReconciliationResult.BreakCount
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.BreakCount
+  id: BreakCount
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: BreakCount
+  nameWithType: EngineReconciliationResult.BreakCount
+  fullName: Meridian.Application.Services.EngineReconciliationResult.BreakCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BreakCount
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int BreakCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BreakCount As Integer
+  overload: Meridian.Application.Services.EngineReconciliationResult.BreakCount*
+- uid: Meridian.Application.Services.EngineReconciliationResult.Matches
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.Matches
+  id: Matches
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: Matches
+  nameWithType: EngineReconciliationResult.Matches
+  fullName: Meridian.Application.Services.EngineReconciliationResult.Matches
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Matches
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public PortfolioLedgerCheckResultDto[] Matches { get; init; }
+    parameters: []
+    return:
+      type: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[]
+    content.vb: Public Property Matches As PortfolioLedgerCheckResultDto()
+  overload: Meridian.Application.Services.EngineReconciliationResult.Matches*
+- uid: Meridian.Application.Services.EngineReconciliationResult.Breaks
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.Breaks
+  id: Breaks
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: Breaks
+  nameWithType: EngineReconciliationResult.Breaks
+  fullName: Meridian.Application.Services.EngineReconciliationResult.Breaks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Breaks
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public PortfolioLedgerCheckResultDto[] Breaks { get; init; }
+    parameters: []
+    return:
+      type: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[]
+    content.vb: Public Property Breaks As PortfolioLedgerCheckResultDto()
+  overload: Meridian.Application.Services.EngineReconciliationResult.Breaks*
+- uid: Meridian.Application.Services.EngineReconciliationResult.ResolvedSecurities
+  commentId: P:Meridian.Application.Services.EngineReconciliationResult.ResolvedSecurities
+  id: ResolvedSecurities
+  parent: Meridian.Application.Services.EngineReconciliationResult
+  langs:
+  - csharp
+  - vb
+  name: ResolvedSecurities
+  nameWithType: EngineReconciliationResult.ResolvedSecurities
+  fullName: Meridian.Application.Services.EngineReconciliationResult.ResolvedSecurities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ReconciliationEngineService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolvedSecurities
+    path: ../../src/Meridian.Application/Services/ReconciliationEngineService.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public IReadOnlyDictionary<string, SecurityDetailDto> ResolvedSecurities { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+    content.vb: Public Property ResolvedSecurities As IReadOnlyDictionary(Of String, SecurityDetailDto)
+  overload: Meridian.Application.Services.EngineReconciliationResult.ResolvedSecurities*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Services.EngineReconciliationResult}
+  commentId: T:System.IEquatable{Meridian.Application.Services.EngineReconciliationResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<EngineReconciliationResult>
+  nameWithType: IEquatable<EngineReconciliationResult>
+  fullName: System.IEquatable<Meridian.Application.Services.EngineReconciliationResult>
+  nameWithType.vb: IEquatable(Of EngineReconciliationResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.EngineReconciliationResult)
+  name.vb: IEquatable(Of EngineReconciliationResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.EngineReconciliationResult
+    name: EngineReconciliationResult
+    href: Meridian.Application.Services.EngineReconciliationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.EngineReconciliationResult
+    name: EngineReconciliationResult
+    href: Meridian.Application.Services.EngineReconciliationResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.EngineReconciliationResult.#ctor*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.#ctor
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult__ctor_System_Guid_System_String_System_DateTimeOffset_System_DateTimeOffset_System_DateTimeOffset_System_Int32_System_Int32_System_Int32_Meridian_FSharp_Ledger_PortfolioLedgerCheckResultDto___Meridian_FSharp_Ledger_PortfolioLedgerCheckResultDto___System_Collections_Generic_IReadOnlyDictionary_System_String_Meridian_Contracts_SecurityMaster_SecurityDetailDto__
+  name: EngineReconciliationResult
+  nameWithType: EngineReconciliationResult.EngineReconciliationResult
+  fullName: Meridian.Application.Services.EngineReconciliationResult.EngineReconciliationResult
+  nameWithType.vb: EngineReconciliationResult.New
+  fullName.vb: Meridian.Application.Services.EngineReconciliationResult.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[]
+  isExternal: true
+  name: PortfolioLedgerCheckResultDto[]
+  nameWithType: PortfolioLedgerCheckResultDto[]
+  fullName: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[]
+  nameWithType.vb: PortfolioLedgerCheckResultDto()
+  fullName.vb: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto()
+  name.vb: PortfolioLedgerCheckResultDto()
+  spec.csharp:
+  - uid: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto
+    name: PortfolioLedgerCheckResultDto
+    isExternal: true
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto
+    name: PortfolioLedgerCheckResultDto
+    isExternal: true
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, SecurityDetailDto>
+  nameWithType: IReadOnlyDictionary<string, SecurityDetailDto>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Contracts.SecurityMaster.SecurityDetailDto>
+  nameWithType.vb: IReadOnlyDictionary(Of String, SecurityDetailDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Contracts.SecurityMaster.SecurityDetailDto)
+  name.vb: IReadOnlyDictionary(Of String, SecurityDetailDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+    name: SecurityDetailDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+    name: SecurityDetailDto
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.EngineReconciliationResult.RunId*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.RunId
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_RunId
+  name: RunId
+  nameWithType: EngineReconciliationResult.RunId
+  fullName: Meridian.Application.Services.EngineReconciliationResult.RunId
+- uid: Meridian.Application.Services.EngineReconciliationResult.PortfolioId*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.PortfolioId
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_PortfolioId
+  name: PortfolioId
+  nameWithType: EngineReconciliationResult.PortfolioId
+  fullName: Meridian.Application.Services.EngineReconciliationResult.PortfolioId
+- uid: Meridian.Application.Services.EngineReconciliationResult.AsOf*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.AsOf
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_AsOf
+  name: AsOf
+  nameWithType: EngineReconciliationResult.AsOf
+  fullName: Meridian.Application.Services.EngineReconciliationResult.AsOf
+- uid: Meridian.Application.Services.EngineReconciliationResult.StartedAt*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.StartedAt
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_StartedAt
+  name: StartedAt
+  nameWithType: EngineReconciliationResult.StartedAt
+  fullName: Meridian.Application.Services.EngineReconciliationResult.StartedAt
+- uid: Meridian.Application.Services.EngineReconciliationResult.CompletedAt*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.CompletedAt
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_CompletedAt
+  name: CompletedAt
+  nameWithType: EngineReconciliationResult.CompletedAt
+  fullName: Meridian.Application.Services.EngineReconciliationResult.CompletedAt
+- uid: Meridian.Application.Services.EngineReconciliationResult.TotalChecks*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.TotalChecks
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_TotalChecks
+  name: TotalChecks
+  nameWithType: EngineReconciliationResult.TotalChecks
+  fullName: Meridian.Application.Services.EngineReconciliationResult.TotalChecks
+- uid: Meridian.Application.Services.EngineReconciliationResult.MatchCount*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.MatchCount
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_MatchCount
+  name: MatchCount
+  nameWithType: EngineReconciliationResult.MatchCount
+  fullName: Meridian.Application.Services.EngineReconciliationResult.MatchCount
+- uid: Meridian.Application.Services.EngineReconciliationResult.BreakCount*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.BreakCount
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_BreakCount
+  name: BreakCount
+  nameWithType: EngineReconciliationResult.BreakCount
+  fullName: Meridian.Application.Services.EngineReconciliationResult.BreakCount
+- uid: Meridian.Application.Services.EngineReconciliationResult.Matches*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.Matches
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_Matches
+  name: Matches
+  nameWithType: EngineReconciliationResult.Matches
+  fullName: Meridian.Application.Services.EngineReconciliationResult.Matches
+- uid: Meridian.Application.Services.EngineReconciliationResult.Breaks*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.Breaks
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_Breaks
+  name: Breaks
+  nameWithType: EngineReconciliationResult.Breaks
+  fullName: Meridian.Application.Services.EngineReconciliationResult.Breaks
+- uid: Meridian.Application.Services.EngineReconciliationResult.ResolvedSecurities*
+  commentId: Overload:Meridian.Application.Services.EngineReconciliationResult.ResolvedSecurities
+  href: Meridian.Application.Services.EngineReconciliationResult.html#Meridian_Application_Services_EngineReconciliationResult_ResolvedSecurities
+  name: ResolvedSecurities
+  nameWithType: EngineReconciliationResult.ResolvedSecurities
+  fullName: Meridian.Application.Services.EngineReconciliationResult.ResolvedSecurities

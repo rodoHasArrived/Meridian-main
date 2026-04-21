@@ -1,0 +1,865 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ProviderBindingConfig
+  commentId: T:Meridian.Application.Config.ProviderBindingConfig
+  id: ProviderBindingConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ProviderBindingConfig.#ctor(System.String,Meridian.ProviderSdk.ProviderCapabilityKind,System.String,Meridian.ProviderSdk.ProviderBindingTarget,System.Int32,System.Boolean,System.String[],System.Nullable{Meridian.ProviderSdk.ProviderSafetyMode},System.String)
+  - Meridian.Application.Config.ProviderBindingConfig.BindingId
+  - Meridian.Application.Config.ProviderBindingConfig.Capability
+  - Meridian.Application.Config.ProviderBindingConfig.ConnectionId
+  - Meridian.Application.Config.ProviderBindingConfig.Enabled
+  - Meridian.Application.Config.ProviderBindingConfig.FailoverConnectionIds
+  - Meridian.Application.Config.ProviderBindingConfig.Notes
+  - Meridian.Application.Config.ProviderBindingConfig.Priority
+  - Meridian.Application.Config.ProviderBindingConfig.SafetyModeOverride
+  - Meridian.Application.Config.ProviderBindingConfig.Target
+  langs:
+  - csharp
+  - vb
+  name: ProviderBindingConfig
+  nameWithType: ProviderBindingConfig
+  fullName: Meridian.Application.Config.ProviderBindingConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderBindingConfig
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Capability binding targeting one connection and one scope.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderBindingConfig : IEquatable<ProviderBindingConfig>'
+    content.vb: Public NotInheritable Class ProviderBindingConfig Implements IEquatable(Of ProviderBindingConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.ProviderBindingConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.ProviderBindingConfig.#ctor(System.String,Meridian.ProviderSdk.ProviderCapabilityKind,System.String,Meridian.ProviderSdk.ProviderBindingTarget,System.Int32,System.Boolean,System.String[],System.Nullable{Meridian.ProviderSdk.ProviderSafetyMode},System.String)
+  commentId: M:Meridian.Application.Config.ProviderBindingConfig.#ctor(System.String,Meridian.ProviderSdk.ProviderCapabilityKind,System.String,Meridian.ProviderSdk.ProviderBindingTarget,System.Int32,System.Boolean,System.String[],System.Nullable{Meridian.ProviderSdk.ProviderSafetyMode},System.String)
+  id: '#ctor(System.String,Meridian.ProviderSdk.ProviderCapabilityKind,System.String,Meridian.ProviderSdk.ProviderBindingTarget,System.Int32,System.Boolean,System.String[],System.Nullable{Meridian.ProviderSdk.ProviderSafetyMode},System.String)'
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: ProviderBindingConfig(string, ProviderCapabilityKind, string, ProviderBindingTarget?, int, bool, string[]?, ProviderSafetyMode?, string?)
+  nameWithType: ProviderBindingConfig.ProviderBindingConfig(string, ProviderCapabilityKind, string, ProviderBindingTarget?, int, bool, string[]?, ProviderSafetyMode?, string?)
+  fullName: Meridian.Application.Config.ProviderBindingConfig.ProviderBindingConfig(string, Meridian.ProviderSdk.ProviderCapabilityKind, string, Meridian.ProviderSdk.ProviderBindingTarget?, int, bool, string[]?, Meridian.ProviderSdk.ProviderSafetyMode?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Capability binding targeting one connection and one scope.
+  example: []
+  syntax:
+    content: public ProviderBindingConfig(string BindingId, ProviderCapabilityKind Capability, string ConnectionId, ProviderBindingTarget? Target = null, int Priority = 100, bool Enabled = true, string[]? FailoverConnectionIds = null, ProviderSafetyMode? SafetyModeOverride = null, string? Notes = null)
+    parameters:
+    - id: BindingId
+      type: System.String
+    - id: Capability
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+    - id: ConnectionId
+      type: System.String
+    - id: Target
+      type: Meridian.ProviderSdk.ProviderBindingTarget
+    - id: Priority
+      type: System.Int32
+    - id: Enabled
+      type: System.Boolean
+    - id: FailoverConnectionIds
+      type: System.String[]
+    - id: SafetyModeOverride
+      type: System.Nullable{Meridian.ProviderSdk.ProviderSafetyMode}
+    - id: Notes
+      type: System.String
+    content.vb: Public Sub New(BindingId As String, Capability As ProviderCapabilityKind, ConnectionId As String, Target As ProviderBindingTarget = Nothing, Priority As Integer = 100, Enabled As Boolean = True, FailoverConnectionIds As String() = Nothing, SafetyModeOverride As ProviderSafetyMode? = Nothing, Notes As String = Nothing)
+  overload: Meridian.Application.Config.ProviderBindingConfig.#ctor*
+  nameWithType.vb: ProviderBindingConfig.New(String, ProviderCapabilityKind, String, ProviderBindingTarget, Integer, Boolean, String(), ProviderSafetyMode?, String)
+  fullName.vb: Meridian.Application.Config.ProviderBindingConfig.New(String, Meridian.ProviderSdk.ProviderCapabilityKind, String, Meridian.ProviderSdk.ProviderBindingTarget, Integer, Boolean, String(), Meridian.ProviderSdk.ProviderSafetyMode?, String)
+  name.vb: New(String, ProviderCapabilityKind, String, ProviderBindingTarget, Integer, Boolean, String(), ProviderSafetyMode?, String)
+- uid: Meridian.Application.Config.ProviderBindingConfig.BindingId
+  commentId: P:Meridian.Application.Config.ProviderBindingConfig.BindingId
+  id: BindingId
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: BindingId
+  nameWithType: ProviderBindingConfig.BindingId
+  fullName: Meridian.Application.Config.ProviderBindingConfig.BindingId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BindingId
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string BindingId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BindingId As String
+  overload: Meridian.Application.Config.ProviderBindingConfig.BindingId*
+- uid: Meridian.Application.Config.ProviderBindingConfig.Capability
+  commentId: P:Meridian.Application.Config.ProviderBindingConfig.Capability
+  id: Capability
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: Capability
+  nameWithType: ProviderBindingConfig.Capability
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Capability
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capability
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public ProviderCapabilityKind Capability { get; init; }
+    parameters: []
+    return:
+      type: Meridian.ProviderSdk.ProviderCapabilityKind
+    content.vb: Public Property Capability As ProviderCapabilityKind
+  overload: Meridian.Application.Config.ProviderBindingConfig.Capability*
+- uid: Meridian.Application.Config.ProviderBindingConfig.ConnectionId
+  commentId: P:Meridian.Application.Config.ProviderBindingConfig.ConnectionId
+  id: ConnectionId
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: ConnectionId
+  nameWithType: ProviderBindingConfig.ConnectionId
+  fullName: Meridian.Application.Config.ProviderBindingConfig.ConnectionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionId
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string ConnectionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConnectionId As String
+  overload: Meridian.Application.Config.ProviderBindingConfig.ConnectionId*
+- uid: Meridian.Application.Config.ProviderBindingConfig.Target
+  commentId: P:Meridian.Application.Config.ProviderBindingConfig.Target
+  id: Target
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: Target
+  nameWithType: ProviderBindingConfig.Target
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Target
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Target
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public ProviderBindingTarget? Target { get; init; }
+    parameters: []
+    return:
+      type: Meridian.ProviderSdk.ProviderBindingTarget
+    content.vb: Public Property Target As ProviderBindingTarget
+  overload: Meridian.Application.Config.ProviderBindingConfig.Target*
+- uid: Meridian.Application.Config.ProviderBindingConfig.Priority
+  commentId: P:Meridian.Application.Config.ProviderBindingConfig.Priority
+  id: Priority
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: ProviderBindingConfig.Priority
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Application.Config.ProviderBindingConfig.Priority*
+- uid: Meridian.Application.Config.ProviderBindingConfig.Enabled
+  commentId: P:Meridian.Application.Config.ProviderBindingConfig.Enabled
+  id: Enabled
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: ProviderBindingConfig.Enabled
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public bool Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Application.Config.ProviderBindingConfig.Enabled*
+- uid: Meridian.Application.Config.ProviderBindingConfig.FailoverConnectionIds
+  commentId: P:Meridian.Application.Config.ProviderBindingConfig.FailoverConnectionIds
+  id: FailoverConnectionIds
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: FailoverConnectionIds
+  nameWithType: ProviderBindingConfig.FailoverConnectionIds
+  fullName: Meridian.Application.Config.ProviderBindingConfig.FailoverConnectionIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverConnectionIds
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string[]? FailoverConnectionIds { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property FailoverConnectionIds As String()
+  overload: Meridian.Application.Config.ProviderBindingConfig.FailoverConnectionIds*
+- uid: Meridian.Application.Config.ProviderBindingConfig.SafetyModeOverride
+  commentId: P:Meridian.Application.Config.ProviderBindingConfig.SafetyModeOverride
+  id: SafetyModeOverride
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: SafetyModeOverride
+  nameWithType: ProviderBindingConfig.SafetyModeOverride
+  fullName: Meridian.Application.Config.ProviderBindingConfig.SafetyModeOverride
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SafetyModeOverride
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public ProviderSafetyMode? SafetyModeOverride { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.ProviderSdk.ProviderSafetyMode}
+    content.vb: Public Property SafetyModeOverride As ProviderSafetyMode?
+  overload: Meridian.Application.Config.ProviderBindingConfig.SafetyModeOverride*
+- uid: Meridian.Application.Config.ProviderBindingConfig.Notes
+  commentId: P:Meridian.Application.Config.ProviderBindingConfig.Notes
+  id: Notes
+  parent: Meridian.Application.Config.ProviderBindingConfig
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: ProviderBindingConfig.Notes
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? Notes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Notes As String
+  overload: Meridian.Application.Config.ProviderBindingConfig.Notes*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.ProviderBindingConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.ProviderBindingConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderBindingConfig>
+  nameWithType: IEquatable<ProviderBindingConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.ProviderBindingConfig>
+  nameWithType.vb: IEquatable(Of ProviderBindingConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.ProviderBindingConfig)
+  name.vb: IEquatable(Of ProviderBindingConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.ProviderBindingConfig
+    name: ProviderBindingConfig
+    href: Meridian.Application.Config.ProviderBindingConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ProviderBindingConfig
+    name: ProviderBindingConfig
+    href: Meridian.Application.Config.ProviderBindingConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.ProviderBindingConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.#ctor
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig__ctor_System_String_Meridian_ProviderSdk_ProviderCapabilityKind_System_String_Meridian_ProviderSdk_ProviderBindingTarget_System_Int32_System_Boolean_System_String___System_Nullable_Meridian_ProviderSdk_ProviderSafetyMode__System_String_
+  name: ProviderBindingConfig
+  nameWithType: ProviderBindingConfig.ProviderBindingConfig
+  fullName: Meridian.Application.Config.ProviderBindingConfig.ProviderBindingConfig
+  nameWithType.vb: ProviderBindingConfig.New
+  fullName.vb: Meridian.Application.Config.ProviderBindingConfig.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.ProviderSdk.ProviderCapabilityKind
+  commentId: T:Meridian.ProviderSdk.ProviderCapabilityKind
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderCapabilityKind.html
+  name: ProviderCapabilityKind
+  nameWithType: ProviderCapabilityKind
+  fullName: Meridian.ProviderSdk.ProviderCapabilityKind
+- uid: Meridian.ProviderSdk.ProviderBindingTarget
+  commentId: T:Meridian.ProviderSdk.ProviderBindingTarget
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderBindingTarget.html
+  name: ProviderBindingTarget
+  nameWithType: ProviderBindingTarget
+  fullName: Meridian.ProviderSdk.ProviderBindingTarget
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Nullable{Meridian.ProviderSdk.ProviderSafetyMode}
+  commentId: T:System.Nullable{Meridian.ProviderSdk.ProviderSafetyMode}
+  parent: System
+  definition: System.Nullable`1
+  name: ProviderSafetyMode?
+  nameWithType: ProviderSafetyMode?
+  fullName: Meridian.ProviderSdk.ProviderSafetyMode?
+  spec.csharp:
+  - uid: Meridian.ProviderSdk.ProviderSafetyMode
+    name: ProviderSafetyMode
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.ProviderSdk.ProviderSafetyMode
+    name: ProviderSafetyMode
+  - name: '?'
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.ProviderBindingConfig.BindingId*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.BindingId
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig_BindingId
+  name: BindingId
+  nameWithType: ProviderBindingConfig.BindingId
+  fullName: Meridian.Application.Config.ProviderBindingConfig.BindingId
+- uid: Meridian.Application.Config.ProviderBindingConfig.Capability*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.Capability
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig_Capability
+  name: Capability
+  nameWithType: ProviderBindingConfig.Capability
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Capability
+- uid: Meridian.Application.Config.ProviderBindingConfig.ConnectionId*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.ConnectionId
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig_ConnectionId
+  name: ConnectionId
+  nameWithType: ProviderBindingConfig.ConnectionId
+  fullName: Meridian.Application.Config.ProviderBindingConfig.ConnectionId
+- uid: Meridian.Application.Config.ProviderBindingConfig.Target*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.Target
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig_Target
+  name: Target
+  nameWithType: ProviderBindingConfig.Target
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Target
+- uid: Meridian.Application.Config.ProviderBindingConfig.Priority*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.Priority
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig_Priority
+  name: Priority
+  nameWithType: ProviderBindingConfig.Priority
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Priority
+- uid: Meridian.Application.Config.ProviderBindingConfig.Enabled*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.Enabled
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig_Enabled
+  name: Enabled
+  nameWithType: ProviderBindingConfig.Enabled
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Enabled
+- uid: Meridian.Application.Config.ProviderBindingConfig.FailoverConnectionIds*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.FailoverConnectionIds
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig_FailoverConnectionIds
+  name: FailoverConnectionIds
+  nameWithType: ProviderBindingConfig.FailoverConnectionIds
+  fullName: Meridian.Application.Config.ProviderBindingConfig.FailoverConnectionIds
+- uid: Meridian.Application.Config.ProviderBindingConfig.SafetyModeOverride*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.SafetyModeOverride
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig_SafetyModeOverride
+  name: SafetyModeOverride
+  nameWithType: ProviderBindingConfig.SafetyModeOverride
+  fullName: Meridian.Application.Config.ProviderBindingConfig.SafetyModeOverride
+- uid: Meridian.Application.Config.ProviderBindingConfig.Notes*
+  commentId: Overload:Meridian.Application.Config.ProviderBindingConfig.Notes
+  href: Meridian.Application.Config.ProviderBindingConfig.html#Meridian_Application_Config_ProviderBindingConfig_Notes
+  name: Notes
+  nameWithType: ProviderBindingConfig.Notes
+  fullName: Meridian.Application.Config.ProviderBindingConfig.Notes

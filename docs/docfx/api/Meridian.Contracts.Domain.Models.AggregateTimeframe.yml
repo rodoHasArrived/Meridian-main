@@ -1,0 +1,192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Models.AggregateTimeframe
+  commentId: T:Meridian.Contracts.Domain.Models.AggregateTimeframe
+  id: AggregateTimeframe
+  parent: Meridian.Contracts.Domain.Models
+  children:
+  - Meridian.Contracts.Domain.Models.AggregateTimeframe.Day
+  - Meridian.Contracts.Domain.Models.AggregateTimeframe.Hour
+  - Meridian.Contracts.Domain.Models.AggregateTimeframe.Minute
+  - Meridian.Contracts.Domain.Models.AggregateTimeframe.Second
+  langs:
+  - csharp
+  - vb
+  name: AggregateTimeframe
+  nameWithType: AggregateTimeframe
+  fullName: Meridian.Contracts.Domain.Models.AggregateTimeframe
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AggregateTimeframe
+    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Timeframe for aggregate bars.
+  example: []
+  syntax:
+    content: 'public enum AggregateTimeframe : byte'
+    content.vb: Public Enum AggregateTimeframe As Byte
+- uid: Meridian.Contracts.Domain.Models.AggregateTimeframe.Second
+  commentId: F:Meridian.Contracts.Domain.Models.AggregateTimeframe.Second
+  id: Second
+  parent: Meridian.Contracts.Domain.Models.AggregateTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Second
+  nameWithType: AggregateTimeframe.Second
+  fullName: Meridian.Contracts.Domain.Models.AggregateTimeframe.Second
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Second
+    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Per-second aggregate (Polygon "A" event).
+  example: []
+  syntax:
+    content: Second = 0
+    return:
+      type: Meridian.Contracts.Domain.Models.AggregateTimeframe
+- uid: Meridian.Contracts.Domain.Models.AggregateTimeframe.Minute
+  commentId: F:Meridian.Contracts.Domain.Models.AggregateTimeframe.Minute
+  id: Minute
+  parent: Meridian.Contracts.Domain.Models.AggregateTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Minute
+  nameWithType: AggregateTimeframe.Minute
+  fullName: Meridian.Contracts.Domain.Models.AggregateTimeframe.Minute
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute
+    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Per-minute aggregate (Polygon "AM" event).
+  example: []
+  syntax:
+    content: Minute = 1
+    return:
+      type: Meridian.Contracts.Domain.Models.AggregateTimeframe
+- uid: Meridian.Contracts.Domain.Models.AggregateTimeframe.Hour
+  commentId: F:Meridian.Contracts.Domain.Models.AggregateTimeframe.Hour
+  id: Hour
+  parent: Meridian.Contracts.Domain.Models.AggregateTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Hour
+  nameWithType: AggregateTimeframe.Hour
+  fullName: Meridian.Contracts.Domain.Models.AggregateTimeframe.Hour
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hour
+    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Hourly aggregate.
+  example: []
+  syntax:
+    content: Hour = 2
+    return:
+      type: Meridian.Contracts.Domain.Models.AggregateTimeframe
+- uid: Meridian.Contracts.Domain.Models.AggregateTimeframe.Day
+  commentId: F:Meridian.Contracts.Domain.Models.AggregateTimeframe.Day
+  id: Day
+  parent: Meridian.Contracts.Domain.Models.AggregateTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Day
+  nameWithType: AggregateTimeframe.Day
+  fullName: Meridian.Contracts.Domain.Models.AggregateTimeframe.Day
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Day
+    path: ../../src/Meridian.Contracts/Domain/Models/AggregateBarPayload.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Daily aggregate.
+  example: []
+  syntax:
+    content: Day = 3
+    return:
+      type: Meridian.Contracts.Domain.Models.AggregateTimeframe
+references:
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Contracts.Domain.Models.AggregateTimeframe
+  commentId: T:Meridian.Contracts.Domain.Models.AggregateTimeframe
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.AggregateTimeframe.html
+  name: AggregateTimeframe
+  nameWithType: AggregateTimeframe
+  fullName: Meridian.Contracts.Domain.Models.AggregateTimeframe

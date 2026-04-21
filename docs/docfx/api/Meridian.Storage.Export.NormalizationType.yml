@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.NormalizationType
+  commentId: T:Meridian.Storage.Export.NormalizationType
+  id: NormalizationType
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.NormalizationType.MinMax
+  - Meridian.Storage.Export.NormalizationType.None
+  - Meridian.Storage.Export.NormalizationType.Robust
+  - Meridian.Storage.Export.NormalizationType.ZScore
+  langs:
+  - csharp
+  - vb
+  name: NormalizationType
+  nameWithType: NormalizationType
+  fullName: Meridian.Storage.Export.NormalizationType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizationType
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 268
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Feature normalization types.
+  example: []
+  syntax:
+    content: 'public enum NormalizationType : byte'
+    content.vb: Public Enum NormalizationType As Byte
+- uid: Meridian.Storage.Export.NormalizationType.None
+  commentId: F:Meridian.Storage.Export.NormalizationType.None
+  id: None
+  parent: Meridian.Storage.Export.NormalizationType
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: NormalizationType.None
+  fullName: Meridian.Storage.Export.NormalizationType.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 271
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: No normalization.
+  example: []
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Storage.Export.NormalizationType
+- uid: Meridian.Storage.Export.NormalizationType.MinMax
+  commentId: F:Meridian.Storage.Export.NormalizationType.MinMax
+  id: MinMax
+  parent: Meridian.Storage.Export.NormalizationType
+  langs:
+  - csharp
+  - vb
+  name: MinMax
+  nameWithType: NormalizationType.MinMax
+  fullName: Meridian.Storage.Export.NormalizationType.MinMax
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinMax
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Min-max scaling to [0,1].
+  example: []
+  syntax:
+    content: MinMax = 1
+    return:
+      type: Meridian.Storage.Export.NormalizationType
+- uid: Meridian.Storage.Export.NormalizationType.ZScore
+  commentId: F:Meridian.Storage.Export.NormalizationType.ZScore
+  id: ZScore
+  parent: Meridian.Storage.Export.NormalizationType
+  langs:
+  - csharp
+  - vb
+  name: ZScore
+  nameWithType: NormalizationType.ZScore
+  fullName: Meridian.Storage.Export.NormalizationType.ZScore
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ZScore
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Z-score normalization.
+  example: []
+  syntax:
+    content: ZScore = 2
+    return:
+      type: Meridian.Storage.Export.NormalizationType
+- uid: Meridian.Storage.Export.NormalizationType.Robust
+  commentId: F:Meridian.Storage.Export.NormalizationType.Robust
+  id: Robust
+  parent: Meridian.Storage.Export.NormalizationType
+  langs:
+  - csharp
+  - vb
+  name: Robust
+  nameWithType: NormalizationType.Robust
+  fullName: Meridian.Storage.Export.NormalizationType.Robust
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Robust
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 277
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Robust scaling (using median and IQR).
+  example: []
+  syntax:
+    content: Robust = 3
+    return:
+      type: Meridian.Storage.Export.NormalizationType
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.NormalizationType
+  commentId: T:Meridian.Storage.Export.NormalizationType
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.NormalizationType.html
+  name: NormalizationType
+  nameWithType: NormalizationType
+  fullName: Meridian.Storage.Export.NormalizationType

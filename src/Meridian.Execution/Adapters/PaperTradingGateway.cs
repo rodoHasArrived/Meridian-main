@@ -238,7 +238,7 @@ public sealed class PaperTradingGateway : IOrderGateway
             ClientOrderId: orderId,
             Symbol: request.Symbol,
             Status: GatewayOrderStatus.Filled,
-            FilledQuantity: checked((long)decimal.Truncate(decimal.Abs(request.Quantity))),
+            FilledQuantity: decimal.Abs(request.Quantity),
             AverageFillPrice: fillPrice,
             RejectReason: null,
             Timestamp: DateTimeOffset.UtcNow);

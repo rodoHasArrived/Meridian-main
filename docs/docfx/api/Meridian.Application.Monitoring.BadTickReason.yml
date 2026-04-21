@@ -1,0 +1,338 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.BadTickReason
+  commentId: T:Meridian.Application.Monitoring.BadTickReason
+  id: BadTickReason
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.BadTickReason.AbnormalSpread
+  - Meridian.Application.Monitoring.BadTickReason.CrossedMarket
+  - Meridian.Application.Monitoring.BadTickReason.ExtremeDeviation
+  - Meridian.Application.Monitoring.BadTickReason.InvalidSize
+  - Meridian.Application.Monitoring.BadTickReason.NegativeOrZeroPrice
+  - Meridian.Application.Monitoring.BadTickReason.OutsideLuldBand
+  - Meridian.Application.Monitoring.BadTickReason.PlaceholderPrice
+  - Meridian.Application.Monitoring.BadTickReason.PriceAboveMaximum
+  - Meridian.Application.Monitoring.BadTickReason.PriceBelowMinimum
+  - Meridian.Application.Monitoring.BadTickReason.TradingHalted
+  langs:
+  - csharp
+  - vb
+  name: BadTickReason
+  nameWithType: BadTickReason
+  fullName: Meridian.Application.Monitoring.BadTickReason
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BadTickReason
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 584
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Reasons why a tick was flagged as bad.
+  example: []
+  syntax:
+    content: 'public enum BadTickReason : byte'
+    content.vb: Public Enum BadTickReason As Byte
+- uid: Meridian.Application.Monitoring.BadTickReason.NegativeOrZeroPrice
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.NegativeOrZeroPrice
+  id: NegativeOrZeroPrice
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: NegativeOrZeroPrice
+  nameWithType: BadTickReason.NegativeOrZeroPrice
+  fullName: Meridian.Application.Monitoring.BadTickReason.NegativeOrZeroPrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NegativeOrZeroPrice
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 586
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: NegativeOrZeroPrice = 0
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+- uid: Meridian.Application.Monitoring.BadTickReason.PriceBelowMinimum
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.PriceBelowMinimum
+  id: PriceBelowMinimum
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: PriceBelowMinimum
+  nameWithType: BadTickReason.PriceBelowMinimum
+  fullName: Meridian.Application.Monitoring.BadTickReason.PriceBelowMinimum
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceBelowMinimum
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 587
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: PriceBelowMinimum = 1
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+- uid: Meridian.Application.Monitoring.BadTickReason.PriceAboveMaximum
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.PriceAboveMaximum
+  id: PriceAboveMaximum
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: PriceAboveMaximum
+  nameWithType: BadTickReason.PriceAboveMaximum
+  fullName: Meridian.Application.Monitoring.BadTickReason.PriceAboveMaximum
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceAboveMaximum
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 588
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: PriceAboveMaximum = 2
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+- uid: Meridian.Application.Monitoring.BadTickReason.PlaceholderPrice
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.PlaceholderPrice
+  id: PlaceholderPrice
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: PlaceholderPrice
+  nameWithType: BadTickReason.PlaceholderPrice
+  fullName: Meridian.Application.Monitoring.BadTickReason.PlaceholderPrice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PlaceholderPrice
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 589
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: PlaceholderPrice = 3
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+- uid: Meridian.Application.Monitoring.BadTickReason.InvalidSize
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.InvalidSize
+  id: InvalidSize
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: InvalidSize
+  nameWithType: BadTickReason.InvalidSize
+  fullName: Meridian.Application.Monitoring.BadTickReason.InvalidSize
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidSize
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 590
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: InvalidSize = 4
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+- uid: Meridian.Application.Monitoring.BadTickReason.ExtremeDeviation
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.ExtremeDeviation
+  id: ExtremeDeviation
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: ExtremeDeviation
+  nameWithType: BadTickReason.ExtremeDeviation
+  fullName: Meridian.Application.Monitoring.BadTickReason.ExtremeDeviation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExtremeDeviation
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 591
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: ExtremeDeviation = 5
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+- uid: Meridian.Application.Monitoring.BadTickReason.CrossedMarket
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.CrossedMarket
+  id: CrossedMarket
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: CrossedMarket
+  nameWithType: BadTickReason.CrossedMarket
+  fullName: Meridian.Application.Monitoring.BadTickReason.CrossedMarket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CrossedMarket
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 592
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: CrossedMarket = 6
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+- uid: Meridian.Application.Monitoring.BadTickReason.AbnormalSpread
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.AbnormalSpread
+  id: AbnormalSpread
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: AbnormalSpread
+  nameWithType: BadTickReason.AbnormalSpread
+  fullName: Meridian.Application.Monitoring.BadTickReason.AbnormalSpread
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AbnormalSpread
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 593
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: AbnormalSpread = 7
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+- uid: Meridian.Application.Monitoring.BadTickReason.OutsideLuldBand
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.OutsideLuldBand
+  id: OutsideLuldBand
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: OutsideLuldBand
+  nameWithType: BadTickReason.OutsideLuldBand
+  fullName: Meridian.Application.Monitoring.BadTickReason.OutsideLuldBand
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutsideLuldBand
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 594
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: OutsideLuldBand = 8
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+- uid: Meridian.Application.Monitoring.BadTickReason.TradingHalted
+  commentId: F:Meridian.Application.Monitoring.BadTickReason.TradingHalted
+  id: TradingHalted
+  parent: Meridian.Application.Monitoring.BadTickReason
+  langs:
+  - csharp
+  - vb
+  name: TradingHalted
+  nameWithType: BadTickReason.TradingHalted
+  fullName: Meridian.Application.Monitoring.BadTickReason.TradingHalted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BadTickFilter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradingHalted
+    path: ../../src/Meridian.Application/Monitoring/BadTickFilter.cs
+    startLine: 595
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: TradingHalted = 9
+    return:
+      type: Meridian.Application.Monitoring.BadTickReason
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.BadTickReason
+  commentId: T:Meridian.Application.Monitoring.BadTickReason
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.BadTickReason.html
+  name: BadTickReason
+  nameWithType: BadTickReason
+  fullName: Meridian.Application.Monitoring.BadTickReason

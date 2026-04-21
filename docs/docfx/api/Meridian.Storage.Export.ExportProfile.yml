@@ -1,0 +1,1607 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.ExportProfile
+  commentId: T:Meridian.Storage.Export.ExportProfile
+  id: ExportProfile
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.ExportProfile.ArrowFeather
+  - Meridian.Storage.Export.ExportProfile.Compression
+  - Meridian.Storage.Export.ExportProfile.Description
+  - Meridian.Storage.Export.ExportProfile.Excel
+  - Meridian.Storage.Export.ExportProfile.ExcludeFields
+  - Meridian.Storage.Export.ExportProfile.FileNamePattern
+  - Meridian.Storage.Export.ExportProfile.Format
+  - Meridian.Storage.Export.ExportProfile.GetBuiltInProfiles
+  - Meridian.Storage.Export.ExportProfile.Id
+  - Meridian.Storage.Export.ExportProfile.IncludeDataDictionary
+  - Meridian.Storage.Export.ExportProfile.IncludeFields
+  - Meridian.Storage.Export.ExportProfile.IncludeLoaderScript
+  - Meridian.Storage.Export.ExportProfile.MaxRecordsPerFile
+  - Meridian.Storage.Export.ExportProfile.Name
+  - Meridian.Storage.Export.ExportProfile.PostgreSql
+  - Meridian.Storage.Export.ExportProfile.PythonPandas
+  - Meridian.Storage.Export.ExportProfile.QuantConnectLean
+  - Meridian.Storage.Export.ExportProfile.RStats
+  - Meridian.Storage.Export.ExportProfile.RunMat
+  - Meridian.Storage.Export.ExportProfile.SplitByDate
+  - Meridian.Storage.Export.ExportProfile.SplitBySymbol
+  - Meridian.Storage.Export.ExportProfile.TargetTool
+  - Meridian.Storage.Export.ExportProfile.TimestampSettings
+  - Meridian.Storage.Export.ExportProfile.WithFormat(Meridian.Storage.Export.ExportFormat)
+  langs:
+  - csharp
+  - vb
+  name: ExportProfile
+  nameWithType: ExportProfile
+  fullName: Meridian.Storage.Export.ExportProfile
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportProfile
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: >-
+    Defines export profiles for different external analysis tools.
+
+    Each profile specifies format, settings, and post-processing options.
+  example: []
+  syntax:
+    content: public sealed class ExportProfile
+    content.vb: Public NotInheritable Class ExportProfile
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Export.ExportProfile.Id
+  commentId: P:Meridian.Storage.Export.ExportProfile.Id
+  id: Id
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: ExportProfile.Id
+  fullName: Meridian.Storage.Export.ExportProfile.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Unique identifier for this profile.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("id")]
+
+      public string Id { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("id")>
+
+      Public Property Id As String
+  overload: Meridian.Storage.Export.ExportProfile.Id*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: id
+- uid: Meridian.Storage.Export.ExportProfile.Name
+  commentId: P:Meridian.Storage.Export.ExportProfile.Name
+  id: Name
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: ExportProfile.Name
+  fullName: Meridian.Storage.Export.ExportProfile.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Human-readable name.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("name")]
+
+      public string Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("name")>
+
+      Public Property Name As String
+  overload: Meridian.Storage.Export.ExportProfile.Name*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: name
+- uid: Meridian.Storage.Export.ExportProfile.Description
+  commentId: P:Meridian.Storage.Export.ExportProfile.Description
+  id: Description
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: ExportProfile.Description
+  fullName: Meridian.Storage.Export.ExportProfile.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Description of the profile and target tool.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string? Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Storage.Export.ExportProfile.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+- uid: Meridian.Storage.Export.ExportProfile.TargetTool
+  commentId: P:Meridian.Storage.Export.ExportProfile.TargetTool
+  id: TargetTool
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: TargetTool
+  nameWithType: ExportProfile.TargetTool
+  fullName: Meridian.Storage.Export.ExportProfile.TargetTool
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetTool
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Target analysis tool (Python, R, Lean, Excel, PostgreSQL, etc.)
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("targetTool")]
+
+      public string TargetTool { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("targetTool")>
+
+      Public Property TargetTool As String
+  overload: Meridian.Storage.Export.ExportProfile.TargetTool*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: targetTool
+- uid: Meridian.Storage.Export.ExportProfile.Format
+  commentId: P:Meridian.Storage.Export.ExportProfile.Format
+  id: Format
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: Format
+  nameWithType: ExportProfile.Format
+  fullName: Meridian.Storage.Export.ExportProfile.Format
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Output format (Parquet, CSV, JSONL, Lean, XLSX, SQL).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("format")]
+
+      public ExportFormat Format { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportFormat
+    content.vb: >-
+      <JsonPropertyName("format")>
+
+      Public Property Format As ExportFormat
+  overload: Meridian.Storage.Export.ExportProfile.Format*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: format
+- uid: Meridian.Storage.Export.ExportProfile.Compression
+  commentId: P:Meridian.Storage.Export.ExportProfile.Compression
+  id: Compression
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: Compression
+  nameWithType: ExportProfile.Compression
+  fullName: Meridian.Storage.Export.ExportProfile.Compression
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Compression
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Compression settings.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("compression")]
+
+      public CompressionSettings Compression { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.CompressionSettings
+    content.vb: >-
+      <JsonPropertyName("compression")>
+
+      Public Property Compression As CompressionSettings
+  overload: Meridian.Storage.Export.ExportProfile.Compression*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: compression
+- uid: Meridian.Storage.Export.ExportProfile.TimestampSettings
+  commentId: P:Meridian.Storage.Export.ExportProfile.TimestampSettings
+  id: TimestampSettings
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: TimestampSettings
+  nameWithType: ExportProfile.TimestampSettings
+  fullName: Meridian.Storage.Export.ExportProfile.TimestampSettings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampSettings
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Timestamp handling settings.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("timestampSettings")]
+
+      public TimestampSettings TimestampSettings { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.TimestampSettings
+    content.vb: >-
+      <JsonPropertyName("timestampSettings")>
+
+      Public Property TimestampSettings As TimestampSettings
+  overload: Meridian.Storage.Export.ExportProfile.TimestampSettings*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: timestampSettings
+- uid: Meridian.Storage.Export.ExportProfile.IncludeFields
+  commentId: P:Meridian.Storage.Export.ExportProfile.IncludeFields
+  id: IncludeFields
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: IncludeFields
+  nameWithType: ExportProfile.IncludeFields
+  fullName: Meridian.Storage.Export.ExportProfile.IncludeFields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeFields
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Fields to include in export (null = all fields).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeFields")]
+
+      public string[]? IncludeFields { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("includeFields")>
+
+      Public Property IncludeFields As String()
+  overload: Meridian.Storage.Export.ExportProfile.IncludeFields*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeFields
+- uid: Meridian.Storage.Export.ExportProfile.ExcludeFields
+  commentId: P:Meridian.Storage.Export.ExportProfile.ExcludeFields
+  id: ExcludeFields
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: ExcludeFields
+  nameWithType: ExportProfile.ExcludeFields
+  fullName: Meridian.Storage.Export.ExportProfile.ExcludeFields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExcludeFields
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Fields to exclude from export.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("excludeFields")]
+
+      public string[]? ExcludeFields { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("excludeFields")>
+
+      Public Property ExcludeFields As String()
+  overload: Meridian.Storage.Export.ExportProfile.ExcludeFields*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: excludeFields
+- uid: Meridian.Storage.Export.ExportProfile.IncludeLoaderScript
+  commentId: P:Meridian.Storage.Export.ExportProfile.IncludeLoaderScript
+  id: IncludeLoaderScript
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: IncludeLoaderScript
+  nameWithType: ExportProfile.IncludeLoaderScript
+  fullName: Meridian.Storage.Export.ExportProfile.IncludeLoaderScript
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeLoaderScript
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Whether to generate sample loader code.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeLoaderScript")]
+
+      public bool IncludeLoaderScript { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeLoaderScript")>
+
+      Public Property IncludeLoaderScript As Boolean
+  overload: Meridian.Storage.Export.ExportProfile.IncludeLoaderScript*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeLoaderScript
+- uid: Meridian.Storage.Export.ExportProfile.IncludeDataDictionary
+  commentId: P:Meridian.Storage.Export.ExportProfile.IncludeDataDictionary
+  id: IncludeDataDictionary
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: IncludeDataDictionary
+  nameWithType: ExportProfile.IncludeDataDictionary
+  fullName: Meridian.Storage.Export.ExportProfile.IncludeDataDictionary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeDataDictionary
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Whether to generate data dictionary.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("includeDataDictionary")]
+
+      public bool IncludeDataDictionary { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("includeDataDictionary")>
+
+      Public Property IncludeDataDictionary As Boolean
+  overload: Meridian.Storage.Export.ExportProfile.IncludeDataDictionary*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: includeDataDictionary
+- uid: Meridian.Storage.Export.ExportProfile.FileNamePattern
+  commentId: P:Meridian.Storage.Export.ExportProfile.FileNamePattern
+  id: FileNamePattern
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: FileNamePattern
+  nameWithType: ExportProfile.FileNamePattern
+  fullName: Meridian.Storage.Export.ExportProfile.FileNamePattern
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileNamePattern
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: >-
+    File naming pattern.
+
+    Variables: {symbol}, {date}, {type}, {format}
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("fileNamePattern")]
+
+      public string FileNamePattern { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("fileNamePattern")>
+
+      Public Property FileNamePattern As String
+  overload: Meridian.Storage.Export.ExportProfile.FileNamePattern*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fileNamePattern
+- uid: Meridian.Storage.Export.ExportProfile.SplitBySymbol
+  commentId: P:Meridian.Storage.Export.ExportProfile.SplitBySymbol
+  id: SplitBySymbol
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: SplitBySymbol
+  nameWithType: ExportProfile.SplitBySymbol
+  fullName: Meridian.Storage.Export.ExportProfile.SplitBySymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SplitBySymbol
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Whether to split files by symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("splitBySymbol")]
+
+      public bool SplitBySymbol { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("splitBySymbol")>
+
+      Public Property SplitBySymbol As Boolean
+  overload: Meridian.Storage.Export.ExportProfile.SplitBySymbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: splitBySymbol
+- uid: Meridian.Storage.Export.ExportProfile.SplitByDate
+  commentId: P:Meridian.Storage.Export.ExportProfile.SplitByDate
+  id: SplitByDate
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: SplitByDate
+  nameWithType: ExportProfile.SplitByDate
+  fullName: Meridian.Storage.Export.ExportProfile.SplitByDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SplitByDate
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Whether to split files by date.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("splitByDate")]
+
+      public bool SplitByDate { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("splitByDate")>
+
+      Public Property SplitByDate As Boolean
+  overload: Meridian.Storage.Export.ExportProfile.SplitByDate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: splitByDate
+- uid: Meridian.Storage.Export.ExportProfile.MaxRecordsPerFile
+  commentId: P:Meridian.Storage.Export.ExportProfile.MaxRecordsPerFile
+  id: MaxRecordsPerFile
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: MaxRecordsPerFile
+  nameWithType: ExportProfile.MaxRecordsPerFile
+  fullName: Meridian.Storage.Export.ExportProfile.MaxRecordsPerFile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRecordsPerFile
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Maximum records per file (null = unlimited).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("maxRecordsPerFile")]
+
+      public long? MaxRecordsPerFile { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: >-
+      <JsonPropertyName("maxRecordsPerFile")>
+
+      Public Property MaxRecordsPerFile As Long?
+  overload: Meridian.Storage.Export.ExportProfile.MaxRecordsPerFile*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: maxRecordsPerFile
+- uid: Meridian.Storage.Export.ExportProfile.PythonPandas
+  commentId: P:Meridian.Storage.Export.ExportProfile.PythonPandas
+  id: PythonPandas
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: PythonPandas
+  nameWithType: ExportProfile.PythonPandas
+  fullName: Meridian.Storage.Export.ExportProfile.PythonPandas
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PythonPandas
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Pre-built profile for Python/Pandas.
+  example: []
+  syntax:
+    content: public static ExportProfile PythonPandas { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Shared ReadOnly Property PythonPandas As ExportProfile
+  overload: Meridian.Storage.Export.ExportProfile.PythonPandas*
+- uid: Meridian.Storage.Export.ExportProfile.RStats
+  commentId: P:Meridian.Storage.Export.ExportProfile.RStats
+  id: RStats
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: RStats
+  nameWithType: ExportProfile.RStats
+  fullName: Meridian.Storage.Export.ExportProfile.RStats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RStats
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Pre-built profile for R.
+  example: []
+  syntax:
+    content: public static ExportProfile RStats { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Shared ReadOnly Property RStats As ExportProfile
+  overload: Meridian.Storage.Export.ExportProfile.RStats*
+- uid: Meridian.Storage.Export.ExportProfile.QuantConnectLean
+  commentId: P:Meridian.Storage.Export.ExportProfile.QuantConnectLean
+  id: QuantConnectLean
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: QuantConnectLean
+  nameWithType: ExportProfile.QuantConnectLean
+  fullName: Meridian.Storage.Export.ExportProfile.QuantConnectLean
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuantConnectLean
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Pre-built profile for QuantConnect Lean.
+  example: []
+  syntax:
+    content: public static ExportProfile QuantConnectLean { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Shared ReadOnly Property QuantConnectLean As ExportProfile
+  overload: Meridian.Storage.Export.ExportProfile.QuantConnectLean*
+- uid: Meridian.Storage.Export.ExportProfile.Excel
+  commentId: P:Meridian.Storage.Export.ExportProfile.Excel
+  id: Excel
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: Excel
+  nameWithType: ExportProfile.Excel
+  fullName: Meridian.Storage.Export.ExportProfile.Excel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Excel
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Pre-built profile for Excel.
+  example: []
+  syntax:
+    content: public static ExportProfile Excel { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Shared ReadOnly Property Excel As ExportProfile
+  overload: Meridian.Storage.Export.ExportProfile.Excel*
+- uid: Meridian.Storage.Export.ExportProfile.PostgreSql
+  commentId: P:Meridian.Storage.Export.ExportProfile.PostgreSql
+  id: PostgreSql
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: PostgreSql
+  nameWithType: ExportProfile.PostgreSql
+  fullName: Meridian.Storage.Export.ExportProfile.PostgreSql
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostgreSql
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Pre-built profile for PostgreSQL/TimescaleDB.
+  example: []
+  syntax:
+    content: public static ExportProfile PostgreSql { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Shared ReadOnly Property PostgreSql As ExportProfile
+  overload: Meridian.Storage.Export.ExportProfile.PostgreSql*
+- uid: Meridian.Storage.Export.ExportProfile.ArrowFeather
+  commentId: P:Meridian.Storage.Export.ExportProfile.ArrowFeather
+  id: ArrowFeather
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: ArrowFeather
+  nameWithType: ExportProfile.ArrowFeather
+  fullName: Meridian.Storage.Export.ExportProfile.ArrowFeather
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArrowFeather
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Pre-built profile for Apache Arrow/Feather.
+  example: []
+  syntax:
+    content: public static ExportProfile ArrowFeather { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Shared ReadOnly Property ArrowFeather As ExportProfile
+  overload: Meridian.Storage.Export.ExportProfile.ArrowFeather*
+- uid: Meridian.Storage.Export.ExportProfile.RunMat
+  commentId: P:Meridian.Storage.Export.ExportProfile.RunMat
+  id: RunMat
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: RunMat
+  nameWithType: ExportProfile.RunMat
+  fullName: Meridian.Storage.Export.ExportProfile.RunMat
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunMat
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Pre-built profile for RunMat.
+  example: []
+  syntax:
+    content: public static ExportProfile RunMat { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Shared ReadOnly Property RunMat As ExportProfile
+  overload: Meridian.Storage.Export.ExportProfile.RunMat*
+- uid: Meridian.Storage.Export.ExportProfile.WithFormat(Meridian.Storage.Export.ExportFormat)
+  commentId: M:Meridian.Storage.Export.ExportProfile.WithFormat(Meridian.Storage.Export.ExportFormat)
+  id: WithFormat(Meridian.Storage.Export.ExportFormat)
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: WithFormat(ExportFormat)
+  nameWithType: ExportProfile.WithFormat(ExportFormat)
+  fullName: Meridian.Storage.Export.ExportProfile.WithFormat(Meridian.Storage.Export.ExportFormat)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithFormat
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: >-
+    Creates a copy of this profile with only the format overridden.
+
+    All other settings (compression, timestamps, loader script, data dictionary, file naming, etc.) are preserved.
+  example: []
+  syntax:
+    content: public ExportProfile WithFormat(ExportFormat newFormat)
+    parameters:
+    - id: newFormat
+      type: Meridian.Storage.Export.ExportFormat
+    return:
+      type: Meridian.Storage.Export.ExportProfile
+    content.vb: Public Function WithFormat(newFormat As ExportFormat) As ExportProfile
+  overload: Meridian.Storage.Export.ExportProfile.WithFormat*
+- uid: Meridian.Storage.Export.ExportProfile.GetBuiltInProfiles
+  commentId: M:Meridian.Storage.Export.ExportProfile.GetBuiltInProfiles
+  id: GetBuiltInProfiles
+  parent: Meridian.Storage.Export.ExportProfile
+  langs:
+  - csharp
+  - vb
+  name: GetBuiltInProfiles()
+  nameWithType: ExportProfile.GetBuiltInProfiles()
+  fullName: Meridian.Storage.Export.ExportProfile.GetBuiltInProfiles()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBuiltInProfiles
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Get all pre-built profiles.
+  example: []
+  syntax:
+    content: public static IReadOnlyList<ExportProfile> GetBuiltInProfiles()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Export.ExportProfile}
+    content.vb: Public Shared Function GetBuiltInProfiles() As IReadOnlyList(Of ExportProfile)
+  overload: Meridian.Storage.Export.ExportProfile.GetBuiltInProfiles*
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Export.ExportProfile.Id*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.Id
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_Id
+  name: Id
+  nameWithType: ExportProfile.Id
+  fullName: Meridian.Storage.Export.ExportProfile.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Export.ExportProfile.Name*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.Name
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_Name
+  name: Name
+  nameWithType: ExportProfile.Name
+  fullName: Meridian.Storage.Export.ExportProfile.Name
+- uid: Meridian.Storage.Export.ExportProfile.Description*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.Description
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_Description
+  name: Description
+  nameWithType: ExportProfile.Description
+  fullName: Meridian.Storage.Export.ExportProfile.Description
+- uid: Meridian.Storage.Export.ExportProfile.TargetTool*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.TargetTool
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_TargetTool
+  name: TargetTool
+  nameWithType: ExportProfile.TargetTool
+  fullName: Meridian.Storage.Export.ExportProfile.TargetTool
+- uid: Meridian.Storage.Export.ExportProfile.Format*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.Format
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_Format
+  name: Format
+  nameWithType: ExportProfile.Format
+  fullName: Meridian.Storage.Export.ExportProfile.Format
+- uid: Meridian.Storage.Export.ExportFormat
+  commentId: T:Meridian.Storage.Export.ExportFormat
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.ExportFormat.html
+  name: ExportFormat
+  nameWithType: ExportFormat
+  fullName: Meridian.Storage.Export.ExportFormat
+- uid: Meridian.Storage.Export.ExportProfile.Compression*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.Compression
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_Compression
+  name: Compression
+  nameWithType: ExportProfile.Compression
+  fullName: Meridian.Storage.Export.ExportProfile.Compression
+- uid: Meridian.Storage.Export.CompressionSettings
+  commentId: T:Meridian.Storage.Export.CompressionSettings
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.CompressionSettings.html
+  name: CompressionSettings
+  nameWithType: CompressionSettings
+  fullName: Meridian.Storage.Export.CompressionSettings
+- uid: Meridian.Storage.Export.ExportProfile.TimestampSettings*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.TimestampSettings
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_TimestampSettings
+  name: TimestampSettings
+  nameWithType: ExportProfile.TimestampSettings
+  fullName: Meridian.Storage.Export.ExportProfile.TimestampSettings
+- uid: Meridian.Storage.Export.TimestampSettings
+  commentId: T:Meridian.Storage.Export.TimestampSettings
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.TimestampSettings.html
+  name: TimestampSettings
+  nameWithType: TimestampSettings
+  fullName: Meridian.Storage.Export.TimestampSettings
+- uid: Meridian.Storage.Export.ExportProfile.IncludeFields*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.IncludeFields
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_IncludeFields
+  name: IncludeFields
+  nameWithType: ExportProfile.IncludeFields
+  fullName: Meridian.Storage.Export.ExportProfile.IncludeFields
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Export.ExportProfile.ExcludeFields*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.ExcludeFields
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_ExcludeFields
+  name: ExcludeFields
+  nameWithType: ExportProfile.ExcludeFields
+  fullName: Meridian.Storage.Export.ExportProfile.ExcludeFields
+- uid: Meridian.Storage.Export.ExportProfile.IncludeLoaderScript*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.IncludeLoaderScript
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_IncludeLoaderScript
+  name: IncludeLoaderScript
+  nameWithType: ExportProfile.IncludeLoaderScript
+  fullName: Meridian.Storage.Export.ExportProfile.IncludeLoaderScript
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Export.ExportProfile.IncludeDataDictionary*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.IncludeDataDictionary
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_IncludeDataDictionary
+  name: IncludeDataDictionary
+  nameWithType: ExportProfile.IncludeDataDictionary
+  fullName: Meridian.Storage.Export.ExportProfile.IncludeDataDictionary
+- uid: Meridian.Storage.Export.ExportProfile.FileNamePattern*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.FileNamePattern
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_FileNamePattern
+  name: FileNamePattern
+  nameWithType: ExportProfile.FileNamePattern
+  fullName: Meridian.Storage.Export.ExportProfile.FileNamePattern
+- uid: Meridian.Storage.Export.ExportProfile.SplitBySymbol*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.SplitBySymbol
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_SplitBySymbol
+  name: SplitBySymbol
+  nameWithType: ExportProfile.SplitBySymbol
+  fullName: Meridian.Storage.Export.ExportProfile.SplitBySymbol
+- uid: Meridian.Storage.Export.ExportProfile.SplitByDate*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.SplitByDate
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_SplitByDate
+  name: SplitByDate
+  nameWithType: ExportProfile.SplitByDate
+  fullName: Meridian.Storage.Export.ExportProfile.SplitByDate
+- uid: Meridian.Storage.Export.ExportProfile.MaxRecordsPerFile*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.MaxRecordsPerFile
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_MaxRecordsPerFile
+  name: MaxRecordsPerFile
+  nameWithType: ExportProfile.MaxRecordsPerFile
+  fullName: Meridian.Storage.Export.ExportProfile.MaxRecordsPerFile
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Export.ExportProfile.PythonPandas*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.PythonPandas
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_PythonPandas
+  name: PythonPandas
+  nameWithType: ExportProfile.PythonPandas
+  fullName: Meridian.Storage.Export.ExportProfile.PythonPandas
+- uid: Meridian.Storage.Export.ExportProfile
+  commentId: T:Meridian.Storage.Export.ExportProfile
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.ExportProfile.html
+  name: ExportProfile
+  nameWithType: ExportProfile
+  fullName: Meridian.Storage.Export.ExportProfile
+- uid: Meridian.Storage.Export.ExportProfile.RStats*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.RStats
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_RStats
+  name: RStats
+  nameWithType: ExportProfile.RStats
+  fullName: Meridian.Storage.Export.ExportProfile.RStats
+- uid: Meridian.Storage.Export.ExportProfile.QuantConnectLean*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.QuantConnectLean
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_QuantConnectLean
+  name: QuantConnectLean
+  nameWithType: ExportProfile.QuantConnectLean
+  fullName: Meridian.Storage.Export.ExportProfile.QuantConnectLean
+- uid: Meridian.Storage.Export.ExportProfile.Excel*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.Excel
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_Excel
+  name: Excel
+  nameWithType: ExportProfile.Excel
+  fullName: Meridian.Storage.Export.ExportProfile.Excel
+- uid: Meridian.Storage.Export.ExportProfile.PostgreSql*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.PostgreSql
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_PostgreSql
+  name: PostgreSql
+  nameWithType: ExportProfile.PostgreSql
+  fullName: Meridian.Storage.Export.ExportProfile.PostgreSql
+- uid: Meridian.Storage.Export.ExportProfile.ArrowFeather*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.ArrowFeather
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_ArrowFeather
+  name: ArrowFeather
+  nameWithType: ExportProfile.ArrowFeather
+  fullName: Meridian.Storage.Export.ExportProfile.ArrowFeather
+- uid: Meridian.Storage.Export.ExportProfile.RunMat*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.RunMat
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_RunMat
+  name: RunMat
+  nameWithType: ExportProfile.RunMat
+  fullName: Meridian.Storage.Export.ExportProfile.RunMat
+- uid: Meridian.Storage.Export.ExportProfile.WithFormat*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.WithFormat
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_WithFormat_Meridian_Storage_Export_ExportFormat_
+  name: WithFormat
+  nameWithType: ExportProfile.WithFormat
+  fullName: Meridian.Storage.Export.ExportProfile.WithFormat
+- uid: Meridian.Storage.Export.ExportProfile.GetBuiltInProfiles*
+  commentId: Overload:Meridian.Storage.Export.ExportProfile.GetBuiltInProfiles
+  href: Meridian.Storage.Export.ExportProfile.html#Meridian_Storage_Export_ExportProfile_GetBuiltInProfiles
+  name: GetBuiltInProfiles
+  nameWithType: ExportProfile.GetBuiltInProfiles
+  fullName: Meridian.Storage.Export.ExportProfile.GetBuiltInProfiles
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Export.ExportProfile}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Export.ExportProfile}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ExportProfile>
+  nameWithType: IReadOnlyList<ExportProfile>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Export.ExportProfile>
+  nameWithType.vb: IReadOnlyList(Of ExportProfile)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Export.ExportProfile)
+  name.vb: IReadOnlyList(Of ExportProfile)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Export.ExportProfile
+    name: ExportProfile
+    href: Meridian.Storage.Export.ExportProfile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Export.ExportProfile
+    name: ExportProfile
+    href: Meridian.Storage.Export.ExportProfile.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

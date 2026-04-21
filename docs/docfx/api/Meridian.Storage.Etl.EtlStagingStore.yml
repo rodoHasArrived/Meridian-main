@@ -1,0 +1,586 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Etl.EtlStagingStore
+  commentId: T:Meridian.Storage.Etl.EtlStagingStore
+  id: EtlStagingStore
+  parent: Meridian.Storage.Etl
+  children:
+  - Meridian.Storage.Etl.EtlStagingStore.#ctor(System.String)
+  - Meridian.Storage.Etl.EtlStagingStore.StageAsync(System.String,Meridian.Contracts.Etl.EtlRemoteFile,System.IO.Stream,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: EtlStagingStore
+  nameWithType: EtlStagingStore
+  fullName: Meridian.Storage.Etl.EtlStagingStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Etl/EtlStores.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EtlStagingStore
+    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Etl
+  syntax:
+    content: public sealed class EtlStagingStore
+    content.vb: Public NotInheritable Class EtlStagingStore
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Etl.EtlStagingStore.#ctor(System.String)
+  commentId: M:Meridian.Storage.Etl.EtlStagingStore.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Storage.Etl.EtlStagingStore
+  langs:
+  - csharp
+  - vb
+  name: EtlStagingStore(string)
+  nameWithType: EtlStagingStore.EtlStagingStore(string)
+  fullName: Meridian.Storage.Etl.EtlStagingStore.EtlStagingStore(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Etl/EtlStores.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Etl
+  syntax:
+    content: public EtlStagingStore(string dataRoot)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    content.vb: Public Sub New(dataRoot As String)
+  overload: Meridian.Storage.Etl.EtlStagingStore.#ctor*
+  nameWithType.vb: EtlStagingStore.New(String)
+  fullName.vb: Meridian.Storage.Etl.EtlStagingStore.New(String)
+  name.vb: New(String)
+- uid: Meridian.Storage.Etl.EtlStagingStore.StageAsync(System.String,Meridian.Contracts.Etl.EtlRemoteFile,System.IO.Stream,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Etl.EtlStagingStore.StageAsync(System.String,Meridian.Contracts.Etl.EtlRemoteFile,System.IO.Stream,System.Threading.CancellationToken)
+  id: StageAsync(System.String,Meridian.Contracts.Etl.EtlRemoteFile,System.IO.Stream,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Etl.EtlStagingStore
+  langs:
+  - csharp
+  - vb
+  name: StageAsync(string, EtlRemoteFile, Stream, CancellationToken)
+  nameWithType: EtlStagingStore.StageAsync(string, EtlRemoteFile, Stream, CancellationToken)
+  fullName: Meridian.Storage.Etl.EtlStagingStore.StageAsync(string, Meridian.Contracts.Etl.EtlRemoteFile, System.IO.Stream, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Etl/EtlStores.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StageAsync
+    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Etl
+  syntax:
+    content: public Task<EtlStagedFile> StageAsync(string jobId, EtlRemoteFile file, Stream sourceStream, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: file
+      type: Meridian.Contracts.Etl.EtlRemoteFile
+    - id: sourceStream
+      type: System.IO.Stream
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlStagedFile}
+    content.vb: Public Function StageAsync(jobId As String, file As EtlRemoteFile, sourceStream As Stream, ct As CancellationToken = Nothing) As Task(Of EtlStagedFile)
+  overload: Meridian.Storage.Etl.EtlStagingStore.StageAsync*
+  nameWithType.vb: EtlStagingStore.StageAsync(String, EtlRemoteFile, Stream, CancellationToken)
+  fullName.vb: Meridian.Storage.Etl.EtlStagingStore.StageAsync(String, Meridian.Contracts.Etl.EtlRemoteFile, System.IO.Stream, System.Threading.CancellationToken)
+  name.vb: StageAsync(String, EtlRemoteFile, Stream, CancellationToken)
+references:
+- uid: Meridian.Storage.Etl
+  commentId: N:Meridian.Storage.Etl
+  href: Meridian.html
+  name: Meridian.Storage.Etl
+  nameWithType: Meridian.Storage.Etl
+  fullName: Meridian.Storage.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Etl
+    name: Etl
+    href: Meridian.Storage.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Etl
+    name: Etl
+    href: Meridian.Storage.Etl.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Etl.EtlStagingStore.#ctor*
+  commentId: Overload:Meridian.Storage.Etl.EtlStagingStore.#ctor
+  href: Meridian.Storage.Etl.EtlStagingStore.html#Meridian_Storage_Etl_EtlStagingStore__ctor_System_String_
+  name: EtlStagingStore
+  nameWithType: EtlStagingStore.EtlStagingStore
+  fullName: Meridian.Storage.Etl.EtlStagingStore.EtlStagingStore
+  nameWithType.vb: EtlStagingStore.New
+  fullName.vb: Meridian.Storage.Etl.EtlStagingStore.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Etl.EtlStagingStore.StageAsync*
+  commentId: Overload:Meridian.Storage.Etl.EtlStagingStore.StageAsync
+  href: Meridian.Storage.Etl.EtlStagingStore.html#Meridian_Storage_Etl_EtlStagingStore_StageAsync_System_String_Meridian_Contracts_Etl_EtlRemoteFile_System_IO_Stream_System_Threading_CancellationToken_
+  name: StageAsync
+  nameWithType: EtlStagingStore.StageAsync
+  fullName: Meridian.Storage.Etl.EtlStagingStore.StageAsync
+- uid: Meridian.Contracts.Etl.EtlRemoteFile
+  commentId: T:Meridian.Contracts.Etl.EtlRemoteFile
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlRemoteFile.html
+  name: EtlRemoteFile
+  nameWithType: EtlRemoteFile
+  fullName: Meridian.Contracts.Etl.EtlRemoteFile
+- uid: System.IO.Stream
+  commentId: T:System.IO.Stream
+  parent: System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.stream
+  name: Stream
+  nameWithType: Stream
+  fullName: System.IO.Stream
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlStagedFile}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlStagedFile}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EtlStagedFile>
+  nameWithType: Task<EtlStagedFile>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Etl.EtlStagedFile>
+  nameWithType.vb: Task(Of EtlStagedFile)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Etl.EtlStagedFile)
+  name.vb: Task(Of EtlStagedFile)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Etl.EtlStagedFile
+    name: EtlStagedFile
+    href: Meridian.Contracts.Etl.EtlStagedFile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Etl.EtlStagedFile
+    name: EtlStagedFile
+    href: Meridian.Contracts.Etl.EtlStagedFile.html
+  - name: )
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: System.IO
+  commentId: N:System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.IO
+  nameWithType: System.IO
+  fullName: System.IO
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

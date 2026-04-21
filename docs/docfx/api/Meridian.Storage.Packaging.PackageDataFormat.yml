@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.PackageDataFormat
+  commentId: T:Meridian.Storage.Packaging.PackageDataFormat
+  id: PackageDataFormat
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.PackageDataFormat.Csv
+  - Meridian.Storage.Packaging.PackageDataFormat.Jsonl
+  - Meridian.Storage.Packaging.PackageDataFormat.Original
+  - Meridian.Storage.Packaging.PackageDataFormat.Parquet
+  langs:
+  - csharp
+  - vb
+  name: PackageDataFormat
+  nameWithType: PackageDataFormat
+  fullName: Meridian.Storage.Packaging.PackageDataFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageDataFormat
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Data format conversion options.
+  example: []
+  syntax:
+    content: 'public enum PackageDataFormat : byte'
+    content.vb: Public Enum PackageDataFormat As Byte
+- uid: Meridian.Storage.Packaging.PackageDataFormat.Original
+  commentId: F:Meridian.Storage.Packaging.PackageDataFormat.Original
+  id: Original
+  parent: Meridian.Storage.Packaging.PackageDataFormat
+  langs:
+  - csharp
+  - vb
+  name: Original
+  nameWithType: PackageDataFormat.Original
+  fullName: Meridian.Storage.Packaging.PackageDataFormat.Original
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Original
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Keep original format (JSONL, Parquet, etc.).
+  example: []
+  syntax:
+    content: Original = 0
+    return:
+      type: Meridian.Storage.Packaging.PackageDataFormat
+- uid: Meridian.Storage.Packaging.PackageDataFormat.Jsonl
+  commentId: F:Meridian.Storage.Packaging.PackageDataFormat.Jsonl
+  id: Jsonl
+  parent: Meridian.Storage.Packaging.PackageDataFormat
+  langs:
+  - csharp
+  - vb
+  name: Jsonl
+  nameWithType: PackageDataFormat.Jsonl
+  fullName: Meridian.Storage.Packaging.PackageDataFormat.Jsonl
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Jsonl
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Convert to JSONL for universal compatibility.
+  example: []
+  syntax:
+    content: Jsonl = 1
+    return:
+      type: Meridian.Storage.Packaging.PackageDataFormat
+- uid: Meridian.Storage.Packaging.PackageDataFormat.Csv
+  commentId: F:Meridian.Storage.Packaging.PackageDataFormat.Csv
+  id: Csv
+  parent: Meridian.Storage.Packaging.PackageDataFormat
+  langs:
+  - csharp
+  - vb
+  name: Csv
+  nameWithType: PackageDataFormat.Csv
+  fullName: Meridian.Storage.Packaging.PackageDataFormat.Csv
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Csv
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Convert to CSV for spreadsheet compatibility.
+  example: []
+  syntax:
+    content: Csv = 2
+    return:
+      type: Meridian.Storage.Packaging.PackageDataFormat
+- uid: Meridian.Storage.Packaging.PackageDataFormat.Parquet
+  commentId: F:Meridian.Storage.Packaging.PackageDataFormat.Parquet
+  id: Parquet
+  parent: Meridian.Storage.Packaging.PackageDataFormat
+  langs:
+  - csharp
+  - vb
+  name: Parquet
+  nameWithType: PackageDataFormat.Parquet
+  fullName: Meridian.Storage.Packaging.PackageDataFormat.Parquet
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parquet
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Convert to Parquet for analytics.
+  example: []
+  syntax:
+    content: Parquet = 3
+    return:
+      type: Meridian.Storage.Packaging.PackageDataFormat
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: Meridian.Storage.Packaging.PackageDataFormat
+  commentId: T:Meridian.Storage.Packaging.PackageDataFormat
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageDataFormat.html
+  name: PackageDataFormat
+  nameWithType: PackageDataFormat
+  fullName: Meridian.Storage.Packaging.PackageDataFormat

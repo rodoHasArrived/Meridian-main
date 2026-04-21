@@ -1,0 +1,76 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Providers
+  commentId: N:Meridian.Infrastructure.CppTrader.Providers
+  id: Meridian.Infrastructure.CppTrader.Providers
+  children:
+  - Meridian.Infrastructure.CppTrader.Providers.CppTraderItchIngestionService
+  - Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient
+  - Meridian.Infrastructure.CppTrader.Providers.ICppTraderItchIngestionService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.CppTrader.Providers
+  nameWithType: Meridian.Infrastructure.CppTrader.Providers
+  fullName: Meridian.Infrastructure.CppTrader.Providers
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+references:
+- uid: Meridian.Infrastructure.CppTrader.Providers.CppTraderItchIngestionService
+  commentId: T:Meridian.Infrastructure.CppTrader.Providers.CppTraderItchIngestionService
+  href: Meridian.Infrastructure.CppTrader.Providers.CppTraderItchIngestionService.html
+  name: CppTraderItchIngestionService
+  nameWithType: CppTraderItchIngestionService
+  fullName: Meridian.Infrastructure.CppTrader.Providers.CppTraderItchIngestionService
+- uid: Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient
+  commentId: T:Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient
+  href: Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient.html
+  name: CppTraderMarketDataClient
+  nameWithType: CppTraderMarketDataClient
+  fullName: Meridian.Infrastructure.CppTrader.Providers.CppTraderMarketDataClient
+- uid: Meridian.Infrastructure.CppTrader.Providers.ICppTraderItchIngestionService
+  commentId: T:Meridian.Infrastructure.CppTrader.Providers.ICppTraderItchIngestionService
+  parent: Meridian.Infrastructure.CppTrader.Providers
+  href: Meridian.Infrastructure.CppTrader.Providers.ICppTraderItchIngestionService.html
+  name: ICppTraderItchIngestionService
+  nameWithType: ICppTraderItchIngestionService
+  fullName: Meridian.Infrastructure.CppTrader.Providers.ICppTraderItchIngestionService
+- uid: Meridian.Infrastructure.CppTrader.Providers
+  commentId: N:Meridian.Infrastructure.CppTrader.Providers
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Providers
+  nameWithType: Meridian.Infrastructure.CppTrader.Providers
+  fullName: Meridian.Infrastructure.CppTrader.Providers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Providers
+    name: Providers
+    href: Meridian.Infrastructure.CppTrader.Providers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Providers
+    name: Providers
+    href: Meridian.Infrastructure.CppTrader.Providers.html

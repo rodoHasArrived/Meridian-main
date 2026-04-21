@@ -1,0 +1,309 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.LoanStatus
+  commentId: T:Meridian.Contracts.DirectLending.LoanStatus
+  id: LoanStatus
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.LoanStatus.Active
+  - Meridian.Contracts.DirectLending.LoanStatus.Approved
+  - Meridian.Contracts.DirectLending.LoanStatus.Closed
+  - Meridian.Contracts.DirectLending.LoanStatus.Defaulted
+  - Meridian.Contracts.DirectLending.LoanStatus.Draft
+  - Meridian.Contracts.DirectLending.LoanStatus.Matured
+  - Meridian.Contracts.DirectLending.LoanStatus.NonPerforming
+  - Meridian.Contracts.DirectLending.LoanStatus.Suspended
+  - Meridian.Contracts.DirectLending.LoanStatus.Workout
+  langs:
+  - csharp
+  - vb
+  name: LoanStatus
+  nameWithType: LoanStatus
+  fullName: Meridian.Contracts.DirectLending.LoanStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoanStatus
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum LoanStatus : byte'
+    content.vb: Public Enum LoanStatus As Byte
+- uid: Meridian.Contracts.DirectLending.LoanStatus.Draft
+  commentId: F:Meridian.Contracts.DirectLending.LoanStatus.Draft
+  id: Draft
+  parent: Meridian.Contracts.DirectLending.LoanStatus
+  langs:
+  - csharp
+  - vb
+  name: Draft
+  nameWithType: LoanStatus.Draft
+  fullName: Meridian.Contracts.DirectLending.LoanStatus.Draft
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Draft
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Draft = 0
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+- uid: Meridian.Contracts.DirectLending.LoanStatus.Approved
+  commentId: F:Meridian.Contracts.DirectLending.LoanStatus.Approved
+  id: Approved
+  parent: Meridian.Contracts.DirectLending.LoanStatus
+  langs:
+  - csharp
+  - vb
+  name: Approved
+  nameWithType: LoanStatus.Approved
+  fullName: Meridian.Contracts.DirectLending.LoanStatus.Approved
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Approved
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Approved = 1
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+- uid: Meridian.Contracts.DirectLending.LoanStatus.Active
+  commentId: F:Meridian.Contracts.DirectLending.LoanStatus.Active
+  id: Active
+  parent: Meridian.Contracts.DirectLending.LoanStatus
+  langs:
+  - csharp
+  - vb
+  name: Active
+  nameWithType: LoanStatus.Active
+  fullName: Meridian.Contracts.DirectLending.LoanStatus.Active
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Active
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Active = 2
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+- uid: Meridian.Contracts.DirectLending.LoanStatus.Suspended
+  commentId: F:Meridian.Contracts.DirectLending.LoanStatus.Suspended
+  id: Suspended
+  parent: Meridian.Contracts.DirectLending.LoanStatus
+  langs:
+  - csharp
+  - vb
+  name: Suspended
+  nameWithType: LoanStatus.Suspended
+  fullName: Meridian.Contracts.DirectLending.LoanStatus.Suspended
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Suspended
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Suspended = 3
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+- uid: Meridian.Contracts.DirectLending.LoanStatus.Matured
+  commentId: F:Meridian.Contracts.DirectLending.LoanStatus.Matured
+  id: Matured
+  parent: Meridian.Contracts.DirectLending.LoanStatus
+  langs:
+  - csharp
+  - vb
+  name: Matured
+  nameWithType: LoanStatus.Matured
+  fullName: Meridian.Contracts.DirectLending.LoanStatus.Matured
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Matured
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Matured = 4
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+- uid: Meridian.Contracts.DirectLending.LoanStatus.Closed
+  commentId: F:Meridian.Contracts.DirectLending.LoanStatus.Closed
+  id: Closed
+  parent: Meridian.Contracts.DirectLending.LoanStatus
+  langs:
+  - csharp
+  - vb
+  name: Closed
+  nameWithType: LoanStatus.Closed
+  fullName: Meridian.Contracts.DirectLending.LoanStatus.Closed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Closed
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Closed = 5
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+- uid: Meridian.Contracts.DirectLending.LoanStatus.Defaulted
+  commentId: F:Meridian.Contracts.DirectLending.LoanStatus.Defaulted
+  id: Defaulted
+  parent: Meridian.Contracts.DirectLending.LoanStatus
+  langs:
+  - csharp
+  - vb
+  name: Defaulted
+  nameWithType: LoanStatus.Defaulted
+  fullName: Meridian.Contracts.DirectLending.LoanStatus.Defaulted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Defaulted
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Defaulted = 6
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+- uid: Meridian.Contracts.DirectLending.LoanStatus.NonPerforming
+  commentId: F:Meridian.Contracts.DirectLending.LoanStatus.NonPerforming
+  id: NonPerforming
+  parent: Meridian.Contracts.DirectLending.LoanStatus
+  langs:
+  - csharp
+  - vb
+  name: NonPerforming
+  nameWithType: LoanStatus.NonPerforming
+  fullName: Meridian.Contracts.DirectLending.LoanStatus.NonPerforming
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NonPerforming
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: NonPerforming = 7
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+- uid: Meridian.Contracts.DirectLending.LoanStatus.Workout
+  commentId: F:Meridian.Contracts.DirectLending.LoanStatus.Workout
+  id: Workout
+  parent: Meridian.Contracts.DirectLending.LoanStatus
+  langs:
+  - csharp
+  - vb
+  name: Workout
+  nameWithType: LoanStatus.Workout
+  fullName: Meridian.Contracts.DirectLending.LoanStatus.Workout
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Workout
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Workout = 8
+    return:
+      type: Meridian.Contracts.DirectLending.LoanStatus
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.LoanStatus
+  commentId: T:Meridian.Contracts.DirectLending.LoanStatus
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.LoanStatus.html
+  name: LoanStatus
+  nameWithType: LoanStatus
+  fullName: Meridian.Contracts.DirectLending.LoanStatus

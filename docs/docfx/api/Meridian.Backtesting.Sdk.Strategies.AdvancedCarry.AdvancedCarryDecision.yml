@@ -1,0 +1,929 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  id: AdvancedCarryDecision
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.#ctor(System.DateTimeOffset,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan},Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport,System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AsOf
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.CashWeight
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.Diagnostics
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.ExecutionPlans
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.InvestedWeight
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RebalanceInstructions
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RiskReport
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.TargetWeights
+  langs:
+  - csharp
+  - vb
+  name: AdvancedCarryDecision
+  nameWithType: AdvancedCarryDecision
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdvancedCarryDecision
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: 'public sealed record AdvancedCarryDecision : IEquatable<AdvancedCarryDecision>'
+    content.vb: Public NotInheritable Class AdvancedCarryDecision Implements IEquatable(Of AdvancedCarryDecision)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.#ctor(System.DateTimeOffset,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan},Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport,System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.#ctor(System.DateTimeOffset,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan},Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport,System.Collections.Generic.IReadOnlyList{System.String})
+  id: '#ctor(System.DateTimeOffset,System.Double,System.Double,System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction},System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan},Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport,System.Collections.Generic.IReadOnlyList{System.String})'
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  langs:
+  - csharp
+  - vb
+  name: AdvancedCarryDecision(DateTimeOffset, double, double, IReadOnlyList<OptimizedTargetWeight>, IReadOnlyList<RebalanceInstruction>, IReadOnlyList<ExecutionPlan>, CarryRiskReport, IReadOnlyList<string>)
+  nameWithType: AdvancedCarryDecision.AdvancedCarryDecision(DateTimeOffset, double, double, IReadOnlyList<OptimizedTargetWeight>, IReadOnlyList<RebalanceInstruction>, IReadOnlyList<ExecutionPlan>, CarryRiskReport, IReadOnlyList<string>)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AdvancedCarryDecision(System.DateTimeOffset, double, double, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight>, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction>, System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan>, Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport, System.Collections.Generic.IReadOnlyList<string>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public AdvancedCarryDecision(DateTimeOffset AsOf, double InvestedWeight, double CashWeight, IReadOnlyList<OptimizedTargetWeight> TargetWeights, IReadOnlyList<RebalanceInstruction> RebalanceInstructions, IReadOnlyList<ExecutionPlan> ExecutionPlans, CarryRiskReport RiskReport, IReadOnlyList<string> Diagnostics)
+    parameters:
+    - id: AsOf
+      type: System.DateTimeOffset
+    - id: InvestedWeight
+      type: System.Double
+    - id: CashWeight
+      type: System.Double
+    - id: TargetWeights
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight}
+    - id: RebalanceInstructions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction}
+    - id: ExecutionPlans
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan}
+    - id: RiskReport
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
+    - id: Diagnostics
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Sub New(AsOf As DateTimeOffset, InvestedWeight As Double, CashWeight As Double, TargetWeights As IReadOnlyList(Of OptimizedTargetWeight), RebalanceInstructions As IReadOnlyList(Of RebalanceInstruction), ExecutionPlans As IReadOnlyList(Of ExecutionPlan), RiskReport As CarryRiskReport, Diagnostics As IReadOnlyList(Of String))
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.#ctor*
+  nameWithType.vb: AdvancedCarryDecision.New(DateTimeOffset, Double, Double, IReadOnlyList(Of OptimizedTargetWeight), IReadOnlyList(Of RebalanceInstruction), IReadOnlyList(Of ExecutionPlan), CarryRiskReport, IReadOnlyList(Of String))
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.New(System.DateTimeOffset, Double, Double, System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction), System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan), Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: New(DateTimeOffset, Double, Double, IReadOnlyList(Of OptimizedTargetWeight), IReadOnlyList(Of RebalanceInstruction), IReadOnlyList(Of ExecutionPlan), CarryRiskReport, IReadOnlyList(Of String))
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AsOf
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AsOf
+  id: AsOf
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: AdvancedCarryDecision.AsOf
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AsOf*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.InvestedWeight
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.InvestedWeight
+  id: InvestedWeight
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  langs:
+  - csharp
+  - vb
+  name: InvestedWeight
+  nameWithType: AdvancedCarryDecision.InvestedWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.InvestedWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvestedWeight
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double InvestedWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property InvestedWeight As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.InvestedWeight*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.CashWeight
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.CashWeight
+  id: CashWeight
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  langs:
+  - csharp
+  - vb
+  name: CashWeight
+  nameWithType: AdvancedCarryDecision.CashWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.CashWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashWeight
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public double CashWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CashWeight As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.CashWeight*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.TargetWeights
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.TargetWeights
+  id: TargetWeights
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  langs:
+  - csharp
+  - vb
+  name: TargetWeights
+  nameWithType: AdvancedCarryDecision.TargetWeights
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.TargetWeights
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetWeights
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public IReadOnlyList<OptimizedTargetWeight> TargetWeights { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight}
+    content.vb: Public Property TargetWeights As IReadOnlyList(Of OptimizedTargetWeight)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.TargetWeights*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RebalanceInstructions
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RebalanceInstructions
+  id: RebalanceInstructions
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  langs:
+  - csharp
+  - vb
+  name: RebalanceInstructions
+  nameWithType: AdvancedCarryDecision.RebalanceInstructions
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RebalanceInstructions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RebalanceInstructions
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public IReadOnlyList<RebalanceInstruction> RebalanceInstructions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction}
+    content.vb: Public Property RebalanceInstructions As IReadOnlyList(Of RebalanceInstruction)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RebalanceInstructions*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.ExecutionPlans
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.ExecutionPlans
+  id: ExecutionPlans
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  langs:
+  - csharp
+  - vb
+  name: ExecutionPlans
+  nameWithType: AdvancedCarryDecision.ExecutionPlans
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.ExecutionPlans
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionPlans
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public IReadOnlyList<ExecutionPlan> ExecutionPlans { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan}
+    content.vb: Public Property ExecutionPlans As IReadOnlyList(Of ExecutionPlan)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.ExecutionPlans*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RiskReport
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RiskReport
+  id: RiskReport
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  langs:
+  - csharp
+  - vb
+  name: RiskReport
+  nameWithType: AdvancedCarryDecision.RiskReport
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RiskReport
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RiskReport
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public CarryRiskReport RiskReport { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
+    content.vb: Public Property RiskReport As CarryRiskReport
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RiskReport*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.Diagnostics
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.Diagnostics
+  id: Diagnostics
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+  langs:
+  - csharp
+  - vb
+  name: Diagnostics
+  nameWithType: AdvancedCarryDecision.Diagnostics
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.Diagnostics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Diagnostics
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public IReadOnlyList<string> Diagnostics { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Diagnostics As IReadOnlyList(Of String)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.Diagnostics*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AdvancedCarryDecision>
+  nameWithType: IEquatable<AdvancedCarryDecision>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision>
+  nameWithType.vb: IEquatable(Of AdvancedCarryDecision)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision)
+  name.vb: IEquatable(Of AdvancedCarryDecision)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+    name: AdvancedCarryDecision
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision
+    name: AdvancedCarryDecision
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryDecision__ctor_System_DateTimeOffset_System_Double_System_Double_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_OptimizedTargetWeight__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_RebalanceInstruction__System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_ExecutionPlan__Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryRiskReport_System_Collections_Generic_IReadOnlyList_System_String__
+  name: AdvancedCarryDecision
+  nameWithType: AdvancedCarryDecision.AdvancedCarryDecision
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AdvancedCarryDecision
+  nameWithType.vb: AdvancedCarryDecision.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<OptimizedTargetWeight>
+  nameWithType: IReadOnlyList<OptimizedTargetWeight>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight>
+  nameWithType.vb: IReadOnlyList(Of OptimizedTargetWeight)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight)
+  name.vb: IReadOnlyList(Of OptimizedTargetWeight)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight
+    name: OptimizedTargetWeight
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight
+    name: OptimizedTargetWeight
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.OptimizedTargetWeight.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<RebalanceInstruction>
+  nameWithType: IReadOnlyList<RebalanceInstruction>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction>
+  nameWithType.vb: IReadOnlyList(Of RebalanceInstruction)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction)
+  name.vb: IReadOnlyList(Of RebalanceInstruction)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+    name: RebalanceInstruction
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction
+    name: RebalanceInstruction
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.RebalanceInstruction.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ExecutionPlan>
+  nameWithType: IReadOnlyList<ExecutionPlan>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan>
+  nameWithType.vb: IReadOnlyList(Of ExecutionPlan)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan)
+  name.vb: IReadOnlyList(Of ExecutionPlan)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan
+    name: ExecutionPlan
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan
+    name: ExecutionPlan
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.ExecutionPlan.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport.html
+  name: CarryRiskReport
+  nameWithType: CarryRiskReport
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryRiskReport
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AsOf*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AsOf
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryDecision_AsOf
+  name: AsOf
+  nameWithType: AdvancedCarryDecision.AsOf
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.AsOf
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.InvestedWeight*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.InvestedWeight
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryDecision_InvestedWeight
+  name: InvestedWeight
+  nameWithType: AdvancedCarryDecision.InvestedWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.InvestedWeight
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.CashWeight*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.CashWeight
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryDecision_CashWeight
+  name: CashWeight
+  nameWithType: AdvancedCarryDecision.CashWeight
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.CashWeight
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.TargetWeights*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.TargetWeights
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryDecision_TargetWeights
+  name: TargetWeights
+  nameWithType: AdvancedCarryDecision.TargetWeights
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.TargetWeights
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RebalanceInstructions*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RebalanceInstructions
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryDecision_RebalanceInstructions
+  name: RebalanceInstructions
+  nameWithType: AdvancedCarryDecision.RebalanceInstructions
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RebalanceInstructions
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.ExecutionPlans*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.ExecutionPlans
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryDecision_ExecutionPlans
+  name: ExecutionPlans
+  nameWithType: AdvancedCarryDecision.ExecutionPlans
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.ExecutionPlans
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RiskReport*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RiskReport
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryDecision_RiskReport
+  name: RiskReport
+  nameWithType: AdvancedCarryDecision.RiskReport
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.RiskReport
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.Diagnostics*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.Diagnostics
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_AdvancedCarryDecision_Diagnostics
+  name: Diagnostics
+  nameWithType: AdvancedCarryDecision.Diagnostics
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.AdvancedCarryDecision.Diagnostics

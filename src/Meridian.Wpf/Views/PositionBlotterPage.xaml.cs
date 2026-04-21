@@ -15,7 +15,7 @@ public partial class PositionBlotterPage : Page
         InitializeComponent();
         _viewModel = new PositionBlotterViewModel(
             ApiClientService.Instance,
-            NavigationService.Instance);
+            Services.NavigationService.Instance);
         DataContext = _viewModel;
     }
 

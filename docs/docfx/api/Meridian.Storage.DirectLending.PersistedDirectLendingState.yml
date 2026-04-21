@@ -1,0 +1,599 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState
+  commentId: T:Meridian.Storage.DirectLending.PersistedDirectLendingState
+  id: PersistedDirectLendingState
+  parent: Meridian.Storage.DirectLending
+  children:
+  - Meridian.Storage.DirectLending.PersistedDirectLendingState.#ctor(System.Guid,System.Int64,Meridian.Contracts.DirectLending.LoanContractDetailDto,Meridian.Contracts.DirectLending.LoanServicingStateDto)
+  - Meridian.Storage.DirectLending.PersistedDirectLendingState.AggregateVersion
+  - Meridian.Storage.DirectLending.PersistedDirectLendingState.Contract
+  - Meridian.Storage.DirectLending.PersistedDirectLendingState.LoanId
+  - Meridian.Storage.DirectLending.PersistedDirectLendingState.Servicing
+  langs:
+  - csharp
+  - vb
+  name: PersistedDirectLendingState
+  nameWithType: PersistedDirectLendingState
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PersistedDirectLendingState
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: 'public sealed record PersistedDirectLendingState : IEquatable<PersistedDirectLendingState>'
+    content.vb: Public NotInheritable Class PersistedDirectLendingState Implements IEquatable(Of PersistedDirectLendingState)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.DirectLending.PersistedDirectLendingState}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.#ctor(System.Guid,System.Int64,Meridian.Contracts.DirectLending.LoanContractDetailDto,Meridian.Contracts.DirectLending.LoanServicingStateDto)
+  commentId: M:Meridian.Storage.DirectLending.PersistedDirectLendingState.#ctor(System.Guid,System.Int64,Meridian.Contracts.DirectLending.LoanContractDetailDto,Meridian.Contracts.DirectLending.LoanServicingStateDto)
+  id: '#ctor(System.Guid,System.Int64,Meridian.Contracts.DirectLending.LoanContractDetailDto,Meridian.Contracts.DirectLending.LoanServicingStateDto)'
+  parent: Meridian.Storage.DirectLending.PersistedDirectLendingState
+  langs:
+  - csharp
+  - vb
+  name: PersistedDirectLendingState(Guid, long, LoanContractDetailDto, LoanServicingStateDto)
+  nameWithType: PersistedDirectLendingState.PersistedDirectLendingState(Guid, long, LoanContractDetailDto, LoanServicingStateDto)
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.PersistedDirectLendingState(System.Guid, long, Meridian.Contracts.DirectLending.LoanContractDetailDto, Meridian.Contracts.DirectLending.LoanServicingStateDto)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public PersistedDirectLendingState(Guid LoanId, long AggregateVersion, LoanContractDetailDto Contract, LoanServicingStateDto Servicing)
+    parameters:
+    - id: LoanId
+      type: System.Guid
+    - id: AggregateVersion
+      type: System.Int64
+    - id: Contract
+      type: Meridian.Contracts.DirectLending.LoanContractDetailDto
+    - id: Servicing
+      type: Meridian.Contracts.DirectLending.LoanServicingStateDto
+    content.vb: Public Sub New(LoanId As Guid, AggregateVersion As Long, Contract As LoanContractDetailDto, Servicing As LoanServicingStateDto)
+  overload: Meridian.Storage.DirectLending.PersistedDirectLendingState.#ctor*
+  nameWithType.vb: PersistedDirectLendingState.New(Guid, Long, LoanContractDetailDto, LoanServicingStateDto)
+  fullName.vb: Meridian.Storage.DirectLending.PersistedDirectLendingState.New(System.Guid, Long, Meridian.Contracts.DirectLending.LoanContractDetailDto, Meridian.Contracts.DirectLending.LoanServicingStateDto)
+  name.vb: New(Guid, Long, LoanContractDetailDto, LoanServicingStateDto)
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.LoanId
+  commentId: P:Meridian.Storage.DirectLending.PersistedDirectLendingState.LoanId
+  id: LoanId
+  parent: Meridian.Storage.DirectLending.PersistedDirectLendingState
+  langs:
+  - csharp
+  - vb
+  name: LoanId
+  nameWithType: PersistedDirectLendingState.LoanId
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.LoanId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoanId
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public Guid LoanId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property LoanId As Guid
+  overload: Meridian.Storage.DirectLending.PersistedDirectLendingState.LoanId*
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.AggregateVersion
+  commentId: P:Meridian.Storage.DirectLending.PersistedDirectLendingState.AggregateVersion
+  id: AggregateVersion
+  parent: Meridian.Storage.DirectLending.PersistedDirectLendingState
+  langs:
+  - csharp
+  - vb
+  name: AggregateVersion
+  nameWithType: PersistedDirectLendingState.AggregateVersion
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.AggregateVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AggregateVersion
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public long AggregateVersion { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property AggregateVersion As Long
+  overload: Meridian.Storage.DirectLending.PersistedDirectLendingState.AggregateVersion*
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.Contract
+  commentId: P:Meridian.Storage.DirectLending.PersistedDirectLendingState.Contract
+  id: Contract
+  parent: Meridian.Storage.DirectLending.PersistedDirectLendingState
+  langs:
+  - csharp
+  - vb
+  name: Contract
+  nameWithType: PersistedDirectLendingState.Contract
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.Contract
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contract
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public LoanContractDetailDto Contract { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.LoanContractDetailDto
+    content.vb: Public Property Contract As LoanContractDetailDto
+  overload: Meridian.Storage.DirectLending.PersistedDirectLendingState.Contract*
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.Servicing
+  commentId: P:Meridian.Storage.DirectLending.PersistedDirectLendingState.Servicing
+  id: Servicing
+  parent: Meridian.Storage.DirectLending.PersistedDirectLendingState
+  langs:
+  - csharp
+  - vb
+  name: Servicing
+  nameWithType: PersistedDirectLendingState.Servicing
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.Servicing
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Servicing
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingStateStore.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public LoanServicingStateDto Servicing { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.LoanServicingStateDto
+    content.vb: Public Property Servicing As LoanServicingStateDto
+  overload: Meridian.Storage.DirectLending.PersistedDirectLendingState.Servicing*
+references:
+- uid: Meridian.Storage.DirectLending
+  commentId: N:Meridian.Storage.DirectLending
+  href: Meridian.html
+  name: Meridian.Storage.DirectLending
+  nameWithType: Meridian.Storage.DirectLending
+  fullName: Meridian.Storage.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.DirectLending.PersistedDirectLendingState}
+  commentId: T:System.IEquatable{Meridian.Storage.DirectLending.PersistedDirectLendingState}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PersistedDirectLendingState>
+  nameWithType: IEquatable<PersistedDirectLendingState>
+  fullName: System.IEquatable<Meridian.Storage.DirectLending.PersistedDirectLendingState>
+  nameWithType.vb: IEquatable(Of PersistedDirectLendingState)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.DirectLending.PersistedDirectLendingState)
+  name.vb: IEquatable(Of PersistedDirectLendingState)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.DirectLending.PersistedDirectLendingState
+    name: PersistedDirectLendingState
+    href: Meridian.Storage.DirectLending.PersistedDirectLendingState.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.DirectLending.PersistedDirectLendingState
+    name: PersistedDirectLendingState
+    href: Meridian.Storage.DirectLending.PersistedDirectLendingState.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.#ctor*
+  commentId: Overload:Meridian.Storage.DirectLending.PersistedDirectLendingState.#ctor
+  href: Meridian.Storage.DirectLending.PersistedDirectLendingState.html#Meridian_Storage_DirectLending_PersistedDirectLendingState__ctor_System_Guid_System_Int64_Meridian_Contracts_DirectLending_LoanContractDetailDto_Meridian_Contracts_DirectLending_LoanServicingStateDto_
+  name: PersistedDirectLendingState
+  nameWithType: PersistedDirectLendingState.PersistedDirectLendingState
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.PersistedDirectLendingState
+  nameWithType.vb: PersistedDirectLendingState.New
+  fullName.vb: Meridian.Storage.DirectLending.PersistedDirectLendingState.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.DirectLending.LoanContractDetailDto
+  commentId: T:Meridian.Contracts.DirectLending.LoanContractDetailDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.LoanContractDetailDto.html
+  name: LoanContractDetailDto
+  nameWithType: LoanContractDetailDto
+  fullName: Meridian.Contracts.DirectLending.LoanContractDetailDto
+- uid: Meridian.Contracts.DirectLending.LoanServicingStateDto
+  commentId: T:Meridian.Contracts.DirectLending.LoanServicingStateDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.LoanServicingStateDto.html
+  name: LoanServicingStateDto
+  nameWithType: LoanServicingStateDto
+  fullName: Meridian.Contracts.DirectLending.LoanServicingStateDto
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.LoanId*
+  commentId: Overload:Meridian.Storage.DirectLending.PersistedDirectLendingState.LoanId
+  href: Meridian.Storage.DirectLending.PersistedDirectLendingState.html#Meridian_Storage_DirectLending_PersistedDirectLendingState_LoanId
+  name: LoanId
+  nameWithType: PersistedDirectLendingState.LoanId
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.LoanId
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.AggregateVersion*
+  commentId: Overload:Meridian.Storage.DirectLending.PersistedDirectLendingState.AggregateVersion
+  href: Meridian.Storage.DirectLending.PersistedDirectLendingState.html#Meridian_Storage_DirectLending_PersistedDirectLendingState_AggregateVersion
+  name: AggregateVersion
+  nameWithType: PersistedDirectLendingState.AggregateVersion
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.AggregateVersion
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.Contract*
+  commentId: Overload:Meridian.Storage.DirectLending.PersistedDirectLendingState.Contract
+  href: Meridian.Storage.DirectLending.PersistedDirectLendingState.html#Meridian_Storage_DirectLending_PersistedDirectLendingState_Contract
+  name: Contract
+  nameWithType: PersistedDirectLendingState.Contract
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.Contract
+- uid: Meridian.Storage.DirectLending.PersistedDirectLendingState.Servicing*
+  commentId: Overload:Meridian.Storage.DirectLending.PersistedDirectLendingState.Servicing
+  href: Meridian.Storage.DirectLending.PersistedDirectLendingState.html#Meridian_Storage_DirectLending_PersistedDirectLendingState_Servicing
+  name: Servicing
+  nameWithType: PersistedDirectLendingState.Servicing
+  fullName: Meridian.Storage.DirectLending.PersistedDirectLendingState.Servicing

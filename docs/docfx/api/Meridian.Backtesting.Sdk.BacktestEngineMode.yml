@@ -1,0 +1,122 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMode
+  commentId: T:Meridian.Backtesting.Sdk.BacktestEngineMode
+  id: BacktestEngineMode
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.BacktestEngineMode.CppTrader
+  - Meridian.Backtesting.Sdk.BacktestEngineMode.Managed
+  langs:
+  - csharp
+  - vb
+  name: BacktestEngineMode
+  nameWithType: BacktestEngineMode
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestEngineMode
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Selects which engine executes a backtest request.
+  example: []
+  syntax:
+    content: public enum BacktestEngineMode
+    content.vb: Public Enum BacktestEngineMode
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMode.Managed
+  commentId: F:Meridian.Backtesting.Sdk.BacktestEngineMode.Managed
+  id: Managed
+  parent: Meridian.Backtesting.Sdk.BacktestEngineMode
+  langs:
+  - csharp
+  - vb
+  name: Managed
+  nameWithType: BacktestEngineMode.Managed
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMode.Managed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Managed
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Managed = 0
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestEngineMode
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMode.CppTrader
+  commentId: F:Meridian.Backtesting.Sdk.BacktestEngineMode.CppTrader
+  id: CppTrader
+  parent: Meridian.Backtesting.Sdk.BacktestEngineMode
+  langs:
+  - csharp
+  - vb
+  name: CppTrader
+  nameWithType: BacktestEngineMode.CppTrader
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMode.CppTrader
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CppTrader
+    path: ../../src/Meridian.Backtesting.Sdk/BacktestEngineMode.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: CppTrader = 1
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestEngineMode
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.BacktestEngineMode
+  commentId: T:Meridian.Backtesting.Sdk.BacktestEngineMode
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestEngineMode.html
+  name: BacktestEngineMode
+  nameWithType: BacktestEngineMode
+  fullName: Meridian.Backtesting.Sdk.BacktestEngineMode

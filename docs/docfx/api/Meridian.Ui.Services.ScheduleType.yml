@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ScheduleType
+  commentId: T:Meridian.Ui.Services.ScheduleType
+  id: ScheduleType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ScheduleType.Daily
+  - Meridian.Ui.Services.ScheduleType.Hourly
+  - Meridian.Ui.Services.ScheduleType.Monthly
+  - Meridian.Ui.Services.ScheduleType.Weekly
+  langs:
+  - csharp
+  - vb
+  name: ScheduleType
+  nameWithType: ScheduleType
+  fullName: Meridian.Ui.Services.ScheduleType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleType
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 668
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Schedule types for maintenance tasks.
+  example: []
+  syntax:
+    content: 'public enum ScheduleType : byte'
+    content.vb: Public Enum ScheduleType As Byte
+- uid: Meridian.Ui.Services.ScheduleType.Hourly
+  commentId: F:Meridian.Ui.Services.ScheduleType.Hourly
+  id: Hourly
+  parent: Meridian.Ui.Services.ScheduleType
+  langs:
+  - csharp
+  - vb
+  name: Hourly
+  nameWithType: ScheduleType.Hourly
+  fullName: Meridian.Ui.Services.ScheduleType.Hourly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hourly
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 670
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Hourly = 0
+    return:
+      type: Meridian.Ui.Services.ScheduleType
+- uid: Meridian.Ui.Services.ScheduleType.Daily
+  commentId: F:Meridian.Ui.Services.ScheduleType.Daily
+  id: Daily
+  parent: Meridian.Ui.Services.ScheduleType
+  langs:
+  - csharp
+  - vb
+  name: Daily
+  nameWithType: ScheduleType.Daily
+  fullName: Meridian.Ui.Services.ScheduleType.Daily
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Daily
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 671
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Daily = 1
+    return:
+      type: Meridian.Ui.Services.ScheduleType
+- uid: Meridian.Ui.Services.ScheduleType.Weekly
+  commentId: F:Meridian.Ui.Services.ScheduleType.Weekly
+  id: Weekly
+  parent: Meridian.Ui.Services.ScheduleType
+  langs:
+  - csharp
+  - vb
+  name: Weekly
+  nameWithType: ScheduleType.Weekly
+  fullName: Meridian.Ui.Services.ScheduleType.Weekly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weekly
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 672
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Weekly = 2
+    return:
+      type: Meridian.Ui.Services.ScheduleType
+- uid: Meridian.Ui.Services.ScheduleType.Monthly
+  commentId: F:Meridian.Ui.Services.ScheduleType.Monthly
+  id: Monthly
+  parent: Meridian.Ui.Services.ScheduleType
+  langs:
+  - csharp
+  - vb
+  name: Monthly
+  nameWithType: ScheduleType.Monthly
+  fullName: Meridian.Ui.Services.ScheduleType.Monthly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Monthly
+    path: ../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+    startLine: 673
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Monthly = 3
+    return:
+      type: Meridian.Ui.Services.ScheduleType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.ScheduleType
+  commentId: T:Meridian.Ui.Services.ScheduleType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ScheduleType.html
+  name: ScheduleType
+  nameWithType: ScheduleType
+  fullName: Meridian.Ui.Services.ScheduleType

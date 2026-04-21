@@ -1,0 +1,430 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  commentId: T:Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  id: ICanonicalizationMetrics
+  parent: Meridian.Application.Canonicalization
+  children:
+  - Meridian.Application.Canonicalization.ICanonicalizationMetrics.GetSnapshot
+  - Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordDualWrite
+  - Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordHardFail(System.String,System.String)
+  - Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSoftFail(System.String,System.String)
+  - Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSuccess(System.String,System.String)
+  - Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordUnresolved(System.String,System.String)
+  - Meridian.Application.Canonicalization.ICanonicalizationMetrics.Reset
+  - Meridian.Application.Canonicalization.ICanonicalizationMetrics.SetActiveVersion(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: ICanonicalizationMetrics
+  nameWithType: ICanonicalizationMetrics
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICanonicalizationMetrics
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: >-
+    Abstraction over canonicalization counters that enables DI injection and test isolation.
+
+    Register the default implementation (<xref href="Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics" data-throw-if-not-resolved="false"></xref>) as a
+
+    singleton via <code>services.AddSingleton&lt;ICanonicalizationMetrics, DefaultCanonicalizationMetrics&gt;()</code>.
+  example: []
+  syntax:
+    content: public interface ICanonicalizationMetrics
+    content.vb: Public Interface ICanonicalizationMetrics
+  derivedClasses:
+  - Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSuccess(System.String,System.String)
+  commentId: M:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSuccess(System.String,System.String)
+  id: RecordSuccess(System.String,System.String)
+  parent: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  langs:
+  - csharp
+  - vb
+  name: RecordSuccess(string, string)
+  nameWithType: ICanonicalizationMetrics.RecordSuccess(string, string)
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSuccess(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordSuccess
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Records a successful canonicalization.
+  example: []
+  syntax:
+    content: void RecordSuccess(string provider, string eventType)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: eventType
+      type: System.String
+    content.vb: Sub RecordSuccess(provider As String, eventType As String)
+  overload: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSuccess*
+  nameWithType.vb: ICanonicalizationMetrics.RecordSuccess(String, String)
+  fullName.vb: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSuccess(String, String)
+  name.vb: RecordSuccess(String, String)
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSoftFail(System.String,System.String)
+  commentId: M:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSoftFail(System.String,System.String)
+  id: RecordSoftFail(System.String,System.String)
+  parent: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  langs:
+  - csharp
+  - vb
+  name: RecordSoftFail(string, string)
+  nameWithType: ICanonicalizationMetrics.RecordSoftFail(string, string)
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSoftFail(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordSoftFail
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Records a soft failure (partial canonicalization).
+  example: []
+  syntax:
+    content: void RecordSoftFail(string provider, string eventType)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: eventType
+      type: System.String
+    content.vb: Sub RecordSoftFail(provider As String, eventType As String)
+  overload: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSoftFail*
+  nameWithType.vb: ICanonicalizationMetrics.RecordSoftFail(String, String)
+  fullName.vb: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSoftFail(String, String)
+  name.vb: RecordSoftFail(String, String)
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordHardFail(System.String,System.String)
+  commentId: M:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordHardFail(System.String,System.String)
+  id: RecordHardFail(System.String,System.String)
+  parent: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  langs:
+  - csharp
+  - vb
+  name: RecordHardFail(string, string)
+  nameWithType: ICanonicalizationMetrics.RecordHardFail(string, string)
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordHardFail(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordHardFail
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Records a hard failure (event dropped or missing required fields).
+  example: []
+  syntax:
+    content: void RecordHardFail(string provider, string eventType)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: eventType
+      type: System.String
+    content.vb: Sub RecordHardFail(provider As String, eventType As String)
+  overload: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordHardFail*
+  nameWithType.vb: ICanonicalizationMetrics.RecordHardFail(String, String)
+  fullName.vb: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordHardFail(String, String)
+  name.vb: RecordHardFail(String, String)
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordUnresolved(System.String,System.String)
+  commentId: M:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordUnresolved(System.String,System.String)
+  id: RecordUnresolved(System.String,System.String)
+  parent: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  langs:
+  - csharp
+  - vb
+  name: RecordUnresolved(string, string)
+  nameWithType: ICanonicalizationMetrics.RecordUnresolved(string, string)
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordUnresolved(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordUnresolved
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Records an unresolved field (symbol, venue, or condition).
+  example: []
+  syntax:
+    content: void RecordUnresolved(string provider, string field)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: field
+      type: System.String
+    content.vb: Sub RecordUnresolved(provider As String, field As String)
+  overload: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordUnresolved*
+  nameWithType.vb: ICanonicalizationMetrics.RecordUnresolved(String, String)
+  fullName.vb: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordUnresolved(String, String)
+  name.vb: RecordUnresolved(String, String)
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordDualWrite
+  commentId: M:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordDualWrite
+  id: RecordDualWrite
+  parent: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  langs:
+  - csharp
+  - vb
+  name: RecordDualWrite()
+  nameWithType: ICanonicalizationMetrics.RecordDualWrite()
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordDualWrite()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordDualWrite
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Records a dual-write event (both raw and enriched persisted).
+  example: []
+  syntax:
+    content: void RecordDualWrite()
+    content.vb: Sub RecordDualWrite()
+  overload: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordDualWrite*
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.SetActiveVersion(System.Int32)
+  commentId: M:Meridian.Application.Canonicalization.ICanonicalizationMetrics.SetActiveVersion(System.Int32)
+  id: SetActiveVersion(System.Int32)
+  parent: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  langs:
+  - csharp
+  - vb
+  name: SetActiveVersion(int)
+  nameWithType: ICanonicalizationMetrics.SetActiveVersion(int)
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.SetActiveVersion(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetActiveVersion
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Sets the active canonicalization version.
+  example: []
+  syntax:
+    content: void SetActiveVersion(int version)
+    parameters:
+    - id: version
+      type: System.Int32
+    content.vb: Sub SetActiveVersion(version As Integer)
+  overload: Meridian.Application.Canonicalization.ICanonicalizationMetrics.SetActiveVersion*
+  nameWithType.vb: ICanonicalizationMetrics.SetActiveVersion(Integer)
+  fullName.vb: Meridian.Application.Canonicalization.ICanonicalizationMetrics.SetActiveVersion(Integer)
+  name.vb: SetActiveVersion(Integer)
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.GetSnapshot
+  commentId: M:Meridian.Application.Canonicalization.ICanonicalizationMetrics.GetSnapshot
+  id: GetSnapshot
+  parent: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot()
+  nameWithType: ICanonicalizationMetrics.GetSnapshot()
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.GetSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Gets a snapshot of current metrics.
+  example: []
+  syntax:
+    content: CanonicalizationSnapshot GetSnapshot()
+    return:
+      type: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+    content.vb: Function GetSnapshot() As CanonicalizationSnapshot
+  overload: Meridian.Application.Canonicalization.ICanonicalizationMetrics.GetSnapshot*
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.Reset
+  commentId: M:Meridian.Application.Canonicalization.ICanonicalizationMetrics.Reset
+  id: Reset
+  parent: Meridian.Application.Canonicalization.ICanonicalizationMetrics
+  langs:
+  - csharp
+  - vb
+  name: Reset()
+  nameWithType: ICanonicalizationMetrics.Reset()
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.Reset()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizationMetrics.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Resets all counters. Intended for use in tests.
+  example: []
+  syntax:
+    content: void Reset()
+    content.vb: Sub Reset()
+  overload: Meridian.Application.Canonicalization.ICanonicalizationMetrics.Reset*
+references:
+- uid: Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics
+  commentId: T:Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics
+  href: Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics.html
+  name: DefaultCanonicalizationMetrics
+  nameWithType: DefaultCanonicalizationMetrics
+  fullName: Meridian.Application.Canonicalization.DefaultCanonicalizationMetrics
+- uid: Meridian.Application.Canonicalization
+  commentId: N:Meridian.Application.Canonicalization
+  href: Meridian.html
+  name: Meridian.Application.Canonicalization
+  nameWithType: Meridian.Application.Canonicalization
+  fullName: Meridian.Application.Canonicalization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSuccess*
+  commentId: Overload:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSuccess
+  href: Meridian.Application.Canonicalization.ICanonicalizationMetrics.html#Meridian_Application_Canonicalization_ICanonicalizationMetrics_RecordSuccess_System_String_System_String_
+  name: RecordSuccess
+  nameWithType: ICanonicalizationMetrics.RecordSuccess
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSuccess
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSoftFail*
+  commentId: Overload:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSoftFail
+  href: Meridian.Application.Canonicalization.ICanonicalizationMetrics.html#Meridian_Application_Canonicalization_ICanonicalizationMetrics_RecordSoftFail_System_String_System_String_
+  name: RecordSoftFail
+  nameWithType: ICanonicalizationMetrics.RecordSoftFail
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordSoftFail
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordHardFail*
+  commentId: Overload:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordHardFail
+  href: Meridian.Application.Canonicalization.ICanonicalizationMetrics.html#Meridian_Application_Canonicalization_ICanonicalizationMetrics_RecordHardFail_System_String_System_String_
+  name: RecordHardFail
+  nameWithType: ICanonicalizationMetrics.RecordHardFail
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordHardFail
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordUnresolved*
+  commentId: Overload:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordUnresolved
+  href: Meridian.Application.Canonicalization.ICanonicalizationMetrics.html#Meridian_Application_Canonicalization_ICanonicalizationMetrics_RecordUnresolved_System_String_System_String_
+  name: RecordUnresolved
+  nameWithType: ICanonicalizationMetrics.RecordUnresolved
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordUnresolved
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordDualWrite*
+  commentId: Overload:Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordDualWrite
+  href: Meridian.Application.Canonicalization.ICanonicalizationMetrics.html#Meridian_Application_Canonicalization_ICanonicalizationMetrics_RecordDualWrite
+  name: RecordDualWrite
+  nameWithType: ICanonicalizationMetrics.RecordDualWrite
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.RecordDualWrite
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.SetActiveVersion*
+  commentId: Overload:Meridian.Application.Canonicalization.ICanonicalizationMetrics.SetActiveVersion
+  href: Meridian.Application.Canonicalization.ICanonicalizationMetrics.html#Meridian_Application_Canonicalization_ICanonicalizationMetrics_SetActiveVersion_System_Int32_
+  name: SetActiveVersion
+  nameWithType: ICanonicalizationMetrics.SetActiveVersion
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.SetActiveVersion
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.GetSnapshot*
+  commentId: Overload:Meridian.Application.Canonicalization.ICanonicalizationMetrics.GetSnapshot
+  href: Meridian.Application.Canonicalization.ICanonicalizationMetrics.html#Meridian_Application_Canonicalization_ICanonicalizationMetrics_GetSnapshot
+  name: GetSnapshot
+  nameWithType: ICanonicalizationMetrics.GetSnapshot
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.GetSnapshot
+- uid: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  commentId: T:Meridian.Application.Canonicalization.CanonicalizationSnapshot
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.CanonicalizationSnapshot.html
+  name: CanonicalizationSnapshot
+  nameWithType: CanonicalizationSnapshot
+  fullName: Meridian.Application.Canonicalization.CanonicalizationSnapshot
+- uid: Meridian.Application.Canonicalization.ICanonicalizationMetrics.Reset*
+  commentId: Overload:Meridian.Application.Canonicalization.ICanonicalizationMetrics.Reset
+  href: Meridian.Application.Canonicalization.ICanonicalizationMetrics.html#Meridian_Application_Canonicalization_ICanonicalizationMetrics_Reset
+  name: Reset
+  nameWithType: ICanonicalizationMetrics.Reset
+  fullName: Meridian.Application.Canonicalization.ICanonicalizationMetrics.Reset

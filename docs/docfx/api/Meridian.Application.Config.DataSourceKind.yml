@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.DataSourceKind
+  commentId: T:Meridian.Application.Config.DataSourceKind
+  id: DataSourceKind
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.DataSourceKind.Alpaca
+  - Meridian.Application.Config.DataSourceKind.IB
+  - Meridian.Application.Config.DataSourceKind.NYSE
+  - Meridian.Application.Config.DataSourceKind.Polygon
+  - Meridian.Application.Config.DataSourceKind.Synthetic
+  langs:
+  - csharp
+  - vb
+  name: DataSourceKind
+  nameWithType: DataSourceKind
+  fullName: Meridian.Application.Config.DataSourceKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceKind
+    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Supported market data providers.
+  example: []
+  syntax:
+    content: 'public enum DataSourceKind : byte'
+    content.vb: Public Enum DataSourceKind As Byte
+- uid: Meridian.Application.Config.DataSourceKind.IB
+  commentId: F:Meridian.Application.Config.DataSourceKind.IB
+  id: IB
+  parent: Meridian.Application.Config.DataSourceKind
+  langs:
+  - csharp
+  - vb
+  name: IB
+  nameWithType: DataSourceKind.IB
+  fullName: Meridian.Application.Config.DataSourceKind.IB
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IB
+    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Interactive Brokers via native TWS API.
+  example: []
+  syntax:
+    content: IB = 0
+    return:
+      type: Meridian.Application.Config.DataSourceKind
+- uid: Meridian.Application.Config.DataSourceKind.Alpaca
+  commentId: F:Meridian.Application.Config.DataSourceKind.Alpaca
+  id: Alpaca
+  parent: Meridian.Application.Config.DataSourceKind
+  langs:
+  - csharp
+  - vb
+  name: Alpaca
+  nameWithType: DataSourceKind.Alpaca
+  fullName: Meridian.Application.Config.DataSourceKind.Alpaca
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alpaca
+    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Alpaca Markets via WebSocket.
+  example: []
+  syntax:
+    content: Alpaca = 1
+    return:
+      type: Meridian.Application.Config.DataSourceKind
+- uid: Meridian.Application.Config.DataSourceKind.Polygon
+  commentId: F:Meridian.Application.Config.DataSourceKind.Polygon
+  id: Polygon
+  parent: Meridian.Application.Config.DataSourceKind
+  langs:
+  - csharp
+  - vb
+  name: Polygon
+  nameWithType: DataSourceKind.Polygon
+  fullName: Meridian.Application.Config.DataSourceKind.Polygon
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Polygon
+    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Polygon.io via WebSocket.
+  example: []
+  syntax:
+    content: Polygon = 2
+    return:
+      type: Meridian.Application.Config.DataSourceKind
+- uid: Meridian.Application.Config.DataSourceKind.NYSE
+  commentId: F:Meridian.Application.Config.DataSourceKind.NYSE
+  id: NYSE
+  parent: Meridian.Application.Config.DataSourceKind
+  langs:
+  - csharp
+  - vb
+  name: NYSE
+  nameWithType: DataSourceKind.NYSE
+  fullName: Meridian.Application.Config.DataSourceKind.NYSE
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NYSE
+    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: NYSE market data feed.
+  example: []
+  syntax:
+    content: NYSE = 4
+    return:
+      type: Meridian.Application.Config.DataSourceKind
+- uid: Meridian.Application.Config.DataSourceKind.Synthetic
+  commentId: F:Meridian.Application.Config.DataSourceKind.Synthetic
+  id: Synthetic
+  parent: Meridian.Application.Config.DataSourceKind
+  langs:
+  - csharp
+  - vb
+  name: Synthetic
+  nameWithType: DataSourceKind.Synthetic
+  fullName: Meridian.Application.Config.DataSourceKind.Synthetic
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Config/DataSourceKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Synthetic
+    path: ../../src/Meridian.Core/Config/DataSourceKind.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Built-in synthetic/reference market data for offline development and replay.
+  example: []
+  syntax:
+    content: Synthetic = 5
+    return:
+      type: Meridian.Application.Config.DataSourceKind
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Config.DataSourceKind
+  commentId: T:Meridian.Application.Config.DataSourceKind
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DataSourceKind.html
+  name: DataSourceKind
+  nameWithType: DataSourceKind
+  fullName: Meridian.Application.Config.DataSourceKind

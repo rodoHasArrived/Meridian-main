@@ -1,0 +1,1664 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  id: NyseMarketDataClient
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  children:
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.#ctor(Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,System.Net.Http.IHttpClientFactory,Meridian.Infrastructure.Adapters.NYSE.NYSEOptions)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisposeAsync
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.IsEnabled
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCapabilities
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCredentialFields
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDescription
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDisplayName
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderId
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderNotes
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderPriority
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderWarnings
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeTrades(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: NyseMarketDataClient
+  nameWithType: NyseMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NyseMarketDataClient
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Bridges <xref href="Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource" data-throw-if-not-resolved="false"></xref> into the unified <xref href="Meridian.Infrastructure.IMarketDataClient" data-throw-if-not-resolved="false"></xref> abstraction
+
+    used by the provider registry.
+  example: []
+  syntax:
+    content: >-
+      [DataSource("nyse-streaming", "NYSE Streaming", DataSourceType.Realtime, DataSourceCategory.Exchange, Priority = 5, Description = "Unified NYSE streaming client backed by NYSEDataSource")]
+
+      public sealed class NyseMarketDataClient : IMarketDataClient, IProviderMetadata, IAsyncDisposable
+    content.vb: >-
+      <DataSource("nyse-streaming", "NYSE Streaming", DataSourceType.Realtime, DataSourceCategory.Exchange, Priority:=5, Description:="Unified NYSE streaming client backed by NYSEDataSource")>
+
+      Public NotInheritable Class NyseMarketDataClient Implements IMarketDataClient, IProviderMetadata, IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.DataSources.DataSourceAttribute
+    ctor: Meridian.Infrastructure.DataSources.DataSourceAttribute.#ctor(System.String,System.String,Meridian.Infrastructure.DataSources.DataSourceType,Meridian.Infrastructure.DataSources.DataSourceCategory)
+    arguments:
+    - type: System.String
+      value: nyse-streaming
+    - type: System.String
+      value: NYSE Streaming
+    - type: Meridian.Infrastructure.DataSources.DataSourceType
+      value: 0
+    - type: Meridian.Infrastructure.DataSources.DataSourceCategory
+      value: 0
+    namedArguments:
+    - name: Priority
+      type: System.Int32
+      value: 5
+    - name: Description
+      type: System.String
+      value: Unified NYSE streaming client backed by NYSEDataSource
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.#ctor(Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,System.Net.Http.IHttpClientFactory,Meridian.Infrastructure.Adapters.NYSE.NYSEOptions)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.#ctor(Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,System.Net.Http.IHttpClientFactory,Meridian.Infrastructure.Adapters.NYSE.NYSEOptions)
+  id: '#ctor(Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.MarketDepthCollector,Meridian.Domain.Collectors.QuoteCollector,System.Net.Http.IHttpClientFactory,Meridian.Infrastructure.Adapters.NYSE.NYSEOptions)'
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: NyseMarketDataClient(TradeDataCollector, MarketDepthCollector, QuoteCollector, IHttpClientFactory, NYSEOptions?)
+  nameWithType: NyseMarketDataClient.NyseMarketDataClient(TradeDataCollector, MarketDepthCollector, QuoteCollector, IHttpClientFactory, NYSEOptions?)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.NyseMarketDataClient(Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.MarketDepthCollector, Meridian.Domain.Collectors.QuoteCollector, System.Net.Http.IHttpClientFactory, Meridian.Infrastructure.Adapters.NYSE.NYSEOptions?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public NyseMarketDataClient(TradeDataCollector tradeCollector, MarketDepthCollector depthCollector, QuoteCollector quoteCollector, IHttpClientFactory httpClientFactory, NYSEOptions? options = null)
+    parameters:
+    - id: tradeCollector
+      type: Meridian.Domain.Collectors.TradeDataCollector
+    - id: depthCollector
+      type: Meridian.Domain.Collectors.MarketDepthCollector
+    - id: quoteCollector
+      type: Meridian.Domain.Collectors.QuoteCollector
+    - id: httpClientFactory
+      type: System.Net.Http.IHttpClientFactory
+    - id: options
+      type: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+    content.vb: Public Sub New(tradeCollector As TradeDataCollector, depthCollector As MarketDepthCollector, quoteCollector As QuoteCollector, httpClientFactory As IHttpClientFactory, options As NYSEOptions = Nothing)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.#ctor*
+  nameWithType.vb: NyseMarketDataClient.New(TradeDataCollector, MarketDepthCollector, QuoteCollector, IHttpClientFactory, NYSEOptions)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.New(Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.MarketDepthCollector, Meridian.Domain.Collectors.QuoteCollector, System.Net.Http.IHttpClientFactory, Meridian.Infrastructure.Adapters.NYSE.NYSEOptions)
+  name.vb: New(TradeDataCollector, MarketDepthCollector, QuoteCollector, IHttpClientFactory, NYSEOptions)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.IsEnabled
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.IsEnabled
+  id: IsEnabled
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: IsEnabled
+  nameWithType: NyseMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.IsEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEnabled
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  example: []
+  syntax:
+    content: public bool IsEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsEnabled As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.IsEnabled*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: NyseMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Unique identifier for the provider (e.g., "alpaca", "polygon", "yahoo").
+  example: []
+  syntax:
+    content: public string ProviderId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderId As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderId*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDisplayName
+  id: ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDisplayName
+  nameWithType: NyseMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: public string ProviderDisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderDisplayName As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDisplayName*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDescription
+  id: ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDescription
+  nameWithType: NyseMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDescription
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Description of the provider and its capabilities.
+  example: []
+  syntax:
+    content: public string ProviderDescription { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ProviderDescription As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDescription*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderPriority
+  id: ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderPriority
+  nameWithType: NyseMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderPriority
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Priority for routing and failover (lower = higher priority, tried first).
+  example: []
+  syntax:
+    content: public int ProviderPriority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property ProviderPriority As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderPriority*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCapabilities
+  id: ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderCapabilities
+  nameWithType: NyseMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCapabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCapabilities
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Unified capability flags and metadata for this provider.
+  example: []
+  syntax:
+    content: public ProviderCapabilities ProviderCapabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public ReadOnly Property ProviderCapabilities As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCapabilities*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCredentialFields
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCredentialFields
+  id: ProviderCredentialFields
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderCredentialFields
+  nameWithType: NyseMarketDataClient.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCredentialFields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCredentialFields
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Credential fields required for this provider.
+
+    Override to specify API keys, tokens, or other authentication requirements.
+  example: []
+  syntax:
+    content: public ProviderCredentialField[] ProviderCredentialFields { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+    content.vb: Public ReadOnly Property ProviderCredentialFields As ProviderCredentialField()
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCredentialFields*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderNotes
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderNotes
+  id: ProviderNotes
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderNotes
+  nameWithType: NyseMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderNotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderNotes
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Informational notes about using this provider (displayed in UI).
+  example: []
+  syntax:
+    content: public string[] ProviderNotes { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property ProviderNotes As String()
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderNotes*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderWarnings
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderWarnings
+  id: ProviderWarnings
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderWarnings
+  nameWithType: NyseMarketDataClient.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderWarnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderWarnings
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Warnings about limitations or issues with this provider (displayed in UI).
+  example: []
+  syntax:
+    content: public string[] ProviderWarnings { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property ProviderWarnings As String()
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderWarnings*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  id: ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(CancellationToken)
+  nameWithType: NyseMarketDataClient.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  example: []
+  syntax:
+    content: public Task ConnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ConnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ConnectAsync*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  id: DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: NyseMarketDataClient.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  example: []
+  syntax:
+    content: public Task DisconnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DisconnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisconnectAsync*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: NyseMarketDataClient.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Subscribe to market depth for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public int SubscribeMarketDepth(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Function SubscribeMarketDepth(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: NyseMarketDataClient.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Unsubscribe a previously returned depth subscription id.
+  example: []
+  syntax:
+    content: public void UnsubscribeMarketDepth(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeMarketDepth(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  nameWithType.vb: NyseMarketDataClient.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: NyseMarketDataClient.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Subscribe to tick-by-tick trade prints for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public int SubscribeTrades(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Function SubscribeTrades(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: NyseMarketDataClient.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Unsubscribe a previously returned trade subscription id.
+  example: []
+  syntax:
+    content: public void UnsubscribeTrades(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeTrades(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  nameWithType.vb: NyseMarketDataClient.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisposeAsync
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: NyseMarketDataClient.DisposeAsync()
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseMarketDataClient.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource.html
+  name: NYSEDataSource
+  nameWithType: NYSEDataSource
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEDataSource
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.NYSE
+  commentId: N:Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.NYSE
+  nameWithType: Meridian.Infrastructure.Adapters.NYSE
+  fullName: Meridian.Infrastructure.Adapters.NYSE
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.#ctor
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient__ctor_Meridian_Domain_Collectors_TradeDataCollector_Meridian_Domain_Collectors_MarketDepthCollector_Meridian_Domain_Collectors_QuoteCollector_System_Net_Http_IHttpClientFactory_Meridian_Infrastructure_Adapters_NYSE_NYSEOptions_
+  name: NyseMarketDataClient
+  nameWithType: NyseMarketDataClient.NyseMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.NyseMarketDataClient
+  nameWithType.vb: NyseMarketDataClient.New
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.New
+  name.vb: New
+- uid: Meridian.Domain.Collectors.TradeDataCollector
+  commentId: T:Meridian.Domain.Collectors.TradeDataCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.TradeDataCollector.html
+  name: TradeDataCollector
+  nameWithType: TradeDataCollector
+  fullName: Meridian.Domain.Collectors.TradeDataCollector
+- uid: Meridian.Domain.Collectors.MarketDepthCollector
+  commentId: T:Meridian.Domain.Collectors.MarketDepthCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.MarketDepthCollector.html
+  name: MarketDepthCollector
+  nameWithType: MarketDepthCollector
+  fullName: Meridian.Domain.Collectors.MarketDepthCollector
+- uid: Meridian.Domain.Collectors.QuoteCollector
+  commentId: T:Meridian.Domain.Collectors.QuoteCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.QuoteCollector.html
+  name: QuoteCollector
+  nameWithType: QuoteCollector
+  fullName: Meridian.Domain.Collectors.QuoteCollector
+- uid: System.Net.Http.IHttpClientFactory
+  commentId: T:System.Net.Http.IHttpClientFactory
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.ihttpclientfactory
+  name: IHttpClientFactory
+  nameWithType: IHttpClientFactory
+  fullName: System.Net.Http.IHttpClientFactory
+- uid: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions.html
+  name: NYSEOptions
+  nameWithType: NYSEOptions
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NYSEOptions
+- uid: Meridian.Domain.Collectors
+  commentId: N:Meridian.Domain.Collectors
+  href: Meridian.html
+  name: Meridian.Domain.Collectors
+  nameWithType: Meridian.Domain.Collectors
+  fullName: Meridian.Domain.Collectors
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.IsEnabled*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.IsEnabled
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_IsEnabled
+  name: IsEnabled
+  nameWithType: NyseMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.IMarketDataClient.IsEnabled
+  commentId: P:Meridian.Infrastructure.IMarketDataClient.IsEnabled
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: IsEnabled
+  nameWithType: IMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.IMarketDataClient.IsEnabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderId
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_ProviderId
+  name: ProviderId
+  nameWithType: NyseMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderId
+  name: ProviderId
+  nameWithType: IProviderMetadata.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDisplayName
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: NyseMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: IProviderMetadata.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDescription*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDescription
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_ProviderDescription
+  name: ProviderDescription
+  nameWithType: NyseMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDescription
+  name: ProviderDescription
+  nameWithType: IProviderMetadata.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderPriority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderPriority
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_ProviderPriority
+  name: ProviderPriority
+  nameWithType: NyseMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderPriority
+  name: ProviderPriority
+  nameWithType: IProviderMetadata.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCapabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCapabilities
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: NyseMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: IProviderMetadata.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities
+  nameWithType: ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCredentialFields*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCredentialFields
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_ProviderCredentialFields
+  name: ProviderCredentialFields
+  nameWithType: NyseMarketDataClient.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCredentialFields
+  name: ProviderCredentialFields
+  nameWithType: IProviderMetadata.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  name: ProviderCredentialField[]
+  nameWithType: ProviderCredentialField[]
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  nameWithType.vb: ProviderCredentialField()
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField()
+  name.vb: ProviderCredentialField()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderNotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderNotes
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_ProviderNotes
+  name: ProviderNotes
+  nameWithType: NyseMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderNotes
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderNotes
+  name: ProviderNotes
+  nameWithType: IProviderMetadata.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderNotes
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderWarnings*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderWarnings
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_ProviderWarnings
+  name: ProviderWarnings
+  nameWithType: NyseMarketDataClient.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ProviderWarnings
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderWarnings
+  name: ProviderWarnings
+  nameWithType: IProviderMetadata.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderWarnings
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ConnectAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: NyseMarketDataClient.ConnectAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.ConnectAsync
+- uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ConnectAsync(CancellationToken)
+  nameWithType: IMarketDataClient.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisconnectAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync
+  nameWithType: NyseMarketDataClient.DisconnectAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisconnectAsync
+- uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: IMarketDataClient.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth
+  nameWithType: NyseMarketDataClient.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeMarketDepth
+- uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: IMarketDataClient.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: NyseMarketDataClient.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeMarketDepth
+- uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: IMarketDataClient.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(int)
+  nameWithType.vb: IMarketDataClient.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeTrades
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: NyseMarketDataClient.SubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.SubscribeTrades
+- uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: IMarketDataClient.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeTrades
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: NyseMarketDataClient.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.UnsubscribeTrades
+- uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeTrades(int)
+  nameWithType: IMarketDataClient.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(int)
+  nameWithType.vb: IMarketDataClient.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisposeAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisposeAsync
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.html#Meridian_Infrastructure_Adapters_NYSE_NyseMarketDataClient_DisposeAsync
+  name: DisposeAsync
+  nameWithType: NyseMarketDataClient.DisposeAsync
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseMarketDataClient.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

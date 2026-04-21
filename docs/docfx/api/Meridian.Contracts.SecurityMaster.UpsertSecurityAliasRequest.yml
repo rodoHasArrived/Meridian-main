@@ -1,0 +1,846 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  id: UpsertSecurityAliasRequest
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityAliasScope,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasId
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasKind
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasValue
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.CreatedBy
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Provider
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Reason
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Scope
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.SecurityId
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidFrom
+  - Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidTo
+  langs:
+  - csharp
+  - vb
+  name: UpsertSecurityAliasRequest
+  nameWithType: UpsertSecurityAliasRequest
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpsertSecurityAliasRequest
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: 'public sealed record UpsertSecurityAliasRequest : IEquatable<UpsertSecurityAliasRequest>'
+    content.vb: Public NotInheritable Class UpsertSecurityAliasRequest Implements IEquatable(Of UpsertSecurityAliasRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityAliasScope,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityAliasScope,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)
+  id: '#ctor(System.Guid,System.Guid,System.String,System.String,System.String,Meridian.Contracts.SecurityMaster.SecurityAliasScope,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String)'
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: UpsertSecurityAliasRequest(Guid, Guid, string, string, string?, SecurityAliasScope, string, DateTimeOffset, DateTimeOffset?, string?)
+  nameWithType: UpsertSecurityAliasRequest.UpsertSecurityAliasRequest(Guid, Guid, string, string, string?, SecurityAliasScope, string, DateTimeOffset, DateTimeOffset?, string?)
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.UpsertSecurityAliasRequest(System.Guid, System.Guid, string, string, string?, Meridian.Contracts.SecurityMaster.SecurityAliasScope, string, System.DateTimeOffset, System.DateTimeOffset?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public UpsertSecurityAliasRequest(Guid AliasId, Guid SecurityId, string AliasKind, string AliasValue, string? Provider, SecurityAliasScope Scope, string CreatedBy, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string? Reason)
+    parameters:
+    - id: AliasId
+      type: System.Guid
+    - id: SecurityId
+      type: System.Guid
+    - id: AliasKind
+      type: System.String
+    - id: AliasValue
+      type: System.String
+    - id: Provider
+      type: System.String
+    - id: Scope
+      type: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+    - id: CreatedBy
+      type: System.String
+    - id: ValidFrom
+      type: System.DateTimeOffset
+    - id: ValidTo
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Reason
+      type: System.String
+    content.vb: Public Sub New(AliasId As Guid, SecurityId As Guid, AliasKind As String, AliasValue As String, Provider As String, Scope As SecurityAliasScope, CreatedBy As String, ValidFrom As DateTimeOffset, ValidTo As DateTimeOffset?, Reason As String)
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.#ctor*
+  nameWithType.vb: UpsertSecurityAliasRequest.New(Guid, Guid, String, String, String, SecurityAliasScope, String, DateTimeOffset, DateTimeOffset?, String)
+  fullName.vb: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.New(System.Guid, System.Guid, String, String, String, Meridian.Contracts.SecurityMaster.SecurityAliasScope, String, System.DateTimeOffset, System.DateTimeOffset?, String)
+  name.vb: New(Guid, Guid, String, String, String, SecurityAliasScope, String, DateTimeOffset, DateTimeOffset?, String)
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasId
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasId
+  id: AliasId
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: AliasId
+  nameWithType: UpsertSecurityAliasRequest.AliasId
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AliasId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid AliasId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property AliasId As Guid
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasId*
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.SecurityId
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.SecurityId
+  id: SecurityId
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: UpsertSecurityAliasRequest.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SecurityId As Guid
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.SecurityId*
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasKind
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasKind
+  id: AliasKind
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: AliasKind
+  nameWithType: UpsertSecurityAliasRequest.AliasKind
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AliasKind
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string AliasKind { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AliasKind As String
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasKind*
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasValue
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasValue
+  id: AliasValue
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: AliasValue
+  nameWithType: UpsertSecurityAliasRequest.AliasValue
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AliasValue
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string AliasValue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AliasValue As String
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasValue*
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Provider
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Provider
+  id: Provider
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: UpsertSecurityAliasRequest.Provider
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string? Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Provider*
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Scope
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Scope
+  id: Scope
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: Scope
+  nameWithType: UpsertSecurityAliasRequest.Scope
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Scope
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Scope
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public SecurityAliasScope Scope { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+    content.vb: Public Property Scope As SecurityAliasScope
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Scope*
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.CreatedBy
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.CreatedBy
+  id: CreatedBy
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: CreatedBy
+  nameWithType: UpsertSecurityAliasRequest.CreatedBy
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.CreatedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedBy
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string CreatedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CreatedBy As String
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.CreatedBy*
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidFrom
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidFrom
+  id: ValidFrom
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: ValidFrom
+  nameWithType: UpsertSecurityAliasRequest.ValidFrom
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidFrom
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateTimeOffset ValidFrom { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ValidFrom As DateTimeOffset
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidFrom*
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidTo
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidTo
+  id: ValidTo
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: ValidTo
+  nameWithType: UpsertSecurityAliasRequest.ValidTo
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidTo
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateTimeOffset? ValidTo { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ValidTo As DateTimeOffset?
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidTo*
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Reason
+  commentId: P:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Reason
+  id: Reason
+  parent: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: UpsertSecurityAliasRequest.Reason
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityCommands.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string? Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Reason*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<UpsertSecurityAliasRequest>
+  nameWithType: IEquatable<UpsertSecurityAliasRequest>
+  fullName: System.IEquatable<Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest>
+  nameWithType.vb: IEquatable(Of UpsertSecurityAliasRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest)
+  name.vb: IEquatable(Of UpsertSecurityAliasRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+    name: UpsertSecurityAliasRequest
+    href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest
+    name: UpsertSecurityAliasRequest
+    href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.#ctor
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest__ctor_System_Guid_System_Guid_System_String_System_String_System_String_Meridian_Contracts_SecurityMaster_SecurityAliasScope_System_String_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_
+  name: UpsertSecurityAliasRequest
+  nameWithType: UpsertSecurityAliasRequest.UpsertSecurityAliasRequest
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.UpsertSecurityAliasRequest
+  nameWithType.vb: UpsertSecurityAliasRequest.New
+  fullName.vb: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityAliasScope
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityAliasScope.html
+  name: SecurityAliasScope
+  nameWithType: SecurityAliasScope
+  fullName: Meridian.Contracts.SecurityMaster.SecurityAliasScope
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasId
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_AliasId
+  name: AliasId
+  nameWithType: UpsertSecurityAliasRequest.AliasId
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasId
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.SecurityId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.SecurityId
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_SecurityId
+  name: SecurityId
+  nameWithType: UpsertSecurityAliasRequest.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.SecurityId
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasKind*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasKind
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_AliasKind
+  name: AliasKind
+  nameWithType: UpsertSecurityAliasRequest.AliasKind
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasKind
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasValue*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasValue
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_AliasValue
+  name: AliasValue
+  nameWithType: UpsertSecurityAliasRequest.AliasValue
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.AliasValue
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Provider*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Provider
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_Provider
+  name: Provider
+  nameWithType: UpsertSecurityAliasRequest.Provider
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Provider
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Scope*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Scope
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_Scope
+  name: Scope
+  nameWithType: UpsertSecurityAliasRequest.Scope
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Scope
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.CreatedBy*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.CreatedBy
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_CreatedBy
+  name: CreatedBy
+  nameWithType: UpsertSecurityAliasRequest.CreatedBy
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.CreatedBy
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidFrom*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidFrom
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_ValidFrom
+  name: ValidFrom
+  nameWithType: UpsertSecurityAliasRequest.ValidFrom
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidFrom
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidTo*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidTo
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_ValidTo
+  name: ValidTo
+  nameWithType: UpsertSecurityAliasRequest.ValidTo
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.ValidTo
+- uid: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Reason*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Reason
+  href: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.html#Meridian_Contracts_SecurityMaster_UpsertSecurityAliasRequest_Reason
+  name: Reason
+  nameWithType: UpsertSecurityAliasRequest.Reason
+  fullName: Meridian.Contracts.SecurityMaster.UpsertSecurityAliasRequest.Reason

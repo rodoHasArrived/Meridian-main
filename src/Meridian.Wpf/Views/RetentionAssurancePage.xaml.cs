@@ -175,7 +175,8 @@ public partial class RetentionAssurancePage : Page
         try
         {
             var policy = BuildPolicyFromUI();
-            var dataRoot = System.IO.Path.Combine(AppContext.BaseDirectory, "data");
+            var config = await WpfServices.ConfigService.Instance.LoadConfigAsync();
+            var dataRoot = WpfServices.ConfigService.Instance.ResolveDataRoot(config);
             _lastDryRun = await _retentionService.PerformDryRunAsync(policy, dataRoot);
 
             ResultsPanel.Visibility = Visibility.Visible;

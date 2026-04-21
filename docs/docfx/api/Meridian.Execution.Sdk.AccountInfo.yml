@@ -1,0 +1,642 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.AccountInfo
+  commentId: T:Meridian.Execution.Sdk.AccountInfo
+  id: AccountInfo
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.AccountInfo.AccountId
+  - Meridian.Execution.Sdk.AccountInfo.BuyingPower
+  - Meridian.Execution.Sdk.AccountInfo.Cash
+  - Meridian.Execution.Sdk.AccountInfo.Currency
+  - Meridian.Execution.Sdk.AccountInfo.Equity
+  - Meridian.Execution.Sdk.AccountInfo.RetrievedAt
+  - Meridian.Execution.Sdk.AccountInfo.Status
+  langs:
+  - csharp
+  - vb
+  name: AccountInfo
+  nameWithType: AccountInfo
+  fullName: Meridian.Execution.Sdk.AccountInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountInfo
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Account balance and buying power information from a broker.
+  example: []
+  syntax:
+    content: 'public sealed record AccountInfo : IEquatable<AccountInfo>'
+    content.vb: Public NotInheritable Class AccountInfo Implements IEquatable(Of AccountInfo)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.AccountInfo}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.AccountInfo.AccountId
+  commentId: P:Meridian.Execution.Sdk.AccountInfo.AccountId
+  id: AccountId
+  parent: Meridian.Execution.Sdk.AccountInfo
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: AccountInfo.AccountId
+  fullName: Meridian.Execution.Sdk.AccountInfo.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Account identifier at the broker.
+  example: []
+  syntax:
+    content: public required string AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Execution.Sdk.AccountInfo.AccountId*
+- uid: Meridian.Execution.Sdk.AccountInfo.Equity
+  commentId: P:Meridian.Execution.Sdk.AccountInfo.Equity
+  id: Equity
+  parent: Meridian.Execution.Sdk.AccountInfo
+  langs:
+  - csharp
+  - vb
+  name: Equity
+  nameWithType: AccountInfo.Equity
+  fullName: Meridian.Execution.Sdk.AccountInfo.Equity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Equity
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Total equity value (cash + positions at mark).
+  example: []
+  syntax:
+    content: public decimal Equity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Equity As Decimal
+  overload: Meridian.Execution.Sdk.AccountInfo.Equity*
+- uid: Meridian.Execution.Sdk.AccountInfo.Cash
+  commentId: P:Meridian.Execution.Sdk.AccountInfo.Cash
+  id: Cash
+  parent: Meridian.Execution.Sdk.AccountInfo
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: AccountInfo.Cash
+  fullName: Meridian.Execution.Sdk.AccountInfo.Cash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Available cash balance.
+  example: []
+  syntax:
+    content: public decimal Cash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Cash As Decimal
+  overload: Meridian.Execution.Sdk.AccountInfo.Cash*
+- uid: Meridian.Execution.Sdk.AccountInfo.BuyingPower
+  commentId: P:Meridian.Execution.Sdk.AccountInfo.BuyingPower
+  id: BuyingPower
+  parent: Meridian.Execution.Sdk.AccountInfo
+  langs:
+  - csharp
+  - vb
+  name: BuyingPower
+  nameWithType: AccountInfo.BuyingPower
+  fullName: Meridian.Execution.Sdk.AccountInfo.BuyingPower
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuyingPower
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 151
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Buying power available for new orders.
+  example: []
+  syntax:
+    content: public decimal BuyingPower { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property BuyingPower As Decimal
+  overload: Meridian.Execution.Sdk.AccountInfo.BuyingPower*
+- uid: Meridian.Execution.Sdk.AccountInfo.Currency
+  commentId: P:Meridian.Execution.Sdk.AccountInfo.Currency
+  id: Currency
+  parent: Meridian.Execution.Sdk.AccountInfo
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: AccountInfo.Currency
+  fullName: Meridian.Execution.Sdk.AccountInfo.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Currency code (e.g., "USD").
+  example: []
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Execution.Sdk.AccountInfo.Currency*
+- uid: Meridian.Execution.Sdk.AccountInfo.Status
+  commentId: P:Meridian.Execution.Sdk.AccountInfo.Status
+  id: Status
+  parent: Meridian.Execution.Sdk.AccountInfo
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: AccountInfo.Status
+  fullName: Meridian.Execution.Sdk.AccountInfo.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Account status (e.g., "active", "restricted").
+  example: []
+  syntax:
+    content: public string Status { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Status As String
+  overload: Meridian.Execution.Sdk.AccountInfo.Status*
+- uid: Meridian.Execution.Sdk.AccountInfo.RetrievedAt
+  commentId: P:Meridian.Execution.Sdk.AccountInfo.RetrievedAt
+  id: RetrievedAt
+  parent: Meridian.Execution.Sdk.AccountInfo
+  langs:
+  - csharp
+  - vb
+  name: RetrievedAt
+  nameWithType: AccountInfo.RetrievedAt
+  fullName: Meridian.Execution.Sdk.AccountInfo.RetrievedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetrievedAt
+    path: ../../src/Meridian.Execution.Sdk/IBrokerageGateway.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Timestamp when this info was retrieved.
+  example: []
+  syntax:
+    content: public DateTimeOffset RetrievedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property RetrievedAt As DateTimeOffset
+  overload: Meridian.Execution.Sdk.AccountInfo.RetrievedAt*
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.AccountInfo}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.AccountInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AccountInfo>
+  nameWithType: IEquatable<AccountInfo>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.AccountInfo>
+  nameWithType.vb: IEquatable(Of AccountInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.AccountInfo)
+  name.vb: IEquatable(Of AccountInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.AccountInfo
+    name: AccountInfo
+    href: Meridian.Execution.Sdk.AccountInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.AccountInfo
+    name: AccountInfo
+    href: Meridian.Execution.Sdk.AccountInfo.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.AccountInfo.AccountId*
+  commentId: Overload:Meridian.Execution.Sdk.AccountInfo.AccountId
+  href: Meridian.Execution.Sdk.AccountInfo.html#Meridian_Execution_Sdk_AccountInfo_AccountId
+  name: AccountId
+  nameWithType: AccountInfo.AccountId
+  fullName: Meridian.Execution.Sdk.AccountInfo.AccountId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Sdk.AccountInfo.Equity*
+  commentId: Overload:Meridian.Execution.Sdk.AccountInfo.Equity
+  href: Meridian.Execution.Sdk.AccountInfo.html#Meridian_Execution_Sdk_AccountInfo_Equity
+  name: Equity
+  nameWithType: AccountInfo.Equity
+  fullName: Meridian.Execution.Sdk.AccountInfo.Equity
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Sdk.AccountInfo.Cash*
+  commentId: Overload:Meridian.Execution.Sdk.AccountInfo.Cash
+  href: Meridian.Execution.Sdk.AccountInfo.html#Meridian_Execution_Sdk_AccountInfo_Cash
+  name: Cash
+  nameWithType: AccountInfo.Cash
+  fullName: Meridian.Execution.Sdk.AccountInfo.Cash
+- uid: Meridian.Execution.Sdk.AccountInfo.BuyingPower*
+  commentId: Overload:Meridian.Execution.Sdk.AccountInfo.BuyingPower
+  href: Meridian.Execution.Sdk.AccountInfo.html#Meridian_Execution_Sdk_AccountInfo_BuyingPower
+  name: BuyingPower
+  nameWithType: AccountInfo.BuyingPower
+  fullName: Meridian.Execution.Sdk.AccountInfo.BuyingPower
+- uid: Meridian.Execution.Sdk.AccountInfo.Currency*
+  commentId: Overload:Meridian.Execution.Sdk.AccountInfo.Currency
+  href: Meridian.Execution.Sdk.AccountInfo.html#Meridian_Execution_Sdk_AccountInfo_Currency
+  name: Currency
+  nameWithType: AccountInfo.Currency
+  fullName: Meridian.Execution.Sdk.AccountInfo.Currency
+- uid: Meridian.Execution.Sdk.AccountInfo.Status*
+  commentId: Overload:Meridian.Execution.Sdk.AccountInfo.Status
+  href: Meridian.Execution.Sdk.AccountInfo.html#Meridian_Execution_Sdk_AccountInfo_Status
+  name: Status
+  nameWithType: AccountInfo.Status
+  fullName: Meridian.Execution.Sdk.AccountInfo.Status
+- uid: Meridian.Execution.Sdk.AccountInfo.RetrievedAt*
+  commentId: Overload:Meridian.Execution.Sdk.AccountInfo.RetrievedAt
+  href: Meridian.Execution.Sdk.AccountInfo.html#Meridian_Execution_Sdk_AccountInfo_RetrievedAt
+  name: RetrievedAt
+  nameWithType: AccountInfo.RetrievedAt
+  fullName: Meridian.Execution.Sdk.AccountInfo.RetrievedAt
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset

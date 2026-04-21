@@ -1,0 +1,215 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SymbolCheckpointStatus
+  commentId: T:Meridian.Ui.Services.SymbolCheckpointStatus
+  id: SymbolCheckpointStatus
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SymbolCheckpointStatus.Completed
+  - Meridian.Ui.Services.SymbolCheckpointStatus.Downloading
+  - Meridian.Ui.Services.SymbolCheckpointStatus.Failed
+  - Meridian.Ui.Services.SymbolCheckpointStatus.Pending
+  - Meridian.Ui.Services.SymbolCheckpointStatus.Skipped
+  langs:
+  - csharp
+  - vb
+  name: SymbolCheckpointStatus
+  nameWithType: SymbolCheckpointStatus
+  fullName: Meridian.Ui.Services.SymbolCheckpointStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolCheckpointStatus
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 418
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Per-symbol checkpoint status.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter))]
+
+      public enum SymbolCheckpointStatus : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter))>
+
+      Public Enum SymbolCheckpointStatus As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter
+- uid: Meridian.Ui.Services.SymbolCheckpointStatus.Pending
+  commentId: F:Meridian.Ui.Services.SymbolCheckpointStatus.Pending
+  id: Pending
+  parent: Meridian.Ui.Services.SymbolCheckpointStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: SymbolCheckpointStatus.Pending
+  fullName: Meridian.Ui.Services.SymbolCheckpointStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 421
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Ui.Services.SymbolCheckpointStatus
+- uid: Meridian.Ui.Services.SymbolCheckpointStatus.Downloading
+  commentId: F:Meridian.Ui.Services.SymbolCheckpointStatus.Downloading
+  id: Downloading
+  parent: Meridian.Ui.Services.SymbolCheckpointStatus
+  langs:
+  - csharp
+  - vb
+  name: Downloading
+  nameWithType: SymbolCheckpointStatus.Downloading
+  fullName: Meridian.Ui.Services.SymbolCheckpointStatus.Downloading
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Downloading
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 422
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Downloading = 1
+    return:
+      type: Meridian.Ui.Services.SymbolCheckpointStatus
+- uid: Meridian.Ui.Services.SymbolCheckpointStatus.Completed
+  commentId: F:Meridian.Ui.Services.SymbolCheckpointStatus.Completed
+  id: Completed
+  parent: Meridian.Ui.Services.SymbolCheckpointStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: SymbolCheckpointStatus.Completed
+  fullName: Meridian.Ui.Services.SymbolCheckpointStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 423
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Completed = 2
+    return:
+      type: Meridian.Ui.Services.SymbolCheckpointStatus
+- uid: Meridian.Ui.Services.SymbolCheckpointStatus.Failed
+  commentId: F:Meridian.Ui.Services.SymbolCheckpointStatus.Failed
+  id: Failed
+  parent: Meridian.Ui.Services.SymbolCheckpointStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: SymbolCheckpointStatus.Failed
+  fullName: Meridian.Ui.Services.SymbolCheckpointStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 424
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Failed = 3
+    return:
+      type: Meridian.Ui.Services.SymbolCheckpointStatus
+- uid: Meridian.Ui.Services.SymbolCheckpointStatus.Skipped
+  commentId: F:Meridian.Ui.Services.SymbolCheckpointStatus.Skipped
+  id: Skipped
+  parent: Meridian.Ui.Services.SymbolCheckpointStatus
+  langs:
+  - csharp
+  - vb
+  name: Skipped
+  nameWithType: SymbolCheckpointStatus.Skipped
+  fullName: Meridian.Ui.Services.SymbolCheckpointStatus.Skipped
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skipped
+    path: ../../src/Meridian.Ui.Services/Services/BackfillCheckpointService.cs
+    startLine: 425
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Skipped = 4
+    return:
+      type: Meridian.Ui.Services.SymbolCheckpointStatus
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.SymbolCheckpointStatus
+  commentId: T:Meridian.Ui.Services.SymbolCheckpointStatus
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SymbolCheckpointStatus.html
+  name: SymbolCheckpointStatus
+  nameWithType: SymbolCheckpointStatus
+  fullName: Meridian.Ui.Services.SymbolCheckpointStatus

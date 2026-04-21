@@ -1,0 +1,1194 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.LiveDataService
+  commentId: T:Meridian.Ui.Services.LiveDataService
+  id: LiveDataService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.LiveDataService.GetActiveSubscriptionsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LiveDataService.GetBboAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LiveDataService.GetOrderBookAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LiveDataService.GetOrderFlowStatsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LiveDataService.GetRecentQuotesAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LiveDataService.GetRecentTradesAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LiveDataService.GetStreamHealthAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LiveDataService.Instance
+  - Meridian.Ui.Services.LiveDataService.SubscribeAsync(Meridian.Ui.Services.SubscribeRequest,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LiveDataService.UnsubscribeAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: LiveDataService
+  nameWithType: LiveDataService
+  fullName: Meridian.Ui.Services.LiveDataService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LiveDataService
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Service for accessing real-time market data streams.
+  example: []
+  syntax:
+    content: public sealed class LiveDataService
+    content.vb: Public NotInheritable Class LiveDataService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.LiveDataService.Instance
+  commentId: P:Meridian.Ui.Services.LiveDataService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: LiveDataService.Instance
+  fullName: Meridian.Ui.Services.LiveDataService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static LiveDataService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.LiveDataService
+    content.vb: Public Shared ReadOnly Property Instance As LiveDataService
+  overload: Meridian.Ui.Services.LiveDataService.Instance*
+- uid: Meridian.Ui.Services.LiveDataService.GetRecentTradesAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LiveDataService.GetRecentTradesAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  id: GetRecentTradesAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: GetRecentTradesAsync(string, int, CancellationToken)
+  nameWithType: LiveDataService.GetRecentTradesAsync(string, int, CancellationToken)
+  fullName: Meridian.Ui.Services.LiveDataService.GetRecentTradesAsync(string, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentTradesAsync
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets recent trades for a symbol.
+  example: []
+  syntax:
+    content: public Task<List<TradeEvent>?> GetRecentTradesAsync(string symbol, int limit = 100, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.TradeEvent}}
+    content.vb: Public Function GetRecentTradesAsync(symbol As String, limit As Integer = 100, ct As CancellationToken = Nothing) As Task(Of List(Of TradeEvent))
+  overload: Meridian.Ui.Services.LiveDataService.GetRecentTradesAsync*
+  nameWithType.vb: LiveDataService.GetRecentTradesAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LiveDataService.GetRecentTradesAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: GetRecentTradesAsync(String, Integer, CancellationToken)
+- uid: Meridian.Ui.Services.LiveDataService.GetRecentQuotesAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LiveDataService.GetRecentQuotesAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  id: GetRecentQuotesAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: GetRecentQuotesAsync(string, int, CancellationToken)
+  nameWithType: LiveDataService.GetRecentQuotesAsync(string, int, CancellationToken)
+  fullName: Meridian.Ui.Services.LiveDataService.GetRecentQuotesAsync(string, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentQuotesAsync
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets recent quotes for a symbol.
+  example: []
+  syntax:
+    content: public Task<List<QuoteEvent>?> GetRecentQuotesAsync(string symbol, int limit = 100, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.QuoteEvent}}
+    content.vb: Public Function GetRecentQuotesAsync(symbol As String, limit As Integer = 100, ct As CancellationToken = Nothing) As Task(Of List(Of QuoteEvent))
+  overload: Meridian.Ui.Services.LiveDataService.GetRecentQuotesAsync*
+  nameWithType.vb: LiveDataService.GetRecentQuotesAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LiveDataService.GetRecentQuotesAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: GetRecentQuotesAsync(String, Integer, CancellationToken)
+- uid: Meridian.Ui.Services.LiveDataService.GetOrderBookAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LiveDataService.GetOrderBookAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  id: GetOrderBookAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: GetOrderBookAsync(string, int, CancellationToken)
+  nameWithType: LiveDataService.GetOrderBookAsync(string, int, CancellationToken)
+  fullName: Meridian.Ui.Services.LiveDataService.GetOrderBookAsync(string, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOrderBookAsync
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the current order book snapshot for a symbol.
+  example: []
+  syntax:
+    content: public Task<OrderBookSnapshot?> GetOrderBookAsync(string symbol, int levels = 10, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: levels
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.OrderBookSnapshot}
+    content.vb: Public Function GetOrderBookAsync(symbol As String, levels As Integer = 10, ct As CancellationToken = Nothing) As Task(Of OrderBookSnapshot)
+  overload: Meridian.Ui.Services.LiveDataService.GetOrderBookAsync*
+  nameWithType.vb: LiveDataService.GetOrderBookAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LiveDataService.GetOrderBookAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: GetOrderBookAsync(String, Integer, CancellationToken)
+- uid: Meridian.Ui.Services.LiveDataService.GetBboAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LiveDataService.GetBboAsync(System.String,System.Threading.CancellationToken)
+  id: GetBboAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: GetBboAsync(string, CancellationToken)
+  nameWithType: LiveDataService.GetBboAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.LiveDataService.GetBboAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBboAsync
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets current BBO (Best Bid/Offer) for a symbol.
+  example: []
+  syntax:
+    content: public Task<BboQuote?> GetBboAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BboQuote}
+    content.vb: Public Function GetBboAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of BboQuote)
+  overload: Meridian.Ui.Services.LiveDataService.GetBboAsync*
+  nameWithType.vb: LiveDataService.GetBboAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LiveDataService.GetBboAsync(String, System.Threading.CancellationToken)
+  name.vb: GetBboAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.LiveDataService.GetOrderFlowStatsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LiveDataService.GetOrderFlowStatsAsync(System.String,System.Threading.CancellationToken)
+  id: GetOrderFlowStatsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: GetOrderFlowStatsAsync(string, CancellationToken)
+  nameWithType: LiveDataService.GetOrderFlowStatsAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.LiveDataService.GetOrderFlowStatsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOrderFlowStatsAsync
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets order flow statistics for a symbol.
+  example: []
+  syntax:
+    content: public Task<OrderFlowStats?> GetOrderFlowStatsAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.OrderFlowStats}
+    content.vb: Public Function GetOrderFlowStatsAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of OrderFlowStats)
+  overload: Meridian.Ui.Services.LiveDataService.GetOrderFlowStatsAsync*
+  nameWithType.vb: LiveDataService.GetOrderFlowStatsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LiveDataService.GetOrderFlowStatsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetOrderFlowStatsAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.LiveDataService.GetActiveSubscriptionsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LiveDataService.GetActiveSubscriptionsAsync(System.Threading.CancellationToken)
+  id: GetActiveSubscriptionsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: GetActiveSubscriptionsAsync(CancellationToken)
+  nameWithType: LiveDataService.GetActiveSubscriptionsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.LiveDataService.GetActiveSubscriptionsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetActiveSubscriptionsAsync
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets active subscriptions.
+  example: []
+  syntax:
+    content: public Task<List<SubscriptionInfo>?> GetActiveSubscriptionsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SubscriptionInfo}}
+    content.vb: Public Function GetActiveSubscriptionsAsync(ct As CancellationToken = Nothing) As Task(Of List(Of SubscriptionInfo))
+  overload: Meridian.Ui.Services.LiveDataService.GetActiveSubscriptionsAsync*
+- uid: Meridian.Ui.Services.LiveDataService.SubscribeAsync(Meridian.Ui.Services.SubscribeRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LiveDataService.SubscribeAsync(Meridian.Ui.Services.SubscribeRequest,System.Threading.CancellationToken)
+  id: SubscribeAsync(Meridian.Ui.Services.SubscribeRequest,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: SubscribeAsync(SubscribeRequest, CancellationToken)
+  nameWithType: LiveDataService.SubscribeAsync(SubscribeRequest, CancellationToken)
+  fullName: Meridian.Ui.Services.LiveDataService.SubscribeAsync(Meridian.Ui.Services.SubscribeRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeAsync
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Subscribes to a symbol for real-time data.
+  example: []
+  syntax:
+    content: public Task<SubscriptionResult?> SubscribeAsync(SubscribeRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Ui.Services.SubscribeRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.SubscriptionResult}
+    content.vb: Public Function SubscribeAsync(request As SubscribeRequest, ct As CancellationToken = Nothing) As Task(Of SubscriptionResult)
+  overload: Meridian.Ui.Services.LiveDataService.SubscribeAsync*
+- uid: Meridian.Ui.Services.LiveDataService.UnsubscribeAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LiveDataService.UnsubscribeAsync(System.String,System.Threading.CancellationToken)
+  id: UnsubscribeAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeAsync(string, CancellationToken)
+  nameWithType: LiveDataService.UnsubscribeAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.LiveDataService.UnsubscribeAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeAsync
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Unsubscribes from a symbol.
+  example: []
+  syntax:
+    content: public Task<bool> UnsubscribeAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function UnsubscribeAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.LiveDataService.UnsubscribeAsync*
+  nameWithType.vb: LiveDataService.UnsubscribeAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LiveDataService.UnsubscribeAsync(String, System.Threading.CancellationToken)
+  name.vb: UnsubscribeAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.LiveDataService.GetStreamHealthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LiveDataService.GetStreamHealthAsync(System.Threading.CancellationToken)
+  id: GetStreamHealthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LiveDataService
+  langs:
+  - csharp
+  - vb
+  name: GetStreamHealthAsync(CancellationToken)
+  nameWithType: LiveDataService.GetStreamHealthAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.LiveDataService.GetStreamHealthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LiveDataService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStreamHealthAsync
+    path: ../../src/Meridian.Ui.Services/Services/LiveDataService.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets data stream health for all active subscriptions.
+  example: []
+  syntax:
+    content: public Task<DataStreamHealth?> GetStreamHealthAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DataStreamHealth}
+    content.vb: Public Function GetStreamHealthAsync(ct As CancellationToken = Nothing) As Task(Of DataStreamHealth)
+  overload: Meridian.Ui.Services.LiveDataService.GetStreamHealthAsync*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.LiveDataService.Instance*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.Instance
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_Instance
+  name: Instance
+  nameWithType: LiveDataService.Instance
+  fullName: Meridian.Ui.Services.LiveDataService.Instance
+- uid: Meridian.Ui.Services.LiveDataService
+  commentId: T:Meridian.Ui.Services.LiveDataService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.LiveDataService.html
+  name: LiveDataService
+  nameWithType: LiveDataService
+  fullName: Meridian.Ui.Services.LiveDataService
+- uid: Meridian.Ui.Services.LiveDataService.GetRecentTradesAsync*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.GetRecentTradesAsync
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_GetRecentTradesAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: GetRecentTradesAsync
+  nameWithType: LiveDataService.GetRecentTradesAsync
+  fullName: Meridian.Ui.Services.LiveDataService.GetRecentTradesAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.TradeEvent}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.TradeEvent}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<TradeEvent>>
+  nameWithType: Task<List<TradeEvent>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.TradeEvent>>
+  nameWithType.vb: Task(Of List(Of TradeEvent))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.TradeEvent))
+  name.vb: Task(Of List(Of TradeEvent))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.TradeEvent
+    name: TradeEvent
+    href: Meridian.Ui.Services.TradeEvent.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TradeEvent
+    name: TradeEvent
+    href: Meridian.Ui.Services.TradeEvent.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.LiveDataService.GetRecentQuotesAsync*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.GetRecentQuotesAsync
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_GetRecentQuotesAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: GetRecentQuotesAsync
+  nameWithType: LiveDataService.GetRecentQuotesAsync
+  fullName: Meridian.Ui.Services.LiveDataService.GetRecentQuotesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.QuoteEvent}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.QuoteEvent}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<QuoteEvent>>
+  nameWithType: Task<List<QuoteEvent>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.QuoteEvent>>
+  nameWithType.vb: Task(Of List(Of QuoteEvent))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.QuoteEvent))
+  name.vb: Task(Of List(Of QuoteEvent))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.QuoteEvent
+    name: QuoteEvent
+    href: Meridian.Ui.Services.QuoteEvent.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.QuoteEvent
+    name: QuoteEvent
+    href: Meridian.Ui.Services.QuoteEvent.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.LiveDataService.GetOrderBookAsync*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.GetOrderBookAsync
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_GetOrderBookAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: GetOrderBookAsync
+  nameWithType: LiveDataService.GetOrderBookAsync
+  fullName: Meridian.Ui.Services.LiveDataService.GetOrderBookAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.OrderBookSnapshot}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.OrderBookSnapshot}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OrderBookSnapshot>
+  nameWithType: Task<OrderBookSnapshot>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.OrderBookSnapshot>
+  nameWithType.vb: Task(Of OrderBookSnapshot)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.OrderBookSnapshot)
+  name.vb: Task(Of OrderBookSnapshot)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.OrderBookSnapshot
+    name: OrderBookSnapshot
+    href: Meridian.Ui.Services.OrderBookSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.OrderBookSnapshot
+    name: OrderBookSnapshot
+    href: Meridian.Ui.Services.OrderBookSnapshot.html
+  - name: )
+- uid: Meridian.Ui.Services.LiveDataService.GetBboAsync*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.GetBboAsync
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_GetBboAsync_System_String_System_Threading_CancellationToken_
+  name: GetBboAsync
+  nameWithType: LiveDataService.GetBboAsync
+  fullName: Meridian.Ui.Services.LiveDataService.GetBboAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.BboQuote}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.BboQuote}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BboQuote>
+  nameWithType: Task<BboQuote>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.BboQuote>
+  nameWithType.vb: Task(Of BboQuote)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.BboQuote)
+  name.vb: Task(Of BboQuote)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.BboQuote
+    name: BboQuote
+    href: Meridian.Ui.Services.BboQuote.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BboQuote
+    name: BboQuote
+    href: Meridian.Ui.Services.BboQuote.html
+  - name: )
+- uid: Meridian.Ui.Services.LiveDataService.GetOrderFlowStatsAsync*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.GetOrderFlowStatsAsync
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_GetOrderFlowStatsAsync_System_String_System_Threading_CancellationToken_
+  name: GetOrderFlowStatsAsync
+  nameWithType: LiveDataService.GetOrderFlowStatsAsync
+  fullName: Meridian.Ui.Services.LiveDataService.GetOrderFlowStatsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.OrderFlowStats}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.OrderFlowStats}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OrderFlowStats>
+  nameWithType: Task<OrderFlowStats>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.OrderFlowStats>
+  nameWithType.vb: Task(Of OrderFlowStats)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.OrderFlowStats)
+  name.vb: Task(Of OrderFlowStats)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.OrderFlowStats
+    name: OrderFlowStats
+    href: Meridian.Ui.Services.OrderFlowStats.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.OrderFlowStats
+    name: OrderFlowStats
+    href: Meridian.Ui.Services.OrderFlowStats.html
+  - name: )
+- uid: Meridian.Ui.Services.LiveDataService.GetActiveSubscriptionsAsync*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.GetActiveSubscriptionsAsync
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_GetActiveSubscriptionsAsync_System_Threading_CancellationToken_
+  name: GetActiveSubscriptionsAsync
+  nameWithType: LiveDataService.GetActiveSubscriptionsAsync
+  fullName: Meridian.Ui.Services.LiveDataService.GetActiveSubscriptionsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SubscriptionInfo}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.SubscriptionInfo}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<SubscriptionInfo>>
+  nameWithType: Task<List<SubscriptionInfo>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.SubscriptionInfo>>
+  nameWithType.vb: Task(Of List(Of SubscriptionInfo))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.SubscriptionInfo))
+  name.vb: Task(Of List(Of SubscriptionInfo))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.SubscriptionInfo
+    name: SubscriptionInfo
+    href: Meridian.Ui.Services.SubscriptionInfo.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SubscriptionInfo
+    name: SubscriptionInfo
+    href: Meridian.Ui.Services.SubscriptionInfo.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.LiveDataService.SubscribeAsync*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.SubscribeAsync
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_SubscribeAsync_Meridian_Ui_Services_SubscribeRequest_System_Threading_CancellationToken_
+  name: SubscribeAsync
+  nameWithType: LiveDataService.SubscribeAsync
+  fullName: Meridian.Ui.Services.LiveDataService.SubscribeAsync
+- uid: Meridian.Ui.Services.SubscribeRequest
+  commentId: T:Meridian.Ui.Services.SubscribeRequest
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SubscribeRequest.html
+  name: SubscribeRequest
+  nameWithType: SubscribeRequest
+  fullName: Meridian.Ui.Services.SubscribeRequest
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.SubscriptionResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.SubscriptionResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SubscriptionResult>
+  nameWithType: Task<SubscriptionResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.SubscriptionResult>
+  nameWithType.vb: Task(Of SubscriptionResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.SubscriptionResult)
+  name.vb: Task(Of SubscriptionResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.SubscriptionResult
+    name: SubscriptionResult
+    href: Meridian.Ui.Services.SubscriptionResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SubscriptionResult
+    name: SubscriptionResult
+    href: Meridian.Ui.Services.SubscriptionResult.html
+  - name: )
+- uid: Meridian.Ui.Services.LiveDataService.UnsubscribeAsync*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.UnsubscribeAsync
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_UnsubscribeAsync_System_String_System_Threading_CancellationToken_
+  name: UnsubscribeAsync
+  nameWithType: LiveDataService.UnsubscribeAsync
+  fullName: Meridian.Ui.Services.LiveDataService.UnsubscribeAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Ui.Services.LiveDataService.GetStreamHealthAsync*
+  commentId: Overload:Meridian.Ui.Services.LiveDataService.GetStreamHealthAsync
+  href: Meridian.Ui.Services.LiveDataService.html#Meridian_Ui_Services_LiveDataService_GetStreamHealthAsync_System_Threading_CancellationToken_
+  name: GetStreamHealthAsync
+  nameWithType: LiveDataService.GetStreamHealthAsync
+  fullName: Meridian.Ui.Services.LiveDataService.GetStreamHealthAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DataStreamHealth}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DataStreamHealth}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataStreamHealth>
+  nameWithType: Task<DataStreamHealth>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DataStreamHealth>
+  nameWithType.vb: Task(Of DataStreamHealth)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DataStreamHealth)
+  name.vb: Task(Of DataStreamHealth)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataStreamHealth
+    name: DataStreamHealth
+    href: Meridian.Ui.Services.DataStreamHealth.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataStreamHealth
+    name: DataStreamHealth
+    href: Meridian.Ui.Services.DataStreamHealth.html
+  - name: )

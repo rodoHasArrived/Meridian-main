@@ -42,13 +42,17 @@ This directory contains documentation about the system's design, architectural d
 | [Why This Architecture](why-this-architecture.md) | Design rationale and tradeoffs |
 | [Provider Management](provider-management.md) | Provider abstraction and failover |
 | [Domain Boundaries](domains.md) | Domain model responsibilities |
-| [C4 Diagrams Reference](c4-diagrams.md) | Reference guide for C4 diagrams |
+| [C4 Diagrams Reference](c4-diagrams.md) | C4 views plus the runtime, workstation, Security Master, and fund-ops diagram catalog |
 | [Crystallized Storage Format](crystallized-storage-format.md) | Storage format specification |
-| [UI Redesign Notes](ui-redesign.md) | Desktop UI architectural direction |
+| [Deterministic Canonicalization](deterministic-canonicalization.md) | Normalization and deduplication rules |
+| [Ledger Architecture](ledger-architecture.md) | Ledger, portfolio, and accounting architecture notes |
+| [Environment Designer Runtime Projection and WPF Admin Surface](environment-designer-runtime-projection-and-wpf-admin-surface.md) | Draft/publish/rollback architecture for company umbrella environment design |
+| [Desktop Layers](desktop-layers.md) | WPF desktop application layering |
+| [WPF Shell MVVM](wpf-shell-mvvm.md) | Shell composition and MVVM direction for the desktop client |
+| [WPF Workstation Shell UX](wpf-workstation-shell-ux.md) | Shared workstation-shell UX pattern for WPF research, trading, data operations, and governance |
+| [UI Redesign](ui-redesign.md) | Product and information-architecture direction for workstation UX |
 | [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md) | Target run model, workspace IA, and migration phases |
 | [MCP Server](layer-boundaries.md#dependency-graph) | MCP tool server — dependency position and boundary rules |
-
----
 
 ## Related
 

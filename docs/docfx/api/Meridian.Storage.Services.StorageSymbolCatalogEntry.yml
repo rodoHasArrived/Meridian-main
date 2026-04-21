@@ -1,0 +1,780 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  commentId: T:Meridian.Storage.Services.StorageSymbolCatalogEntry
+  id: StorageSymbolCatalogEntry
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.StorageSymbolCatalogEntry.#ctor(System.String,System.DateTimeOffset,System.DateTimeOffset,System.Int64,System.Int64,System.Collections.Generic.HashSet{System.String},System.Collections.Generic.HashSet{System.String})
+  - Meridian.Storage.Services.StorageSymbolCatalogEntry.EventTypes
+  - Meridian.Storage.Services.StorageSymbolCatalogEntry.FirstDate
+  - Meridian.Storage.Services.StorageSymbolCatalogEntry.LastDate
+  - Meridian.Storage.Services.StorageSymbolCatalogEntry.Sources
+  - Meridian.Storage.Services.StorageSymbolCatalogEntry.Symbol
+  - Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalBytes
+  - Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalEvents
+  langs:
+  - csharp
+  - vb
+  name: StorageSymbolCatalogEntry
+  nameWithType: StorageSymbolCatalogEntry
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageSymbolCatalogEntry
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 695
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record StorageSymbolCatalogEntry : IEquatable<StorageSymbolCatalogEntry>'
+    content.vb: Public NotInheritable Class StorageSymbolCatalogEntry Implements IEquatable(Of StorageSymbolCatalogEntry)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.StorageSymbolCatalogEntry}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.#ctor(System.String,System.DateTimeOffset,System.DateTimeOffset,System.Int64,System.Int64,System.Collections.Generic.HashSet{System.String},System.Collections.Generic.HashSet{System.String})
+  commentId: M:Meridian.Storage.Services.StorageSymbolCatalogEntry.#ctor(System.String,System.DateTimeOffset,System.DateTimeOffset,System.Int64,System.Int64,System.Collections.Generic.HashSet{System.String},System.Collections.Generic.HashSet{System.String})
+  id: '#ctor(System.String,System.DateTimeOffset,System.DateTimeOffset,System.Int64,System.Int64,System.Collections.Generic.HashSet{System.String},System.Collections.Generic.HashSet{System.String})'
+  parent: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: StorageSymbolCatalogEntry(string, DateTimeOffset, DateTimeOffset, long, long, HashSet<string>, HashSet<string>)
+  nameWithType: StorageSymbolCatalogEntry.StorageSymbolCatalogEntry(string, DateTimeOffset, DateTimeOffset, long, long, HashSet<string>, HashSet<string>)
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.StorageSymbolCatalogEntry(string, System.DateTimeOffset, System.DateTimeOffset, long, long, System.Collections.Generic.HashSet<string>, System.Collections.Generic.HashSet<string>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 695
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public StorageSymbolCatalogEntry(string Symbol, DateTimeOffset FirstDate, DateTimeOffset LastDate, long TotalEvents, long TotalBytes, HashSet<string> Sources, HashSet<string> EventTypes)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: FirstDate
+      type: System.DateTimeOffset
+    - id: LastDate
+      type: System.DateTimeOffset
+    - id: TotalEvents
+      type: System.Int64
+    - id: TotalBytes
+      type: System.Int64
+    - id: Sources
+      type: System.Collections.Generic.HashSet{System.String}
+    - id: EventTypes
+      type: System.Collections.Generic.HashSet{System.String}
+    content.vb: Public Sub New(Symbol As String, FirstDate As DateTimeOffset, LastDate As DateTimeOffset, TotalEvents As Long, TotalBytes As Long, Sources As HashSet(Of String), EventTypes As HashSet(Of String))
+  overload: Meridian.Storage.Services.StorageSymbolCatalogEntry.#ctor*
+  nameWithType.vb: StorageSymbolCatalogEntry.New(String, DateTimeOffset, DateTimeOffset, Long, Long, HashSet(Of String), HashSet(Of String))
+  fullName.vb: Meridian.Storage.Services.StorageSymbolCatalogEntry.New(String, System.DateTimeOffset, System.DateTimeOffset, Long, Long, System.Collections.Generic.HashSet(Of String), System.Collections.Generic.HashSet(Of String))
+  name.vb: New(String, DateTimeOffset, DateTimeOffset, Long, Long, HashSet(Of String), HashSet(Of String))
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.Symbol
+  commentId: P:Meridian.Storage.Services.StorageSymbolCatalogEntry.Symbol
+  id: Symbol
+  parent: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: StorageSymbolCatalogEntry.Symbol
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 696
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Storage.Services.StorageSymbolCatalogEntry.Symbol*
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.FirstDate
+  commentId: P:Meridian.Storage.Services.StorageSymbolCatalogEntry.FirstDate
+  id: FirstDate
+  parent: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: FirstDate
+  nameWithType: StorageSymbolCatalogEntry.FirstDate
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.FirstDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FirstDate
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 697
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset FirstDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property FirstDate As DateTimeOffset
+  overload: Meridian.Storage.Services.StorageSymbolCatalogEntry.FirstDate*
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.LastDate
+  commentId: P:Meridian.Storage.Services.StorageSymbolCatalogEntry.LastDate
+  id: LastDate
+  parent: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: LastDate
+  nameWithType: StorageSymbolCatalogEntry.LastDate
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.LastDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastDate
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 698
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset LastDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastDate As DateTimeOffset
+  overload: Meridian.Storage.Services.StorageSymbolCatalogEntry.LastDate*
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalEvents
+  commentId: P:Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalEvents
+  id: TotalEvents
+  parent: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: TotalEvents
+  nameWithType: StorageSymbolCatalogEntry.TotalEvents
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEvents
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 699
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long TotalEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalEvents As Long
+  overload: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalEvents*
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalBytes
+  commentId: P:Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalBytes
+  id: TotalBytes
+  parent: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: TotalBytes
+  nameWithType: StorageSymbolCatalogEntry.TotalBytes
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytes
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 700
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long TotalBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalBytes As Long
+  overload: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalBytes*
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.Sources
+  commentId: P:Meridian.Storage.Services.StorageSymbolCatalogEntry.Sources
+  id: Sources
+  parent: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: StorageSymbolCatalogEntry.Sources
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 701
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public HashSet<string> Sources { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.HashSet{System.String}
+    content.vb: Public Property Sources As HashSet(Of String)
+  overload: Meridian.Storage.Services.StorageSymbolCatalogEntry.Sources*
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.EventTypes
+  commentId: P:Meridian.Storage.Services.StorageSymbolCatalogEntry.EventTypes
+  id: EventTypes
+  parent: Meridian.Storage.Services.StorageSymbolCatalogEntry
+  langs:
+  - csharp
+  - vb
+  name: EventTypes
+  nameWithType: StorageSymbolCatalogEntry.EventTypes
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.EventTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypes
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 702
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public HashSet<string> EventTypes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.HashSet{System.String}
+    content.vb: Public Property EventTypes As HashSet(Of String)
+  overload: Meridian.Storage.Services.StorageSymbolCatalogEntry.EventTypes*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.StorageSymbolCatalogEntry}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.StorageSymbolCatalogEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StorageSymbolCatalogEntry>
+  nameWithType: IEquatable<StorageSymbolCatalogEntry>
+  fullName: System.IEquatable<Meridian.Storage.Services.StorageSymbolCatalogEntry>
+  nameWithType.vb: IEquatable(Of StorageSymbolCatalogEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.StorageSymbolCatalogEntry)
+  name.vb: IEquatable(Of StorageSymbolCatalogEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.StorageSymbolCatalogEntry
+    name: StorageSymbolCatalogEntry
+    href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.StorageSymbolCatalogEntry
+    name: StorageSymbolCatalogEntry
+    href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.#ctor*
+  commentId: Overload:Meridian.Storage.Services.StorageSymbolCatalogEntry.#ctor
+  href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html#Meridian_Storage_Services_StorageSymbolCatalogEntry__ctor_System_String_System_DateTimeOffset_System_DateTimeOffset_System_Int64_System_Int64_System_Collections_Generic_HashSet_System_String__System_Collections_Generic_HashSet_System_String__
+  name: StorageSymbolCatalogEntry
+  nameWithType: StorageSymbolCatalogEntry.StorageSymbolCatalogEntry
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.StorageSymbolCatalogEntry
+  nameWithType.vb: StorageSymbolCatalogEntry.New
+  fullName.vb: Meridian.Storage.Services.StorageSymbolCatalogEntry.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Collections.Generic.HashSet{System.String}
+  commentId: T:System.Collections.Generic.HashSet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.HashSet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  name: HashSet<string>
+  nameWithType: HashSet<string>
+  fullName: System.Collections.Generic.HashSet<string>
+  nameWithType.vb: HashSet(Of String)
+  fullName.vb: System.Collections.Generic.HashSet(Of String)
+  name.vb: HashSet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.HashSet`1
+  commentId: T:System.Collections.Generic.HashSet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  name: HashSet<T>
+  nameWithType: HashSet<T>
+  fullName: System.Collections.Generic.HashSet<T>
+  nameWithType.vb: HashSet(Of T)
+  fullName.vb: System.Collections.Generic.HashSet(Of T)
+  name.vb: HashSet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.Symbol*
+  commentId: Overload:Meridian.Storage.Services.StorageSymbolCatalogEntry.Symbol
+  href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html#Meridian_Storage_Services_StorageSymbolCatalogEntry_Symbol
+  name: Symbol
+  nameWithType: StorageSymbolCatalogEntry.Symbol
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.Symbol
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.FirstDate*
+  commentId: Overload:Meridian.Storage.Services.StorageSymbolCatalogEntry.FirstDate
+  href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html#Meridian_Storage_Services_StorageSymbolCatalogEntry_FirstDate
+  name: FirstDate
+  nameWithType: StorageSymbolCatalogEntry.FirstDate
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.FirstDate
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.LastDate*
+  commentId: Overload:Meridian.Storage.Services.StorageSymbolCatalogEntry.LastDate
+  href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html#Meridian_Storage_Services_StorageSymbolCatalogEntry_LastDate
+  name: LastDate
+  nameWithType: StorageSymbolCatalogEntry.LastDate
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.LastDate
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalEvents*
+  commentId: Overload:Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalEvents
+  href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html#Meridian_Storage_Services_StorageSymbolCatalogEntry_TotalEvents
+  name: TotalEvents
+  nameWithType: StorageSymbolCatalogEntry.TotalEvents
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalEvents
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalBytes*
+  commentId: Overload:Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalBytes
+  href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html#Meridian_Storage_Services_StorageSymbolCatalogEntry_TotalBytes
+  name: TotalBytes
+  nameWithType: StorageSymbolCatalogEntry.TotalBytes
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.TotalBytes
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.Sources*
+  commentId: Overload:Meridian.Storage.Services.StorageSymbolCatalogEntry.Sources
+  href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html#Meridian_Storage_Services_StorageSymbolCatalogEntry_Sources
+  name: Sources
+  nameWithType: StorageSymbolCatalogEntry.Sources
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.Sources
+- uid: Meridian.Storage.Services.StorageSymbolCatalogEntry.EventTypes*
+  commentId: Overload:Meridian.Storage.Services.StorageSymbolCatalogEntry.EventTypes
+  href: Meridian.Storage.Services.StorageSymbolCatalogEntry.html#Meridian_Storage_Services_StorageSymbolCatalogEntry_EventTypes
+  name: EventTypes
+  nameWithType: StorageSymbolCatalogEntry.EventTypes
+  fullName: Meridian.Storage.Services.StorageSymbolCatalogEntry.EventTypes

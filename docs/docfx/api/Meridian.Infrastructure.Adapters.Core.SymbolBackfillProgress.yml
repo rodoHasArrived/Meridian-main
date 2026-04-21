@@ -1,0 +1,1081 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  id: SymbolBackfillProgress
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.BarsRetrieved
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedAt
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedRequests
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.DatesToFill
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedDates
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedRequests
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FilledDates
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.LastError
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.ProgressPercent
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.StartedAt
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Status
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.SuccessfulProvider
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Symbol
+  - Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.TotalRequests
+  langs:
+  - csharp
+  - vb
+  name: SymbolBackfillProgress
+  nameWithType: SymbolBackfillProgress
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolBackfillProgress
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Progress tracking for a single symbol within a backfill job.
+  example: []
+  syntax:
+    content: public sealed class SymbolBackfillProgress
+    content.vb: Public NotInheritable Class SymbolBackfillProgress
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Symbol
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolBackfillProgress.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Symbol*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.DatesToFill
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.DatesToFill
+  id: DatesToFill
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: DatesToFill
+  nameWithType: SymbolBackfillProgress.DatesToFill
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.DatesToFill
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DatesToFill
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Dates that need to be backfilled (gaps detected).
+  example: []
+  syntax:
+    content: public List<DateOnly> DatesToFill { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.DateOnly}
+    content.vb: Public Property DatesToFill As List(Of DateOnly)
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.DatesToFill*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FilledDates
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FilledDates
+  id: FilledDates
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: FilledDates
+  nameWithType: SymbolBackfillProgress.FilledDates
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FilledDates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilledDates
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Dates that have been successfully filled.
+  example: []
+  syntax:
+    content: public HashSet<DateOnly> FilledDates { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.HashSet{System.DateOnly}
+    content.vb: Public Property FilledDates As HashSet(Of DateOnly)
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FilledDates*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedDates
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedDates
+  id: FailedDates
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: FailedDates
+  nameWithType: SymbolBackfillProgress.FailedDates
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedDates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedDates
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Dates that failed to fill after all retries.
+  example: []
+  syntax:
+    content: public HashSet<DateOnly> FailedDates { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.HashSet{System.DateOnly}
+    content.vb: Public Property FailedDates As HashSet(Of DateOnly)
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedDates*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.TotalRequests
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.TotalRequests
+  id: TotalRequests
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: TotalRequests
+  nameWithType: SymbolBackfillProgress.TotalRequests
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.TotalRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRequests
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Total requests needed for this symbol.
+  example: []
+  syntax:
+    content: public int TotalRequests { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalRequests As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.TotalRequests*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedRequests
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedRequests
+  id: CompletedRequests
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: CompletedRequests
+  nameWithType: SymbolBackfillProgress.CompletedRequests
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedRequests
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Completed requests.
+  example: []
+  syntax:
+    content: public int CompletedRequests { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CompletedRequests As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedRequests*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedRequests
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedRequests
+  id: FailedRequests
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: FailedRequests
+  nameWithType: SymbolBackfillProgress.FailedRequests
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedRequests
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailedRequests
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Failed requests.
+  example: []
+  syntax:
+    content: public int FailedRequests { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailedRequests As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedRequests*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.BarsRetrieved
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.BarsRetrieved
+  id: BarsRetrieved
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: BarsRetrieved
+  nameWithType: SymbolBackfillProgress.BarsRetrieved
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.BarsRetrieved
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BarsRetrieved
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Total bars retrieved.
+  example: []
+  syntax:
+    content: public long BarsRetrieved { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BarsRetrieved As Long
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.BarsRetrieved*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.SuccessfulProvider
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.SuccessfulProvider
+  id: SuccessfulProvider
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: SuccessfulProvider
+  nameWithType: SymbolBackfillProgress.SuccessfulProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.SuccessfulProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessfulProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Provider that successfully provided data.
+  example: []
+  syntax:
+    content: public string? SuccessfulProvider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SuccessfulProvider As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.SuccessfulProvider*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.LastError
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.LastError
+  id: LastError
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: LastError
+  nameWithType: SymbolBackfillProgress.LastError
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.LastError
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastError
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Last error message if any.
+  example: []
+  syntax:
+    content: public string? LastError { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LastError As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.LastError*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.StartedAt
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.StartedAt
+  id: StartedAt
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: SymbolBackfillProgress.StartedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: When this symbol started processing.
+  example: []
+  syntax:
+    content: public DateTimeOffset? StartedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property StartedAt As DateTimeOffset?
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.StartedAt*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedAt
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: SymbolBackfillProgress.CompletedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: When this symbol completed processing.
+  example: []
+  syntax:
+    content: public DateTimeOffset? CompletedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CompletedAt As DateTimeOffset?
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedAt*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Status
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Status
+  id: Status
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: SymbolBackfillProgress.Status
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Current processing status.
+  example: []
+  syntax:
+    content: public SymbolBackfillStatus Status { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+    content.vb: Public Property Status As SymbolBackfillStatus
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Status*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.ProgressPercent
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.ProgressPercent
+  id: ProgressPercent
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress
+  langs:
+  - csharp
+  - vb
+  name: ProgressPercent
+  nameWithType: SymbolBackfillProgress.ProgressPercent
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.ProgressPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProgressPercent
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public double ProgressPercent { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property ProgressPercent As Double
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.ProgressPercent*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Symbol*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Symbol
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_Symbol
+  name: Symbol
+  nameWithType: SymbolBackfillProgress.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.DatesToFill*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.DatesToFill
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_DatesToFill
+  name: DatesToFill
+  nameWithType: SymbolBackfillProgress.DatesToFill
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.DatesToFill
+- uid: System.Collections.Generic.List{System.DateOnly}
+  commentId: T:System.Collections.Generic.List{System.DateOnly}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<DateOnly>
+  nameWithType: List<DateOnly>
+  fullName: System.Collections.Generic.List<System.DateOnly>
+  nameWithType.vb: List(Of DateOnly)
+  fullName.vb: System.Collections.Generic.List(Of System.DateOnly)
+  name.vb: List(Of DateOnly)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FilledDates*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FilledDates
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_FilledDates
+  name: FilledDates
+  nameWithType: SymbolBackfillProgress.FilledDates
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FilledDates
+- uid: System.Collections.Generic.HashSet{System.DateOnly}
+  commentId: T:System.Collections.Generic.HashSet{System.DateOnly}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.HashSet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  name: HashSet<DateOnly>
+  nameWithType: HashSet<DateOnly>
+  fullName: System.Collections.Generic.HashSet<System.DateOnly>
+  nameWithType.vb: HashSet(Of DateOnly)
+  fullName.vb: System.Collections.Generic.HashSet(Of System.DateOnly)
+  name.vb: HashSet(Of DateOnly)
+  spec.csharp:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: <
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: )
+- uid: System.Collections.Generic.HashSet`1
+  commentId: T:System.Collections.Generic.HashSet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  name: HashSet<T>
+  nameWithType: HashSet<T>
+  fullName: System.Collections.Generic.HashSet<T>
+  nameWithType.vb: HashSet(Of T)
+  fullName.vb: System.Collections.Generic.HashSet(Of T)
+  name.vb: HashSet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedDates*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedDates
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_FailedDates
+  name: FailedDates
+  nameWithType: SymbolBackfillProgress.FailedDates
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedDates
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.TotalRequests*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.TotalRequests
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_TotalRequests
+  name: TotalRequests
+  nameWithType: SymbolBackfillProgress.TotalRequests
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.TotalRequests
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedRequests*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedRequests
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_CompletedRequests
+  name: CompletedRequests
+  nameWithType: SymbolBackfillProgress.CompletedRequests
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedRequests
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedRequests*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedRequests
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_FailedRequests
+  name: FailedRequests
+  nameWithType: SymbolBackfillProgress.FailedRequests
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.FailedRequests
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.BarsRetrieved*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.BarsRetrieved
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_BarsRetrieved
+  name: BarsRetrieved
+  nameWithType: SymbolBackfillProgress.BarsRetrieved
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.BarsRetrieved
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.SuccessfulProvider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.SuccessfulProvider
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_SuccessfulProvider
+  name: SuccessfulProvider
+  nameWithType: SymbolBackfillProgress.SuccessfulProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.SuccessfulProvider
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.LastError*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.LastError
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_LastError
+  name: LastError
+  nameWithType: SymbolBackfillProgress.LastError
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.LastError
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.StartedAt*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.StartedAt
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_StartedAt
+  name: StartedAt
+  nameWithType: SymbolBackfillProgress.StartedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.StartedAt
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedAt*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedAt
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_CompletedAt
+  name: CompletedAt
+  nameWithType: SymbolBackfillProgress.CompletedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.CompletedAt
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Status*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Status
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_Status
+  name: Status
+  nameWithType: SymbolBackfillProgress.Status
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.Status
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus.html
+  name: SymbolBackfillStatus
+  nameWithType: SymbolBackfillStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.ProgressPercent*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.ProgressPercent
+  href: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.html#Meridian_Infrastructure_Adapters_Core_SymbolBackfillProgress_ProgressPercent
+  name: ProgressPercent
+  nameWithType: SymbolBackfillProgress.ProgressPercent
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress.ProgressPercent
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

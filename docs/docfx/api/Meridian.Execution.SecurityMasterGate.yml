@@ -1,0 +1,718 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.SecurityMasterGate
+  commentId: T:Meridian.Execution.SecurityMasterGate
+  id: SecurityMasterGate
+  parent: Meridian.Execution
+  children:
+  - Meridian.Execution.SecurityMasterGate.#ctor(Meridian.Application.SecurityMaster.ISecurityResolver,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.SecurityMasterGate})
+  - Meridian.Execution.SecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterGate
+  nameWithType: SecurityMasterGate
+  fullName: Meridian.Execution.SecurityMasterGate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/SecurityMasterGate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterGate
+    path: ../../src/Meridian.Execution/SecurityMasterGate.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: >-
+    Default <xref href="Meridian.Execution.ISecurityMasterGate" data-throw-if-not-resolved="false"></xref> implementation that uses <xref href="Meridian.Application.SecurityMaster.ISecurityResolver" data-throw-if-not-resolved="false"></xref>
+
+    to look up the symbol in the Security Master.
+  example: []
+  syntax:
+    content: 'public sealed class SecurityMasterGate : ISecurityMasterGate'
+    content.vb: Public NotInheritable Class SecurityMasterGate Implements ISecurityMasterGate
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Execution.ISecurityMasterGate
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.SecurityMasterGate.#ctor(Meridian.Application.SecurityMaster.ISecurityResolver,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.SecurityMasterGate})
+  commentId: M:Meridian.Execution.SecurityMasterGate.#ctor(Meridian.Application.SecurityMaster.ISecurityResolver,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.SecurityMasterGate})
+  id: '#ctor(Meridian.Application.SecurityMaster.ISecurityResolver,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.SecurityMasterGate})'
+  parent: Meridian.Execution.SecurityMasterGate
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterGate(ISecurityResolver, ILogger<SecurityMasterGate>)
+  nameWithType: SecurityMasterGate.SecurityMasterGate(ISecurityResolver, ILogger<SecurityMasterGate>)
+  fullName: Meridian.Execution.SecurityMasterGate.SecurityMasterGate(Meridian.Application.SecurityMaster.ISecurityResolver, Microsoft.Extensions.Logging.ILogger<Meridian.Execution.SecurityMasterGate>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/SecurityMasterGate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/SecurityMasterGate.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  syntax:
+    content: public SecurityMasterGate(ISecurityResolver resolver, ILogger<SecurityMasterGate> logger)
+    parameters:
+    - id: resolver
+      type: Meridian.Application.SecurityMaster.ISecurityResolver
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.SecurityMasterGate}
+    content.vb: Public Sub New(resolver As ISecurityResolver, logger As ILogger(Of SecurityMasterGate))
+  overload: Meridian.Execution.SecurityMasterGate.#ctor*
+  nameWithType.vb: SecurityMasterGate.New(ISecurityResolver, ILogger(Of SecurityMasterGate))
+  fullName.vb: Meridian.Execution.SecurityMasterGate.New(Meridian.Application.SecurityMaster.ISecurityResolver, Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.SecurityMasterGate))
+  name.vb: New(ISecurityResolver, ILogger(Of SecurityMasterGate))
+- uid: Meridian.Execution.SecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.SecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+  id: CheckAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.SecurityMasterGate
+  langs:
+  - csharp
+  - vb
+  name: CheckAsync(string, CancellationToken)
+  nameWithType: SecurityMasterGate.CheckAsync(string, CancellationToken)
+  fullName: Meridian.Execution.SecurityMasterGate.CheckAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/SecurityMasterGate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckAsync
+    path: ../../src/Meridian.Execution/SecurityMasterGate.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Checks whether <code class="paramref">symbol</code> resolves to an active security in the Security Master.
+  example: []
+  syntax:
+    content: public Task<SecurityMasterGateResult> CheckAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Ticker or identifier to check.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.SecurityMasterGateResult}
+      description: >-
+        <xref href="Meridian.Execution.SecurityMasterGateResult.IsApproved" data-throw-if-not-resolved="false"></xref> is <code>true</code> when the symbol resolves;
+
+        <code>false</code> with a rejection <xref href="Meridian.Execution.SecurityMasterGateResult.Reason" data-throw-if-not-resolved="false"></xref> otherwise.
+    content.vb: Public Function CheckAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of SecurityMasterGateResult)
+  overload: Meridian.Execution.SecurityMasterGate.CheckAsync*
+  implements:
+  - Meridian.Execution.ISecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: SecurityMasterGate.CheckAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.SecurityMasterGate.CheckAsync(String, System.Threading.CancellationToken)
+  name.vb: CheckAsync(String, CancellationToken)
+references:
+- uid: Meridian.Execution.ISecurityMasterGate
+  commentId: T:Meridian.Execution.ISecurityMasterGate
+  parent: Meridian.Execution
+  href: Meridian.Execution.ISecurityMasterGate.html
+  name: ISecurityMasterGate
+  nameWithType: ISecurityMasterGate
+  fullName: Meridian.Execution.ISecurityMasterGate
+- uid: Meridian.Application.SecurityMaster.ISecurityResolver
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityResolver
+  parent: Meridian.Application.SecurityMaster
+  href: Meridian.Application.SecurityMaster.ISecurityResolver.html
+  name: ISecurityResolver
+  nameWithType: ISecurityResolver
+  fullName: Meridian.Application.SecurityMaster.ISecurityResolver
+- uid: Meridian.Execution
+  commentId: N:Meridian.Execution
+  href: Meridian.html
+  name: Meridian.Execution
+  nameWithType: Meridian.Execution
+  fullName: Meridian.Execution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.SecurityMasterGate.#ctor*
+  commentId: Overload:Meridian.Execution.SecurityMasterGate.#ctor
+  href: Meridian.Execution.SecurityMasterGate.html#Meridian_Execution_SecurityMasterGate__ctor_Meridian_Application_SecurityMaster_ISecurityResolver_Microsoft_Extensions_Logging_ILogger_Meridian_Execution_SecurityMasterGate__
+  name: SecurityMasterGate
+  nameWithType: SecurityMasterGate.SecurityMasterGate
+  fullName: Meridian.Execution.SecurityMasterGate.SecurityMasterGate
+  nameWithType.vb: SecurityMasterGate.New
+  fullName.vb: Meridian.Execution.SecurityMasterGate.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.SecurityMasterGate}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Execution.SecurityMasterGate}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<SecurityMasterGate>
+  nameWithType: ILogger<SecurityMasterGate>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Execution.SecurityMasterGate>
+  nameWithType.vb: ILogger(Of SecurityMasterGate)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.SecurityMasterGate)
+  name.vb: ILogger(Of SecurityMasterGate)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Execution.SecurityMasterGate
+    name: SecurityMasterGate
+    href: Meridian.Execution.SecurityMasterGate.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.SecurityMasterGate
+    name: SecurityMasterGate
+    href: Meridian.Execution.SecurityMasterGate.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Execution.SecurityMasterGateResult.IsApproved
+  commentId: P:Meridian.Execution.SecurityMasterGateResult.IsApproved
+  href: Meridian.Execution.SecurityMasterGateResult.html#Meridian_Execution_SecurityMasterGateResult_IsApproved
+  name: IsApproved
+  nameWithType: SecurityMasterGateResult.IsApproved
+  fullName: Meridian.Execution.SecurityMasterGateResult.IsApproved
+- uid: Meridian.Execution.SecurityMasterGateResult.Reason
+  commentId: P:Meridian.Execution.SecurityMasterGateResult.Reason
+  href: Meridian.Execution.SecurityMasterGateResult.html#Meridian_Execution_SecurityMasterGateResult_Reason
+  name: Reason
+  nameWithType: SecurityMasterGateResult.Reason
+  fullName: Meridian.Execution.SecurityMasterGateResult.Reason
+- uid: Meridian.Execution.SecurityMasterGate.CheckAsync*
+  commentId: Overload:Meridian.Execution.SecurityMasterGate.CheckAsync
+  href: Meridian.Execution.SecurityMasterGate.html#Meridian_Execution_SecurityMasterGate_CheckAsync_System_String_System_Threading_CancellationToken_
+  name: CheckAsync
+  nameWithType: SecurityMasterGate.CheckAsync
+  fullName: Meridian.Execution.SecurityMasterGate.CheckAsync
+- uid: Meridian.Execution.ISecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.ISecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.ISecurityMasterGate
+  isExternal: true
+  href: Meridian.Execution.ISecurityMasterGate.html#Meridian_Execution_ISecurityMasterGate_CheckAsync_System_String_System_Threading_CancellationToken_
+  name: CheckAsync(string, CancellationToken)
+  nameWithType: ISecurityMasterGate.CheckAsync(string, CancellationToken)
+  fullName: Meridian.Execution.ISecurityMasterGate.CheckAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: ISecurityMasterGate.CheckAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.ISecurityMasterGate.CheckAsync(String, System.Threading.CancellationToken)
+  name.vb: CheckAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Execution.ISecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+    name: CheckAsync
+    href: Meridian.Execution.ISecurityMasterGate.html#Meridian_Execution_ISecurityMasterGate_CheckAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Execution.ISecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+    name: CheckAsync
+    href: Meridian.Execution.ISecurityMasterGate.html#Meridian_Execution_ISecurityMasterGate_CheckAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Execution.SecurityMasterGateResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.SecurityMasterGateResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityMasterGateResult>
+  nameWithType: Task<SecurityMasterGateResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.SecurityMasterGateResult>
+  nameWithType.vb: Task(Of SecurityMasterGateResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.SecurityMasterGateResult)
+  name.vb: Task(Of SecurityMasterGateResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.SecurityMasterGateResult
+    name: SecurityMasterGateResult
+    href: Meridian.Execution.SecurityMasterGateResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.SecurityMasterGateResult
+    name: SecurityMasterGateResult
+    href: Meridian.Execution.SecurityMasterGateResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

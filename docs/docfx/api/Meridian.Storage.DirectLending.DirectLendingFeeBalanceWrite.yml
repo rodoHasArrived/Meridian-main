@@ -1,0 +1,650 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  id: DirectLendingFeeBalanceWrite
+  parent: Meridian.Storage.DirectLending
+  children:
+  - Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.#ctor(System.Guid,System.String,System.DateOnly,System.Decimal,System.Decimal,System.String)
+  - Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.EffectiveDate
+  - Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeBalanceId
+  - Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeType
+  - Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.Note
+  - Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.OriginalAmount
+  - Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.UnpaidAmount
+  langs:
+  - csharp
+  - vb
+  name: DirectLendingFeeBalanceWrite
+  nameWithType: DirectLendingFeeBalanceWrite
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DirectLendingFeeBalanceWrite
+    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: 'public sealed record DirectLendingFeeBalanceWrite : IEquatable<DirectLendingFeeBalanceWrite>'
+    content.vb: Public NotInheritable Class DirectLendingFeeBalanceWrite Implements IEquatable(Of DirectLendingFeeBalanceWrite)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.#ctor(System.Guid,System.String,System.DateOnly,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.#ctor(System.Guid,System.String,System.DateOnly,System.Decimal,System.Decimal,System.String)
+  id: '#ctor(System.Guid,System.String,System.DateOnly,System.Decimal,System.Decimal,System.String)'
+  parent: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  langs:
+  - csharp
+  - vb
+  name: DirectLendingFeeBalanceWrite(Guid, string, DateOnly, decimal, decimal, string?)
+  nameWithType: DirectLendingFeeBalanceWrite.DirectLendingFeeBalanceWrite(Guid, string, DateOnly, decimal, decimal, string?)
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.DirectLendingFeeBalanceWrite(System.Guid, string, System.DateOnly, decimal, decimal, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public DirectLendingFeeBalanceWrite(Guid FeeBalanceId, string FeeType, DateOnly EffectiveDate, decimal OriginalAmount, decimal UnpaidAmount, string? Note)
+    parameters:
+    - id: FeeBalanceId
+      type: System.Guid
+    - id: FeeType
+      type: System.String
+    - id: EffectiveDate
+      type: System.DateOnly
+    - id: OriginalAmount
+      type: System.Decimal
+    - id: UnpaidAmount
+      type: System.Decimal
+    - id: Note
+      type: System.String
+    content.vb: Public Sub New(FeeBalanceId As Guid, FeeType As String, EffectiveDate As DateOnly, OriginalAmount As Decimal, UnpaidAmount As Decimal, Note As String)
+  overload: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.#ctor*
+  nameWithType.vb: DirectLendingFeeBalanceWrite.New(Guid, String, DateOnly, Decimal, Decimal, String)
+  fullName.vb: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.New(System.Guid, String, System.DateOnly, Decimal, Decimal, String)
+  name.vb: New(Guid, String, DateOnly, Decimal, Decimal, String)
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeBalanceId
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeBalanceId
+  id: FeeBalanceId
+  parent: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  langs:
+  - csharp
+  - vb
+  name: FeeBalanceId
+  nameWithType: DirectLendingFeeBalanceWrite.FeeBalanceId
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeBalanceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FeeBalanceId
+    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public Guid FeeBalanceId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property FeeBalanceId As Guid
+  overload: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeBalanceId*
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeType
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeType
+  id: FeeType
+  parent: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  langs:
+  - csharp
+  - vb
+  name: FeeType
+  nameWithType: DirectLendingFeeBalanceWrite.FeeType
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FeeType
+    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public string FeeType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FeeType As String
+  overload: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeType*
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.EffectiveDate
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.EffectiveDate
+  id: EffectiveDate
+  parent: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  langs:
+  - csharp
+  - vb
+  name: EffectiveDate
+  nameWithType: DirectLendingFeeBalanceWrite.EffectiveDate
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.EffectiveDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveDate
+    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public DateOnly EffectiveDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property EffectiveDate As DateOnly
+  overload: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.EffectiveDate*
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.OriginalAmount
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.OriginalAmount
+  id: OriginalAmount
+  parent: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  langs:
+  - csharp
+  - vb
+  name: OriginalAmount
+  nameWithType: DirectLendingFeeBalanceWrite.OriginalAmount
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.OriginalAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OriginalAmount
+    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public decimal OriginalAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property OriginalAmount As Decimal
+  overload: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.OriginalAmount*
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.UnpaidAmount
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.UnpaidAmount
+  id: UnpaidAmount
+  parent: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  langs:
+  - csharp
+  - vb
+  name: UnpaidAmount
+  nameWithType: DirectLendingFeeBalanceWrite.UnpaidAmount
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.UnpaidAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnpaidAmount
+    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public decimal UnpaidAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnpaidAmount As Decimal
+  overload: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.UnpaidAmount*
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.Note
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.Note
+  id: Note
+  parent: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+  langs:
+  - csharp
+  - vb
+  name: Note
+  nameWithType: DirectLendingFeeBalanceWrite.Note
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.Note
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Note
+    path: ../../src/Meridian.Storage/DirectLending/DirectLendingPersistenceBatch.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public string? Note { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Note As String
+  overload: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.Note*
+references:
+- uid: Meridian.Storage.DirectLending
+  commentId: N:Meridian.Storage.DirectLending
+  href: Meridian.html
+  name: Meridian.Storage.DirectLending
+  nameWithType: Meridian.Storage.DirectLending
+  fullName: Meridian.Storage.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite}
+  commentId: T:System.IEquatable{Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DirectLendingFeeBalanceWrite>
+  nameWithType: IEquatable<DirectLendingFeeBalanceWrite>
+  fullName: System.IEquatable<Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite>
+  nameWithType.vb: IEquatable(Of DirectLendingFeeBalanceWrite)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite)
+  name.vb: IEquatable(Of DirectLendingFeeBalanceWrite)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+    name: DirectLendingFeeBalanceWrite
+    href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite
+    name: DirectLendingFeeBalanceWrite
+    href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.#ctor*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.#ctor
+  href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html#Meridian_Storage_DirectLending_DirectLendingFeeBalanceWrite__ctor_System_Guid_System_String_System_DateOnly_System_Decimal_System_Decimal_System_String_
+  name: DirectLendingFeeBalanceWrite
+  nameWithType: DirectLendingFeeBalanceWrite.DirectLendingFeeBalanceWrite
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.DirectLendingFeeBalanceWrite
+  nameWithType.vb: DirectLendingFeeBalanceWrite.New
+  fullName.vb: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeBalanceId*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeBalanceId
+  href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html#Meridian_Storage_DirectLending_DirectLendingFeeBalanceWrite_FeeBalanceId
+  name: FeeBalanceId
+  nameWithType: DirectLendingFeeBalanceWrite.FeeBalanceId
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeBalanceId
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeType*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeType
+  href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html#Meridian_Storage_DirectLending_DirectLendingFeeBalanceWrite_FeeType
+  name: FeeType
+  nameWithType: DirectLendingFeeBalanceWrite.FeeType
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.FeeType
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.EffectiveDate*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.EffectiveDate
+  href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html#Meridian_Storage_DirectLending_DirectLendingFeeBalanceWrite_EffectiveDate
+  name: EffectiveDate
+  nameWithType: DirectLendingFeeBalanceWrite.EffectiveDate
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.EffectiveDate
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.OriginalAmount*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.OriginalAmount
+  href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html#Meridian_Storage_DirectLending_DirectLendingFeeBalanceWrite_OriginalAmount
+  name: OriginalAmount
+  nameWithType: DirectLendingFeeBalanceWrite.OriginalAmount
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.OriginalAmount
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.UnpaidAmount*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.UnpaidAmount
+  href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html#Meridian_Storage_DirectLending_DirectLendingFeeBalanceWrite_UnpaidAmount
+  name: UnpaidAmount
+  nameWithType: DirectLendingFeeBalanceWrite.UnpaidAmount
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.UnpaidAmount
+- uid: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.Note*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.Note
+  href: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.html#Meridian_Storage_DirectLending_DirectLendingFeeBalanceWrite_Note
+  name: Note
+  nameWithType: DirectLendingFeeBalanceWrite.Note
+  fullName: Meridian.Storage.DirectLending.DirectLendingFeeBalanceWrite.Note

@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.ExecutionMode
+  commentId: T:Meridian.Execution.Sdk.ExecutionMode
+  id: ExecutionMode
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.ExecutionMode.Live
+  - Meridian.Execution.Sdk.ExecutionMode.Paper
+  - Meridian.Execution.Sdk.ExecutionMode.Simulation
+  langs:
+  - csharp
+  - vb
+  name: ExecutionMode
+  nameWithType: ExecutionMode
+  fullName: Meridian.Execution.Sdk.ExecutionMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionMode
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Execution mode determines whether orders are routed to live brokers or simulated.
+  example: []
+  syntax:
+    content: public enum ExecutionMode
+    content.vb: Public Enum ExecutionMode
+- uid: Meridian.Execution.Sdk.ExecutionMode.Paper
+  commentId: F:Meridian.Execution.Sdk.ExecutionMode.Paper
+  id: Paper
+  parent: Meridian.Execution.Sdk.ExecutionMode
+  langs:
+  - csharp
+  - vb
+  name: Paper
+  nameWithType: ExecutionMode.Paper
+  fullName: Meridian.Execution.Sdk.ExecutionMode.Paper
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Paper
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Orders are simulated locally (no broker connection).
+  example: []
+  syntax:
+    content: Paper = 0
+    return:
+      type: Meridian.Execution.Sdk.ExecutionMode
+- uid: Meridian.Execution.Sdk.ExecutionMode.Live
+  commentId: F:Meridian.Execution.Sdk.ExecutionMode.Live
+  id: Live
+  parent: Meridian.Execution.Sdk.ExecutionMode
+  langs:
+  - csharp
+  - vb
+  name: Live
+  nameWithType: ExecutionMode.Live
+  fullName: Meridian.Execution.Sdk.ExecutionMode.Live
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Live
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Orders are routed to a live broker for real execution.
+  example: []
+  syntax:
+    content: Live = 1
+    return:
+      type: Meridian.Execution.Sdk.ExecutionMode
+- uid: Meridian.Execution.Sdk.ExecutionMode.Simulation
+  commentId: F:Meridian.Execution.Sdk.ExecutionMode.Simulation
+  id: Simulation
+  parent: Meridian.Execution.Sdk.ExecutionMode
+  langs:
+  - csharp
+  - vb
+  name: Simulation
+  nameWithType: ExecutionMode.Simulation
+  fullName: Meridian.Execution.Sdk.ExecutionMode.Simulation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Simulation
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Orders are simulated using historical replay data.
+  example: []
+  syntax:
+    content: Simulation = 2
+    return:
+      type: Meridian.Execution.Sdk.ExecutionMode
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.ExecutionMode
+  commentId: T:Meridian.Execution.Sdk.ExecutionMode
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.ExecutionMode.html
+  name: ExecutionMode
+  nameWithType: ExecutionMode
+  fullName: Meridian.Execution.Sdk.ExecutionMode

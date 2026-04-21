@@ -1,0 +1,822 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.ExportValidationResult
+  commentId: T:Meridian.Storage.Export.ExportValidationResult
+  id: ExportValidationResult
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.ExportValidationResult.AvailableDiskSpaceBytes
+  - Meridian.Storage.Export.ExportValidationResult.Errors
+  - Meridian.Storage.Export.ExportValidationResult.EstimatedRecordCount
+  - Meridian.Storage.Export.ExportValidationResult.EstimatedSizeBytes
+  - Meridian.Storage.Export.ExportValidationResult.IsValid
+  - Meridian.Storage.Export.ExportValidationResult.Issues
+  - Meridian.Storage.Export.ExportValidationResult.Warnings
+  langs:
+  - csharp
+  - vb
+  name: ExportValidationResult
+  nameWithType: ExportValidationResult
+  fullName: Meridian.Storage.Export.ExportValidationResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportValidationResult
+    path: ../../src/Meridian.Storage/Export/ExportValidator.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Result of a pre-export validation run.
+  example: []
+  syntax:
+    content: public sealed class ExportValidationResult
+    content.vb: Public NotInheritable Class ExportValidationResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Export.ExportValidationResult.IsValid
+  commentId: P:Meridian.Storage.Export.ExportValidationResult.IsValid
+  id: IsValid
+  parent: Meridian.Storage.Export.ExportValidationResult
+  langs:
+  - csharp
+  - vb
+  name: IsValid
+  nameWithType: ExportValidationResult.IsValid
+  fullName: Meridian.Storage.Export.ExportValidationResult.IsValid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValid
+    path: ../../src/Meridian.Storage/Export/ExportValidator.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Whether the export can proceed (no error-level issues).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("isValid")]
+
+      public bool IsValid { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isValid")>
+
+      Public Property IsValid As Boolean
+  overload: Meridian.Storage.Export.ExportValidationResult.IsValid*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isValid
+- uid: Meridian.Storage.Export.ExportValidationResult.EstimatedRecordCount
+  commentId: P:Meridian.Storage.Export.ExportValidationResult.EstimatedRecordCount
+  id: EstimatedRecordCount
+  parent: Meridian.Storage.Export.ExportValidationResult
+  langs:
+  - csharp
+  - vb
+  name: EstimatedRecordCount
+  nameWithType: ExportValidationResult.EstimatedRecordCount
+  fullName: Meridian.Storage.Export.ExportValidationResult.EstimatedRecordCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedRecordCount
+    path: ../../src/Meridian.Storage/Export/ExportValidator.cs
+    startLine: 236
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Estimated number of records that would be exported.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("estimatedRecordCount")]
+
+      public long EstimatedRecordCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("estimatedRecordCount")>
+
+      Public Property EstimatedRecordCount As Long
+  overload: Meridian.Storage.Export.ExportValidationResult.EstimatedRecordCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: estimatedRecordCount
+- uid: Meridian.Storage.Export.ExportValidationResult.EstimatedSizeBytes
+  commentId: P:Meridian.Storage.Export.ExportValidationResult.EstimatedSizeBytes
+  id: EstimatedSizeBytes
+  parent: Meridian.Storage.Export.ExportValidationResult
+  langs:
+  - csharp
+  - vb
+  name: EstimatedSizeBytes
+  nameWithType: ExportValidationResult.EstimatedSizeBytes
+  fullName: Meridian.Storage.Export.ExportValidationResult.EstimatedSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedSizeBytes
+    path: ../../src/Meridian.Storage/Export/ExportValidator.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Estimated output size in bytes.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("estimatedSizeBytes")]
+
+      public long EstimatedSizeBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("estimatedSizeBytes")>
+
+      Public Property EstimatedSizeBytes As Long
+  overload: Meridian.Storage.Export.ExportValidationResult.EstimatedSizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: estimatedSizeBytes
+- uid: Meridian.Storage.Export.ExportValidationResult.AvailableDiskSpaceBytes
+  commentId: P:Meridian.Storage.Export.ExportValidationResult.AvailableDiskSpaceBytes
+  id: AvailableDiskSpaceBytes
+  parent: Meridian.Storage.Export.ExportValidationResult
+  langs:
+  - csharp
+  - vb
+  name: AvailableDiskSpaceBytes
+  nameWithType: ExportValidationResult.AvailableDiskSpaceBytes
+  fullName: Meridian.Storage.Export.ExportValidationResult.AvailableDiskSpaceBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvailableDiskSpaceBytes
+    path: ../../src/Meridian.Storage/Export/ExportValidator.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Available disk space at the output path in bytes. -1 when unknown.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("availableDiskSpaceBytes")]
+
+      public long AvailableDiskSpaceBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("availableDiskSpaceBytes")>
+
+      Public Property AvailableDiskSpaceBytes As Long
+  overload: Meridian.Storage.Export.ExportValidationResult.AvailableDiskSpaceBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: availableDiskSpaceBytes
+- uid: Meridian.Storage.Export.ExportValidationResult.Issues
+  commentId: P:Meridian.Storage.Export.ExportValidationResult.Issues
+  id: Issues
+  parent: Meridian.Storage.Export.ExportValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: ExportValidationResult.Issues
+  fullName: Meridian.Storage.Export.ExportValidationResult.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Storage/Export/ExportValidator.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: All issues found during validation.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("issues")]
+
+      public IReadOnlyList<ExportValidationIssue> Issues { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Export.ExportValidationIssue}
+    content.vb: >-
+      <JsonPropertyName("issues")>
+
+      Public Property Issues As IReadOnlyList(Of ExportValidationIssue)
+  overload: Meridian.Storage.Export.ExportValidationResult.Issues*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: issues
+- uid: Meridian.Storage.Export.ExportValidationResult.Errors
+  commentId: P:Meridian.Storage.Export.ExportValidationResult.Errors
+  id: Errors
+  parent: Meridian.Storage.Export.ExportValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Errors
+  nameWithType: ExportValidationResult.Errors
+  fullName: Meridian.Storage.Export.ExportValidationResult.Errors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Errors
+    path: ../../src/Meridian.Storage/Export/ExportValidator.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Issues with <xref href="Meridian.Storage.Export.ExportValidationSeverity.Error" data-throw-if-not-resolved="false"></xref> severity that block the export.
+  example: []
+  syntax:
+    content: >-
+      [JsonIgnore]
+
+      public IEnumerable<ExportValidationIssue> Errors { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Storage.Export.ExportValidationIssue}
+    content.vb: >-
+      <JsonIgnore>
+
+      Public ReadOnly Property Errors As IEnumerable(Of ExportValidationIssue)
+  overload: Meridian.Storage.Export.ExportValidationResult.Errors*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+- uid: Meridian.Storage.Export.ExportValidationResult.Warnings
+  commentId: P:Meridian.Storage.Export.ExportValidationResult.Warnings
+  id: Warnings
+  parent: Meridian.Storage.Export.ExportValidationResult
+  langs:
+  - csharp
+  - vb
+  name: Warnings
+  nameWithType: ExportValidationResult.Warnings
+  fullName: Meridian.Storage.Export.ExportValidationResult.Warnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportValidator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warnings
+    path: ../../src/Meridian.Storage/Export/ExportValidator.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Issues with <xref href="Meridian.Storage.Export.ExportValidationSeverity.Warning" data-throw-if-not-resolved="false"></xref> severity.
+  example: []
+  syntax:
+    content: >-
+      [JsonIgnore]
+
+      public IEnumerable<ExportValidationIssue> Warnings { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Storage.Export.ExportValidationIssue}
+    content.vb: >-
+      <JsonIgnore>
+
+      Public ReadOnly Property Warnings As IEnumerable(Of ExportValidationIssue)
+  overload: Meridian.Storage.Export.ExportValidationResult.Warnings*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonIgnoreAttribute
+    ctor: System.Text.Json.Serialization.JsonIgnoreAttribute.#ctor
+    arguments: []
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Export.ExportValidationResult.IsValid*
+  commentId: Overload:Meridian.Storage.Export.ExportValidationResult.IsValid
+  href: Meridian.Storage.Export.ExportValidationResult.html#Meridian_Storage_Export_ExportValidationResult_IsValid
+  name: IsValid
+  nameWithType: ExportValidationResult.IsValid
+  fullName: Meridian.Storage.Export.ExportValidationResult.IsValid
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Export.ExportValidationResult.EstimatedRecordCount*
+  commentId: Overload:Meridian.Storage.Export.ExportValidationResult.EstimatedRecordCount
+  href: Meridian.Storage.Export.ExportValidationResult.html#Meridian_Storage_Export_ExportValidationResult_EstimatedRecordCount
+  name: EstimatedRecordCount
+  nameWithType: ExportValidationResult.EstimatedRecordCount
+  fullName: Meridian.Storage.Export.ExportValidationResult.EstimatedRecordCount
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Export.ExportValidationResult.EstimatedSizeBytes*
+  commentId: Overload:Meridian.Storage.Export.ExportValidationResult.EstimatedSizeBytes
+  href: Meridian.Storage.Export.ExportValidationResult.html#Meridian_Storage_Export_ExportValidationResult_EstimatedSizeBytes
+  name: EstimatedSizeBytes
+  nameWithType: ExportValidationResult.EstimatedSizeBytes
+  fullName: Meridian.Storage.Export.ExportValidationResult.EstimatedSizeBytes
+- uid: Meridian.Storage.Export.ExportValidationResult.AvailableDiskSpaceBytes*
+  commentId: Overload:Meridian.Storage.Export.ExportValidationResult.AvailableDiskSpaceBytes
+  href: Meridian.Storage.Export.ExportValidationResult.html#Meridian_Storage_Export_ExportValidationResult_AvailableDiskSpaceBytes
+  name: AvailableDiskSpaceBytes
+  nameWithType: ExportValidationResult.AvailableDiskSpaceBytes
+  fullName: Meridian.Storage.Export.ExportValidationResult.AvailableDiskSpaceBytes
+- uid: Meridian.Storage.Export.ExportValidationResult.Issues*
+  commentId: Overload:Meridian.Storage.Export.ExportValidationResult.Issues
+  href: Meridian.Storage.Export.ExportValidationResult.html#Meridian_Storage_Export_ExportValidationResult_Issues
+  name: Issues
+  nameWithType: ExportValidationResult.Issues
+  fullName: Meridian.Storage.Export.ExportValidationResult.Issues
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Export.ExportValidationIssue}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Export.ExportValidationIssue}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ExportValidationIssue>
+  nameWithType: IReadOnlyList<ExportValidationIssue>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Export.ExportValidationIssue>
+  nameWithType.vb: IReadOnlyList(Of ExportValidationIssue)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Export.ExportValidationIssue)
+  name.vb: IReadOnlyList(Of ExportValidationIssue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Export.ExportValidationIssue
+    name: ExportValidationIssue
+    href: Meridian.Storage.Export.ExportValidationIssue.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Export.ExportValidationIssue
+    name: ExportValidationIssue
+    href: Meridian.Storage.Export.ExportValidationIssue.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Export.ExportValidationSeverity.Error
+  commentId: F:Meridian.Storage.Export.ExportValidationSeverity.Error
+  href: Meridian.Storage.Export.ExportValidationSeverity.html#Meridian_Storage_Export_ExportValidationSeverity_Error
+  name: Error
+  nameWithType: ExportValidationSeverity.Error
+  fullName: Meridian.Storage.Export.ExportValidationSeverity.Error
+- uid: Meridian.Storage.Export.ExportValidationResult.Errors*
+  commentId: Overload:Meridian.Storage.Export.ExportValidationResult.Errors
+  href: Meridian.Storage.Export.ExportValidationResult.html#Meridian_Storage_Export_ExportValidationResult_Errors
+  name: Errors
+  nameWithType: ExportValidationResult.Errors
+  fullName: Meridian.Storage.Export.ExportValidationResult.Errors
+- uid: System.Collections.Generic.IEnumerable{Meridian.Storage.Export.ExportValidationIssue}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Storage.Export.ExportValidationIssue}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<ExportValidationIssue>
+  nameWithType: IEnumerable<ExportValidationIssue>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Storage.Export.ExportValidationIssue>
+  nameWithType.vb: IEnumerable(Of ExportValidationIssue)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Storage.Export.ExportValidationIssue)
+  name.vb: IEnumerable(Of ExportValidationIssue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Storage.Export.ExportValidationIssue
+    name: ExportValidationIssue
+    href: Meridian.Storage.Export.ExportValidationIssue.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Export.ExportValidationIssue
+    name: ExportValidationIssue
+    href: Meridian.Storage.Export.ExportValidationIssue.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Export.ExportValidationSeverity.Warning
+  commentId: F:Meridian.Storage.Export.ExportValidationSeverity.Warning
+  href: Meridian.Storage.Export.ExportValidationSeverity.html#Meridian_Storage_Export_ExportValidationSeverity_Warning
+  name: Warning
+  nameWithType: ExportValidationSeverity.Warning
+  fullName: Meridian.Storage.Export.ExportValidationSeverity.Warning
+- uid: Meridian.Storage.Export.ExportValidationResult.Warnings*
+  commentId: Overload:Meridian.Storage.Export.ExportValidationResult.Warnings
+  href: Meridian.Storage.Export.ExportValidationResult.html#Meridian_Storage_Export_ExportValidationResult_Warnings
+  name: Warnings
+  nameWithType: ExportValidationResult.Warnings
+  fullName: Meridian.Storage.Export.ExportValidationResult.Warnings

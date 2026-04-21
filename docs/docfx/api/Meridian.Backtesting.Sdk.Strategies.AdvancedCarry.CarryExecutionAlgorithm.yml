@@ -1,0 +1,217 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  id: CarryExecutionAlgorithm
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Adaptive
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Iceberg
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Pov
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Twap
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Vwap
+  langs:
+  - csharp
+  - vb
+  name: CarryExecutionAlgorithm
+  nameWithType: CarryExecutionAlgorithm
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CarryExecutionAlgorithm
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public enum CarryExecutionAlgorithm
+    content.vb: Public Enum CarryExecutionAlgorithm
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Twap
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Twap
+  id: Twap
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  langs:
+  - csharp
+  - vb
+  name: Twap
+  nameWithType: CarryExecutionAlgorithm.Twap
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Twap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Twap
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: Twap = 0
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Vwap
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Vwap
+  id: Vwap
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  langs:
+  - csharp
+  - vb
+  name: Vwap
+  nameWithType: CarryExecutionAlgorithm.Vwap
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Vwap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vwap
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: Vwap = 1
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Pov
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Pov
+  id: Pov
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  langs:
+  - csharp
+  - vb
+  name: Pov
+  nameWithType: CarryExecutionAlgorithm.Pov
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Pov
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pov
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: Pov = 2
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Adaptive
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Adaptive
+  id: Adaptive
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  langs:
+  - csharp
+  - vb
+  name: Adaptive
+  nameWithType: CarryExecutionAlgorithm.Adaptive
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Adaptive
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Adaptive
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: Adaptive = 3
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Iceberg
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Iceberg
+  id: Iceberg
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  langs:
+  - csharp
+  - vb
+  name: Iceberg
+  nameWithType: CarryExecutionAlgorithm.Iceberg
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.Iceberg
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Iceberg
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: Iceberg = 4
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm.html
+  name: CarryExecutionAlgorithm
+  nameWithType: CarryExecutionAlgorithm
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryExecutionAlgorithm

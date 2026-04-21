@@ -73,8 +73,8 @@
 <title>Operator&#45;&gt;Meridian</title>
 <path fill="none" stroke="#4a5568" d="M414.48,-437.73C414.48,-394.05 414.48,-318 414.48,-318 414.48,-318 953.88,-318 953.88,-318"/>
 <polygon fill="#4a5568" stroke="#4a5568" points="953.88,-321.5 963.88,-318 953.88,-314.5 953.88,-321.5"/>
-<text text-anchor="middle" x="744.5" y="-385.18" font-family="Helvetica,sans-Serif" font-size="9.00">Configures via</text>
-<text text-anchor="middle" x="744.5" y="-375.18" font-family="Helvetica,sans-Serif" font-size="9.00">WPF/Web/CLI</text>
+<text text-anchor="middle" x="738" y="-385.18" font-family="Helvetica,sans-Serif" font-size="9.00">Configures via</text>
+<text text-anchor="middle" x="738" y="-375.18" font-family="Helvetica,sans-Serif" font-size="9.00">WPF/local API/CLI</text>
 </g>
 <!-- Quant -->
 <g id="node2" class="node">
@@ -117,8 +117,8 @@
 <title>DevOps&#45;&gt;PROM</title>
 <path fill="none" stroke="#4a5568" d="M175.91,-427.37C175.91,-345.85 175.91,-169 175.91,-169 175.91,-169 1084.17,-169 1084.17,-169 1084.17,-169 1084.17,-116.27 1084.17,-116.27"/>
 <polygon fill="#4a5568" stroke="#4a5568" points="1087.67,-116.27 1084.17,-106.27 1080.67,-116.27 1087.67,-116.27"/>
-<text text-anchor="middle" x="710.5" y="-286.18" font-family="Helvetica,sans-Serif" font-size="9.00">Monitors</text>
-<text text-anchor="middle" x="710.5" y="-276.18" font-family="Helvetica,sans-Serif" font-size="9.00">infrastructure</text>
+<text text-anchor="middle" x="697.5" y="-286.18" font-family="Helvetica,sans-Serif" font-size="9.00">Monitors</text>
+<text text-anchor="middle" x="697.5" y="-276.18" font-family="Helvetica,sans-Serif" font-size="9.00">infrastructure</text>
 </g>
 <!-- ALP_BROK -->
 <g id="node15" class="node">
@@ -168,8 +168,8 @@
 <title>Meridian&#45;&gt;SS_BROK</title>
 <path fill="none" stroke="#744210" d="M963.67,-265C780.79,-265 489.09,-265 489.09,-265 489.09,-265 489.09,-116.25 489.09,-116.25"/>
 <polygon fill="#744210" stroke="#744210" points="492.59,-116.25 489.09,-106.25 485.59,-116.25 492.59,-116.25"/>
-<text text-anchor="middle" x="523.5" y="-182.18" font-family="Helvetica,sans-Serif" font-size="9.00">Multi&#45;broker</text>
-<text text-anchor="middle" x="523.5" y="-172.18" font-family="Helvetica,sans-Serif" font-size="9.00">routing</text>
+<text text-anchor="middle" x="517.5" y="-182.18" font-family="Helvetica,sans-Serif" font-size="9.00">Multi&#45;broker</text>
+<text text-anchor="middle" x="517.5" y="-172.18" font-family="Helvetica,sans-Serif" font-size="9.00">routing</text>
 </g>
 <!-- LEAN -->
 <g id="node18" class="node">
@@ -185,8 +185,8 @@
 <title>Meridian&#45;&gt;LEAN</title>
 <path fill="none" stroke="#805ad5" d="M963.72,-247C838.28,-247 676.5,-247 676.5,-247 676.5,-247 676.5,-116.32 676.5,-116.32"/>
 <polygon fill="#805ad5" stroke="#805ad5" points="680,-116.32 676.5,-106.32 673,-116.32 680,-116.32"/>
-<text text-anchor="middle" x="634.5" y="-182.18" font-family="Helvetica,sans-Serif" font-size="9.00">Exports Lean</text>
-<text text-anchor="middle" x="634.5" y="-172.18" font-family="Helvetica,sans-Serif" font-size="9.00">format data</text>
+<text text-anchor="middle" x="621.5" y="-182.18" font-family="Helvetica,sans-Serif" font-size="9.00">Exports Lean</text>
+<text text-anchor="middle" x="621.5" y="-172.18" font-family="Helvetica,sans-Serif" font-size="9.00">format data</text>
 </g>
 <!-- PYTHON -->
 <g id="node19" class="node">

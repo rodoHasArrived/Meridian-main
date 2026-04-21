@@ -1,0 +1,724 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Performance.WarmUpStatistics
+  commentId: T:Meridian.Core.Performance.WarmUpStatistics
+  id: WarmUpStatistics
+  parent: Meridian.Core.Performance
+  children:
+  - Meridian.Core.Performance.WarmUpStatistics.#ctor(System.Int32,System.Int32,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  - Meridian.Core.Performance.WarmUpStatistics.AvgLatencyUs
+  - Meridian.Core.Performance.WarmUpStatistics.IterationsCompleted
+  - Meridian.Core.Performance.WarmUpStatistics.IterationsFailed
+  - Meridian.Core.Performance.WarmUpStatistics.MaxLatencyUs
+  - Meridian.Core.Performance.WarmUpStatistics.MinLatencyUs
+  - Meridian.Core.Performance.WarmUpStatistics.P99LatencyUs
+  - Meridian.Core.Performance.WarmUpStatistics.Timestamp
+  - Meridian.Core.Performance.WarmUpStatistics.TotalDurationMs
+  langs:
+  - csharp
+  - vb
+  name: WarmUpStatistics
+  nameWithType: WarmUpStatistics
+  fullName: Meridian.Core.Performance.WarmUpStatistics
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WarmUpStatistics
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Statistics from a connection warm-up operation.
+  example: []
+  syntax:
+    content: 'public readonly record struct WarmUpStatistics : IEquatable<WarmUpStatistics>'
+    content.vb: Public Structure WarmUpStatistics Implements IEquatable(Of WarmUpStatistics)
+  implements:
+  - System.IEquatable{Meridian.Core.Performance.WarmUpStatistics}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Core.Performance.WarmUpStatistics.#ctor(System.Int32,System.Int32,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  commentId: M:Meridian.Core.Performance.WarmUpStatistics.#ctor(System.Int32,System.Int32,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  id: '#ctor(System.Int32,System.Int32,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)'
+  parent: Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: WarmUpStatistics(int, int, double, double, double, double, double, DateTimeOffset)
+  nameWithType: WarmUpStatistics.WarmUpStatistics(int, int, double, double, double, double, double, DateTimeOffset)
+  fullName: Meridian.Core.Performance.WarmUpStatistics.WarmUpStatistics(int, int, double, double, double, double, double, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Statistics from a connection warm-up operation.
+  example: []
+  syntax:
+    content: public WarmUpStatistics(int IterationsCompleted, int IterationsFailed, double TotalDurationMs, double MinLatencyUs, double MaxLatencyUs, double AvgLatencyUs, double P99LatencyUs, DateTimeOffset Timestamp)
+    parameters:
+    - id: IterationsCompleted
+      type: System.Int32
+    - id: IterationsFailed
+      type: System.Int32
+    - id: TotalDurationMs
+      type: System.Double
+    - id: MinLatencyUs
+      type: System.Double
+    - id: MaxLatencyUs
+      type: System.Double
+    - id: AvgLatencyUs
+      type: System.Double
+    - id: P99LatencyUs
+      type: System.Double
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(IterationsCompleted As Integer, IterationsFailed As Integer, TotalDurationMs As Double, MinLatencyUs As Double, MaxLatencyUs As Double, AvgLatencyUs As Double, P99LatencyUs As Double, Timestamp As DateTimeOffset)
+  overload: Meridian.Core.Performance.WarmUpStatistics.#ctor*
+  nameWithType.vb: WarmUpStatistics.New(Integer, Integer, Double, Double, Double, Double, Double, DateTimeOffset)
+  fullName.vb: Meridian.Core.Performance.WarmUpStatistics.New(Integer, Integer, Double, Double, Double, Double, Double, System.DateTimeOffset)
+  name.vb: New(Integer, Integer, Double, Double, Double, Double, Double, DateTimeOffset)
+- uid: Meridian.Core.Performance.WarmUpStatistics.IterationsCompleted
+  commentId: P:Meridian.Core.Performance.WarmUpStatistics.IterationsCompleted
+  id: IterationsCompleted
+  parent: Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: IterationsCompleted
+  nameWithType: WarmUpStatistics.IterationsCompleted
+  fullName: Meridian.Core.Performance.WarmUpStatistics.IterationsCompleted
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IterationsCompleted
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public int IterationsCompleted { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property IterationsCompleted As Integer
+  overload: Meridian.Core.Performance.WarmUpStatistics.IterationsCompleted*
+- uid: Meridian.Core.Performance.WarmUpStatistics.IterationsFailed
+  commentId: P:Meridian.Core.Performance.WarmUpStatistics.IterationsFailed
+  id: IterationsFailed
+  parent: Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: IterationsFailed
+  nameWithType: WarmUpStatistics.IterationsFailed
+  fullName: Meridian.Core.Performance.WarmUpStatistics.IterationsFailed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IterationsFailed
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public int IterationsFailed { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property IterationsFailed As Integer
+  overload: Meridian.Core.Performance.WarmUpStatistics.IterationsFailed*
+- uid: Meridian.Core.Performance.WarmUpStatistics.TotalDurationMs
+  commentId: P:Meridian.Core.Performance.WarmUpStatistics.TotalDurationMs
+  id: TotalDurationMs
+  parent: Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalDurationMs
+  nameWithType: WarmUpStatistics.TotalDurationMs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.TotalDurationMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalDurationMs
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public double TotalDurationMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property TotalDurationMs As Double
+  overload: Meridian.Core.Performance.WarmUpStatistics.TotalDurationMs*
+- uid: Meridian.Core.Performance.WarmUpStatistics.MinLatencyUs
+  commentId: P:Meridian.Core.Performance.WarmUpStatistics.MinLatencyUs
+  id: MinLatencyUs
+  parent: Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: MinLatencyUs
+  nameWithType: WarmUpStatistics.MinLatencyUs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.MinLatencyUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinLatencyUs
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public double MinLatencyUs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MinLatencyUs As Double
+  overload: Meridian.Core.Performance.WarmUpStatistics.MinLatencyUs*
+- uid: Meridian.Core.Performance.WarmUpStatistics.MaxLatencyUs
+  commentId: P:Meridian.Core.Performance.WarmUpStatistics.MaxLatencyUs
+  id: MaxLatencyUs
+  parent: Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: MaxLatencyUs
+  nameWithType: WarmUpStatistics.MaxLatencyUs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.MaxLatencyUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxLatencyUs
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public double MaxLatencyUs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxLatencyUs As Double
+  overload: Meridian.Core.Performance.WarmUpStatistics.MaxLatencyUs*
+- uid: Meridian.Core.Performance.WarmUpStatistics.AvgLatencyUs
+  commentId: P:Meridian.Core.Performance.WarmUpStatistics.AvgLatencyUs
+  id: AvgLatencyUs
+  parent: Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: AvgLatencyUs
+  nameWithType: WarmUpStatistics.AvgLatencyUs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.AvgLatencyUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvgLatencyUs
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public double AvgLatencyUs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AvgLatencyUs As Double
+  overload: Meridian.Core.Performance.WarmUpStatistics.AvgLatencyUs*
+- uid: Meridian.Core.Performance.WarmUpStatistics.P99LatencyUs
+  commentId: P:Meridian.Core.Performance.WarmUpStatistics.P99LatencyUs
+  id: P99LatencyUs
+  parent: Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: P99LatencyUs
+  nameWithType: WarmUpStatistics.P99LatencyUs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.P99LatencyUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P99LatencyUs
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public double P99LatencyUs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P99LatencyUs As Double
+  overload: Meridian.Core.Performance.WarmUpStatistics.P99LatencyUs*
+- uid: Meridian.Core.Performance.WarmUpStatistics.Timestamp
+  commentId: P:Meridian.Core.Performance.WarmUpStatistics.Timestamp
+  id: Timestamp
+  parent: Meridian.Core.Performance.WarmUpStatistics
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: WarmUpStatistics.Timestamp
+  fullName: Meridian.Core.Performance.WarmUpStatistics.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Core.Performance.WarmUpStatistics.Timestamp*
+references:
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  href: Meridian.html
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+- uid: System.IEquatable{Meridian.Core.Performance.WarmUpStatistics}
+  commentId: T:System.IEquatable{Meridian.Core.Performance.WarmUpStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<WarmUpStatistics>
+  nameWithType: IEquatable<WarmUpStatistics>
+  fullName: System.IEquatable<Meridian.Core.Performance.WarmUpStatistics>
+  nameWithType.vb: IEquatable(Of WarmUpStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Core.Performance.WarmUpStatistics)
+  name.vb: IEquatable(Of WarmUpStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Core.Performance.WarmUpStatistics
+    name: WarmUpStatistics
+    href: Meridian.Core.Performance.WarmUpStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Core.Performance.WarmUpStatistics
+    name: WarmUpStatistics
+    href: Meridian.Core.Performance.WarmUpStatistics.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Core.Performance.WarmUpStatistics.#ctor*
+  commentId: Overload:Meridian.Core.Performance.WarmUpStatistics.#ctor
+  href: Meridian.Core.Performance.WarmUpStatistics.html#Meridian_Core_Performance_WarmUpStatistics__ctor_System_Int32_System_Int32_System_Double_System_Double_System_Double_System_Double_System_Double_System_DateTimeOffset_
+  name: WarmUpStatistics
+  nameWithType: WarmUpStatistics.WarmUpStatistics
+  fullName: Meridian.Core.Performance.WarmUpStatistics.WarmUpStatistics
+  nameWithType.vb: WarmUpStatistics.New
+  fullName.vb: Meridian.Core.Performance.WarmUpStatistics.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Core.Performance.WarmUpStatistics.IterationsCompleted*
+  commentId: Overload:Meridian.Core.Performance.WarmUpStatistics.IterationsCompleted
+  href: Meridian.Core.Performance.WarmUpStatistics.html#Meridian_Core_Performance_WarmUpStatistics_IterationsCompleted
+  name: IterationsCompleted
+  nameWithType: WarmUpStatistics.IterationsCompleted
+  fullName: Meridian.Core.Performance.WarmUpStatistics.IterationsCompleted
+- uid: Meridian.Core.Performance.WarmUpStatistics.IterationsFailed*
+  commentId: Overload:Meridian.Core.Performance.WarmUpStatistics.IterationsFailed
+  href: Meridian.Core.Performance.WarmUpStatistics.html#Meridian_Core_Performance_WarmUpStatistics_IterationsFailed
+  name: IterationsFailed
+  nameWithType: WarmUpStatistics.IterationsFailed
+  fullName: Meridian.Core.Performance.WarmUpStatistics.IterationsFailed
+- uid: Meridian.Core.Performance.WarmUpStatistics.TotalDurationMs*
+  commentId: Overload:Meridian.Core.Performance.WarmUpStatistics.TotalDurationMs
+  href: Meridian.Core.Performance.WarmUpStatistics.html#Meridian_Core_Performance_WarmUpStatistics_TotalDurationMs
+  name: TotalDurationMs
+  nameWithType: WarmUpStatistics.TotalDurationMs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.TotalDurationMs
+- uid: Meridian.Core.Performance.WarmUpStatistics.MinLatencyUs*
+  commentId: Overload:Meridian.Core.Performance.WarmUpStatistics.MinLatencyUs
+  href: Meridian.Core.Performance.WarmUpStatistics.html#Meridian_Core_Performance_WarmUpStatistics_MinLatencyUs
+  name: MinLatencyUs
+  nameWithType: WarmUpStatistics.MinLatencyUs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.MinLatencyUs
+- uid: Meridian.Core.Performance.WarmUpStatistics.MaxLatencyUs*
+  commentId: Overload:Meridian.Core.Performance.WarmUpStatistics.MaxLatencyUs
+  href: Meridian.Core.Performance.WarmUpStatistics.html#Meridian_Core_Performance_WarmUpStatistics_MaxLatencyUs
+  name: MaxLatencyUs
+  nameWithType: WarmUpStatistics.MaxLatencyUs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.MaxLatencyUs
+- uid: Meridian.Core.Performance.WarmUpStatistics.AvgLatencyUs*
+  commentId: Overload:Meridian.Core.Performance.WarmUpStatistics.AvgLatencyUs
+  href: Meridian.Core.Performance.WarmUpStatistics.html#Meridian_Core_Performance_WarmUpStatistics_AvgLatencyUs
+  name: AvgLatencyUs
+  nameWithType: WarmUpStatistics.AvgLatencyUs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.AvgLatencyUs
+- uid: Meridian.Core.Performance.WarmUpStatistics.P99LatencyUs*
+  commentId: Overload:Meridian.Core.Performance.WarmUpStatistics.P99LatencyUs
+  href: Meridian.Core.Performance.WarmUpStatistics.html#Meridian_Core_Performance_WarmUpStatistics_P99LatencyUs
+  name: P99LatencyUs
+  nameWithType: WarmUpStatistics.P99LatencyUs
+  fullName: Meridian.Core.Performance.WarmUpStatistics.P99LatencyUs
+- uid: Meridian.Core.Performance.WarmUpStatistics.Timestamp*
+  commentId: Overload:Meridian.Core.Performance.WarmUpStatistics.Timestamp
+  href: Meridian.Core.Performance.WarmUpStatistics.html#Meridian_Core_Performance_WarmUpStatistics_Timestamp
+  name: Timestamp
+  nameWithType: WarmUpStatistics.Timestamp
+  fullName: Meridian.Core.Performance.WarmUpStatistics.Timestamp

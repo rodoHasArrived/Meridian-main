@@ -1,0 +1,592 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ledger.LedgerBookKey
+  commentId: T:Meridian.Ledger.LedgerBookKey
+  id: LedgerBookKey
+  parent: Meridian.Ledger
+  children:
+  - Meridian.Ledger.LedgerBookKey.#ctor(System.String,System.String,Meridian.Ledger.LedgerViewKind,System.String)
+  - Meridian.Ledger.LedgerBookKey.LedgerBook
+  - Meridian.Ledger.LedgerBookKey.LedgerView
+  - Meridian.Ledger.LedgerBookKey.Normalize
+  - Meridian.Ledger.LedgerBookKey.ProjectId
+  - Meridian.Ledger.LedgerBookKey.ScenarioId
+  langs:
+  - csharp
+  - vb
+  name: LedgerBookKey
+  nameWithType: LedgerBookKey
+  fullName: Meridian.Ledger.LedgerBookKey
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerBookKey.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerBookKey
+    path: ../../src/Meridian.Ledger/LedgerBookKey.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Unique key for one logical ledger inside a project-scoped ledger collection.
+  example: []
+  syntax:
+    content: 'public sealed record LedgerBookKey : IEquatable<LedgerBookKey>'
+    content.vb: Public NotInheritable Class LedgerBookKey Implements IEquatable(Of LedgerBookKey)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ledger.LedgerBookKey}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ledger.LedgerBookKey.#ctor(System.String,System.String,Meridian.Ledger.LedgerViewKind,System.String)
+  commentId: M:Meridian.Ledger.LedgerBookKey.#ctor(System.String,System.String,Meridian.Ledger.LedgerViewKind,System.String)
+  id: '#ctor(System.String,System.String,Meridian.Ledger.LedgerViewKind,System.String)'
+  parent: Meridian.Ledger.LedgerBookKey
+  langs:
+  - csharp
+  - vb
+  name: LedgerBookKey(string, string, LedgerViewKind, string?)
+  nameWithType: LedgerBookKey.LedgerBookKey(string, string, LedgerViewKind, string?)
+  fullName: Meridian.Ledger.LedgerBookKey.LedgerBookKey(string, string, Meridian.Ledger.LedgerViewKind, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerBookKey.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ledger/LedgerBookKey.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Unique key for one logical ledger inside a project-scoped ledger collection.
+  example: []
+  syntax:
+    content: public LedgerBookKey(string ProjectId, string LedgerBook, LedgerViewKind LedgerView = LedgerViewKind.Actual, string? ScenarioId = null)
+    parameters:
+    - id: ProjectId
+      type: System.String
+    - id: LedgerBook
+      type: System.String
+    - id: LedgerView
+      type: Meridian.Ledger.LedgerViewKind
+    - id: ScenarioId
+      type: System.String
+    content.vb: Public Sub New(ProjectId As String, LedgerBook As String, LedgerView As LedgerViewKind = LedgerViewKind.Actual, ScenarioId As String = Nothing)
+  overload: Meridian.Ledger.LedgerBookKey.#ctor*
+  nameWithType.vb: LedgerBookKey.New(String, String, LedgerViewKind, String)
+  fullName.vb: Meridian.Ledger.LedgerBookKey.New(String, String, Meridian.Ledger.LedgerViewKind, String)
+  name.vb: New(String, String, LedgerViewKind, String)
+- uid: Meridian.Ledger.LedgerBookKey.ProjectId
+  commentId: P:Meridian.Ledger.LedgerBookKey.ProjectId
+  id: ProjectId
+  parent: Meridian.Ledger.LedgerBookKey
+  langs:
+  - csharp
+  - vb
+  name: ProjectId
+  nameWithType: LedgerBookKey.ProjectId
+  fullName: Meridian.Ledger.LedgerBookKey.ProjectId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerBookKey.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectId
+    path: ../../src/Meridian.Ledger/LedgerBookKey.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public string ProjectId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProjectId As String
+  overload: Meridian.Ledger.LedgerBookKey.ProjectId*
+- uid: Meridian.Ledger.LedgerBookKey.LedgerBook
+  commentId: P:Meridian.Ledger.LedgerBookKey.LedgerBook
+  id: LedgerBook
+  parent: Meridian.Ledger.LedgerBookKey
+  langs:
+  - csharp
+  - vb
+  name: LedgerBook
+  nameWithType: LedgerBookKey.LedgerBook
+  fullName: Meridian.Ledger.LedgerBookKey.LedgerBook
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerBookKey.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerBook
+    path: ../../src/Meridian.Ledger/LedgerBookKey.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public string LedgerBook { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LedgerBook As String
+  overload: Meridian.Ledger.LedgerBookKey.LedgerBook*
+- uid: Meridian.Ledger.LedgerBookKey.LedgerView
+  commentId: P:Meridian.Ledger.LedgerBookKey.LedgerView
+  id: LedgerView
+  parent: Meridian.Ledger.LedgerBookKey
+  langs:
+  - csharp
+  - vb
+  name: LedgerView
+  nameWithType: LedgerBookKey.LedgerView
+  fullName: Meridian.Ledger.LedgerBookKey.LedgerView
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerBookKey.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerView
+    path: ../../src/Meridian.Ledger/LedgerBookKey.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public LedgerViewKind LedgerView { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Ledger.LedgerViewKind
+    content.vb: Public Property LedgerView As LedgerViewKind
+  overload: Meridian.Ledger.LedgerBookKey.LedgerView*
+- uid: Meridian.Ledger.LedgerBookKey.ScenarioId
+  commentId: P:Meridian.Ledger.LedgerBookKey.ScenarioId
+  id: ScenarioId
+  parent: Meridian.Ledger.LedgerBookKey
+  langs:
+  - csharp
+  - vb
+  name: ScenarioId
+  nameWithType: LedgerBookKey.ScenarioId
+  fullName: Meridian.Ledger.LedgerBookKey.ScenarioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerBookKey.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScenarioId
+    path: ../../src/Meridian.Ledger/LedgerBookKey.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public string? ScenarioId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScenarioId As String
+  overload: Meridian.Ledger.LedgerBookKey.ScenarioId*
+- uid: Meridian.Ledger.LedgerBookKey.Normalize
+  commentId: M:Meridian.Ledger.LedgerBookKey.Normalize
+  id: Normalize
+  parent: Meridian.Ledger.LedgerBookKey
+  langs:
+  - csharp
+  - vb
+  name: Normalize()
+  nameWithType: LedgerBookKey.Normalize()
+  fullName: Meridian.Ledger.LedgerBookKey.Normalize()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerBookKey.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Normalize
+    path: ../../src/Meridian.Ledger/LedgerBookKey.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public LedgerBookKey Normalize()
+    return:
+      type: Meridian.Ledger.LedgerBookKey
+    content.vb: Public Function Normalize() As LedgerBookKey
+  overload: Meridian.Ledger.LedgerBookKey.Normalize*
+references:
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ledger.LedgerBookKey}
+  commentId: T:System.IEquatable{Meridian.Ledger.LedgerBookKey}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<LedgerBookKey>
+  nameWithType: IEquatable<LedgerBookKey>
+  fullName: System.IEquatable<Meridian.Ledger.LedgerBookKey>
+  nameWithType.vb: IEquatable(Of LedgerBookKey)
+  fullName.vb: System.IEquatable(Of Meridian.Ledger.LedgerBookKey)
+  name.vb: IEquatable(Of LedgerBookKey)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ledger.LedgerBookKey
+    name: LedgerBookKey
+    href: Meridian.Ledger.LedgerBookKey.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerBookKey
+    name: LedgerBookKey
+    href: Meridian.Ledger.LedgerBookKey.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ledger.LedgerBookKey.#ctor*
+  commentId: Overload:Meridian.Ledger.LedgerBookKey.#ctor
+  href: Meridian.Ledger.LedgerBookKey.html#Meridian_Ledger_LedgerBookKey__ctor_System_String_System_String_Meridian_Ledger_LedgerViewKind_System_String_
+  name: LedgerBookKey
+  nameWithType: LedgerBookKey.LedgerBookKey
+  fullName: Meridian.Ledger.LedgerBookKey.LedgerBookKey
+  nameWithType.vb: LedgerBookKey.New
+  fullName.vb: Meridian.Ledger.LedgerBookKey.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ledger.LedgerViewKind
+  commentId: T:Meridian.Ledger.LedgerViewKind
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerViewKind.html
+  name: LedgerViewKind
+  nameWithType: LedgerViewKind
+  fullName: Meridian.Ledger.LedgerViewKind
+- uid: Meridian.Ledger.LedgerBookKey.ProjectId*
+  commentId: Overload:Meridian.Ledger.LedgerBookKey.ProjectId
+  href: Meridian.Ledger.LedgerBookKey.html#Meridian_Ledger_LedgerBookKey_ProjectId
+  name: ProjectId
+  nameWithType: LedgerBookKey.ProjectId
+  fullName: Meridian.Ledger.LedgerBookKey.ProjectId
+- uid: Meridian.Ledger.LedgerBookKey.LedgerBook*
+  commentId: Overload:Meridian.Ledger.LedgerBookKey.LedgerBook
+  href: Meridian.Ledger.LedgerBookKey.html#Meridian_Ledger_LedgerBookKey_LedgerBook
+  name: LedgerBook
+  nameWithType: LedgerBookKey.LedgerBook
+  fullName: Meridian.Ledger.LedgerBookKey.LedgerBook
+- uid: Meridian.Ledger.LedgerBookKey.LedgerView*
+  commentId: Overload:Meridian.Ledger.LedgerBookKey.LedgerView
+  href: Meridian.Ledger.LedgerBookKey.html#Meridian_Ledger_LedgerBookKey_LedgerView
+  name: LedgerView
+  nameWithType: LedgerBookKey.LedgerView
+  fullName: Meridian.Ledger.LedgerBookKey.LedgerView
+- uid: Meridian.Ledger.LedgerBookKey.ScenarioId*
+  commentId: Overload:Meridian.Ledger.LedgerBookKey.ScenarioId
+  href: Meridian.Ledger.LedgerBookKey.html#Meridian_Ledger_LedgerBookKey_ScenarioId
+  name: ScenarioId
+  nameWithType: LedgerBookKey.ScenarioId
+  fullName: Meridian.Ledger.LedgerBookKey.ScenarioId
+- uid: Meridian.Ledger.LedgerBookKey.Normalize*
+  commentId: Overload:Meridian.Ledger.LedgerBookKey.Normalize
+  href: Meridian.Ledger.LedgerBookKey.html#Meridian_Ledger_LedgerBookKey_Normalize
+  name: Normalize
+  nameWithType: LedgerBookKey.Normalize
+  fullName: Meridian.Ledger.LedgerBookKey.Normalize
+- uid: Meridian.Ledger.LedgerBookKey
+  commentId: T:Meridian.Ledger.LedgerBookKey
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerBookKey.html
+  name: LedgerBookKey
+  nameWithType: LedgerBookKey
+  fullName: Meridian.Ledger.LedgerBookKey

@@ -1,0 +1,1135 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.PortfolioSummary
+  commentId: T:Meridian.Contracts.Workstation.PortfolioSummary
+  id: PortfolioSummary
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.PortfolioSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32)
+  - Meridian.Contracts.Workstation.PortfolioSummary.AsOf
+  - Meridian.Contracts.Workstation.PortfolioSummary.Cash
+  - Meridian.Contracts.Workstation.PortfolioSummary.Commissions
+  - Meridian.Contracts.Workstation.PortfolioSummary.Financing
+  - Meridian.Contracts.Workstation.PortfolioSummary.GrossExposure
+  - Meridian.Contracts.Workstation.PortfolioSummary.LongMarketValue
+  - Meridian.Contracts.Workstation.PortfolioSummary.NetExposure
+  - Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId
+  - Meridian.Contracts.Workstation.PortfolioSummary.Positions
+  - Meridian.Contracts.Workstation.PortfolioSummary.RealizedPnl
+  - Meridian.Contracts.Workstation.PortfolioSummary.RunId
+  - Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount
+  - Meridian.Contracts.Workstation.PortfolioSummary.SecurityResolvedCount
+  - Meridian.Contracts.Workstation.PortfolioSummary.ShortMarketValue
+  - Meridian.Contracts.Workstation.PortfolioSummary.TotalEquity
+  - Meridian.Contracts.Workstation.PortfolioSummary.UnrealizedPnl
+  langs:
+  - csharp
+  - vb
+  name: PortfolioSummary
+  nameWithType: PortfolioSummary
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioSummary
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared portfolio rollup for workstation research and trading surfaces.
+  example: []
+  syntax:
+    content: 'public sealed record PortfolioSummary : IEquatable<PortfolioSummary>'
+    content.vb: Public NotInheritable Class PortfolioSummary Implements IEquatable(Of PortfolioSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.PortfolioSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32)
+  commentId: M:Meridian.Contracts.Workstation.PortfolioSummary.#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32)
+  id: '#ctor(System.String,System.String,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary},System.Int32,System.Int32)'
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: PortfolioSummary(string, string, DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<PortfolioPositionSummary>, int, int)
+  nameWithType: PortfolioSummary.PortfolioSummary(string, string, DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<PortfolioPositionSummary>, int, int)
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioSummary(string, string, System.DateTimeOffset, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.PortfolioPositionSummary>, int, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared portfolio rollup for workstation research and trading surfaces.
+  example: []
+  syntax:
+    content: public PortfolioSummary(string PortfolioId, string RunId, DateTimeOffset AsOf, decimal Cash, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, decimal RealizedPnl, decimal UnrealizedPnl, decimal Commissions, decimal Financing, IReadOnlyList<PortfolioPositionSummary> Positions, int SecurityResolvedCount = 0, int SecurityMissingCount = 0)
+    parameters:
+    - id: PortfolioId
+      type: System.String
+    - id: RunId
+      type: System.String
+    - id: AsOf
+      type: System.DateTimeOffset
+    - id: Cash
+      type: System.Decimal
+    - id: LongMarketValue
+      type: System.Decimal
+    - id: ShortMarketValue
+      type: System.Decimal
+    - id: GrossExposure
+      type: System.Decimal
+    - id: NetExposure
+      type: System.Decimal
+    - id: TotalEquity
+      type: System.Decimal
+    - id: RealizedPnl
+      type: System.Decimal
+    - id: UnrealizedPnl
+      type: System.Decimal
+    - id: Commissions
+      type: System.Decimal
+    - id: Financing
+      type: System.Decimal
+    - id: Positions
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary}
+    - id: SecurityResolvedCount
+      type: System.Int32
+    - id: SecurityMissingCount
+      type: System.Int32
+    content.vb: Public Sub New(PortfolioId As String, RunId As String, AsOf As DateTimeOffset, Cash As Decimal, LongMarketValue As Decimal, ShortMarketValue As Decimal, GrossExposure As Decimal, NetExposure As Decimal, TotalEquity As Decimal, RealizedPnl As Decimal, UnrealizedPnl As Decimal, Commissions As Decimal, Financing As Decimal, Positions As IReadOnlyList(Of PortfolioPositionSummary), SecurityResolvedCount As Integer = 0, SecurityMissingCount As Integer = 0)
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.#ctor*
+  nameWithType.vb: PortfolioSummary.New(String, String, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of PortfolioPositionSummary), Integer, Integer)
+  fullName.vb: Meridian.Contracts.Workstation.PortfolioSummary.New(String, String, System.DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.PortfolioPositionSummary), Integer, Integer)
+  name.vb: New(String, String, DateTimeOffset, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of PortfolioPositionSummary), Integer, Integer)
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId
+  id: PortfolioId
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: PortfolioId
+  nameWithType: PortfolioSummary.PortfolioId
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string PortfolioId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PortfolioId As String
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.RunId
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: PortfolioSummary.RunId
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.RunId*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.AsOf
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.AsOf
+  id: AsOf
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: PortfolioSummary.AsOf
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.AsOf*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.Cash
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.Cash
+  id: Cash
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: PortfolioSummary.Cash
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.Cash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal Cash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Cash As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.Cash*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.LongMarketValue
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.LongMarketValue
+  id: LongMarketValue
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: LongMarketValue
+  nameWithType: PortfolioSummary.LongMarketValue
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.LongMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LongMarketValue
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal LongMarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property LongMarketValue As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.LongMarketValue*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.ShortMarketValue
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.ShortMarketValue
+  id: ShortMarketValue
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: ShortMarketValue
+  nameWithType: PortfolioSummary.ShortMarketValue
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.ShortMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortMarketValue
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal ShortMarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ShortMarketValue As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.ShortMarketValue*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.GrossExposure
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.GrossExposure
+  id: GrossExposure
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: GrossExposure
+  nameWithType: PortfolioSummary.GrossExposure
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.GrossExposure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GrossExposure
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal GrossExposure { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property GrossExposure As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.GrossExposure*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.NetExposure
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.NetExposure
+  id: NetExposure
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: NetExposure
+  nameWithType: PortfolioSummary.NetExposure
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.NetExposure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetExposure
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal NetExposure { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetExposure As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.NetExposure*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.TotalEquity
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.TotalEquity
+  id: TotalEquity
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalEquity
+  nameWithType: PortfolioSummary.TotalEquity
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.TotalEquity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEquity
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalEquity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalEquity As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.TotalEquity*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.RealizedPnl
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.RealizedPnl
+  id: RealizedPnl
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnl
+  nameWithType: PortfolioSummary.RealizedPnl
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.RealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnl
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal RealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedPnl As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.RealizedPnl*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.UnrealizedPnl
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.UnrealizedPnl
+  id: UnrealizedPnl
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl
+  nameWithType: PortfolioSummary.UnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.UnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal UnrealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnrealizedPnl As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.UnrealizedPnl*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.Commissions
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.Commissions
+  id: Commissions
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: Commissions
+  nameWithType: PortfolioSummary.Commissions
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.Commissions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Commissions
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal Commissions { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Commissions As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.Commissions*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.Financing
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.Financing
+  id: Financing
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: Financing
+  nameWithType: PortfolioSummary.Financing
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.Financing
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Financing
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal Financing { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Financing As Decimal
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.Financing*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.Positions
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.Positions
+  id: Positions
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: Positions
+  nameWithType: PortfolioSummary.Positions
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.Positions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Positions
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<PortfolioPositionSummary> Positions { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary}
+    content.vb: Public Property Positions As IReadOnlyList(Of PortfolioPositionSummary)
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.Positions*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.SecurityResolvedCount
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.SecurityResolvedCount
+  id: SecurityResolvedCount
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: SecurityResolvedCount
+  nameWithType: PortfolioSummary.SecurityResolvedCount
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.SecurityResolvedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityResolvedCount
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int SecurityResolvedCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SecurityResolvedCount As Integer
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.SecurityResolvedCount*
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount
+  commentId: P:Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount
+  id: SecurityMissingCount
+  parent: Meridian.Contracts.Workstation.PortfolioSummary
+  langs:
+  - csharp
+  - vb
+  name: SecurityMissingCount
+  nameWithType: PortfolioSummary.SecurityMissingCount
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMissingCount
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int SecurityMissingCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SecurityMissingCount As Integer
+  overload: Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.PortfolioSummary}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.PortfolioSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PortfolioSummary>
+  nameWithType: IEquatable<PortfolioSummary>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.PortfolioSummary>
+  nameWithType.vb: IEquatable(Of PortfolioSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.PortfolioSummary)
+  name.vb: IEquatable(Of PortfolioSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.PortfolioSummary
+    name: PortfolioSummary
+    href: Meridian.Contracts.Workstation.PortfolioSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.PortfolioSummary
+    name: PortfolioSummary
+    href: Meridian.Contracts.Workstation.PortfolioSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.#ctor
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary__ctor_System_String_System_String_System_DateTimeOffset_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_PortfolioPositionSummary__System_Int32_System_Int32_
+  name: PortfolioSummary
+  nameWithType: PortfolioSummary.PortfolioSummary
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioSummary
+  nameWithType.vb: PortfolioSummary.New
+  fullName.vb: Meridian.Contracts.Workstation.PortfolioSummary.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.PortfolioPositionSummary}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<PortfolioPositionSummary>
+  nameWithType: IReadOnlyList<PortfolioPositionSummary>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.PortfolioPositionSummary>
+  nameWithType.vb: IReadOnlyList(Of PortfolioPositionSummary)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.PortfolioPositionSummary)
+  name.vb: IReadOnlyList(Of PortfolioPositionSummary)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.PortfolioPositionSummary
+    name: PortfolioPositionSummary
+    href: Meridian.Contracts.Workstation.PortfolioPositionSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.PortfolioPositionSummary
+    name: PortfolioPositionSummary
+    href: Meridian.Contracts.Workstation.PortfolioPositionSummary.html
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_PortfolioId
+  name: PortfolioId
+  nameWithType: PortfolioSummary.PortfolioId
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.PortfolioId
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.RunId
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_RunId
+  name: RunId
+  nameWithType: PortfolioSummary.RunId
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.RunId
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.AsOf*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.AsOf
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_AsOf
+  name: AsOf
+  nameWithType: PortfolioSummary.AsOf
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.AsOf
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.Cash*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.Cash
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_Cash
+  name: Cash
+  nameWithType: PortfolioSummary.Cash
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.Cash
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.LongMarketValue*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.LongMarketValue
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_LongMarketValue
+  name: LongMarketValue
+  nameWithType: PortfolioSummary.LongMarketValue
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.LongMarketValue
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.ShortMarketValue*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.ShortMarketValue
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_ShortMarketValue
+  name: ShortMarketValue
+  nameWithType: PortfolioSummary.ShortMarketValue
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.ShortMarketValue
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.GrossExposure*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.GrossExposure
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_GrossExposure
+  name: GrossExposure
+  nameWithType: PortfolioSummary.GrossExposure
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.GrossExposure
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.NetExposure*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.NetExposure
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_NetExposure
+  name: NetExposure
+  nameWithType: PortfolioSummary.NetExposure
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.NetExposure
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.TotalEquity*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.TotalEquity
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_TotalEquity
+  name: TotalEquity
+  nameWithType: PortfolioSummary.TotalEquity
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.TotalEquity
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.RealizedPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.RealizedPnl
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_RealizedPnl
+  name: RealizedPnl
+  nameWithType: PortfolioSummary.RealizedPnl
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.RealizedPnl
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.UnrealizedPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.UnrealizedPnl
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: PortfolioSummary.UnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.UnrealizedPnl
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.Commissions*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.Commissions
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_Commissions
+  name: Commissions
+  nameWithType: PortfolioSummary.Commissions
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.Commissions
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.Financing*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.Financing
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_Financing
+  name: Financing
+  nameWithType: PortfolioSummary.Financing
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.Financing
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.Positions*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.Positions
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_Positions
+  name: Positions
+  nameWithType: PortfolioSummary.Positions
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.Positions
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.SecurityResolvedCount*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.SecurityResolvedCount
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_SecurityResolvedCount
+  name: SecurityResolvedCount
+  nameWithType: PortfolioSummary.SecurityResolvedCount
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.SecurityResolvedCount
+- uid: Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount*
+  commentId: Overload:Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount
+  href: Meridian.Contracts.Workstation.PortfolioSummary.html#Meridian_Contracts_Workstation_PortfolioSummary_SecurityMissingCount
+  name: SecurityMissingCount
+  nameWithType: PortfolioSummary.SecurityMissingCount
+  fullName: Meridian.Contracts.Workstation.PortfolioSummary.SecurityMissingCount

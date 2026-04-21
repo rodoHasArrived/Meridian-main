@@ -4,7 +4,9 @@ using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
+using System.Windows.Controls;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
@@ -237,5 +239,26 @@ public sealed class CashFlowViewModelTests
 
         vm.BucketSummaryText.Should().NotBe("-");
         vm.BucketSummaryText.Should().Contain("d"); // bucket day width label
+    }
+
+    [Fact]
+    public void OpenSelectedSecurityCommand_NavigatesToSecurityMasterForSelectedSymbol()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var navigation = NavigationService.Instance;
+            navigation.ResetForTests();
+            navigation.Initialize(new Frame());
+
+            var (vm, runId) = CreateWithTradeRun();
+            vm.Parameter = runId;
+            await Task.Delay(100);
+
+            vm.SelectedEntry.Should().NotBeNull();
+            vm.OpenSelectedSecurityCommand.Execute(null);
+
+            navigation.GetCurrentPageTag().Should().Be("SecurityMaster");
+            navigation.GetBreadcrumbs().First().Parameter.Should().Be(vm.SelectedEntry!.Symbol);
+        });
     }
 }

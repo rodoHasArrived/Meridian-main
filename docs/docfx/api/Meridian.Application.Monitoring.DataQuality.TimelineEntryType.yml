@@ -1,0 +1,211 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  id: TimelineEntryType
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntryType.AfterHours
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntryType.DataPresent
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntryType.Gap
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntryType.MarketClosed
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntryType.PreMarket
+  langs:
+  - csharp
+  - vb
+  name: TimelineEntryType
+  nameWithType: TimelineEntryType
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimelineEntryType
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Type of timeline entry.
+  example: []
+  syntax:
+    content: 'public enum TimelineEntryType : byte'
+    content.vb: Public Enum TimelineEntryType As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.DataPresent
+  commentId: F:Meridian.Application.Monitoring.DataQuality.TimelineEntryType.DataPresent
+  id: DataPresent
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  langs:
+  - csharp
+  - vb
+  name: DataPresent
+  nameWithType: TimelineEntryType.DataPresent
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.DataPresent
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataPresent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: DataPresent = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.Gap
+  commentId: F:Meridian.Application.Monitoring.DataQuality.TimelineEntryType.Gap
+  id: Gap
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  langs:
+  - csharp
+  - vb
+  name: Gap
+  nameWithType: TimelineEntryType.Gap
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.Gap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gap
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Gap = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.MarketClosed
+  commentId: F:Meridian.Application.Monitoring.DataQuality.TimelineEntryType.MarketClosed
+  id: MarketClosed
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  langs:
+  - csharp
+  - vb
+  name: MarketClosed
+  nameWithType: TimelineEntryType.MarketClosed
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.MarketClosed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketClosed
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: MarketClosed = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.PreMarket
+  commentId: F:Meridian.Application.Monitoring.DataQuality.TimelineEntryType.PreMarket
+  id: PreMarket
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  langs:
+  - csharp
+  - vb
+  name: PreMarket
+  nameWithType: TimelineEntryType.PreMarket
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.PreMarket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreMarket
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: PreMarket = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.AfterHours
+  commentId: F:Meridian.Application.Monitoring.DataQuality.TimelineEntryType.AfterHours
+  id: AfterHours
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  langs:
+  - csharp
+  - vb
+  name: AfterHours
+  nameWithType: TimelineEntryType.AfterHours
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.AfterHours
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AfterHours
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: AfterHours = 4
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.html
+  name: TimelineEntryType
+  nameWithType: TimelineEntryType
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntryType

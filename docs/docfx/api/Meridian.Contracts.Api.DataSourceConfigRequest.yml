@@ -1,0 +1,976 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest
+  commentId: T:Meridian.Contracts.Api.DataSourceConfigRequest
+  id: DataSourceConfigRequest
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.DataSourceConfigRequest.#ctor(System.String,System.String,System.String,System.Boolean,System.String,System.Int32,Meridian.Contracts.Configuration.AlpacaOptionsDto,Meridian.Contracts.Configuration.PolygonOptionsDto,Meridian.Contracts.Configuration.IBOptionsDto,System.String[],System.String,System.String[])
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Alpaca
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Description
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Enabled
+  - Meridian.Contracts.Api.DataSourceConfigRequest.IB
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Id
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Name
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Polygon
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Priority
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Provider
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Symbols
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Tags
+  - Meridian.Contracts.Api.DataSourceConfigRequest.Type
+  langs:
+  - csharp
+  - vb
+  name: DataSourceConfigRequest
+  nameWithType: DataSourceConfigRequest
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceConfigRequest
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Request to create or update a data source configuration.
+  example: []
+  syntax:
+    content: 'public record DataSourceConfigRequest : IEquatable<DataSourceConfigRequest>'
+    content.vb: Public Class DataSourceConfigRequest Implements IEquatable(Of DataSourceConfigRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.DataSourceConfigRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.#ctor(System.String,System.String,System.String,System.Boolean,System.String,System.Int32,Meridian.Contracts.Configuration.AlpacaOptionsDto,Meridian.Contracts.Configuration.PolygonOptionsDto,Meridian.Contracts.Configuration.IBOptionsDto,System.String[],System.String,System.String[])
+  commentId: M:Meridian.Contracts.Api.DataSourceConfigRequest.#ctor(System.String,System.String,System.String,System.Boolean,System.String,System.Int32,Meridian.Contracts.Configuration.AlpacaOptionsDto,Meridian.Contracts.Configuration.PolygonOptionsDto,Meridian.Contracts.Configuration.IBOptionsDto,System.String[],System.String,System.String[])
+  id: '#ctor(System.String,System.String,System.String,System.Boolean,System.String,System.Int32,Meridian.Contracts.Configuration.AlpacaOptionsDto,Meridian.Contracts.Configuration.PolygonOptionsDto,Meridian.Contracts.Configuration.IBOptionsDto,System.String[],System.String,System.String[])'
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: DataSourceConfigRequest(string?, string, string, bool, string, int, AlpacaOptionsDto?, PolygonOptionsDto?, IBOptionsDto?, string[]?, string?, string[]?)
+  nameWithType: DataSourceConfigRequest.DataSourceConfigRequest(string?, string, string, bool, string, int, AlpacaOptionsDto?, PolygonOptionsDto?, IBOptionsDto?, string[]?, string?, string[]?)
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.DataSourceConfigRequest(string?, string, string, bool, string, int, Meridian.Contracts.Configuration.AlpacaOptionsDto?, Meridian.Contracts.Configuration.PolygonOptionsDto?, Meridian.Contracts.Configuration.IBOptionsDto?, string[]?, string?, string[]?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Request to create or update a data source configuration.
+  example: []
+  syntax:
+    content: public DataSourceConfigRequest(string? Id, string Name, string Provider = "IB", bool Enabled = true, string Type = "RealTime", int Priority = 100, AlpacaOptionsDto? Alpaca = null, PolygonOptionsDto? Polygon = null, IBOptionsDto? IB = null, string[]? Symbols = null, string? Description = null, string[]? Tags = null)
+    parameters:
+    - id: Id
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: Provider
+      type: System.String
+    - id: Enabled
+      type: System.Boolean
+    - id: Type
+      type: System.String
+    - id: Priority
+      type: System.Int32
+    - id: Alpaca
+      type: Meridian.Contracts.Configuration.AlpacaOptionsDto
+    - id: Polygon
+      type: Meridian.Contracts.Configuration.PolygonOptionsDto
+    - id: IB
+      type: Meridian.Contracts.Configuration.IBOptionsDto
+    - id: Symbols
+      type: System.String[]
+    - id: Description
+      type: System.String
+    - id: Tags
+      type: System.String[]
+    content.vb: Public Sub New(Id As String, Name As String, Provider As String = "IB", Enabled As Boolean = True, Type As String = "RealTime", Priority As Integer = 100, Alpaca As AlpacaOptionsDto = Nothing, Polygon As PolygonOptionsDto = Nothing, IB As IBOptionsDto = Nothing, Symbols As String() = Nothing, Description As String = Nothing, Tags As String() = Nothing)
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.#ctor*
+  nameWithType.vb: DataSourceConfigRequest.New(String, String, String, Boolean, String, Integer, AlpacaOptionsDto, PolygonOptionsDto, IBOptionsDto, String(), String, String())
+  fullName.vb: Meridian.Contracts.Api.DataSourceConfigRequest.New(String, String, String, Boolean, String, Integer, Meridian.Contracts.Configuration.AlpacaOptionsDto, Meridian.Contracts.Configuration.PolygonOptionsDto, Meridian.Contracts.Configuration.IBOptionsDto, String(), String, String())
+  name.vb: New(String, String, String, Boolean, String, Integer, AlpacaOptionsDto, PolygonOptionsDto, IBOptionsDto, String(), String, String())
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Id
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Id
+  id: Id
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: DataSourceConfigRequest.Id
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? Id { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Id*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Name
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Name
+  id: Name
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: DataSourceConfigRequest.Name
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Name*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Provider
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Provider
+  id: Provider
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: DataSourceConfigRequest.Provider
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Provider*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Enabled
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Enabled
+  id: Enabled
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: DataSourceConfigRequest.Enabled
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public bool Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Enabled*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Type
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Type
+  id: Type
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: DataSourceConfigRequest.Type
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Type { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Type As String
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Type*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Priority
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Priority
+  id: Priority
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: DataSourceConfigRequest.Priority
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Priority*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Alpaca
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Alpaca
+  id: Alpaca
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Alpaca
+  nameWithType: DataSourceConfigRequest.Alpaca
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Alpaca
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Alpaca
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public AlpacaOptionsDto? Alpaca { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.AlpacaOptionsDto
+    content.vb: Public Property Alpaca As AlpacaOptionsDto
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Alpaca*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Polygon
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Polygon
+  id: Polygon
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Polygon
+  nameWithType: DataSourceConfigRequest.Polygon
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Polygon
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Polygon
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public PolygonOptionsDto? Polygon { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.PolygonOptionsDto
+    content.vb: Public Property Polygon As PolygonOptionsDto
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Polygon*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.IB
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.IB
+  id: IB
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: IB
+  nameWithType: DataSourceConfigRequest.IB
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.IB
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IB
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public IBOptionsDto? IB { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.IBOptionsDto
+    content.vb: Public Property IB As IBOptionsDto
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.IB*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Symbols
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Symbols
+  id: Symbols
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: DataSourceConfigRequest.Symbols
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string[]? Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Symbols*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Description
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Description
+  id: Description
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: DataSourceConfigRequest.Description
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Description*
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Tags
+  commentId: P:Meridian.Contracts.Api.DataSourceConfigRequest.Tags
+  id: Tags
+  parent: Meridian.Contracts.Api.DataSourceConfigRequest
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: DataSourceConfigRequest.Tags
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string[]? Tags { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Tags As String()
+  overload: Meridian.Contracts.Api.DataSourceConfigRequest.Tags*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.DataSourceConfigRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.DataSourceConfigRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataSourceConfigRequest>
+  nameWithType: IEquatable<DataSourceConfigRequest>
+  fullName: System.IEquatable<Meridian.Contracts.Api.DataSourceConfigRequest>
+  nameWithType.vb: IEquatable(Of DataSourceConfigRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.DataSourceConfigRequest)
+  name.vb: IEquatable(Of DataSourceConfigRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.DataSourceConfigRequest
+    name: DataSourceConfigRequest
+    href: Meridian.Contracts.Api.DataSourceConfigRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.DataSourceConfigRequest
+    name: DataSourceConfigRequest
+    href: Meridian.Contracts.Api.DataSourceConfigRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.#ctor
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest__ctor_System_String_System_String_System_String_System_Boolean_System_String_System_Int32_Meridian_Contracts_Configuration_AlpacaOptionsDto_Meridian_Contracts_Configuration_PolygonOptionsDto_Meridian_Contracts_Configuration_IBOptionsDto_System_String___System_String_System_String___
+  name: DataSourceConfigRequest
+  nameWithType: DataSourceConfigRequest.DataSourceConfigRequest
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.DataSourceConfigRequest
+  nameWithType.vb: DataSourceConfigRequest.New
+  fullName.vb: Meridian.Contracts.Api.DataSourceConfigRequest.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration.AlpacaOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.AlpacaOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.AlpacaOptionsDto.html
+  name: AlpacaOptionsDto
+  nameWithType: AlpacaOptionsDto
+  fullName: Meridian.Contracts.Configuration.AlpacaOptionsDto
+- uid: Meridian.Contracts.Configuration.PolygonOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.PolygonOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.PolygonOptionsDto.html
+  name: PolygonOptionsDto
+  nameWithType: PolygonOptionsDto
+  fullName: Meridian.Contracts.Configuration.PolygonOptionsDto
+- uid: Meridian.Contracts.Configuration.IBOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.IBOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.IBOptionsDto.html
+  name: IBOptionsDto
+  nameWithType: IBOptionsDto
+  fullName: Meridian.Contracts.Configuration.IBOptionsDto
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Id*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Id
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Id
+  name: Id
+  nameWithType: DataSourceConfigRequest.Id
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Id
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Name*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Name
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Name
+  name: Name
+  nameWithType: DataSourceConfigRequest.Name
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Name
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Provider*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Provider
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Provider
+  name: Provider
+  nameWithType: DataSourceConfigRequest.Provider
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Provider
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Enabled*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Enabled
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Enabled
+  name: Enabled
+  nameWithType: DataSourceConfigRequest.Enabled
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Enabled
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Type*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Type
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Type
+  name: Type
+  nameWithType: DataSourceConfigRequest.Type
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Type
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Priority*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Priority
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Priority
+  name: Priority
+  nameWithType: DataSourceConfigRequest.Priority
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Priority
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Alpaca*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Alpaca
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Alpaca
+  name: Alpaca
+  nameWithType: DataSourceConfigRequest.Alpaca
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Alpaca
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Polygon*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Polygon
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Polygon
+  name: Polygon
+  nameWithType: DataSourceConfigRequest.Polygon
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Polygon
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.IB*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.IB
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_IB
+  name: IB
+  nameWithType: DataSourceConfigRequest.IB
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.IB
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Symbols*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Symbols
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Symbols
+  name: Symbols
+  nameWithType: DataSourceConfigRequest.Symbols
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Symbols
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Description*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Description
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Description
+  name: Description
+  nameWithType: DataSourceConfigRequest.Description
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Description
+- uid: Meridian.Contracts.Api.DataSourceConfigRequest.Tags*
+  commentId: Overload:Meridian.Contracts.Api.DataSourceConfigRequest.Tags
+  href: Meridian.Contracts.Api.DataSourceConfigRequest.html#Meridian_Contracts_Api_DataSourceConfigRequest_Tags
+  name: Tags
+  nameWithType: DataSourceConfigRequest.Tags
+  fullName: Meridian.Contracts.Api.DataSourceConfigRequest.Tags

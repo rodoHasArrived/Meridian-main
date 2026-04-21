@@ -1,0 +1,771 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.AccountDefinition
+  commentId: T:Meridian.Execution.Services.AccountDefinition
+  id: AccountDefinition
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.AccountDefinition.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,Meridian.Execution.Margin.MarginAccountType,Meridian.Execution.Margin.IMarginModel)
+  - Meridian.Execution.Services.AccountDefinition.AccountId
+  - Meridian.Execution.Services.AccountDefinition.DisplayName
+  - Meridian.Execution.Services.AccountDefinition.InitialCash
+  - Meridian.Execution.Services.AccountDefinition.Kind
+  - Meridian.Execution.Services.AccountDefinition.MarginModel
+  - Meridian.Execution.Services.AccountDefinition.MarginType
+  langs:
+  - csharp
+  - vb
+  name: AccountDefinition
+  nameWithType: AccountDefinition
+  fullName: Meridian.Execution.Services.AccountDefinition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountDefinition
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 750
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Defines one account within a multi-account paper trading session.
+  example: []
+  syntax:
+    content: 'public sealed record AccountDefinition : IEquatable<AccountDefinition>'
+    content.vb: Public NotInheritable Class AccountDefinition Implements IEquatable(Of AccountDefinition)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Services.AccountDefinition}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.AccountDefinition.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,Meridian.Execution.Margin.MarginAccountType,Meridian.Execution.Margin.IMarginModel)
+  commentId: M:Meridian.Execution.Services.AccountDefinition.#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,Meridian.Execution.Margin.MarginAccountType,Meridian.Execution.Margin.IMarginModel)
+  id: '#ctor(System.String,System.String,Meridian.Execution.Models.AccountKind,System.Decimal,Meridian.Execution.Margin.MarginAccountType,Meridian.Execution.Margin.IMarginModel)'
+  parent: Meridian.Execution.Services.AccountDefinition
+  langs:
+  - csharp
+  - vb
+  name: AccountDefinition(string, string, AccountKind, decimal, MarginAccountType, IMarginModel?)
+  nameWithType: AccountDefinition.AccountDefinition(string, string, AccountKind, decimal, MarginAccountType, IMarginModel?)
+  fullName: Meridian.Execution.Services.AccountDefinition.AccountDefinition(string, string, Meridian.Execution.Models.AccountKind, decimal, Meridian.Execution.Margin.MarginAccountType, Meridian.Execution.Margin.IMarginModel?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 750
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Defines one account within a multi-account paper trading session.
+  example: []
+  syntax:
+    content: public AccountDefinition(string AccountId, string DisplayName, AccountKind Kind, decimal InitialCash, MarginAccountType MarginType = MarginAccountType.Cash, IMarginModel? MarginModel = null)
+    parameters:
+    - id: AccountId
+      type: System.String
+      description: Unique account identifier.
+    - id: DisplayName
+      type: System.String
+      description: Human-readable name.
+    - id: Kind
+      type: Meridian.Execution.Models.AccountKind
+      description: Brokerage or Bank.
+    - id: InitialCash
+      type: System.Decimal
+      description: Opening cash balance.
+    - id: MarginType
+      type: Meridian.Execution.Margin.MarginAccountType
+      description: >-
+        Margin regime for this account.
+
+        Defaults to <xref href="Meridian.Execution.Margin.MarginAccountType.Cash" data-throw-if-not-resolved="false"></xref> (no borrowing).
+    - id: MarginModel
+      type: Meridian.Execution.Margin.IMarginModel
+      description: >-
+        Optional explicit margin model. When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> a default model is
+
+        created automatically for <xref href="Meridian.Execution.Margin.MarginAccountType.RegT" data-throw-if-not-resolved="false"></xref> and
+
+        <xref href="Meridian.Execution.Margin.MarginAccountType.PortfolioMargin" data-throw-if-not-resolved="false"></xref> accounts.
+    content.vb: Public Sub New(AccountId As String, DisplayName As String, Kind As AccountKind, InitialCash As Decimal, MarginType As MarginAccountType = MarginAccountType.Cash, MarginModel As IMarginModel = Nothing)
+  overload: Meridian.Execution.Services.AccountDefinition.#ctor*
+  nameWithType.vb: AccountDefinition.New(String, String, AccountKind, Decimal, MarginAccountType, IMarginModel)
+  fullName.vb: Meridian.Execution.Services.AccountDefinition.New(String, String, Meridian.Execution.Models.AccountKind, Decimal, Meridian.Execution.Margin.MarginAccountType, Meridian.Execution.Margin.IMarginModel)
+  name.vb: New(String, String, AccountKind, Decimal, MarginAccountType, IMarginModel)
+- uid: Meridian.Execution.Services.AccountDefinition.AccountId
+  commentId: P:Meridian.Execution.Services.AccountDefinition.AccountId
+  id: AccountId
+  parent: Meridian.Execution.Services.AccountDefinition
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: AccountDefinition.AccountId
+  fullName: Meridian.Execution.Services.AccountDefinition.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 751
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Unique account identifier.
+  example: []
+  syntax:
+    content: public string AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Execution.Services.AccountDefinition.AccountId*
+- uid: Meridian.Execution.Services.AccountDefinition.DisplayName
+  commentId: P:Meridian.Execution.Services.AccountDefinition.DisplayName
+  id: DisplayName
+  parent: Meridian.Execution.Services.AccountDefinition
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: AccountDefinition.DisplayName
+  fullName: Meridian.Execution.Services.AccountDefinition.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 752
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Human-readable name.
+  example: []
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Execution.Services.AccountDefinition.DisplayName*
+- uid: Meridian.Execution.Services.AccountDefinition.Kind
+  commentId: P:Meridian.Execution.Services.AccountDefinition.Kind
+  id: Kind
+  parent: Meridian.Execution.Services.AccountDefinition
+  langs:
+  - csharp
+  - vb
+  name: Kind
+  nameWithType: AccountDefinition.Kind
+  fullName: Meridian.Execution.Services.AccountDefinition.Kind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Kind
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 753
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Brokerage or Bank.
+  example: []
+  syntax:
+    content: public AccountKind Kind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Models.AccountKind
+    content.vb: Public Property Kind As AccountKind
+  overload: Meridian.Execution.Services.AccountDefinition.Kind*
+- uid: Meridian.Execution.Services.AccountDefinition.InitialCash
+  commentId: P:Meridian.Execution.Services.AccountDefinition.InitialCash
+  id: InitialCash
+  parent: Meridian.Execution.Services.AccountDefinition
+  langs:
+  - csharp
+  - vb
+  name: InitialCash
+  nameWithType: AccountDefinition.InitialCash
+  fullName: Meridian.Execution.Services.AccountDefinition.InitialCash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitialCash
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 754
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Opening cash balance.
+  example: []
+  syntax:
+    content: public decimal InitialCash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property InitialCash As Decimal
+  overload: Meridian.Execution.Services.AccountDefinition.InitialCash*
+- uid: Meridian.Execution.Services.AccountDefinition.MarginType
+  commentId: P:Meridian.Execution.Services.AccountDefinition.MarginType
+  id: MarginType
+  parent: Meridian.Execution.Services.AccountDefinition
+  langs:
+  - csharp
+  - vb
+  name: MarginType
+  nameWithType: AccountDefinition.MarginType
+  fullName: Meridian.Execution.Services.AccountDefinition.MarginType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginType
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 755
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Margin regime for this account.
+
+    Defaults to <xref href="Meridian.Execution.Margin.MarginAccountType.Cash" data-throw-if-not-resolved="false"></xref> (no borrowing).
+  example: []
+  syntax:
+    content: public MarginAccountType MarginType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Margin.MarginAccountType
+    content.vb: Public Property MarginType As MarginAccountType
+  overload: Meridian.Execution.Services.AccountDefinition.MarginType*
+- uid: Meridian.Execution.Services.AccountDefinition.MarginModel
+  commentId: P:Meridian.Execution.Services.AccountDefinition.MarginModel
+  id: MarginModel
+  parent: Meridian.Execution.Services.AccountDefinition
+  langs:
+  - csharp
+  - vb
+  name: MarginModel
+  nameWithType: AccountDefinition.MarginModel
+  fullName: Meridian.Execution.Services.AccountDefinition.MarginModel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginModel
+    path: ../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs
+    startLine: 756
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Optional explicit margin model. When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> a default model is
+
+    created automatically for <xref href="Meridian.Execution.Margin.MarginAccountType.RegT" data-throw-if-not-resolved="false"></xref> and
+
+    <xref href="Meridian.Execution.Margin.MarginAccountType.PortfolioMargin" data-throw-if-not-resolved="false"></xref> accounts.
+  example: []
+  syntax:
+    content: public IMarginModel? MarginModel { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Margin.IMarginModel
+    content.vb: Public Property MarginModel As IMarginModel
+  overload: Meridian.Execution.Services.AccountDefinition.MarginModel*
+references:
+- uid: Meridian.Execution.Margin.MarginAccountType.Cash
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.Cash
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_Cash
+  name: Cash
+  nameWithType: MarginAccountType.Cash
+  fullName: Meridian.Execution.Margin.MarginAccountType.Cash
+- uid: Meridian.Execution.Margin.MarginAccountType.RegT
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.RegT
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_RegT
+  name: RegT
+  nameWithType: MarginAccountType.RegT
+  fullName: Meridian.Execution.Margin.MarginAccountType.RegT
+- uid: Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  commentId: F:Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+  href: Meridian.Execution.Margin.MarginAccountType.html#Meridian_Execution_Margin_MarginAccountType_PortfolioMargin
+  name: PortfolioMargin
+  nameWithType: MarginAccountType.PortfolioMargin
+  fullName: Meridian.Execution.Margin.MarginAccountType.PortfolioMargin
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Services.AccountDefinition}
+  commentId: T:System.IEquatable{Meridian.Execution.Services.AccountDefinition}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AccountDefinition>
+  nameWithType: IEquatable<AccountDefinition>
+  fullName: System.IEquatable<Meridian.Execution.Services.AccountDefinition>
+  nameWithType.vb: IEquatable(Of AccountDefinition)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Services.AccountDefinition)
+  name.vb: IEquatable(Of AccountDefinition)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Services.AccountDefinition
+    name: AccountDefinition
+    href: Meridian.Execution.Services.AccountDefinition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.AccountDefinition
+    name: AccountDefinition
+    href: Meridian.Execution.Services.AccountDefinition.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.AccountDefinition.#ctor*
+  commentId: Overload:Meridian.Execution.Services.AccountDefinition.#ctor
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition__ctor_System_String_System_String_Meridian_Execution_Models_AccountKind_System_Decimal_Meridian_Execution_Margin_MarginAccountType_Meridian_Execution_Margin_IMarginModel_
+  name: AccountDefinition
+  nameWithType: AccountDefinition.AccountDefinition
+  fullName: Meridian.Execution.Services.AccountDefinition.AccountDefinition
+  nameWithType.vb: AccountDefinition.New
+  fullName.vb: Meridian.Execution.Services.AccountDefinition.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Models.AccountKind
+  commentId: T:Meridian.Execution.Models.AccountKind
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.AccountKind.html
+  name: AccountKind
+  nameWithType: AccountKind
+  fullName: Meridian.Execution.Models.AccountKind
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Margin.MarginAccountType
+  commentId: T:Meridian.Execution.Margin.MarginAccountType
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.MarginAccountType.html
+  name: MarginAccountType
+  nameWithType: MarginAccountType
+  fullName: Meridian.Execution.Margin.MarginAccountType
+- uid: Meridian.Execution.Margin.IMarginModel
+  commentId: T:Meridian.Execution.Margin.IMarginModel
+  parent: Meridian.Execution.Margin
+  href: Meridian.Execution.Margin.IMarginModel.html
+  name: IMarginModel
+  nameWithType: IMarginModel
+  fullName: Meridian.Execution.Margin.IMarginModel
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Margin
+  commentId: N:Meridian.Execution.Margin
+  href: Meridian.html
+  name: Meridian.Execution.Margin
+  nameWithType: Meridian.Execution.Margin
+  fullName: Meridian.Execution.Margin
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Margin
+    name: Margin
+    href: Meridian.Execution.Margin.html
+- uid: Meridian.Execution.Services.AccountDefinition.AccountId*
+  commentId: Overload:Meridian.Execution.Services.AccountDefinition.AccountId
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition_AccountId
+  name: AccountId
+  nameWithType: AccountDefinition.AccountId
+  fullName: Meridian.Execution.Services.AccountDefinition.AccountId
+- uid: Meridian.Execution.Services.AccountDefinition.DisplayName*
+  commentId: Overload:Meridian.Execution.Services.AccountDefinition.DisplayName
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition_DisplayName
+  name: DisplayName
+  nameWithType: AccountDefinition.DisplayName
+  fullName: Meridian.Execution.Services.AccountDefinition.DisplayName
+- uid: Meridian.Execution.Services.AccountDefinition.Kind*
+  commentId: Overload:Meridian.Execution.Services.AccountDefinition.Kind
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition_Kind
+  name: Kind
+  nameWithType: AccountDefinition.Kind
+  fullName: Meridian.Execution.Services.AccountDefinition.Kind
+- uid: Meridian.Execution.Services.AccountDefinition.InitialCash*
+  commentId: Overload:Meridian.Execution.Services.AccountDefinition.InitialCash
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition_InitialCash
+  name: InitialCash
+  nameWithType: AccountDefinition.InitialCash
+  fullName: Meridian.Execution.Services.AccountDefinition.InitialCash
+- uid: Meridian.Execution.Services.AccountDefinition.MarginType*
+  commentId: Overload:Meridian.Execution.Services.AccountDefinition.MarginType
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition_MarginType
+  name: MarginType
+  nameWithType: AccountDefinition.MarginType
+  fullName: Meridian.Execution.Services.AccountDefinition.MarginType
+- uid: Meridian.Execution.Services.AccountDefinition.MarginModel*
+  commentId: Overload:Meridian.Execution.Services.AccountDefinition.MarginModel
+  href: Meridian.Execution.Services.AccountDefinition.html#Meridian_Execution_Services_AccountDefinition_MarginModel
+  name: MarginModel
+  nameWithType: AccountDefinition.MarginModel
+  fullName: Meridian.Execution.Services.AccountDefinition.MarginModel

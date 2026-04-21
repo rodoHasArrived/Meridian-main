@@ -1,0 +1,230 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.CompressionType
+  commentId: T:Meridian.Storage.Export.CompressionType
+  id: CompressionType
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.CompressionType.Gzip
+  - Meridian.Storage.Export.CompressionType.Lz4
+  - Meridian.Storage.Export.CompressionType.None
+  - Meridian.Storage.Export.CompressionType.Snappy
+  - Meridian.Storage.Export.CompressionType.Zip
+  - Meridian.Storage.Export.CompressionType.Zstd
+  langs:
+  - csharp
+  - vb
+  name: CompressionType
+  nameWithType: CompressionType
+  fullName: Meridian.Storage.Export.CompressionType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionType
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 308
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Supported compression types.
+  example: []
+  syntax:
+    content: 'public enum CompressionType : byte'
+    content.vb: Public Enum CompressionType As Byte
+- uid: Meridian.Storage.Export.CompressionType.None
+  commentId: F:Meridian.Storage.Export.CompressionType.None
+  id: None
+  parent: Meridian.Storage.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: CompressionType.None
+  fullName: Meridian.Storage.Export.CompressionType.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 310
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Storage.Export.CompressionType
+- uid: Meridian.Storage.Export.CompressionType.Gzip
+  commentId: F:Meridian.Storage.Export.CompressionType.Gzip
+  id: Gzip
+  parent: Meridian.Storage.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: Gzip
+  nameWithType: CompressionType.Gzip
+  fullName: Meridian.Storage.Export.CompressionType.Gzip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gzip
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 311
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Gzip = 1
+    return:
+      type: Meridian.Storage.Export.CompressionType
+- uid: Meridian.Storage.Export.CompressionType.Snappy
+  commentId: F:Meridian.Storage.Export.CompressionType.Snappy
+  id: Snappy
+  parent: Meridian.Storage.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: Snappy
+  nameWithType: CompressionType.Snappy
+  fullName: Meridian.Storage.Export.CompressionType.Snappy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Snappy
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Snappy = 2
+    return:
+      type: Meridian.Storage.Export.CompressionType
+- uid: Meridian.Storage.Export.CompressionType.Zstd
+  commentId: F:Meridian.Storage.Export.CompressionType.Zstd
+  id: Zstd
+  parent: Meridian.Storage.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: Zstd
+  nameWithType: CompressionType.Zstd
+  fullName: Meridian.Storage.Export.CompressionType.Zstd
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zstd
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 313
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Zstd = 3
+    return:
+      type: Meridian.Storage.Export.CompressionType
+- uid: Meridian.Storage.Export.CompressionType.Lz4
+  commentId: F:Meridian.Storage.Export.CompressionType.Lz4
+  id: Lz4
+  parent: Meridian.Storage.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: Lz4
+  nameWithType: CompressionType.Lz4
+  fullName: Meridian.Storage.Export.CompressionType.Lz4
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lz4
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 314
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Lz4 = 4
+    return:
+      type: Meridian.Storage.Export.CompressionType
+- uid: Meridian.Storage.Export.CompressionType.Zip
+  commentId: F:Meridian.Storage.Export.CompressionType.Zip
+  id: Zip
+  parent: Meridian.Storage.Export.CompressionType
+  langs:
+  - csharp
+  - vb
+  name: Zip
+  nameWithType: CompressionType.Zip
+  fullName: Meridian.Storage.Export.CompressionType.Zip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportProfile.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zip
+    path: ../../src/Meridian.Storage/Export/ExportProfile.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Zip = 5
+    return:
+      type: Meridian.Storage.Export.CompressionType
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.CompressionType
+  commentId: T:Meridian.Storage.Export.CompressionType
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.CompressionType.html
+  name: CompressionType
+  nameWithType: CompressionType
+  fullName: Meridian.Storage.Export.CompressionType

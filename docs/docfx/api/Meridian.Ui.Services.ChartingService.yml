@@ -1,0 +1,1088 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ChartingService
+  commentId: T:Meridian.Ui.Services.ChartingService
+  id: ChartingService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ChartingService.#ctor
+  - Meridian.Ui.Services.ChartingService.CalculateAtr(Meridian.Ui.Services.CandlestickData,System.Int32)
+  - Meridian.Ui.Services.ChartingService.CalculateBollingerBands(Meridian.Ui.Services.CandlestickData,System.Int32,System.Decimal)
+  - Meridian.Ui.Services.ChartingService.CalculateEma(Meridian.Ui.Services.CandlestickData,System.Int32)
+  - Meridian.Ui.Services.ChartingService.CalculateMacd(Meridian.Ui.Services.CandlestickData,System.Int32,System.Int32,System.Int32)
+  - Meridian.Ui.Services.ChartingService.CalculateRsi(Meridian.Ui.Services.CandlestickData,System.Int32)
+  - Meridian.Ui.Services.ChartingService.CalculateSma(Meridian.Ui.Services.CandlestickData,System.Int32)
+  - Meridian.Ui.Services.ChartingService.CalculateVolumeProfile(Meridian.Ui.Services.CandlestickData,System.Int32)
+  - Meridian.Ui.Services.ChartingService.CalculateVwap(Meridian.Ui.Services.CandlestickData)
+  - Meridian.Ui.Services.ChartingService.GetAvailableIndicators
+  - Meridian.Ui.Services.ChartingService.GetCandlestickDataAsync(System.String,Meridian.Ui.Services.ChartTimeframe,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ChartingService
+  nameWithType: ChartingService
+  fullName: Meridian.Ui.Services.ChartingService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChartingService
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for advanced charting with candlesticks and technical indicators.
+
+    Provides data transformation and indicator calculations for chart rendering.
+  example: []
+  syntax:
+    content: public sealed class ChartingService
+    content.vb: Public NotInheritable Class ChartingService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ChartingService.#ctor
+  commentId: M:Meridian.Ui.Services.ChartingService.#ctor
+  id: '#ctor'
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: ChartingService()
+  nameWithType: ChartingService.ChartingService()
+  fullName: Meridian.Ui.Services.ChartingService.ChartingService()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public ChartingService()
+    content.vb: Public Sub New()
+  overload: Meridian.Ui.Services.ChartingService.#ctor*
+  nameWithType.vb: ChartingService.New()
+  fullName.vb: Meridian.Ui.Services.ChartingService.New()
+  name.vb: New()
+- uid: Meridian.Ui.Services.ChartingService.GetCandlestickDataAsync(System.String,Meridian.Ui.Services.ChartTimeframe,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ChartingService.GetCandlestickDataAsync(System.String,Meridian.Ui.Services.ChartTimeframe,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  id: GetCandlestickDataAsync(System.String,Meridian.Ui.Services.ChartTimeframe,System.DateOnly,System.DateOnly,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: GetCandlestickDataAsync(string, ChartTimeframe, DateOnly, DateOnly, CancellationToken)
+  nameWithType: ChartingService.GetCandlestickDataAsync(string, ChartTimeframe, DateOnly, DateOnly, CancellationToken)
+  fullName: Meridian.Ui.Services.ChartingService.GetCandlestickDataAsync(string, Meridian.Ui.Services.ChartTimeframe, System.DateOnly, System.DateOnly, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCandlestickDataAsync
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets OHLCV candlestick data for charting.
+  example: []
+  syntax:
+    content: public Task<CandlestickData> GetCandlestickDataAsync(string symbol, ChartTimeframe timeframe, DateOnly fromDate, DateOnly toDate, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: timeframe
+      type: Meridian.Ui.Services.ChartTimeframe
+    - id: fromDate
+      type: System.DateOnly
+    - id: toDate
+      type: System.DateOnly
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.CandlestickData}
+    content.vb: Public Function GetCandlestickDataAsync(symbol As String, timeframe As ChartTimeframe, fromDate As DateOnly, toDate As DateOnly, ct As CancellationToken = Nothing) As Task(Of CandlestickData)
+  overload: Meridian.Ui.Services.ChartingService.GetCandlestickDataAsync*
+  nameWithType.vb: ChartingService.GetCandlestickDataAsync(String, ChartTimeframe, DateOnly, DateOnly, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ChartingService.GetCandlestickDataAsync(String, Meridian.Ui.Services.ChartTimeframe, System.DateOnly, System.DateOnly, System.Threading.CancellationToken)
+  name.vb: GetCandlestickDataAsync(String, ChartTimeframe, DateOnly, DateOnly, CancellationToken)
+- uid: Meridian.Ui.Services.ChartingService.CalculateSma(Meridian.Ui.Services.CandlestickData,System.Int32)
+  commentId: M:Meridian.Ui.Services.ChartingService.CalculateSma(Meridian.Ui.Services.CandlestickData,System.Int32)
+  id: CalculateSma(Meridian.Ui.Services.CandlestickData,System.Int32)
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: CalculateSma(CandlestickData, int)
+  nameWithType: ChartingService.CalculateSma(CandlestickData, int)
+  fullName: Meridian.Ui.Services.ChartingService.CalculateSma(Meridian.Ui.Services.CandlestickData, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateSma
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Calculates Simple Moving Average (SMA).
+  example: []
+  syntax:
+    content: public IndicatorData CalculateSma(CandlestickData data, int period)
+    parameters:
+    - id: data
+      type: Meridian.Ui.Services.CandlestickData
+    - id: period
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.IndicatorData
+    content.vb: Public Function CalculateSma(data As CandlestickData, period As Integer) As IndicatorData
+  overload: Meridian.Ui.Services.ChartingService.CalculateSma*
+  nameWithType.vb: ChartingService.CalculateSma(CandlestickData, Integer)
+  fullName.vb: Meridian.Ui.Services.ChartingService.CalculateSma(Meridian.Ui.Services.CandlestickData, Integer)
+  name.vb: CalculateSma(CandlestickData, Integer)
+- uid: Meridian.Ui.Services.ChartingService.CalculateEma(Meridian.Ui.Services.CandlestickData,System.Int32)
+  commentId: M:Meridian.Ui.Services.ChartingService.CalculateEma(Meridian.Ui.Services.CandlestickData,System.Int32)
+  id: CalculateEma(Meridian.Ui.Services.CandlestickData,System.Int32)
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: CalculateEma(CandlestickData, int)
+  nameWithType: ChartingService.CalculateEma(CandlestickData, int)
+  fullName: Meridian.Ui.Services.ChartingService.CalculateEma(Meridian.Ui.Services.CandlestickData, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateEma
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Calculates Exponential Moving Average (EMA).
+  example: []
+  syntax:
+    content: public IndicatorData CalculateEma(CandlestickData data, int period)
+    parameters:
+    - id: data
+      type: Meridian.Ui.Services.CandlestickData
+    - id: period
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.IndicatorData
+    content.vb: Public Function CalculateEma(data As CandlestickData, period As Integer) As IndicatorData
+  overload: Meridian.Ui.Services.ChartingService.CalculateEma*
+  nameWithType.vb: ChartingService.CalculateEma(CandlestickData, Integer)
+  fullName.vb: Meridian.Ui.Services.ChartingService.CalculateEma(Meridian.Ui.Services.CandlestickData, Integer)
+  name.vb: CalculateEma(CandlestickData, Integer)
+- uid: Meridian.Ui.Services.ChartingService.CalculateVwap(Meridian.Ui.Services.CandlestickData)
+  commentId: M:Meridian.Ui.Services.ChartingService.CalculateVwap(Meridian.Ui.Services.CandlestickData)
+  id: CalculateVwap(Meridian.Ui.Services.CandlestickData)
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: CalculateVwap(CandlestickData)
+  nameWithType: ChartingService.CalculateVwap(CandlestickData)
+  fullName: Meridian.Ui.Services.ChartingService.CalculateVwap(Meridian.Ui.Services.CandlestickData)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateVwap
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Calculates Volume Weighted Average Price (VWAP).
+  example: []
+  syntax:
+    content: public IndicatorData CalculateVwap(CandlestickData data)
+    parameters:
+    - id: data
+      type: Meridian.Ui.Services.CandlestickData
+    return:
+      type: Meridian.Ui.Services.IndicatorData
+    content.vb: Public Function CalculateVwap(data As CandlestickData) As IndicatorData
+  overload: Meridian.Ui.Services.ChartingService.CalculateVwap*
+- uid: Meridian.Ui.Services.ChartingService.CalculateRsi(Meridian.Ui.Services.CandlestickData,System.Int32)
+  commentId: M:Meridian.Ui.Services.ChartingService.CalculateRsi(Meridian.Ui.Services.CandlestickData,System.Int32)
+  id: CalculateRsi(Meridian.Ui.Services.CandlestickData,System.Int32)
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: CalculateRsi(CandlestickData, int)
+  nameWithType: ChartingService.CalculateRsi(CandlestickData, int)
+  fullName: Meridian.Ui.Services.ChartingService.CalculateRsi(Meridian.Ui.Services.CandlestickData, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateRsi
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Calculates Relative Strength Index (RSI).
+  example: []
+  syntax:
+    content: public IndicatorData CalculateRsi(CandlestickData data, int period = 14)
+    parameters:
+    - id: data
+      type: Meridian.Ui.Services.CandlestickData
+    - id: period
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.IndicatorData
+    content.vb: Public Function CalculateRsi(data As CandlestickData, period As Integer = 14) As IndicatorData
+  overload: Meridian.Ui.Services.ChartingService.CalculateRsi*
+  nameWithType.vb: ChartingService.CalculateRsi(CandlestickData, Integer)
+  fullName.vb: Meridian.Ui.Services.ChartingService.CalculateRsi(Meridian.Ui.Services.CandlestickData, Integer)
+  name.vb: CalculateRsi(CandlestickData, Integer)
+- uid: Meridian.Ui.Services.ChartingService.CalculateMacd(Meridian.Ui.Services.CandlestickData,System.Int32,System.Int32,System.Int32)
+  commentId: M:Meridian.Ui.Services.ChartingService.CalculateMacd(Meridian.Ui.Services.CandlestickData,System.Int32,System.Int32,System.Int32)
+  id: CalculateMacd(Meridian.Ui.Services.CandlestickData,System.Int32,System.Int32,System.Int32)
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: CalculateMacd(CandlestickData, int, int, int)
+  nameWithType: ChartingService.CalculateMacd(CandlestickData, int, int, int)
+  fullName: Meridian.Ui.Services.ChartingService.CalculateMacd(Meridian.Ui.Services.CandlestickData, int, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateMacd
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Calculates Moving Average Convergence Divergence (MACD).
+  example: []
+  syntax:
+    content: public MacdData CalculateMacd(CandlestickData data, int fastPeriod = 12, int slowPeriod = 26, int signalPeriod = 9)
+    parameters:
+    - id: data
+      type: Meridian.Ui.Services.CandlestickData
+    - id: fastPeriod
+      type: System.Int32
+    - id: slowPeriod
+      type: System.Int32
+    - id: signalPeriod
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.MacdData
+    content.vb: Public Function CalculateMacd(data As CandlestickData, fastPeriod As Integer = 12, slowPeriod As Integer = 26, signalPeriod As Integer = 9) As MacdData
+  overload: Meridian.Ui.Services.ChartingService.CalculateMacd*
+  nameWithType.vb: ChartingService.CalculateMacd(CandlestickData, Integer, Integer, Integer)
+  fullName.vb: Meridian.Ui.Services.ChartingService.CalculateMacd(Meridian.Ui.Services.CandlestickData, Integer, Integer, Integer)
+  name.vb: CalculateMacd(CandlestickData, Integer, Integer, Integer)
+- uid: Meridian.Ui.Services.ChartingService.CalculateBollingerBands(Meridian.Ui.Services.CandlestickData,System.Int32,System.Decimal)
+  commentId: M:Meridian.Ui.Services.ChartingService.CalculateBollingerBands(Meridian.Ui.Services.CandlestickData,System.Int32,System.Decimal)
+  id: CalculateBollingerBands(Meridian.Ui.Services.CandlestickData,System.Int32,System.Decimal)
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: CalculateBollingerBands(CandlestickData, int, decimal)
+  nameWithType: ChartingService.CalculateBollingerBands(CandlestickData, int, decimal)
+  fullName: Meridian.Ui.Services.ChartingService.CalculateBollingerBands(Meridian.Ui.Services.CandlestickData, int, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateBollingerBands
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Calculates Bollinger Bands.
+  example: []
+  syntax:
+    content: public BollingerBandsData CalculateBollingerBands(CandlestickData data, int period = 20, decimal stdDevMultiplier = 2)
+    parameters:
+    - id: data
+      type: Meridian.Ui.Services.CandlestickData
+    - id: period
+      type: System.Int32
+    - id: stdDevMultiplier
+      type: System.Decimal
+    return:
+      type: Meridian.Ui.Services.BollingerBandsData
+    content.vb: Public Function CalculateBollingerBands(data As CandlestickData, period As Integer = 20, stdDevMultiplier As Decimal = 2) As BollingerBandsData
+  overload: Meridian.Ui.Services.ChartingService.CalculateBollingerBands*
+  nameWithType.vb: ChartingService.CalculateBollingerBands(CandlestickData, Integer, Decimal)
+  fullName.vb: Meridian.Ui.Services.ChartingService.CalculateBollingerBands(Meridian.Ui.Services.CandlestickData, Integer, Decimal)
+  name.vb: CalculateBollingerBands(CandlestickData, Integer, Decimal)
+- uid: Meridian.Ui.Services.ChartingService.CalculateAtr(Meridian.Ui.Services.CandlestickData,System.Int32)
+  commentId: M:Meridian.Ui.Services.ChartingService.CalculateAtr(Meridian.Ui.Services.CandlestickData,System.Int32)
+  id: CalculateAtr(Meridian.Ui.Services.CandlestickData,System.Int32)
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: CalculateAtr(CandlestickData, int)
+  nameWithType: ChartingService.CalculateAtr(CandlestickData, int)
+  fullName: Meridian.Ui.Services.ChartingService.CalculateAtr(Meridian.Ui.Services.CandlestickData, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateAtr
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 324
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Calculates Average True Range (ATR).
+  example: []
+  syntax:
+    content: public IndicatorData CalculateAtr(CandlestickData data, int period = 14)
+    parameters:
+    - id: data
+      type: Meridian.Ui.Services.CandlestickData
+    - id: period
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.IndicatorData
+    content.vb: Public Function CalculateAtr(data As CandlestickData, period As Integer = 14) As IndicatorData
+  overload: Meridian.Ui.Services.ChartingService.CalculateAtr*
+  nameWithType.vb: ChartingService.CalculateAtr(CandlestickData, Integer)
+  fullName.vb: Meridian.Ui.Services.ChartingService.CalculateAtr(Meridian.Ui.Services.CandlestickData, Integer)
+  name.vb: CalculateAtr(CandlestickData, Integer)
+- uid: Meridian.Ui.Services.ChartingService.CalculateVolumeProfile(Meridian.Ui.Services.CandlestickData,System.Int32)
+  commentId: M:Meridian.Ui.Services.ChartingService.CalculateVolumeProfile(Meridian.Ui.Services.CandlestickData,System.Int32)
+  id: CalculateVolumeProfile(Meridian.Ui.Services.CandlestickData,System.Int32)
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: CalculateVolumeProfile(CandlestickData, int)
+  nameWithType: ChartingService.CalculateVolumeProfile(CandlestickData, int)
+  fullName: Meridian.Ui.Services.ChartingService.CalculateVolumeProfile(Meridian.Ui.Services.CandlestickData, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateVolumeProfile
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 375
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Calculates volume profile for price levels.
+  example: []
+  syntax:
+    content: public VolumeProfileData CalculateVolumeProfile(CandlestickData data, int buckets = 20)
+    parameters:
+    - id: data
+      type: Meridian.Ui.Services.CandlestickData
+    - id: buckets
+      type: System.Int32
+    return:
+      type: Meridian.Ui.Services.VolumeProfileData
+    content.vb: Public Function CalculateVolumeProfile(data As CandlestickData, buckets As Integer = 20) As VolumeProfileData
+  overload: Meridian.Ui.Services.ChartingService.CalculateVolumeProfile*
+  nameWithType.vb: ChartingService.CalculateVolumeProfile(CandlestickData, Integer)
+  fullName.vb: Meridian.Ui.Services.ChartingService.CalculateVolumeProfile(Meridian.Ui.Services.CandlestickData, Integer)
+  name.vb: CalculateVolumeProfile(CandlestickData, Integer)
+- uid: Meridian.Ui.Services.ChartingService.GetAvailableIndicators
+  commentId: M:Meridian.Ui.Services.ChartingService.GetAvailableIndicators
+  id: GetAvailableIndicators
+  parent: Meridian.Ui.Services.ChartingService
+  langs:
+  - csharp
+  - vb
+  name: GetAvailableIndicators()
+  nameWithType: ChartingService.GetAvailableIndicators()
+  fullName: Meridian.Ui.Services.ChartingService.GetAvailableIndicators()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAvailableIndicators
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 456
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets available technical indicators.
+  example: []
+  syntax:
+    content: public IReadOnlyList<TechnicalIndicatorInfo> GetAvailableIndicators()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.TechnicalIndicatorInfo}
+    content.vb: Public Function GetAvailableIndicators() As IReadOnlyList(Of TechnicalIndicatorInfo)
+  overload: Meridian.Ui.Services.ChartingService.GetAvailableIndicators*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ChartingService.#ctor*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.#ctor
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService__ctor
+  name: ChartingService
+  nameWithType: ChartingService.ChartingService
+  fullName: Meridian.Ui.Services.ChartingService.ChartingService
+  nameWithType.vb: ChartingService.New
+  fullName.vb: Meridian.Ui.Services.ChartingService.New
+  name.vb: New
+- uid: Meridian.Ui.Services.ChartingService.GetCandlestickDataAsync*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.GetCandlestickDataAsync
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_GetCandlestickDataAsync_System_String_Meridian_Ui_Services_ChartTimeframe_System_DateOnly_System_DateOnly_System_Threading_CancellationToken_
+  name: GetCandlestickDataAsync
+  nameWithType: ChartingService.GetCandlestickDataAsync
+  fullName: Meridian.Ui.Services.ChartingService.GetCandlestickDataAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ChartTimeframe
+  commentId: T:Meridian.Ui.Services.ChartTimeframe
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ChartTimeframe.html
+  name: ChartTimeframe
+  nameWithType: ChartTimeframe
+  fullName: Meridian.Ui.Services.ChartTimeframe
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.CandlestickData}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.CandlestickData}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CandlestickData>
+  nameWithType: Task<CandlestickData>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.CandlestickData>
+  nameWithType.vb: Task(Of CandlestickData)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.CandlestickData)
+  name.vb: Task(Of CandlestickData)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.CandlestickData
+    name: CandlestickData
+    href: Meridian.Ui.Services.CandlestickData.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.CandlestickData
+    name: CandlestickData
+    href: Meridian.Ui.Services.CandlestickData.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.ChartingService.CalculateSma*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.CalculateSma
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_CalculateSma_Meridian_Ui_Services_CandlestickData_System_Int32_
+  name: CalculateSma
+  nameWithType: ChartingService.CalculateSma
+  fullName: Meridian.Ui.Services.ChartingService.CalculateSma
+- uid: Meridian.Ui.Services.CandlestickData
+  commentId: T:Meridian.Ui.Services.CandlestickData
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.CandlestickData.html
+  name: CandlestickData
+  nameWithType: CandlestickData
+  fullName: Meridian.Ui.Services.CandlestickData
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.IndicatorData
+  commentId: T:Meridian.Ui.Services.IndicatorData
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.IndicatorData.html
+  name: IndicatorData
+  nameWithType: IndicatorData
+  fullName: Meridian.Ui.Services.IndicatorData
+- uid: Meridian.Ui.Services.ChartingService.CalculateEma*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.CalculateEma
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_CalculateEma_Meridian_Ui_Services_CandlestickData_System_Int32_
+  name: CalculateEma
+  nameWithType: ChartingService.CalculateEma
+  fullName: Meridian.Ui.Services.ChartingService.CalculateEma
+- uid: Meridian.Ui.Services.ChartingService.CalculateVwap*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.CalculateVwap
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_CalculateVwap_Meridian_Ui_Services_CandlestickData_
+  name: CalculateVwap
+  nameWithType: ChartingService.CalculateVwap
+  fullName: Meridian.Ui.Services.ChartingService.CalculateVwap
+- uid: Meridian.Ui.Services.ChartingService.CalculateRsi*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.CalculateRsi
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_CalculateRsi_Meridian_Ui_Services_CandlestickData_System_Int32_
+  name: CalculateRsi
+  nameWithType: ChartingService.CalculateRsi
+  fullName: Meridian.Ui.Services.ChartingService.CalculateRsi
+- uid: Meridian.Ui.Services.ChartingService.CalculateMacd*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.CalculateMacd
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_CalculateMacd_Meridian_Ui_Services_CandlestickData_System_Int32_System_Int32_System_Int32_
+  name: CalculateMacd
+  nameWithType: ChartingService.CalculateMacd
+  fullName: Meridian.Ui.Services.ChartingService.CalculateMacd
+- uid: Meridian.Ui.Services.MacdData
+  commentId: T:Meridian.Ui.Services.MacdData
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.MacdData.html
+  name: MacdData
+  nameWithType: MacdData
+  fullName: Meridian.Ui.Services.MacdData
+- uid: Meridian.Ui.Services.ChartingService.CalculateBollingerBands*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.CalculateBollingerBands
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_CalculateBollingerBands_Meridian_Ui_Services_CandlestickData_System_Int32_System_Decimal_
+  name: CalculateBollingerBands
+  nameWithType: ChartingService.CalculateBollingerBands
+  fullName: Meridian.Ui.Services.ChartingService.CalculateBollingerBands
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Ui.Services.BollingerBandsData
+  commentId: T:Meridian.Ui.Services.BollingerBandsData
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BollingerBandsData.html
+  name: BollingerBandsData
+  nameWithType: BollingerBandsData
+  fullName: Meridian.Ui.Services.BollingerBandsData
+- uid: Meridian.Ui.Services.ChartingService.CalculateAtr*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.CalculateAtr
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_CalculateAtr_Meridian_Ui_Services_CandlestickData_System_Int32_
+  name: CalculateAtr
+  nameWithType: ChartingService.CalculateAtr
+  fullName: Meridian.Ui.Services.ChartingService.CalculateAtr
+- uid: Meridian.Ui.Services.ChartingService.CalculateVolumeProfile*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.CalculateVolumeProfile
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_CalculateVolumeProfile_Meridian_Ui_Services_CandlestickData_System_Int32_
+  name: CalculateVolumeProfile
+  nameWithType: ChartingService.CalculateVolumeProfile
+  fullName: Meridian.Ui.Services.ChartingService.CalculateVolumeProfile
+- uid: Meridian.Ui.Services.VolumeProfileData
+  commentId: T:Meridian.Ui.Services.VolumeProfileData
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.VolumeProfileData.html
+  name: VolumeProfileData
+  nameWithType: VolumeProfileData
+  fullName: Meridian.Ui.Services.VolumeProfileData
+- uid: Meridian.Ui.Services.ChartingService.GetAvailableIndicators*
+  commentId: Overload:Meridian.Ui.Services.ChartingService.GetAvailableIndicators
+  href: Meridian.Ui.Services.ChartingService.html#Meridian_Ui_Services_ChartingService_GetAvailableIndicators
+  name: GetAvailableIndicators
+  nameWithType: ChartingService.GetAvailableIndicators
+  fullName: Meridian.Ui.Services.ChartingService.GetAvailableIndicators
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.TechnicalIndicatorInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.TechnicalIndicatorInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<TechnicalIndicatorInfo>
+  nameWithType: IReadOnlyList<TechnicalIndicatorInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.TechnicalIndicatorInfo>
+  nameWithType.vb: IReadOnlyList(Of TechnicalIndicatorInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.TechnicalIndicatorInfo)
+  name.vb: IReadOnlyList(Of TechnicalIndicatorInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.TechnicalIndicatorInfo
+    name: TechnicalIndicatorInfo
+    href: Meridian.Ui.Services.TechnicalIndicatorInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TechnicalIndicatorInfo
+    name: TechnicalIndicatorInfo
+    href: Meridian.Ui.Services.TechnicalIndicatorInfo.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

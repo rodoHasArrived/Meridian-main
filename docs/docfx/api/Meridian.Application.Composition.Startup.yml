@@ -1,0 +1,98 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.Startup
+  commentId: N:Meridian.Application.Composition.Startup
+  id: Meridian.Application.Composition.Startup
+  children:
+  - Meridian.Application.Composition.Startup.DashboardServerFactory
+  - Meridian.Application.Composition.Startup.HostModeOrchestrator
+  - Meridian.Application.Composition.Startup.IHostDashboardServer
+  - Meridian.Application.Composition.Startup.SharedStartupBootstrapper
+  - Meridian.Application.Composition.Startup.SharedStartupHelpers
+  - Meridian.Application.Composition.Startup.StartupOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Composition.Startup
+  nameWithType: Meridian.Application.Composition.Startup
+  fullName: Meridian.Application.Composition.Startup
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Composition.Startup.DashboardServerFactory
+  commentId: T:Meridian.Application.Composition.Startup.DashboardServerFactory
+  parent: Meridian.Application.Composition.Startup
+  href: Meridian.Application.Composition.Startup.DashboardServerFactory.html
+  name: DashboardServerFactory
+  nameWithType: DashboardServerFactory
+  fullName: Meridian.Application.Composition.Startup.DashboardServerFactory
+- uid: Meridian.Application.Composition.Startup.IHostDashboardServer
+  commentId: T:Meridian.Application.Composition.Startup.IHostDashboardServer
+  parent: Meridian.Application.Composition.Startup
+  href: Meridian.Application.Composition.Startup.IHostDashboardServer.html
+  name: IHostDashboardServer
+  nameWithType: IHostDashboardServer
+  fullName: Meridian.Application.Composition.Startup.IHostDashboardServer
+- uid: Meridian.Application.Composition.Startup.SharedStartupBootstrapper
+  commentId: T:Meridian.Application.Composition.Startup.SharedStartupBootstrapper
+  href: Meridian.Application.Composition.Startup.SharedStartupBootstrapper.html
+  name: SharedStartupBootstrapper
+  nameWithType: SharedStartupBootstrapper
+  fullName: Meridian.Application.Composition.Startup.SharedStartupBootstrapper
+- uid: Meridian.Application.Composition.Startup.SharedStartupHelpers
+  commentId: T:Meridian.Application.Composition.Startup.SharedStartupHelpers
+  href: Meridian.Application.Composition.Startup.SharedStartupHelpers.html
+  name: SharedStartupHelpers
+  nameWithType: SharedStartupHelpers
+  fullName: Meridian.Application.Composition.Startup.SharedStartupHelpers
+- uid: Meridian.Application.Composition.Startup.HostModeOrchestrator
+  commentId: T:Meridian.Application.Composition.Startup.HostModeOrchestrator
+  href: Meridian.Application.Composition.Startup.HostModeOrchestrator.html
+  name: HostModeOrchestrator
+  nameWithType: HostModeOrchestrator
+  fullName: Meridian.Application.Composition.Startup.HostModeOrchestrator
+- uid: Meridian.Application.Composition.Startup.StartupOrchestrator
+  commentId: T:Meridian.Application.Composition.Startup.StartupOrchestrator
+  href: Meridian.Application.Composition.Startup.StartupOrchestrator.html
+  name: StartupOrchestrator
+  nameWithType: StartupOrchestrator
+  fullName: Meridian.Application.Composition.Startup.StartupOrchestrator
+- uid: Meridian.Application.Composition.Startup
+  commentId: N:Meridian.Application.Composition.Startup
+  href: Meridian.html
+  name: Meridian.Application.Composition.Startup
+  nameWithType: Meridian.Application.Composition.Startup
+  fullName: Meridian.Application.Composition.Startup
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html

@@ -1,0 +1,881 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Mcp.Tools.AuditTools
+  commentId: T:Meridian.Mcp.Tools.AuditTools
+  id: AuditTools
+  parent: Meridian.Mcp.Tools
+  children:
+  - Meridian.Mcp.Tools.AuditTools.#ctor(Meridian.Mcp.Services.RepoPathService,Microsoft.Extensions.Logging.ILogger{Meridian.Mcp.Tools.AuditTools})
+  - Meridian.Mcp.Tools.AuditTools.GetDiffSummaryAsync(System.Threading.CancellationToken)
+  - Meridian.Mcp.Tools.AuditTools.RunCodeAuditAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Mcp.Tools.AuditTools.RunFullAuditAsync(System.Threading.CancellationToken)
+  - Meridian.Mcp.Tools.AuditTools.RunProviderAuditAsync(System.Threading.CancellationToken)
+  - Meridian.Mcp.Tools.AuditTools.RunTestAuditAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: AuditTools
+  nameWithType: AuditTools
+  fullName: Meridian.Mcp.Tools.AuditTools
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/AuditTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditTools
+    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    startLine: 4
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: >-
+      [McpServerToolType]
+
+      public sealed class AuditTools
+    content.vb: >-
+      <McpServerToolType>
+
+      Public NotInheritable Class AuditTools
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolTypeAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolTypeAttribute.#ctor
+    arguments: []
+- uid: Meridian.Mcp.Tools.AuditTools.#ctor(Meridian.Mcp.Services.RepoPathService,Microsoft.Extensions.Logging.ILogger{Meridian.Mcp.Tools.AuditTools})
+  commentId: M:Meridian.Mcp.Tools.AuditTools.#ctor(Meridian.Mcp.Services.RepoPathService,Microsoft.Extensions.Logging.ILogger{Meridian.Mcp.Tools.AuditTools})
+  id: '#ctor(Meridian.Mcp.Services.RepoPathService,Microsoft.Extensions.Logging.ILogger{Meridian.Mcp.Tools.AuditTools})'
+  parent: Meridian.Mcp.Tools.AuditTools
+  langs:
+  - csharp
+  - vb
+  name: AuditTools(RepoPathService, ILogger<AuditTools>)
+  nameWithType: AuditTools.AuditTools(RepoPathService, ILogger<AuditTools>)
+  fullName: Meridian.Mcp.Tools.AuditTools.AuditTools(Meridian.Mcp.Services.RepoPathService, Microsoft.Extensions.Logging.ILogger<Meridian.Mcp.Tools.AuditTools>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/AuditTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    startLine: 4
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: public AuditTools(RepoPathService repo, ILogger<AuditTools> logger)
+    parameters:
+    - id: repo
+      type: Meridian.Mcp.Services.RepoPathService
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Mcp.Tools.AuditTools}
+    content.vb: Public Sub New(repo As RepoPathService, logger As ILogger(Of AuditTools))
+  overload: Meridian.Mcp.Tools.AuditTools.#ctor*
+  nameWithType.vb: AuditTools.New(RepoPathService, ILogger(Of AuditTools))
+  fullName.vb: Meridian.Mcp.Tools.AuditTools.New(Meridian.Mcp.Services.RepoPathService, Microsoft.Extensions.Logging.ILogger(Of Meridian.Mcp.Tools.AuditTools))
+  name.vb: New(RepoPathService, ILogger(Of AuditTools))
+- uid: Meridian.Mcp.Tools.AuditTools.RunCodeAuditAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Mcp.Tools.AuditTools.RunCodeAuditAsync(System.String,System.Threading.CancellationToken)
+  id: RunCodeAuditAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Mcp.Tools.AuditTools
+  langs:
+  - csharp
+  - vb
+  name: RunCodeAuditAsync(string?, CancellationToken)
+  nameWithType: AuditTools.RunCodeAuditAsync(string?, CancellationToken)
+  fullName: Meridian.Mcp.Tools.AuditTools.RunCodeAuditAsync(string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/AuditTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunCodeAuditAsync
+    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    startLine: 9
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: >-
+      [McpServerTool(Name = "run_code_audit")]
+
+      public Task<string> RunCodeAuditAsync(string? pathFilter = null, CancellationToken ct = default)
+    parameters:
+    - id: pathFilter
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: >-
+      <McpServerTool(Name:="run_code_audit")>
+
+      Public Function RunCodeAuditAsync(pathFilter As String = Nothing, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Mcp.Tools.AuditTools.RunCodeAuditAsync*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: Name
+      type: System.String
+      value: run_code_audit
+  nameWithType.vb: AuditTools.RunCodeAuditAsync(String, CancellationToken)
+  fullName.vb: Meridian.Mcp.Tools.AuditTools.RunCodeAuditAsync(String, System.Threading.CancellationToken)
+  name.vb: RunCodeAuditAsync(String, CancellationToken)
+- uid: Meridian.Mcp.Tools.AuditTools.RunProviderAuditAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Mcp.Tools.AuditTools.RunProviderAuditAsync(System.Threading.CancellationToken)
+  id: RunProviderAuditAsync(System.Threading.CancellationToken)
+  parent: Meridian.Mcp.Tools.AuditTools
+  langs:
+  - csharp
+  - vb
+  name: RunProviderAuditAsync(CancellationToken)
+  nameWithType: AuditTools.RunProviderAuditAsync(CancellationToken)
+  fullName: Meridian.Mcp.Tools.AuditTools.RunProviderAuditAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/AuditTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunProviderAuditAsync
+    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    startLine: 21
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: >-
+      [McpServerTool(Name = "run_provider_audit")]
+
+      public Task<string> RunProviderAuditAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: >-
+      <McpServerTool(Name:="run_provider_audit")>
+
+      Public Function RunProviderAuditAsync(ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Mcp.Tools.AuditTools.RunProviderAuditAsync*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: Name
+      type: System.String
+      value: run_provider_audit
+- uid: Meridian.Mcp.Tools.AuditTools.RunTestAuditAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Mcp.Tools.AuditTools.RunTestAuditAsync(System.Threading.CancellationToken)
+  id: RunTestAuditAsync(System.Threading.CancellationToken)
+  parent: Meridian.Mcp.Tools.AuditTools
+  langs:
+  - csharp
+  - vb
+  name: RunTestAuditAsync(CancellationToken)
+  nameWithType: AuditTools.RunTestAuditAsync(CancellationToken)
+  fullName: Meridian.Mcp.Tools.AuditTools.RunTestAuditAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/AuditTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunTestAuditAsync
+    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    startLine: 26
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: >-
+      [McpServerTool(Name = "run_test_audit")]
+
+      public Task<string> RunTestAuditAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: >-
+      <McpServerTool(Name:="run_test_audit")>
+
+      Public Function RunTestAuditAsync(ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Mcp.Tools.AuditTools.RunTestAuditAsync*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: Name
+      type: System.String
+      value: run_test_audit
+- uid: Meridian.Mcp.Tools.AuditTools.GetDiffSummaryAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Mcp.Tools.AuditTools.GetDiffSummaryAsync(System.Threading.CancellationToken)
+  id: GetDiffSummaryAsync(System.Threading.CancellationToken)
+  parent: Meridian.Mcp.Tools.AuditTools
+  langs:
+  - csharp
+  - vb
+  name: GetDiffSummaryAsync(CancellationToken)
+  nameWithType: AuditTools.GetDiffSummaryAsync(CancellationToken)
+  fullName: Meridian.Mcp.Tools.AuditTools.GetDiffSummaryAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/AuditTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDiffSummaryAsync
+    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    startLine: 31
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: >-
+      [McpServerTool(Name = "get_diff_summary")]
+
+      public Task<string> GetDiffSummaryAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: >-
+      <McpServerTool(Name:="get_diff_summary")>
+
+      Public Function GetDiffSummaryAsync(ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Mcp.Tools.AuditTools.GetDiffSummaryAsync*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: Name
+      type: System.String
+      value: get_diff_summary
+- uid: Meridian.Mcp.Tools.AuditTools.RunFullAuditAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Mcp.Tools.AuditTools.RunFullAuditAsync(System.Threading.CancellationToken)
+  id: RunFullAuditAsync(System.Threading.CancellationToken)
+  parent: Meridian.Mcp.Tools.AuditTools
+  langs:
+  - csharp
+  - vb
+  name: RunFullAuditAsync(CancellationToken)
+  nameWithType: AuditTools.RunFullAuditAsync(CancellationToken)
+  fullName: Meridian.Mcp.Tools.AuditTools.RunFullAuditAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Mcp/Tools/AuditTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunFullAuditAsync
+    path: ../../src/Meridian.Mcp/Tools/AuditTools.cs
+    startLine: 36
+  assemblies:
+  - mdc-mcp
+  namespace: Meridian.Mcp.Tools
+  syntax:
+    content: >-
+      [McpServerTool(Name = "run_full_audit")]
+
+      public Task<string> RunFullAuditAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: >-
+      <McpServerTool(Name:="run_full_audit")>
+
+      Public Function RunFullAuditAsync(ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Mcp.Tools.AuditTools.RunFullAuditAsync*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: Name
+      type: System.String
+      value: run_full_audit
+references:
+- uid: Meridian.Mcp.Tools
+  commentId: N:Meridian.Mcp.Tools
+  href: Meridian.html
+  name: Meridian.Mcp.Tools
+  nameWithType: Meridian.Mcp.Tools
+  fullName: Meridian.Mcp.Tools
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Tools
+    name: Tools
+    href: Meridian.Mcp.Tools.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Tools
+    name: Tools
+    href: Meridian.Mcp.Tools.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Mcp.Tools.AuditTools.#ctor*
+  commentId: Overload:Meridian.Mcp.Tools.AuditTools.#ctor
+  href: Meridian.Mcp.Tools.AuditTools.html#Meridian_Mcp_Tools_AuditTools__ctor_Meridian_Mcp_Services_RepoPathService_Microsoft_Extensions_Logging_ILogger_Meridian_Mcp_Tools_AuditTools__
+  name: AuditTools
+  nameWithType: AuditTools.AuditTools
+  fullName: Meridian.Mcp.Tools.AuditTools.AuditTools
+  nameWithType.vb: AuditTools.New
+  fullName.vb: Meridian.Mcp.Tools.AuditTools.New
+  name.vb: New
+- uid: Meridian.Mcp.Services.RepoPathService
+  commentId: T:Meridian.Mcp.Services.RepoPathService
+  parent: Meridian.Mcp.Services
+  href: Meridian.Mcp.Services.RepoPathService.html
+  name: RepoPathService
+  nameWithType: RepoPathService
+  fullName: Meridian.Mcp.Services.RepoPathService
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Mcp.Tools.AuditTools}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Mcp.Tools.AuditTools}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<AuditTools>
+  nameWithType: ILogger<AuditTools>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Mcp.Tools.AuditTools>
+  nameWithType.vb: ILogger(Of AuditTools)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Mcp.Tools.AuditTools)
+  name.vb: ILogger(Of AuditTools)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Mcp.Tools.AuditTools
+    name: AuditTools
+    href: Meridian.Mcp.Tools.AuditTools.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Mcp.Tools.AuditTools
+    name: AuditTools
+    href: Meridian.Mcp.Tools.AuditTools.html
+  - name: )
+- uid: Meridian.Mcp.Services
+  commentId: N:Meridian.Mcp.Services
+  href: Meridian.html
+  name: Meridian.Mcp.Services
+  nameWithType: Meridian.Mcp.Services
+  fullName: Meridian.Mcp.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Services
+    name: Services
+    href: Meridian.Mcp.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Mcp
+    name: Mcp
+    href: Meridian.Mcp.html
+  - name: .
+  - uid: Meridian.Mcp.Services
+    name: Services
+    href: Meridian.Mcp.Services.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Mcp.Tools.AuditTools.RunCodeAuditAsync*
+  commentId: Overload:Meridian.Mcp.Tools.AuditTools.RunCodeAuditAsync
+  href: Meridian.Mcp.Tools.AuditTools.html#Meridian_Mcp_Tools_AuditTools_RunCodeAuditAsync_System_String_System_Threading_CancellationToken_
+  name: RunCodeAuditAsync
+  nameWithType: AuditTools.RunCodeAuditAsync
+  fullName: Meridian.Mcp.Tools.AuditTools.RunCodeAuditAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Mcp.Tools.AuditTools.RunProviderAuditAsync*
+  commentId: Overload:Meridian.Mcp.Tools.AuditTools.RunProviderAuditAsync
+  href: Meridian.Mcp.Tools.AuditTools.html#Meridian_Mcp_Tools_AuditTools_RunProviderAuditAsync_System_Threading_CancellationToken_
+  name: RunProviderAuditAsync
+  nameWithType: AuditTools.RunProviderAuditAsync
+  fullName: Meridian.Mcp.Tools.AuditTools.RunProviderAuditAsync
+- uid: Meridian.Mcp.Tools.AuditTools.RunTestAuditAsync*
+  commentId: Overload:Meridian.Mcp.Tools.AuditTools.RunTestAuditAsync
+  href: Meridian.Mcp.Tools.AuditTools.html#Meridian_Mcp_Tools_AuditTools_RunTestAuditAsync_System_Threading_CancellationToken_
+  name: RunTestAuditAsync
+  nameWithType: AuditTools.RunTestAuditAsync
+  fullName: Meridian.Mcp.Tools.AuditTools.RunTestAuditAsync
+- uid: Meridian.Mcp.Tools.AuditTools.GetDiffSummaryAsync*
+  commentId: Overload:Meridian.Mcp.Tools.AuditTools.GetDiffSummaryAsync
+  href: Meridian.Mcp.Tools.AuditTools.html#Meridian_Mcp_Tools_AuditTools_GetDiffSummaryAsync_System_Threading_CancellationToken_
+  name: GetDiffSummaryAsync
+  nameWithType: AuditTools.GetDiffSummaryAsync
+  fullName: Meridian.Mcp.Tools.AuditTools.GetDiffSummaryAsync
+- uid: Meridian.Mcp.Tools.AuditTools.RunFullAuditAsync*
+  commentId: Overload:Meridian.Mcp.Tools.AuditTools.RunFullAuditAsync
+  href: Meridian.Mcp.Tools.AuditTools.html#Meridian_Mcp_Tools_AuditTools_RunFullAuditAsync_System_Threading_CancellationToken_
+  name: RunFullAuditAsync
+  nameWithType: AuditTools.RunFullAuditAsync
+  fullName: Meridian.Mcp.Tools.AuditTools.RunFullAuditAsync

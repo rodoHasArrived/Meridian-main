@@ -323,7 +323,7 @@ public sealed class OnboardingTourService
                 new()
                 {
                     Title = "Choose a Provider",
-                    Content = "Meridian supports multiple data providers including Alpaca, Polygon, Interactive Brokers, and StockSharp. Select a provider to configure.",
+                    Content = "Meridian supports multiple data providers including Alpaca, Polygon, and Interactive Brokers. Select a provider to configure.",
                     TargetElement = "ProviderList",
                     Placement = TooltipPlacement.Right
                 },

@@ -3,8 +3,8 @@
 > **⚠️ SUPERSEDED NOTICE**
 >
 > This document is superseded by:
-> - **[Desktop Platform Improvements - Implementation Guide](../evaluations/desktop-platform-improvements-implementation-guide.md)** - Complete implementation details with code examples
-> - **[Desktop Improvements - Executive Summary](../evaluations/desktop-improvements-executive-summary.md)** - Impact analysis and prioritized roadmap
+> - **[Desktop Platform Improvements - Implementation Guide](../../../docs/evaluations/desktop-platform-improvements-implementation-guide.md)** - Complete implementation details with code examples
+> - **[Evaluations & Audits Summary](../../../docs/status/EVALUATIONS_AND_AUDITS.md#desktop-platform-improvements-guide)** - Consolidated desktop modernization context
 >
 > This document remains for historical reference of the original improvement plan. Most Priority 1 items have been completed (see below). For current guidance on desktop development, see the implementation guide.
 

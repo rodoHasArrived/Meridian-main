@@ -1,0 +1,296 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.ITradeSource
+  commentId: T:Meridian.Infrastructure.DataSources.ITradeSource
+  id: ITradeSource
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.ITradeSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.DataSources.ITradeSource.Trades
+  - Meridian.Infrastructure.DataSources.ITradeSource.UnsubscribeTrades(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: ITradeSource
+  nameWithType: ITradeSource
+  fullName: Meridian.Infrastructure.DataSources.ITradeSource
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ITradeSource
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 108
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Interface for sources that provide trade data.
+  example: []
+  syntax:
+    content: public interface ITradeSource
+    content.vb: Public Interface ITradeSource
+- uid: Meridian.Infrastructure.DataSources.ITradeSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.ITradeSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.DataSources.ITradeSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: ITradeSource.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.DataSources.ITradeSource.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 113
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Subscribes to trade prints for the given symbol.
+  example: []
+  syntax:
+    content: int SubscribeTrades(SymbolConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Function SubscribeTrades(config As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.DataSources.ITradeSource.SubscribeTrades*
+- uid: Meridian.Infrastructure.DataSources.ITradeSource.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.ITradeSource.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.DataSources.ITradeSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: ITradeSource.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.DataSources.ITradeSource.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 118
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Unsubscribes from a trade subscription.
+  example: []
+  syntax:
+    content: void UnsubscribeTrades(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Sub UnsubscribeTrades(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.DataSources.ITradeSource.UnsubscribeTrades*
+  nameWithType.vb: ITradeSource.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.ITradeSource.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+- uid: Meridian.Infrastructure.DataSources.ITradeSource.Trades
+  commentId: P:Meridian.Infrastructure.DataSources.ITradeSource.Trades
+  id: Trades
+  parent: Meridian.Infrastructure.DataSources.ITradeSource
+  langs:
+  - csharp
+  - vb
+  name: Trades
+  nameWithType: ITradeSource.Trades
+  fullName: Meridian.Infrastructure.DataSources.ITradeSource.Trades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trades
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 123
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Observable stream of trade events.
+  example: []
+  syntax:
+    content: IObservable<RealtimeTrade> Trades { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+    content.vb: ReadOnly Property Trades As IObservable(Of RealtimeTrade)
+  overload: Meridian.Infrastructure.DataSources.ITradeSource.Trades*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.ITradeSource.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.DataSources.ITradeSource.SubscribeTrades
+  href: Meridian.Infrastructure.DataSources.ITradeSource.html#Meridian_Infrastructure_DataSources_ITradeSource_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: ITradeSource.SubscribeTrades
+  fullName: Meridian.Infrastructure.DataSources.ITradeSource.SubscribeTrades
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.DataSources.ITradeSource.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.DataSources.ITradeSource.UnsubscribeTrades
+  href: Meridian.Infrastructure.DataSources.ITradeSource.html#Meridian_Infrastructure_DataSources_ITradeSource_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: ITradeSource.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.DataSources.ITradeSource.UnsubscribeTrades
+- uid: Meridian.Infrastructure.DataSources.ITradeSource.Trades*
+  commentId: Overload:Meridian.Infrastructure.DataSources.ITradeSource.Trades
+  href: Meridian.Infrastructure.DataSources.ITradeSource.html#Meridian_Infrastructure_DataSources_ITradeSource_Trades
+  name: Trades
+  nameWithType: ITradeSource.Trades
+  fullName: Meridian.Infrastructure.DataSources.ITradeSource.Trades
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.RealtimeTrade}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<RealtimeTrade>
+  nameWithType: IObservable<RealtimeTrade>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.RealtimeTrade>
+  nameWithType.vb: IObservable(Of RealtimeTrade)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.RealtimeTrade)
+  name.vb: IObservable(Of RealtimeTrade)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+    name: RealtimeTrade
+    href: Meridian.Infrastructure.DataSources.RealtimeTrade.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+    name: RealtimeTrade
+    href: Meridian.Infrastructure.DataSources.RealtimeTrade.html
+  - name: )
+- uid: System.IObservable`1
+  commentId: T:System.IObservable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<T>
+  nameWithType: IObservable<T>
+  fullName: System.IObservable<T>
+  nameWithType.vb: IObservable(Of T)
+  fullName.vb: System.IObservable(Of T)
+  name.vb: IObservable(Of T)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

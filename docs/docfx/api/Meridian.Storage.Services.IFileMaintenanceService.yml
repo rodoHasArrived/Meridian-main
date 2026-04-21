@@ -1,0 +1,474 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.IFileMaintenanceService
+  commentId: T:Meridian.Storage.Services.IFileMaintenanceService
+  id: IFileMaintenanceService
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.IFileMaintenanceService.DefragmentAsync(Meridian.Storage.Services.DefragOptions,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IFileMaintenanceService.FindOrphansAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IFileMaintenanceService.RepairAsync(Meridian.Storage.Services.RepairOptions,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.IFileMaintenanceService.RunHealthCheckAsync(Meridian.Storage.Services.HealthCheckOptions,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IFileMaintenanceService
+  nameWithType: IFileMaintenanceService
+  fullName: Meridian.Storage.Services.IFileMaintenanceService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IFileMaintenanceService
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 548
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Interface for file maintenance service.
+  example: []
+  syntax:
+    content: public interface IFileMaintenanceService
+    content.vb: Public Interface IFileMaintenanceService
+  derivedClasses:
+  - Meridian.Storage.Services.FileMaintenanceService
+- uid: Meridian.Storage.Services.IFileMaintenanceService.RunHealthCheckAsync(Meridian.Storage.Services.HealthCheckOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IFileMaintenanceService.RunHealthCheckAsync(Meridian.Storage.Services.HealthCheckOptions,System.Threading.CancellationToken)
+  id: RunHealthCheckAsync(Meridian.Storage.Services.HealthCheckOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IFileMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: RunHealthCheckAsync(HealthCheckOptions, CancellationToken)
+  nameWithType: IFileMaintenanceService.RunHealthCheckAsync(HealthCheckOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.IFileMaintenanceService.RunHealthCheckAsync(Meridian.Storage.Services.HealthCheckOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunHealthCheckAsync
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 550
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<HealthReport> RunHealthCheckAsync(HealthCheckOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Storage.Services.HealthCheckOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.HealthReport}
+    content.vb: Function RunHealthCheckAsync(options As HealthCheckOptions, ct As CancellationToken = Nothing) As Task(Of HealthReport)
+  overload: Meridian.Storage.Services.IFileMaintenanceService.RunHealthCheckAsync*
+- uid: Meridian.Storage.Services.IFileMaintenanceService.RepairAsync(Meridian.Storage.Services.RepairOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IFileMaintenanceService.RepairAsync(Meridian.Storage.Services.RepairOptions,System.Threading.CancellationToken)
+  id: RepairAsync(Meridian.Storage.Services.RepairOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IFileMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: RepairAsync(RepairOptions, CancellationToken)
+  nameWithType: IFileMaintenanceService.RepairAsync(RepairOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.IFileMaintenanceService.RepairAsync(Meridian.Storage.Services.RepairOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepairAsync
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 551
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<RepairResult> RepairAsync(RepairOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Storage.Services.RepairOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.RepairResult}
+    content.vb: Function RepairAsync(options As RepairOptions, ct As CancellationToken = Nothing) As Task(Of RepairResult)
+  overload: Meridian.Storage.Services.IFileMaintenanceService.RepairAsync*
+- uid: Meridian.Storage.Services.IFileMaintenanceService.DefragmentAsync(Meridian.Storage.Services.DefragOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IFileMaintenanceService.DefragmentAsync(Meridian.Storage.Services.DefragOptions,System.Threading.CancellationToken)
+  id: DefragmentAsync(Meridian.Storage.Services.DefragOptions,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IFileMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: DefragmentAsync(DefragOptions, CancellationToken)
+  nameWithType: IFileMaintenanceService.DefragmentAsync(DefragOptions, CancellationToken)
+  fullName: Meridian.Storage.Services.IFileMaintenanceService.DefragmentAsync(Meridian.Storage.Services.DefragOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefragmentAsync
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 552
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<DefragResult> DefragmentAsync(DefragOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Storage.Services.DefragOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.DefragResult}
+    content.vb: Function DefragmentAsync(options As DefragOptions, ct As CancellationToken = Nothing) As Task(Of DefragResult)
+  overload: Meridian.Storage.Services.IFileMaintenanceService.DefragmentAsync*
+- uid: Meridian.Storage.Services.IFileMaintenanceService.FindOrphansAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IFileMaintenanceService.FindOrphansAsync(System.Threading.CancellationToken)
+  id: FindOrphansAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IFileMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: FindOrphansAsync(CancellationToken)
+  nameWithType: IFileMaintenanceService.FindOrphansAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.IFileMaintenanceService.FindOrphansAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FindOrphansAsync
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 553
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<OrphanReport> FindOrphansAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.OrphanReport}
+    content.vb: Function FindOrphansAsync(ct As CancellationToken = Nothing) As Task(Of OrphanReport)
+  overload: Meridian.Storage.Services.IFileMaintenanceService.FindOrphansAsync*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.IFileMaintenanceService.RunHealthCheckAsync*
+  commentId: Overload:Meridian.Storage.Services.IFileMaintenanceService.RunHealthCheckAsync
+  href: Meridian.Storage.Services.IFileMaintenanceService.html#Meridian_Storage_Services_IFileMaintenanceService_RunHealthCheckAsync_Meridian_Storage_Services_HealthCheckOptions_System_Threading_CancellationToken_
+  name: RunHealthCheckAsync
+  nameWithType: IFileMaintenanceService.RunHealthCheckAsync
+  fullName: Meridian.Storage.Services.IFileMaintenanceService.RunHealthCheckAsync
+- uid: Meridian.Storage.Services.HealthCheckOptions
+  commentId: T:Meridian.Storage.Services.HealthCheckOptions
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.HealthCheckOptions.html
+  name: HealthCheckOptions
+  nameWithType: HealthCheckOptions
+  fullName: Meridian.Storage.Services.HealthCheckOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.HealthReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.HealthReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<HealthReport>
+  nameWithType: Task<HealthReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.HealthReport>
+  nameWithType.vb: Task(Of HealthReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.HealthReport)
+  name.vb: Task(Of HealthReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.HealthReport
+    name: HealthReport
+    href: Meridian.Storage.Services.HealthReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.HealthReport
+    name: HealthReport
+    href: Meridian.Storage.Services.HealthReport.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Services.IFileMaintenanceService.RepairAsync*
+  commentId: Overload:Meridian.Storage.Services.IFileMaintenanceService.RepairAsync
+  href: Meridian.Storage.Services.IFileMaintenanceService.html#Meridian_Storage_Services_IFileMaintenanceService_RepairAsync_Meridian_Storage_Services_RepairOptions_System_Threading_CancellationToken_
+  name: RepairAsync
+  nameWithType: IFileMaintenanceService.RepairAsync
+  fullName: Meridian.Storage.Services.IFileMaintenanceService.RepairAsync
+- uid: Meridian.Storage.Services.RepairOptions
+  commentId: T:Meridian.Storage.Services.RepairOptions
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.RepairOptions.html
+  name: RepairOptions
+  nameWithType: RepairOptions
+  fullName: Meridian.Storage.Services.RepairOptions
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.RepairResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.RepairResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<RepairResult>
+  nameWithType: Task<RepairResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.RepairResult>
+  nameWithType.vb: Task(Of RepairResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.RepairResult)
+  name.vb: Task(Of RepairResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.RepairResult
+    name: RepairResult
+    href: Meridian.Storage.Services.RepairResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.RepairResult
+    name: RepairResult
+    href: Meridian.Storage.Services.RepairResult.html
+  - name: )
+- uid: Meridian.Storage.Services.IFileMaintenanceService.DefragmentAsync*
+  commentId: Overload:Meridian.Storage.Services.IFileMaintenanceService.DefragmentAsync
+  href: Meridian.Storage.Services.IFileMaintenanceService.html#Meridian_Storage_Services_IFileMaintenanceService_DefragmentAsync_Meridian_Storage_Services_DefragOptions_System_Threading_CancellationToken_
+  name: DefragmentAsync
+  nameWithType: IFileMaintenanceService.DefragmentAsync
+  fullName: Meridian.Storage.Services.IFileMaintenanceService.DefragmentAsync
+- uid: Meridian.Storage.Services.DefragOptions
+  commentId: T:Meridian.Storage.Services.DefragOptions
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.DefragOptions.html
+  name: DefragOptions
+  nameWithType: DefragOptions
+  fullName: Meridian.Storage.Services.DefragOptions
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.DefragResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.DefragResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DefragResult>
+  nameWithType: Task<DefragResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.DefragResult>
+  nameWithType.vb: Task(Of DefragResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.DefragResult)
+  name.vb: Task(Of DefragResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.DefragResult
+    name: DefragResult
+    href: Meridian.Storage.Services.DefragResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.DefragResult
+    name: DefragResult
+    href: Meridian.Storage.Services.DefragResult.html
+  - name: )
+- uid: Meridian.Storage.Services.IFileMaintenanceService.FindOrphansAsync*
+  commentId: Overload:Meridian.Storage.Services.IFileMaintenanceService.FindOrphansAsync
+  href: Meridian.Storage.Services.IFileMaintenanceService.html#Meridian_Storage_Services_IFileMaintenanceService_FindOrphansAsync_System_Threading_CancellationToken_
+  name: FindOrphansAsync
+  nameWithType: IFileMaintenanceService.FindOrphansAsync
+  fullName: Meridian.Storage.Services.IFileMaintenanceService.FindOrphansAsync
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.OrphanReport}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.OrphanReport}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OrphanReport>
+  nameWithType: Task<OrphanReport>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.OrphanReport>
+  nameWithType.vb: Task(Of OrphanReport)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.OrphanReport)
+  name.vb: Task(Of OrphanReport)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.OrphanReport
+    name: OrphanReport
+    href: Meridian.Storage.Services.OrphanReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.OrphanReport
+    name: OrphanReport
+    href: Meridian.Storage.Services.OrphanReport.html
+  - name: )

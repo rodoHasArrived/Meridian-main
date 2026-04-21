@@ -1,0 +1,969 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.SchemaValidationService
+  commentId: T:Meridian.Application.Monitoring.SchemaValidationService
+  id: SchemaValidationService
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.SchemaValidationService.#ctor(Meridian.Application.Monitoring.SchemaValidationOptions,System.String)
+  - Meridian.Application.Monitoring.SchemaValidationService.CurrentSchemaVersion
+  - Meridian.Application.Monitoring.SchemaValidationService.CurrentSemanticVersion
+  - Meridian.Application.Monitoring.SchemaValidationService.DisposeAsync
+  - Meridian.Application.Monitoring.SchemaValidationService.ExportSchemasAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.SchemaValidationService.GetVersionManager
+  - Meridian.Application.Monitoring.SchemaValidationService.PerformStartupCheckAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.SchemaValidationService.Validate(Meridian.Domain.Events.MarketEvent)
+  - Meridian.Application.Monitoring.SchemaValidationService.ValidateSafe(Meridian.Domain.Events.MarketEvent)
+  langs:
+  - csharp
+  - vb
+  name: SchemaValidationService
+  nameWithType: SchemaValidationService
+  fullName: Meridian.Application.Monitoring.SchemaValidationService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaValidationService
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Consolidated schema validation service providing a single entrypoint for
+
+    schema version validation in the ingestion path.
+
+    Bridges EventSchemaValidator (runtime) and SchemaVersionManager (archival).
+  example: []
+  syntax:
+    content: 'public sealed class SchemaValidationService : IAsyncDisposable'
+    content.vb: Public NotInheritable Class SchemaValidationService Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.SchemaValidationService.CurrentSchemaVersion
+  commentId: P:Meridian.Application.Monitoring.SchemaValidationService.CurrentSchemaVersion
+  id: CurrentSchemaVersion
+  parent: Meridian.Application.Monitoring.SchemaValidationService
+  langs:
+  - csharp
+  - vb
+  name: CurrentSchemaVersion
+  nameWithType: SchemaValidationService.CurrentSchemaVersion
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.CurrentSchemaVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentSchemaVersion
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Current schema version for serialized MarketEvent documents.
+
+    This is the single source of truth for schema versioning.
+  example: []
+  syntax:
+    content: public static int CurrentSchemaVersion { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Shared ReadOnly Property CurrentSchemaVersion As Integer
+  overload: Meridian.Application.Monitoring.SchemaValidationService.CurrentSchemaVersion*
+- uid: Meridian.Application.Monitoring.SchemaValidationService.CurrentSemanticVersion
+  commentId: P:Meridian.Application.Monitoring.SchemaValidationService.CurrentSemanticVersion
+  id: CurrentSemanticVersion
+  parent: Meridian.Application.Monitoring.SchemaValidationService
+  langs:
+  - csharp
+  - vb
+  name: CurrentSemanticVersion
+  nameWithType: SchemaValidationService.CurrentSemanticVersion
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.CurrentSemanticVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentSemanticVersion
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Semantic version string corresponding to the current schema version.
+
+    Used for compatibility with SchemaVersionManager.
+  example: []
+  syntax:
+    content: public static string CurrentSemanticVersion { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Shared ReadOnly Property CurrentSemanticVersion As String
+  overload: Meridian.Application.Monitoring.SchemaValidationService.CurrentSemanticVersion*
+- uid: Meridian.Application.Monitoring.SchemaValidationService.#ctor(Meridian.Application.Monitoring.SchemaValidationOptions,System.String)
+  commentId: M:Meridian.Application.Monitoring.SchemaValidationService.#ctor(Meridian.Application.Monitoring.SchemaValidationOptions,System.String)
+  id: '#ctor(Meridian.Application.Monitoring.SchemaValidationOptions,System.String)'
+  parent: Meridian.Application.Monitoring.SchemaValidationService
+  langs:
+  - csharp
+  - vb
+  name: SchemaValidationService(SchemaValidationOptions?, string?)
+  nameWithType: SchemaValidationService.SchemaValidationService(SchemaValidationOptions?, string?)
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.SchemaValidationService(Meridian.Application.Monitoring.SchemaValidationOptions?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public SchemaValidationService(SchemaValidationOptions? options = null, string? dataRoot = null)
+    parameters:
+    - id: options
+      type: Meridian.Application.Monitoring.SchemaValidationOptions
+    - id: dataRoot
+      type: System.String
+    content.vb: Public Sub New(options As SchemaValidationOptions = Nothing, dataRoot As String = Nothing)
+  overload: Meridian.Application.Monitoring.SchemaValidationService.#ctor*
+  nameWithType.vb: SchemaValidationService.New(SchemaValidationOptions, String)
+  fullName.vb: Meridian.Application.Monitoring.SchemaValidationService.New(Meridian.Application.Monitoring.SchemaValidationOptions, String)
+  name.vb: New(SchemaValidationOptions, String)
+- uid: Meridian.Application.Monitoring.SchemaValidationService.Validate(Meridian.Domain.Events.MarketEvent)
+  commentId: M:Meridian.Application.Monitoring.SchemaValidationService.Validate(Meridian.Domain.Events.MarketEvent)
+  id: Validate(Meridian.Domain.Events.MarketEvent)
+  parent: Meridian.Application.Monitoring.SchemaValidationService
+  langs:
+  - csharp
+  - vb
+  name: Validate(MarketEvent)
+  nameWithType: SchemaValidationService.Validate(MarketEvent)
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.Validate(Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validate
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Validates an event for schema compliance. This is the single entrypoint
+
+    for all schema validation in the ingestion path.
+  example: []
+  syntax:
+    content: public void Validate(MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+      description: The market event to validate.
+    content.vb: Public Sub Validate(evt As MarketEvent)
+  overload: Meridian.Application.Monitoring.SchemaValidationService.Validate*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when validation fails.
+- uid: Meridian.Application.Monitoring.SchemaValidationService.ValidateSafe(Meridian.Domain.Events.MarketEvent)
+  commentId: M:Meridian.Application.Monitoring.SchemaValidationService.ValidateSafe(Meridian.Domain.Events.MarketEvent)
+  id: ValidateSafe(Meridian.Domain.Events.MarketEvent)
+  parent: Meridian.Application.Monitoring.SchemaValidationService
+  langs:
+  - csharp
+  - vb
+  name: ValidateSafe(MarketEvent)
+  nameWithType: SchemaValidationService.ValidateSafe(MarketEvent)
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.ValidateSafe(Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateSafe
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Validates an event and returns a result instead of throwing.
+  example: []
+  syntax:
+    content: public SchemaCheckResult ValidateSafe(MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+      description: The market event to validate.
+    return:
+      type: Meridian.Application.Monitoring.SchemaCheckResult
+      description: Validation result with success status and any errors.
+    content.vb: Public Function ValidateSafe(evt As MarketEvent) As SchemaCheckResult
+  overload: Meridian.Application.Monitoring.SchemaValidationService.ValidateSafe*
+- uid: Meridian.Application.Monitoring.SchemaValidationService.PerformStartupCheckAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.SchemaValidationService.PerformStartupCheckAsync(System.Threading.CancellationToken)
+  id: PerformStartupCheckAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.SchemaValidationService
+  langs:
+  - csharp
+  - vb
+  name: PerformStartupCheckAsync(CancellationToken)
+  nameWithType: SchemaValidationService.PerformStartupCheckAsync(CancellationToken)
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.PerformStartupCheckAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PerformStartupCheckAsync
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Performs a startup check for stored schema compatibility.
+
+    Scans existing data files and verifies they are compatible with current schema.
+  example: []
+  syntax:
+    content: public Task<StartupSchemaCheckResult> PerformStartupCheckAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Monitoring.StartupSchemaCheckResult}
+      description: Result of the startup compatibility check.
+    content.vb: Public Function PerformStartupCheckAsync(ct As CancellationToken = Nothing) As Task(Of StartupSchemaCheckResult)
+  overload: Meridian.Application.Monitoring.SchemaValidationService.PerformStartupCheckAsync*
+- uid: Meridian.Application.Monitoring.SchemaValidationService.GetVersionManager
+  commentId: M:Meridian.Application.Monitoring.SchemaValidationService.GetVersionManager
+  id: GetVersionManager
+  parent: Meridian.Application.Monitoring.SchemaValidationService
+  langs:
+  - csharp
+  - vb
+  name: GetVersionManager()
+  nameWithType: SchemaValidationService.GetVersionManager()
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.GetVersionManager()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetVersionManager
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Gets the version manager for advanced schema operations.
+
+    Returns null if version tracking is disabled.
+  example: []
+  syntax:
+    content: public SchemaVersionManager? GetVersionManager()
+    return:
+      type: Meridian.Storage.Archival.SchemaVersionManager
+    content.vb: Public Function GetVersionManager() As SchemaVersionManager
+  overload: Meridian.Application.Monitoring.SchemaValidationService.GetVersionManager*
+- uid: Meridian.Application.Monitoring.SchemaValidationService.ExportSchemasAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.SchemaValidationService.ExportSchemasAsync(System.Threading.CancellationToken)
+  id: ExportSchemasAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.SchemaValidationService
+  langs:
+  - csharp
+  - vb
+  name: ExportSchemasAsync(CancellationToken)
+  nameWithType: SchemaValidationService.ExportSchemasAsync(CancellationToken)
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.ExportSchemasAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportSchemasAsync
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Exports current schema definitions to the schema directory.
+  example: []
+  syntax:
+    content: public Task ExportSchemasAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ExportSchemasAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Monitoring.SchemaValidationService.ExportSchemasAsync*
+- uid: Meridian.Application.Monitoring.SchemaValidationService.DisposeAsync
+  commentId: M:Meridian.Application.Monitoring.SchemaValidationService.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Monitoring.SchemaValidationService
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: SchemaValidationService.DisposeAsync()
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SchemaValidationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Monitoring/SchemaValidationService.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Monitoring.SchemaValidationService.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.SchemaValidationService.CurrentSchemaVersion*
+  commentId: Overload:Meridian.Application.Monitoring.SchemaValidationService.CurrentSchemaVersion
+  href: Meridian.Application.Monitoring.SchemaValidationService.html#Meridian_Application_Monitoring_SchemaValidationService_CurrentSchemaVersion
+  name: CurrentSchemaVersion
+  nameWithType: SchemaValidationService.CurrentSchemaVersion
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.CurrentSchemaVersion
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Monitoring.SchemaValidationService.CurrentSemanticVersion*
+  commentId: Overload:Meridian.Application.Monitoring.SchemaValidationService.CurrentSemanticVersion
+  href: Meridian.Application.Monitoring.SchemaValidationService.html#Meridian_Application_Monitoring_SchemaValidationService_CurrentSemanticVersion
+  name: CurrentSemanticVersion
+  nameWithType: SchemaValidationService.CurrentSemanticVersion
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.CurrentSemanticVersion
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.SchemaValidationService.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.SchemaValidationService.#ctor
+  href: Meridian.Application.Monitoring.SchemaValidationService.html#Meridian_Application_Monitoring_SchemaValidationService__ctor_Meridian_Application_Monitoring_SchemaValidationOptions_System_String_
+  name: SchemaValidationService
+  nameWithType: SchemaValidationService.SchemaValidationService
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.SchemaValidationService
+  nameWithType.vb: SchemaValidationService.New
+  fullName.vb: Meridian.Application.Monitoring.SchemaValidationService.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.SchemaValidationOptions
+  commentId: T:Meridian.Application.Monitoring.SchemaValidationOptions
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.SchemaValidationOptions.html
+  name: SchemaValidationOptions
+  nameWithType: SchemaValidationOptions
+  fullName: Meridian.Application.Monitoring.SchemaValidationOptions
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Meridian.Application.Monitoring.SchemaValidationService.Validate*
+  commentId: Overload:Meridian.Application.Monitoring.SchemaValidationService.Validate
+  href: Meridian.Application.Monitoring.SchemaValidationService.html#Meridian_Application_Monitoring_SchemaValidationService_Validate_Meridian_Domain_Events_MarketEvent_
+  name: Validate
+  nameWithType: SchemaValidationService.Validate
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.Validate
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Application.Monitoring.SchemaValidationService.ValidateSafe*
+  commentId: Overload:Meridian.Application.Monitoring.SchemaValidationService.ValidateSafe
+  href: Meridian.Application.Monitoring.SchemaValidationService.html#Meridian_Application_Monitoring_SchemaValidationService_ValidateSafe_Meridian_Domain_Events_MarketEvent_
+  name: ValidateSafe
+  nameWithType: SchemaValidationService.ValidateSafe
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.ValidateSafe
+- uid: Meridian.Application.Monitoring.SchemaCheckResult
+  commentId: T:Meridian.Application.Monitoring.SchemaCheckResult
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.SchemaCheckResult.html
+  name: SchemaCheckResult
+  nameWithType: SchemaCheckResult
+  fullName: Meridian.Application.Monitoring.SchemaCheckResult
+- uid: Meridian.Application.Monitoring.SchemaValidationService.PerformStartupCheckAsync*
+  commentId: Overload:Meridian.Application.Monitoring.SchemaValidationService.PerformStartupCheckAsync
+  href: Meridian.Application.Monitoring.SchemaValidationService.html#Meridian_Application_Monitoring_SchemaValidationService_PerformStartupCheckAsync_System_Threading_CancellationToken_
+  name: PerformStartupCheckAsync
+  nameWithType: SchemaValidationService.PerformStartupCheckAsync
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.PerformStartupCheckAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Monitoring.StartupSchemaCheckResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Monitoring.StartupSchemaCheckResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<StartupSchemaCheckResult>
+  nameWithType: Task<StartupSchemaCheckResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Monitoring.StartupSchemaCheckResult>
+  nameWithType.vb: Task(Of StartupSchemaCheckResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.StartupSchemaCheckResult)
+  name.vb: Task(Of StartupSchemaCheckResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.StartupSchemaCheckResult
+    name: StartupSchemaCheckResult
+    href: Meridian.Application.Monitoring.StartupSchemaCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.StartupSchemaCheckResult
+    name: StartupSchemaCheckResult
+    href: Meridian.Application.Monitoring.StartupSchemaCheckResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Monitoring.SchemaValidationService.GetVersionManager*
+  commentId: Overload:Meridian.Application.Monitoring.SchemaValidationService.GetVersionManager
+  href: Meridian.Application.Monitoring.SchemaValidationService.html#Meridian_Application_Monitoring_SchemaValidationService_GetVersionManager
+  name: GetVersionManager
+  nameWithType: SchemaValidationService.GetVersionManager
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.GetVersionManager
+- uid: Meridian.Storage.Archival.SchemaVersionManager
+  commentId: T:Meridian.Storage.Archival.SchemaVersionManager
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.SchemaVersionManager.html
+  name: SchemaVersionManager
+  nameWithType: SchemaVersionManager
+  fullName: Meridian.Storage.Archival.SchemaVersionManager
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: Meridian.Application.Monitoring.SchemaValidationService.ExportSchemasAsync*
+  commentId: Overload:Meridian.Application.Monitoring.SchemaValidationService.ExportSchemasAsync
+  href: Meridian.Application.Monitoring.SchemaValidationService.html#Meridian_Application_Monitoring_SchemaValidationService_ExportSchemasAsync_System_Threading_CancellationToken_
+  name: ExportSchemasAsync
+  nameWithType: SchemaValidationService.ExportSchemasAsync
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.ExportSchemasAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Application.Monitoring.SchemaValidationService.DisposeAsync*
+  commentId: Overload:Meridian.Application.Monitoring.SchemaValidationService.DisposeAsync
+  href: Meridian.Application.Monitoring.SchemaValidationService.html#Meridian_Application_Monitoring_SchemaValidationService_DisposeAsync
+  name: DisposeAsync
+  nameWithType: SchemaValidationService.DisposeAsync
+  fullName: Meridian.Application.Monitoring.SchemaValidationService.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

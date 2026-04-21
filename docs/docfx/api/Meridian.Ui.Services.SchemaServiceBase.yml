@@ -1,0 +1,1045 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SchemaServiceBase
+  commentId: T:Meridian.Ui.Services.SchemaServiceBase
+  id: SchemaServiceBase
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SchemaServiceBase.CreateBarSchema
+  - Meridian.Ui.Services.SchemaServiceBase.CreateBboQuoteSchema
+  - Meridian.Ui.Services.SchemaServiceBase.CreateDataDictionary
+  - Meridian.Ui.Services.SchemaServiceBase.CreateL2DepthSchema
+  - Meridian.Ui.Services.SchemaServiceBase.CreateQuoteSchema
+  - Meridian.Ui.Services.SchemaServiceBase.CreateTradeSchema
+  - Meridian.Ui.Services.SchemaServiceBase.ExportAsCsv(Meridian.Contracts.Schema.DataDictionary)
+  - Meridian.Ui.Services.SchemaServiceBase.ExportAsJson(Meridian.Contracts.Schema.DataDictionary)
+  - Meridian.Ui.Services.SchemaServiceBase.ExportAsMarkdown(Meridian.Contracts.Schema.DataDictionary)
+  - Meridian.Ui.Services.SchemaServiceBase.GetExchangeCodes
+  - Meridian.Ui.Services.SchemaServiceBase.GetJsonSchema(System.String)
+  - Meridian.Ui.Services.SchemaServiceBase.GetQuoteConditions
+  - Meridian.Ui.Services.SchemaServiceBase.GetTradeConditions
+  langs:
+  - csharp
+  - vb
+  name: SchemaServiceBase
+  nameWithType: SchemaServiceBase
+  fullName: Meridian.Ui.Services.SchemaServiceBase
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaServiceBase
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Base class containing shared schema creation and export logic.
+
+    Platform-specific projects (WPF) extend this class with their own
+
+    storage and caching implementations.
+  example: []
+  syntax:
+    content: 'public abstract class SchemaServiceBase : ISchemaService'
+    content.vb: Public MustInherit Class SchemaServiceBase Implements ISchemaService
+  inheritance:
+  - System.Object
+  derivedClasses:
+  - Meridian.Ui.Services.SchemaService
+  implements:
+  - Meridian.Ui.Services.Contracts.ISchemaService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SchemaServiceBase.GetJsonSchema(System.String)
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.GetJsonSchema(System.String)
+  id: GetJsonSchema(System.String)
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetJsonSchema(string)
+  nameWithType: SchemaServiceBase.GetJsonSchema(string)
+  fullName: Meridian.Ui.Services.SchemaServiceBase.GetJsonSchema(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJsonSchema
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Gets a JSON schema for the specified event type.
+
+    Implements ISchemaService for use by shared UI services.
+  example: []
+  syntax:
+    content: public virtual string? GetJsonSchema(string eventType)
+    parameters:
+    - id: eventType
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Overridable Function GetJsonSchema(eventType As String) As String
+  overload: Meridian.Ui.Services.SchemaServiceBase.GetJsonSchema*
+  implements:
+  - Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(System.String)
+  nameWithType.vb: SchemaServiceBase.GetJsonSchema(String)
+  fullName.vb: Meridian.Ui.Services.SchemaServiceBase.GetJsonSchema(String)
+  name.vb: GetJsonSchema(String)
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateDataDictionary
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.CreateDataDictionary
+  id: CreateDataDictionary
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CreateDataDictionary()
+  nameWithType: SchemaServiceBase.CreateDataDictionary()
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateDataDictionary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateDataDictionary
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a complete data dictionary with all known event schemas.
+  example: []
+  syntax:
+    content: protected virtual DataDictionary CreateDataDictionary()
+    return:
+      type: Meridian.Contracts.Schema.DataDictionary
+    content.vb: Protected Overridable Function CreateDataDictionary() As DataDictionary
+  overload: Meridian.Ui.Services.SchemaServiceBase.CreateDataDictionary*
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateTradeSchema
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.CreateTradeSchema
+  id: CreateTradeSchema
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CreateTradeSchema()
+  nameWithType: SchemaServiceBase.CreateTradeSchema()
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateTradeSchema()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateTradeSchema
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static EventSchema CreateTradeSchema()
+    return:
+      type: Meridian.Contracts.Schema.EventSchema
+    content.vb: Protected Shared Function CreateTradeSchema() As EventSchema
+  overload: Meridian.Ui.Services.SchemaServiceBase.CreateTradeSchema*
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateQuoteSchema
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.CreateQuoteSchema
+  id: CreateQuoteSchema
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CreateQuoteSchema()
+  nameWithType: SchemaServiceBase.CreateQuoteSchema()
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateQuoteSchema()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateQuoteSchema
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static EventSchema CreateQuoteSchema()
+    return:
+      type: Meridian.Contracts.Schema.EventSchema
+    content.vb: Protected Shared Function CreateQuoteSchema() As EventSchema
+  overload: Meridian.Ui.Services.SchemaServiceBase.CreateQuoteSchema*
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateBboQuoteSchema
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.CreateBboQuoteSchema
+  id: CreateBboQuoteSchema
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CreateBboQuoteSchema()
+  nameWithType: SchemaServiceBase.CreateBboQuoteSchema()
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateBboQuoteSchema()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateBboQuoteSchema
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static EventSchema CreateBboQuoteSchema()
+    return:
+      type: Meridian.Contracts.Schema.EventSchema
+    content.vb: Protected Shared Function CreateBboQuoteSchema() As EventSchema
+  overload: Meridian.Ui.Services.SchemaServiceBase.CreateBboQuoteSchema*
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateL2DepthSchema
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.CreateL2DepthSchema
+  id: CreateL2DepthSchema
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CreateL2DepthSchema()
+  nameWithType: SchemaServiceBase.CreateL2DepthSchema()
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateL2DepthSchema()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateL2DepthSchema
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static EventSchema CreateL2DepthSchema()
+    return:
+      type: Meridian.Contracts.Schema.EventSchema
+    content.vb: Protected Shared Function CreateL2DepthSchema() As EventSchema
+  overload: Meridian.Ui.Services.SchemaServiceBase.CreateL2DepthSchema*
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateBarSchema
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.CreateBarSchema
+  id: CreateBarSchema
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CreateBarSchema()
+  nameWithType: SchemaServiceBase.CreateBarSchema()
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateBarSchema()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateBarSchema
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static EventSchema CreateBarSchema()
+    return:
+      type: Meridian.Contracts.Schema.EventSchema
+    content.vb: Protected Shared Function CreateBarSchema() As EventSchema
+  overload: Meridian.Ui.Services.SchemaServiceBase.CreateBarSchema*
+- uid: Meridian.Ui.Services.SchemaServiceBase.GetExchangeCodes
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.GetExchangeCodes
+  id: GetExchangeCodes
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetExchangeCodes()
+  nameWithType: SchemaServiceBase.GetExchangeCodes()
+  fullName: Meridian.Ui.Services.SchemaServiceBase.GetExchangeCodes()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetExchangeCodes
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static Dictionary<string, string> GetExchangeCodes()
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Protected Shared Function GetExchangeCodes() As Dictionary(Of String, String)
+  overload: Meridian.Ui.Services.SchemaServiceBase.GetExchangeCodes*
+- uid: Meridian.Ui.Services.SchemaServiceBase.GetTradeConditions
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.GetTradeConditions
+  id: GetTradeConditions
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetTradeConditions()
+  nameWithType: SchemaServiceBase.GetTradeConditions()
+  fullName: Meridian.Ui.Services.SchemaServiceBase.GetTradeConditions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTradeConditions
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 271
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static Dictionary<string, string> GetTradeConditions()
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Protected Shared Function GetTradeConditions() As Dictionary(Of String, String)
+  overload: Meridian.Ui.Services.SchemaServiceBase.GetTradeConditions*
+- uid: Meridian.Ui.Services.SchemaServiceBase.GetQuoteConditions
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.GetQuoteConditions
+  id: GetQuoteConditions
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetQuoteConditions()
+  nameWithType: SchemaServiceBase.GetQuoteConditions()
+  fullName: Meridian.Ui.Services.SchemaServiceBase.GetQuoteConditions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetQuoteConditions
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 286
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static Dictionary<string, string> GetQuoteConditions()
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Protected Shared Function GetQuoteConditions() As Dictionary(Of String, String)
+  overload: Meridian.Ui.Services.SchemaServiceBase.GetQuoteConditions*
+- uid: Meridian.Ui.Services.SchemaServiceBase.ExportAsJson(Meridian.Contracts.Schema.DataDictionary)
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.ExportAsJson(Meridian.Contracts.Schema.DataDictionary)
+  id: ExportAsJson(Meridian.Contracts.Schema.DataDictionary)
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ExportAsJson(DataDictionary)
+  nameWithType: SchemaServiceBase.ExportAsJson(DataDictionary)
+  fullName: Meridian.Ui.Services.SchemaServiceBase.ExportAsJson(Meridian.Contracts.Schema.DataDictionary)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportAsJson
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static string ExportAsJson(DataDictionary dictionary)
+    parameters:
+    - id: dictionary
+      type: Meridian.Contracts.Schema.DataDictionary
+    return:
+      type: System.String
+    content.vb: Protected Shared Function ExportAsJson(dictionary As DataDictionary) As String
+  overload: Meridian.Ui.Services.SchemaServiceBase.ExportAsJson*
+- uid: Meridian.Ui.Services.SchemaServiceBase.ExportAsMarkdown(Meridian.Contracts.Schema.DataDictionary)
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.ExportAsMarkdown(Meridian.Contracts.Schema.DataDictionary)
+  id: ExportAsMarkdown(Meridian.Contracts.Schema.DataDictionary)
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ExportAsMarkdown(DataDictionary)
+  nameWithType: SchemaServiceBase.ExportAsMarkdown(DataDictionary)
+  fullName: Meridian.Ui.Services.SchemaServiceBase.ExportAsMarkdown(Meridian.Contracts.Schema.DataDictionary)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportAsMarkdown
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 306
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static string ExportAsMarkdown(DataDictionary dictionary)
+    parameters:
+    - id: dictionary
+      type: Meridian.Contracts.Schema.DataDictionary
+    return:
+      type: System.String
+    content.vb: Protected Shared Function ExportAsMarkdown(dictionary As DataDictionary) As String
+  overload: Meridian.Ui.Services.SchemaServiceBase.ExportAsMarkdown*
+- uid: Meridian.Ui.Services.SchemaServiceBase.ExportAsCsv(Meridian.Contracts.Schema.DataDictionary)
+  commentId: M:Meridian.Ui.Services.SchemaServiceBase.ExportAsCsv(Meridian.Contracts.Schema.DataDictionary)
+  id: ExportAsCsv(Meridian.Contracts.Schema.DataDictionary)
+  parent: Meridian.Ui.Services.SchemaServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ExportAsCsv(DataDictionary)
+  nameWithType: SchemaServiceBase.ExportAsCsv(DataDictionary)
+  fullName: Meridian.Ui.Services.SchemaServiceBase.ExportAsCsv(Meridian.Contracts.Schema.DataDictionary)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportAsCsv
+    path: ../../src/Meridian.Ui.Services/Services/SchemaServiceBase.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: protected static string ExportAsCsv(DataDictionary dictionary)
+    parameters:
+    - id: dictionary
+      type: Meridian.Contracts.Schema.DataDictionary
+    return:
+      type: System.String
+    content.vb: Protected Shared Function ExportAsCsv(dictionary As DataDictionary) As String
+  overload: Meridian.Ui.Services.SchemaServiceBase.ExportAsCsv*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Ui.Services.Contracts.ISchemaService
+  commentId: T:Meridian.Ui.Services.Contracts.ISchemaService
+  parent: Meridian.Ui.Services.Contracts
+  href: Meridian.Ui.Services.Contracts.ISchemaService.html
+  name: ISchemaService
+  nameWithType: ISchemaService
+  fullName: Meridian.Ui.Services.Contracts.ISchemaService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.SchemaServiceBase.GetJsonSchema*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.GetJsonSchema
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_GetJsonSchema_System_String_
+  name: GetJsonSchema
+  nameWithType: SchemaServiceBase.GetJsonSchema
+  fullName: Meridian.Ui.Services.SchemaServiceBase.GetJsonSchema
+- uid: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(System.String)
+  commentId: M:Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(System.String)
+  parent: Meridian.Ui.Services.Contracts.ISchemaService
+  isExternal: true
+  href: Meridian.Ui.Services.Contracts.ISchemaService.html#Meridian_Ui_Services_Contracts_ISchemaService_GetJsonSchema_System_String_
+  name: GetJsonSchema(string)
+  nameWithType: ISchemaService.GetJsonSchema(string)
+  fullName: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(string)
+  nameWithType.vb: ISchemaService.GetJsonSchema(String)
+  fullName.vb: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(String)
+  name.vb: GetJsonSchema(String)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(System.String)
+    name: GetJsonSchema
+    href: Meridian.Ui.Services.Contracts.ISchemaService.html#Meridian_Ui_Services_Contracts_ISchemaService_GetJsonSchema_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ui.Services.Contracts.ISchemaService.GetJsonSchema(System.String)
+    name: GetJsonSchema
+    href: Meridian.Ui.Services.Contracts.ISchemaService.html#Meridian_Ui_Services_Contracts_ISchemaService_GetJsonSchema_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateDataDictionary*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.CreateDataDictionary
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_CreateDataDictionary
+  name: CreateDataDictionary
+  nameWithType: SchemaServiceBase.CreateDataDictionary
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateDataDictionary
+- uid: Meridian.Contracts.Schema.DataDictionary
+  commentId: T:Meridian.Contracts.Schema.DataDictionary
+  parent: Meridian.Contracts.Schema
+  href: Meridian.Contracts.Schema.DataDictionary.html
+  name: DataDictionary
+  nameWithType: DataDictionary
+  fullName: Meridian.Contracts.Schema.DataDictionary
+- uid: Meridian.Contracts.Schema
+  commentId: N:Meridian.Contracts.Schema
+  href: Meridian.html
+  name: Meridian.Contracts.Schema
+  nameWithType: Meridian.Contracts.Schema
+  fullName: Meridian.Contracts.Schema
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Schema
+    name: Schema
+    href: Meridian.Contracts.Schema.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Schema
+    name: Schema
+    href: Meridian.Contracts.Schema.html
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateTradeSchema*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.CreateTradeSchema
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_CreateTradeSchema
+  name: CreateTradeSchema
+  nameWithType: SchemaServiceBase.CreateTradeSchema
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateTradeSchema
+- uid: Meridian.Contracts.Schema.EventSchema
+  commentId: T:Meridian.Contracts.Schema.EventSchema
+  parent: Meridian.Contracts.Schema
+  href: Meridian.Contracts.Schema.EventSchema.html
+  name: EventSchema
+  nameWithType: EventSchema
+  fullName: Meridian.Contracts.Schema.EventSchema
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateQuoteSchema*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.CreateQuoteSchema
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_CreateQuoteSchema
+  name: CreateQuoteSchema
+  nameWithType: SchemaServiceBase.CreateQuoteSchema
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateQuoteSchema
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateBboQuoteSchema*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.CreateBboQuoteSchema
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_CreateBboQuoteSchema
+  name: CreateBboQuoteSchema
+  nameWithType: SchemaServiceBase.CreateBboQuoteSchema
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateBboQuoteSchema
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateL2DepthSchema*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.CreateL2DepthSchema
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_CreateL2DepthSchema
+  name: CreateL2DepthSchema
+  nameWithType: SchemaServiceBase.CreateL2DepthSchema
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateL2DepthSchema
+- uid: Meridian.Ui.Services.SchemaServiceBase.CreateBarSchema*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.CreateBarSchema
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_CreateBarSchema
+  name: CreateBarSchema
+  nameWithType: SchemaServiceBase.CreateBarSchema
+  fullName: Meridian.Ui.Services.SchemaServiceBase.CreateBarSchema
+- uid: Meridian.Ui.Services.SchemaServiceBase.GetExchangeCodes*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.GetExchangeCodes
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_GetExchangeCodes
+  name: GetExchangeCodes
+  nameWithType: SchemaServiceBase.GetExchangeCodes
+  fullName: Meridian.Ui.Services.SchemaServiceBase.GetExchangeCodes
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.SchemaServiceBase.GetTradeConditions*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.GetTradeConditions
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_GetTradeConditions
+  name: GetTradeConditions
+  nameWithType: SchemaServiceBase.GetTradeConditions
+  fullName: Meridian.Ui.Services.SchemaServiceBase.GetTradeConditions
+- uid: Meridian.Ui.Services.SchemaServiceBase.GetQuoteConditions*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.GetQuoteConditions
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_GetQuoteConditions
+  name: GetQuoteConditions
+  nameWithType: SchemaServiceBase.GetQuoteConditions
+  fullName: Meridian.Ui.Services.SchemaServiceBase.GetQuoteConditions
+- uid: Meridian.Ui.Services.SchemaServiceBase.ExportAsJson*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.ExportAsJson
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_ExportAsJson_Meridian_Contracts_Schema_DataDictionary_
+  name: ExportAsJson
+  nameWithType: SchemaServiceBase.ExportAsJson
+  fullName: Meridian.Ui.Services.SchemaServiceBase.ExportAsJson
+- uid: Meridian.Ui.Services.SchemaServiceBase.ExportAsMarkdown*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.ExportAsMarkdown
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_ExportAsMarkdown_Meridian_Contracts_Schema_DataDictionary_
+  name: ExportAsMarkdown
+  nameWithType: SchemaServiceBase.ExportAsMarkdown
+  fullName: Meridian.Ui.Services.SchemaServiceBase.ExportAsMarkdown
+- uid: Meridian.Ui.Services.SchemaServiceBase.ExportAsCsv*
+  commentId: Overload:Meridian.Ui.Services.SchemaServiceBase.ExportAsCsv
+  href: Meridian.Ui.Services.SchemaServiceBase.html#Meridian_Ui_Services_SchemaServiceBase_ExportAsCsv_Meridian_Contracts_Schema_DataDictionary_
+  name: ExportAsCsv
+  nameWithType: SchemaServiceBase.ExportAsCsv
+  fullName: Meridian.Ui.Services.SchemaServiceBase.ExportAsCsv

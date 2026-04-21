@@ -65,7 +65,7 @@ public record FailoverRuleRequest(
 public record ForceFailoverRequest(string TargetProviderId);
 
 /// <summary>Request to run a backfill operation.</summary>
-public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To);
+public record BackfillRequestDto(string? Provider, string[] Symbols, DateOnly? From, DateOnly? To, string? Granularity = null);
 
 /// <summary>Request to generate a dry-run backfill plan.</summary>
 public record DryRunPlanRequest(string[] Symbols);
@@ -148,7 +148,14 @@ public record ProviderHealthResponse(
     int ConsecutiveSuccesses,
     DateTimeOffset? LastIssueTime,
     DateTimeOffset? LastSuccessTime,
+    double DegradationScore,
+    ProviderScoreReasonResponse[] Reasons,
     HealthIssueResponse[] RecentIssues);
+
+/// <summary>Compact explanation reason attached to score outputs.</summary>
+public readonly record struct ProviderScoreReasonResponse(
+    string Code,
+    double Contribution);
 
 /// <summary>Response containing a health issue.</summary>
 public record HealthIssueResponse(

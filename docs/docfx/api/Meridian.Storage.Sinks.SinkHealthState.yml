@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Sinks.SinkHealthState
+  commentId: T:Meridian.Storage.Sinks.SinkHealthState
+  id: SinkHealthState
+  parent: Meridian.Storage.Sinks
+  children:
+  - Meridian.Storage.Sinks.SinkHealthState.Degraded
+  - Meridian.Storage.Sinks.SinkHealthState.Failed
+  - Meridian.Storage.Sinks.SinkHealthState.Healthy
+  langs:
+  - csharp
+  - vb
+  name: SinkHealthState
+  nameWithType: SinkHealthState
+  fullName: Meridian.Storage.Sinks.SinkHealthState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SinkHealthState
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Health state of an individual storage sink within the composite.
+  example: []
+  syntax:
+    content: 'public enum SinkHealthState : byte'
+    content.vb: Public Enum SinkHealthState As Byte
+- uid: Meridian.Storage.Sinks.SinkHealthState.Healthy
+  commentId: F:Meridian.Storage.Sinks.SinkHealthState.Healthy
+  id: Healthy
+  parent: Meridian.Storage.Sinks.SinkHealthState
+  langs:
+  - csharp
+  - vb
+  name: Healthy
+  nameWithType: SinkHealthState.Healthy
+  fullName: Meridian.Storage.Sinks.SinkHealthState.Healthy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Sink is operating normally.
+  example: []
+  syntax:
+    content: Healthy = 0
+    return:
+      type: Meridian.Storage.Sinks.SinkHealthState
+- uid: Meridian.Storage.Sinks.SinkHealthState.Degraded
+  commentId: F:Meridian.Storage.Sinks.SinkHealthState.Degraded
+  id: Degraded
+  parent: Meridian.Storage.Sinks.SinkHealthState
+  langs:
+  - csharp
+  - vb
+  name: Degraded
+  nameWithType: SinkHealthState.Degraded
+  fullName: Meridian.Storage.Sinks.SinkHealthState.Degraded
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Degraded
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Sink has experienced failures but is still receiving writes.
+  example: []
+  syntax:
+    content: Degraded = 1
+    return:
+      type: Meridian.Storage.Sinks.SinkHealthState
+- uid: Meridian.Storage.Sinks.SinkHealthState.Failed
+  commentId: F:Meridian.Storage.Sinks.SinkHealthState.Failed
+  id: Failed
+  parent: Meridian.Storage.Sinks.SinkHealthState
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: SinkHealthState.Failed
+  fullName: Meridian.Storage.Sinks.SinkHealthState.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Sinks/CompositeSink.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Storage/Sinks/CompositeSink.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Sinks
+  summary: Sink circuit breaker is open; writes are being skipped.
+  example: []
+  syntax:
+    content: Failed = 2
+    return:
+      type: Meridian.Storage.Sinks.SinkHealthState
+references:
+- uid: Meridian.Storage.Sinks
+  commentId: N:Meridian.Storage.Sinks
+  href: Meridian.html
+  name: Meridian.Storage.Sinks
+  nameWithType: Meridian.Storage.Sinks
+  fullName: Meridian.Storage.Sinks
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Sinks
+    name: Sinks
+    href: Meridian.Storage.Sinks.html
+- uid: Meridian.Storage.Sinks.SinkHealthState
+  commentId: T:Meridian.Storage.Sinks.SinkHealthState
+  parent: Meridian.Storage.Sinks
+  href: Meridian.Storage.Sinks.SinkHealthState.html
+  name: SinkHealthState
+  nameWithType: SinkHealthState
+  fullName: Meridian.Storage.Sinks.SinkHealthState

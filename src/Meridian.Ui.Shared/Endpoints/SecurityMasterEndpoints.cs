@@ -4,6 +4,7 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.SecurityMaster;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using AppSecurityMaster = Meridian.Application.SecurityMaster;
 
@@ -33,7 +34,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapGet(UiApiRoutes.SecurityMasterById, async (
             Guid securityId,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var detail = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -55,7 +56,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterResolve, async (
             ResolveSecurityRequest request,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var detail = await queryService.GetByIdentifierAsync(
@@ -91,7 +92,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterSearch, async (
             SecuritySearchRequest request,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var results = await queryService.SearchAsync(request, ct).ConfigureAwait(false);
@@ -111,7 +112,7 @@ public static class SecurityMasterEndpoints
         group.MapGet(UiApiRoutes.SecurityMasterHistory, async (
             Guid securityId,
             int? take,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var history = await queryService.GetHistoryAsync(
@@ -137,7 +138,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterCreate, async (
             CreateSecurityRequest request,
-            ISecurityMasterService service,
+            [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
             var detail = await service.CreateAsync(request, ct).ConfigureAwait(false);
@@ -156,7 +157,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterAmend, async (
             AmendSecurityTermsRequest request,
-            ISecurityMasterService service,
+            [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
             var detail = await service.AmendTermsAsync(request, ct).ConfigureAwait(false);
@@ -175,7 +176,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterDeactivate, async (
             DeactivateSecurityRequest request,
-            ISecurityMasterService service,
+            [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
             await service.DeactivateAsync(request, ct).ConfigureAwait(false);
@@ -194,7 +195,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapPost(UiApiRoutes.SecurityMasterAliasesUpsert, async (
             UpsertSecurityAliasRequest request,
-            ISecurityMasterService service,
+            [FromServices] ISecurityMasterService service,
             CancellationToken ct) =>
         {
             var alias = await service.UpsertAliasAsync(request, ct).ConfigureAwait(false);
@@ -213,7 +214,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapGet(UiApiRoutes.SecurityMasterTradingParameters, async (
             Guid securityId,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var parameters = await queryService
@@ -228,6 +229,110 @@ public static class SecurityMasterEndpoints
         .Produces(StatusCodes.Status404NotFound);
 
         /// <summary>
+        /// Retrieves the current preferred-equity term definition for a security when its classification includes preferred terms.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns 404 for non-equity securities or equities without preferred terms.</para>
+        /// <para>This is the current term snapshot only; dividend schedules, yield projections, and execution history are separate follow-on APIs.</para>
+        /// </remarks>
+        group.MapGet(UiApiRoutes.SecurityMasterPreferredEquityTerms, async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var terms = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            return terms is null
+                ? Results.NotFound()
+                : Results.Json(terms, jsonOptions);
+        })
+        .WithName("GetSecurityMasterPreferredEquityTerms")
+        .Produces<PreferredEquityTermsDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Replaces the preferred-equity term definition for a security while preserving any non-preferred equity metadata already attached to the security.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns 404 for missing securities or equities without preferred terms.</para>
+        /// <para>This route updates the current preferred term snapshot only; dividend schedule and yield projections remain separate follow-on APIs.</para>
+        /// </remarks>
+        group.MapPatch(UiApiRoutes.SecurityMasterPreferredEquityTerms, async (
+            Guid securityId,
+            AmendPreferredEquityTermsRequest request,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
+            CancellationToken ct) =>
+        {
+            var currentTerms = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            if (currentTerms is null)
+            {
+                return Results.NotFound();
+            }
+
+            var detail = await service
+                .AmendPreferredEquityTermsAsync(securityId, request, ct)
+                .ConfigureAwait(false);
+
+            return Results.Json(detail, jsonOptions);
+        })
+        .WithName("AmendSecurityMasterPreferredEquityTerms")
+        .Accepts<AmendPreferredEquityTermsRequest>("application/json")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Retrieves the current convertible-equity term definition for a security when its classification includes conversion terms.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns 404 for non-equity securities or equities without convertible terms.</para>
+        /// <para>This returns the stored conversion terms snapshot; price-derived parity and in-the-money calculations remain separate follow-on APIs.</para>
+        /// </remarks>
+        group.MapGet(UiApiRoutes.SecurityMasterConvertibleEquityTerms, async (
+            Guid securityId,
+            [FromServices] ISecurityMasterQueryService queryService,
+            CancellationToken ct) =>
+        {
+            var terms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            return terms is null
+                ? Results.NotFound()
+                : Results.Json(terms, jsonOptions);
+        })
+        .WithName("GetSecurityMasterConvertibleEquityTerms")
+        .Produces<ConvertibleEquityTermsDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
+        /// Replaces the convertible-equity term definition for a security while preserving any non-convertible equity metadata already attached to the security.
+        /// </summary>
+        /// <remarks>
+        /// <para>Returns 404 for missing securities or equities without convertible terms.</para>
+        /// <para>This route updates the current convertible term snapshot only.</para>
+        /// </remarks>
+        group.MapPatch(UiApiRoutes.SecurityMasterConvertibleEquityTerms, async (
+            Guid securityId,
+            AmendConvertibleEquityTermsRequest request,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
+            CancellationToken ct) =>
+        {
+            var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            if (currentTerms is null)
+            {
+                return Results.NotFound();
+            }
+
+            var detail = await service
+                .AmendConvertibleEquityTermsAsync(securityId, request, ct)
+                .ConfigureAwait(false);
+
+            return Results.Json(detail, jsonOptions);
+        })
+        .WithName("AmendSecurityMasterConvertibleEquityTerms")
+        .Accepts<AmendConvertibleEquityTermsRequest>("application/json")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+
+        /// <summary>
         /// Retrieves all corporate action events for a security, sorted by ex-date (dividend, split, merger, etc.).
         /// </summary>
         /// <remarks>
@@ -237,7 +342,7 @@ public static class SecurityMasterEndpoints
         /// </remarks>
         group.MapGet(UiApiRoutes.SecurityMasterCorporateActions, async (
             Guid securityId,
-            ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
             var actions = await queryService
@@ -259,7 +364,7 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterCorporateActions, async (
             Guid securityId,
             CorporateActionDto dto,
-            ISecurityMasterEventStore eventStore,
+            [FromServices] ISecurityMasterEventStore eventStore,
             CancellationToken ct) =>
         {
             if (dto.SecurityId != securityId)
@@ -277,7 +382,7 @@ public static class SecurityMasterEndpoints
 
         // GET /api/security-master/conflicts
         group.MapGet(UiApiRoutes.SecurityMasterConflicts, async (
-            AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
             var conflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
@@ -290,7 +395,7 @@ public static class SecurityMasterEndpoints
         group.MapPost(UiApiRoutes.SecurityMasterConflictResolve, async (
             Guid conflictId,
             ResolveConflictRequest request,
-            AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
             CancellationToken ct) =>
         {
             if (request.ConflictId != conflictId)
@@ -310,7 +415,7 @@ public static class SecurityMasterEndpoints
         // POST /api/security-master/import
         group.MapPost(UiApiRoutes.SecurityMasterImport, async (
             SecurityMasterImportRequest request,
-            AppSecurityMaster.ISecurityMasterImportService importService,
+            [FromServices] AppSecurityMaster.ISecurityMasterImportService importService,
             CancellationToken ct) =>
         {
             var result = await importService.ImportAsync(
@@ -325,18 +430,75 @@ public static class SecurityMasterEndpoints
 
         // GET /api/security-master/ingest/status
         group.MapGet(UiApiRoutes.SecurityMasterIngestStatus, async (
-            AppSecurityMaster.ISecurityMasterConflictService conflictService,
-            ISecurityMasterQueryService queryService,
+            [FromServices] AppSecurityMaster.ISecurityMasterConflictService conflictService,
+            [FromServices] AppSecurityMaster.ISecurityMasterIngestStatusService ingestStatusService,
             CancellationToken ct) =>
         {
             var openConflicts = await conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
-            return Results.Json(new
-            {
-                OpenConflicts = openConflicts.Count,
-                RetrievedAt = DateTimeOffset.UtcNow
-            }, jsonOptions);
+            var snapshot = ingestStatusService.GetSnapshot();
+            var response = ToIngestStatusResponse(snapshot, openConflicts.Count);
+            return Results.Json(response, jsonOptions);
         })
         .WithName("SecurityMasterIngestStatus")
-        .Produces(StatusCodes.Status200OK);
+        .Produces<SecurityMasterIngestStatusResponse>(StatusCodes.Status200OK);
+
+        // PATCH /api/security-master/equities/{securityId}/preferred-terms
+        group.MapMethods("/api/security-master/equities/{securityId:guid}/preferred-terms", [HttpMethods.Patch], async (
+            Guid securityId,
+            AmendPreferredEquityTermsRequest request,
+            [FromServices] ISecurityMasterQueryService queryService,
+            [FromServices] ISecurityMasterService service,
+            CancellationToken ct) =>
+        {
+            var existing = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
+            if (existing is null)
+                return Results.NotFound();
+
+            var detail = await service.AmendPreferredEquityTermsAsync(securityId, request, ct).ConfigureAwait(false);
+            return Results.Json(detail, jsonOptions);
+        })
+        .WithName("PatchSecurityPreferredTerms")
+        .Produces<SecurityDetailDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status404NotFound);
+    }
+
+    private static SecurityMasterIngestStatusResponse ToIngestStatusResponse(
+        AppSecurityMaster.SecurityMasterIngestStatusSnapshot snapshot,
+        int openConflicts)
+    {
+        return new SecurityMasterIngestStatusResponse
+        {
+            OpenConflicts = openConflicts,
+            IsImportActive = snapshot.ActiveImport is not null,
+            ActiveImport = snapshot.ActiveImport is null
+                ? null
+                : new SecurityMasterActiveImportStatusResponse
+                {
+                    FileExtension = snapshot.ActiveImport.FileExtension,
+                    Total = snapshot.ActiveImport.Total,
+                    Processed = snapshot.ActiveImport.Processed,
+                    Imported = snapshot.ActiveImport.Imported,
+                    Skipped = snapshot.ActiveImport.Skipped,
+                    Failed = snapshot.ActiveImport.Failed,
+                    StartedAtUtc = snapshot.ActiveImport.StartedAtUtc,
+                    UpdatedAtUtc = snapshot.ActiveImport.UpdatedAtUtc
+                },
+            LastCompleted = snapshot.LastCompleted is null
+                ? null
+                : new SecurityMasterCompletedImportStatusResponse
+                {
+                    FileExtension = snapshot.LastCompleted.FileExtension,
+                    Total = snapshot.LastCompleted.Total,
+                    Processed = snapshot.LastCompleted.Processed,
+                    Imported = snapshot.LastCompleted.Imported,
+                    Skipped = snapshot.LastCompleted.Skipped,
+                    Failed = snapshot.LastCompleted.Failed,
+                    ConflictsDetected = snapshot.LastCompleted.ConflictsDetected,
+                    ErrorCount = snapshot.LastCompleted.ErrorCount,
+                    StartedAtUtc = snapshot.LastCompleted.StartedAtUtc,
+                    CompletedAtUtc = snapshot.LastCompleted.CompletedAtUtc
+                },
+            RetrievedAtUtc = DateTimeOffset.UtcNow
+        };
     }
 }

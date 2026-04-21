@@ -1,15 +1,18 @@
 # Meridian - Consolidated Evaluations & Audits
 
-**Version:** 1.7.0
-**Last Updated:** 2026-03-21
-**Status:** Consolidated reference document (aligned with current roadmap/status docs)
+**Version:** 1.7.1
+**Last Updated:** 2026-04-08
+**Status:** Consolidated reference document (supporting reference, not the live execution backlog)
 
 This document consolidates all architecture evaluations, code audits, desktop assessments, improvement brainstorms, and architecture proposals into a single navigable reference. It replaces the need to read 20+ individual files across `docs/evaluations/`, `docs/audits/`, and `docs/development/` for a complete project health picture.
 
 **Canonical tracking documents (not merged here):**
-- [`ROADMAP.md`](ROADMAP.md) — phased execution timeline (Phases 0-10)
-- [`IMPROVEMENTS.md`](IMPROVEMENTS.md) — item-level improvement tracking (35 items, 7 themes)
-- [`production-status.md`](production-status.md) — provider readiness and production checklist
+- [`ROADMAP.md`](ROADMAP.md) — wave-structured delivery roadmap and core operator-readiness gates
+- [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) — normalized active implementation backlog aligned to the roadmap
+- [`IMPROVEMENTS.md`](IMPROVEMENTS.md) — item-level improvement tracking with legacy milestone tags retained for traceability
+- [`production-status.md`](production-status.md) — current development / pilot-ready posture and readiness caveats
+
+Use this document as supporting context. For active prioritization, default to the roadmap and normalized TODO rather than the historical evaluation set.
 
 ---
 
@@ -71,7 +74,7 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ## Refresh Highlights
 
-**This 2026-03-21 refresh aligns the consolidated document with the current planning set:**
+**This 2026-04-08 refresh keeps the consolidated document aligned with the current planning set:**
 
 - C1/C2 provider registration and DI composition are now reflected as **completed**, matching `IMPROVEMENTS.md` and `ROADMAP.md`.
 - Operational readiness now reflects the shipped SLO registry, alert-to-runbook linkage, and current remaining work (release gates, rollback drills).
@@ -328,8 +331,8 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ### Desktop Improvements Executive Summary
 
-> Source: `docs/evaluations/desktop-improvements-executive-summary.md`
-> Date: 2026-02-22 | Updated: 2026-03-19 | Status: Current summary for desktop modernization
+> Source: `../../archive/docs/summaries/desktop-improvements-executive-summary.md`
+> Date: 2026-02-22 | Updated: 2026-03-19 | Status: Archived executive snapshot — implementation guide is the canonical active reference
 
 **Executive Takeaway:** The desktop stack has broad functional coverage already, but the highest-value remaining work is UX consolidation, stronger live-state trust signals, and a workflow-centric trading workstation structure.
 
@@ -467,8 +470,8 @@ This document consolidates all architecture evaluations, code audits, desktop as
 
 ### High-Impact Improvement Brainstorm (March 2026)
 
-> Source: `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md`
-> Date: 2026-03-01 (follow-ups: 2026-03-10, 2026-03-11) | Status: Active — several items implemented
+> Source: `../../archive/docs/assessments/high-impact-improvement-brainstorm-2026-03.md`
+> Date: 2026-03-01 (follow-ups: 2026-03-10, 2026-03-11) | Status: Archived historical brainstorm — rationale retained, active execution moved into status docs
 
 **Overall Rating:** 6.5/10 — Architecturally Sound, Operationally Risky
 
@@ -794,7 +797,7 @@ All source documents that feed into this consolidation:
 | Operational Readiness Evaluation | `docs/evaluations/operational-readiness-evaluation.md` | Evaluation | Current |
 | Desktop End-User Improvements | `../../archive/docs/assessments/desktop-end-user-improvements.md` | Assessment | Archived |
 | Desktop Provider Configurability | `docs/evaluations/windows-desktop-provider-configurability-assessment.md` | Assessment | Current |
-| High-Impact Improvement Brainstorm (Mar 2026) | `docs/evaluations/high-impact-improvement-brainstorm-2026-03.md` | Brainstorm | Active |
+| High-Impact Improvement Brainstorm (Mar 2026) | `../../archive/docs/assessments/high-impact-improvement-brainstorm-2026-03.md` | Brainstorm | Archived |
 | High-Impact Improvements Brainstorm | `../../archive/docs/assessments/high-impact-improvements-brainstorm.md` | Brainstorm | Archived |
 | High-Value Low-Cost Improvements | `docs/evaluations/high-value-low-cost-improvements-brainstorm.md` | Brainstorm | Active |
 | Nautilus-Inspired Restructuring Proposal | `docs/evaluations/nautilus-inspired-restructuring-proposal.md` | Proposal | Partially Implemented |
@@ -807,10 +810,10 @@ All source documents that feed into this consolidation:
 | UWP Comprehensive Audit | `../../archive/docs/assessments/UWP_COMPREHENSIVE_AUDIT.md` | Audit | Archived |
 | Repository Cleanup Plan | `../../archive/docs/plans/repository-cleanup-action-plan.md` | Plan | Archived |
 | Config Consolidation Report | `../../archive/docs/assessments/CONFIG_CONSOLIDATION_REPORT.md` | Report | Archived |
-| Desktop Improvements Exec Summary | `docs/evaluations/desktop-improvements-executive-summary.md` | Summary | Current |
+| Desktop Improvements Exec Summary | `../../archive/docs/summaries/desktop-improvements-executive-summary.md` | Summary | Archived |
 | Desktop Platform Improvements Guide | `docs/evaluations/desktop-platform-improvements-implementation-guide.md` | Guide | Current |
 | Desktop Improvement Shortlist | `../../archive/docs/assessments/desktop-end-user-improvements-shortlist.md` | Assessment | Archived |
 
 ---
 
-*Last Updated: 2026-03-21*
+*Last Updated: 2026-04-08*

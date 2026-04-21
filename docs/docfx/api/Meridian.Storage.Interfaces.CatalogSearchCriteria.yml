@@ -1,0 +1,733 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  commentId: T:Meridian.Storage.Interfaces.CatalogSearchCriteria
+  id: CatalogSearchCriteria
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria.EndDate
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria.EventTypes
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria.MaxSizeBytes
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria.MinSizeBytes
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria.PathPattern
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria.SchemaVersion
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria.Sources
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria.StartDate
+  - Meridian.Storage.Interfaces.CatalogSearchCriteria.Symbols
+  langs:
+  - csharp
+  - vb
+  name: CatalogSearchCriteria
+  nameWithType: CatalogSearchCriteria
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatalogSearchCriteria
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Search criteria for catalog files.
+  example: []
+  syntax:
+    content: public sealed class CatalogSearchCriteria
+    content.vb: Public NotInheritable Class CatalogSearchCriteria
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.Symbols
+  commentId: P:Meridian.Storage.Interfaces.CatalogSearchCriteria.Symbols
+  id: Symbols
+  parent: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: CatalogSearchCriteria.Symbols
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 326
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Symbols to include.
+  example: []
+  syntax:
+    content: public string[]? Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Storage.Interfaces.CatalogSearchCriteria.Symbols*
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.EventTypes
+  commentId: P:Meridian.Storage.Interfaces.CatalogSearchCriteria.EventTypes
+  id: EventTypes
+  parent: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  langs:
+  - csharp
+  - vb
+  name: EventTypes
+  nameWithType: CatalogSearchCriteria.EventTypes
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.EventTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventTypes
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 331
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Event types to include.
+  example: []
+  syntax:
+    content: public string[]? EventTypes { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property EventTypes As String()
+  overload: Meridian.Storage.Interfaces.CatalogSearchCriteria.EventTypes*
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.Sources
+  commentId: P:Meridian.Storage.Interfaces.CatalogSearchCriteria.Sources
+  id: Sources
+  parent: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: CatalogSearchCriteria.Sources
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 336
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Data sources to include.
+  example: []
+  syntax:
+    content: public string[]? Sources { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Sources As String()
+  overload: Meridian.Storage.Interfaces.CatalogSearchCriteria.Sources*
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.StartDate
+  commentId: P:Meridian.Storage.Interfaces.CatalogSearchCriteria.StartDate
+  id: StartDate
+  parent: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  langs:
+  - csharp
+  - vb
+  name: StartDate
+  nameWithType: CatalogSearchCriteria.StartDate
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.StartDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartDate
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Start date filter.
+  example: []
+  syntax:
+    content: public DateTime? StartDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property StartDate As Date?
+  overload: Meridian.Storage.Interfaces.CatalogSearchCriteria.StartDate*
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.EndDate
+  commentId: P:Meridian.Storage.Interfaces.CatalogSearchCriteria.EndDate
+  id: EndDate
+  parent: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  langs:
+  - csharp
+  - vb
+  name: EndDate
+  nameWithType: CatalogSearchCriteria.EndDate
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.EndDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndDate
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: End date filter.
+  example: []
+  syntax:
+    content: public DateTime? EndDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property EndDate As Date?
+  overload: Meridian.Storage.Interfaces.CatalogSearchCriteria.EndDate*
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.MinSizeBytes
+  commentId: P:Meridian.Storage.Interfaces.CatalogSearchCriteria.MinSizeBytes
+  id: MinSizeBytes
+  parent: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  langs:
+  - csharp
+  - vb
+  name: MinSizeBytes
+  nameWithType: CatalogSearchCriteria.MinSizeBytes
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.MinSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSizeBytes
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Minimum file size.
+  example: []
+  syntax:
+    content: public long? MinSizeBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property MinSizeBytes As Long?
+  overload: Meridian.Storage.Interfaces.CatalogSearchCriteria.MinSizeBytes*
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.MaxSizeBytes
+  commentId: P:Meridian.Storage.Interfaces.CatalogSearchCriteria.MaxSizeBytes
+  id: MaxSizeBytes
+  parent: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  langs:
+  - csharp
+  - vb
+  name: MaxSizeBytes
+  nameWithType: CatalogSearchCriteria.MaxSizeBytes
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.MaxSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxSizeBytes
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Maximum file size.
+  example: []
+  syntax:
+    content: public long? MaxSizeBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property MaxSizeBytes As Long?
+  overload: Meridian.Storage.Interfaces.CatalogSearchCriteria.MaxSizeBytes*
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.PathPattern
+  commentId: P:Meridian.Storage.Interfaces.CatalogSearchCriteria.PathPattern
+  id: PathPattern
+  parent: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  langs:
+  - csharp
+  - vb
+  name: PathPattern
+  nameWithType: CatalogSearchCriteria.PathPattern
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.PathPattern
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PathPattern
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 361
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: File path pattern (supports wildcards).
+  example: []
+  syntax:
+    content: public string? PathPattern { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PathPattern As String
+  overload: Meridian.Storage.Interfaces.CatalogSearchCriteria.PathPattern*
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.SchemaVersion
+  commentId: P:Meridian.Storage.Interfaces.CatalogSearchCriteria.SchemaVersion
+  id: SchemaVersion
+  parent: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  langs:
+  - csharp
+  - vb
+  name: SchemaVersion
+  nameWithType: CatalogSearchCriteria.SchemaVersion
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.SchemaVersion
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaVersion
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 366
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Schema version filter.
+  example: []
+  syntax:
+    content: public string? SchemaVersion { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SchemaVersion As String
+  overload: Meridian.Storage.Interfaces.CatalogSearchCriteria.SchemaVersion*
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.Symbols*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogSearchCriteria.Symbols
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html#Meridian_Storage_Interfaces_CatalogSearchCriteria_Symbols
+  name: Symbols
+  nameWithType: CatalogSearchCriteria.Symbols
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.Symbols
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.EventTypes*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogSearchCriteria.EventTypes
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html#Meridian_Storage_Interfaces_CatalogSearchCriteria_EventTypes
+  name: EventTypes
+  nameWithType: CatalogSearchCriteria.EventTypes
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.EventTypes
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.Sources*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogSearchCriteria.Sources
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html#Meridian_Storage_Interfaces_CatalogSearchCriteria_Sources
+  name: Sources
+  nameWithType: CatalogSearchCriteria.Sources
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.Sources
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.StartDate*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogSearchCriteria.StartDate
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html#Meridian_Storage_Interfaces_CatalogSearchCriteria_StartDate
+  name: StartDate
+  nameWithType: CatalogSearchCriteria.StartDate
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.StartDate
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.EndDate*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogSearchCriteria.EndDate
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html#Meridian_Storage_Interfaces_CatalogSearchCriteria_EndDate
+  name: EndDate
+  nameWithType: CatalogSearchCriteria.EndDate
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.EndDate
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.MinSizeBytes*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogSearchCriteria.MinSizeBytes
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html#Meridian_Storage_Interfaces_CatalogSearchCriteria_MinSizeBytes
+  name: MinSizeBytes
+  nameWithType: CatalogSearchCriteria.MinSizeBytes
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.MinSizeBytes
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.MaxSizeBytes*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogSearchCriteria.MaxSizeBytes
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html#Meridian_Storage_Interfaces_CatalogSearchCriteria_MaxSizeBytes
+  name: MaxSizeBytes
+  nameWithType: CatalogSearchCriteria.MaxSizeBytes
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.MaxSizeBytes
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.PathPattern*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogSearchCriteria.PathPattern
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html#Meridian_Storage_Interfaces_CatalogSearchCriteria_PathPattern
+  name: PathPattern
+  nameWithType: CatalogSearchCriteria.PathPattern
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.PathPattern
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria.SchemaVersion*
+  commentId: Overload:Meridian.Storage.Interfaces.CatalogSearchCriteria.SchemaVersion
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html#Meridian_Storage_Interfaces_CatalogSearchCriteria_SchemaVersion
+  name: SchemaVersion
+  nameWithType: CatalogSearchCriteria.SchemaVersion
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria.SchemaVersion

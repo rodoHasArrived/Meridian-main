@@ -1,0 +1,879 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer
+  commentId: T:Meridian.Application.Pipeline.HotPathBatchSerializer
+  id: HotPathBatchSerializer
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.HotPathBatchSerializer.#ctor(Meridian.Core.Performance.SymbolTable,System.Int32)
+  - Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent})
+  - Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent})
+  langs:
+  - csharp
+  - vb
+  name: HotPathBatchSerializer
+  nameWithType: HotPathBatchSerializer
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HotPathBatchSerializer
+    path: ../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Batch-serializes hot-path struct events (<xref href="Meridian.Core.Performance.RawTradeEvent" data-throw-if-not-resolved="false"></xref>,
+
+    <xref href="Meridian.Core.Performance.RawQuoteEvent" data-throw-if-not-resolved="false"></xref>) to JSONL-formatted UTF-8 bytes.
+  remarks: >-
+    <p>
+
+    A pre-allocated <xref href="System.Buffers.ArrayBufferWriter%601" data-throw-if-not-resolved="false"></xref> is reused across calls so that
+
+    the backing byte array grows at most logarithmically and is never released to the
+
+    GC between batches.  A <xref href="System.Text.Json.Utf8JsonWriter" data-throw-if-not-resolved="false"></xref> is reset (not re-constructed)
+
+    before each batch to avoid repeated small allocations in the consumer loop.
+
+    </p>
+
+    <p>
+
+    <b>Not thread-safe.</b> A single instance must only be used from the consumer
+
+    thread that drains the corresponding <xref href="Meridian.Core.Performance.SpscRingBuffer%601" data-throw-if-not-resolved="false"></xref>.
+
+    </p>
+
+    <p>
+
+    The JSON schema emitted for each event is a compact, flat JSON line intended for
+
+    hot-path processing. Each line represents a single trade or quote object:
+
+
+    <pre><code class="lang-csharp">{"timestamp":"…","symbol":"SPY","price":100.01,"size":200,"aggressor":1,"sequence":42}</code></pre>
+
+
+    Quote events follow a similar shape with bid/ask-specific fields.
+
+    This schema is specific to the hot-path pipeline and does not include the
+
+    higher-level <code>MarketEvent</code> envelope (such as <code>type</code> or <code>payload</code>).
+
+    </p>
+  example: []
+  syntax:
+    content: public sealed class HotPathBatchSerializer
+    content.vb: Public NotInheritable Class HotPathBatchSerializer
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer.#ctor(Meridian.Core.Performance.SymbolTable,System.Int32)
+  commentId: M:Meridian.Application.Pipeline.HotPathBatchSerializer.#ctor(Meridian.Core.Performance.SymbolTable,System.Int32)
+  id: '#ctor(Meridian.Core.Performance.SymbolTable,System.Int32)'
+  parent: Meridian.Application.Pipeline.HotPathBatchSerializer
+  langs:
+  - csharp
+  - vb
+  name: HotPathBatchSerializer(SymbolTable, int)
+  nameWithType: HotPathBatchSerializer.HotPathBatchSerializer(SymbolTable, int)
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer.HotPathBatchSerializer(Meridian.Core.Performance.SymbolTable, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Creates a new serializer backed by the given symbol table.
+  example: []
+  syntax:
+    content: public HotPathBatchSerializer(SymbolTable symbolTable, int initialBufferCapacity = 65536)
+    parameters:
+    - id: symbolTable
+      type: Meridian.Core.Performance.SymbolTable
+      description: >-
+        Shared symbol table used to resolve integer symbol IDs back to strings.
+
+        Must be the same instance used by the producing ring-buffer writer.
+    - id: initialBufferCapacity
+      type: System.Int32
+      description: >-
+        Initial byte capacity of the pre-allocated write buffer.
+
+        The buffer grows automatically when the batch exceeds this size.
+
+        Default is 64 KiB — sufficient for ~500 trade events.
+    content.vb: Public Sub New(symbolTable As SymbolTable, initialBufferCapacity As Integer = 65536)
+  overload: Meridian.Application.Pipeline.HotPathBatchSerializer.#ctor*
+  nameWithType.vb: HotPathBatchSerializer.New(SymbolTable, Integer)
+  fullName.vb: Meridian.Application.Pipeline.HotPathBatchSerializer.New(Meridian.Core.Performance.SymbolTable, Integer)
+  name.vb: New(SymbolTable, Integer)
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent})
+  commentId: M:Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent})
+  id: SerializeTrades(System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent})
+  parent: Meridian.Application.Pipeline.HotPathBatchSerializer
+  langs:
+  - csharp
+  - vb
+  name: SerializeTrades(ReadOnlySpan<RawTradeEvent>)
+  nameWithType: HotPathBatchSerializer.SerializeTrades(ReadOnlySpan<RawTradeEvent>)
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan<Meridian.Core.Performance.RawTradeEvent>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SerializeTrades
+    path: ../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Serializes a batch of <xref href="Meridian.Core.Performance.RawTradeEvent" data-throw-if-not-resolved="false"></xref> structs to JSONL UTF-8 bytes.
+  remarks: >-
+    The returned <xref href="System.ReadOnlyMemory%601" data-throw-if-not-resolved="false"></xref> is valid only until the next call
+
+    to <xref href="Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan%7bMeridian.Core.Performance.RawTradeEvent%7d)" data-throw-if-not-resolved="false"></xref> or <xref href="Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan%7bMeridian.Core.Performance.RawQuoteEvent%7d)" data-throw-if-not-resolved="false"></xref> on this instance
+
+    (the underlying buffer is reused).  Copy the bytes if longer lifetime is needed.
+  example: []
+  syntax:
+    content: public ReadOnlyMemory<byte> SerializeTrades(ReadOnlySpan<RawTradeEvent> batch)
+    parameters:
+    - id: batch
+      type: System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent}
+      description: Span of trade events to serialize.
+    return:
+      type: System.ReadOnlyMemory{System.Byte}
+      description: >-
+        UTF-8 encoded JSONL bytes — one JSON object per line, terminated by <code>\n</code>.
+
+        Returns an empty span when <code class="paramref">batch</code> is empty.
+    content.vb: Public Function SerializeTrades(batch As ReadOnlySpan(Of RawTradeEvent)) As ReadOnlyMemory(Of Byte)
+  overload: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades*
+  nameWithType.vb: HotPathBatchSerializer.SerializeTrades(ReadOnlySpan(Of RawTradeEvent))
+  fullName.vb: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan(Of Meridian.Core.Performance.RawTradeEvent))
+  name.vb: SerializeTrades(ReadOnlySpan(Of RawTradeEvent))
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent})
+  commentId: M:Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent})
+  id: SerializeQuotes(System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent})
+  parent: Meridian.Application.Pipeline.HotPathBatchSerializer
+  langs:
+  - csharp
+  - vb
+  name: SerializeQuotes(ReadOnlySpan<RawQuoteEvent>)
+  nameWithType: HotPathBatchSerializer.SerializeQuotes(ReadOnlySpan<RawQuoteEvent>)
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan<Meridian.Core.Performance.RawQuoteEvent>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SerializeQuotes
+    path: ../../src/Meridian.Application/Pipeline/HotPathBatchSerializer.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Pipeline
+  summary: Serializes a batch of <xref href="Meridian.Core.Performance.RawQuoteEvent" data-throw-if-not-resolved="false"></xref> structs to JSONL UTF-8 bytes.
+  remarks: >-
+    The returned <xref href="System.ReadOnlyMemory%601" data-throw-if-not-resolved="false"></xref> is valid only until the next call
+
+    to <xref href="Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan%7bMeridian.Core.Performance.RawTradeEvent%7d)" data-throw-if-not-resolved="false"></xref> or <xref href="Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan%7bMeridian.Core.Performance.RawQuoteEvent%7d)" data-throw-if-not-resolved="false"></xref> on this instance.
+  example: []
+  syntax:
+    content: public ReadOnlyMemory<byte> SerializeQuotes(ReadOnlySpan<RawQuoteEvent> batch)
+    parameters:
+    - id: batch
+      type: System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent}
+      description: Span of quote events to serialize.
+    return:
+      type: System.ReadOnlyMemory{System.Byte}
+      description: >-
+        UTF-8 encoded JSONL bytes — one JSON object per line, terminated by <code>\n</code>.
+
+        Returns an empty span when <code class="paramref">batch</code> is empty.
+    content.vb: Public Function SerializeQuotes(batch As ReadOnlySpan(Of RawQuoteEvent)) As ReadOnlyMemory(Of Byte)
+  overload: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes*
+  nameWithType.vb: HotPathBatchSerializer.SerializeQuotes(ReadOnlySpan(Of RawQuoteEvent))
+  fullName.vb: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan(Of Meridian.Core.Performance.RawQuoteEvent))
+  name.vb: SerializeQuotes(ReadOnlySpan(Of RawQuoteEvent))
+references:
+- uid: Meridian.Core.Performance.RawTradeEvent
+  commentId: T:Meridian.Core.Performance.RawTradeEvent
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.RawTradeEvent.html
+  name: RawTradeEvent
+  nameWithType: RawTradeEvent
+  fullName: Meridian.Core.Performance.RawTradeEvent
+- uid: Meridian.Core.Performance.RawQuoteEvent
+  commentId: T:Meridian.Core.Performance.RawQuoteEvent
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.RawQuoteEvent.html
+  name: RawQuoteEvent
+  nameWithType: RawQuoteEvent
+  fullName: Meridian.Core.Performance.RawQuoteEvent
+- uid: System.Buffers.ArrayBufferWriter`1
+  commentId: T:System.Buffers.ArrayBufferWriter`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.buffers.arraybufferwriter-1
+  name: ArrayBufferWriter<T>
+  nameWithType: ArrayBufferWriter<T>
+  fullName: System.Buffers.ArrayBufferWriter<T>
+  nameWithType.vb: ArrayBufferWriter(Of T)
+  fullName.vb: System.Buffers.ArrayBufferWriter(Of T)
+  name.vb: ArrayBufferWriter(Of T)
+  spec.csharp:
+  - uid: System.Buffers.ArrayBufferWriter`1
+    name: ArrayBufferWriter
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.buffers.arraybufferwriter-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Buffers.ArrayBufferWriter`1
+    name: ArrayBufferWriter
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.buffers.arraybufferwriter-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Text.Json.Utf8JsonWriter
+  commentId: T:System.Text.Json.Utf8JsonWriter
+  parent: System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.utf8jsonwriter
+  name: Utf8JsonWriter
+  nameWithType: Utf8JsonWriter
+  fullName: System.Text.Json.Utf8JsonWriter
+- uid: Meridian.Core.Performance.SpscRingBuffer`1
+  commentId: T:Meridian.Core.Performance.SpscRingBuffer`1
+  href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  name: SpscRingBuffer<T>
+  nameWithType: SpscRingBuffer<T>
+  fullName: Meridian.Core.Performance.SpscRingBuffer<T>
+  nameWithType.vb: SpscRingBuffer(Of T)
+  fullName.vb: Meridian.Core.Performance.SpscRingBuffer(Of T)
+  name.vb: SpscRingBuffer(Of T)
+  spec.csharp:
+  - uid: Meridian.Core.Performance.SpscRingBuffer`1
+    name: SpscRingBuffer
+    href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Core.Performance.SpscRingBuffer`1
+    name: SpscRingBuffer
+    href: Meridian.Core.Performance.SpscRingBuffer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  href: Meridian.html
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+- uid: System.Text.Json
+  commentId: N:System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.Json
+  nameWithType: System.Text.Json
+  fullName: System.Text.Json
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.HotPathBatchSerializer.#ctor
+  href: Meridian.Application.Pipeline.HotPathBatchSerializer.html#Meridian_Application_Pipeline_HotPathBatchSerializer__ctor_Meridian_Core_Performance_SymbolTable_System_Int32_
+  name: HotPathBatchSerializer
+  nameWithType: HotPathBatchSerializer.HotPathBatchSerializer
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer.HotPathBatchSerializer
+  nameWithType.vb: HotPathBatchSerializer.New
+  fullName.vb: Meridian.Application.Pipeline.HotPathBatchSerializer.New
+  name.vb: New
+- uid: Meridian.Core.Performance.SymbolTable
+  commentId: T:Meridian.Core.Performance.SymbolTable
+  parent: Meridian.Core.Performance
+  href: Meridian.Core.Performance.SymbolTable.html
+  name: SymbolTable
+  nameWithType: SymbolTable
+  fullName: Meridian.Core.Performance.SymbolTable
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.ReadOnlyMemory`1
+  commentId: T:System.ReadOnlyMemory`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.readonlymemory-1
+  name: ReadOnlyMemory<T>
+  nameWithType: ReadOnlyMemory<T>
+  fullName: System.ReadOnlyMemory<T>
+  nameWithType.vb: ReadOnlyMemory(Of T)
+  fullName.vb: System.ReadOnlyMemory(Of T)
+  name.vb: ReadOnlyMemory(Of T)
+  spec.csharp:
+  - uid: System.ReadOnlyMemory`1
+    name: ReadOnlyMemory
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlymemory-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.ReadOnlyMemory`1
+    name: ReadOnlyMemory
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlymemory-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent})
+  commentId: M:Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent})
+  isExternal: true
+  href: Meridian.Application.Pipeline.HotPathBatchSerializer.html#Meridian_Application_Pipeline_HotPathBatchSerializer_SerializeTrades_System_ReadOnlySpan_Meridian_Core_Performance_RawTradeEvent__
+  name: SerializeTrades(ReadOnlySpan<RawTradeEvent>)
+  nameWithType: HotPathBatchSerializer.SerializeTrades(ReadOnlySpan<RawTradeEvent>)
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan<Meridian.Core.Performance.RawTradeEvent>)
+  nameWithType.vb: HotPathBatchSerializer.SerializeTrades(ReadOnlySpan(Of RawTradeEvent))
+  fullName.vb: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan(Of Meridian.Core.Performance.RawTradeEvent))
+  name.vb: SerializeTrades(ReadOnlySpan(Of RawTradeEvent))
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent})
+    name: SerializeTrades
+    href: Meridian.Application.Pipeline.HotPathBatchSerializer.html#Meridian_Application_Pipeline_HotPathBatchSerializer_SerializeTrades_System_ReadOnlySpan_Meridian_Core_Performance_RawTradeEvent__
+  - name: (
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: <
+  - uid: Meridian.Core.Performance.RawTradeEvent
+    name: RawTradeEvent
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades(System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent})
+    name: SerializeTrades
+    href: Meridian.Application.Pipeline.HotPathBatchSerializer.html#Meridian_Application_Pipeline_HotPathBatchSerializer_SerializeTrades_System_ReadOnlySpan_Meridian_Core_Performance_RawTradeEvent__
+  - name: (
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Core.Performance.RawTradeEvent
+    name: RawTradeEvent
+  - name: )
+  - name: )
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent})
+  commentId: M:Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent})
+  isExternal: true
+  href: Meridian.Application.Pipeline.HotPathBatchSerializer.html#Meridian_Application_Pipeline_HotPathBatchSerializer_SerializeQuotes_System_ReadOnlySpan_Meridian_Core_Performance_RawQuoteEvent__
+  name: SerializeQuotes(ReadOnlySpan<RawQuoteEvent>)
+  nameWithType: HotPathBatchSerializer.SerializeQuotes(ReadOnlySpan<RawQuoteEvent>)
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan<Meridian.Core.Performance.RawQuoteEvent>)
+  nameWithType.vb: HotPathBatchSerializer.SerializeQuotes(ReadOnlySpan(Of RawQuoteEvent))
+  fullName.vb: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan(Of Meridian.Core.Performance.RawQuoteEvent))
+  name.vb: SerializeQuotes(ReadOnlySpan(Of RawQuoteEvent))
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent})
+    name: SerializeQuotes
+    href: Meridian.Application.Pipeline.HotPathBatchSerializer.html#Meridian_Application_Pipeline_HotPathBatchSerializer_SerializeQuotes_System_ReadOnlySpan_Meridian_Core_Performance_RawQuoteEvent__
+  - name: (
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: <
+  - uid: Meridian.Core.Performance.RawQuoteEvent
+    name: RawQuoteEvent
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes(System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent})
+    name: SerializeQuotes
+    href: Meridian.Application.Pipeline.HotPathBatchSerializer.html#Meridian_Application_Pipeline_HotPathBatchSerializer_SerializeQuotes_System_ReadOnlySpan_Meridian_Core_Performance_RawQuoteEvent__
+  - name: (
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Core.Performance.RawQuoteEvent
+    name: RawQuoteEvent
+  - name: )
+  - name: )
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades*
+  commentId: Overload:Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades
+  href: Meridian.Application.Pipeline.HotPathBatchSerializer.html#Meridian_Application_Pipeline_HotPathBatchSerializer_SerializeTrades_System_ReadOnlySpan_Meridian_Core_Performance_RawTradeEvent__
+  name: SerializeTrades
+  nameWithType: HotPathBatchSerializer.SerializeTrades
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeTrades
+- uid: System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent}
+  commentId: T:System.ReadOnlySpan{Meridian.Core.Performance.RawTradeEvent}
+  parent: System
+  definition: System.ReadOnlySpan`1
+  href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  name: ReadOnlySpan<RawTradeEvent>
+  nameWithType: ReadOnlySpan<RawTradeEvent>
+  fullName: System.ReadOnlySpan<Meridian.Core.Performance.RawTradeEvent>
+  nameWithType.vb: ReadOnlySpan(Of RawTradeEvent)
+  fullName.vb: System.ReadOnlySpan(Of Meridian.Core.Performance.RawTradeEvent)
+  name.vb: ReadOnlySpan(Of RawTradeEvent)
+  spec.csharp:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: <
+  - uid: Meridian.Core.Performance.RawTradeEvent
+    name: RawTradeEvent
+  - name: '>'
+  spec.vb:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Core.Performance.RawTradeEvent
+    name: RawTradeEvent
+  - name: )
+- uid: System.ReadOnlyMemory{System.Byte}
+  commentId: T:System.ReadOnlyMemory{System.Byte}
+  parent: System
+  definition: System.ReadOnlyMemory`1
+  href: https://learn.microsoft.com/dotnet/api/system.readonlymemory-1
+  name: ReadOnlyMemory<byte>
+  nameWithType: ReadOnlyMemory<byte>
+  fullName: System.ReadOnlyMemory<byte>
+  nameWithType.vb: ReadOnlyMemory(Of Byte)
+  fullName.vb: System.ReadOnlyMemory(Of Byte)
+  name.vb: ReadOnlyMemory(Of Byte)
+  spec.csharp:
+  - uid: System.ReadOnlyMemory`1
+    name: ReadOnlyMemory
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlymemory-1
+  - name: <
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: '>'
+  spec.vb:
+  - uid: System.ReadOnlyMemory`1
+    name: ReadOnlyMemory
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlymemory-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: System.ReadOnlySpan`1
+  commentId: T:System.ReadOnlySpan`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  name: ReadOnlySpan<T>
+  nameWithType: ReadOnlySpan<T>
+  fullName: System.ReadOnlySpan<T>
+  nameWithType.vb: ReadOnlySpan(Of T)
+  fullName.vb: System.ReadOnlySpan(Of T)
+  name.vb: ReadOnlySpan(Of T)
+  spec.csharp:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes*
+  commentId: Overload:Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes
+  href: Meridian.Application.Pipeline.HotPathBatchSerializer.html#Meridian_Application_Pipeline_HotPathBatchSerializer_SerializeQuotes_System_ReadOnlySpan_Meridian_Core_Performance_RawQuoteEvent__
+  name: SerializeQuotes
+  nameWithType: HotPathBatchSerializer.SerializeQuotes
+  fullName: Meridian.Application.Pipeline.HotPathBatchSerializer.SerializeQuotes
+- uid: System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent}
+  commentId: T:System.ReadOnlySpan{Meridian.Core.Performance.RawQuoteEvent}
+  parent: System
+  definition: System.ReadOnlySpan`1
+  href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  name: ReadOnlySpan<RawQuoteEvent>
+  nameWithType: ReadOnlySpan<RawQuoteEvent>
+  fullName: System.ReadOnlySpan<Meridian.Core.Performance.RawQuoteEvent>
+  nameWithType.vb: ReadOnlySpan(Of RawQuoteEvent)
+  fullName.vb: System.ReadOnlySpan(Of Meridian.Core.Performance.RawQuoteEvent)
+  name.vb: ReadOnlySpan(Of RawQuoteEvent)
+  spec.csharp:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: <
+  - uid: Meridian.Core.Performance.RawQuoteEvent
+    name: RawQuoteEvent
+  - name: '>'
+  spec.vb:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Core.Performance.RawQuoteEvent
+    name: RawQuoteEvent
+  - name: )

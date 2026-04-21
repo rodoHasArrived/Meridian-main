@@ -1,0 +1,977 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.StatusHttpServer
+  commentId: T:Meridian.Application.Monitoring.StatusHttpServer
+  id: StatusHttpServer
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.StatusHttpServer.#ctor(System.Int32,System.Func{Meridian.Application.Monitoring.MetricsSnapshot},System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.DepthIntegrityEvent}},System.Func{Meridian.Application.Monitoring.ErrorRingBuffer},System.String,System.Boolean,System.String,System.Int32)
+  - Meridian.Application.Monitoring.StatusHttpServer.DisposeAsync
+  - Meridian.Application.Monitoring.StatusHttpServer.Handlers
+  - Meridian.Application.Monitoring.StatusHttpServer.RegisterExtendedProviders(System.Func{System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}},System.Func{Meridian.Application.Monitoring.BackpressureStatus},System.Func{Meridian.Application.Monitoring.ProviderLatencySummary},System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot})
+  - Meridian.Application.Monitoring.StatusHttpServer.Start
+  langs:
+  - csharp
+  - vb
+  name: StatusHttpServer
+  nameWithType: StatusHttpServer
+  fullName: Meridian.Application.Monitoring.StatusHttpServer
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StatusHttpServer
+    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Lightweight HTTP server exposing runtime status, metrics (Prometheus format), and a minimal HTML dashboard.
+
+    Avoids pulling in ASP.NET for small deployments.
+
+    Uses shared StatusEndpointHandlers for consistent response generation with UiServer.
+
+    Enhanced with detailed health check (QW-32), backpressure status (MON-18), and provider latency (PROV-11).
+  example: []
+  syntax:
+    content: 'public sealed class StatusHttpServer : IAsyncDisposable'
+    content.vb: Public NotInheritable Class StatusHttpServer Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.StatusHttpServer.#ctor(System.Int32,System.Func{Meridian.Application.Monitoring.MetricsSnapshot},System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.DepthIntegrityEvent}},System.Func{Meridian.Application.Monitoring.ErrorRingBuffer},System.String,System.Boolean,System.String,System.Int32)
+  commentId: M:Meridian.Application.Monitoring.StatusHttpServer.#ctor(System.Int32,System.Func{Meridian.Application.Monitoring.MetricsSnapshot},System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.DepthIntegrityEvent}},System.Func{Meridian.Application.Monitoring.ErrorRingBuffer},System.String,System.Boolean,System.String,System.Int32)
+  id: '#ctor(System.Int32,System.Func{Meridian.Application.Monitoring.MetricsSnapshot},System.Func{Meridian.Application.Pipeline.PipelineStatistics},System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.DepthIntegrityEvent}},System.Func{Meridian.Application.Monitoring.ErrorRingBuffer},System.String,System.Boolean,System.String,System.Int32)'
+  parent: Meridian.Application.Monitoring.StatusHttpServer
+  langs:
+  - csharp
+  - vb
+  name: StatusHttpServer(int, Func<MetricsSnapshot>, Func<PipelineStatistics>, Func<IReadOnlyList<DepthIntegrityEvent>>, Func<ErrorRingBuffer?>?, string, bool, string?, int)
+  nameWithType: StatusHttpServer.StatusHttpServer(int, Func<MetricsSnapshot>, Func<PipelineStatistics>, Func<IReadOnlyList<DepthIntegrityEvent>>, Func<ErrorRingBuffer?>?, string, bool, string?, int)
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.StatusHttpServer(int, System.Func<Meridian.Application.Monitoring.MetricsSnapshot>, System.Func<Meridian.Application.Pipeline.PipelineStatistics>, System.Func<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.DepthIntegrityEvent>>, System.Func<Meridian.Application.Monitoring.ErrorRingBuffer?>?, string, bool, string?, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public StatusHttpServer(int port, Func<MetricsSnapshot> metricsProvider, Func<PipelineStatistics> pipelineProvider, Func<IReadOnlyList<DepthIntegrityEvent>> integrityProvider, Func<ErrorRingBuffer?>? errorBufferProvider = null, string bindAddress = "localhost", bool allowRemoteAccess = false, string? accessToken = null, int maxConcurrentRequests = 16)
+    parameters:
+    - id: port
+      type: System.Int32
+    - id: metricsProvider
+      type: System.Func{Meridian.Application.Monitoring.MetricsSnapshot}
+    - id: pipelineProvider
+      type: System.Func{Meridian.Application.Pipeline.PipelineStatistics}
+    - id: integrityProvider
+      type: System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.DepthIntegrityEvent}}
+    - id: errorBufferProvider
+      type: System.Func{Meridian.Application.Monitoring.ErrorRingBuffer}
+    - id: bindAddress
+      type: System.String
+    - id: allowRemoteAccess
+      type: System.Boolean
+    - id: accessToken
+      type: System.String
+    - id: maxConcurrentRequests
+      type: System.Int32
+    content.vb: Public Sub New(port As Integer, metricsProvider As Func(Of MetricsSnapshot), pipelineProvider As Func(Of PipelineStatistics), integrityProvider As Func(Of IReadOnlyList(Of DepthIntegrityEvent)), errorBufferProvider As Func(Of ErrorRingBuffer) = Nothing, bindAddress As String = "localhost", allowRemoteAccess As Boolean = False, accessToken As String = Nothing, maxConcurrentRequests As Integer = 16)
+  overload: Meridian.Application.Monitoring.StatusHttpServer.#ctor*
+  nameWithType.vb: StatusHttpServer.New(Integer, Func(Of MetricsSnapshot), Func(Of PipelineStatistics), Func(Of IReadOnlyList(Of DepthIntegrityEvent)), Func(Of ErrorRingBuffer), String, Boolean, String, Integer)
+  fullName.vb: Meridian.Application.Monitoring.StatusHttpServer.New(Integer, System.Func(Of Meridian.Application.Monitoring.MetricsSnapshot), System.Func(Of Meridian.Application.Pipeline.PipelineStatistics), System.Func(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.DepthIntegrityEvent)), System.Func(Of Meridian.Application.Monitoring.ErrorRingBuffer), String, Boolean, String, Integer)
+  name.vb: New(Integer, Func(Of MetricsSnapshot), Func(Of PipelineStatistics), Func(Of IReadOnlyList(Of DepthIntegrityEvent)), Func(Of ErrorRingBuffer), String, Boolean, String, Integer)
+- uid: Meridian.Application.Monitoring.StatusHttpServer.Handlers
+  commentId: P:Meridian.Application.Monitoring.StatusHttpServer.Handlers
+  id: Handlers
+  parent: Meridian.Application.Monitoring.StatusHttpServer
+  langs:
+  - csharp
+  - vb
+  name: Handlers
+  nameWithType: StatusHttpServer.Handlers
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.Handlers
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Handlers
+    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Gets the shared StatusEndpointHandlers instance.
+
+    This can be used to share handlers with the ASP.NET Core UiServer.
+  example: []
+  syntax:
+    content: public StatusEndpointHandlers Handlers { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.UI.StatusEndpointHandlers
+    content.vb: Public ReadOnly Property Handlers As StatusEndpointHandlers
+  overload: Meridian.Application.Monitoring.StatusHttpServer.Handlers*
+- uid: Meridian.Application.Monitoring.StatusHttpServer.Start
+  commentId: M:Meridian.Application.Monitoring.StatusHttpServer.Start
+  id: Start
+  parent: Meridian.Application.Monitoring.StatusHttpServer
+  langs:
+  - csharp
+  - vb
+  name: Start()
+  nameWithType: StatusHttpServer.Start()
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.Start()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public void Start()
+    content.vb: Public Sub Start()
+  overload: Meridian.Application.Monitoring.StatusHttpServer.Start*
+- uid: Meridian.Application.Monitoring.StatusHttpServer.RegisterExtendedProviders(System.Func{System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}},System.Func{Meridian.Application.Monitoring.BackpressureStatus},System.Func{Meridian.Application.Monitoring.ProviderLatencySummary},System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot})
+  commentId: M:Meridian.Application.Monitoring.StatusHttpServer.RegisterExtendedProviders(System.Func{System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}},System.Func{Meridian.Application.Monitoring.BackpressureStatus},System.Func{Meridian.Application.Monitoring.ProviderLatencySummary},System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot})
+  id: RegisterExtendedProviders(System.Func{System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}},System.Func{Meridian.Application.Monitoring.BackpressureStatus},System.Func{Meridian.Application.Monitoring.ProviderLatencySummary},System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot})
+  parent: Meridian.Application.Monitoring.StatusHttpServer
+  langs:
+  - csharp
+  - vb
+  name: RegisterExtendedProviders(Func<Task<DetailedHealthReport>>?, Func<BackpressureStatus>?, Func<ProviderLatencySummary>?, Func<ConnectionHealthSnapshot>?)
+  nameWithType: StatusHttpServer.RegisterExtendedProviders(Func<Task<DetailedHealthReport>>?, Func<BackpressureStatus>?, Func<ProviderLatencySummary>?, Func<ConnectionHealthSnapshot>?)
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.RegisterExtendedProviders(System.Func<System.Threading.Tasks.Task<Meridian.Application.Monitoring.DetailedHealthReport>>?, System.Func<Meridian.Application.Monitoring.BackpressureStatus>?, System.Func<Meridian.Application.Monitoring.ProviderLatencySummary>?, System.Func<Meridian.Application.Monitoring.ConnectionHealthSnapshot>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterExtendedProviders
+    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Registers extended providers for detailed health, backpressure, and provider latency endpoints.
+  example: []
+  syntax:
+    content: public void RegisterExtendedProviders(Func<Task<DetailedHealthReport>>? detailedHealth = null, Func<BackpressureStatus>? backpressure = null, Func<ProviderLatencySummary>? providerLatency = null, Func<ConnectionHealthSnapshot>? connectionHealth = null)
+    parameters:
+    - id: detailedHealth
+      type: System.Func{System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}}
+    - id: backpressure
+      type: System.Func{Meridian.Application.Monitoring.BackpressureStatus}
+    - id: providerLatency
+      type: System.Func{Meridian.Application.Monitoring.ProviderLatencySummary}
+    - id: connectionHealth
+      type: System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot}
+    content.vb: Public Sub RegisterExtendedProviders(detailedHealth As Func(Of Task(Of DetailedHealthReport)) = Nothing, backpressure As Func(Of BackpressureStatus) = Nothing, providerLatency As Func(Of ProviderLatencySummary) = Nothing, connectionHealth As Func(Of ConnectionHealthSnapshot) = Nothing)
+  overload: Meridian.Application.Monitoring.StatusHttpServer.RegisterExtendedProviders*
+  nameWithType.vb: StatusHttpServer.RegisterExtendedProviders(Func(Of Task(Of DetailedHealthReport)), Func(Of BackpressureStatus), Func(Of ProviderLatencySummary), Func(Of ConnectionHealthSnapshot))
+  fullName.vb: Meridian.Application.Monitoring.StatusHttpServer.RegisterExtendedProviders(System.Func(Of System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.DetailedHealthReport)), System.Func(Of Meridian.Application.Monitoring.BackpressureStatus), System.Func(Of Meridian.Application.Monitoring.ProviderLatencySummary), System.Func(Of Meridian.Application.Monitoring.ConnectionHealthSnapshot))
+  name.vb: RegisterExtendedProviders(Func(Of Task(Of DetailedHealthReport)), Func(Of BackpressureStatus), Func(Of ProviderLatencySummary), Func(Of ConnectionHealthSnapshot))
+- uid: Meridian.Application.Monitoring.StatusHttpServer.DisposeAsync
+  commentId: M:Meridian.Application.Monitoring.StatusHttpServer.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Monitoring.StatusHttpServer
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: StatusHttpServer.DisposeAsync()
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/StatusHttpServer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Monitoring/StatusHttpServer.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Monitoring.StatusHttpServer.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.StatusHttpServer.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.StatusHttpServer.#ctor
+  href: Meridian.Application.Monitoring.StatusHttpServer.html#Meridian_Application_Monitoring_StatusHttpServer__ctor_System_Int32_System_Func_Meridian_Application_Monitoring_MetricsSnapshot__System_Func_Meridian_Application_Pipeline_PipelineStatistics__System_Func_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_DepthIntegrityEvent___System_Func_Meridian_Application_Monitoring_ErrorRingBuffer__System_String_System_Boolean_System_String_System_Int32_
+  name: StatusHttpServer
+  nameWithType: StatusHttpServer.StatusHttpServer
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.StatusHttpServer
+  nameWithType.vb: StatusHttpServer.New
+  fullName.vb: Meridian.Application.Monitoring.StatusHttpServer.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Func{Meridian.Application.Monitoring.MetricsSnapshot}
+  commentId: T:System.Func{Meridian.Application.Monitoring.MetricsSnapshot}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<MetricsSnapshot>
+  nameWithType: Func<MetricsSnapshot>
+  fullName: System.Func<Meridian.Application.Monitoring.MetricsSnapshot>
+  nameWithType.vb: Func(Of MetricsSnapshot)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.MetricsSnapshot)
+  name.vb: Func(Of MetricsSnapshot)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.MetricsSnapshot
+    name: MetricsSnapshot
+    href: Meridian.Application.Monitoring.MetricsSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.MetricsSnapshot
+    name: MetricsSnapshot
+    href: Meridian.Application.Monitoring.MetricsSnapshot.html
+  - name: )
+- uid: System.Func{Meridian.Application.Pipeline.PipelineStatistics}
+  commentId: T:System.Func{Meridian.Application.Pipeline.PipelineStatistics}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<PipelineStatistics>
+  nameWithType: Func<PipelineStatistics>
+  fullName: System.Func<Meridian.Application.Pipeline.PipelineStatistics>
+  nameWithType.vb: Func(Of PipelineStatistics)
+  fullName.vb: System.Func(Of Meridian.Application.Pipeline.PipelineStatistics)
+  name.vb: Func(Of PipelineStatistics)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.PipelineStatistics
+    name: PipelineStatistics
+    href: Meridian.Application.Pipeline.PipelineStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.PipelineStatistics
+    name: PipelineStatistics
+    href: Meridian.Application.Pipeline.PipelineStatistics.html
+  - name: )
+- uid: System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.DepthIntegrityEvent}}
+  commentId: T:System.Func{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.DepthIntegrityEvent}}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<IReadOnlyList<DepthIntegrityEvent>>
+  nameWithType: Func<IReadOnlyList<DepthIntegrityEvent>>
+  fullName: System.Func<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.DepthIntegrityEvent>>
+  nameWithType.vb: Func(Of IReadOnlyList(Of DepthIntegrityEvent))
+  fullName.vb: System.Func(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.DepthIntegrityEvent))
+  name.vb: Func(Of IReadOnlyList(Of DepthIntegrityEvent))
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.DepthIntegrityEvent
+    name: DepthIntegrityEvent
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.DepthIntegrityEvent
+    name: DepthIntegrityEvent
+  - name: )
+  - name: )
+- uid: System.Func{Meridian.Application.Monitoring.ErrorRingBuffer}
+  commentId: T:System.Func{Meridian.Application.Monitoring.ErrorRingBuffer}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<ErrorRingBuffer>
+  nameWithType: Func<ErrorRingBuffer>
+  fullName: System.Func<Meridian.Application.Monitoring.ErrorRingBuffer>
+  nameWithType.vb: Func(Of ErrorRingBuffer)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.ErrorRingBuffer)
+  name.vb: Func(Of ErrorRingBuffer)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ErrorRingBuffer
+    name: ErrorRingBuffer
+    href: Meridian.Application.Monitoring.ErrorRingBuffer.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ErrorRingBuffer
+    name: ErrorRingBuffer
+    href: Meridian.Application.Monitoring.ErrorRingBuffer.html
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Monitoring.StatusHttpServer.Handlers*
+  commentId: Overload:Meridian.Application.Monitoring.StatusHttpServer.Handlers
+  href: Meridian.Application.Monitoring.StatusHttpServer.html#Meridian_Application_Monitoring_StatusHttpServer_Handlers
+  name: Handlers
+  nameWithType: StatusHttpServer.Handlers
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.Handlers
+- uid: Meridian.Application.UI.StatusEndpointHandlers
+  commentId: T:Meridian.Application.UI.StatusEndpointHandlers
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.StatusEndpointHandlers.html
+  name: StatusEndpointHandlers
+  nameWithType: StatusEndpointHandlers
+  fullName: Meridian.Application.UI.StatusEndpointHandlers
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Application.Monitoring.StatusHttpServer.Start*
+  commentId: Overload:Meridian.Application.Monitoring.StatusHttpServer.Start
+  href: Meridian.Application.Monitoring.StatusHttpServer.html#Meridian_Application_Monitoring_StatusHttpServer_Start
+  name: Start
+  nameWithType: StatusHttpServer.Start
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.Start
+- uid: Meridian.Application.Monitoring.StatusHttpServer.RegisterExtendedProviders*
+  commentId: Overload:Meridian.Application.Monitoring.StatusHttpServer.RegisterExtendedProviders
+  href: Meridian.Application.Monitoring.StatusHttpServer.html#Meridian_Application_Monitoring_StatusHttpServer_RegisterExtendedProviders_System_Func_System_Threading_Tasks_Task_Meridian_Application_Monitoring_DetailedHealthReport___System_Func_Meridian_Application_Monitoring_BackpressureStatus__System_Func_Meridian_Application_Monitoring_ProviderLatencySummary__System_Func_Meridian_Application_Monitoring_ConnectionHealthSnapshot__
+  name: RegisterExtendedProviders
+  nameWithType: StatusHttpServer.RegisterExtendedProviders
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.RegisterExtendedProviders
+- uid: System.Func{System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}}
+  commentId: T:System.Func{System.Threading.Tasks.Task{Meridian.Application.Monitoring.DetailedHealthReport}}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<Task<DetailedHealthReport>>
+  nameWithType: Func<Task<DetailedHealthReport>>
+  fullName: System.Func<System.Threading.Tasks.Task<Meridian.Application.Monitoring.DetailedHealthReport>>
+  nameWithType.vb: Func(Of Task(Of DetailedHealthReport))
+  fullName.vb: System.Func(Of System.Threading.Tasks.Task(Of Meridian.Application.Monitoring.DetailedHealthReport))
+  name.vb: Func(Of Task(Of DetailedHealthReport))
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DetailedHealthReport
+    name: DetailedHealthReport
+    href: Meridian.Application.Monitoring.DetailedHealthReport.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DetailedHealthReport
+    name: DetailedHealthReport
+    href: Meridian.Application.Monitoring.DetailedHealthReport.html
+  - name: )
+  - name: )
+- uid: System.Func{Meridian.Application.Monitoring.BackpressureStatus}
+  commentId: T:System.Func{Meridian.Application.Monitoring.BackpressureStatus}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<BackpressureStatus>
+  nameWithType: Func<BackpressureStatus>
+  fullName: System.Func<Meridian.Application.Monitoring.BackpressureStatus>
+  nameWithType.vb: Func(Of BackpressureStatus)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.BackpressureStatus)
+  name.vb: Func(Of BackpressureStatus)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.BackpressureStatus
+    name: BackpressureStatus
+    href: Meridian.Application.Monitoring.BackpressureStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.BackpressureStatus
+    name: BackpressureStatus
+    href: Meridian.Application.Monitoring.BackpressureStatus.html
+  - name: )
+- uid: System.Func{Meridian.Application.Monitoring.ProviderLatencySummary}
+  commentId: T:System.Func{Meridian.Application.Monitoring.ProviderLatencySummary}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<ProviderLatencySummary>
+  nameWithType: Func<ProviderLatencySummary>
+  fullName: System.Func<Meridian.Application.Monitoring.ProviderLatencySummary>
+  nameWithType.vb: Func(Of ProviderLatencySummary)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.ProviderLatencySummary)
+  name.vb: Func(Of ProviderLatencySummary)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderLatencySummary
+    name: ProviderLatencySummary
+    href: Meridian.Application.Monitoring.ProviderLatencySummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderLatencySummary
+    name: ProviderLatencySummary
+    href: Meridian.Application.Monitoring.ProviderLatencySummary.html
+  - name: )
+- uid: System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot}
+  commentId: T:System.Func{Meridian.Application.Monitoring.ConnectionHealthSnapshot}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<ConnectionHealthSnapshot>
+  nameWithType: Func<ConnectionHealthSnapshot>
+  fullName: System.Func<Meridian.Application.Monitoring.ConnectionHealthSnapshot>
+  nameWithType.vb: Func(Of ConnectionHealthSnapshot)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.ConnectionHealthSnapshot)
+  name.vb: Func(Of ConnectionHealthSnapshot)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+    name: ConnectionHealthSnapshot
+    href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ConnectionHealthSnapshot
+    name: ConnectionHealthSnapshot
+    href: Meridian.Application.Monitoring.ConnectionHealthSnapshot.html
+  - name: )
+- uid: Meridian.Application.Monitoring.StatusHttpServer.DisposeAsync*
+  commentId: Overload:Meridian.Application.Monitoring.StatusHttpServer.DisposeAsync
+  href: Meridian.Application.Monitoring.StatusHttpServer.html#Meridian_Application_Monitoring_StatusHttpServer_DisposeAsync
+  name: DisposeAsync
+  nameWithType: StatusHttpServer.DisposeAsync
+  fullName: Meridian.Application.Monitoring.StatusHttpServer.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

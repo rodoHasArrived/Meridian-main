@@ -1,0 +1,1453 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  commentId: T:Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  id: MaintenanceTaskOptions
+  parent: Meridian.Storage.Maintenance
+  children:
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupBeforeRepair
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupPath
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckFilePermissions
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckSequenceContinuity
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.CompressionLevel
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteEmptyDirectories
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteOrphans
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteSourceAfterMigration
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteTemporaryFiles
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.DryRun
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.FileAgeDaysThreshold
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.IdentifyCorruption
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketCloseTime
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketOpenTime
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketTimeZoneId
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxFilesPerMerge
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationBytesPerRun
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationsPerRun
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.MinFileSizeBytes
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.OrphanAgeDays
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.OverrideRetentionDays
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.ParallelOperations
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.RecompressExisting
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.SkipCriticalData
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.TargetCompressionCodec
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.TruncateCorrupted
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.ValidateChecksums
+  - Meridian.Storage.Maintenance.MaintenanceTaskOptions.VerifyAfterMigration
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceTaskOptions
+  nameWithType: MaintenanceTaskOptions
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceTaskOptions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  summary: Configuration options for maintenance tasks.
+  example: []
+  syntax:
+    content: public sealed class MaintenanceTaskOptions
+    content.vb: Public NotInheritable Class MaintenanceTaskOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ValidateChecksums
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.ValidateChecksums
+  id: ValidateChecksums
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: ValidateChecksums
+  nameWithType: MaintenanceTaskOptions.ValidateChecksums
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ValidateChecksums
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateChecksums
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool ValidateChecksums { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property ValidateChecksums As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ValidateChecksums*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckSequenceContinuity
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckSequenceContinuity
+  id: CheckSequenceContinuity
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: CheckSequenceContinuity
+  nameWithType: MaintenanceTaskOptions.CheckSequenceContinuity
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckSequenceContinuity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckSequenceContinuity
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool CheckSequenceContinuity { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property CheckSequenceContinuity As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckSequenceContinuity*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.IdentifyCorruption
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.IdentifyCorruption
+  id: IdentifyCorruption
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: IdentifyCorruption
+  nameWithType: MaintenanceTaskOptions.IdentifyCorruption
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.IdentifyCorruption
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IdentifyCorruption
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 233
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool IdentifyCorruption { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IdentifyCorruption As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.IdentifyCorruption*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckFilePermissions
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckFilePermissions
+  id: CheckFilePermissions
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: CheckFilePermissions
+  nameWithType: MaintenanceTaskOptions.CheckFilePermissions
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckFilePermissions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckFilePermissions
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 234
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool CheckFilePermissions { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property CheckFilePermissions As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckFilePermissions*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ParallelOperations
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.ParallelOperations
+  id: ParallelOperations
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: ParallelOperations
+  nameWithType: MaintenanceTaskOptions.ParallelOperations
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ParallelOperations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParallelOperations
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int ParallelOperations { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ParallelOperations As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ParallelOperations*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteOrphans
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteOrphans
+  id: DeleteOrphans
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: DeleteOrphans
+  nameWithType: MaintenanceTaskOptions.DeleteOrphans
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteOrphans
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteOrphans
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool DeleteOrphans { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property DeleteOrphans As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteOrphans*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteTemporaryFiles
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteTemporaryFiles
+  id: DeleteTemporaryFiles
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: DeleteTemporaryFiles
+  nameWithType: MaintenanceTaskOptions.DeleteTemporaryFiles
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteTemporaryFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteTemporaryFiles
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool DeleteTemporaryFiles { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property DeleteTemporaryFiles As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteTemporaryFiles*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteEmptyDirectories
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteEmptyDirectories
+  id: DeleteEmptyDirectories
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: DeleteEmptyDirectories
+  nameWithType: MaintenanceTaskOptions.DeleteEmptyDirectories
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteEmptyDirectories
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteEmptyDirectories
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool DeleteEmptyDirectories { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property DeleteEmptyDirectories As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteEmptyDirectories*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OrphanAgeDays
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.OrphanAgeDays
+  id: OrphanAgeDays
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: OrphanAgeDays
+  nameWithType: MaintenanceTaskOptions.OrphanAgeDays
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OrphanAgeDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrphanAgeDays
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int OrphanAgeDays { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property OrphanAgeDays As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OrphanAgeDays*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MinFileSizeBytes
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MinFileSizeBytes
+  id: MinFileSizeBytes
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: MinFileSizeBytes
+  nameWithType: MaintenanceTaskOptions.MinFileSizeBytes
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MinFileSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinFileSizeBytes
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public long MinFileSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MinFileSizeBytes As Long
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MinFileSizeBytes*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxFilesPerMerge
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxFilesPerMerge
+  id: MaxFilesPerMerge
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxFilesPerMerge
+  nameWithType: MaintenanceTaskOptions.MaxFilesPerMerge
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxFilesPerMerge
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxFilesPerMerge
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int MaxFilesPerMerge { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxFilesPerMerge As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxFilesPerMerge*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.FileAgeDaysThreshold
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.FileAgeDaysThreshold
+  id: FileAgeDaysThreshold
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: FileAgeDaysThreshold
+  nameWithType: MaintenanceTaskOptions.FileAgeDaysThreshold
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.FileAgeDaysThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileAgeDaysThreshold
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int FileAgeDaysThreshold { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FileAgeDaysThreshold As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.FileAgeDaysThreshold*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DryRun
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DryRun
+  id: DryRun
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: DryRun
+  nameWithType: MaintenanceTaskOptions.DryRun
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DryRun
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DryRun
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool DryRun { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property DryRun As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DryRun*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteSourceAfterMigration
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteSourceAfterMigration
+  id: DeleteSourceAfterMigration
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: DeleteSourceAfterMigration
+  nameWithType: MaintenanceTaskOptions.DeleteSourceAfterMigration
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteSourceAfterMigration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteSourceAfterMigration
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool DeleteSourceAfterMigration { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property DeleteSourceAfterMigration As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteSourceAfterMigration*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.VerifyAfterMigration
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.VerifyAfterMigration
+  id: VerifyAfterMigration
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: VerifyAfterMigration
+  nameWithType: MaintenanceTaskOptions.VerifyAfterMigration
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.VerifyAfterMigration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifyAfterMigration
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool VerifyAfterMigration { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property VerifyAfterMigration As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.VerifyAfterMigration*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationsPerRun
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationsPerRun
+  id: MaxMigrationsPerRun
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxMigrationsPerRun
+  nameWithType: MaintenanceTaskOptions.MaxMigrationsPerRun
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationsPerRun
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxMigrationsPerRun
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int MaxMigrationsPerRun { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxMigrationsPerRun As Integer
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationsPerRun*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationBytesPerRun
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationBytesPerRun
+  id: MaxMigrationBytesPerRun
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: MaxMigrationBytesPerRun
+  nameWithType: MaintenanceTaskOptions.MaxMigrationBytesPerRun
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationBytesPerRun
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxMigrationBytesPerRun
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public long? MaxMigrationBytesPerRun { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property MaxMigrationBytesPerRun As Long?
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationBytesPerRun*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours
+  id: RunOnlyDuringMarketClosedHours
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: RunOnlyDuringMarketClosedHours
+  nameWithType: MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunOnlyDuringMarketClosedHours
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool RunOnlyDuringMarketClosedHours { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property RunOnlyDuringMarketClosedHours As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketTimeZoneId
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketTimeZoneId
+  id: MarketTimeZoneId
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: MarketTimeZoneId
+  nameWithType: MaintenanceTaskOptions.MarketTimeZoneId
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketTimeZoneId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketTimeZoneId
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 255
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public string MarketTimeZoneId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MarketTimeZoneId As String
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketTimeZoneId*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketOpenTime
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketOpenTime
+  id: MarketOpenTime
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: MarketOpenTime
+  nameWithType: MaintenanceTaskOptions.MarketOpenTime
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketOpenTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketOpenTime
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public TimeSpan MarketOpenTime { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MarketOpenTime As TimeSpan
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketOpenTime*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketCloseTime
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketCloseTime
+  id: MarketCloseTime
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: MarketCloseTime
+  nameWithType: MaintenanceTaskOptions.MarketCloseTime
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketCloseTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketCloseTime
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public TimeSpan MarketCloseTime { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MarketCloseTime As TimeSpan
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketCloseTime*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TargetCompressionCodec
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.TargetCompressionCodec
+  id: TargetCompressionCodec
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: TargetCompressionCodec
+  nameWithType: MaintenanceTaskOptions.TargetCompressionCodec
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TargetCompressionCodec
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetCompressionCodec
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public string? TargetCompressionCodec { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TargetCompressionCodec As String
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TargetCompressionCodec*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CompressionLevel
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.CompressionLevel
+  id: CompressionLevel
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: CompressionLevel
+  nameWithType: MaintenanceTaskOptions.CompressionLevel
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CompressionLevel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionLevel
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 261
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int? CompressionLevel { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property CompressionLevel As Integer?
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CompressionLevel*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RecompressExisting
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.RecompressExisting
+  id: RecompressExisting
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: RecompressExisting
+  nameWithType: MaintenanceTaskOptions.RecompressExisting
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RecompressExisting
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecompressExisting
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 262
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool RecompressExisting { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property RecompressExisting As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RecompressExisting*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupBeforeRepair
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupBeforeRepair
+  id: BackupBeforeRepair
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: BackupBeforeRepair
+  nameWithType: MaintenanceTaskOptions.BackupBeforeRepair
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupBeforeRepair
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackupBeforeRepair
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 265
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool BackupBeforeRepair { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property BackupBeforeRepair As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupBeforeRepair*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupPath
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupPath
+  id: BackupPath
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: BackupPath
+  nameWithType: MaintenanceTaskOptions.BackupPath
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackupPath
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public string? BackupPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BackupPath As String
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupPath*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TruncateCorrupted
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.TruncateCorrupted
+  id: TruncateCorrupted
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: TruncateCorrupted
+  nameWithType: MaintenanceTaskOptions.TruncateCorrupted
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TruncateCorrupted
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TruncateCorrupted
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 267
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool TruncateCorrupted { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property TruncateCorrupted As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TruncateCorrupted*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OverrideRetentionDays
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.OverrideRetentionDays
+  id: OverrideRetentionDays
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: OverrideRetentionDays
+  nameWithType: MaintenanceTaskOptions.OverrideRetentionDays
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OverrideRetentionDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OverrideRetentionDays
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 270
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public int? OverrideRetentionDays { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property OverrideRetentionDays As Integer?
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OverrideRetentionDays*
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.SkipCriticalData
+  commentId: P:Meridian.Storage.Maintenance.MaintenanceTaskOptions.SkipCriticalData
+  id: SkipCriticalData
+  parent: Meridian.Storage.Maintenance.MaintenanceTaskOptions
+  langs:
+  - csharp
+  - vb
+  name: SkipCriticalData
+  nameWithType: MaintenanceTaskOptions.SkipCriticalData
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.SkipCriticalData
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkipCriticalData
+    path: ../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+    startLine: 271
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Maintenance
+  syntax:
+    content: public bool SkipCriticalData { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SkipCriticalData As Boolean
+  overload: Meridian.Storage.Maintenance.MaintenanceTaskOptions.SkipCriticalData*
+references:
+- uid: Meridian.Storage.Maintenance
+  commentId: N:Meridian.Storage.Maintenance
+  href: Meridian.html
+  name: Meridian.Storage.Maintenance
+  nameWithType: Meridian.Storage.Maintenance
+  fullName: Meridian.Storage.Maintenance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Maintenance
+    name: Maintenance
+    href: Meridian.Storage.Maintenance.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ValidateChecksums*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.ValidateChecksums
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_ValidateChecksums
+  name: ValidateChecksums
+  nameWithType: MaintenanceTaskOptions.ValidateChecksums
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ValidateChecksums
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckSequenceContinuity*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckSequenceContinuity
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_CheckSequenceContinuity
+  name: CheckSequenceContinuity
+  nameWithType: MaintenanceTaskOptions.CheckSequenceContinuity
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckSequenceContinuity
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.IdentifyCorruption*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.IdentifyCorruption
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_IdentifyCorruption
+  name: IdentifyCorruption
+  nameWithType: MaintenanceTaskOptions.IdentifyCorruption
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.IdentifyCorruption
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckFilePermissions*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckFilePermissions
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_CheckFilePermissions
+  name: CheckFilePermissions
+  nameWithType: MaintenanceTaskOptions.CheckFilePermissions
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CheckFilePermissions
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ParallelOperations*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.ParallelOperations
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_ParallelOperations
+  name: ParallelOperations
+  nameWithType: MaintenanceTaskOptions.ParallelOperations
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.ParallelOperations
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteOrphans*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteOrphans
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_DeleteOrphans
+  name: DeleteOrphans
+  nameWithType: MaintenanceTaskOptions.DeleteOrphans
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteOrphans
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteTemporaryFiles*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteTemporaryFiles
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_DeleteTemporaryFiles
+  name: DeleteTemporaryFiles
+  nameWithType: MaintenanceTaskOptions.DeleteTemporaryFiles
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteTemporaryFiles
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteEmptyDirectories*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteEmptyDirectories
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_DeleteEmptyDirectories
+  name: DeleteEmptyDirectories
+  nameWithType: MaintenanceTaskOptions.DeleteEmptyDirectories
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteEmptyDirectories
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OrphanAgeDays*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.OrphanAgeDays
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_OrphanAgeDays
+  name: OrphanAgeDays
+  nameWithType: MaintenanceTaskOptions.OrphanAgeDays
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OrphanAgeDays
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MinFileSizeBytes*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MinFileSizeBytes
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_MinFileSizeBytes
+  name: MinFileSizeBytes
+  nameWithType: MaintenanceTaskOptions.MinFileSizeBytes
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MinFileSizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxFilesPerMerge*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxFilesPerMerge
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_MaxFilesPerMerge
+  name: MaxFilesPerMerge
+  nameWithType: MaintenanceTaskOptions.MaxFilesPerMerge
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxFilesPerMerge
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.FileAgeDaysThreshold*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.FileAgeDaysThreshold
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_FileAgeDaysThreshold
+  name: FileAgeDaysThreshold
+  nameWithType: MaintenanceTaskOptions.FileAgeDaysThreshold
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.FileAgeDaysThreshold
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DryRun*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DryRun
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_DryRun
+  name: DryRun
+  nameWithType: MaintenanceTaskOptions.DryRun
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DryRun
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteSourceAfterMigration*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteSourceAfterMigration
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_DeleteSourceAfterMigration
+  name: DeleteSourceAfterMigration
+  nameWithType: MaintenanceTaskOptions.DeleteSourceAfterMigration
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.DeleteSourceAfterMigration
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.VerifyAfterMigration*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.VerifyAfterMigration
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_VerifyAfterMigration
+  name: VerifyAfterMigration
+  nameWithType: MaintenanceTaskOptions.VerifyAfterMigration
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.VerifyAfterMigration
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationsPerRun*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationsPerRun
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_MaxMigrationsPerRun
+  name: MaxMigrationsPerRun
+  nameWithType: MaintenanceTaskOptions.MaxMigrationsPerRun
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationsPerRun
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationBytesPerRun*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationBytesPerRun
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_MaxMigrationBytesPerRun
+  name: MaxMigrationBytesPerRun
+  nameWithType: MaintenanceTaskOptions.MaxMigrationBytesPerRun
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MaxMigrationBytesPerRun
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_RunOnlyDuringMarketClosedHours
+  name: RunOnlyDuringMarketClosedHours
+  nameWithType: MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RunOnlyDuringMarketClosedHours
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketTimeZoneId*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketTimeZoneId
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_MarketTimeZoneId
+  name: MarketTimeZoneId
+  nameWithType: MaintenanceTaskOptions.MarketTimeZoneId
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketTimeZoneId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketOpenTime*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketOpenTime
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_MarketOpenTime
+  name: MarketOpenTime
+  nameWithType: MaintenanceTaskOptions.MarketOpenTime
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketOpenTime
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketCloseTime*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketCloseTime
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_MarketCloseTime
+  name: MarketCloseTime
+  nameWithType: MaintenanceTaskOptions.MarketCloseTime
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.MarketCloseTime
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TargetCompressionCodec*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.TargetCompressionCodec
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_TargetCompressionCodec
+  name: TargetCompressionCodec
+  nameWithType: MaintenanceTaskOptions.TargetCompressionCodec
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TargetCompressionCodec
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CompressionLevel*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.CompressionLevel
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_CompressionLevel
+  name: CompressionLevel
+  nameWithType: MaintenanceTaskOptions.CompressionLevel
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.CompressionLevel
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RecompressExisting*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.RecompressExisting
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_RecompressExisting
+  name: RecompressExisting
+  nameWithType: MaintenanceTaskOptions.RecompressExisting
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.RecompressExisting
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupBeforeRepair*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupBeforeRepair
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_BackupBeforeRepair
+  name: BackupBeforeRepair
+  nameWithType: MaintenanceTaskOptions.BackupBeforeRepair
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupBeforeRepair
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupPath*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupPath
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_BackupPath
+  name: BackupPath
+  nameWithType: MaintenanceTaskOptions.BackupPath
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.BackupPath
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TruncateCorrupted*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.TruncateCorrupted
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_TruncateCorrupted
+  name: TruncateCorrupted
+  nameWithType: MaintenanceTaskOptions.TruncateCorrupted
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.TruncateCorrupted
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OverrideRetentionDays*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.OverrideRetentionDays
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_OverrideRetentionDays
+  name: OverrideRetentionDays
+  nameWithType: MaintenanceTaskOptions.OverrideRetentionDays
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.OverrideRetentionDays
+- uid: Meridian.Storage.Maintenance.MaintenanceTaskOptions.SkipCriticalData*
+  commentId: Overload:Meridian.Storage.Maintenance.MaintenanceTaskOptions.SkipCriticalData
+  href: Meridian.Storage.Maintenance.MaintenanceTaskOptions.html#Meridian_Storage_Maintenance_MaintenanceTaskOptions_SkipCriticalData
+  name: SkipCriticalData
+  nameWithType: MaintenanceTaskOptions.SkipCriticalData
+  fullName: Meridian.Storage.Maintenance.MaintenanceTaskOptions.SkipCriticalData

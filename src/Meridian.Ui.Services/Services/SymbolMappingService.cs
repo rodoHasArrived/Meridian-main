@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
+using Meridian.Contracts.Configuration;
+using Meridian.Ui.Services.Contracts;
 
 namespace Meridian.Ui.Services;
 
@@ -12,7 +14,11 @@ public sealed class SymbolMappingService
     private static readonly Lazy<SymbolMappingService> _instance = new(() => new SymbolMappingService());
     public static SymbolMappingService Instance => _instance.Value;
 
-    private readonly string _mappingsFilePath;
+    private readonly IConfigService _configService;
+    private readonly string _legacyMappingsFilePath;
+    private readonly Lock _pathInitializationLock = new();
+    private Task? _pathInitializationTask;
+    private string? _mappingsFilePath;
     private SymbolMappingsConfig _config = new();
 
     // Use centralized JSON options to avoid duplication across services
@@ -31,16 +37,20 @@ public sealed class SymbolMappingService
         new("Tiingo", "Tiingo", "Dots to dashes (BRK.B → BRK-B)", SymbolTransform.DotsToDashes),
         new("Finnhub", "Finnhub", "Uppercase (identity)", SymbolTransform.Uppercase),
         new("AlphaVantage", "Alpha Vantage", "Uppercase (identity)", SymbolTransform.Uppercase),
-        new("StockSharp", "StockSharp", "Symbol@Exchange format", SymbolTransform.StockSharpFormat),
         new("NYSE", "NYSE", "Uppercase (identity)", SymbolTransform.Uppercase),
     };
 
     public event EventHandler? MappingsChanged;
 
     private SymbolMappingService()
+        : this(new ConfigService())
     {
-        var baseDir = AppContext.BaseDirectory;
-        _mappingsFilePath = Path.Combine(baseDir, "data", "_config", "symbol-mappings.json");
+    }
+
+    internal SymbolMappingService(IConfigService configService)
+    {
+        _configService = configService;
+        _legacyMappingsFilePath = Path.Combine(AppContext.BaseDirectory, "data", "_config", "symbol-mappings.json");
     }
 
     /// <summary>
@@ -50,11 +60,27 @@ public sealed class SymbolMappingService
     {
         try
         {
-            if (File.Exists(_mappingsFilePath))
+            var mappingsFilePath = await GetMappingsFilePathAsync(ct);
+            var loadPath = mappingsFilePath;
+            var migratedFromLegacy = false;
+            if (!File.Exists(loadPath) &&
+                !PathsEqual(mappingsFilePath, _legacyMappingsFilePath) &&
+                File.Exists(_legacyMappingsFilePath))
             {
-                var json = await File.ReadAllTextAsync(_mappingsFilePath);
+                loadPath = _legacyMappingsFilePath;
+                migratedFromLegacy = true;
+            }
+
+            if (File.Exists(loadPath))
+            {
+                var json = await File.ReadAllTextAsync(loadPath, ct);
                 _config = JsonSerializer.Deserialize<SymbolMappingsConfig>(json, JsonOptions)
                           ?? new SymbolMappingsConfig();
+
+                if (migratedFromLegacy)
+                {
+                    await SaveAsync(ct);
+                }
             }
             else
             {
@@ -76,14 +102,15 @@ public sealed class SymbolMappingService
     {
         try
         {
-            var directory = Path.GetDirectoryName(_mappingsFilePath);
+            var mappingsFilePath = await GetMappingsFilePathAsync(ct);
+            var directory = Path.GetDirectoryName(mappingsFilePath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
             }
 
             var json = JsonSerializer.Serialize(_config, JsonOptions);
-            await File.WriteAllTextAsync(_mappingsFilePath, json);
+            await File.WriteAllTextAsync(mappingsFilePath, json, ct);
             MappingsChanged?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex)
@@ -133,7 +160,7 @@ public sealed class SymbolMappingService
         }
 
         _config.Mappings = mappings.ToArray();
-        await SaveAsync();
+        await SaveAsync(ct);
     }
 
     /// <summary>
@@ -145,7 +172,7 @@ public sealed class SymbolMappingService
         mappings.RemoveAll(m =>
             string.Equals(m.CanonicalSymbol, canonicalSymbol, StringComparison.OrdinalIgnoreCase));
         _config.Mappings = mappings.ToArray();
-        await SaveAsync();
+        await SaveAsync(ct);
     }
 
     /// <summary>
@@ -206,7 +233,6 @@ public sealed class SymbolMappingService
             SymbolTransform.DotsToSpaces => symbol.Replace(".", " ").ToUpperInvariant(),
             SymbolTransform.DotsToDashes => symbol.Replace(".", "-").ToUpperInvariant(),
             SymbolTransform.StooqFormat => $"{symbol.Replace(".", "-").ToLowerInvariant()}.us",
-            SymbolTransform.StockSharpFormat => symbol.ToUpperInvariant(), // Requires exchange, handled separately
             _ => symbol.ToUpperInvariant()
         };
     }
@@ -231,7 +257,6 @@ public sealed class SymbolMappingService
             SymbolTransform.DotsToSpaces => providerSymbol.Replace(" ", ".").ToUpperInvariant(),
             SymbolTransform.DotsToDashes => providerSymbol.Replace("-", ".").ToUpperInvariant(),
             SymbolTransform.StooqFormat => providerSymbol.Replace(".us", "").Replace("-", ".").ToUpperInvariant(),
-            SymbolTransform.StockSharpFormat => providerSymbol.Split('@')[0].ToUpperInvariant(),
             _ => providerSymbol.ToUpperInvariant()
         };
     }
@@ -304,7 +329,7 @@ public sealed class SymbolMappingService
                 }
             }
 
-            await AddOrUpdateMappingAsync(mapping);
+            await AddOrUpdateMappingAsync(mapping, ct);
             imported++;
         }
 
@@ -385,6 +410,112 @@ public sealed class SymbolMappingService
 
         return mapping;
     }
+
+    private async Task<string> GetMappingsFilePathAsync(CancellationToken ct)
+    {
+        await EnsurePathsResolvedAsync(ct);
+        return _mappingsFilePath!;
+    }
+
+    private async Task EnsurePathsResolvedAsync(CancellationToken ct)
+    {
+        Task initializationTask;
+        lock (_pathInitializationLock)
+        {
+            _pathInitializationTask ??= InitialisePathsAsync(CancellationToken.None);
+            initializationTask = _pathInitializationTask;
+        }
+
+        await initializationTask.WaitAsync(ct);
+    }
+
+    private async Task InitialisePathsAsync(CancellationToken ct)
+    {
+        AppConfig? config = null;
+        try
+        {
+            config = await _configService.LoadConfigAsync(ct);
+        }
+        catch
+        {
+        }
+
+        var configuredPersistencePath = await TryReadConfiguredPersistencePathAsync(ct);
+        if (!string.IsNullOrWhiteSpace(configuredPersistencePath))
+        {
+            _mappingsFilePath = MeridianPathDefaults.ResolvePathFromConfigBase(
+                _configService.ConfigPath,
+                configuredPersistencePath,
+                Path.Combine(MeridianPathDefaults.DefaultDataRoot, "_config", "symbol-mappings.json"));
+            return;
+        }
+
+        var dataRoot = MeridianPathDefaults.ResolveDataRoot(_configService.ConfigPath, config?.DataRoot);
+        _mappingsFilePath = Path.Combine(dataRoot, "_config", "symbol-mappings.json");
+    }
+
+    private async Task<string?> TryReadConfiguredPersistencePathAsync(CancellationToken ct)
+    {
+        try
+        {
+            if (!File.Exists(_configService.ConfigPath))
+            {
+                return null;
+            }
+
+            var json = await File.ReadAllTextAsync(_configService.ConfigPath, ct);
+            using var document = JsonDocument.Parse(json);
+            if (!TryGetProperty(document.RootElement, "dataSources", out var dataSources) ||
+                dataSources.ValueKind != JsonValueKind.Object ||
+                !TryGetProperty(dataSources, "symbolMappings", out var symbolMappings) ||
+                symbolMappings.ValueKind != JsonValueKind.Object ||
+                !TryGetProperty(symbolMappings, "persistencePath", out var persistencePath) ||
+                persistencePath.ValueKind != JsonValueKind.String)
+            {
+                return null;
+            }
+
+            return persistencePath.GetString();
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement propertyValue)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (property.NameEquals(propertyName) ||
+                property.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase))
+            {
+                propertyValue = property.Value;
+                return true;
+            }
+        }
+
+        propertyValue = default;
+        return false;
+    }
+
+    private static bool PathsEqual(string left, string right)
+        => string.Equals(
+            Path.GetFullPath(left),
+            Path.GetFullPath(right),
+            StringComparison.OrdinalIgnoreCase);
 }
 
 /// <summary>
@@ -496,7 +627,5 @@ public enum SymbolTransform : byte
     /// <summary>Replace dots with dashes (Yahoo format).</summary>
     DotsToDashes,
     /// <summary>Stooq format: lowercase with .us suffix.</summary>
-    StooqFormat,
-    /// <summary>StockSharp format: SYMBOL@EXCHANGE.</summary>
-    StockSharpFormat
+    StooqFormat
 }

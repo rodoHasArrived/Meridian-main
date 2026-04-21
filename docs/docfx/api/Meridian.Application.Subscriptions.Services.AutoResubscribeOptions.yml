@@ -1,0 +1,709 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  commentId: T:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  id: AutoResubscribeOptions
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerDuration
+  - Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerThreshold
+  - Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinResubscribeInterval
+  - Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinSeverityForResubscribe
+  - Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerDuration
+  - Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerThreshold
+  - Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCooldown
+  langs:
+  - csharp
+  - vb
+  name: AutoResubscribeOptions
+  nameWithType: AutoResubscribeOptions
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AutoResubscribeOptions
+    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    startLine: 487
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Configuration options for the auto-resubscribe policy.
+  example: []
+  syntax:
+    content: 'public sealed record AutoResubscribeOptions : IEquatable<AutoResubscribeOptions>'
+    content.vb: Public NotInheritable Class AutoResubscribeOptions Implements IEquatable(Of AutoResubscribeOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Services.AutoResubscribeOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinSeverityForResubscribe
+  commentId: P:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinSeverityForResubscribe
+  id: MinSeverityForResubscribe
+  parent: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  langs:
+  - csharp
+  - vb
+  name: MinSeverityForResubscribe
+  nameWithType: AutoResubscribeOptions.MinSeverityForResubscribe
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinSeverityForResubscribe
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinSeverityForResubscribe
+    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    startLine: 493
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Minimum severity level required to trigger auto-resubscribe.
+
+    Default: Error (only Error-level integrity events trigger resubscription).
+  example: []
+  syntax:
+    content: public IntegritySeverity MinSeverityForResubscribe { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.IntegritySeverity
+    content.vb: Public Property MinSeverityForResubscribe As IntegritySeverity
+  overload: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinSeverityForResubscribe*
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCooldown
+  commentId: P:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCooldown
+  id: SymbolCooldown
+  parent: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  langs:
+  - csharp
+  - vb
+  name: SymbolCooldown
+  nameWithType: AutoResubscribeOptions.SymbolCooldown
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCooldown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolCooldown
+    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    startLine: 500
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Cooldown period after a successful resubscription.
+
+    Prevents rapid repeated resubscriptions for the same symbol.
+
+    Default: 30 seconds.
+  example: []
+  syntax:
+    content: public TimeSpan SymbolCooldown { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property SymbolCooldown As TimeSpan
+  overload: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCooldown*
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinResubscribeInterval
+  commentId: P:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinResubscribeInterval
+  id: MinResubscribeInterval
+  parent: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  langs:
+  - csharp
+  - vb
+  name: MinResubscribeInterval
+  nameWithType: AutoResubscribeOptions.MinResubscribeInterval
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinResubscribeInterval
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinResubscribeInterval
+    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    startLine: 507
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Minimum interval between resubscription attempts for the same symbol.
+
+    Applies even if previous attempt failed.
+
+    Default: 5 seconds.
+  example: []
+  syntax:
+    content: public TimeSpan MinResubscribeInterval { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MinResubscribeInterval As TimeSpan
+  overload: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinResubscribeInterval*
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerThreshold
+  commentId: P:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerThreshold
+  id: CircuitBreakerThreshold
+  parent: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerThreshold
+  nameWithType: AutoResubscribeOptions.CircuitBreakerThreshold
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerThreshold
+    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    startLine: 513
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Number of consecutive failures before the global circuit breaker opens.
+
+    Default: 5 failures.
+  example: []
+  syntax:
+    content: public int CircuitBreakerThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CircuitBreakerThreshold As Integer
+  overload: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerThreshold*
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerDuration
+  commentId: P:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerDuration
+  id: CircuitBreakerDuration
+  parent: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerDuration
+  nameWithType: AutoResubscribeOptions.CircuitBreakerDuration
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerDuration
+    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    startLine: 519
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Duration the global circuit breaker remains open before transitioning to half-open.
+
+    Default: 60 seconds.
+  example: []
+  syntax:
+    content: public TimeSpan CircuitBreakerDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property CircuitBreakerDuration As TimeSpan
+  overload: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerDuration*
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerThreshold
+  commentId: P:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerThreshold
+  id: SymbolCircuitBreakerThreshold
+  parent: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  langs:
+  - csharp
+  - vb
+  name: SymbolCircuitBreakerThreshold
+  nameWithType: AutoResubscribeOptions.SymbolCircuitBreakerThreshold
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolCircuitBreakerThreshold
+    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    startLine: 525
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Number of consecutive failures before a per-symbol circuit breaker opens.
+
+    Default: 3 failures.
+  example: []
+  syntax:
+    content: public int SymbolCircuitBreakerThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolCircuitBreakerThreshold As Integer
+  overload: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerThreshold*
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerDuration
+  commentId: P:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerDuration
+  id: SymbolCircuitBreakerDuration
+  parent: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+  langs:
+  - csharp
+  - vb
+  name: SymbolCircuitBreakerDuration
+  nameWithType: AutoResubscribeOptions.SymbolCircuitBreakerDuration
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolCircuitBreakerDuration
+    path: ../../src/Meridian.Application/Subscriptions/Services/AutoResubscribePolicy.cs
+    startLine: 531
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Duration a per-symbol circuit breaker remains open.
+
+    Default: 120 seconds (longer than global to allow global recovery first).
+  example: []
+  syntax:
+    content: public TimeSpan SymbolCircuitBreakerDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property SymbolCircuitBreakerDuration As TimeSpan
+  overload: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerDuration*
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Services.AutoResubscribeOptions}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Services.AutoResubscribeOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AutoResubscribeOptions>
+  nameWithType: IEquatable<AutoResubscribeOptions>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Services.AutoResubscribeOptions>
+  nameWithType.vb: IEquatable(Of AutoResubscribeOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Services.AutoResubscribeOptions)
+  name.vb: IEquatable(Of AutoResubscribeOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+    name: AutoResubscribeOptions
+    href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions
+    name: AutoResubscribeOptions
+    href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinSeverityForResubscribe*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinSeverityForResubscribe
+  href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html#Meridian_Application_Subscriptions_Services_AutoResubscribeOptions_MinSeverityForResubscribe
+  name: MinSeverityForResubscribe
+  nameWithType: AutoResubscribeOptions.MinSeverityForResubscribe
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinSeverityForResubscribe
+- uid: Meridian.Contracts.Domain.Enums.IntegritySeverity
+  commentId: T:Meridian.Contracts.Domain.Enums.IntegritySeverity
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.IntegritySeverity.html
+  name: IntegritySeverity
+  nameWithType: IntegritySeverity
+  fullName: Meridian.Contracts.Domain.Enums.IntegritySeverity
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCooldown*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCooldown
+  href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html#Meridian_Application_Subscriptions_Services_AutoResubscribeOptions_SymbolCooldown
+  name: SymbolCooldown
+  nameWithType: AutoResubscribeOptions.SymbolCooldown
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCooldown
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinResubscribeInterval*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinResubscribeInterval
+  href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html#Meridian_Application_Subscriptions_Services_AutoResubscribeOptions_MinResubscribeInterval
+  name: MinResubscribeInterval
+  nameWithType: AutoResubscribeOptions.MinResubscribeInterval
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.MinResubscribeInterval
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerThreshold*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerThreshold
+  href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html#Meridian_Application_Subscriptions_Services_AutoResubscribeOptions_CircuitBreakerThreshold
+  name: CircuitBreakerThreshold
+  nameWithType: AutoResubscribeOptions.CircuitBreakerThreshold
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerThreshold
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerDuration*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerDuration
+  href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html#Meridian_Application_Subscriptions_Services_AutoResubscribeOptions_CircuitBreakerDuration
+  name: CircuitBreakerDuration
+  nameWithType: AutoResubscribeOptions.CircuitBreakerDuration
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.CircuitBreakerDuration
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerThreshold*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerThreshold
+  href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html#Meridian_Application_Subscriptions_Services_AutoResubscribeOptions_SymbolCircuitBreakerThreshold
+  name: SymbolCircuitBreakerThreshold
+  nameWithType: AutoResubscribeOptions.SymbolCircuitBreakerThreshold
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerThreshold
+- uid: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerDuration*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerDuration
+  href: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.html#Meridian_Application_Subscriptions_Services_AutoResubscribeOptions_SymbolCircuitBreakerDuration
+  name: SymbolCircuitBreakerDuration
+  nameWithType: AutoResubscribeOptions.SymbolCircuitBreakerDuration
+  fullName: Meridian.Application.Subscriptions.Services.AutoResubscribeOptions.SymbolCircuitBreakerDuration

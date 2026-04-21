@@ -1,0 +1,315 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Banking.IBankTransactionSource
+  commentId: T:Meridian.Contracts.Banking.IBankTransactionSource
+  id: IBankTransactionSource
+  parent: Meridian.Contracts.Banking
+  children:
+  - Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IBankTransactionSource
+  nameWithType: IBankTransactionSource
+  fullName: Meridian.Contracts.Banking.IBankTransactionSource
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBankTransactionSource
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  summary: >-
+    Read-only banking data source for cross-domain integrations such as
+
+    reconciliation.  Services outside the Banking module can depend on this
+
+    narrow interface instead of the full <code>IBankingService</code>.
+  example: []
+  syntax:
+    content: public interface IBankTransactionSource
+    content.vb: Public Interface IBankTransactionSource
+  derivedClasses:
+  - Meridian.Application.Banking.InMemoryBankingService
+- uid: Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  id: GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Banking.IBankTransactionSource
+  langs:
+  - csharp
+  - vb
+  name: GetBankTransactionsAsync(Guid?, CancellationToken)
+  nameWithType: IBankTransactionSource.GetBankTransactionsAsync(Guid?, CancellationToken)
+  fullName: Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Guid?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBankTransactionsAsync
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  summary: >-
+    Return bank transactions.  When <code class="paramref">entityId</code> is provided
+
+    the result is scoped to that entity; otherwise all transactions are returned.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<BankTransactionDto>> GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default)
+    parameters:
+    - id: entityId
+      type: System.Nullable{System.Guid}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}}
+    content.vb: Function GetBankTransactionsAsync(entityId As Guid? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of BankTransactionDto))
+  overload: Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync*
+references:
+- uid: Meridian.Contracts.Banking
+  commentId: N:Meridian.Contracts.Banking
+  href: Meridian.html
+  name: Meridian.Contracts.Banking
+  nameWithType: Meridian.Contracts.Banking
+  fullName: Meridian.Contracts.Banking
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html
+- uid: Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync*
+  commentId: Overload:Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync
+  href: Meridian.Contracts.Banking.IBankTransactionSource.html#Meridian_Contracts_Banking_IBankTransactionSource_GetBankTransactionsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: GetBankTransactionsAsync
+  nameWithType: IBankTransactionSource.GetBankTransactionsAsync
+  fullName: Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<BankTransactionDto>>
+  nameWithType: Task<IReadOnlyList<BankTransactionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Banking.BankTransactionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of BankTransactionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Banking.BankTransactionDto))
+  name.vb: Task(Of IReadOnlyList(Of BankTransactionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Banking.BankTransactionDto
+    name: BankTransactionDto
+    href: Meridian.Contracts.Banking.BankTransactionDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Banking.BankTransactionDto
+    name: BankTransactionDto
+    href: Meridian.Contracts.Banking.BankTransactionDto.html
+  - name: )
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

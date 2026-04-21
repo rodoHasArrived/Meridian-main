@@ -1,0 +1,1192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput
+  commentId: T:Meridian.Contracts.Api.ProviderTemplateOutput
+  id: ProviderTemplateOutput
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.ProviderTemplateOutput.Capabilities
+  - Meridian.Contracts.Api.ProviderTemplateOutput.CredentialFields
+  - Meridian.Contracts.Api.ProviderTemplateOutput.DataTypes
+  - Meridian.Contracts.Api.ProviderTemplateOutput.Description
+  - Meridian.Contracts.Api.ProviderTemplateOutput.DisplayName
+  - Meridian.Contracts.Api.ProviderTemplateOutput.FromCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry)
+  - Meridian.Contracts.Api.ProviderTemplateOutput.HasValidCredentials
+  - Meridian.Contracts.Api.ProviderTemplateOutput.IsConnected
+  - Meridian.Contracts.Api.ProviderTemplateOutput.IsEnabled
+  - Meridian.Contracts.Api.ProviderTemplateOutput.IsHealthy
+  - Meridian.Contracts.Api.ProviderTemplateOutput.Notes
+  - Meridian.Contracts.Api.ProviderTemplateOutput.ProviderId
+  - Meridian.Contracts.Api.ProviderTemplateOutput.ProviderType
+  - Meridian.Contracts.Api.ProviderTemplateOutput.RateLimit
+  - Meridian.Contracts.Api.ProviderTemplateOutput.RequiresCredentials
+  - Meridian.Contracts.Api.ProviderTemplateOutput.SupportedMarkets
+  - Meridian.Contracts.Api.ProviderTemplateOutput.Warnings
+  langs:
+  - csharp
+  - vb
+  name: ProviderTemplateOutput
+  nameWithType: ProviderTemplateOutput
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderTemplateOutput
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: >-
+    Unified provider template output for standardized UI consumption.
+
+    Combines provider catalog metadata with runtime status into a single
+
+    consistent structure that both Web and desktop can consume without
+
+    provider-specific conditionals.
+  example: []
+  syntax:
+    content: public sealed class ProviderTemplateOutput
+    content.vb: Public NotInheritable Class ProviderTemplateOutput
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderId
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.ProviderId
+  id: ProviderId
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: ProviderTemplateOutput.ProviderId
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("providerId")]
+
+      public string ProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("providerId")>
+
+      Public Property ProviderId As String
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: providerId
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.DisplayName
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.DisplayName
+  id: DisplayName
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: ProviderTemplateOutput.DisplayName
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("displayName")]
+
+      public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("displayName")>
+
+      Public Property DisplayName As String
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.DisplayName*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: displayName
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.Description
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.Description
+  id: Description
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: ProviderTemplateOutput.Description
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderType
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.ProviderType
+  id: ProviderType
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: ProviderType
+  nameWithType: ProviderTemplateOutput.ProviderType
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderType
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("providerType")]
+
+      public string ProviderType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("providerType")>
+
+      Public Property ProviderType As String
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: providerType
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.IsEnabled
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.IsEnabled
+  id: IsEnabled
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: IsEnabled
+  nameWithType: ProviderTemplateOutput.IsEnabled
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.IsEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEnabled
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("isEnabled")]
+
+      public bool IsEnabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isEnabled")>
+
+      Public Property IsEnabled As Boolean
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.IsEnabled*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isEnabled
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.IsConnected
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.IsConnected
+  id: IsConnected
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: ProviderTemplateOutput.IsConnected
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("isConnected")]
+
+      public bool IsConnected { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isConnected")>
+
+      Public Property IsConnected As Boolean
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.IsConnected*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isConnected
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.IsHealthy
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.IsHealthy
+  id: IsHealthy
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: IsHealthy
+  nameWithType: ProviderTemplateOutput.IsHealthy
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.IsHealthy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHealthy
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("isHealthy")]
+
+      public bool IsHealthy { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isHealthy")>
+
+      Public Property IsHealthy As Boolean
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.IsHealthy*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isHealthy
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.RequiresCredentials
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.RequiresCredentials
+  id: RequiresCredentials
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: RequiresCredentials
+  nameWithType: ProviderTemplateOutput.RequiresCredentials
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.RequiresCredentials
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequiresCredentials
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("requiresCredentials")]
+
+      public bool RequiresCredentials { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("requiresCredentials")>
+
+      Public Property RequiresCredentials As Boolean
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.RequiresCredentials*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: requiresCredentials
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.HasValidCredentials
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.HasValidCredentials
+  id: HasValidCredentials
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: HasValidCredentials
+  nameWithType: ProviderTemplateOutput.HasValidCredentials
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.HasValidCredentials
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasValidCredentials
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("hasValidCredentials")]
+
+      public bool HasValidCredentials { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("hasValidCredentials")>
+
+      Public Property HasValidCredentials As Boolean
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.HasValidCredentials*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: hasValidCredentials
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.CredentialFields
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.CredentialFields
+  id: CredentialFields
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: CredentialFields
+  nameWithType: ProviderTemplateOutput.CredentialFields
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.CredentialFields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialFields
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("credentialFields")]
+
+      public CredentialFieldOutput[] CredentialFields { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Api.CredentialFieldOutput[]
+    content.vb: >-
+      <JsonPropertyName("credentialFields")>
+
+      Public Property CredentialFields As CredentialFieldOutput()
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.CredentialFields*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: credentialFields
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.Capabilities
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.Capabilities
+  id: Capabilities
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: ProviderTemplateOutput.Capabilities
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("capabilities")]
+
+      public ProviderCapabilityOutput Capabilities { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Api.ProviderCapabilityOutput
+    content.vb: >-
+      <JsonPropertyName("capabilities")>
+
+      Public Property Capabilities As ProviderCapabilityOutput
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.Capabilities*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: capabilities
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.Notes
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.Notes
+  id: Notes
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: ProviderTemplateOutput.Notes
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("notes")]
+
+      public string[] Notes { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("notes")>
+
+      Public Property Notes As String()
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.Notes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: notes
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.Warnings
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.Warnings
+  id: Warnings
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: Warnings
+  nameWithType: ProviderTemplateOutput.Warnings
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.Warnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warnings
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 234
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("warnings")]
+
+      public string[] Warnings { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("warnings")>
+
+      Public Property Warnings As String()
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.Warnings*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: warnings
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.RateLimit
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.RateLimit
+  id: RateLimit
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: RateLimit
+  nameWithType: ProviderTemplateOutput.RateLimit
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.RateLimit
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimit
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("rateLimit")]
+
+      public ProviderRateLimitOutput? RateLimit { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Api.ProviderRateLimitOutput
+    content.vb: >-
+      <JsonPropertyName("rateLimit")>
+
+      Public Property RateLimit As ProviderRateLimitOutput
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.RateLimit*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: rateLimit
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.SupportedMarkets
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.SupportedMarkets
+  id: SupportedMarkets
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: SupportedMarkets
+  nameWithType: ProviderTemplateOutput.SupportedMarkets
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.SupportedMarkets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedMarkets
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("supportedMarkets")]
+
+      public string[] SupportedMarkets { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("supportedMarkets")>
+
+      Public Property SupportedMarkets As String()
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.SupportedMarkets*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: supportedMarkets
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.DataTypes
+  commentId: P:Meridian.Contracts.Api.ProviderTemplateOutput.DataTypes
+  id: DataTypes
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: DataTypes
+  nameWithType: ProviderTemplateOutput.DataTypes
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.DataTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataTypes
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("dataTypes")]
+
+      public string[] DataTypes { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("dataTypes")>
+
+      Public Property DataTypes As String()
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.DataTypes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: dataTypes
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.FromCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry)
+  commentId: M:Meridian.Contracts.Api.ProviderTemplateOutput.FromCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry)
+  id: FromCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry)
+  parent: Meridian.Contracts.Api.ProviderTemplateOutput
+  langs:
+  - csharp
+  - vb
+  name: FromCatalogEntry(ProviderCatalogEntry)
+  nameWithType: ProviderTemplateOutput.FromCatalogEntry(ProviderCatalogEntry)
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.FromCatalogEntry(Meridian.Contracts.Api.ProviderCatalogEntry)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromCatalogEntry
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Creates a ProviderTemplateOutput from a ProviderCatalogEntry.
+  example: []
+  syntax:
+    content: public static ProviderTemplateOutput FromCatalogEntry(ProviderCatalogEntry entry)
+    parameters:
+    - id: entry
+      type: Meridian.Contracts.Api.ProviderCatalogEntry
+    return:
+      type: Meridian.Contracts.Api.ProviderTemplateOutput
+    content.vb: Public Shared Function FromCatalogEntry(entry As ProviderCatalogEntry) As ProviderTemplateOutput
+  overload: Meridian.Contracts.Api.ProviderTemplateOutput.FromCatalogEntry*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderId*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.ProviderId
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_ProviderId
+  name: ProviderId
+  nameWithType: ProviderTemplateOutput.ProviderId
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.DisplayName*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.DisplayName
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_DisplayName
+  name: DisplayName
+  nameWithType: ProviderTemplateOutput.DisplayName
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.DisplayName
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.Description*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.Description
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_Description
+  name: Description
+  nameWithType: ProviderTemplateOutput.Description
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.Description
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderType*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.ProviderType
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_ProviderType
+  name: ProviderType
+  nameWithType: ProviderTemplateOutput.ProviderType
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.ProviderType
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.IsEnabled*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.IsEnabled
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_IsEnabled
+  name: IsEnabled
+  nameWithType: ProviderTemplateOutput.IsEnabled
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.IsEnabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.IsConnected*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.IsConnected
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_IsConnected
+  name: IsConnected
+  nameWithType: ProviderTemplateOutput.IsConnected
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.IsConnected
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.IsHealthy*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.IsHealthy
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_IsHealthy
+  name: IsHealthy
+  nameWithType: ProviderTemplateOutput.IsHealthy
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.IsHealthy
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.RequiresCredentials*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.RequiresCredentials
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_RequiresCredentials
+  name: RequiresCredentials
+  nameWithType: ProviderTemplateOutput.RequiresCredentials
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.RequiresCredentials
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.HasValidCredentials*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.HasValidCredentials
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_HasValidCredentials
+  name: HasValidCredentials
+  nameWithType: ProviderTemplateOutput.HasValidCredentials
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.HasValidCredentials
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.CredentialFields*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.CredentialFields
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_CredentialFields
+  name: CredentialFields
+  nameWithType: ProviderTemplateOutput.CredentialFields
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.CredentialFields
+- uid: Meridian.Contracts.Api.CredentialFieldOutput[]
+  isExternal: true
+  href: Meridian.Contracts.Api.CredentialFieldOutput.html
+  name: CredentialFieldOutput[]
+  nameWithType: CredentialFieldOutput[]
+  fullName: Meridian.Contracts.Api.CredentialFieldOutput[]
+  nameWithType.vb: CredentialFieldOutput()
+  fullName.vb: Meridian.Contracts.Api.CredentialFieldOutput()
+  name.vb: CredentialFieldOutput()
+  spec.csharp:
+  - uid: Meridian.Contracts.Api.CredentialFieldOutput
+    name: CredentialFieldOutput
+    href: Meridian.Contracts.Api.CredentialFieldOutput.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Api.CredentialFieldOutput
+    name: CredentialFieldOutput
+    href: Meridian.Contracts.Api.CredentialFieldOutput.html
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.Capabilities*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.Capabilities
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_Capabilities
+  name: Capabilities
+  nameWithType: ProviderTemplateOutput.Capabilities
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.Capabilities
+- uid: Meridian.Contracts.Api.ProviderCapabilityOutput
+  commentId: T:Meridian.Contracts.Api.ProviderCapabilityOutput
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.ProviderCapabilityOutput.html
+  name: ProviderCapabilityOutput
+  nameWithType: ProviderCapabilityOutput
+  fullName: Meridian.Contracts.Api.ProviderCapabilityOutput
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.Notes*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.Notes
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_Notes
+  name: Notes
+  nameWithType: ProviderTemplateOutput.Notes
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.Notes
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.Warnings*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.Warnings
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_Warnings
+  name: Warnings
+  nameWithType: ProviderTemplateOutput.Warnings
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.Warnings
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.RateLimit*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.RateLimit
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_RateLimit
+  name: RateLimit
+  nameWithType: ProviderTemplateOutput.RateLimit
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.RateLimit
+- uid: Meridian.Contracts.Api.ProviderRateLimitOutput
+  commentId: T:Meridian.Contracts.Api.ProviderRateLimitOutput
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.ProviderRateLimitOutput.html
+  name: ProviderRateLimitOutput
+  nameWithType: ProviderRateLimitOutput
+  fullName: Meridian.Contracts.Api.ProviderRateLimitOutput
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.SupportedMarkets*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.SupportedMarkets
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: ProviderTemplateOutput.SupportedMarkets
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.SupportedMarkets
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.DataTypes*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.DataTypes
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_DataTypes
+  name: DataTypes
+  nameWithType: ProviderTemplateOutput.DataTypes
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.DataTypes
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput.FromCatalogEntry*
+  commentId: Overload:Meridian.Contracts.Api.ProviderTemplateOutput.FromCatalogEntry
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html#Meridian_Contracts_Api_ProviderTemplateOutput_FromCatalogEntry_Meridian_Contracts_Api_ProviderCatalogEntry_
+  name: FromCatalogEntry
+  nameWithType: ProviderTemplateOutput.FromCatalogEntry
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput.FromCatalogEntry
+- uid: Meridian.Contracts.Api.ProviderCatalogEntry
+  commentId: T:Meridian.Contracts.Api.ProviderCatalogEntry
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.ProviderCatalogEntry.html
+  name: ProviderCatalogEntry
+  nameWithType: ProviderCatalogEntry
+  fullName: Meridian.Contracts.Api.ProviderCatalogEntry
+- uid: Meridian.Contracts.Api.ProviderTemplateOutput
+  commentId: T:Meridian.Contracts.Api.ProviderTemplateOutput
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.ProviderTemplateOutput.html
+  name: ProviderTemplateOutput
+  nameWithType: ProviderTemplateOutput
+  fullName: Meridian.Contracts.Api.ProviderTemplateOutput

@@ -1,0 +1,823 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot
+  commentId: T:Meridian.Execution.Services.ExecutionControlSnapshot
+  id: ExecutionControlSnapshot
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.ExecutionControlSnapshot.#ctor(Meridian.Execution.Services.ExecutionCircuitBreakerState,System.Nullable{System.Decimal},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionManualOverride},System.DateTimeOffset)
+  - Meridian.Execution.Services.ExecutionControlSnapshot.AsOf
+  - Meridian.Execution.Services.ExecutionControlSnapshot.CircuitBreaker
+  - Meridian.Execution.Services.ExecutionControlSnapshot.DefaultMaxPositionSize
+  - Meridian.Execution.Services.ExecutionControlSnapshot.ManualOverrides
+  - Meridian.Execution.Services.ExecutionControlSnapshot.SymbolPositionLimits
+  langs:
+  - csharp
+  - vb
+  name: ExecutionControlSnapshot
+  nameWithType: ExecutionControlSnapshot
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionControlSnapshot
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Persisted snapshot of the live execution control state.
+  example: []
+  syntax:
+    content: 'public sealed record ExecutionControlSnapshot : IEquatable<ExecutionControlSnapshot>'
+    content.vb: Public NotInheritable Class ExecutionControlSnapshot Implements IEquatable(Of ExecutionControlSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Services.ExecutionControlSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.#ctor(Meridian.Execution.Services.ExecutionCircuitBreakerState,System.Nullable{System.Decimal},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionManualOverride},System.DateTimeOffset)
+  commentId: M:Meridian.Execution.Services.ExecutionControlSnapshot.#ctor(Meridian.Execution.Services.ExecutionCircuitBreakerState,System.Nullable{System.Decimal},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionManualOverride},System.DateTimeOffset)
+  id: '#ctor(Meridian.Execution.Services.ExecutionCircuitBreakerState,System.Nullable{System.Decimal},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal},System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionManualOverride},System.DateTimeOffset)'
+  parent: Meridian.Execution.Services.ExecutionControlSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ExecutionControlSnapshot(ExecutionCircuitBreakerState, decimal?, IReadOnlyDictionary<string, decimal>, IReadOnlyList<ExecutionManualOverride>, DateTimeOffset)
+  nameWithType: ExecutionControlSnapshot.ExecutionControlSnapshot(ExecutionCircuitBreakerState, decimal?, IReadOnlyDictionary<string, decimal>, IReadOnlyList<ExecutionManualOverride>, DateTimeOffset)
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.ExecutionControlSnapshot(Meridian.Execution.Services.ExecutionCircuitBreakerState, decimal?, System.Collections.Generic.IReadOnlyDictionary<string, decimal>, System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.ExecutionManualOverride>, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Persisted snapshot of the live execution control state.
+  example: []
+  syntax:
+    content: public ExecutionControlSnapshot(ExecutionCircuitBreakerState CircuitBreaker, decimal? DefaultMaxPositionSize, IReadOnlyDictionary<string, decimal> SymbolPositionLimits, IReadOnlyList<ExecutionManualOverride> ManualOverrides, DateTimeOffset AsOf)
+    parameters:
+    - id: CircuitBreaker
+      type: Meridian.Execution.Services.ExecutionCircuitBreakerState
+    - id: DefaultMaxPositionSize
+      type: System.Nullable{System.Decimal}
+    - id: SymbolPositionLimits
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    - id: ManualOverrides
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionManualOverride}
+    - id: AsOf
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(CircuitBreaker As ExecutionCircuitBreakerState, DefaultMaxPositionSize As Decimal?, SymbolPositionLimits As IReadOnlyDictionary(Of String, Decimal), ManualOverrides As IReadOnlyList(Of ExecutionManualOverride), AsOf As DateTimeOffset)
+  overload: Meridian.Execution.Services.ExecutionControlSnapshot.#ctor*
+  nameWithType.vb: ExecutionControlSnapshot.New(ExecutionCircuitBreakerState, Decimal?, IReadOnlyDictionary(Of String, Decimal), IReadOnlyList(Of ExecutionManualOverride), DateTimeOffset)
+  fullName.vb: Meridian.Execution.Services.ExecutionControlSnapshot.New(Meridian.Execution.Services.ExecutionCircuitBreakerState, Decimal?, System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal), System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.ExecutionManualOverride), System.DateTimeOffset)
+  name.vb: New(ExecutionCircuitBreakerState, Decimal?, IReadOnlyDictionary(Of String, Decimal), IReadOnlyList(Of ExecutionManualOverride), DateTimeOffset)
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.CircuitBreaker
+  commentId: P:Meridian.Execution.Services.ExecutionControlSnapshot.CircuitBreaker
+  id: CircuitBreaker
+  parent: Meridian.Execution.Services.ExecutionControlSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreaker
+  nameWithType: ExecutionControlSnapshot.CircuitBreaker
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.CircuitBreaker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreaker
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public ExecutionCircuitBreakerState CircuitBreaker { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Services.ExecutionCircuitBreakerState
+    content.vb: Public Property CircuitBreaker As ExecutionCircuitBreakerState
+  overload: Meridian.Execution.Services.ExecutionControlSnapshot.CircuitBreaker*
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.DefaultMaxPositionSize
+  commentId: P:Meridian.Execution.Services.ExecutionControlSnapshot.DefaultMaxPositionSize
+  id: DefaultMaxPositionSize
+  parent: Meridian.Execution.Services.ExecutionControlSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DefaultMaxPositionSize
+  nameWithType: ExecutionControlSnapshot.DefaultMaxPositionSize
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.DefaultMaxPositionSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultMaxPositionSize
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public decimal? DefaultMaxPositionSize { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property DefaultMaxPositionSize As Decimal?
+  overload: Meridian.Execution.Services.ExecutionControlSnapshot.DefaultMaxPositionSize*
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.SymbolPositionLimits
+  commentId: P:Meridian.Execution.Services.ExecutionControlSnapshot.SymbolPositionLimits
+  id: SymbolPositionLimits
+  parent: Meridian.Execution.Services.ExecutionControlSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SymbolPositionLimits
+  nameWithType: ExecutionControlSnapshot.SymbolPositionLimits
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.SymbolPositionLimits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolPositionLimits
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public IReadOnlyDictionary<string, decimal> SymbolPositionLimits { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+    content.vb: Public Property SymbolPositionLimits As IReadOnlyDictionary(Of String, Decimal)
+  overload: Meridian.Execution.Services.ExecutionControlSnapshot.SymbolPositionLimits*
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.ManualOverrides
+  commentId: P:Meridian.Execution.Services.ExecutionControlSnapshot.ManualOverrides
+  id: ManualOverrides
+  parent: Meridian.Execution.Services.ExecutionControlSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ManualOverrides
+  nameWithType: ExecutionControlSnapshot.ManualOverrides
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.ManualOverrides
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManualOverrides
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public IReadOnlyList<ExecutionManualOverride> ManualOverrides { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionManualOverride}
+    content.vb: Public Property ManualOverrides As IReadOnlyList(Of ExecutionManualOverride)
+  overload: Meridian.Execution.Services.ExecutionControlSnapshot.ManualOverrides*
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.AsOf
+  commentId: P:Meridian.Execution.Services.ExecutionControlSnapshot.AsOf
+  id: AsOf
+  parent: Meridian.Execution.Services.ExecutionControlSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: ExecutionControlSnapshot.AsOf
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Execution.Services.ExecutionControlSnapshot.AsOf*
+references:
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Services.ExecutionControlSnapshot}
+  commentId: T:System.IEquatable{Meridian.Execution.Services.ExecutionControlSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExecutionControlSnapshot>
+  nameWithType: IEquatable<ExecutionControlSnapshot>
+  fullName: System.IEquatable<Meridian.Execution.Services.ExecutionControlSnapshot>
+  nameWithType.vb: IEquatable(Of ExecutionControlSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Services.ExecutionControlSnapshot)
+  name.vb: IEquatable(Of ExecutionControlSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionControlSnapshot
+    name: ExecutionControlSnapshot
+    href: Meridian.Execution.Services.ExecutionControlSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionControlSnapshot
+    name: ExecutionControlSnapshot
+    href: Meridian.Execution.Services.ExecutionControlSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.#ctor*
+  commentId: Overload:Meridian.Execution.Services.ExecutionControlSnapshot.#ctor
+  href: Meridian.Execution.Services.ExecutionControlSnapshot.html#Meridian_Execution_Services_ExecutionControlSnapshot__ctor_Meridian_Execution_Services_ExecutionCircuitBreakerState_System_Nullable_System_Decimal__System_Collections_Generic_IReadOnlyDictionary_System_String_System_Decimal__System_Collections_Generic_IReadOnlyList_Meridian_Execution_Services_ExecutionManualOverride__System_DateTimeOffset_
+  name: ExecutionControlSnapshot
+  nameWithType: ExecutionControlSnapshot.ExecutionControlSnapshot
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.ExecutionControlSnapshot
+  nameWithType.vb: ExecutionControlSnapshot.New
+  fullName.vb: Meridian.Execution.Services.ExecutionControlSnapshot.New
+  name.vb: New
+- uid: Meridian.Execution.Services.ExecutionCircuitBreakerState
+  commentId: T:Meridian.Execution.Services.ExecutionCircuitBreakerState
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.ExecutionCircuitBreakerState.html
+  name: ExecutionCircuitBreakerState
+  nameWithType: ExecutionCircuitBreakerState
+  fullName: Meridian.Execution.Services.ExecutionCircuitBreakerState
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, decimal>
+  nameWithType: IReadOnlyDictionary<string, decimal>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, decimal>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Decimal)
+  name.vb: IReadOnlyDictionary(Of String, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionManualOverride}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionManualOverride}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ExecutionManualOverride>
+  nameWithType: IReadOnlyList<ExecutionManualOverride>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.ExecutionManualOverride>
+  nameWithType.vb: IReadOnlyList(Of ExecutionManualOverride)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.ExecutionManualOverride)
+  name.vb: IReadOnlyList(Of ExecutionManualOverride)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionManualOverride
+    name: ExecutionManualOverride
+    href: Meridian.Execution.Services.ExecutionManualOverride.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionManualOverride
+    name: ExecutionManualOverride
+    href: Meridian.Execution.Services.ExecutionManualOverride.html
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.CircuitBreaker*
+  commentId: Overload:Meridian.Execution.Services.ExecutionControlSnapshot.CircuitBreaker
+  href: Meridian.Execution.Services.ExecutionControlSnapshot.html#Meridian_Execution_Services_ExecutionControlSnapshot_CircuitBreaker
+  name: CircuitBreaker
+  nameWithType: ExecutionControlSnapshot.CircuitBreaker
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.CircuitBreaker
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.DefaultMaxPositionSize*
+  commentId: Overload:Meridian.Execution.Services.ExecutionControlSnapshot.DefaultMaxPositionSize
+  href: Meridian.Execution.Services.ExecutionControlSnapshot.html#Meridian_Execution_Services_ExecutionControlSnapshot_DefaultMaxPositionSize
+  name: DefaultMaxPositionSize
+  nameWithType: ExecutionControlSnapshot.DefaultMaxPositionSize
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.DefaultMaxPositionSize
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.SymbolPositionLimits*
+  commentId: Overload:Meridian.Execution.Services.ExecutionControlSnapshot.SymbolPositionLimits
+  href: Meridian.Execution.Services.ExecutionControlSnapshot.html#Meridian_Execution_Services_ExecutionControlSnapshot_SymbolPositionLimits
+  name: SymbolPositionLimits
+  nameWithType: ExecutionControlSnapshot.SymbolPositionLimits
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.SymbolPositionLimits
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.ManualOverrides*
+  commentId: Overload:Meridian.Execution.Services.ExecutionControlSnapshot.ManualOverrides
+  href: Meridian.Execution.Services.ExecutionControlSnapshot.html#Meridian_Execution_Services_ExecutionControlSnapshot_ManualOverrides
+  name: ManualOverrides
+  nameWithType: ExecutionControlSnapshot.ManualOverrides
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.ManualOverrides
+- uid: Meridian.Execution.Services.ExecutionControlSnapshot.AsOf*
+  commentId: Overload:Meridian.Execution.Services.ExecutionControlSnapshot.AsOf
+  href: Meridian.Execution.Services.ExecutionControlSnapshot.html#Meridian_Execution_Services_ExecutionControlSnapshot_AsOf
+  name: AsOf
+  nameWithType: ExecutionControlSnapshot.AsOf
+  fullName: Meridian.Execution.Services.ExecutionControlSnapshot.AsOf

@@ -14,7 +14,7 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="0,0,0,20">
+        <Border Grid.Row="0" Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,20">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

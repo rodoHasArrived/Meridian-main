@@ -1,0 +1,217 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Events.PublishResult
+  commentId: T:Meridian.Domain.Events.PublishResult
+  id: PublishResult
+  parent: Meridian.Domain.Events
+  children:
+  - Meridian.Domain.Events.PublishResult.Accepted
+  - Meridian.Domain.Events.PublishResult.AcceptedUnderPressure
+  - Meridian.Domain.Events.PublishResult.Dropped
+  langs:
+  - csharp
+  - vb
+  name: PublishResult
+  nameWithType: PublishResult
+  fullName: Meridian.Domain.Events.PublishResult
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Domain/Events/PublishResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishResult
+    path: ../../src/Meridian.Domain/Events/PublishResult.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Events
+  summary: >-
+    Detailed result of a <xref href="Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent%40)" data-throw-if-not-resolved="false"></xref> call.
+
+    Provides richer information than a plain <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">bool</a> so that producers
+
+    can make informed throttling decisions rather than silently dropping events.
+  remarks: >-
+    Use <code>EventPipeline.TryPublishWithResult</code> when you need the detailed result.
+
+    The original <xref href="Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent%40)" data-throw-if-not-resolved="false"></xref> continues to return
+
+    <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">bool</a> for backward compatibility.
+  example: []
+  syntax:
+    content: public enum PublishResult
+    content.vb: Public Enum PublishResult
+- uid: Meridian.Domain.Events.PublishResult.Accepted
+  commentId: F:Meridian.Domain.Events.PublishResult.Accepted
+  id: Accepted
+  parent: Meridian.Domain.Events.PublishResult
+  langs:
+  - csharp
+  - vb
+  name: Accepted
+  nameWithType: PublishResult.Accepted
+  fullName: Meridian.Domain.Events.PublishResult.Accepted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Domain/Events/PublishResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accepted
+    path: ../../src/Meridian.Domain/Events/PublishResult.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Events
+  summary: The event was accepted and enqueued for processing.
+  example: []
+  syntax:
+    content: Accepted = 0
+    return:
+      type: Meridian.Domain.Events.PublishResult
+- uid: Meridian.Domain.Events.PublishResult.AcceptedUnderPressure
+  commentId: F:Meridian.Domain.Events.PublishResult.AcceptedUnderPressure
+  id: AcceptedUnderPressure
+  parent: Meridian.Domain.Events.PublishResult
+  langs:
+  - csharp
+  - vb
+  name: AcceptedUnderPressure
+  nameWithType: PublishResult.AcceptedUnderPressure
+  fullName: Meridian.Domain.Events.PublishResult.AcceptedUnderPressure
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Domain/Events/PublishResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AcceptedUnderPressure
+    path: ../../src/Meridian.Domain/Events/PublishResult.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Events
+  summary: >-
+    The event was accepted but the pipeline queue is approaching capacity (≥ 80 %).
+
+    Producers should consider slowing down or reducing the rate of publication.
+  example: []
+  syntax:
+    content: AcceptedUnderPressure = 1
+    return:
+      type: Meridian.Domain.Events.PublishResult
+- uid: Meridian.Domain.Events.PublishResult.Dropped
+  commentId: F:Meridian.Domain.Events.PublishResult.Dropped
+  id: Dropped
+  parent: Meridian.Domain.Events.PublishResult
+  langs:
+  - csharp
+  - vb
+  name: Dropped
+  nameWithType: PublishResult.Dropped
+  fullName: Meridian.Domain.Events.PublishResult.Dropped
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Domain/Events/PublishResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dropped
+    path: ../../src/Meridian.Domain/Events/PublishResult.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Events
+  summary: >-
+    The event was not accepted because the pipeline queue was full and the active
+
+    backpressure policy rejected the write (for example, DropWrite pre-checks or a
+
+    failed <code>TryWrite</code> on the underlying channel).
+
+    This result corresponds to <xref href="Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent%40)" data-throw-if-not-resolved="false"></xref> returning
+
+    <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> and does not include silent evictions that may occur in
+
+    DropOldest/DropNewest modes.
+  example: []
+  syntax:
+    content: Dropped = 2
+    return:
+      type: Meridian.Domain.Events.PublishResult
+references:
+- uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Domain.Events.IMarketEventPublisher
+  href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  name: TryPublish(in MarketEvent)
+  nameWithType: IMarketEventPublisher.TryPublish(in MarketEvent)
+  fullName: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(in Meridian.Domain.Events.MarketEvent)
+  nameWithType.vb: IMarketEventPublisher.TryPublish(MarketEvent)
+  fullName.vb: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublish(MarketEvent)
+  spec.csharp:
+  - uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - name: in
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+    href: Meridian.Domain.Events.MarketEvent.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+    href: Meridian.Domain.Events.MarketEvent.html
+  - name: )
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IMarketEventPublisher.html
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+- uid: Meridian.Domain.Events.PublishResult
+  commentId: T:Meridian.Domain.Events.PublishResult
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.PublishResult.html
+  name: PublishResult
+  nameWithType: PublishResult
+  fullName: Meridian.Domain.Events.PublishResult

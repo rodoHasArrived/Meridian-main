@@ -30,7 +30,7 @@ namespace Meridian.Application.Composition;
 /// <remarks>
 /// <para><b>Design Philosophy:</b></para>
 /// <list type="bullet">
-/// <item><description>Single host graph construction surface for console, web, desktop, and utility flows</description></item>
+/// <item><description>Single host graph construction surface for console, desktop, and utility flows</description></item>
 /// <item><description>Uses <see cref="ServiceCompositionRoot"/> for all DI registration</description></item>
 /// <item><description>Shared startup orchestrators choose canonical <see cref="CompositionOptions"/> presets</description></item>
 /// <item><description>Eliminates duplicated service wiring across hosts</description></item>
@@ -72,12 +72,6 @@ public sealed class HostStartup : IAsyncDisposable
     /// <returns>Configured HostStartup instance.</returns>
     public static HostStartup CreateForStreaming(string configPath)
         => Create(CompositionOptions.Streaming with { ConfigPath = configPath });
-
-    /// <summary>
-    /// Creates a host startup for the web dashboard host profile.
-    /// </summary>
-    public static HostStartup CreateForWebDashboard(string configPath)
-        => Create(CompositionOptions.WebDashboard with { ConfigPath = configPath });
 
     /// <summary>
     /// Creates a host startup for the default/full host profile.
@@ -303,7 +297,6 @@ public static class HostStartupFactory
     {
         return deployment.Mode switch
         {
-            DeploymentMode.Web => CompositionOptions.WebDashboard,
             DeploymentMode.Desktop => CompositionOptions.Default,
             _ => CompositionOptions.Streaming
         };
@@ -320,7 +313,6 @@ public static class HostStartupFactory
         var profile = ResolveProfile(deployment);
         return profile switch
         {
-            _ when profile == CompositionOptions.WebDashboard => HostStartup.CreateForWebDashboard(configPath),
             _ when profile == CompositionOptions.Default => HostStartup.CreateDefault(configPath),
             _ => HostStartup.CreateForStreaming(configPath)
         };

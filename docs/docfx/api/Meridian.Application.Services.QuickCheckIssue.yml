@@ -1,0 +1,520 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.QuickCheckIssue
+  commentId: T:Meridian.Application.Services.QuickCheckIssue
+  id: QuickCheckIssue
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.QuickCheckIssue.#ctor(Meridian.Application.Services.IssueSeverity,System.String,System.String)
+  - Meridian.Application.Services.QuickCheckIssue.Component
+  - Meridian.Application.Services.QuickCheckIssue.Message
+  - Meridian.Application.Services.QuickCheckIssue.Severity
+  langs:
+  - csharp
+  - vb
+  name: QuickCheckIssue
+  nameWithType: QuickCheckIssue
+  fullName: Meridian.Application.Services.QuickCheckIssue
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/StartupSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuickCheckIssue
+    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    startLine: 417
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: An issue found during quick check.
+  example: []
+  syntax:
+    content: 'public sealed record QuickCheckIssue : IEquatable<QuickCheckIssue>'
+    content.vb: Public NotInheritable Class QuickCheckIssue Implements IEquatable(Of QuickCheckIssue)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Services.QuickCheckIssue}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.QuickCheckIssue.#ctor(Meridian.Application.Services.IssueSeverity,System.String,System.String)
+  commentId: M:Meridian.Application.Services.QuickCheckIssue.#ctor(Meridian.Application.Services.IssueSeverity,System.String,System.String)
+  id: '#ctor(Meridian.Application.Services.IssueSeverity,System.String,System.String)'
+  parent: Meridian.Application.Services.QuickCheckIssue
+  langs:
+  - csharp
+  - vb
+  name: QuickCheckIssue(IssueSeverity, string, string)
+  nameWithType: QuickCheckIssue.QuickCheckIssue(IssueSeverity, string, string)
+  fullName: Meridian.Application.Services.QuickCheckIssue.QuickCheckIssue(Meridian.Application.Services.IssueSeverity, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/StartupSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    startLine: 417
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: An issue found during quick check.
+  example: []
+  syntax:
+    content: public QuickCheckIssue(IssueSeverity Severity, string Component, string Message)
+    parameters:
+    - id: Severity
+      type: Meridian.Application.Services.IssueSeverity
+    - id: Component
+      type: System.String
+    - id: Message
+      type: System.String
+    content.vb: Public Sub New(Severity As IssueSeverity, Component As String, Message As String)
+  overload: Meridian.Application.Services.QuickCheckIssue.#ctor*
+  nameWithType.vb: QuickCheckIssue.New(IssueSeverity, String, String)
+  fullName.vb: Meridian.Application.Services.QuickCheckIssue.New(Meridian.Application.Services.IssueSeverity, String, String)
+  name.vb: New(IssueSeverity, String, String)
+- uid: Meridian.Application.Services.QuickCheckIssue.Severity
+  commentId: P:Meridian.Application.Services.QuickCheckIssue.Severity
+  id: Severity
+  parent: Meridian.Application.Services.QuickCheckIssue
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: QuickCheckIssue.Severity
+  fullName: Meridian.Application.Services.QuickCheckIssue.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/StartupSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    startLine: 418
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public IssueSeverity Severity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.IssueSeverity
+    content.vb: Public Property Severity As IssueSeverity
+  overload: Meridian.Application.Services.QuickCheckIssue.Severity*
+- uid: Meridian.Application.Services.QuickCheckIssue.Component
+  commentId: P:Meridian.Application.Services.QuickCheckIssue.Component
+  id: Component
+  parent: Meridian.Application.Services.QuickCheckIssue
+  langs:
+  - csharp
+  - vb
+  name: Component
+  nameWithType: QuickCheckIssue.Component
+  fullName: Meridian.Application.Services.QuickCheckIssue.Component
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/StartupSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Component
+    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    startLine: 419
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Component { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Component As String
+  overload: Meridian.Application.Services.QuickCheckIssue.Component*
+- uid: Meridian.Application.Services.QuickCheckIssue.Message
+  commentId: P:Meridian.Application.Services.QuickCheckIssue.Message
+  id: Message
+  parent: Meridian.Application.Services.QuickCheckIssue
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: QuickCheckIssue.Message
+  fullName: Meridian.Application.Services.QuickCheckIssue.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/StartupSummary.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Services/StartupSummary.cs
+    startLine: 420
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Services.QuickCheckIssue.Message*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Services.QuickCheckIssue}
+  commentId: T:System.IEquatable{Meridian.Application.Services.QuickCheckIssue}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QuickCheckIssue>
+  nameWithType: IEquatable<QuickCheckIssue>
+  fullName: System.IEquatable<Meridian.Application.Services.QuickCheckIssue>
+  nameWithType.vb: IEquatable(Of QuickCheckIssue)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.QuickCheckIssue)
+  name.vb: IEquatable(Of QuickCheckIssue)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.QuickCheckIssue
+    name: QuickCheckIssue
+    href: Meridian.Application.Services.QuickCheckIssue.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.QuickCheckIssue
+    name: QuickCheckIssue
+    href: Meridian.Application.Services.QuickCheckIssue.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.QuickCheckIssue.#ctor*
+  commentId: Overload:Meridian.Application.Services.QuickCheckIssue.#ctor
+  href: Meridian.Application.Services.QuickCheckIssue.html#Meridian_Application_Services_QuickCheckIssue__ctor_Meridian_Application_Services_IssueSeverity_System_String_System_String_
+  name: QuickCheckIssue
+  nameWithType: QuickCheckIssue.QuickCheckIssue
+  fullName: Meridian.Application.Services.QuickCheckIssue.QuickCheckIssue
+  nameWithType.vb: QuickCheckIssue.New
+  fullName.vb: Meridian.Application.Services.QuickCheckIssue.New
+  name.vb: New
+- uid: Meridian.Application.Services.IssueSeverity
+  commentId: T:Meridian.Application.Services.IssueSeverity
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.IssueSeverity.html
+  name: IssueSeverity
+  nameWithType: IssueSeverity
+  fullName: Meridian.Application.Services.IssueSeverity
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.QuickCheckIssue.Severity*
+  commentId: Overload:Meridian.Application.Services.QuickCheckIssue.Severity
+  href: Meridian.Application.Services.QuickCheckIssue.html#Meridian_Application_Services_QuickCheckIssue_Severity
+  name: Severity
+  nameWithType: QuickCheckIssue.Severity
+  fullName: Meridian.Application.Services.QuickCheckIssue.Severity
+- uid: Meridian.Application.Services.QuickCheckIssue.Component*
+  commentId: Overload:Meridian.Application.Services.QuickCheckIssue.Component
+  href: Meridian.Application.Services.QuickCheckIssue.html#Meridian_Application_Services_QuickCheckIssue_Component
+  name: Component
+  nameWithType: QuickCheckIssue.Component
+  fullName: Meridian.Application.Services.QuickCheckIssue.Component
+- uid: Meridian.Application.Services.QuickCheckIssue.Message*
+  commentId: Overload:Meridian.Application.Services.QuickCheckIssue.Message
+  href: Meridian.Application.Services.QuickCheckIssue.html#Meridian_Application_Services_QuickCheckIssue_Message
+  name: Message
+  nameWithType: QuickCheckIssue.Message
+  fullName: Meridian.Application.Services.QuickCheckIssue.Message

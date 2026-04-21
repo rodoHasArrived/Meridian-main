@@ -1,0 +1,192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.MarketEventTier
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventTier
+  id: MarketEventTier
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.MarketEventTier.Derived
+  - Meridian.Contracts.Domain.Enums.MarketEventTier.Enriched
+  - Meridian.Contracts.Domain.Enums.MarketEventTier.Processed
+  - Meridian.Contracts.Domain.Enums.MarketEventTier.Raw
+  langs:
+  - csharp
+  - vb
+  name: MarketEventTier
+  nameWithType: MarketEventTier
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventTier
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketEventTier
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Processing tier for market events.
+  example: []
+  syntax:
+    content: 'public enum MarketEventTier : byte'
+    content.vb: Public Enum MarketEventTier As Byte
+- uid: Meridian.Contracts.Domain.Enums.MarketEventTier.Raw
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventTier.Raw
+  id: Raw
+  parent: Meridian.Contracts.Domain.Enums.MarketEventTier
+  langs:
+  - csharp
+  - vb
+  name: Raw
+  nameWithType: MarketEventTier.Raw
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventTier.Raw
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Raw
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Raw event from data provider.
+  example: []
+  syntax:
+    content: Raw = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventTier
+- uid: Meridian.Contracts.Domain.Enums.MarketEventTier.Derived
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventTier.Derived
+  id: Derived
+  parent: Meridian.Contracts.Domain.Enums.MarketEventTier
+  langs:
+  - csharp
+  - vb
+  name: Derived
+  nameWithType: MarketEventTier.Derived
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventTier.Derived
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Derived
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Derived event from processing pipeline.
+  example: []
+  syntax:
+    content: Derived = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventTier
+- uid: Meridian.Contracts.Domain.Enums.MarketEventTier.Enriched
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventTier.Enriched
+  id: Enriched
+  parent: Meridian.Contracts.Domain.Enums.MarketEventTier
+  langs:
+  - csharp
+  - vb
+  name: Enriched
+  nameWithType: MarketEventTier.Enriched
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventTier.Enriched
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enriched
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Enriched event after canonicalization (symbol resolution, condition code mapping, venue normalization).
+  example: []
+  syntax:
+    content: Enriched = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventTier
+- uid: Meridian.Contracts.Domain.Enums.MarketEventTier.Processed
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventTier.Processed
+  id: Processed
+  parent: Meridian.Contracts.Domain.Enums.MarketEventTier
+  langs:
+  - csharp
+  - vb
+  name: Processed
+  nameWithType: MarketEventTier.Processed
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventTier.Processed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Processed
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventTier.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Fully processed event after all pipeline stages.
+  example: []
+  syntax:
+    content: Processed = 3
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventTier
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.MarketEventTier
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventTier
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketEventTier.html
+  name: MarketEventTier
+  nameWithType: MarketEventTier
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventTier

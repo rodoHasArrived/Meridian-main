@@ -1,0 +1,1225 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  id: CompletenessScoreCalculator
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.#ctor(Meridian.Application.Monitoring.DataQuality.CompletenessConfig)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Dispose
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAllScores
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAverageScore(System.DateOnly)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetLowCompletenessSymbols(System.DateOnly,System.Double)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScore(System.String,System.DateOnly)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForDate(System.DateOnly)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForSymbol(System.String)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetSummary
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvent(System.String,System.DateTimeOffset,System.String)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvents(System.String,System.Collections.Generic.IEnumerable{System.DateTimeOffset},System.String)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Reset(System.String,System.DateOnly)
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.ResetAll
+  - Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.SetExpectedEventsPerHour(System.String,System.Int64)
+  langs:
+  - csharp
+  - vb
+  name: CompletenessScoreCalculator
+  nameWithType: CompletenessScoreCalculator
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessScoreCalculator
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Calculates data completeness scores per symbol/date based on expected vs actual events.
+
+    Thread-safe for real-time updates from multiple data streams.
+  example: []
+  syntax:
+    content: 'public sealed class CompletenessScoreCalculator : IDisposable'
+    content.vb: Public NotInheritable Class CompletenessScoreCalculator Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.#ctor(Meridian.Application.Monitoring.DataQuality.CompletenessConfig)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.#ctor(Meridian.Application.Monitoring.DataQuality.CompletenessConfig)
+  id: '#ctor(Meridian.Application.Monitoring.DataQuality.CompletenessConfig)'
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: CompletenessScoreCalculator(CompletenessConfig?)
+  nameWithType: CompletenessScoreCalculator.CompletenessScoreCalculator(CompletenessConfig?)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.CompletenessScoreCalculator(Meridian.Application.Monitoring.DataQuality.CompletenessConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public CompletenessScoreCalculator(CompletenessConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.DataQuality.CompletenessConfig
+    content.vb: Public Sub New(config As CompletenessConfig = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.#ctor*
+  nameWithType.vb: CompletenessScoreCalculator.New(CompletenessConfig)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.New(Meridian.Application.Monitoring.DataQuality.CompletenessConfig)
+  name.vb: New(CompletenessConfig)
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  id: RegisterSymbolLiquidity(System.String,Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: RegisterSymbolLiquidity(string, LiquidityProfile)
+  nameWithType: CompletenessScoreCalculator.RegisterSymbolLiquidity(string, LiquidityProfile)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RegisterSymbolLiquidity(string, Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSymbolLiquidity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Registers a liquidity profile for a symbol. When set, the expected events per hour
+
+    for that symbol will be derived from the profile instead of the global default.
+  example: []
+  syntax:
+    content: public void RegisterSymbolLiquidity(string symbol, LiquidityProfile profile)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: profile
+      type: Meridian.Contracts.Domain.Enums.LiquidityProfile
+    content.vb: Public Sub RegisterSymbolLiquidity(symbol As String, profile As LiquidityProfile)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RegisterSymbolLiquidity*
+  nameWithType.vb: CompletenessScoreCalculator.RegisterSymbolLiquidity(String, LiquidityProfile)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RegisterSymbolLiquidity(String, Meridian.Contracts.Domain.Enums.LiquidityProfile)
+  name.vb: RegisterSymbolLiquidity(String, LiquidityProfile)
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvent(System.String,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvent(System.String,System.DateTimeOffset,System.String)
+  id: RecordEvent(System.String,System.DateTimeOffset,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: RecordEvent(string, DateTimeOffset, string)
+  nameWithType: CompletenessScoreCalculator.RecordEvent(string, DateTimeOffset, string)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvent(string, System.DateTimeOffset, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordEvent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Records an event for completeness tracking.
+  example: []
+  syntax:
+    content: public void RecordEvent(string symbol, DateTimeOffset timestamp, string eventType)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: eventType
+      type: System.String
+    content.vb: Public Sub RecordEvent(symbol As String, timestamp As DateTimeOffset, eventType As String)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvent*
+  nameWithType.vb: CompletenessScoreCalculator.RecordEvent(String, DateTimeOffset, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvent(String, System.DateTimeOffset, String)
+  name.vb: RecordEvent(String, DateTimeOffset, String)
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvents(System.String,System.Collections.Generic.IEnumerable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvents(System.String,System.Collections.Generic.IEnumerable{System.DateTimeOffset},System.String)
+  id: RecordEvents(System.String,System.Collections.Generic.IEnumerable{System.DateTimeOffset},System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: RecordEvents(string, IEnumerable<DateTimeOffset>, string)
+  nameWithType: CompletenessScoreCalculator.RecordEvents(string, IEnumerable<DateTimeOffset>, string)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvents(string, System.Collections.Generic.IEnumerable<System.DateTimeOffset>, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordEvents
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Records multiple events for completeness tracking.
+  example: []
+  syntax:
+    content: public void RecordEvents(string symbol, IEnumerable<DateTimeOffset> timestamps, string eventType)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: timestamps
+      type: System.Collections.Generic.IEnumerable{System.DateTimeOffset}
+    - id: eventType
+      type: System.String
+    content.vb: Public Sub RecordEvents(symbol As String, timestamps As IEnumerable(Of DateTimeOffset), eventType As String)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvents*
+  nameWithType.vb: CompletenessScoreCalculator.RecordEvents(String, IEnumerable(Of DateTimeOffset), String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvents(String, System.Collections.Generic.IEnumerable(Of System.DateTimeOffset), String)
+  name.vb: RecordEvents(String, IEnumerable(Of DateTimeOffset), String)
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScore(System.String,System.DateOnly)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScore(System.String,System.DateOnly)
+  id: GetScore(System.String,System.DateOnly)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: GetScore(string, DateOnly)
+  nameWithType: CompletenessScoreCalculator.GetScore(string, DateOnly)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScore(string, System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetScore
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets the completeness score for a specific symbol and date.
+  example: []
+  syntax:
+    content: public CompletenessScore? GetScore(string symbol, DateOnly date)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: date
+      type: System.DateOnly
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.CompletenessScore
+    content.vb: Public Function GetScore(symbol As String, [date] As DateOnly) As CompletenessScore
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScore*
+  nameWithType.vb: CompletenessScoreCalculator.GetScore(String, DateOnly)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScore(String, System.DateOnly)
+  name.vb: GetScore(String, DateOnly)
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAllScores
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAllScores
+  id: GetAllScores
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: GetAllScores()
+  nameWithType: CompletenessScoreCalculator.GetAllScores()
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAllScores()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllScores
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets completeness scores for all tracked symbol/dates.
+  example: []
+  syntax:
+    content: public IReadOnlyList<CompletenessScore> GetAllScores()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.CompletenessScore}
+    content.vb: Public Function GetAllScores() As IReadOnlyList(Of CompletenessScore)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAllScores*
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForDate(System.DateOnly)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForDate(System.DateOnly)
+  id: GetScoresForDate(System.DateOnly)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: GetScoresForDate(DateOnly)
+  nameWithType: CompletenessScoreCalculator.GetScoresForDate(DateOnly)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForDate(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetScoresForDate
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets completeness scores for a specific date across all symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<CompletenessScore> GetScoresForDate(DateOnly date)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.CompletenessScore}
+    content.vb: Public Function GetScoresForDate([date] As DateOnly) As IReadOnlyList(Of CompletenessScore)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForDate*
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForSymbol(System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForSymbol(System.String)
+  id: GetScoresForSymbol(System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: GetScoresForSymbol(string)
+  nameWithType: CompletenessScoreCalculator.GetScoresForSymbol(string)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForSymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetScoresForSymbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets completeness scores for a specific symbol across all dates.
+  example: []
+  syntax:
+    content: public IReadOnlyList<CompletenessScore> GetScoresForSymbol(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.CompletenessScore}
+    content.vb: Public Function GetScoresForSymbol(symbol As String) As IReadOnlyList(Of CompletenessScore)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForSymbol*
+  nameWithType.vb: CompletenessScoreCalculator.GetScoresForSymbol(String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForSymbol(String)
+  name.vb: GetScoresForSymbol(String)
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAverageScore(System.DateOnly)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAverageScore(System.DateOnly)
+  id: GetAverageScore(System.DateOnly)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: GetAverageScore(DateOnly)
+  nameWithType: CompletenessScoreCalculator.GetAverageScore(DateOnly)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAverageScore(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAverageScore
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets the average completeness score for a date.
+  example: []
+  syntax:
+    content: public double GetAverageScore(DateOnly date)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    return:
+      type: System.Double
+    content.vb: Public Function GetAverageScore([date] As DateOnly) As Double
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAverageScore*
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetLowCompletenessSymbols(System.DateOnly,System.Double)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetLowCompletenessSymbols(System.DateOnly,System.Double)
+  id: GetLowCompletenessSymbols(System.DateOnly,System.Double)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: GetLowCompletenessSymbols(DateOnly, double)
+  nameWithType: CompletenessScoreCalculator.GetLowCompletenessSymbols(DateOnly, double)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetLowCompletenessSymbols(System.DateOnly, double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLowCompletenessSymbols
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets symbols with low completeness for a date.
+  example: []
+  syntax:
+    content: public IReadOnlyList<CompletenessScore> GetLowCompletenessSymbols(DateOnly date, double threshold = 0.8)
+    parameters:
+    - id: date
+      type: System.DateOnly
+    - id: threshold
+      type: System.Double
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.CompletenessScore}
+    content.vb: Public Function GetLowCompletenessSymbols([date] As DateOnly, threshold As Double = 0.8) As IReadOnlyList(Of CompletenessScore)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetLowCompletenessSymbols*
+  nameWithType.vb: CompletenessScoreCalculator.GetLowCompletenessSymbols(DateOnly, Double)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetLowCompletenessSymbols(System.DateOnly, Double)
+  name.vb: GetLowCompletenessSymbols(DateOnly, Double)
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetSummary
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetSummary
+  id: GetSummary
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: GetSummary()
+  nameWithType: CompletenessScoreCalculator.GetSummary()
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetSummary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSummary
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets the overall completeness summary.
+  example: []
+  syntax:
+    content: public CompletenessSummary GetSummary()
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.CompletenessSummary
+    content.vb: Public Function GetSummary() As CompletenessSummary
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetSummary*
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.SetExpectedEventsPerHour(System.String,System.Int64)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.SetExpectedEventsPerHour(System.String,System.Int64)
+  id: SetExpectedEventsPerHour(System.String,System.Int64)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: SetExpectedEventsPerHour(string, long)
+  nameWithType: CompletenessScoreCalculator.SetExpectedEventsPerHour(string, long)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.SetExpectedEventsPerHour(string, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetExpectedEventsPerHour
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Sets the expected events per hour for a specific symbol (for high-volume symbols).
+  example: []
+  syntax:
+    content: public void SetExpectedEventsPerHour(string symbol, long expectedPerHour)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: expectedPerHour
+      type: System.Int64
+    content.vb: Public Sub SetExpectedEventsPerHour(symbol As String, expectedPerHour As Long)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.SetExpectedEventsPerHour*
+  nameWithType.vb: CompletenessScoreCalculator.SetExpectedEventsPerHour(String, Long)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.SetExpectedEventsPerHour(String, Long)
+  name.vb: SetExpectedEventsPerHour(String, Long)
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Reset(System.String,System.DateOnly)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Reset(System.String,System.DateOnly)
+  id: Reset(System.String,System.DateOnly)
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: Reset(string, DateOnly)
+  nameWithType: CompletenessScoreCalculator.Reset(string, DateOnly)
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Reset(string, System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Resets tracking for a specific symbol/date.
+  example: []
+  syntax:
+    content: public void Reset(string symbol, DateOnly date)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: date
+      type: System.DateOnly
+    content.vb: Public Sub Reset(symbol As String, [date] As DateOnly)
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Reset*
+  nameWithType.vb: CompletenessScoreCalculator.Reset(String, DateOnly)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Reset(String, System.DateOnly)
+  name.vb: Reset(String, DateOnly)
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.ResetAll
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.ResetAll
+  id: ResetAll
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: ResetAll()
+  nameWithType: CompletenessScoreCalculator.ResetAll()
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.ResetAll()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetAll
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Resets all tracking.
+  example: []
+  syntax:
+    content: public void ResetAll()
+    content.vb: Public Sub ResetAll()
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.ResetAll*
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Dispose
+  commentId: M:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: CompletenessScoreCalculator.Dispose()
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/CompletenessScoreCalculator.cs
+    startLine: 258
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator__ctor_Meridian_Application_Monitoring_DataQuality_CompletenessConfig_
+  name: CompletenessScoreCalculator
+  nameWithType: CompletenessScoreCalculator.CompletenessScoreCalculator
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.CompletenessScoreCalculator
+  nameWithType.vb: CompletenessScoreCalculator.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CompletenessConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessConfig.html
+  name: CompletenessConfig
+  nameWithType: CompletenessConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessConfig
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RegisterSymbolLiquidity*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RegisterSymbolLiquidity
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_RegisterSymbolLiquidity_System_String_Meridian_Contracts_Domain_Enums_LiquidityProfile_
+  name: RegisterSymbolLiquidity
+  nameWithType: CompletenessScoreCalculator.RegisterSymbolLiquidity
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RegisterSymbolLiquidity
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Enums.LiquidityProfile
+  commentId: T:Meridian.Contracts.Domain.Enums.LiquidityProfile
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.LiquidityProfile.html
+  name: LiquidityProfile
+  nameWithType: LiquidityProfile
+  fullName: Meridian.Contracts.Domain.Enums.LiquidityProfile
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvent
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_RecordEvent_System_String_System_DateTimeOffset_System_String_
+  name: RecordEvent
+  nameWithType: CompletenessScoreCalculator.RecordEvent
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvent
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvents*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvents
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_RecordEvents_System_String_System_Collections_Generic_IEnumerable_System_DateTimeOffset__System_String_
+  name: RecordEvents
+  nameWithType: CompletenessScoreCalculator.RecordEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.RecordEvents
+- uid: System.Collections.Generic.IEnumerable{System.DateTimeOffset}
+  commentId: T:System.Collections.Generic.IEnumerable{System.DateTimeOffset}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<DateTimeOffset>
+  nameWithType: IEnumerable<DateTimeOffset>
+  fullName: System.Collections.Generic.IEnumerable<System.DateTimeOffset>
+  nameWithType.vb: IEnumerable(Of DateTimeOffset)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of System.DateTimeOffset)
+  name.vb: IEnumerable(Of DateTimeOffset)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScore*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScore
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_GetScore_System_String_System_DateOnly_
+  name: GetScore
+  nameWithType: CompletenessScoreCalculator.GetScore
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScore
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScore
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CompletenessScore
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScore.html
+  name: CompletenessScore
+  nameWithType: CompletenessScore
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScore
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAllScores*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAllScores
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_GetAllScores
+  name: GetAllScores
+  nameWithType: CompletenessScoreCalculator.GetAllScores
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAllScores
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.CompletenessScore}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.CompletenessScore}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<CompletenessScore>
+  nameWithType: IReadOnlyList<CompletenessScore>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.CompletenessScore>
+  nameWithType.vb: IReadOnlyList(Of CompletenessScore)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.CompletenessScore)
+  name.vb: IReadOnlyList(Of CompletenessScore)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.CompletenessScore
+    name: CompletenessScore
+    href: Meridian.Application.Monitoring.DataQuality.CompletenessScore.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.CompletenessScore
+    name: CompletenessScore
+    href: Meridian.Application.Monitoring.DataQuality.CompletenessScore.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForDate*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForDate
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_GetScoresForDate_System_DateOnly_
+  name: GetScoresForDate
+  nameWithType: CompletenessScoreCalculator.GetScoresForDate
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForDate
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForSymbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForSymbol
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_GetScoresForSymbol_System_String_
+  name: GetScoresForSymbol
+  nameWithType: CompletenessScoreCalculator.GetScoresForSymbol
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetScoresForSymbol
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAverageScore*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAverageScore
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_GetAverageScore_System_DateOnly_
+  name: GetAverageScore
+  nameWithType: CompletenessScoreCalculator.GetAverageScore
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetAverageScore
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetLowCompletenessSymbols*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetLowCompletenessSymbols
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_GetLowCompletenessSymbols_System_DateOnly_System_Double_
+  name: GetLowCompletenessSymbols
+  nameWithType: CompletenessScoreCalculator.GetLowCompletenessSymbols
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetLowCompletenessSymbols
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetSummary*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetSummary
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_GetSummary
+  name: GetSummary
+  nameWithType: CompletenessScoreCalculator.GetSummary
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.GetSummary
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessSummary
+  commentId: T:Meridian.Application.Monitoring.DataQuality.CompletenessSummary
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessSummary.html
+  name: CompletenessSummary
+  nameWithType: CompletenessSummary
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessSummary
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.SetExpectedEventsPerHour*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.SetExpectedEventsPerHour
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_SetExpectedEventsPerHour_System_String_System_Int64_
+  name: SetExpectedEventsPerHour
+  nameWithType: CompletenessScoreCalculator.SetExpectedEventsPerHour
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.SetExpectedEventsPerHour
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Reset*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Reset
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_Reset_System_String_System_DateOnly_
+  name: Reset
+  nameWithType: CompletenessScoreCalculator.Reset
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Reset
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.ResetAll*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.ResetAll
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_ResetAll
+  name: ResetAll
+  nameWithType: CompletenessScoreCalculator.ResetAll
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.ResetAll
+- uid: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Dispose
+  href: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.html#Meridian_Application_Monitoring_DataQuality_CompletenessScoreCalculator_Dispose
+  name: Dispose
+  nameWithType: CompletenessScoreCalculator.Dispose
+  fullName: Meridian.Application.Monitoring.DataQuality.CompletenessScoreCalculator.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

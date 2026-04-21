@@ -1,0 +1,870 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.StorageAnalytics
+  commentId: T:Meridian.Ui.Services.StorageAnalytics
+  id: StorageAnalytics
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.StorageAnalytics.DailyGrowthBytes
+  - Meridian.Ui.Services.StorageAnalytics.DepthFileCount
+  - Meridian.Ui.Services.StorageAnalytics.DepthSizeBytes
+  - Meridian.Ui.Services.StorageAnalytics.HistoricalFileCount
+  - Meridian.Ui.Services.StorageAnalytics.HistoricalSizeBytes
+  - Meridian.Ui.Services.StorageAnalytics.LastUpdated
+  - Meridian.Ui.Services.StorageAnalytics.ProjectedDaysUntilFull
+  - Meridian.Ui.Services.StorageAnalytics.SymbolBreakdown
+  - Meridian.Ui.Services.StorageAnalytics.TotalFileCount
+  - Meridian.Ui.Services.StorageAnalytics.TotalFiles
+  - Meridian.Ui.Services.StorageAnalytics.TotalSizeBytes
+  - Meridian.Ui.Services.StorageAnalytics.TradeFileCount
+  - Meridian.Ui.Services.StorageAnalytics.TradeSizeBytes
+  langs:
+  - csharp
+  - vb
+  name: StorageAnalytics
+  nameWithType: StorageAnalytics
+  fullName: Meridian.Ui.Services.StorageAnalytics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageAnalytics
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 398
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Storage analytics data.
+  example: []
+  syntax:
+    content: public sealed class StorageAnalytics
+    content.vb: Public NotInheritable Class StorageAnalytics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.StorageAnalytics.LastUpdated
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.LastUpdated
+  id: LastUpdated
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: LastUpdated
+  nameWithType: StorageAnalytics.LastUpdated
+  fullName: Meridian.Ui.Services.StorageAnalytics.LastUpdated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdated
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 400
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime? LastUpdated { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: Public Property LastUpdated As Date?
+  overload: Meridian.Ui.Services.StorageAnalytics.LastUpdated*
+- uid: Meridian.Ui.Services.StorageAnalytics.TotalSizeBytes
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.TotalSizeBytes
+  id: TotalSizeBytes
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: TotalSizeBytes
+  nameWithType: StorageAnalytics.TotalSizeBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.TotalSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSizeBytes
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalSizeBytes As Long
+  overload: Meridian.Ui.Services.StorageAnalytics.TotalSizeBytes*
+- uid: Meridian.Ui.Services.StorageAnalytics.TotalFileCount
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.TotalFileCount
+  id: TotalFileCount
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: TotalFileCount
+  nameWithType: StorageAnalytics.TotalFileCount
+  fullName: Meridian.Ui.Services.StorageAnalytics.TotalFileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFileCount
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TotalFileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalFileCount As Integer
+  overload: Meridian.Ui.Services.StorageAnalytics.TotalFileCount*
+- uid: Meridian.Ui.Services.StorageAnalytics.TradeSizeBytes
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.TradeSizeBytes
+  id: TradeSizeBytes
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: TradeSizeBytes
+  nameWithType: StorageAnalytics.TradeSizeBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.TradeSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeSizeBytes
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 403
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TradeSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TradeSizeBytes As Long
+  overload: Meridian.Ui.Services.StorageAnalytics.TradeSizeBytes*
+- uid: Meridian.Ui.Services.StorageAnalytics.TradeFileCount
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.TradeFileCount
+  id: TradeFileCount
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: TradeFileCount
+  nameWithType: StorageAnalytics.TradeFileCount
+  fullName: Meridian.Ui.Services.StorageAnalytics.TradeFileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeFileCount
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TradeFileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TradeFileCount As Integer
+  overload: Meridian.Ui.Services.StorageAnalytics.TradeFileCount*
+- uid: Meridian.Ui.Services.StorageAnalytics.DepthSizeBytes
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.DepthSizeBytes
+  id: DepthSizeBytes
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: DepthSizeBytes
+  nameWithType: StorageAnalytics.DepthSizeBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.DepthSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthSizeBytes
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 405
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long DepthSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DepthSizeBytes As Long
+  overload: Meridian.Ui.Services.StorageAnalytics.DepthSizeBytes*
+- uid: Meridian.Ui.Services.StorageAnalytics.DepthFileCount
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.DepthFileCount
+  id: DepthFileCount
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: DepthFileCount
+  nameWithType: StorageAnalytics.DepthFileCount
+  fullName: Meridian.Ui.Services.StorageAnalytics.DepthFileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthFileCount
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 406
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int DepthFileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DepthFileCount As Integer
+  overload: Meridian.Ui.Services.StorageAnalytics.DepthFileCount*
+- uid: Meridian.Ui.Services.StorageAnalytics.HistoricalSizeBytes
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.HistoricalSizeBytes
+  id: HistoricalSizeBytes
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: HistoricalSizeBytes
+  nameWithType: StorageAnalytics.HistoricalSizeBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.HistoricalSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalSizeBytes
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 407
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long HistoricalSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property HistoricalSizeBytes As Long
+  overload: Meridian.Ui.Services.StorageAnalytics.HistoricalSizeBytes*
+- uid: Meridian.Ui.Services.StorageAnalytics.HistoricalFileCount
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.HistoricalFileCount
+  id: HistoricalFileCount
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: HistoricalFileCount
+  nameWithType: StorageAnalytics.HistoricalFileCount
+  fullName: Meridian.Ui.Services.StorageAnalytics.HistoricalFileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalFileCount
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 408
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int HistoricalFileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HistoricalFileCount As Integer
+  overload: Meridian.Ui.Services.StorageAnalytics.HistoricalFileCount*
+- uid: Meridian.Ui.Services.StorageAnalytics.SymbolBreakdown
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.SymbolBreakdown
+  id: SymbolBreakdown
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: SymbolBreakdown
+  nameWithType: StorageAnalytics.SymbolBreakdown
+  fullName: Meridian.Ui.Services.StorageAnalytics.SymbolBreakdown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolBreakdown
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 409
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public SymbolAnalyticsInfo[] SymbolBreakdown { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.SymbolAnalyticsInfo[]
+    content.vb: Public Property SymbolBreakdown As SymbolAnalyticsInfo()
+  overload: Meridian.Ui.Services.StorageAnalytics.SymbolBreakdown*
+- uid: Meridian.Ui.Services.StorageAnalytics.DailyGrowthBytes
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.DailyGrowthBytes
+  id: DailyGrowthBytes
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: DailyGrowthBytes
+  nameWithType: StorageAnalytics.DailyGrowthBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.DailyGrowthBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DailyGrowthBytes
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 410
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long DailyGrowthBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DailyGrowthBytes As Long
+  overload: Meridian.Ui.Services.StorageAnalytics.DailyGrowthBytes*
+- uid: Meridian.Ui.Services.StorageAnalytics.ProjectedDaysUntilFull
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.ProjectedDaysUntilFull
+  id: ProjectedDaysUntilFull
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: ProjectedDaysUntilFull
+  nameWithType: StorageAnalytics.ProjectedDaysUntilFull
+  fullName: Meridian.Ui.Services.StorageAnalytics.ProjectedDaysUntilFull
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedDaysUntilFull
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 411
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int? ProjectedDaysUntilFull { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property ProjectedDaysUntilFull As Integer?
+  overload: Meridian.Ui.Services.StorageAnalytics.ProjectedDaysUntilFull*
+- uid: Meridian.Ui.Services.StorageAnalytics.TotalFiles
+  commentId: P:Meridian.Ui.Services.StorageAnalytics.TotalFiles
+  id: TotalFiles
+  parent: Meridian.Ui.Services.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: StorageAnalytics.TotalFiles
+  fullName: Meridian.Ui.Services.StorageAnalytics.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFiles
+    path: ../../src/Meridian.Ui.Services/Services/StorageAnalyticsService.cs
+    startLine: 414
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Total file count (alias for TotalFileCount).
+  example: []
+  syntax:
+    content: public int TotalFiles { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property TotalFiles As Integer
+  overload: Meridian.Ui.Services.StorageAnalytics.TotalFiles*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.StorageAnalytics.LastUpdated*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.LastUpdated
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_LastUpdated
+  name: LastUpdated
+  nameWithType: StorageAnalytics.LastUpdated
+  fullName: Meridian.Ui.Services.StorageAnalytics.LastUpdated
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.StorageAnalytics.TotalSizeBytes*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.TotalSizeBytes
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_TotalSizeBytes
+  name: TotalSizeBytes
+  nameWithType: StorageAnalytics.TotalSizeBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.TotalSizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.StorageAnalytics.TotalFileCount*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.TotalFileCount
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_TotalFileCount
+  name: TotalFileCount
+  nameWithType: StorageAnalytics.TotalFileCount
+  fullName: Meridian.Ui.Services.StorageAnalytics.TotalFileCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.StorageAnalytics.TradeSizeBytes*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.TradeSizeBytes
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_TradeSizeBytes
+  name: TradeSizeBytes
+  nameWithType: StorageAnalytics.TradeSizeBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.TradeSizeBytes
+- uid: Meridian.Ui.Services.StorageAnalytics.TradeFileCount*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.TradeFileCount
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_TradeFileCount
+  name: TradeFileCount
+  nameWithType: StorageAnalytics.TradeFileCount
+  fullName: Meridian.Ui.Services.StorageAnalytics.TradeFileCount
+- uid: Meridian.Ui.Services.StorageAnalytics.DepthSizeBytes*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.DepthSizeBytes
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_DepthSizeBytes
+  name: DepthSizeBytes
+  nameWithType: StorageAnalytics.DepthSizeBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.DepthSizeBytes
+- uid: Meridian.Ui.Services.StorageAnalytics.DepthFileCount*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.DepthFileCount
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_DepthFileCount
+  name: DepthFileCount
+  nameWithType: StorageAnalytics.DepthFileCount
+  fullName: Meridian.Ui.Services.StorageAnalytics.DepthFileCount
+- uid: Meridian.Ui.Services.StorageAnalytics.HistoricalSizeBytes*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.HistoricalSizeBytes
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_HistoricalSizeBytes
+  name: HistoricalSizeBytes
+  nameWithType: StorageAnalytics.HistoricalSizeBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.HistoricalSizeBytes
+- uid: Meridian.Ui.Services.StorageAnalytics.HistoricalFileCount*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.HistoricalFileCount
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_HistoricalFileCount
+  name: HistoricalFileCount
+  nameWithType: StorageAnalytics.HistoricalFileCount
+  fullName: Meridian.Ui.Services.StorageAnalytics.HistoricalFileCount
+- uid: Meridian.Ui.Services.StorageAnalytics.SymbolBreakdown*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.SymbolBreakdown
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_SymbolBreakdown
+  name: SymbolBreakdown
+  nameWithType: StorageAnalytics.SymbolBreakdown
+  fullName: Meridian.Ui.Services.StorageAnalytics.SymbolBreakdown
+- uid: Meridian.Ui.Services.SymbolAnalyticsInfo[]
+  isExternal: true
+  href: Meridian.Ui.Services.SymbolAnalyticsInfo.html
+  name: SymbolAnalyticsInfo[]
+  nameWithType: SymbolAnalyticsInfo[]
+  fullName: Meridian.Ui.Services.SymbolAnalyticsInfo[]
+  nameWithType.vb: SymbolAnalyticsInfo()
+  fullName.vb: Meridian.Ui.Services.SymbolAnalyticsInfo()
+  name.vb: SymbolAnalyticsInfo()
+  spec.csharp:
+  - uid: Meridian.Ui.Services.SymbolAnalyticsInfo
+    name: SymbolAnalyticsInfo
+    href: Meridian.Ui.Services.SymbolAnalyticsInfo.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Ui.Services.SymbolAnalyticsInfo
+    name: SymbolAnalyticsInfo
+    href: Meridian.Ui.Services.SymbolAnalyticsInfo.html
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.StorageAnalytics.DailyGrowthBytes*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.DailyGrowthBytes
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_DailyGrowthBytes
+  name: DailyGrowthBytes
+  nameWithType: StorageAnalytics.DailyGrowthBytes
+  fullName: Meridian.Ui.Services.StorageAnalytics.DailyGrowthBytes
+- uid: Meridian.Ui.Services.StorageAnalytics.ProjectedDaysUntilFull*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.ProjectedDaysUntilFull
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_ProjectedDaysUntilFull
+  name: ProjectedDaysUntilFull
+  nameWithType: StorageAnalytics.ProjectedDaysUntilFull
+  fullName: Meridian.Ui.Services.StorageAnalytics.ProjectedDaysUntilFull
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: Meridian.Ui.Services.StorageAnalytics.TotalFiles*
+  commentId: Overload:Meridian.Ui.Services.StorageAnalytics.TotalFiles
+  href: Meridian.Ui.Services.StorageAnalytics.html#Meridian_Ui_Services_StorageAnalytics_TotalFiles
+  name: TotalFiles
+  nameWithType: StorageAnalytics.TotalFiles
+  fullName: Meridian.Ui.Services.StorageAnalytics.TotalFiles

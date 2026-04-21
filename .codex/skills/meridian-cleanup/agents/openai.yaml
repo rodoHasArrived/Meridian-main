@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Cleanup"
+  short_description: "Clean Meridian code without behavior drift"
+  default_prompt: "Use $meridian-cleanup to make this Meridian area easier to maintain without changing behavior or breaking shared contracts."

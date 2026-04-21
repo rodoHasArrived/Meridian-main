@@ -1,0 +1,1014 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator
+  commentId: T:Meridian.Backtesting.BacktestStudioRunOrchestrator
+  id: BacktestStudioRunOrchestrator
+  parent: Meridian.Backtesting
+  children:
+  - Meridian.Backtesting.BacktestStudioRunOrchestrator.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,System.Collections.Generic.IEnumerable{Meridian.Application.Backtesting.IBacktestStudioEngine},Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BacktestStudioRunOrchestrator})
+  - Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
+  - Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Backtesting.BacktestStudioRunOrchestrator.StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: BacktestStudioRunOrchestrator
+  nameWithType: BacktestStudioRunOrchestrator
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestStudioRunOrchestrator
+    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Coordinates Backtest Studio runs across multiple engines while persisting them through the shared strategy-run model.
+  example: []
+  syntax:
+    content: 'public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable'
+    content.vb: Public NotInheritable Class BacktestStudioRunOrchestrator Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,System.Collections.Generic.IEnumerable{Meridian.Application.Backtesting.IBacktestStudioEngine},Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BacktestStudioRunOrchestrator})
+  commentId: M:Meridian.Backtesting.BacktestStudioRunOrchestrator.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,System.Collections.Generic.IEnumerable{Meridian.Application.Backtesting.IBacktestStudioEngine},Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BacktestStudioRunOrchestrator})
+  id: '#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,System.Collections.Generic.IEnumerable{Meridian.Application.Backtesting.IBacktestStudioEngine},Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BacktestStudioRunOrchestrator})'
+  parent: Meridian.Backtesting.BacktestStudioRunOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: BacktestStudioRunOrchestrator(IStrategyRepository, IEnumerable<IBacktestStudioEngine>, ILogger<BacktestStudioRunOrchestrator>)
+  nameWithType: BacktestStudioRunOrchestrator.BacktestStudioRunOrchestrator(IStrategyRepository, IEnumerable<IBacktestStudioEngine>, ILogger<BacktestStudioRunOrchestrator>)
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.BacktestStudioRunOrchestrator(Meridian.Strategies.Interfaces.IStrategyRepository, System.Collections.Generic.IEnumerable<Meridian.Application.Backtesting.IBacktestStudioEngine>, Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.BacktestStudioRunOrchestrator>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  syntax:
+    content: public BacktestStudioRunOrchestrator(IStrategyRepository repository, IEnumerable<IBacktestStudioEngine> engines, ILogger<BacktestStudioRunOrchestrator> logger)
+    parameters:
+    - id: repository
+      type: Meridian.Strategies.Interfaces.IStrategyRepository
+    - id: engines
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Backtesting.IBacktestStudioEngine}
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BacktestStudioRunOrchestrator}
+    content.vb: Public Sub New(repository As IStrategyRepository, engines As IEnumerable(Of IBacktestStudioEngine), logger As ILogger(Of BacktestStudioRunOrchestrator))
+  overload: Meridian.Backtesting.BacktestStudioRunOrchestrator.#ctor*
+  nameWithType.vb: BacktestStudioRunOrchestrator.New(IStrategyRepository, IEnumerable(Of IBacktestStudioEngine), ILogger(Of BacktestStudioRunOrchestrator))
+  fullName.vb: Meridian.Backtesting.BacktestStudioRunOrchestrator.New(Meridian.Strategies.Interfaces.IStrategyRepository, System.Collections.Generic.IEnumerable(Of Meridian.Application.Backtesting.IBacktestStudioEngine), Microsoft.Extensions.Logging.ILogger(Of Meridian.Backtesting.BacktestStudioRunOrchestrator))
+  name.vb: New(IStrategyRepository, IEnumerable(Of IBacktestStudioEngine), ILogger(Of BacktestStudioRunOrchestrator))
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.BacktestStudioRunOrchestrator.StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest,System.Threading.CancellationToken)
+  id: StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest,System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.BacktestStudioRunOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: StartAsync(BacktestStudioRunRequest, CancellationToken)
+  nameWithType: BacktestStudioRunOrchestrator.StartAsync(BacktestStudioRunRequest, CancellationToken)
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.StartAsync(Meridian.Application.Backtesting.BacktestStudioRunRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartAsync
+    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Starts a Backtest Studio run, records the initial shared run entry, and monitors completion in the background.
+  example: []
+  syntax:
+    content: public Task<BacktestStudioRunHandle> StartAsync(BacktestStudioRunRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Backtesting.BacktestStudioRunRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunHandle}
+    content.vb: Public Function StartAsync(request As BacktestStudioRunRequest, ct As CancellationToken = Nothing) As Task(Of BacktestStudioRunHandle)
+  overload: Meridian.Backtesting.BacktestStudioRunOrchestrator.StartAsync*
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync(System.String,System.Threading.CancellationToken)
+  id: GetStatusAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.BacktestStudioRunOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: GetStatusAsync(string, CancellationToken)
+  nameWithType: BacktestStudioRunOrchestrator.GetStatusAsync(string, CancellationToken)
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatusAsync
+    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Returns the current status for a previously started Backtest Studio run.
+  example: []
+  syntax:
+    content: public Task<BacktestStudioRunStatus> GetStatusAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunStatus}
+    content.vb: Public Function GetStatusAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of BacktestStudioRunStatus)
+  overload: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync*
+  nameWithType.vb: BacktestStudioRunOrchestrator.GetStatusAsync(String, CancellationToken)
+  fullName.vb: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync(String, System.Threading.CancellationToken)
+  name.vb: GetStatusAsync(String, CancellationToken)
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync(System.String,System.Threading.CancellationToken)
+  id: GetCanonicalResultAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.BacktestStudioRunOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: GetCanonicalResultAsync(string, CancellationToken)
+  nameWithType: BacktestStudioRunOrchestrator.GetCanonicalResultAsync(string, CancellationToken)
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCanonicalResultAsync
+    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Returns the canonical result for a previously started Backtest Studio run.
+  example: []
+  syntax:
+    content: public Task<BacktestResult> GetCanonicalResultAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Backtesting.Sdk.BacktestResult}
+    content.vb: Public Function GetCanonicalResultAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of BacktestResult)
+  overload: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync*
+  nameWithType.vb: BacktestStudioRunOrchestrator.GetCanonicalResultAsync(String, CancellationToken)
+  fullName.vb: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync(String, System.Threading.CancellationToken)
+  name.vb: GetCanonicalResultAsync(String, CancellationToken)
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
+  commentId: M:Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Backtesting.BacktestStudioRunOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: BacktestStudioRunOrchestrator.DisposeAsync()
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Backtesting/BacktestStudioRunOrchestrator.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Backtesting
+  commentId: N:Meridian.Backtesting
+  href: Meridian.html
+  name: Meridian.Backtesting
+  nameWithType: Meridian.Backtesting
+  fullName: Meridian.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.#ctor*
+  commentId: Overload:Meridian.Backtesting.BacktestStudioRunOrchestrator.#ctor
+  href: Meridian.Backtesting.BacktestStudioRunOrchestrator.html#Meridian_Backtesting_BacktestStudioRunOrchestrator__ctor_Meridian_Strategies_Interfaces_IStrategyRepository_System_Collections_Generic_IEnumerable_Meridian_Application_Backtesting_IBacktestStudioEngine__Microsoft_Extensions_Logging_ILogger_Meridian_Backtesting_BacktestStudioRunOrchestrator__
+  name: BacktestStudioRunOrchestrator
+  nameWithType: BacktestStudioRunOrchestrator.BacktestStudioRunOrchestrator
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.BacktestStudioRunOrchestrator
+  nameWithType.vb: BacktestStudioRunOrchestrator.New
+  fullName.vb: Meridian.Backtesting.BacktestStudioRunOrchestrator.New
+  name.vb: New
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyRepository
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html
+  name: IStrategyRepository
+  nameWithType: IStrategyRepository
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository
+- uid: System.Collections.Generic.IEnumerable{Meridian.Application.Backtesting.IBacktestStudioEngine}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Application.Backtesting.IBacktestStudioEngine}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<IBacktestStudioEngine>
+  nameWithType: IEnumerable<IBacktestStudioEngine>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Application.Backtesting.IBacktestStudioEngine>
+  nameWithType.vb: IEnumerable(Of IBacktestStudioEngine)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Application.Backtesting.IBacktestStudioEngine)
+  name.vb: IEnumerable(Of IBacktestStudioEngine)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Application.Backtesting.IBacktestStudioEngine
+    name: IBacktestStudioEngine
+    href: Meridian.Application.Backtesting.IBacktestStudioEngine.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backtesting.IBacktestStudioEngine
+    name: IBacktestStudioEngine
+    href: Meridian.Application.Backtesting.IBacktestStudioEngine.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BacktestStudioRunOrchestrator}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Backtesting.BacktestStudioRunOrchestrator}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<BacktestStudioRunOrchestrator>
+  nameWithType: ILogger<BacktestStudioRunOrchestrator>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Backtesting.BacktestStudioRunOrchestrator>
+  nameWithType.vb: ILogger(Of BacktestStudioRunOrchestrator)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Backtesting.BacktestStudioRunOrchestrator)
+  name.vb: ILogger(Of BacktestStudioRunOrchestrator)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Backtesting.BacktestStudioRunOrchestrator
+    name: BacktestStudioRunOrchestrator
+    href: Meridian.Backtesting.BacktestStudioRunOrchestrator.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.BacktestStudioRunOrchestrator
+    name: BacktestStudioRunOrchestrator
+    href: Meridian.Backtesting.BacktestStudioRunOrchestrator.html
+  - name: )
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.StartAsync*
+  commentId: Overload:Meridian.Backtesting.BacktestStudioRunOrchestrator.StartAsync
+  href: Meridian.Backtesting.BacktestStudioRunOrchestrator.html#Meridian_Backtesting_BacktestStudioRunOrchestrator_StartAsync_Meridian_Application_Backtesting_BacktestStudioRunRequest_System_Threading_CancellationToken_
+  name: StartAsync
+  nameWithType: BacktestStudioRunOrchestrator.StartAsync
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.StartAsync
+- uid: Meridian.Application.Backtesting.BacktestStudioRunRequest
+  commentId: T:Meridian.Application.Backtesting.BacktestStudioRunRequest
+  parent: Meridian.Application.Backtesting
+  href: Meridian.Application.Backtesting.BacktestStudioRunRequest.html
+  name: BacktestStudioRunRequest
+  nameWithType: BacktestStudioRunRequest
+  fullName: Meridian.Application.Backtesting.BacktestStudioRunRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunHandle}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunHandle}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestStudioRunHandle>
+  nameWithType: Task<BacktestStudioRunHandle>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Backtesting.BacktestStudioRunHandle>
+  nameWithType.vb: Task(Of BacktestStudioRunHandle)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Backtesting.BacktestStudioRunHandle)
+  name.vb: Task(Of BacktestStudioRunHandle)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunHandle
+    name: BacktestStudioRunHandle
+    href: Meridian.Application.Backtesting.BacktestStudioRunHandle.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunHandle
+    name: BacktestStudioRunHandle
+    href: Meridian.Application.Backtesting.BacktestStudioRunHandle.html
+  - name: )
+- uid: Meridian.Application.Backtesting
+  commentId: N:Meridian.Application.Backtesting
+  href: Meridian.html
+  name: Meridian.Application.Backtesting
+  nameWithType: Meridian.Application.Backtesting
+  fullName: Meridian.Application.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backtesting
+    name: Backtesting
+    href: Meridian.Application.Backtesting.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync*
+  commentId: Overload:Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync
+  href: Meridian.Backtesting.BacktestStudioRunOrchestrator.html#Meridian_Backtesting_BacktestStudioRunOrchestrator_GetStatusAsync_System_String_System_Threading_CancellationToken_
+  name: GetStatusAsync
+  nameWithType: BacktestStudioRunOrchestrator.GetStatusAsync
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetStatusAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunStatus}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Backtesting.BacktestStudioRunStatus}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestStudioRunStatus>
+  nameWithType: Task<BacktestStudioRunStatus>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Backtesting.BacktestStudioRunStatus>
+  nameWithType.vb: Task(Of BacktestStudioRunStatus)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Backtesting.BacktestStudioRunStatus)
+  name.vb: Task(Of BacktestStudioRunStatus)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunStatus
+    name: BacktestStudioRunStatus
+    href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backtesting.BacktestStudioRunStatus
+    name: BacktestStudioRunStatus
+    href: Meridian.Application.Backtesting.BacktestStudioRunStatus.html
+  - name: )
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync*
+  commentId: Overload:Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync
+  href: Meridian.Backtesting.BacktestStudioRunOrchestrator.html#Meridian_Backtesting_BacktestStudioRunOrchestrator_GetCanonicalResultAsync_System_String_System_Threading_CancellationToken_
+  name: GetCanonicalResultAsync
+  nameWithType: BacktestStudioRunOrchestrator.GetCanonicalResultAsync
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.GetCanonicalResultAsync
+- uid: System.Threading.Tasks.Task{Meridian.Backtesting.Sdk.BacktestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Backtesting.Sdk.BacktestResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestResult>
+  nameWithType: Task<BacktestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Backtesting.Sdk.BacktestResult>
+  nameWithType.vb: Task(Of BacktestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Backtesting.Sdk.BacktestResult)
+  name.vb: Task(Of BacktestResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.BacktestResult
+    name: BacktestResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.BacktestResult
+    name: BacktestResult
+  - name: )
+- uid: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync*
+  commentId: Overload:Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
+  href: Meridian.Backtesting.BacktestStudioRunOrchestrator.html#Meridian_Backtesting_BacktestStudioRunOrchestrator_DisposeAsync
+  name: DisposeAsync
+  nameWithType: BacktestStudioRunOrchestrator.DisposeAsync
+  fullName: Meridian.Backtesting.BacktestStudioRunOrchestrator.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

@@ -1,0 +1,644 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhook
+  commentId: T:Meridian.Application.Monitoring.ConnectionStatusWebhook
+  id: ConnectionStatusWebhook
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ConnectionStatusWebhook.#ctor(Meridian.Application.Monitoring.ConnectionHealthMonitor,Meridian.Application.Services.DailySummaryWebhook,Meridian.Application.Monitoring.ConnectionStatusWebhookConfig)
+  - Meridian.Application.Monitoring.ConnectionStatusWebhook.DisposeAsync
+  - Meridian.Application.Monitoring.ConnectionStatusWebhook.SendConnectionSummaryAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.ConnectionStatusWebhook.SendStatusUpdateAsync(System.String,System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ConnectionStatusWebhook
+  nameWithType: ConnectionStatusWebhook
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhook
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionStatusWebhook
+    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Sends webhook notifications for connection status changes.
+
+    Implements MON-6: Connection Status Webhook.
+  example: []
+  syntax:
+    content: 'public sealed class ConnectionStatusWebhook : IAsyncDisposable'
+    content.vb: Public NotInheritable Class ConnectionStatusWebhook Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhook.#ctor(Meridian.Application.Monitoring.ConnectionHealthMonitor,Meridian.Application.Services.DailySummaryWebhook,Meridian.Application.Monitoring.ConnectionStatusWebhookConfig)
+  commentId: M:Meridian.Application.Monitoring.ConnectionStatusWebhook.#ctor(Meridian.Application.Monitoring.ConnectionHealthMonitor,Meridian.Application.Services.DailySummaryWebhook,Meridian.Application.Monitoring.ConnectionStatusWebhookConfig)
+  id: '#ctor(Meridian.Application.Monitoring.ConnectionHealthMonitor,Meridian.Application.Services.DailySummaryWebhook,Meridian.Application.Monitoring.ConnectionStatusWebhookConfig)'
+  parent: Meridian.Application.Monitoring.ConnectionStatusWebhook
+  langs:
+  - csharp
+  - vb
+  name: ConnectionStatusWebhook(ConnectionHealthMonitor, DailySummaryWebhook?, ConnectionStatusWebhookConfig?)
+  nameWithType: ConnectionStatusWebhook.ConnectionStatusWebhook(ConnectionHealthMonitor, DailySummaryWebhook?, ConnectionStatusWebhookConfig?)
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhook.ConnectionStatusWebhook(Meridian.Application.Monitoring.ConnectionHealthMonitor, Meridian.Application.Services.DailySummaryWebhook?, Meridian.Application.Monitoring.ConnectionStatusWebhookConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public ConnectionStatusWebhook(ConnectionHealthMonitor connectionMonitor, DailySummaryWebhook? webhook = null, ConnectionStatusWebhookConfig? config = null)
+    parameters:
+    - id: connectionMonitor
+      type: Meridian.Application.Monitoring.ConnectionHealthMonitor
+    - id: webhook
+      type: Meridian.Application.Services.DailySummaryWebhook
+    - id: config
+      type: Meridian.Application.Monitoring.ConnectionStatusWebhookConfig
+    content.vb: Public Sub New(connectionMonitor As ConnectionHealthMonitor, webhook As DailySummaryWebhook = Nothing, config As ConnectionStatusWebhookConfig = Nothing)
+  overload: Meridian.Application.Monitoring.ConnectionStatusWebhook.#ctor*
+  nameWithType.vb: ConnectionStatusWebhook.New(ConnectionHealthMonitor, DailySummaryWebhook, ConnectionStatusWebhookConfig)
+  fullName.vb: Meridian.Application.Monitoring.ConnectionStatusWebhook.New(Meridian.Application.Monitoring.ConnectionHealthMonitor, Meridian.Application.Services.DailySummaryWebhook, Meridian.Application.Monitoring.ConnectionStatusWebhookConfig)
+  name.vb: New(ConnectionHealthMonitor, DailySummaryWebhook, ConnectionStatusWebhookConfig)
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendStatusUpdateAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.ConnectionStatusWebhook.SendStatusUpdateAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: SendStatusUpdateAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.ConnectionStatusWebhook
+  langs:
+  - csharp
+  - vb
+  name: SendStatusUpdateAsync(string, string?, CancellationToken)
+  nameWithType: ConnectionStatusWebhook.SendStatusUpdateAsync(string, string?, CancellationToken)
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendStatusUpdateAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SendStatusUpdateAsync
+    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Sends a manual connection status update.
+  example: []
+  syntax:
+    content: public Task SendStatusUpdateAsync(string message, string? title = null, CancellationToken ct = default)
+    parameters:
+    - id: message
+      type: System.String
+    - id: title
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SendStatusUpdateAsync(message As String, title As String = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendStatusUpdateAsync*
+  nameWithType.vb: ConnectionStatusWebhook.SendStatusUpdateAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendStatusUpdateAsync(String, String, System.Threading.CancellationToken)
+  name.vb: SendStatusUpdateAsync(String, String, CancellationToken)
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendConnectionSummaryAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.ConnectionStatusWebhook.SendConnectionSummaryAsync(System.Threading.CancellationToken)
+  id: SendConnectionSummaryAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.ConnectionStatusWebhook
+  langs:
+  - csharp
+  - vb
+  name: SendConnectionSummaryAsync(CancellationToken)
+  nameWithType: ConnectionStatusWebhook.SendConnectionSummaryAsync(CancellationToken)
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendConnectionSummaryAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SendConnectionSummaryAsync
+    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Sends a summary of all connection statuses.
+  example: []
+  syntax:
+    content: public Task SendConnectionSummaryAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SendConnectionSummaryAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendConnectionSummaryAsync*
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhook.DisposeAsync
+  commentId: M:Meridian.Application.Monitoring.ConnectionStatusWebhook.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Monitoring.ConnectionStatusWebhook
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: ConnectionStatusWebhook.DisposeAsync()
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhook.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Monitoring/ConnectionStatusWebhook.cs
+    startLine: 270
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Monitoring.ConnectionStatusWebhook.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhook.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionStatusWebhook.#ctor
+  href: Meridian.Application.Monitoring.ConnectionStatusWebhook.html#Meridian_Application_Monitoring_ConnectionStatusWebhook__ctor_Meridian_Application_Monitoring_ConnectionHealthMonitor_Meridian_Application_Services_DailySummaryWebhook_Meridian_Application_Monitoring_ConnectionStatusWebhookConfig_
+  name: ConnectionStatusWebhook
+  nameWithType: ConnectionStatusWebhook.ConnectionStatusWebhook
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhook.ConnectionStatusWebhook
+  nameWithType.vb: ConnectionStatusWebhook.New
+  fullName.vb: Meridian.Application.Monitoring.ConnectionStatusWebhook.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.ConnectionHealthMonitor
+  commentId: T:Meridian.Application.Monitoring.ConnectionHealthMonitor
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ConnectionHealthMonitor.html
+  name: ConnectionHealthMonitor
+  nameWithType: ConnectionHealthMonitor
+  fullName: Meridian.Application.Monitoring.ConnectionHealthMonitor
+- uid: Meridian.Application.Services.DailySummaryWebhook
+  commentId: T:Meridian.Application.Services.DailySummaryWebhook
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.DailySummaryWebhook.html
+  name: DailySummaryWebhook
+  nameWithType: DailySummaryWebhook
+  fullName: Meridian.Application.Services.DailySummaryWebhook
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhookConfig
+  commentId: T:Meridian.Application.Monitoring.ConnectionStatusWebhookConfig
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ConnectionStatusWebhookConfig.html
+  name: ConnectionStatusWebhookConfig
+  nameWithType: ConnectionStatusWebhookConfig
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhookConfig
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendStatusUpdateAsync*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionStatusWebhook.SendStatusUpdateAsync
+  href: Meridian.Application.Monitoring.ConnectionStatusWebhook.html#Meridian_Application_Monitoring_ConnectionStatusWebhook_SendStatusUpdateAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: SendStatusUpdateAsync
+  nameWithType: ConnectionStatusWebhook.SendStatusUpdateAsync
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendStatusUpdateAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendConnectionSummaryAsync*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionStatusWebhook.SendConnectionSummaryAsync
+  href: Meridian.Application.Monitoring.ConnectionStatusWebhook.html#Meridian_Application_Monitoring_ConnectionStatusWebhook_SendConnectionSummaryAsync_System_Threading_CancellationToken_
+  name: SendConnectionSummaryAsync
+  nameWithType: ConnectionStatusWebhook.SendConnectionSummaryAsync
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhook.SendConnectionSummaryAsync
+- uid: Meridian.Application.Monitoring.ConnectionStatusWebhook.DisposeAsync*
+  commentId: Overload:Meridian.Application.Monitoring.ConnectionStatusWebhook.DisposeAsync
+  href: Meridian.Application.Monitoring.ConnectionStatusWebhook.html#Meridian_Application_Monitoring_ConnectionStatusWebhook_DisposeAsync
+  name: DisposeAsync
+  nameWithType: ConnectionStatusWebhook.DisposeAsync
+  fullName: Meridian.Application.Monitoring.ConnectionStatusWebhook.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

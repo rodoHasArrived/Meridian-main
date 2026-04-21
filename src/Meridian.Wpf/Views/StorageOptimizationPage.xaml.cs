@@ -48,11 +48,8 @@ public partial class StorageOptimizationPage : Page
             AnalysisResultText.Text = "Running storage analysis...";
             AnalysisResultText.Foreground = (Brush)FindResource("ConsoleTextMutedBrush");
 
-            var dataRoot = "data";
-
-            var basePath = System.IO.Path.IsPathRooted(dataRoot)
-                ? dataRoot
-                : System.IO.Path.Combine(AppContext.BaseDirectory, dataRoot);
+            var config = await Meridian.Wpf.Services.ConfigService.Instance.LoadConfigAsync();
+            var basePath = Meridian.Wpf.Services.ConfigService.Instance.ResolveDataRoot(config);
 
             var options = new StorageAnalysisOptions
             {

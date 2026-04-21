@@ -1,0 +1,1553 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Models.StrategyRunEntry
+  commentId: T:Meridian.Strategies.Models.StrategyRunEntry
+  id: StrategyRunEntry
+  parent: Meridian.Strategies.Models
+  children:
+  - Meridian.Strategies.Models.StrategyRunEntry.#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus},System.String,System.String,System.String)
+  - Meridian.Strategies.Models.StrategyRunEntry.AuditReference
+  - Meridian.Strategies.Models.StrategyRunEntry.Cancel
+  - Meridian.Strategies.Models.StrategyRunEntry.Complete(Meridian.Backtesting.Sdk.BacktestResult)
+  - Meridian.Strategies.Models.StrategyRunEntry.DatasetReference
+  - Meridian.Strategies.Models.StrategyRunEntry.EndedAt
+  - Meridian.Strategies.Models.StrategyRunEntry.Engine
+  - Meridian.Strategies.Models.StrategyRunEntry.Fail
+  - Meridian.Strategies.Models.StrategyRunEntry.FeedReference
+  - Meridian.Strategies.Models.StrategyRunEntry.FundDisplayName
+  - Meridian.Strategies.Models.StrategyRunEntry.FundProfileId
+  - Meridian.Strategies.Models.StrategyRunEntry.LedgerReference
+  - Meridian.Strategies.Models.StrategyRunEntry.Metrics
+  - Meridian.Strategies.Models.StrategyRunEntry.ParameterSet
+  - Meridian.Strategies.Models.StrategyRunEntry.ParentRunId
+  - Meridian.Strategies.Models.StrategyRunEntry.PortfolioId
+  - Meridian.Strategies.Models.StrategyRunEntry.RunId
+  - Meridian.Strategies.Models.StrategyRunEntry.RunType
+  - Meridian.Strategies.Models.StrategyRunEntry.Start(System.String,System.String,Meridian.Strategies.Models.RunType)
+  - Meridian.Strategies.Models.StrategyRunEntry.Start(System.String,System.String,Meridian.Strategies.Models.RunType,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  - Meridian.Strategies.Models.StrategyRunEntry.StartedAt
+  - Meridian.Strategies.Models.StrategyRunEntry.StrategyId
+  - Meridian.Strategies.Models.StrategyRunEntry.StrategyName
+  - Meridian.Strategies.Models.StrategyRunEntry.TerminalStatus
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunEntry
+  nameWithType: StrategyRunEntry
+  fullName: Meridian.Strategies.Models.StrategyRunEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunEntry
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: >-
+    An immutable record of a single strategy run (backtest, paper, or live).
+
+    Stored by <xref href="Meridian.Strategies.Storage.StrategyRunStore" data-throw-if-not-resolved="false"></xref> and used by the promotion workflow.
+  example: []
+  syntax:
+    content: 'public sealed record StrategyRunEntry : IEquatable<StrategyRunEntry>'
+    content.vb: Public NotInheritable Class StrategyRunEntry Implements IEquatable(Of StrategyRunEntry)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Strategies.Models.StrategyRunEntry}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Models.StrategyRunEntry.#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus},System.String,System.String,System.String)
+  commentId: M:Meridian.Strategies.Models.StrategyRunEntry.#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus},System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,Meridian.Strategies.Models.RunType,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},Meridian.Backtesting.Sdk.BacktestResult,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus},System.String,System.String,System.String)'
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunEntry(string, string, string, RunType, DateTimeOffset, DateTimeOffset?, BacktestResult?, string?, string?, string?, string?, string?, string?, IReadOnlyDictionary<string, string>?, StrategyRunStatus?, string?, string?, string?)
+  nameWithType: StrategyRunEntry.StrategyRunEntry(string, string, string, RunType, DateTimeOffset, DateTimeOffset?, BacktestResult?, string?, string?, string?, string?, string?, string?, IReadOnlyDictionary<string, string>?, StrategyRunStatus?, string?, string?, string?)
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.StrategyRunEntry(string, string, string, Meridian.Strategies.Models.RunType, System.DateTimeOffset, System.DateTimeOffset?, Meridian.Backtesting.Sdk.BacktestResult?, string?, string?, string?, string?, string?, string?, System.Collections.Generic.IReadOnlyDictionary<string, string>?, Meridian.Contracts.Workstation.StrategyRunStatus?, string?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: >-
+    An immutable record of a single strategy run (backtest, paper, or live).
+
+    Stored by <xref href="Meridian.Strategies.Storage.StrategyRunStore" data-throw-if-not-resolved="false"></xref> and used by the promotion workflow.
+  example: []
+  syntax:
+    content: public StrategyRunEntry(string RunId, string StrategyId, string StrategyName, RunType RunType, DateTimeOffset StartedAt, DateTimeOffset? EndedAt, BacktestResult? Metrics, string? DatasetReference = null, string? FeedReference = null, string? PortfolioId = null, string? LedgerReference = null, string? AuditReference = null, string? Engine = null, IReadOnlyDictionary<string, string>? ParameterSet = null, StrategyRunStatus? TerminalStatus = null, string? ParentRunId = null, string? FundProfileId = null, string? FundDisplayName = null)
+    parameters:
+    - id: RunId
+      type: System.String
+    - id: StrategyId
+      type: System.String
+    - id: StrategyName
+      type: System.String
+    - id: RunType
+      type: Meridian.Strategies.Models.RunType
+    - id: StartedAt
+      type: System.DateTimeOffset
+    - id: EndedAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Metrics
+      type: Meridian.Backtesting.Sdk.BacktestResult
+    - id: DatasetReference
+      type: System.String
+    - id: FeedReference
+      type: System.String
+    - id: PortfolioId
+      type: System.String
+    - id: LedgerReference
+      type: System.String
+    - id: AuditReference
+      type: System.String
+    - id: Engine
+      type: System.String
+    - id: ParameterSet
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    - id: TerminalStatus
+      type: System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus}
+    - id: ParentRunId
+      type: System.String
+    - id: FundProfileId
+      type: System.String
+    - id: FundDisplayName
+      type: System.String
+    content.vb: Public Sub New(RunId As String, StrategyId As String, StrategyName As String, RunType As RunType, StartedAt As DateTimeOffset, EndedAt As DateTimeOffset?, Metrics As BacktestResult, DatasetReference As String = Nothing, FeedReference As String = Nothing, PortfolioId As String = Nothing, LedgerReference As String = Nothing, AuditReference As String = Nothing, Engine As String = Nothing, ParameterSet As IReadOnlyDictionary(Of String, String) = Nothing, TerminalStatus As StrategyRunStatus? = Nothing, ParentRunId As String = Nothing, FundProfileId As String = Nothing, FundDisplayName As String = Nothing)
+  overload: Meridian.Strategies.Models.StrategyRunEntry.#ctor*
+  nameWithType.vb: StrategyRunEntry.New(String, String, String, RunType, DateTimeOffset, DateTimeOffset?, BacktestResult, String, String, String, String, String, String, IReadOnlyDictionary(Of String, String), StrategyRunStatus?, String, String, String)
+  fullName.vb: Meridian.Strategies.Models.StrategyRunEntry.New(String, String, String, Meridian.Strategies.Models.RunType, System.DateTimeOffset, System.DateTimeOffset?, Meridian.Backtesting.Sdk.BacktestResult, String, String, String, String, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, String), Meridian.Contracts.Workstation.StrategyRunStatus?, String, String, String)
+  name.vb: New(String, String, String, RunType, DateTimeOffset, DateTimeOffset?, BacktestResult, String, String, String, String, String, String, IReadOnlyDictionary(Of String, String), StrategyRunStatus?, String, String, String)
+- uid: Meridian.Strategies.Models.StrategyRunEntry.RunId
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.RunId
+  id: RunId
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: StrategyRunEntry.RunId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.RunId*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.StrategyId
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.StrategyId
+  id: StrategyId
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: StrategyRunEntry.StrategyId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.StrategyId*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.StrategyName
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.StrategyName
+  id: StrategyName
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: StrategyName
+  nameWithType: StrategyRunEntry.StrategyName
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.StrategyName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyName
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string StrategyName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyName As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.StrategyName*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.RunType
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.RunType
+  id: RunType
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: RunType
+  nameWithType: StrategyRunEntry.RunType
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.RunType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunType
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public RunType RunType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Strategies.Models.RunType
+    content.vb: Public Property RunType As RunType
+  overload: Meridian.Strategies.Models.StrategyRunEntry.RunType*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.StartedAt
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.StartedAt
+  id: StartedAt
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: StrategyRunEntry.StartedAt
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public DateTimeOffset StartedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property StartedAt As DateTimeOffset
+  overload: Meridian.Strategies.Models.StrategyRunEntry.StartedAt*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.EndedAt
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.EndedAt
+  id: EndedAt
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: EndedAt
+  nameWithType: StrategyRunEntry.EndedAt
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.EndedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EndedAt
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public DateTimeOffset? EndedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property EndedAt As DateTimeOffset?
+  overload: Meridian.Strategies.Models.StrategyRunEntry.EndedAt*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Metrics
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.Metrics
+  id: Metrics
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: Metrics
+  nameWithType: StrategyRunEntry.Metrics
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Metrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metrics
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public BacktestResult? Metrics { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Backtesting.Sdk.BacktestResult
+    content.vb: Public Property Metrics As BacktestResult
+  overload: Meridian.Strategies.Models.StrategyRunEntry.Metrics*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.DatasetReference
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.DatasetReference
+  id: DatasetReference
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: DatasetReference
+  nameWithType: StrategyRunEntry.DatasetReference
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.DatasetReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DatasetReference
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string? DatasetReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DatasetReference As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.DatasetReference*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.FeedReference
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.FeedReference
+  id: FeedReference
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: FeedReference
+  nameWithType: StrategyRunEntry.FeedReference
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.FeedReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FeedReference
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string? FeedReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FeedReference As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.FeedReference*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.PortfolioId
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.PortfolioId
+  id: PortfolioId
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: PortfolioId
+  nameWithType: StrategyRunEntry.PortfolioId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.PortfolioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioId
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string? PortfolioId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PortfolioId As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.PortfolioId*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.LedgerReference
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.LedgerReference
+  id: LedgerReference
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: LedgerReference
+  nameWithType: StrategyRunEntry.LedgerReference
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.LedgerReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerReference
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string? LedgerReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LedgerReference As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.LedgerReference*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.AuditReference
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.AuditReference
+  id: AuditReference
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: AuditReference
+  nameWithType: StrategyRunEntry.AuditReference
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.AuditReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditReference
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string? AuditReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AuditReference As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.AuditReference*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Engine
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.Engine
+  id: Engine
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: Engine
+  nameWithType: StrategyRunEntry.Engine
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Engine
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Engine
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string? Engine { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Engine As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.Engine*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.ParameterSet
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.ParameterSet
+  id: ParameterSet
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: ParameterSet
+  nameWithType: StrategyRunEntry.ParameterSet
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.ParameterSet
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParameterSet
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public IReadOnlyDictionary<string, string>? ParameterSet { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    content.vb: Public Property ParameterSet As IReadOnlyDictionary(Of String, String)
+  overload: Meridian.Strategies.Models.StrategyRunEntry.ParameterSet*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.TerminalStatus
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.TerminalStatus
+  id: TerminalStatus
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: TerminalStatus
+  nameWithType: StrategyRunEntry.TerminalStatus
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.TerminalStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TerminalStatus
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public StrategyRunStatus? TerminalStatus { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus}
+    content.vb: Public Property TerminalStatus As StrategyRunStatus?
+  overload: Meridian.Strategies.Models.StrategyRunEntry.TerminalStatus*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.ParentRunId
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.ParentRunId
+  id: ParentRunId
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: ParentRunId
+  nameWithType: StrategyRunEntry.ParentRunId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.ParentRunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParentRunId
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string? ParentRunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ParentRunId As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.ParentRunId*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.FundProfileId
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.FundProfileId
+  id: FundProfileId
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: FundProfileId
+  nameWithType: StrategyRunEntry.FundProfileId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.FundProfileId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundProfileId
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string? FundProfileId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FundProfileId As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.FundProfileId*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.FundDisplayName
+  commentId: P:Meridian.Strategies.Models.StrategyRunEntry.FundDisplayName
+  id: FundDisplayName
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: FundDisplayName
+  nameWithType: StrategyRunEntry.FundDisplayName
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.FundDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundDisplayName
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  syntax:
+    content: public string? FundDisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FundDisplayName As String
+  overload: Meridian.Strategies.Models.StrategyRunEntry.FundDisplayName*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Start(System.String,System.String,Meridian.Strategies.Models.RunType)
+  commentId: M:Meridian.Strategies.Models.StrategyRunEntry.Start(System.String,System.String,Meridian.Strategies.Models.RunType)
+  id: Start(System.String,System.String,Meridian.Strategies.Models.RunType)
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: Start(string, string, RunType)
+  nameWithType: StrategyRunEntry.Start(string, string, RunType)
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Start(string, string, Meridian.Strategies.Models.RunType)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Creates a new run entry with a generated run ID and current timestamp.
+  example: []
+  syntax:
+    content: public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType)
+    parameters:
+    - id: strategyId
+      type: System.String
+    - id: strategyName
+      type: System.String
+    - id: runType
+      type: Meridian.Strategies.Models.RunType
+    return:
+      type: Meridian.Strategies.Models.StrategyRunEntry
+    content.vb: Public Shared Function Start(strategyId As String, strategyName As String, runType As RunType) As StrategyRunEntry
+  overload: Meridian.Strategies.Models.StrategyRunEntry.Start*
+  nameWithType.vb: StrategyRunEntry.Start(String, String, RunType)
+  fullName.vb: Meridian.Strategies.Models.StrategyRunEntry.Start(String, String, Meridian.Strategies.Models.RunType)
+  name.vb: Start(String, String, RunType)
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Start(System.String,System.String,Meridian.Strategies.Models.RunType,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  commentId: M:Meridian.Strategies.Models.StrategyRunEntry.Start(System.String,System.String,Meridian.Strategies.Models.RunType,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  id: Start(System.String,System.String,Meridian.Strategies.Models.RunType,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: Start(string, string, RunType, string, string?, string?, string?, IReadOnlyDictionary<string, string>?)
+  nameWithType: StrategyRunEntry.Start(string, string, RunType, string, string?, string?, string?, IReadOnlyDictionary<string, string>?)
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Start(string, string, Meridian.Strategies.Models.RunType, string, string?, string?, string?, System.Collections.Generic.IReadOnlyDictionary<string, string>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Creates a new run entry with an explicit run ID and optional metadata fields.
+  example: []
+  syntax:
+    content: public static StrategyRunEntry Start(string strategyId, string strategyName, RunType runType, string runId, string? datasetReference = null, string? feedReference = null, string? engine = null, IReadOnlyDictionary<string, string>? parameterSet = null)
+    parameters:
+    - id: strategyId
+      type: System.String
+    - id: strategyName
+      type: System.String
+    - id: runType
+      type: Meridian.Strategies.Models.RunType
+    - id: runId
+      type: System.String
+    - id: datasetReference
+      type: System.String
+    - id: feedReference
+      type: System.String
+    - id: engine
+      type: System.String
+    - id: parameterSet
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    return:
+      type: Meridian.Strategies.Models.StrategyRunEntry
+    content.vb: Public Shared Function Start(strategyId As String, strategyName As String, runType As RunType, runId As String, datasetReference As String = Nothing, feedReference As String = Nothing, engine As String = Nothing, parameterSet As IReadOnlyDictionary(Of String, String) = Nothing) As StrategyRunEntry
+  overload: Meridian.Strategies.Models.StrategyRunEntry.Start*
+  nameWithType.vb: StrategyRunEntry.Start(String, String, RunType, String, String, String, String, IReadOnlyDictionary(Of String, String))
+  fullName.vb: Meridian.Strategies.Models.StrategyRunEntry.Start(String, String, Meridian.Strategies.Models.RunType, String, String, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, String))
+  name.vb: Start(String, String, RunType, String, String, String, String, IReadOnlyDictionary(Of String, String))
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Complete(Meridian.Backtesting.Sdk.BacktestResult)
+  commentId: M:Meridian.Strategies.Models.StrategyRunEntry.Complete(Meridian.Backtesting.Sdk.BacktestResult)
+  id: Complete(Meridian.Backtesting.Sdk.BacktestResult)
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: Complete(BacktestResult?)
+  nameWithType: StrategyRunEntry.Complete(BacktestResult?)
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Complete(Meridian.Backtesting.Sdk.BacktestResult?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Complete
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Returns a copy of this entry marked as ended with the provided metrics.
+  example: []
+  syntax:
+    content: public StrategyRunEntry Complete(BacktestResult? metrics)
+    parameters:
+    - id: metrics
+      type: Meridian.Backtesting.Sdk.BacktestResult
+    return:
+      type: Meridian.Strategies.Models.StrategyRunEntry
+    content.vb: Public Function Complete(metrics As BacktestResult) As StrategyRunEntry
+  overload: Meridian.Strategies.Models.StrategyRunEntry.Complete*
+  nameWithType.vb: StrategyRunEntry.Complete(BacktestResult)
+  fullName.vb: Meridian.Strategies.Models.StrategyRunEntry.Complete(Meridian.Backtesting.Sdk.BacktestResult)
+  name.vb: Complete(BacktestResult)
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Fail
+  commentId: M:Meridian.Strategies.Models.StrategyRunEntry.Fail
+  id: Fail
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: Fail()
+  nameWithType: StrategyRunEntry.Fail()
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Fail()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fail
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Returns a copy of this entry marked as failed at the current time.
+  example: []
+  syntax:
+    content: public StrategyRunEntry Fail()
+    return:
+      type: Meridian.Strategies.Models.StrategyRunEntry
+    content.vb: Public Function Fail() As StrategyRunEntry
+  overload: Meridian.Strategies.Models.StrategyRunEntry.Fail*
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Cancel
+  commentId: M:Meridian.Strategies.Models.StrategyRunEntry.Cancel
+  id: Cancel
+  parent: Meridian.Strategies.Models.StrategyRunEntry
+  langs:
+  - csharp
+  - vb
+  name: Cancel()
+  nameWithType: StrategyRunEntry.Cancel()
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Cancel()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Models/StrategyRunEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancel
+    path: ../../src/Meridian.Strategies/Models/StrategyRunEntry.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Models
+  summary: Returns a copy of this entry marked as cancelled at the current time.
+  example: []
+  syntax:
+    content: public StrategyRunEntry Cancel()
+    return:
+      type: Meridian.Strategies.Models.StrategyRunEntry
+    content.vb: Public Function Cancel() As StrategyRunEntry
+  overload: Meridian.Strategies.Models.StrategyRunEntry.Cancel*
+references:
+- uid: Meridian.Strategies.Storage.StrategyRunStore
+  commentId: T:Meridian.Strategies.Storage.StrategyRunStore
+  href: Meridian.Strategies.Storage.StrategyRunStore.html
+  name: StrategyRunStore
+  nameWithType: StrategyRunStore
+  fullName: Meridian.Strategies.Storage.StrategyRunStore
+- uid: Meridian.Strategies.Models
+  commentId: N:Meridian.Strategies.Models
+  href: Meridian.html
+  name: Meridian.Strategies.Models
+  nameWithType: Meridian.Strategies.Models
+  fullName: Meridian.Strategies.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Strategies.Models.StrategyRunEntry}
+  commentId: T:System.IEquatable{Meridian.Strategies.Models.StrategyRunEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StrategyRunEntry>
+  nameWithType: IEquatable<StrategyRunEntry>
+  fullName: System.IEquatable<Meridian.Strategies.Models.StrategyRunEntry>
+  nameWithType.vb: IEquatable(Of StrategyRunEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Strategies.Models.StrategyRunEntry)
+  name.vb: IEquatable(Of StrategyRunEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Strategies.Models.StrategyRunEntry
+    name: StrategyRunEntry
+    href: Meridian.Strategies.Models.StrategyRunEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Models.StrategyRunEntry
+    name: StrategyRunEntry
+    href: Meridian.Strategies.Models.StrategyRunEntry.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Strategies.Models.StrategyRunEntry.#ctor*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.#ctor
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry__ctor_System_String_System_String_System_String_Meridian_Strategies_Models_RunType_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__Meridian_Backtesting_Sdk_BacktestResult_System_String_System_String_System_String_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__System_Nullable_Meridian_Contracts_Workstation_StrategyRunStatus__System_String_System_String_System_String_
+  name: StrategyRunEntry
+  nameWithType: StrategyRunEntry.StrategyRunEntry
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.StrategyRunEntry
+  nameWithType.vb: StrategyRunEntry.New
+  fullName.vb: Meridian.Strategies.Models.StrategyRunEntry.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Strategies.Models.RunType
+  commentId: T:Meridian.Strategies.Models.RunType
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.RunType.html
+  name: RunType
+  nameWithType: RunType
+  fullName: Meridian.Strategies.Models.RunType
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: Meridian.Backtesting.Sdk.BacktestResult
+  commentId: T:Meridian.Backtesting.Sdk.BacktestResult
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.BacktestResult.html
+  name: BacktestResult
+  nameWithType: BacktestResult
+  fullName: Meridian.Backtesting.Sdk.BacktestResult
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus}
+  commentId: T:System.Nullable{Meridian.Contracts.Workstation.StrategyRunStatus}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  name: StrategyRunStatus?
+  nameWithType: StrategyRunStatus?
+  fullName: Meridian.Contracts.Workstation.StrategyRunStatus?
+  spec.csharp:
+  - uid: Meridian.Contracts.Workstation.StrategyRunStatus
+    name: StrategyRunStatus
+    href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.Workstation.StrategyRunStatus
+    name: StrategyRunStatus
+    href: Meridian.Contracts.Workstation.StrategyRunStatus.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Strategies.Models.StrategyRunEntry.RunId*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.RunId
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_RunId
+  name: RunId
+  nameWithType: StrategyRunEntry.RunId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.RunId
+- uid: Meridian.Strategies.Models.StrategyRunEntry.StrategyId*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.StrategyId
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_StrategyId
+  name: StrategyId
+  nameWithType: StrategyRunEntry.StrategyId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.StrategyId
+- uid: Meridian.Strategies.Models.StrategyRunEntry.StrategyName*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.StrategyName
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_StrategyName
+  name: StrategyName
+  nameWithType: StrategyRunEntry.StrategyName
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.StrategyName
+- uid: Meridian.Strategies.Models.StrategyRunEntry.RunType*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.RunType
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_RunType
+  name: RunType
+  nameWithType: StrategyRunEntry.RunType
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.RunType
+- uid: Meridian.Strategies.Models.StrategyRunEntry.StartedAt*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.StartedAt
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_StartedAt
+  name: StartedAt
+  nameWithType: StrategyRunEntry.StartedAt
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.StartedAt
+- uid: Meridian.Strategies.Models.StrategyRunEntry.EndedAt*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.EndedAt
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_EndedAt
+  name: EndedAt
+  nameWithType: StrategyRunEntry.EndedAt
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.EndedAt
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Metrics*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.Metrics
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_Metrics
+  name: Metrics
+  nameWithType: StrategyRunEntry.Metrics
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Metrics
+- uid: Meridian.Strategies.Models.StrategyRunEntry.DatasetReference*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.DatasetReference
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_DatasetReference
+  name: DatasetReference
+  nameWithType: StrategyRunEntry.DatasetReference
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.DatasetReference
+- uid: Meridian.Strategies.Models.StrategyRunEntry.FeedReference*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.FeedReference
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_FeedReference
+  name: FeedReference
+  nameWithType: StrategyRunEntry.FeedReference
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.FeedReference
+- uid: Meridian.Strategies.Models.StrategyRunEntry.PortfolioId*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.PortfolioId
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_PortfolioId
+  name: PortfolioId
+  nameWithType: StrategyRunEntry.PortfolioId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.PortfolioId
+- uid: Meridian.Strategies.Models.StrategyRunEntry.LedgerReference*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.LedgerReference
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_LedgerReference
+  name: LedgerReference
+  nameWithType: StrategyRunEntry.LedgerReference
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.LedgerReference
+- uid: Meridian.Strategies.Models.StrategyRunEntry.AuditReference*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.AuditReference
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_AuditReference
+  name: AuditReference
+  nameWithType: StrategyRunEntry.AuditReference
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.AuditReference
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Engine*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.Engine
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_Engine
+  name: Engine
+  nameWithType: StrategyRunEntry.Engine
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Engine
+- uid: Meridian.Strategies.Models.StrategyRunEntry.ParameterSet*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.ParameterSet
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_ParameterSet
+  name: ParameterSet
+  nameWithType: StrategyRunEntry.ParameterSet
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.ParameterSet
+- uid: Meridian.Strategies.Models.StrategyRunEntry.TerminalStatus*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.TerminalStatus
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_TerminalStatus
+  name: TerminalStatus
+  nameWithType: StrategyRunEntry.TerminalStatus
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.TerminalStatus
+- uid: Meridian.Strategies.Models.StrategyRunEntry.ParentRunId*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.ParentRunId
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_ParentRunId
+  name: ParentRunId
+  nameWithType: StrategyRunEntry.ParentRunId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.ParentRunId
+- uid: Meridian.Strategies.Models.StrategyRunEntry.FundProfileId*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.FundProfileId
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_FundProfileId
+  name: FundProfileId
+  nameWithType: StrategyRunEntry.FundProfileId
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.FundProfileId
+- uid: Meridian.Strategies.Models.StrategyRunEntry.FundDisplayName*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.FundDisplayName
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_FundDisplayName
+  name: FundDisplayName
+  nameWithType: StrategyRunEntry.FundDisplayName
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.FundDisplayName
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Start*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.Start
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_Start_System_String_System_String_Meridian_Strategies_Models_RunType_
+  name: Start
+  nameWithType: StrategyRunEntry.Start
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Start
+- uid: Meridian.Strategies.Models.StrategyRunEntry
+  commentId: T:Meridian.Strategies.Models.StrategyRunEntry
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.StrategyRunEntry.html
+  name: StrategyRunEntry
+  nameWithType: StrategyRunEntry
+  fullName: Meridian.Strategies.Models.StrategyRunEntry
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Complete*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.Complete
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_Complete_Meridian_Backtesting_Sdk_BacktestResult_
+  name: Complete
+  nameWithType: StrategyRunEntry.Complete
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Complete
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Fail*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.Fail
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_Fail
+  name: Fail
+  nameWithType: StrategyRunEntry.Fail
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Fail
+- uid: Meridian.Strategies.Models.StrategyRunEntry.Cancel*
+  commentId: Overload:Meridian.Strategies.Models.StrategyRunEntry.Cancel
+  href: Meridian.Strategies.Models.StrategyRunEntry.html#Meridian_Strategies_Models_StrategyRunEntry_Cancel
+  name: Cancel
+  nameWithType: StrategyRunEntry.Cancel
+  fullName: Meridian.Strategies.Models.StrategyRunEntry.Cancel

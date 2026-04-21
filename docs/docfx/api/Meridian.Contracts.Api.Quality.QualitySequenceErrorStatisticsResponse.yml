@@ -1,0 +1,859 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  commentId: T:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  id: QualitySequenceErrorStatisticsResponse
+  parent: Meridian.Contracts.Api.Quality
+  children:
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.#ctor(System.Int64,System.Int64,System.Double,System.Collections.Generic.IReadOnlyDictionary{System.Byte,System.Int64},System.Int32,System.Double,System.Int64,System.DateTimeOffset)
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.AverageGapSize
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.CalculatedAt
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorRate
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorsByType
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.MaxGapSize
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.SymbolsWithErrors
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalErrors
+  - Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalEventsChecked
+  langs:
+  - csharp
+  - vb
+  name: QualitySequenceErrorStatisticsResponse
+  nameWithType: QualitySequenceErrorStatisticsResponse
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualitySequenceErrorStatisticsResponse
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  summary: Sequence-error statistics payload returned by the dashboard.
+  example: []
+  syntax:
+    content: 'public sealed record QualitySequenceErrorStatisticsResponse : IEquatable<QualitySequenceErrorStatisticsResponse>'
+    content.vb: Public NotInheritable Class QualitySequenceErrorStatisticsResponse Implements IEquatable(Of QualitySequenceErrorStatisticsResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.#ctor(System.Int64,System.Int64,System.Double,System.Collections.Generic.IReadOnlyDictionary{System.Byte,System.Int64},System.Int32,System.Double,System.Int64,System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.#ctor(System.Int64,System.Int64,System.Double,System.Collections.Generic.IReadOnlyDictionary{System.Byte,System.Int64},System.Int32,System.Double,System.Int64,System.DateTimeOffset)
+  id: '#ctor(System.Int64,System.Int64,System.Double,System.Collections.Generic.IReadOnlyDictionary{System.Byte,System.Int64},System.Int32,System.Double,System.Int64,System.DateTimeOffset)'
+  parent: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: QualitySequenceErrorStatisticsResponse(long, long, double, IReadOnlyDictionary<byte, long>, int, double, long, DateTimeOffset)
+  nameWithType: QualitySequenceErrorStatisticsResponse.QualitySequenceErrorStatisticsResponse(long, long, double, IReadOnlyDictionary<byte, long>, int, double, long, DateTimeOffset)
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.QualitySequenceErrorStatisticsResponse(long, long, double, System.Collections.Generic.IReadOnlyDictionary<byte, long>, int, double, long, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  summary: Sequence-error statistics payload returned by the dashboard.
+  example: []
+  syntax:
+    content: public QualitySequenceErrorStatisticsResponse(long TotalEventsChecked, long TotalErrors, double ErrorRate, IReadOnlyDictionary<byte, long> ErrorsByType, int SymbolsWithErrors, double AverageGapSize, long MaxGapSize, DateTimeOffset CalculatedAt)
+    parameters:
+    - id: TotalEventsChecked
+      type: System.Int64
+    - id: TotalErrors
+      type: System.Int64
+    - id: ErrorRate
+      type: System.Double
+    - id: ErrorsByType
+      type: System.Collections.Generic.IReadOnlyDictionary{System.Byte,System.Int64}
+    - id: SymbolsWithErrors
+      type: System.Int32
+    - id: AverageGapSize
+      type: System.Double
+    - id: MaxGapSize
+      type: System.Int64
+    - id: CalculatedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(TotalEventsChecked As Long, TotalErrors As Long, ErrorRate As Double, ErrorsByType As IReadOnlyDictionary(Of Byte, Long), SymbolsWithErrors As Integer, AverageGapSize As Double, MaxGapSize As Long, CalculatedAt As DateTimeOffset)
+  overload: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.#ctor*
+  nameWithType.vb: QualitySequenceErrorStatisticsResponse.New(Long, Long, Double, IReadOnlyDictionary(Of Byte, Long), Integer, Double, Long, DateTimeOffset)
+  fullName.vb: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.New(Long, Long, Double, System.Collections.Generic.IReadOnlyDictionary(Of Byte, Long), Integer, Double, Long, System.DateTimeOffset)
+  name.vb: New(Long, Long, Double, IReadOnlyDictionary(Of Byte, Long), Integer, Double, Long, DateTimeOffset)
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalEventsChecked
+  commentId: P:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalEventsChecked
+  id: TotalEventsChecked
+  parent: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: TotalEventsChecked
+  nameWithType: QualitySequenceErrorStatisticsResponse.TotalEventsChecked
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalEventsChecked
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEventsChecked
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public long TotalEventsChecked { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalEventsChecked As Long
+  overload: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalEventsChecked*
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalErrors
+  commentId: P:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalErrors
+  id: TotalErrors
+  parent: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: TotalErrors
+  nameWithType: QualitySequenceErrorStatisticsResponse.TotalErrors
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalErrors
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public long TotalErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalErrors As Long
+  overload: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalErrors*
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorRate
+  commentId: P:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorRate
+  id: ErrorRate
+  parent: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorRate
+  nameWithType: QualitySequenceErrorStatisticsResponse.ErrorRate
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorRate
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public double ErrorRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ErrorRate As Double
+  overload: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorRate*
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorsByType
+  commentId: P:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorsByType
+  id: ErrorsByType
+  parent: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: ErrorsByType
+  nameWithType: QualitySequenceErrorStatisticsResponse.ErrorsByType
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorsByType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorsByType
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public IReadOnlyDictionary<byte, long> ErrorsByType { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.Byte,System.Int64}
+    content.vb: Public Property ErrorsByType As IReadOnlyDictionary(Of Byte, Long)
+  overload: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorsByType*
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.SymbolsWithErrors
+  commentId: P:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.SymbolsWithErrors
+  id: SymbolsWithErrors
+  parent: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: SymbolsWithErrors
+  nameWithType: QualitySequenceErrorStatisticsResponse.SymbolsWithErrors
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.SymbolsWithErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolsWithErrors
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public int SymbolsWithErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolsWithErrors As Integer
+  overload: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.SymbolsWithErrors*
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.AverageGapSize
+  commentId: P:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.AverageGapSize
+  id: AverageGapSize
+  parent: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: AverageGapSize
+  nameWithType: QualitySequenceErrorStatisticsResponse.AverageGapSize
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.AverageGapSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageGapSize
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public double AverageGapSize { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageGapSize As Double
+  overload: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.AverageGapSize*
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.MaxGapSize
+  commentId: P:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.MaxGapSize
+  id: MaxGapSize
+  parent: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: MaxGapSize
+  nameWithType: QualitySequenceErrorStatisticsResponse.MaxGapSize
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.MaxGapSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxGapSize
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public long MaxGapSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MaxGapSize As Long
+  overload: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.MaxGapSize*
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.CalculatedAt
+  commentId: P:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.CalculatedAt
+  id: CalculatedAt
+  parent: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+  langs:
+  - csharp
+  - vb
+  name: CalculatedAt
+  nameWithType: QualitySequenceErrorStatisticsResponse.CalculatedAt
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.CalculatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculatedAt
+    path: ../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api.Quality
+  syntax:
+    content: public DateTimeOffset CalculatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CalculatedAt As DateTimeOffset
+  overload: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.CalculatedAt*
+references:
+- uid: Meridian.Contracts.Api.Quality
+  commentId: N:Meridian.Contracts.Api.Quality
+  href: Meridian.html
+  name: Meridian.Contracts.Api.Quality
+  nameWithType: Meridian.Contracts.Api.Quality
+  fullName: Meridian.Contracts.Api.Quality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  - name: .
+  - uid: Meridian.Contracts.Api.Quality
+    name: Quality
+    href: Meridian.Contracts.Api.Quality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QualitySequenceErrorStatisticsResponse>
+  nameWithType: IEquatable<QualitySequenceErrorStatisticsResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse>
+  nameWithType.vb: IEquatable(Of QualitySequenceErrorStatisticsResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse)
+  name.vb: IEquatable(Of QualitySequenceErrorStatisticsResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+    name: QualitySequenceErrorStatisticsResponse
+    href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse
+    name: QualitySequenceErrorStatisticsResponse
+    href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.#ctor
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualitySequenceErrorStatisticsResponse__ctor_System_Int64_System_Int64_System_Double_System_Collections_Generic_IReadOnlyDictionary_System_Byte_System_Int64__System_Int32_System_Double_System_Int64_System_DateTimeOffset_
+  name: QualitySequenceErrorStatisticsResponse
+  nameWithType: QualitySequenceErrorStatisticsResponse.QualitySequenceErrorStatisticsResponse
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.QualitySequenceErrorStatisticsResponse
+  nameWithType.vb: QualitySequenceErrorStatisticsResponse.New
+  fullName.vb: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.Byte,System.Int64}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.Byte,System.Int64}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<byte, long>
+  nameWithType: IReadOnlyDictionary<byte, long>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<byte, long>
+  nameWithType.vb: IReadOnlyDictionary(Of Byte, Long)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of Byte, Long)
+  name.vb: IReadOnlyDictionary(Of Byte, Long)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalEventsChecked*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalEventsChecked
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualitySequenceErrorStatisticsResponse_TotalEventsChecked
+  name: TotalEventsChecked
+  nameWithType: QualitySequenceErrorStatisticsResponse.TotalEventsChecked
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalEventsChecked
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalErrors*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalErrors
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualitySequenceErrorStatisticsResponse_TotalErrors
+  name: TotalErrors
+  nameWithType: QualitySequenceErrorStatisticsResponse.TotalErrors
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.TotalErrors
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorRate*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorRate
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualitySequenceErrorStatisticsResponse_ErrorRate
+  name: ErrorRate
+  nameWithType: QualitySequenceErrorStatisticsResponse.ErrorRate
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorRate
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorsByType*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorsByType
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualitySequenceErrorStatisticsResponse_ErrorsByType
+  name: ErrorsByType
+  nameWithType: QualitySequenceErrorStatisticsResponse.ErrorsByType
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.ErrorsByType
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.SymbolsWithErrors*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.SymbolsWithErrors
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualitySequenceErrorStatisticsResponse_SymbolsWithErrors
+  name: SymbolsWithErrors
+  nameWithType: QualitySequenceErrorStatisticsResponse.SymbolsWithErrors
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.SymbolsWithErrors
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.AverageGapSize*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.AverageGapSize
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualitySequenceErrorStatisticsResponse_AverageGapSize
+  name: AverageGapSize
+  nameWithType: QualitySequenceErrorStatisticsResponse.AverageGapSize
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.AverageGapSize
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.MaxGapSize*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.MaxGapSize
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualitySequenceErrorStatisticsResponse_MaxGapSize
+  name: MaxGapSize
+  nameWithType: QualitySequenceErrorStatisticsResponse.MaxGapSize
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.MaxGapSize
+- uid: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.CalculatedAt*
+  commentId: Overload:Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.CalculatedAt
+  href: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.html#Meridian_Contracts_Api_Quality_QualitySequenceErrorStatisticsResponse_CalculatedAt
+  name: CalculatedAt
+  nameWithType: QualitySequenceErrorStatisticsResponse.CalculatedAt
+  fullName: Meridian.Contracts.Api.Quality.QualitySequenceErrorStatisticsResponse.CalculatedAt

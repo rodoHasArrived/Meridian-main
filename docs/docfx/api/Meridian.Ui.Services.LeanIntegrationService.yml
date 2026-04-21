@@ -1,0 +1,1861 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.LeanIntegrationService
+  commentId: T:Meridian.Ui.Services.LeanIntegrationService
+  id: LeanIntegrationService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.LeanIntegrationService.BacktestStatusChanged
+  - Meridian.Ui.Services.LeanIntegrationService.ConfigureAutoExportAsync(Meridian.Ui.Services.LeanAutoExportConfigureOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.DeleteBacktestAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.GetAlgorithmsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.GetAutoExportStatusAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.GetBacktestHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.GetBacktestStatusAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.GetConfigurationAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.GetDataSyncStatusAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.GetStatusAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.Instance
+  - Meridian.Ui.Services.LeanIntegrationService.StartBacktestAsync(Meridian.Ui.Services.BacktestOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.SyncDataAsync(Meridian.Ui.Services.DataSyncOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.UpdateConfigurationAsync(Meridian.Ui.Services.LeanConfigurationUpdate,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.LeanIntegrationService.VerifyInstallationAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: LeanIntegrationService
+  nameWithType: LeanIntegrationService
+  fullName: Meridian.Ui.Services.LeanIntegrationService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeanIntegrationService
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for integrating with QuantConnect Lean Engine for backtesting.
+
+    Enables configuration, data synchronization, and backtest execution.
+  example: []
+  syntax:
+    content: public sealed class LeanIntegrationService
+    content.vb: Public NotInheritable Class LeanIntegrationService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.LeanIntegrationService.Instance
+  commentId: P:Meridian.Ui.Services.LeanIntegrationService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: LeanIntegrationService.Instance
+  fullName: Meridian.Ui.Services.LeanIntegrationService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static LeanIntegrationService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.LeanIntegrationService
+    content.vb: Public Shared ReadOnly Property Instance As LeanIntegrationService
+  overload: Meridian.Ui.Services.LeanIntegrationService.Instance*
+- uid: Meridian.Ui.Services.LeanIntegrationService.BacktestStatusChanged
+  commentId: E:Meridian.Ui.Services.LeanIntegrationService.BacktestStatusChanged
+  id: BacktestStatusChanged
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: BacktestStatusChanged
+  nameWithType: LeanIntegrationService.BacktestStatusChanged
+  fullName: Meridian.Ui.Services.LeanIntegrationService.BacktestStatusChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BacktestStatusChanged
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Raised when backtest status changes.
+  example: []
+  syntax:
+    content: public event EventHandler<BacktestStatusChangedEventArgs>? BacktestStatusChanged
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.BacktestStatusChangedEventArgs}
+    content.vb: Public Event BacktestStatusChanged As EventHandler(Of BacktestStatusChangedEventArgs)
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetStatusAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetStatusAsync(System.Threading.CancellationToken)
+  id: GetStatusAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: GetStatusAsync(CancellationToken)
+  nameWithType: LeanIntegrationService.GetStatusAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetStatusAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatusAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the current Lean integration status.
+  example: []
+  syntax:
+    content: public Task<LeanStatus> GetStatusAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanStatus}
+    content.vb: Public Function GetStatusAsync(ct As CancellationToken = Nothing) As Task(Of LeanStatus)
+  overload: Meridian.Ui.Services.LeanIntegrationService.GetStatusAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetConfigurationAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetConfigurationAsync(System.Threading.CancellationToken)
+  id: GetConfigurationAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: GetConfigurationAsync(CancellationToken)
+  nameWithType: LeanIntegrationService.GetConfigurationAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetConfigurationAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetConfigurationAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the Lean configuration.
+  example: []
+  syntax:
+    content: public Task<LeanConfiguration> GetConfigurationAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanConfiguration}
+    content.vb: Public Function GetConfigurationAsync(ct As CancellationToken = Nothing) As Task(Of LeanConfiguration)
+  overload: Meridian.Ui.Services.LeanIntegrationService.GetConfigurationAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.UpdateConfigurationAsync(Meridian.Ui.Services.LeanConfigurationUpdate,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.UpdateConfigurationAsync(Meridian.Ui.Services.LeanConfigurationUpdate,System.Threading.CancellationToken)
+  id: UpdateConfigurationAsync(Meridian.Ui.Services.LeanConfigurationUpdate,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: UpdateConfigurationAsync(LeanConfigurationUpdate, CancellationToken)
+  nameWithType: LeanIntegrationService.UpdateConfigurationAsync(LeanConfigurationUpdate, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.UpdateConfigurationAsync(Meridian.Ui.Services.LeanConfigurationUpdate, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateConfigurationAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates the Lean configuration.
+  example: []
+  syntax:
+    content: public Task<bool> UpdateConfigurationAsync(LeanConfigurationUpdate config, CancellationToken ct = default)
+    parameters:
+    - id: config
+      type: Meridian.Ui.Services.LeanConfigurationUpdate
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function UpdateConfigurationAsync(config As LeanConfigurationUpdate, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.LeanIntegrationService.UpdateConfigurationAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.VerifyInstallationAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.VerifyInstallationAsync(System.Threading.CancellationToken)
+  id: VerifyInstallationAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: VerifyInstallationAsync(CancellationToken)
+  nameWithType: LeanIntegrationService.VerifyInstallationAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.VerifyInstallationAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifyInstallationAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Verifies the Lean installation.
+  example: []
+  syntax:
+    content: public Task<LeanVerificationResult> VerifyInstallationAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanVerificationResult}
+    content.vb: Public Function VerifyInstallationAsync(ct As CancellationToken = Nothing) As Task(Of LeanVerificationResult)
+  overload: Meridian.Ui.Services.LeanIntegrationService.VerifyInstallationAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetAlgorithmsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetAlgorithmsAsync(System.Threading.CancellationToken)
+  id: GetAlgorithmsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: GetAlgorithmsAsync(CancellationToken)
+  nameWithType: LeanIntegrationService.GetAlgorithmsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetAlgorithmsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAlgorithmsAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets available algorithms.
+  example: []
+  syntax:
+    content: public Task<AlgorithmListResult> GetAlgorithmsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.AlgorithmListResult}
+    content.vb: Public Function GetAlgorithmsAsync(ct As CancellationToken = Nothing) As Task(Of AlgorithmListResult)
+  overload: Meridian.Ui.Services.LeanIntegrationService.GetAlgorithmsAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.SyncDataAsync(Meridian.Ui.Services.DataSyncOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.SyncDataAsync(Meridian.Ui.Services.DataSyncOptions,System.Threading.CancellationToken)
+  id: SyncDataAsync(Meridian.Ui.Services.DataSyncOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: SyncDataAsync(DataSyncOptions, CancellationToken)
+  nameWithType: LeanIntegrationService.SyncDataAsync(DataSyncOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.SyncDataAsync(Meridian.Ui.Services.DataSyncOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SyncDataAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Syncs collected data to Lean format.
+  example: []
+  syntax:
+    content: public Task<DataSyncResult> SyncDataAsync(DataSyncOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.DataSyncOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DataSyncResult}
+    content.vb: Public Function SyncDataAsync(options As DataSyncOptions, ct As CancellationToken = Nothing) As Task(Of DataSyncResult)
+  overload: Meridian.Ui.Services.LeanIntegrationService.SyncDataAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetDataSyncStatusAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetDataSyncStatusAsync(System.Threading.CancellationToken)
+  id: GetDataSyncStatusAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: GetDataSyncStatusAsync(CancellationToken)
+  nameWithType: LeanIntegrationService.GetDataSyncStatusAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetDataSyncStatusAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDataSyncStatusAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets data synchronization status.
+  example: []
+  syntax:
+    content: public Task<DataSyncStatus> GetDataSyncStatusAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DataSyncStatus}
+    content.vb: Public Function GetDataSyncStatusAsync(ct As CancellationToken = Nothing) As Task(Of DataSyncStatus)
+  overload: Meridian.Ui.Services.LeanIntegrationService.GetDataSyncStatusAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.StartBacktestAsync(Meridian.Ui.Services.BacktestOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.StartBacktestAsync(Meridian.Ui.Services.BacktestOptions,System.Threading.CancellationToken)
+  id: StartBacktestAsync(Meridian.Ui.Services.BacktestOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: StartBacktestAsync(BacktestOptions, CancellationToken)
+  nameWithType: LeanIntegrationService.StartBacktestAsync(BacktestOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.StartBacktestAsync(Meridian.Ui.Services.BacktestOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartBacktestAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Starts a backtest.
+  example: []
+  syntax:
+    content: public Task<BacktestStartResult> StartBacktestAsync(BacktestOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.BacktestOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestStartResult}
+    content.vb: Public Function StartBacktestAsync(options As BacktestOptions, ct As CancellationToken = Nothing) As Task(Of BacktestStartResult)
+  overload: Meridian.Ui.Services.LeanIntegrationService.StartBacktestAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetBacktestStatusAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetBacktestStatusAsync(System.String,System.Threading.CancellationToken)
+  id: GetBacktestStatusAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: GetBacktestStatusAsync(string, CancellationToken)
+  nameWithType: LeanIntegrationService.GetBacktestStatusAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetBacktestStatusAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBacktestStatusAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets backtest status.
+  example: []
+  syntax:
+    content: public Task<BacktestStatus> GetBacktestStatusAsync(string backtestId, CancellationToken ct = default)
+    parameters:
+    - id: backtestId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestStatus}
+    content.vb: Public Function GetBacktestStatusAsync(backtestId As String, ct As CancellationToken = Nothing) As Task(Of BacktestStatus)
+  overload: Meridian.Ui.Services.LeanIntegrationService.GetBacktestStatusAsync*
+  nameWithType.vb: LeanIntegrationService.GetBacktestStatusAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LeanIntegrationService.GetBacktestStatusAsync(String, System.Threading.CancellationToken)
+  name.vb: GetBacktestStatusAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync(System.String,System.Threading.CancellationToken)
+  id: GetBacktestResultsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: GetBacktestResultsAsync(string, CancellationToken)
+  nameWithType: LeanIntegrationService.GetBacktestResultsAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBacktestResultsAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets backtest results.
+  example: []
+  syntax:
+    content: public Task<BacktestResults> GetBacktestResultsAsync(string backtestId, CancellationToken ct = default)
+    parameters:
+    - id: backtestId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestResults}
+    content.vb: Public Function GetBacktestResultsAsync(backtestId As String, ct As CancellationToken = Nothing) As Task(Of BacktestResults)
+  overload: Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync*
+  nameWithType.vb: LeanIntegrationService.GetBacktestResultsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync(String, System.Threading.CancellationToken)
+  name.vb: GetBacktestResultsAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync(System.String,System.Threading.CancellationToken)
+  id: StopBacktestAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: StopBacktestAsync(string, CancellationToken)
+  nameWithType: LeanIntegrationService.StopBacktestAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopBacktestAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Stops a running backtest.
+  example: []
+  syntax:
+    content: public Task<bool> StopBacktestAsync(string backtestId, CancellationToken ct = default)
+    parameters:
+    - id: backtestId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function StopBacktestAsync(backtestId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync*
+  nameWithType.vb: LeanIntegrationService.StopBacktestAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync(String, System.Threading.CancellationToken)
+  name.vb: StopBacktestAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetBacktestHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetBacktestHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  id: GetBacktestHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: GetBacktestHistoryAsync(int, CancellationToken)
+  nameWithType: LeanIntegrationService.GetBacktestHistoryAsync(int, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetBacktestHistoryAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBacktestHistoryAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets backtest history.
+  example: []
+  syntax:
+    content: public Task<BacktestHistoryResult> GetBacktestHistoryAsync(int limit = 20, CancellationToken ct = default)
+    parameters:
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestHistoryResult}
+    content.vb: Public Function GetBacktestHistoryAsync(limit As Integer = 20, ct As CancellationToken = Nothing) As Task(Of BacktestHistoryResult)
+  overload: Meridian.Ui.Services.LeanIntegrationService.GetBacktestHistoryAsync*
+  nameWithType.vb: LeanIntegrationService.GetBacktestHistoryAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LeanIntegrationService.GetBacktestHistoryAsync(Integer, System.Threading.CancellationToken)
+  name.vb: GetBacktestHistoryAsync(Integer, CancellationToken)
+- uid: Meridian.Ui.Services.LeanIntegrationService.DeleteBacktestAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.DeleteBacktestAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteBacktestAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: DeleteBacktestAsync(string, CancellationToken)
+  nameWithType: LeanIntegrationService.DeleteBacktestAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.DeleteBacktestAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteBacktestAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 277
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Deletes a backtest and its results.
+  example: []
+  syntax:
+    content: public Task<bool> DeleteBacktestAsync(string backtestId, CancellationToken ct = default)
+    parameters:
+    - id: backtestId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteBacktestAsync(backtestId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.LeanIntegrationService.DeleteBacktestAsync*
+  nameWithType.vb: LeanIntegrationService.DeleteBacktestAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LeanIntegrationService.DeleteBacktestAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteBacktestAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetAutoExportStatusAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetAutoExportStatusAsync(System.Threading.CancellationToken)
+  id: GetAutoExportStatusAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: GetAutoExportStatusAsync(CancellationToken)
+  nameWithType: LeanIntegrationService.GetAutoExportStatusAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetAutoExportStatusAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAutoExportStatusAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the current auto-export status and configuration.
+  example: []
+  syntax:
+    content: public Task<LeanAutoExportStatus> GetAutoExportStatusAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanAutoExportStatus}
+    content.vb: Public Function GetAutoExportStatusAsync(ct As CancellationToken = Nothing) As Task(Of LeanAutoExportStatus)
+  overload: Meridian.Ui.Services.LeanIntegrationService.GetAutoExportStatusAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.ConfigureAutoExportAsync(Meridian.Ui.Services.LeanAutoExportConfigureOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.ConfigureAutoExportAsync(Meridian.Ui.Services.LeanAutoExportConfigureOptions,System.Threading.CancellationToken)
+  id: ConfigureAutoExportAsync(Meridian.Ui.Services.LeanAutoExportConfigureOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: ConfigureAutoExportAsync(LeanAutoExportConfigureOptions, CancellationToken)
+  nameWithType: LeanIntegrationService.ConfigureAutoExportAsync(LeanAutoExportConfigureOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.ConfigureAutoExportAsync(Meridian.Ui.Services.LeanAutoExportConfigureOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureAutoExportAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 302
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Configures the Lean auto-export service.
+  example: []
+  syntax:
+    content: public Task<bool> ConfigureAutoExportAsync(LeanAutoExportConfigureOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.LeanAutoExportConfigureOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function ConfigureAutoExportAsync(options As LeanAutoExportConfigureOptions, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.LeanIntegrationService.ConfigureAutoExportAsync*
+- uid: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: IngestBacktestResultsAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: IngestBacktestResultsAsync(string, string?, string?, CancellationToken)
+  nameWithType: LeanIntegrationService.IngestBacktestResultsAsync(string, string?, string?, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(string, string?, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IngestBacktestResultsAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 323
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Ingests Lean backtest results from a local results file.
+  example: []
+  syntax:
+    content: public Task<LeanResultsIngestResult> IngestBacktestResultsAsync(string resultsFilePath, string? backtestId = null, string? algorithmName = null, CancellationToken ct = default)
+    parameters:
+    - id: resultsFilePath
+      type: System.String
+    - id: backtestId
+      type: System.String
+    - id: algorithmName
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanResultsIngestResult}
+    content.vb: Public Function IngestBacktestResultsAsync(resultsFilePath As String, backtestId As String = Nothing, algorithmName As String = Nothing, ct As CancellationToken = Nothing) As Task(Of LeanResultsIngestResult)
+  overload: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync*
+  nameWithType.vb: LeanIntegrationService.IngestBacktestResultsAsync(String, String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: IngestBacktestResultsAsync(String, String, String, CancellationToken)
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  id: GetSymbolMappingAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.LeanIntegrationService
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolMappingAsync(IEnumerable<string>, CancellationToken)
+  nameWithType: LeanIntegrationService.GetSymbolMappingAsync(IEnumerable<string>, CancellationToken)
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync(System.Collections.Generic.IEnumerable<string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolMappingAsync
+    path: ../../src/Meridian.Ui.Services/Services/LeanIntegrationService.cs
+    startLine: 352
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Resolves the Lean ticker and data path components for a given Meridian symbol.
+  example: []
+  syntax:
+    content: public Task<LeanSymbolMappingResult> GetSymbolMappingAsync(IEnumerable<string> symbols, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanSymbolMappingResult}
+    content.vb: Public Function GetSymbolMappingAsync(symbols As IEnumerable(Of String), ct As CancellationToken = Nothing) As Task(Of LeanSymbolMappingResult)
+  overload: Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync*
+  nameWithType.vb: LeanIntegrationService.GetSymbolMappingAsync(IEnumerable(Of String), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync(System.Collections.Generic.IEnumerable(Of String), System.Threading.CancellationToken)
+  name.vb: GetSymbolMappingAsync(IEnumerable(Of String), CancellationToken)
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.LeanIntegrationService.Instance*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.Instance
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_Instance
+  name: Instance
+  nameWithType: LeanIntegrationService.Instance
+  fullName: Meridian.Ui.Services.LeanIntegrationService.Instance
+- uid: Meridian.Ui.Services.LeanIntegrationService
+  commentId: T:Meridian.Ui.Services.LeanIntegrationService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.LeanIntegrationService.html
+  name: LeanIntegrationService
+  nameWithType: LeanIntegrationService
+  fullName: Meridian.Ui.Services.LeanIntegrationService
+- uid: System.EventHandler{Meridian.Ui.Services.BacktestStatusChangedEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.BacktestStatusChangedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<BacktestStatusChangedEventArgs>
+  nameWithType: EventHandler<BacktestStatusChangedEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.BacktestStatusChangedEventArgs>
+  nameWithType.vb: EventHandler(Of BacktestStatusChangedEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.BacktestStatusChangedEventArgs)
+  name.vb: EventHandler(Of BacktestStatusChangedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.BacktestStatusChangedEventArgs
+    name: BacktestStatusChangedEventArgs
+    href: Meridian.Ui.Services.BacktestStatusChangedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BacktestStatusChangedEventArgs
+    name: BacktestStatusChangedEventArgs
+    href: Meridian.Ui.Services.BacktestStatusChangedEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetStatusAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetStatusAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_GetStatusAsync_System_Threading_CancellationToken_
+  name: GetStatusAsync
+  nameWithType: LeanIntegrationService.GetStatusAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetStatusAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanStatus}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.LeanStatus}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LeanStatus>
+  nameWithType: Task<LeanStatus>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.LeanStatus>
+  nameWithType.vb: Task(Of LeanStatus)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.LeanStatus)
+  name.vb: Task(Of LeanStatus)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.LeanStatus
+    name: LeanStatus
+    href: Meridian.Ui.Services.LeanStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.LeanStatus
+    name: LeanStatus
+    href: Meridian.Ui.Services.LeanStatus.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetConfigurationAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetConfigurationAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_GetConfigurationAsync_System_Threading_CancellationToken_
+  name: GetConfigurationAsync
+  nameWithType: LeanIntegrationService.GetConfigurationAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetConfigurationAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanConfiguration}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.LeanConfiguration}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LeanConfiguration>
+  nameWithType: Task<LeanConfiguration>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.LeanConfiguration>
+  nameWithType.vb: Task(Of LeanConfiguration)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.LeanConfiguration)
+  name.vb: Task(Of LeanConfiguration)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.LeanConfiguration
+    name: LeanConfiguration
+    href: Meridian.Ui.Services.LeanConfiguration.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.LeanConfiguration
+    name: LeanConfiguration
+    href: Meridian.Ui.Services.LeanConfiguration.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.UpdateConfigurationAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.UpdateConfigurationAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_UpdateConfigurationAsync_Meridian_Ui_Services_LeanConfigurationUpdate_System_Threading_CancellationToken_
+  name: UpdateConfigurationAsync
+  nameWithType: LeanIntegrationService.UpdateConfigurationAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.UpdateConfigurationAsync
+- uid: Meridian.Ui.Services.LeanConfigurationUpdate
+  commentId: T:Meridian.Ui.Services.LeanConfigurationUpdate
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.LeanConfigurationUpdate.html
+  name: LeanConfigurationUpdate
+  nameWithType: LeanConfigurationUpdate
+  fullName: Meridian.Ui.Services.LeanConfigurationUpdate
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.VerifyInstallationAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.VerifyInstallationAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_VerifyInstallationAsync_System_Threading_CancellationToken_
+  name: VerifyInstallationAsync
+  nameWithType: LeanIntegrationService.VerifyInstallationAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.VerifyInstallationAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanVerificationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.LeanVerificationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LeanVerificationResult>
+  nameWithType: Task<LeanVerificationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.LeanVerificationResult>
+  nameWithType.vb: Task(Of LeanVerificationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.LeanVerificationResult)
+  name.vb: Task(Of LeanVerificationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.LeanVerificationResult
+    name: LeanVerificationResult
+    href: Meridian.Ui.Services.LeanVerificationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.LeanVerificationResult
+    name: LeanVerificationResult
+    href: Meridian.Ui.Services.LeanVerificationResult.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetAlgorithmsAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetAlgorithmsAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_GetAlgorithmsAsync_System_Threading_CancellationToken_
+  name: GetAlgorithmsAsync
+  nameWithType: LeanIntegrationService.GetAlgorithmsAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetAlgorithmsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.AlgorithmListResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.AlgorithmListResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AlgorithmListResult>
+  nameWithType: Task<AlgorithmListResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.AlgorithmListResult>
+  nameWithType.vb: Task(Of AlgorithmListResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.AlgorithmListResult)
+  name.vb: Task(Of AlgorithmListResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.AlgorithmListResult
+    name: AlgorithmListResult
+    href: Meridian.Ui.Services.AlgorithmListResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AlgorithmListResult
+    name: AlgorithmListResult
+    href: Meridian.Ui.Services.AlgorithmListResult.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.SyncDataAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.SyncDataAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_SyncDataAsync_Meridian_Ui_Services_DataSyncOptions_System_Threading_CancellationToken_
+  name: SyncDataAsync
+  nameWithType: LeanIntegrationService.SyncDataAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.SyncDataAsync
+- uid: Meridian.Ui.Services.DataSyncOptions
+  commentId: T:Meridian.Ui.Services.DataSyncOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.DataSyncOptions.html
+  name: DataSyncOptions
+  nameWithType: DataSyncOptions
+  fullName: Meridian.Ui.Services.DataSyncOptions
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DataSyncResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DataSyncResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataSyncResult>
+  nameWithType: Task<DataSyncResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DataSyncResult>
+  nameWithType.vb: Task(Of DataSyncResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DataSyncResult)
+  name.vb: Task(Of DataSyncResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataSyncResult
+    name: DataSyncResult
+    href: Meridian.Ui.Services.DataSyncResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataSyncResult
+    name: DataSyncResult
+    href: Meridian.Ui.Services.DataSyncResult.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetDataSyncStatusAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetDataSyncStatusAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_GetDataSyncStatusAsync_System_Threading_CancellationToken_
+  name: GetDataSyncStatusAsync
+  nameWithType: LeanIntegrationService.GetDataSyncStatusAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetDataSyncStatusAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DataSyncStatus}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DataSyncStatus}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataSyncStatus>
+  nameWithType: Task<DataSyncStatus>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DataSyncStatus>
+  nameWithType.vb: Task(Of DataSyncStatus)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DataSyncStatus)
+  name.vb: Task(Of DataSyncStatus)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataSyncStatus
+    name: DataSyncStatus
+    href: Meridian.Ui.Services.DataSyncStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataSyncStatus
+    name: DataSyncStatus
+    href: Meridian.Ui.Services.DataSyncStatus.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.StartBacktestAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.StartBacktestAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_StartBacktestAsync_Meridian_Ui_Services_BacktestOptions_System_Threading_CancellationToken_
+  name: StartBacktestAsync
+  nameWithType: LeanIntegrationService.StartBacktestAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.StartBacktestAsync
+- uid: Meridian.Ui.Services.BacktestOptions
+  commentId: T:Meridian.Ui.Services.BacktestOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.BacktestOptions.html
+  name: BacktestOptions
+  nameWithType: BacktestOptions
+  fullName: Meridian.Ui.Services.BacktestOptions
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestStartResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestStartResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestStartResult>
+  nameWithType: Task<BacktestStartResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.BacktestStartResult>
+  nameWithType.vb: Task(Of BacktestStartResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.BacktestStartResult)
+  name.vb: Task(Of BacktestStartResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.BacktestStartResult
+    name: BacktestStartResult
+    href: Meridian.Ui.Services.BacktestStartResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BacktestStartResult
+    name: BacktestStartResult
+    href: Meridian.Ui.Services.BacktestStartResult.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetBacktestStatusAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetBacktestStatusAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_GetBacktestStatusAsync_System_String_System_Threading_CancellationToken_
+  name: GetBacktestStatusAsync
+  nameWithType: LeanIntegrationService.GetBacktestStatusAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetBacktestStatusAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestStatus}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestStatus}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestStatus>
+  nameWithType: Task<BacktestStatus>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.BacktestStatus>
+  nameWithType.vb: Task(Of BacktestStatus)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.BacktestStatus)
+  name.vb: Task(Of BacktestStatus)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.BacktestStatus
+    name: BacktestStatus
+    href: Meridian.Ui.Services.BacktestStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BacktestStatus
+    name: BacktestStatus
+    href: Meridian.Ui.Services.BacktestStatus.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_GetBacktestResultsAsync_System_String_System_Threading_CancellationToken_
+  name: GetBacktestResultsAsync
+  nameWithType: LeanIntegrationService.GetBacktestResultsAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetBacktestResultsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestResults}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestResults}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestResults>
+  nameWithType: Task<BacktestResults>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.BacktestResults>
+  nameWithType.vb: Task(Of BacktestResults)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.BacktestResults)
+  name.vb: Task(Of BacktestResults)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.BacktestResults
+    name: BacktestResults
+    href: Meridian.Ui.Services.BacktestResults.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BacktestResults
+    name: BacktestResults
+    href: Meridian.Ui.Services.BacktestResults.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_StopBacktestAsync_System_String_System_Threading_CancellationToken_
+  name: StopBacktestAsync
+  nameWithType: LeanIntegrationService.StopBacktestAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.StopBacktestAsync
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetBacktestHistoryAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetBacktestHistoryAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_GetBacktestHistoryAsync_System_Int32_System_Threading_CancellationToken_
+  name: GetBacktestHistoryAsync
+  nameWithType: LeanIntegrationService.GetBacktestHistoryAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetBacktestHistoryAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestHistoryResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.BacktestHistoryResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BacktestHistoryResult>
+  nameWithType: Task<BacktestHistoryResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.BacktestHistoryResult>
+  nameWithType.vb: Task(Of BacktestHistoryResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.BacktestHistoryResult)
+  name.vb: Task(Of BacktestHistoryResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.BacktestHistoryResult
+    name: BacktestHistoryResult
+    href: Meridian.Ui.Services.BacktestHistoryResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.BacktestHistoryResult
+    name: BacktestHistoryResult
+    href: Meridian.Ui.Services.BacktestHistoryResult.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.DeleteBacktestAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.DeleteBacktestAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_DeleteBacktestAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteBacktestAsync
+  nameWithType: LeanIntegrationService.DeleteBacktestAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.DeleteBacktestAsync
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetAutoExportStatusAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetAutoExportStatusAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_GetAutoExportStatusAsync_System_Threading_CancellationToken_
+  name: GetAutoExportStatusAsync
+  nameWithType: LeanIntegrationService.GetAutoExportStatusAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetAutoExportStatusAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanAutoExportStatus}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.LeanAutoExportStatus}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LeanAutoExportStatus>
+  nameWithType: Task<LeanAutoExportStatus>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.LeanAutoExportStatus>
+  nameWithType.vb: Task(Of LeanAutoExportStatus)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.LeanAutoExportStatus)
+  name.vb: Task(Of LeanAutoExportStatus)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.LeanAutoExportStatus
+    name: LeanAutoExportStatus
+    href: Meridian.Ui.Services.LeanAutoExportStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.LeanAutoExportStatus
+    name: LeanAutoExportStatus
+    href: Meridian.Ui.Services.LeanAutoExportStatus.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.ConfigureAutoExportAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.ConfigureAutoExportAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_ConfigureAutoExportAsync_Meridian_Ui_Services_LeanAutoExportConfigureOptions_System_Threading_CancellationToken_
+  name: ConfigureAutoExportAsync
+  nameWithType: LeanIntegrationService.ConfigureAutoExportAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.ConfigureAutoExportAsync
+- uid: Meridian.Ui.Services.LeanAutoExportConfigureOptions
+  commentId: T:Meridian.Ui.Services.LeanAutoExportConfigureOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.LeanAutoExportConfigureOptions.html
+  name: LeanAutoExportConfigureOptions
+  nameWithType: LeanAutoExportConfigureOptions
+  fullName: Meridian.Ui.Services.LeanAutoExportConfigureOptions
+- uid: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_IngestBacktestResultsAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: IngestBacktestResultsAsync
+  nameWithType: LeanIntegrationService.IngestBacktestResultsAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.IngestBacktestResultsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanResultsIngestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.LeanResultsIngestResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LeanResultsIngestResult>
+  nameWithType: Task<LeanResultsIngestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.LeanResultsIngestResult>
+  nameWithType.vb: Task(Of LeanResultsIngestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.LeanResultsIngestResult)
+  name.vb: Task(Of LeanResultsIngestResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.LeanResultsIngestResult
+    name: LeanResultsIngestResult
+    href: Meridian.Ui.Services.LeanResultsIngestResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.LeanResultsIngestResult
+    name: LeanResultsIngestResult
+    href: Meridian.Ui.Services.LeanResultsIngestResult.html
+  - name: )
+- uid: Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync*
+  commentId: Overload:Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync
+  href: Meridian.Ui.Services.LeanIntegrationService.html#Meridian_Ui_Services_LeanIntegrationService_GetSymbolMappingAsync_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_
+  name: GetSymbolMappingAsync
+  nameWithType: LeanIntegrationService.GetSymbolMappingAsync
+  fullName: Meridian.Ui.Services.LeanIntegrationService.GetSymbolMappingAsync
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.LeanSymbolMappingResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.LeanSymbolMappingResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LeanSymbolMappingResult>
+  nameWithType: Task<LeanSymbolMappingResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.LeanSymbolMappingResult>
+  nameWithType.vb: Task(Of LeanSymbolMappingResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.LeanSymbolMappingResult)
+  name.vb: Task(Of LeanSymbolMappingResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.LeanSymbolMappingResult
+    name: LeanSymbolMappingResult
+    href: Meridian.Ui.Services.LeanSymbolMappingResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.LeanSymbolMappingResult
+    name: LeanSymbolMappingResult
+    href: Meridian.Ui.Services.LeanSymbolMappingResult.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

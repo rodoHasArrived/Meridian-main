@@ -1,26 +1,26 @@
 # Meridian Help
 
-Meridian is a multi-surface platform: the main CLI/host lives in `src/Meridian/`, the web/API surface lives in `src/Meridian.Ui/`, the dashboard frontend lives in `src/Meridian.Ui/dashboard/`, and the Windows desktop shell lives in `src/Meridian.Wpf/`.
+Meridian is a desktop-first platform: the main CLI/host lives in `src/Meridian/`, shared workstation services and local API endpoints live in `src/Meridian.Ui.Services/` and `src/Meridian.Ui.Shared/`, and the Windows desktop shell lives in `src/Meridian.Wpf/`.
 
 This guide focuses on the repo entry points and CLI flows that are currently verified in code.
 
 ## Quick Start
 
-### Web dashboard
+### Desktop-local API host
 
-Use the web surface for the primary cross-platform experience:
+Use the desktop-local API host for backend services and local workstation APIs:
 
 ```bash
-make run-ui
+make run
 ```
 
 Or run the host directly:
 
 ```bash
-dotnet run --project src/Meridian/Meridian.csproj -- --http-port 8080
+dotnet run --project src/Meridian/Meridian.csproj -- --mode desktop --http-port 8080
 ```
 
-Open `http://localhost:8080`.
+Local API endpoint: `http://localhost:8080`.
 
 ### Windows WPF desktop
 
@@ -29,6 +29,13 @@ Use the full desktop workstation shell on Windows:
 ```powershell
 dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj -p:EnableFullWpfBuild=true
 ```
+
+The desktop shell is update-safe by default:
+
+- Config lives at `%LocalAppData%\Meridian\appsettings.json`
+- Relative `DataRoot` values such as `data` resolve relative to that config location, not the executable folder
+- Desktop catalog and health metadata also live alongside the external config instead of under the install directory
+- Retained desktop state now follows the external roots as well: activity logs and collection session history write under the resolved `DataRoot`, symbol mapping persistence follows its configured path or a `DataRoot` fallback, and generated schema artifacts live under `%LocalAppData%\Meridian\_catalog\schemas`
 
 On Linux/macOS, the WPF project remains in the solution as a CI-friendly stub build rather than a full desktop runtime.
 
@@ -41,9 +48,13 @@ make help
 
 ## Verified CLI Workflows
 
+<a id="command-line-usage"></a>
+
 The current CLI argument surface is defined in `src/Meridian.Application/Commands/CliArguments.cs`, with command handlers in `src/Meridian.Application/Commands/`.
 
 ### Configuration and startup
+
+<a id="configuration"></a>
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --quickstart
@@ -73,7 +84,11 @@ Configuration path resolution is currently:
 3. `config/appsettings.json`
 4. `appsettings.json`
 
+For the WPF desktop host, startup now pins both the UI shell and the launched backend process to `%LocalAppData%\Meridian\appsettings.json`, and relative storage paths resolve from that external config root.
+
 ### Diagnostics
+
+<a id="troubleshooting"></a>
 
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --quick-check
@@ -111,6 +126,8 @@ dotnet run --project src/Meridian/Meridian.csproj -- --backfill --resume --backf
 
 ### Package operations
 
+<a id="analysis-ready-exports"></a>
+
 ```bash
 dotnet run --project src/Meridian/Meridian.csproj -- --package --package-name market-data-archive
 dotnet run --project src/Meridian/Meridian.csproj -- --list-package ./packages/data.zip
@@ -133,8 +150,17 @@ dotnet run --project src/Meridian/Meridian.csproj -- --selftest
 ### Solution build
 
 ```bash
-dotnet restore Meridian.sln
-dotnet build Meridian.sln
+python3 build/python/cli/buildctl.py build --project Meridian.sln --configuration Release
+```
+
+For concurrent automation or screenshot/smoke runs, isolate the whole build graph:
+
+```bash
+python3 build/python/cli/buildctl.py build \
+  --project src/Meridian.Wpf/Meridian.Wpf.csproj \
+  --configuration Release \
+  --full-wpf-build \
+  --isolation-key desktop-smoke
 ```
 
 ### Focused test runs
@@ -147,20 +173,12 @@ dotnet test tests/Meridian.McpServer.Tests/Meridian.McpServer.Tests.csproj
 dotnet test tests/Meridian.QuantScript.Tests/Meridian.QuantScript.Tests.csproj
 ```
 
-### Frontend bundle
-
-```bash
-npm --prefix src/Meridian.Ui/dashboard install
-npm --prefix src/Meridian.Ui/dashboard run build
-npm --prefix src/Meridian.Ui/dashboard run test
-```
-
 ## Key Paths
 
 - `src/Meridian/` - main host executable
 - `src/Meridian.Application/` - startup orchestration, commands, and application services
-- `src/Meridian.Ui/` - web/API project
-- `src/Meridian.Ui/dashboard/` - dashboard frontend assets
+- `src/Meridian.Ui.Shared/` - shared workstation endpoints and local API composition
+- `src/Meridian.Ui.Services/` - shared desktop-facing services
 - `src/Meridian.Wpf/` - Windows WPF workstation shell
 - `src/Meridian.Mcp/` and `src/Meridian.McpServer/` - MCP integrations
 - `src/Meridian.QuantScript/` - QuantScript project
@@ -169,6 +187,86 @@ npm --prefix src/Meridian.Ui/dashboard run test
 - `docs/status/FEATURE_INVENTORY.md` - capability inventory
 - `docs/plans/` - active product and technical blueprints
 
+## Configuration
+
+Configuration lives in `config/` at the repository root. The primary config file is `config/appsettings.json`. Provider credentials and secrets use the secrets management pattern documented in [ADR-011](adr/011-centralized-configuration-and-credentials.md).
+
+Desktop note:
+
+- The installed WPF application does not use the repo-local `config/` directory at runtime
+- It stores config under `%LocalAppData%\Meridian\appsettings.json`
+- If `DataRoot` is omitted, Meridian uses `data` under the active config root
+- Legacy desktop configs that still contain `Storage.BaseDirectory` are migrated to `DataRoot` on load
+- Legacy desktop installs with app-folder `sessions.json`, `data/_logs/activity_log.json`, `data/_config/symbol-mappings.json`, or `_catalog/schemas/data_dictionary.json` are migrated into the external desktop locations on first use
+
+```bash
+# View current configuration
+dotnet run --project src/Meridian/Meridian.csproj -- --show-config
+
+# Validate provider credentials
+dotnet run --project src/Meridian/Meridian.csproj -- --validate-credentials
+```
+
+See [Getting Started](getting-started/README.md) for initial setup steps and provider configuration.
+
+## Troubleshooting
+
+Common issues and resolutions:
+
+- **Build failures:** Run `dotnet restore Meridian.sln` before building. Ensure .NET 9 SDK is installed.
+- **Provider connectivity:** Run `dotnet run --project src/Meridian/Meridian.csproj -- --selftest` to validate connectivity.
+- **Missing configuration:** Confirm `config/appsettings.json` exists and contains valid provider entries.
+- **WPF test failures on Linux/macOS:** WPF tests require Windows. Use `/p:EnableWindowsTargeting=true` or skip with `--filter "Category!=WPF"`.
+- **Test isolation failures:** Each test must own its data; see [Desktop Testing Guide](development/desktop-testing-guide.md).
+
+For deeper diagnostics run `dotnet run ... -- --diagnostics`.
+
+## FAQ
+
+**Q: Which provider should I use for equities data?**
+See [Provider Comparison](providers/provider-comparison.md) for a feature matrix.
+
+**Q: How do I add a new data provider?**
+Follow the [Provider Builder Guide](ai/skills/README.md) or use the `meridian-provider-builder` skill.
+
+**Q: Where do I find the current roadmap?**
+See [ROADMAP.md](status/ROADMAP.md) for current delivery waves and priorities.
+
+**Q: How do I run only tests for a single project?**
+Use `dotnet test tests/<ProjectName>.Tests/<ProjectName>.Tests.csproj`.
+
+## Command-Line Usage
+
+Full CLI reference:
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --help
+```
+
+Common flags:
+
+| Flag | Purpose |
+|------|---------|
+| `--dry-run` | Simulate operations without writing data |
+| `--offline` | Run without live provider connections |
+| `--selftest` | Run connectivity and config validation |
+| `--diagnostics` | Extended diagnostic output |
+| `--backfill` | Trigger historical data backfill |
+| `--package` | Package data for export |
+| `--check-config` | Validate configuration file |
+| `--show-config` | Print the effective configuration |
+| `--validate-credentials` | Test configured credentials |
+
+## Analysis-Ready Exports
+
+Meridian can export data in analysis-ready formats using the package command:
+
+```bash
+dotnet run --project src/Meridian/Meridian.csproj -- --package --package-name my-export
+dotnet run --project src/Meridian/Meridian.csproj -- --package --package-format csv --package-symbols AAPL,MSFT
+```
+
+See [Portable Data Packager](operations/portable-data-packager.md) for full export options including CSV, Parquet, and ZIP bundle formats.
 ## Notes
 
 - This document is intentionally grounded in the local codebase rather than aspirational feature copy.

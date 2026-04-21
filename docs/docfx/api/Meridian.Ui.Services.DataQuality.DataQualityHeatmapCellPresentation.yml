@@ -1,0 +1,455 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation
+  commentId: T:Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation
+  id: DataQualityHeatmapCellPresentation
+  parent: Meridian.Ui.Services.DataQuality
+  children:
+  - Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Label
+  - Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Score
+  - Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tone
+  - Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tooltip
+  langs:
+  - csharp
+  - vb
+  name: DataQualityHeatmapCellPresentation
+  nameWithType: DataQualityHeatmapCellPresentation
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityHeatmapCellPresentation
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public sealed class DataQualityHeatmapCellPresentation
+    content.vb: Public NotInheritable Class DataQualityHeatmapCellPresentation
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Label
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Label
+  id: Label
+  parent: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation
+  langs:
+  - csharp
+  - vb
+  name: Label
+  nameWithType: DataQualityHeatmapCellPresentation.Label
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Label
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Label
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string Label { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Label As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Label*
+- uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Score
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Score
+  id: Score
+  parent: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation
+  langs:
+  - csharp
+  - vb
+  name: Score
+  nameWithType: DataQualityHeatmapCellPresentation.Score
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Score
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Score
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 212
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public int Score { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Score As Integer
+  overload: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Score*
+- uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tone
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tone
+  id: Tone
+  parent: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation
+  langs:
+  - csharp
+  - vb
+  name: Tone
+  nameWithType: DataQualityHeatmapCellPresentation.Tone
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tone
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tone
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string Tone { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Tone As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tone*
+- uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tooltip
+  commentId: P:Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tooltip
+  id: Tooltip
+  parent: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation
+  langs:
+  - csharp
+  - vb
+  name: Tooltip
+  nameWithType: DataQualityHeatmapCellPresentation.Tooltip
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tooltip
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tooltip
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/DataQualityModels.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: public string Tooltip { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Tooltip As String
+  overload: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tooltip*
+references:
+- uid: Meridian.Ui.Services.DataQuality
+  commentId: N:Meridian.Ui.Services.DataQuality
+  href: Meridian.html
+  name: Meridian.Ui.Services.DataQuality
+  nameWithType: Meridian.Ui.Services.DataQuality
+  fullName: Meridian.Ui.Services.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Label*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Label
+  href: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.html#Meridian_Ui_Services_DataQuality_DataQualityHeatmapCellPresentation_Label
+  name: Label
+  nameWithType: DataQualityHeatmapCellPresentation.Label
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Label
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Score*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Score
+  href: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.html#Meridian_Ui_Services_DataQuality_DataQualityHeatmapCellPresentation_Score
+  name: Score
+  nameWithType: DataQualityHeatmapCellPresentation.Score
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Score
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tone*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tone
+  href: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.html#Meridian_Ui_Services_DataQuality_DataQualityHeatmapCellPresentation_Tone
+  name: Tone
+  nameWithType: DataQualityHeatmapCellPresentation.Tone
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tone
+- uid: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tooltip*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tooltip
+  href: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.html#Meridian_Ui_Services_DataQuality_DataQualityHeatmapCellPresentation_Tooltip
+  name: Tooltip
+  nameWithType: DataQualityHeatmapCellPresentation.Tooltip
+  fullName: Meridian.Ui.Services.DataQuality.DataQualityHeatmapCellPresentation.Tooltip

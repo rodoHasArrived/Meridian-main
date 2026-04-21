@@ -1,4 +1,4 @@
-export type WorkspaceKey = "research" | "trading" | "data-operations" | "governance";
+export type WorkspaceKey = "overview" | "research" | "trading" | "data-operations" | "governance";
 
 export interface SessionInfo {
   displayName: string;
@@ -83,13 +83,76 @@ export interface PaperSessionSummary {
   sessionId: string;
   strategyId: string;
   strategyName: string | null;
-  status: string;
   initialCash: number;
   createdAt: string;
+  closedAt: string | null;
+  isActive: boolean;
 }
 
-export interface PaperSessionDetail extends PaperSessionSummary {
-  closedAt: string | null;
+export interface ExecutionPortfolioSnapshot {
+  cash: number;
+  portfolioValue: number;
+  unrealisedPnl: number;
+  realisedPnl: number;
+  positions: ExecutionPositionSnapshot[];
+  asOf: string;
+}
+
+export interface ExecutionPositionSnapshot {
+  symbol: string;
+  quantity: number;
+  averageCostBasis: number;
+  currentPrice: number;
+  marketValue: number;
+  unrealisedPnl: number;
+  realisedPnl: number;
+}
+
+export interface SessionOrderHistoryEntry {
+  orderId: string;
+  symbol: string;
+  side: string;
+  type: string;
+  quantity: number;
+  filledQuantity: number;
+  averageFillPrice: number | null;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaperSessionDetail {
+  summary: PaperSessionSummary;
+  symbols: string[];
+  portfolio: ExecutionPortfolioSnapshot | null;
+  orderHistory: SessionOrderHistoryEntry[] | null;
+}
+
+export interface PaperSessionReplayVerification {
+  summary: PaperSessionSummary;
+  symbols: string[];
+  replaySource: string;
+  isConsistent: boolean;
+  mismatchReasons: string[];
+  currentPortfolio: ExecutionPortfolioSnapshot | null;
+  replayPortfolio: ExecutionPortfolioSnapshot;
+  verifiedAt: string;
+}
+
+export interface ExecutionAuditEntry {
+  auditId: string;
+  category: string;
+  action: string;
+  outcome: string;
+  occurredAt: string;
+  actor: string | null;
+  brokerName: string | null;
+  orderId: string | null;
+  runId: string | null;
+  symbol: string | null;
+  correlationId: string | null;
+  message: string | null;
+  metadata: Record<string, string> | null;
 }
 
 export interface ReplayFileRecord {
@@ -318,6 +381,7 @@ export interface TradingActionResult {
   status: "Accepted" | "Completed" | "Rejected" | "Failed";
   message: string;
   occurredAt: string;
+  auditId?: string | null;
 }
 
 // --- Multi-run comparison types ---
@@ -649,4 +713,86 @@ export interface BackfillProgressResponse {
   provider: string | null;
   symbols: BackfillProgressEntry[];
   message: string | null;
+}
+
+// --- System Overview types ---
+
+export interface SystemEventRecord {
+  id: string;
+  type: "info" | "warning" | "error";
+  message: string;
+  source: string;
+  timestamp: string;
+}
+
+export interface SystemOverviewResponse {
+  systemStatus: "Healthy" | "Degraded" | "Offline";
+  providersOnline: number;
+  providersTotal: number;
+  activeRuns: number;
+  openPositions: number;
+  activeBackfills: number;
+  symbolsMonitored: number;
+  storageHealth: "Healthy" | "Warning" | "Critical";
+  lastHeartbeatUtc: string;
+  metrics: MetricSnapshot[];
+  recentEvents: SystemEventRecord[];
+}
+
+// --- Symbol management types ---
+
+export interface SymbolRecord {
+  symbol: string;
+  status: "Active" | "Monitored" | "Archived" | "Error";
+  provider: string | null;
+  lastEventAt: string | null;
+  eventCount: number;
+  hasHistoricalData: boolean;
+}
+
+export interface SymbolStatistics {
+  totalSymbols: number;
+  monitoredSymbols: number;
+  archivedSymbols: number;
+  symbolsWithErrors: number;
+  totalEventsLast24h: number;
+}
+
+// --- Quality monitoring types ---
+
+export interface QualitySymbolScore {
+  symbol: string;
+  completenessScore: number;
+  freshnessScore: number;
+  gapCount: number;
+  anomalyCount: number;
+  health: "Healthy" | "Warning" | "Critical";
+}
+
+export interface QualityGapEntry {
+  symbol: string;
+  provider: string;
+  from: string;
+  to: string;
+  estimatedBars: number;
+  status: "Open" | "Resolved";
+}
+
+export interface QualityAnomalyEntry {
+  anomalyId: string;
+  symbol: string;
+  anomalyType: string;
+  message: string;
+  detectedAt: string;
+  acknowledged: boolean;
+}
+
+export interface QualityDashboardResponse {
+  overallScore: number;
+  completenessScore: number;
+  freshnessScore: number;
+  anomalyRate: number;
+  symbols: QualitySymbolScore[];
+  recentGaps: QualityGapEntry[];
+  recentAnomalies: QualityAnomalyEntry[];
 }

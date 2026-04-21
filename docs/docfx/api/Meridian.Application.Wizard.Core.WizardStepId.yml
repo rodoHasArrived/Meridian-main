@@ -1,0 +1,382 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Wizard.Core.WizardStepId
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepId
+  id: WizardStepId
+  parent: Meridian.Application.Wizard.Core
+  children:
+  - Meridian.Application.Wizard.Core.WizardStepId.ConfigureBackfill
+  - Meridian.Application.Wizard.Core.WizardStepId.ConfigureDataSource
+  - Meridian.Application.Wizard.Core.WizardStepId.ConfigureStorage
+  - Meridian.Application.Wizard.Core.WizardStepId.ConfigureSymbols
+  - Meridian.Application.Wizard.Core.WizardStepId.CredentialGuidance
+  - Meridian.Application.Wizard.Core.WizardStepId.DetectProviders
+  - Meridian.Application.Wizard.Core.WizardStepId.ReviewConfiguration
+  - Meridian.Application.Wizard.Core.WizardStepId.SaveConfiguration
+  - Meridian.Application.Wizard.Core.WizardStepId.SelectUseCase
+  - Meridian.Application.Wizard.Core.WizardStepId.Summary
+  - Meridian.Application.Wizard.Core.WizardStepId.ValidateCredentials
+  langs:
+  - csharp
+  - vb
+  name: WizardStepId
+  nameWithType: WizardStepId
+  fullName: Meridian.Application.Wizard.Core.WizardStepId
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WizardStepId
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: >-
+    Identifies each discrete step in the configuration wizard workflow.
+
+    Steps form a directed graph; transitions are declared in <xref href="Meridian.Application.Wizard.Core.WizardTransition" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public enum WizardStepId : byte'
+    content.vb: Public Enum WizardStepId As Byte
+- uid: Meridian.Application.Wizard.Core.WizardStepId.DetectProviders
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.DetectProviders
+  id: DetectProviders
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: DetectProviders
+  nameWithType: WizardStepId.DetectProviders
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.DetectProviders
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectProviders
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: DetectProviders = 0
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.CredentialGuidance
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.CredentialGuidance
+  id: CredentialGuidance
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: CredentialGuidance
+  nameWithType: WizardStepId.CredentialGuidance
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.CredentialGuidance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialGuidance
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: CredentialGuidance = 1
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.SelectUseCase
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.SelectUseCase
+  id: SelectUseCase
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: SelectUseCase
+  nameWithType: WizardStepId.SelectUseCase
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.SelectUseCase
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SelectUseCase
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: SelectUseCase = 2
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.ConfigureDataSource
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.ConfigureDataSource
+  id: ConfigureDataSource
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: ConfigureDataSource
+  nameWithType: WizardStepId.ConfigureDataSource
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.ConfigureDataSource
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureDataSource
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: ConfigureDataSource = 3
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.ValidateCredentials
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.ValidateCredentials
+  id: ValidateCredentials
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: ValidateCredentials
+  nameWithType: WizardStepId.ValidateCredentials
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.ValidateCredentials
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateCredentials
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: ValidateCredentials = 4
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.ConfigureSymbols
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.ConfigureSymbols
+  id: ConfigureSymbols
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: ConfigureSymbols
+  nameWithType: WizardStepId.ConfigureSymbols
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.ConfigureSymbols
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureSymbols
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: ConfigureSymbols = 5
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.ConfigureStorage
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.ConfigureStorage
+  id: ConfigureStorage
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: ConfigureStorage
+  nameWithType: WizardStepId.ConfigureStorage
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.ConfigureStorage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureStorage
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: ConfigureStorage = 6
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.ConfigureBackfill
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.ConfigureBackfill
+  id: ConfigureBackfill
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: ConfigureBackfill
+  nameWithType: WizardStepId.ConfigureBackfill
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.ConfigureBackfill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureBackfill
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: ConfigureBackfill = 7
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.ReviewConfiguration
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.ReviewConfiguration
+  id: ReviewConfiguration
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: ReviewConfiguration
+  nameWithType: WizardStepId.ReviewConfiguration
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.ReviewConfiguration
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReviewConfiguration
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: ReviewConfiguration = 8
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.SaveConfiguration
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.SaveConfiguration
+  id: SaveConfiguration
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: SaveConfiguration
+  nameWithType: WizardStepId.SaveConfiguration
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.SaveConfiguration
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveConfiguration
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: SaveConfiguration = 9
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId.Summary
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepId.Summary
+  id: Summary
+  parent: Meridian.Application.Wizard.Core.WizardStepId
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: WizardStepId.Summary
+  fullName: Meridian.Application.Wizard.Core.WizardStepId.Summary
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepId.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepId.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  syntax:
+    content: Summary = 10
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+references:
+- uid: Meridian.Application.Wizard.Core.WizardTransition
+  commentId: T:Meridian.Application.Wizard.Core.WizardTransition
+  href: Meridian.Application.Wizard.Core.WizardTransition.html
+  name: WizardTransition
+  nameWithType: WizardTransition
+  fullName: Meridian.Application.Wizard.Core.WizardTransition
+- uid: Meridian.Application.Wizard.Core
+  commentId: N:Meridian.Application.Wizard.Core
+  href: Meridian.html
+  name: Meridian.Application.Wizard.Core
+  nameWithType: Meridian.Application.Wizard.Core
+  fullName: Meridian.Application.Wizard.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+- uid: Meridian.Application.Wizard.Core.WizardStepId
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepId
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardStepId.html
+  name: WizardStepId
+  nameWithType: WizardStepId
+  fullName: Meridian.Application.Wizard.Core.WizardStepId

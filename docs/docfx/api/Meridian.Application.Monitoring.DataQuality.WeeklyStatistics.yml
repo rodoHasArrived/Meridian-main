@@ -1,0 +1,817 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  id: WeeklyStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.#ctor(System.Int64,System.Int64,System.Int32,System.Int32,System.Int32,System.Double,System.Double,System.Double,System.DateOnly,System.DateOnly)
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.AverageScore
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDay
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDayScore
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.EventsPerDay
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.GapsPerDay
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalAnomalies
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalEvents
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalGaps
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDay
+  - Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDayScore
+  langs:
+  - csharp
+  - vb
+  name: WeeklyStatistics
+  nameWithType: WeeklyStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WeeklyStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Weekly statistics.
+  example: []
+  syntax:
+    content: 'public sealed record WeeklyStatistics : IEquatable<WeeklyStatistics>'
+    content.vb: Public NotInheritable Class WeeklyStatistics Implements IEquatable(Of WeeklyStatistics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.WeeklyStatistics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.#ctor(System.Int64,System.Int64,System.Int32,System.Int32,System.Int32,System.Double,System.Double,System.Double,System.DateOnly,System.DateOnly)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.#ctor(System.Int64,System.Int64,System.Int32,System.Int32,System.Int32,System.Double,System.Double,System.Double,System.DateOnly,System.DateOnly)
+  id: '#ctor(System.Int64,System.Int64,System.Int32,System.Int32,System.Int32,System.Double,System.Double,System.Double,System.DateOnly,System.DateOnly)'
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: WeeklyStatistics(long, long, int, int, int, double, double, double, DateOnly, DateOnly)
+  nameWithType: WeeklyStatistics.WeeklyStatistics(long, long, int, int, int, double, double, double, DateOnly, DateOnly)
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WeeklyStatistics(long, long, int, int, int, double, double, double, System.DateOnly, System.DateOnly)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Weekly statistics.
+  example: []
+  syntax:
+    content: public WeeklyStatistics(long TotalEvents, long EventsPerDay, int TotalGaps, int GapsPerDay, int TotalAnomalies, double AverageScore, double BestDayScore, double WorstDayScore, DateOnly BestDay, DateOnly WorstDay)
+    parameters:
+    - id: TotalEvents
+      type: System.Int64
+    - id: EventsPerDay
+      type: System.Int64
+    - id: TotalGaps
+      type: System.Int32
+    - id: GapsPerDay
+      type: System.Int32
+    - id: TotalAnomalies
+      type: System.Int32
+    - id: AverageScore
+      type: System.Double
+    - id: BestDayScore
+      type: System.Double
+    - id: WorstDayScore
+      type: System.Double
+    - id: BestDay
+      type: System.DateOnly
+    - id: WorstDay
+      type: System.DateOnly
+    content.vb: Public Sub New(TotalEvents As Long, EventsPerDay As Long, TotalGaps As Integer, GapsPerDay As Integer, TotalAnomalies As Integer, AverageScore As Double, BestDayScore As Double, WorstDayScore As Double, BestDay As DateOnly, WorstDay As DateOnly)
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.#ctor*
+  nameWithType.vb: WeeklyStatistics.New(Long, Long, Integer, Integer, Integer, Double, Double, Double, DateOnly, DateOnly)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.New(Long, Long, Integer, Integer, Integer, Double, Double, Double, System.DateOnly, System.DateOnly)
+  name.vb: New(Long, Long, Integer, Integer, Integer, Double, Double, Double, DateOnly, DateOnly)
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalEvents
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalEvents
+  id: TotalEvents
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalEvents
+  nameWithType: WeeklyStatistics.TotalEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEvents
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 373
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long TotalEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalEvents As Long
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalEvents*
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.EventsPerDay
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.EventsPerDay
+  id: EventsPerDay
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: EventsPerDay
+  nameWithType: WeeklyStatistics.EventsPerDay
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.EventsPerDay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventsPerDay
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 374
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long EventsPerDay { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EventsPerDay As Long
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.EventsPerDay*
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalGaps
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalGaps
+  id: TotalGaps
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalGaps
+  nameWithType: WeeklyStatistics.TotalGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGaps
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 375
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int TotalGaps { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalGaps As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalGaps*
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.GapsPerDay
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.GapsPerDay
+  id: GapsPerDay
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: GapsPerDay
+  nameWithType: WeeklyStatistics.GapsPerDay
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.GapsPerDay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapsPerDay
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 376
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int GapsPerDay { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapsPerDay As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.GapsPerDay*
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalAnomalies
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalAnomalies
+  id: TotalAnomalies
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalAnomalies
+  nameWithType: WeeklyStatistics.TotalAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalAnomalies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalAnomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int TotalAnomalies { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalAnomalies As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalAnomalies*
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.AverageScore
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.AverageScore
+  id: AverageScore
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: AverageScore
+  nameWithType: WeeklyStatistics.AverageScore
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.AverageScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageScore
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 378
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double AverageScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageScore As Double
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.AverageScore*
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDayScore
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDayScore
+  id: BestDayScore
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: BestDayScore
+  nameWithType: WeeklyStatistics.BestDayScore
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDayScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BestDayScore
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 379
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double BestDayScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property BestDayScore As Double
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDayScore*
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDayScore
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDayScore
+  id: WorstDayScore
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: WorstDayScore
+  nameWithType: WeeklyStatistics.WorstDayScore
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDayScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorstDayScore
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double WorstDayScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property WorstDayScore As Double
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDayScore*
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDay
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDay
+  id: BestDay
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: BestDay
+  nameWithType: WeeklyStatistics.BestDay
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BestDay
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateOnly BestDay { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property BestDay As DateOnly
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDay*
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDay
+  commentId: P:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDay
+  id: WorstDay
+  parent: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+  langs:
+  - csharp
+  - vb
+  name: WorstDay
+  nameWithType: WeeklyStatistics.WorstDay
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorstDay
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateOnly WorstDay { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property WorstDay As DateOnly
+  overload: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDay*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.WeeklyStatistics}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.WeeklyStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<WeeklyStatistics>
+  nameWithType: IEquatable<WeeklyStatistics>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.WeeklyStatistics>
+  nameWithType.vb: IEquatable(Of WeeklyStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.WeeklyStatistics)
+  name.vb: IEquatable(Of WeeklyStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+    name: WeeklyStatistics
+    href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics
+    name: WeeklyStatistics
+    href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics__ctor_System_Int64_System_Int64_System_Int32_System_Int32_System_Int32_System_Double_System_Double_System_Double_System_DateOnly_System_DateOnly_
+  name: WeeklyStatistics
+  nameWithType: WeeklyStatistics.WeeklyStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WeeklyStatistics
+  nameWithType.vb: WeeklyStatistics.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalEvents*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalEvents
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_TotalEvents
+  name: TotalEvents
+  nameWithType: WeeklyStatistics.TotalEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalEvents
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.EventsPerDay*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.EventsPerDay
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_EventsPerDay
+  name: EventsPerDay
+  nameWithType: WeeklyStatistics.EventsPerDay
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.EventsPerDay
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalGaps*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalGaps
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_TotalGaps
+  name: TotalGaps
+  nameWithType: WeeklyStatistics.TotalGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalGaps
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.GapsPerDay*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.GapsPerDay
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_GapsPerDay
+  name: GapsPerDay
+  nameWithType: WeeklyStatistics.GapsPerDay
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.GapsPerDay
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalAnomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalAnomalies
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_TotalAnomalies
+  name: TotalAnomalies
+  nameWithType: WeeklyStatistics.TotalAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.TotalAnomalies
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.AverageScore*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.AverageScore
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_AverageScore
+  name: AverageScore
+  nameWithType: WeeklyStatistics.AverageScore
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.AverageScore
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDayScore*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDayScore
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_BestDayScore
+  name: BestDayScore
+  nameWithType: WeeklyStatistics.BestDayScore
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDayScore
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDayScore*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDayScore
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_WorstDayScore
+  name: WorstDayScore
+  nameWithType: WeeklyStatistics.WorstDayScore
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDayScore
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDay*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDay
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_BestDay
+  name: BestDay
+  nameWithType: WeeklyStatistics.BestDay
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.BestDay
+- uid: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDay*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDay
+  href: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.html#Meridian_Application_Monitoring_DataQuality_WeeklyStatistics_WorstDay
+  name: WorstDay
+  nameWithType: WeeklyStatistics.WorstDay
+  fullName: Meridian.Application.Monitoring.DataQuality.WeeklyStatistics.WorstDay

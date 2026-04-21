@@ -1,7 +1,7 @@
 # Meridian — Feature Inventory
 
 **Version:** 1.7.2
-**Date:** 2026-03-31
+**Date:** 2026-04-17
 **Purpose:** Comprehensive inventory of every functional area, its current implementation status, and the remaining work required to reach full implementation.
 
 Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and sequencing), [`IMPROVEMENTS.md`](IMPROVEMENTS.md) (normalized improvement/backlog tracking), and [`FULL_IMPLEMENTATION_TODO_2026_03_20.md`](FULL_IMPLEMENTATION_TODO_2026_03_20.md) (consolidated non-assembly execution backlog).
@@ -45,21 +45,23 @@ Use this document alongside [`ROADMAP.md`](ROADMAP.md) (delivery waves and seque
 |----------|--------|----------------|
 | **Alpaca** | ✅ | Credential validation, automatic resubscription on reconnect, quote routing |
 | **Interactive Brokers** | 🔑 | Real runtime requires `-p:DefineConstants=IBAPI` plus the official `IBApi` surface; non-`IBAPI` builds expose simulation/setup guidance instead of broker connectivity |
-| **Polygon** | ⚠️ | Real connection when API key present; stub mode (synthetic heartbeat/trades) without key. WebSocket parsing now has committed recorded-session replay coverage, but broader live-feed coverage is still limited |
-| **NYSE** | 🔑 | Requires NYSE Connect credentials; provider implementation complete |
-| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. Unsupported connector / missing-package paths now return recovery-oriented guidance pointing to `EnableStockSharp=true`, connector package requirements, and the StockSharp connector guide |
+| **Polygon** | ⚠️ | Real connection when API key present; committed replay fixtures close the parser path, while live reconnect/websocket throttling remain explicitly runtime-bounded |
+| **Robinhood** | 🔑 | Unofficial broker-backed quote polling plus brokerage reads/orders, options chains, and historical daily bars when `ROBINHOOD_ACCESS_TOKEN` is present; runtime bounds are tracked under `artifacts/provider-validation/robinhood/2026-04-09/` |
+| **NYSE** | 🔑 | Requires NYSE Connect credentials; L1/shared-lifecycle evidence is strong, with auth/rate-limit/depth bounds tracked under `artifacts/provider-validation/nyse/2026-04-09/` |
+| **StockSharp** | 🔑 | Requires StockSharp connector-specific credentials + connector type config. Wave 1 validates `Rithmic`, `IQFeed`, `CQG`, and `InteractiveBrokers`; crypto connectors remain optional/example paths |
 | **Failover-Aware Client** | ✅ | `FailoverAwareMarketDataClient` with `ProviderDegradationScorer`, per-provider health |
 | **Streaming Failover Service** | ✅ | `StreamingFailoverService` + `StreamingFailoverRegistry`; runtime failover orchestration with configurable rules and health evaluation |
 | **IB Simulation Client** | ✅ | `IBSimulationClient` for testing without live connection |
 | **NoOp Client** | ✅ | `NoOpMarketDataClient` for dry-run / test harness scenarios |
 
-Provider validation matrix and evidence links now live in `docs/status/provider-validation-matrix.md` and are referenced by `production-status.md` for pass/fail readiness gating.
+Provider validation matrix and evidence links now live in `docs/status/provider-validation-matrix.md`, `docs/providers/provider-confidence-baseline.md`, and `artifacts/provider-validation/`, with `scripts/dev/run-wave1-provider-validation.ps1` as the offline gate runner.
 
 ### Remaining work to reach full provider coverage
 
 - **Polygon**: Validate WebSocket message parsing against Polygon v2 feed schema (trades, quotes, aggregates, status messages). Add round-trip integration test with a recorded WebSocket session replay.
-- **StockSharp**: Runtime connector guidance and unsupported-path recovery messaging are now aligned; remaining work is expanding connector coverage/examples as more adapters are validated.
-- **IB**: Scripted setup instructions and a compile-only smoke-build path now exist; remaining work is keeping the live vendor-DLL path validated against real IB API releases.
+- **Robinhood**: Quote polling, historical bars, symbol search, options chains, and brokerage paths are in code; remaining work is explicit runtime evidence for the bounded scenarios under `artifacts/provider-validation/robinhood/2026-04-09/`.
+- **StockSharp**: Runtime connector guidance and unsupported-path recovery messaging are now aligned; remaining work is moving the validated adapter set from bounded to captured runtime evidence without broadening the Wave 1 set.
+- **IB**: Scripted setup instructions, version-bound tests, and a compile-only smoke-build path now exist; remaining work is keeping the vendor-runtime path validated against real IB API releases and entitlements.
 
 ---
 
@@ -69,16 +71,18 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 |----------|--------|-------|
 | Alpaca | ✅ | Daily bars, trades, quotes; credentials required |
 | Polygon | ✅ | Daily bars and aggregates; API key required |
+| Robinhood | 🔑 | Daily bars via unofficial Robinhood API; access token required |
 | Tiingo | ✅ | Daily bars; token required |
 | Yahoo Finance | ✅ | Daily bars; unofficial API, no credentials |
 | Stooq | ✅ | Daily bars; free, no credentials |
 | Finnhub | ✅ | Daily bars; token required |
 | Alpha Vantage | ✅ | Daily bars; API key required |
+| FRED Economic Data | 🔑 | Economic time series mapped to synthetic daily bars by series ID; API key required |
 | Nasdaq Data Link (Quandl) | ✅ | Various; API key required |
 | Interactive Brokers | 🔑 | Full implementation behind `IBAPI`; smoke builds remain compile-only and are not operator-ready historical access |
 | StockSharp | ✅ | Via StockSharp connectors; runtime/historical coverage depends on connector setup, package surface, and entitlement |
 | **Composite Provider** | ✅ | Priority-based fallback chain, rate-limit tracking, per-provider health |
-| **Gap Backfill Service** | ✅ | `GapBackfillService` triggered on reconnect; uses `WebSocketReconnectionHelper` gap window |
+| **Gap Backfill Service** | ✅ | `GapBackfillService` triggered on reconnect; uses `WebSocketReconnectionHelper` gap window with Wave 1 repo-backed proof in `GapBackfillServiceTests` |
 | **Backfill Rate Limiting** | ✅ | `ProviderRateLimitTracker` per provider; exponential backoff with `Retry-After` parsing |
 | **Backfill Scheduling** | ✅ | Cron-based `ScheduledBackfillService`; `BackfillScheduleManager` with CRUD API |
 | **Backfill Progress Reporting** | ✅ | `BackfillProgressTracker`, per-symbol %, exposed at `/api/backfill/progress` |
@@ -92,9 +96,11 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 | Provider | Status | Notes |
 |----------|--------|-------|
 | Alpaca | ✅ | `AlpacaSymbolSearchProviderRefactored`; US equities + crypto |
+| Robinhood | ✅ | `RobinhoodSymbolSearchProvider`; public instruments API, no authentication required |
 | Finnhub | ✅ | `FinnhubSymbolSearchProviderRefactored`; US + international |
 | Polygon | ✅ | `PolygonSymbolSearchProvider`; US equities |
 | OpenFIGI | ✅ | `OpenFigiClient`; global instrument ID mapping |
+| EDGAR | ✅ | `EdgarSymbolSearchProvider`; SEC `company_tickers.json` cache for US company lookup and issuer detail enrichment |
 | StockSharp | ✅ | `StockSharpSymbolSearchProvider`; multi-exchange |
 | **Symbol Import/Export** | ✅ | CSV import/export via `SymbolImportExportService`; portfolio import |
 | **Symbol Registry** | ✅ | `CanonicalSymbolRegistry` with persistence; `SymbolRegistryService` |
@@ -130,7 +136,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 | Feature | Status | Notes |
 |---------|--------|-------|
 | JSONL storage sink | ✅ | Append-only, gzip-compressed, configurable naming conventions |
-| Parquet storage sink | ✅ | Columnar, compressed; enabled via `EnableParquetSink` config |
+| Parquet storage sink | ✅ | Columnar, compressed; enabled via `EnableParquetSink` config. Wave 1 repo-backed tests now cover L2 snapshot flush, final dispose flush, and atomic temp-file cleanup |
 | Tiered storage (hot/warm/cold) | ✅ | `TierMigrationService` with configurable retention per tier |
 | Scheduled archive maintenance | ✅ | `ScheduledArchiveMaintenanceService`; tasks: integrity, orphan cleanup, index rebuild, compression |
 | Portable data packaging | ✅ | `PortableDataPackager`; ZIP/tar.gz with manifest, checksums, SQL loaders |
@@ -240,10 +246,19 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 ### Shell & Navigation (Complete baseline)
 
 - Workspace model now persists built-in `Research`, `Trading`, `Data Operations`, and `Governance` workspaces, including legacy workspace ID migration for older saved sessions.
-- Command palette (`Ctrl+K`), keyboard shortcuts
+- Main workstation shell is metadata-driven through `ShellNavigationCatalog`, with workspace home pages, primary/secondary/overflow navigation tiers, recent pages, command-palette search keywords, and related-workflow links.
+- Workspace home pages now act as shell-first operator launchpads (`ResearchShell`, `TradingShell`, `DataOperationsShell`, `GovernanceShell`) instead of a long page-directory entry model.
+- Command palette (`Ctrl+K`), keyboard shortcuts, workspace-tile switching, and governance/fund-ops aliases keep low-frequency pages reachable without promoting them to top-level roots.
+- Workspace shell context strips now standardize scope, environment, freshness, review-state, alert, and currency cues across the four workstation shells.
+- Legacy deep pages now route through `WorkspaceDeepPageHostPage` in both standalone and docked presentations, so direct navigation and workspace docks share the same workspace title, reachability metadata, related-workflow chrome, and trust-state posture without removing the underlying page functionality.
+- Legacy deep pages can now suppress duplicate inner hero/title chrome through `WorkspaceShellChromeState` plus embedded-shell styles (`EmbeddedShellHeroCardStyle`, `EmbeddedShellHeaderGridStyle`, and `EmbeddedShellHeaderStackPanelStyle`), tightening density when pages are already hosted inside the shared workstation shell.
+- Action-heavy hosted pages including `MessagingHubPage`, `NotificationCenterPage`, `SecurityMasterPage`, `ServiceManagerPage`, and `PositionBlotterPage` now collapse decorative identity chrome while preserving their page-specific commands, status badges, and trust signals inside the shared shell host.
+- `PositionBlotterPage`, `SecurityMasterPage`, and `ServiceManagerPage` now go beyond top-band cleanup and render as workflow-native workbenches with persistent inspector rails for selection state, filters/runtime posture, and operator actions while preserving their existing commands and service integrations.
+- Dock-hosted workspace pages are wrapped in `Frame` containers so WPF page content can be embedded safely inside the workstation docking surface.
 - Theme switching, notification center, info bar
 - Offline indicator (single notification + warning on backend unreachable)
 - Session state persistence (active workspace, last page, window bounds)
+- Shell-first regression coverage now includes DI registration checks, workspace-shell smoke tests, dock-hosting smoke tests, compact-host chrome assertions for representative legacy pages, isolated `MainPage` workflow automation, and a full registered-page navigation sweep in `tests/Meridian.Wpf.Tests/`.
 
 ### Pages with live service connections (Implemented)
 
@@ -274,7 +289,7 @@ Provider validation matrix and evidence links now live in `docs/status/provider-
 | SetupWizardPage | SetupWizardService | First-run onboarding |
 | PackageManagerPage | PortablePackagerService | Create/import packages |
 | ScheduleManagerPage | ScheduleManagerService | Backfill schedules |
-| ServiceManagerPage | BackendServiceManagerBase | Backend service status |
+| ServiceManagerPage | BackendServiceManagerBase | Backend service status with control-lane and runtime inspector |
 | StorageOptimizationPage | StorageOptimizationAdvisorService | Storage optimization advice |
 | ArchiveHealthPage | ArchiveHealthService | Archive integrity status |
 | SystemHealthPage | SystemHealthService | Comprehensive health view |
@@ -307,7 +322,8 @@ This migration is tracked in [`../plans/trading-workstation-migration-blueprint.
 - `StrategyRunReadService`, `PortfolioReadService`, and `LedgerReadService` now derive those models from recorded strategy/backtest results.
 - WPF now includes a first-pass `StrategyRuns` browser plus `RunDetail`, `RunPortfolio`, and `RunLedger` drill-in pages, and completed backtests are mirrored into that shared workstation flow.
 - Run-scoped reconciliation contracts and service flows now exist through `ReconciliationRunRequest`, `ReconciliationRunSummary`, `ReconciliationRunDetail`, `ReconciliationRunService`, and `/api/workstation/reconciliation/*`.
-- The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, explicit cash-flow and multi-ledger views, richer reconciliation UX, and more complete cockpit-style workflow integration.
+- Governance fund operations now exposes explicit fund cash-flow projection ladders/events and account-linked multi-ledger views across consolidated, entity, sleeve, and vehicle dimensions.
+- The remaining gap is broader paper/live data-source adoption, richer portfolio/ledger analytics, deeper per-entity/per-sleeve/per-vehicle posting fidelity, richer reconciliation UX, and more complete cockpit-style workflow integration.
 
 ### Known WPF limitations
 
@@ -425,6 +441,7 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 | Order rate throttle | ✅ | `OrderRateThrottle`; configurable order frequency limits |
 | **Brokerage gateway framework** | ✅ | `IBrokerageGateway`, `BaseBrokerageGateway`, `BrokerageGatewayAdapter` |
 | **Alpaca brokerage gateway** | ✅ | `AlpacaBrokerageGateway`; fractional quantity support, client order ID mapping |
+| **Robinhood brokerage gateway** | ✅ | `RobinhoodBrokerageGateway`; unofficial API, equity + option order support, cancel-via-resubmit semantics, and stable `/api/execution/*` seam coverage |
 | **IB brokerage gateway** | 🔑 | `IBBrokerageGateway`; conditional on IBAPI build flag |
 | **StockSharp brokerage gateway** | 🔑 | `StockSharpBrokerageGateway`; connector-dependent |
 | **Template brokerage gateway** | ✅ | `TemplateBrokerageGateway`; scaffold for new adapters |
@@ -438,8 +455,8 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 
 - Wire brokerage gateways into the web dashboard paper-trading cockpit
 - Validate brokerage adapters against live vendor APIs
-- Build explicit `Backtest → Paper → Live` promotion workflow with audit trail
-- Add paper-trading session persistence and replay
+- Complete cockpit-visible `Backtest → Paper → Live` workflow hardening and audit UX
+- Complete paper-trading session persistence and replay operator flows
 
 ---
 
@@ -453,9 +470,10 @@ Two MCP (Model Context Protocol) server projects provide AI-agent tooling over t
 | `Meridian.Wpf.Tests` | 35 | ~391 | WPF desktop services (navigation, config, status, connection, ViewModels) |
 | `Meridian.Backtesting.Tests` | 14 | ~146 | Backtest engine, fill models, portfolio simulation, XIRR |
 | `Meridian.DirectLending.Tests` | 7 | ~29 | Direct lending services, workflows, PostgreSQL integration |
+| `Meridian.FundStructure.Tests` | 2 | ~19 | Governance shared-data access and in-memory fund-structure services |
 | `Meridian.McpServer.Tests` | 3 | ~11 | MCP server tools (backfill, storage) |
 | `Meridian.QuantScript.Tests` | 10 | ~76 | Script compiler, runner, statistics engine, plot queue, portfolio builder |
-| **Total** | **400** | **~5,370** | |
+| **Total** | **402** | **~5,389** | |
 
 ### Key test infrastructure
 
@@ -499,38 +517,41 @@ This section inventories the workflow-centric product model that now sits above 
 | Surface | Status | Notes |
 |---------|--------|-------|
 | Research workspace taxonomy | Partial | Desktop vocabulary now aligns on `Research`; the remaining gap is deeper workspace-native shells and operator flows |
-| Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`; cockpit-grade execution UX remains pending |
+| Trading workspace taxonomy | Partial | Command palette and shell terminology align on `Trading`, and the Trading shell now keeps run-scoped versus account-scoped portfolio drill-ins inside the cockpit instead of bouncing operators back to `Research`; cockpit-grade execution UX remains pending |
 | Data Operations workspace taxonomy | Partial | Operational pages are grouped consistently; further cross-links and workflow shells remain |
-| Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually; governance-first product flows remain incomplete |
+| Governance workspace taxonomy | Partial | Portfolio/ledger/diagnostics/settings surfaces are grouped conceptually, and Security Master/reconciliation drill-ins are live; broader governance-first product flows remain incomplete |
+| Governance fund-ops workspace API baseline | Partial | `/api/fund-structure/workspace-view` and `/api/fund-structure/report-pack-preview` now aggregate fund-account state, banking, ledger, reconciliation, NAV attribution, and reporting profile previews for a `fundProfileId`; the Governance WPF shell now reuses the same shared projection, while workstation-shell polish and governed artifact generation remain open |
 | Shared `StrategyRun` DTO/read-model baseline | Partial | Shared run summary/detail/comparison models exist; paper/live history expansion remains |
 | Shared portfolio read-model baseline | Partial | Portfolio summaries/positions derived from recorded runs exist; equity-history and broader source coverage remain |
 | Shared ledger read-model baseline | Partial | Ledger summaries, journal rows, and trial balance rows exist; account-summary and richer reconciliation UX remain |
 | Reconciliation run baseline | Partial | Run-scoped reconciliation service, history, and Security Master coverage issue detection now exist; broader break queues and non-run workflows remain |
-| Security Master platform baseline | Partial | Contracts, services, storage, migrations, and F# domain modules exist; Wave 6 delivers the six productization items below |
+| Security Master platform baseline | Complete | The current Security Master mechanics are delivered and workstation productization is live: hardened WPF activation, canonical `WorkstationSecurityReference` coverage/provenance, and shared research/trading/governance/portfolio/ledger propagation |
 | Security Master — bond term richness | ✅ | Extended `SecurityEconomicDefinition` with coupon rate, maturity, day-count convention, seniority, callable flag, and issue price |
 | Security Master — trading parameters | ✅ | Per-instrument lot size, tick size; `PaperTradingGateway` lot-size validation and `BacktestEngine` tick-size rounding wired; `GET /api/security-master/{id}/trading-parameters` |
 | Security Master — corporate action events | ✅ | `Dividend`, `StockSplit`, `SpinOff`, `MergerAbsorption` domain events; `CorporateActionAdjustmentService` applies split-adjusted bar prices in backtest replay; `GET /api/security-master/{id}/corporate-actions` |
-| Security Master — exchange bulk ingest | ✅ | CSV + JSON bulk-ingest via `SecurityMasterImportService`; idempotent dedup; CLI `--security-master-ingest`; `POST /api/security-master/import` endpoint |
-| Security Master — golden record conflict resolution | ✅ | `SecurityMasterConflictService` detects identifier-ambiguity conflicts; `GET /api/security-master/conflicts` list + `POST /api/security-master/conflicts/{id}/resolve` |
-| Security Master — WPF browser | ✅ | `SecurityMasterPage` + `SecurityMasterViewModel` (BindableBase); search, detail panel, corporate action timeline, trading params |
+| Security Master — exchange bulk ingest | ✅ | CSV + JSON bulk-ingest via `SecurityMasterImportService`; idempotent dedup; CLI `--security-master-ingest`; `POST /api/security-master/import`; typed `GET /api/security-master/ingest/status` polling surface |
+| Security Master — EDGAR ingest provider | ✅ | `EdgarSecurityMasterIngestProvider`; SEC company-ticker and submission enrichment flow with provenance capture and SEC rate-limit-aware ingest behavior |
+| Security Master — golden record conflict resolution | ✅ | `SecurityMasterConflictService` detects ingest-time identifier conflicts automatically; `GET /api/security-master/conflicts` list + `POST /api/security-master/conflicts/{id}/resolve`; workstation conflict queue and operator resolution path are live |
+| Security Master — WPF browser | ✅ | `SecurityMasterPage` + `SecurityMasterViewModel` (BindableBase); search, results/detail/inspector workbench, ingest polling, conflict queue, corporate action timeline, trading params, import/backfill posture, and governance drill-ins |
 | Direct lending vertical slice | Partial | Postgres-backed direct-lending services, migrations, workflow support, and `/api/loans/*` endpoints are live; broader governance/reporting integration remains |
 | WPF run browser/detail/portfolio/ledger surfaces | In progress | Code present in `src/Meridian.Wpf/`; included in active build |
 | Backtest Studio unification | Planned | Native and Lean backtests are still distinct operator experiences |
-| Paper-trading cockpit | Partial | Execution primitives and brokerage gateway adapters (Alpaca, IB, StockSharp) exist; dedicated web dashboard cockpit wiring is still planned |
-| Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Brokerage gateway framework provides the execution adapter layer; safety-gated lifecycle workflow remains planned |
+| Paper-trading cockpit | Partial | Trading workspace surfaces now cover positions, orders, fills, replay, sessions, promotion flows, and in-shell portfolio/accounting drill-ins; cockpit hardening, broader broker validation, and stronger acceptance criteria remain |
+| Promotion workflow (`Backtest -> Paper -> Live`) | Partial | Endpoint layer and dashboard flows exist; safety-gated lifecycle hardening, broader operator acceptance, and full live-readiness remain open |
 
 ### Additional governance and platform tracks
 
 - **Cash-flow modeling surfaces:** governance-oriented cash-movement and projection views are not yet productized.
 - **Multi-ledger tracking:** governance workflows do not yet expose multiple ledgers, ledger groups, or cross-ledger consolidation explicitly.
 - **Reconciliation engine expansion:** run-scoped reconciliation now exists for recorded strategy runs, but broader position, cash, NAV, external statement, and exception-queue workflows remain incomplete.
-- **Report generation tools:** export infrastructure exists, but governed report-pack generation for investor, board, compliance, and fund-ops workflows is not yet productized.
+- **Report generation tools:** export infrastructure exists and fund-scoped report-pack preview APIs now expose the first governed slice, but full investor, board, compliance, and fund-ops artifact generation is not yet productized.
 
 ### Remaining work
 
 - Turn taxonomy alignment into true workspace-first shells with quick actions and cross-workflow entry points.
 - Extend the shared run/portfolio/ledger model to paper/live history, cash-flow views, multi-ledger tracking, and richer reconciliation views.
 - Elevate Security Master from backend capability to explicit platform/product infrastructure for research and governance (Wave 6 — see [`docs/plans/security-master-productization-roadmap.md`](../plans/security-master-productization-roadmap.md)).
+- Treat `docs/plans/security-master-productization-roadmap.md` as canonical for Wave 6 Security Master status, and keep this table synchronized.
 - Expand the current reconciliation seam into explicit break queues, match rules, exception workflows, and non-run governance use cases.
 - Extend the direct-lending slice into governance-grade projections, reconciliation hooks, and reporting outputs.
 - Add report generation tools that package auditable governance outputs for operators and stakeholders.
@@ -593,7 +614,7 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 - `Research`, `Trading`, `Data Operations`, and `Governance` should operate as durable product surfaces, not only naming conventions.
 - Backtests, paper sessions, and live-facing history should share one recognizable run model with first-class portfolio and ledger drill-ins.
 - Account, entity, strategy-implementation, and trade-management workflows should be part of the same connected product surface.
-- Security Master should serve as the authoritative instrument-definition layer across research, governance, portfolio, and ledger workflows; Wave 6 delivers bond terms, trading parameters, corporate actions, bulk ingest, conflict resolution, and a WPF browser.
+- Security Master now serves as the authoritative instrument-definition layer across research, trading, governance, portfolio, and ledger workflows; the current repo already delivers that baseline.
 - Governance should expose cash-flow modeling, trial-balance analysis, and multi-ledger tracking as first-class capabilities.
 - Governance should include a reconciliation engine comparable to fund-operations tooling, plus report generation tools for audit, investor, and compliance outputs.
 - Provider, replay, storage, diagnostics, and observability capabilities should support that operator workflow end to end.
@@ -607,12 +628,11 @@ Meridian’s intended end state is a comprehensive fund management platform rath
 - **⚠️ Partial**: Works with caveats; see "Remaining Work" column.
 - **🔑 Credentials/build flag required**: Implementation is complete but requires external setup (credentials, IBAPI download, StockSharp license).
 - **🔄 Framework in place**: Core structure exists; specific sub-feature is incomplete (for example, the workstation taxonomy is in place but deeper workspace-native shells and operator flows still remain).
-- **📝 Planned**: Not started; see ROADMAP.md Phase schedule.
+- **📝 Planned**: Not started; see ROADMAP.md wave schedule.
 
 ---
 
-*Last Updated: 2026-03-31*
-
+*Last Updated: 2026-04-17*
 
 
 

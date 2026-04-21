@@ -1,0 +1,753 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ValidationMetrics
+  commentId: T:Meridian.Application.Monitoring.ValidationMetrics
+  id: ValidationMetrics
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ValidationMetrics.GetSnapshot
+  - Meridian.Application.Monitoring.ValidationMetrics.PassRatePercent
+  - Meridian.Application.Monitoring.ValidationMetrics.RecordRejection(System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  - Meridian.Application.Monitoring.ValidationMetrics.RecordValidated(System.String)
+  - Meridian.Application.Monitoring.ValidationMetrics.Reset
+  - Meridian.Application.Monitoring.ValidationMetrics.TotalRejected
+  - Meridian.Application.Monitoring.ValidationMetrics.TotalValidated
+  langs:
+  - csharp
+  - vb
+  name: ValidationMetrics
+  nameWithType: ValidationMetrics
+  fullName: Meridian.Application.Monitoring.ValidationMetrics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidationMetrics
+    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Thread-safe in-memory counters for the F# validation pipeline stage.
+
+    Accumulates pass/reject statistics that are periodically exported to Prometheus
+
+    via <xref href="Meridian.Application.Monitoring.PrometheusMetrics.UpdateValidationMetrics(Meridian.Application.Monitoring.ValidationMetricsSnapshot)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public static class ValidationMetrics
+    content.vb: Public Module ValidationMetrics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ValidationMetrics.TotalValidated
+  commentId: P:Meridian.Application.Monitoring.ValidationMetrics.TotalValidated
+  id: TotalValidated
+  parent: Meridian.Application.Monitoring.ValidationMetrics
+  langs:
+  - csharp
+  - vb
+  name: TotalValidated
+  nameWithType: ValidationMetrics.TotalValidated
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.TotalValidated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalValidated
+    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Total events that entered the validation stage (pass or fail).
+  example: []
+  syntax:
+    content: public static long TotalValidated { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property TotalValidated As Long
+  overload: Meridian.Application.Monitoring.ValidationMetrics.TotalValidated*
+- uid: Meridian.Application.Monitoring.ValidationMetrics.TotalRejected
+  commentId: P:Meridian.Application.Monitoring.ValidationMetrics.TotalRejected
+  id: TotalRejected
+  parent: Meridian.Application.Monitoring.ValidationMetrics
+  langs:
+  - csharp
+  - vb
+  name: TotalRejected
+  nameWithType: ValidationMetrics.TotalRejected
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.TotalRejected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRejected
+    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Total events that failed validation and were sent to the dead-letter sink.
+  example: []
+  syntax:
+    content: public static long TotalRejected { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property TotalRejected As Long
+  overload: Meridian.Application.Monitoring.ValidationMetrics.TotalRejected*
+- uid: Meridian.Application.Monitoring.ValidationMetrics.PassRatePercent
+  commentId: P:Meridian.Application.Monitoring.ValidationMetrics.PassRatePercent
+  id: PassRatePercent
+  parent: Meridian.Application.Monitoring.ValidationMetrics
+  langs:
+  - csharp
+  - vb
+  name: PassRatePercent
+  nameWithType: ValidationMetrics.PassRatePercent
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.PassRatePercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PassRatePercent
+    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Pass rate as a percentage (0–100). Returns 100 when no events have been validated yet.
+  example: []
+  syntax:
+    content: public static double PassRatePercent { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Shared ReadOnly Property PassRatePercent As Double
+  overload: Meridian.Application.Monitoring.ValidationMetrics.PassRatePercent*
+- uid: Meridian.Application.Monitoring.ValidationMetrics.RecordValidated(System.String)
+  commentId: M:Meridian.Application.Monitoring.ValidationMetrics.RecordValidated(System.String)
+  id: RecordValidated(System.String)
+  parent: Meridian.Application.Monitoring.ValidationMetrics
+  langs:
+  - csharp
+  - vb
+  name: RecordValidated(string)
+  nameWithType: ValidationMetrics.RecordValidated(string)
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.RecordValidated(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordValidated
+    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Records a single event that entered the validation stage (regardless of outcome).
+
+    Call once per validated event, before determining pass/fail.
+  example: []
+  syntax:
+    content: public static void RecordValidated(string eventType)
+    parameters:
+    - id: eventType
+      type: System.String
+      description: Lowercase event-type label, e.g. "trade" or "quote".
+    content.vb: Public Shared Sub RecordValidated(eventType As String)
+  overload: Meridian.Application.Monitoring.ValidationMetrics.RecordValidated*
+  nameWithType.vb: ValidationMetrics.RecordValidated(String)
+  fullName.vb: Meridian.Application.Monitoring.ValidationMetrics.RecordValidated(String)
+  name.vb: RecordValidated(String)
+- uid: Meridian.Application.Monitoring.ValidationMetrics.RecordRejection(System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  commentId: M:Meridian.Application.Monitoring.ValidationMetrics.RecordRejection(System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  id: RecordRejection(System.String,System.Collections.Generic.IReadOnlyList{System.String})
+  parent: Meridian.Application.Monitoring.ValidationMetrics
+  langs:
+  - csharp
+  - vb
+  name: RecordRejection(string, IReadOnlyList<string>)
+  nameWithType: ValidationMetrics.RecordRejection(string, IReadOnlyList<string>)
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.RecordRejection(string, System.Collections.Generic.IReadOnlyList<string>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordRejection
+    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records a rejection and distributes the count across all error types found in the event.
+  example: []
+  syntax:
+    content: public static void RecordRejection(string eventType, IReadOnlyList<string> errorDescriptions)
+    parameters:
+    - id: eventType
+      type: System.String
+      description: Lowercase event-type label, e.g. "trade" or "quote".
+    - id: errorDescriptions
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+      description: Error description strings returned by the F# validator.
+    content.vb: Public Shared Sub RecordRejection(eventType As String, errorDescriptions As IReadOnlyList(Of String))
+  overload: Meridian.Application.Monitoring.ValidationMetrics.RecordRejection*
+  nameWithType.vb: ValidationMetrics.RecordRejection(String, IReadOnlyList(Of String))
+  fullName.vb: Meridian.Application.Monitoring.ValidationMetrics.RecordRejection(String, System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: RecordRejection(String, IReadOnlyList(Of String))
+- uid: Meridian.Application.Monitoring.ValidationMetrics.GetSnapshot
+  commentId: M:Meridian.Application.Monitoring.ValidationMetrics.GetSnapshot
+  id: GetSnapshot
+  parent: Meridian.Application.Monitoring.ValidationMetrics
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshot()
+  nameWithType: ValidationMetrics.GetSnapshot()
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.GetSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshot
+    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets a snapshot of current counters for Prometheus export.
+  example: []
+  syntax:
+    content: public static ValidationMetricsSnapshot GetSnapshot()
+    return:
+      type: Meridian.Application.Monitoring.ValidationMetricsSnapshot
+    content.vb: Public Shared Function GetSnapshot() As ValidationMetricsSnapshot
+  overload: Meridian.Application.Monitoring.ValidationMetrics.GetSnapshot*
+- uid: Meridian.Application.Monitoring.ValidationMetrics.Reset
+  commentId: M:Meridian.Application.Monitoring.ValidationMetrics.Reset
+  id: Reset
+  parent: Meridian.Application.Monitoring.ValidationMetrics
+  langs:
+  - csharp
+  - vb
+  name: Reset()
+  nameWithType: ValidationMetrics.Reset()
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.Reset()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ValidationMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Monitoring/ValidationMetrics.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Resets all counters. Intended for testing only.
+  example: []
+  syntax:
+    content: public static void Reset()
+    content.vb: Public Shared Sub Reset()
+  overload: Meridian.Application.Monitoring.ValidationMetrics.Reset*
+references:
+- uid: Meridian.Application.Monitoring.PrometheusMetrics.UpdateValidationMetrics(Meridian.Application.Monitoring.ValidationMetricsSnapshot)
+  commentId: M:Meridian.Application.Monitoring.PrometheusMetrics.UpdateValidationMetrics(Meridian.Application.Monitoring.ValidationMetricsSnapshot)
+  href: Meridian.Application.Monitoring.PrometheusMetrics.html#Meridian_Application_Monitoring_PrometheusMetrics_UpdateValidationMetrics_Meridian_Application_Monitoring_ValidationMetricsSnapshot_
+  name: UpdateValidationMetrics(ValidationMetricsSnapshot)
+  nameWithType: PrometheusMetrics.UpdateValidationMetrics(ValidationMetricsSnapshot)
+  fullName: Meridian.Application.Monitoring.PrometheusMetrics.UpdateValidationMetrics(Meridian.Application.Monitoring.ValidationMetricsSnapshot)
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.PrometheusMetrics.UpdateValidationMetrics(Meridian.Application.Monitoring.ValidationMetricsSnapshot)
+    name: UpdateValidationMetrics
+    href: Meridian.Application.Monitoring.PrometheusMetrics.html#Meridian_Application_Monitoring_PrometheusMetrics_UpdateValidationMetrics_Meridian_Application_Monitoring_ValidationMetricsSnapshot_
+  - name: (
+  - uid: Meridian.Application.Monitoring.ValidationMetricsSnapshot
+    name: ValidationMetricsSnapshot
+    href: Meridian.Application.Monitoring.ValidationMetricsSnapshot.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.PrometheusMetrics.UpdateValidationMetrics(Meridian.Application.Monitoring.ValidationMetricsSnapshot)
+    name: UpdateValidationMetrics
+    href: Meridian.Application.Monitoring.PrometheusMetrics.html#Meridian_Application_Monitoring_PrometheusMetrics_UpdateValidationMetrics_Meridian_Application_Monitoring_ValidationMetricsSnapshot_
+  - name: (
+  - uid: Meridian.Application.Monitoring.ValidationMetricsSnapshot
+    name: ValidationMetricsSnapshot
+    href: Meridian.Application.Monitoring.ValidationMetricsSnapshot.html
+  - name: )
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.ValidationMetrics.TotalValidated*
+  commentId: Overload:Meridian.Application.Monitoring.ValidationMetrics.TotalValidated
+  href: Meridian.Application.Monitoring.ValidationMetrics.html#Meridian_Application_Monitoring_ValidationMetrics_TotalValidated
+  name: TotalValidated
+  nameWithType: ValidationMetrics.TotalValidated
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.TotalValidated
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.ValidationMetrics.TotalRejected*
+  commentId: Overload:Meridian.Application.Monitoring.ValidationMetrics.TotalRejected
+  href: Meridian.Application.Monitoring.ValidationMetrics.html#Meridian_Application_Monitoring_ValidationMetrics_TotalRejected
+  name: TotalRejected
+  nameWithType: ValidationMetrics.TotalRejected
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.TotalRejected
+- uid: Meridian.Application.Monitoring.ValidationMetrics.PassRatePercent*
+  commentId: Overload:Meridian.Application.Monitoring.ValidationMetrics.PassRatePercent
+  href: Meridian.Application.Monitoring.ValidationMetrics.html#Meridian_Application_Monitoring_ValidationMetrics_PassRatePercent
+  name: PassRatePercent
+  nameWithType: ValidationMetrics.PassRatePercent
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.PassRatePercent
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.ValidationMetrics.RecordValidated*
+  commentId: Overload:Meridian.Application.Monitoring.ValidationMetrics.RecordValidated
+  href: Meridian.Application.Monitoring.ValidationMetrics.html#Meridian_Application_Monitoring_ValidationMetrics_RecordValidated_System_String_
+  name: RecordValidated
+  nameWithType: ValidationMetrics.RecordValidated
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.RecordValidated
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.ValidationMetrics.RecordRejection*
+  commentId: Overload:Meridian.Application.Monitoring.ValidationMetrics.RecordRejection
+  href: Meridian.Application.Monitoring.ValidationMetrics.html#Meridian_Application_Monitoring_ValidationMetrics_RecordRejection_System_String_System_Collections_Generic_IReadOnlyList_System_String__
+  name: RecordRejection
+  nameWithType: ValidationMetrics.RecordRejection
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.RecordRejection
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.ValidationMetrics.GetSnapshot*
+  commentId: Overload:Meridian.Application.Monitoring.ValidationMetrics.GetSnapshot
+  href: Meridian.Application.Monitoring.ValidationMetrics.html#Meridian_Application_Monitoring_ValidationMetrics_GetSnapshot
+  name: GetSnapshot
+  nameWithType: ValidationMetrics.GetSnapshot
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.GetSnapshot
+- uid: Meridian.Application.Monitoring.ValidationMetricsSnapshot
+  commentId: T:Meridian.Application.Monitoring.ValidationMetricsSnapshot
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ValidationMetricsSnapshot.html
+  name: ValidationMetricsSnapshot
+  nameWithType: ValidationMetricsSnapshot
+  fullName: Meridian.Application.Monitoring.ValidationMetricsSnapshot
+- uid: Meridian.Application.Monitoring.ValidationMetrics.Reset*
+  commentId: Overload:Meridian.Application.Monitoring.ValidationMetrics.Reset
+  href: Meridian.Application.Monitoring.ValidationMetrics.html#Meridian_Application_Monitoring_ValidationMetrics_Reset
+  name: Reset
+  nameWithType: ValidationMetrics.Reset
+  fullName: Meridian.Application.Monitoring.ValidationMetrics.Reset

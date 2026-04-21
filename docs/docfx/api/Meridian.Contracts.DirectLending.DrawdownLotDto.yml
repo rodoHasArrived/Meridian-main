@@ -1,0 +1,650 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto
+  commentId: T:Meridian.Contracts.DirectLending.DrawdownLotDto
+  id: DrawdownLotDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.DrawdownLotDto.#ctor(System.Guid,System.DateOnly,System.DateOnly,System.Decimal,System.Decimal,System.String)
+  - Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownDate
+  - Meridian.Contracts.DirectLending.DrawdownLotDto.ExternalRef
+  - Meridian.Contracts.DirectLending.DrawdownLotDto.LotId
+  - Meridian.Contracts.DirectLending.DrawdownLotDto.OriginalPrincipal
+  - Meridian.Contracts.DirectLending.DrawdownLotDto.RemainingPrincipal
+  - Meridian.Contracts.DirectLending.DrawdownLotDto.SettleDate
+  langs:
+  - csharp
+  - vb
+  name: DrawdownLotDto
+  nameWithType: DrawdownLotDto
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrawdownLotDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record DrawdownLotDto : IEquatable<DrawdownLotDto>'
+    content.vb: Public NotInheritable Class DrawdownLotDto Implements IEquatable(Of DrawdownLotDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.DrawdownLotDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.#ctor(System.Guid,System.DateOnly,System.DateOnly,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Contracts.DirectLending.DrawdownLotDto.#ctor(System.Guid,System.DateOnly,System.DateOnly,System.Decimal,System.Decimal,System.String)
+  id: '#ctor(System.Guid,System.DateOnly,System.DateOnly,System.Decimal,System.Decimal,System.String)'
+  parent: Meridian.Contracts.DirectLending.DrawdownLotDto
+  langs:
+  - csharp
+  - vb
+  name: DrawdownLotDto(Guid, DateOnly, DateOnly, decimal, decimal, string?)
+  nameWithType: DrawdownLotDto.DrawdownLotDto(Guid, DateOnly, DateOnly, decimal, decimal, string?)
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownLotDto(System.Guid, System.DateOnly, System.DateOnly, decimal, decimal, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DrawdownLotDto(Guid LotId, DateOnly DrawdownDate, DateOnly SettleDate, decimal OriginalPrincipal, decimal RemainingPrincipal, string? ExternalRef)
+    parameters:
+    - id: LotId
+      type: System.Guid
+    - id: DrawdownDate
+      type: System.DateOnly
+    - id: SettleDate
+      type: System.DateOnly
+    - id: OriginalPrincipal
+      type: System.Decimal
+    - id: RemainingPrincipal
+      type: System.Decimal
+    - id: ExternalRef
+      type: System.String
+    content.vb: Public Sub New(LotId As Guid, DrawdownDate As DateOnly, SettleDate As DateOnly, OriginalPrincipal As Decimal, RemainingPrincipal As Decimal, ExternalRef As String)
+  overload: Meridian.Contracts.DirectLending.DrawdownLotDto.#ctor*
+  nameWithType.vb: DrawdownLotDto.New(Guid, DateOnly, DateOnly, Decimal, Decimal, String)
+  fullName.vb: Meridian.Contracts.DirectLending.DrawdownLotDto.New(System.Guid, System.DateOnly, System.DateOnly, Decimal, Decimal, String)
+  name.vb: New(Guid, DateOnly, DateOnly, Decimal, Decimal, String)
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.LotId
+  commentId: P:Meridian.Contracts.DirectLending.DrawdownLotDto.LotId
+  id: LotId
+  parent: Meridian.Contracts.DirectLending.DrawdownLotDto
+  langs:
+  - csharp
+  - vb
+  name: LotId
+  nameWithType: DrawdownLotDto.LotId
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.LotId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LotId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid LotId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property LotId As Guid
+  overload: Meridian.Contracts.DirectLending.DrawdownLotDto.LotId*
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownDate
+  commentId: P:Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownDate
+  id: DrawdownDate
+  parent: Meridian.Contracts.DirectLending.DrawdownLotDto
+  langs:
+  - csharp
+  - vb
+  name: DrawdownDate
+  nameWithType: DrawdownLotDto.DrawdownDate
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrawdownDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly DrawdownDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property DrawdownDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownDate*
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.SettleDate
+  commentId: P:Meridian.Contracts.DirectLending.DrawdownLotDto.SettleDate
+  id: SettleDate
+  parent: Meridian.Contracts.DirectLending.DrawdownLotDto
+  langs:
+  - csharp
+  - vb
+  name: SettleDate
+  nameWithType: DrawdownLotDto.SettleDate
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.SettleDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SettleDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly SettleDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property SettleDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.DrawdownLotDto.SettleDate*
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.OriginalPrincipal
+  commentId: P:Meridian.Contracts.DirectLending.DrawdownLotDto.OriginalPrincipal
+  id: OriginalPrincipal
+  parent: Meridian.Contracts.DirectLending.DrawdownLotDto
+  langs:
+  - csharp
+  - vb
+  name: OriginalPrincipal
+  nameWithType: DrawdownLotDto.OriginalPrincipal
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.OriginalPrincipal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OriginalPrincipal
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal OriginalPrincipal { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property OriginalPrincipal As Decimal
+  overload: Meridian.Contracts.DirectLending.DrawdownLotDto.OriginalPrincipal*
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.RemainingPrincipal
+  commentId: P:Meridian.Contracts.DirectLending.DrawdownLotDto.RemainingPrincipal
+  id: RemainingPrincipal
+  parent: Meridian.Contracts.DirectLending.DrawdownLotDto
+  langs:
+  - csharp
+  - vb
+  name: RemainingPrincipal
+  nameWithType: DrawdownLotDto.RemainingPrincipal
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.RemainingPrincipal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemainingPrincipal
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal RemainingPrincipal { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RemainingPrincipal As Decimal
+  overload: Meridian.Contracts.DirectLending.DrawdownLotDto.RemainingPrincipal*
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.ExternalRef
+  commentId: P:Meridian.Contracts.DirectLending.DrawdownLotDto.ExternalRef
+  id: ExternalRef
+  parent: Meridian.Contracts.DirectLending.DrawdownLotDto
+  langs:
+  - csharp
+  - vb
+  name: ExternalRef
+  nameWithType: DrawdownLotDto.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.ExternalRef
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExternalRef
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? ExternalRef { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExternalRef As String
+  overload: Meridian.Contracts.DirectLending.DrawdownLotDto.ExternalRef*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.DrawdownLotDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.DrawdownLotDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DrawdownLotDto>
+  nameWithType: IEquatable<DrawdownLotDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.DrawdownLotDto>
+  nameWithType.vb: IEquatable(Of DrawdownLotDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.DrawdownLotDto)
+  name.vb: IEquatable(Of DrawdownLotDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.DrawdownLotDto
+    name: DrawdownLotDto
+    href: Meridian.Contracts.DirectLending.DrawdownLotDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.DrawdownLotDto
+    name: DrawdownLotDto
+    href: Meridian.Contracts.DirectLending.DrawdownLotDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.DrawdownLotDto.#ctor
+  href: Meridian.Contracts.DirectLending.DrawdownLotDto.html#Meridian_Contracts_DirectLending_DrawdownLotDto__ctor_System_Guid_System_DateOnly_System_DateOnly_System_Decimal_System_Decimal_System_String_
+  name: DrawdownLotDto
+  nameWithType: DrawdownLotDto.DrawdownLotDto
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownLotDto
+  nameWithType.vb: DrawdownLotDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.DrawdownLotDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.LotId*
+  commentId: Overload:Meridian.Contracts.DirectLending.DrawdownLotDto.LotId
+  href: Meridian.Contracts.DirectLending.DrawdownLotDto.html#Meridian_Contracts_DirectLending_DrawdownLotDto_LotId
+  name: LotId
+  nameWithType: DrawdownLotDto.LotId
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.LotId
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownDate
+  href: Meridian.Contracts.DirectLending.DrawdownLotDto.html#Meridian_Contracts_DirectLending_DrawdownLotDto_DrawdownDate
+  name: DrawdownDate
+  nameWithType: DrawdownLotDto.DrawdownDate
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.DrawdownDate
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.SettleDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.DrawdownLotDto.SettleDate
+  href: Meridian.Contracts.DirectLending.DrawdownLotDto.html#Meridian_Contracts_DirectLending_DrawdownLotDto_SettleDate
+  name: SettleDate
+  nameWithType: DrawdownLotDto.SettleDate
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.SettleDate
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.OriginalPrincipal*
+  commentId: Overload:Meridian.Contracts.DirectLending.DrawdownLotDto.OriginalPrincipal
+  href: Meridian.Contracts.DirectLending.DrawdownLotDto.html#Meridian_Contracts_DirectLending_DrawdownLotDto_OriginalPrincipal
+  name: OriginalPrincipal
+  nameWithType: DrawdownLotDto.OriginalPrincipal
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.OriginalPrincipal
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.RemainingPrincipal*
+  commentId: Overload:Meridian.Contracts.DirectLending.DrawdownLotDto.RemainingPrincipal
+  href: Meridian.Contracts.DirectLending.DrawdownLotDto.html#Meridian_Contracts_DirectLending_DrawdownLotDto_RemainingPrincipal
+  name: RemainingPrincipal
+  nameWithType: DrawdownLotDto.RemainingPrincipal
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.RemainingPrincipal
+- uid: Meridian.Contracts.DirectLending.DrawdownLotDto.ExternalRef*
+  commentId: Overload:Meridian.Contracts.DirectLending.DrawdownLotDto.ExternalRef
+  href: Meridian.Contracts.DirectLending.DrawdownLotDto.html#Meridian_Contracts_DirectLending_DrawdownLotDto_ExternalRef
+  name: ExternalRef
+  nameWithType: DrawdownLotDto.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.DrawdownLotDto.ExternalRef

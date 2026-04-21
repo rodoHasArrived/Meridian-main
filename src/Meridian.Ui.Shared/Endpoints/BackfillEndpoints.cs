@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Meridian.Application.Backfill;
 using Meridian.Contracts.Api;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -51,17 +52,12 @@ public static class BackfillEndpoints
         // Preview backfill (dry run - shows what would be fetched)
         group.MapPost(UiApiRoutes.BackfillRun + "/preview", async (BackfillCoordinator backfill, BackfillRequestDto req) =>
         {
-            var validation = ValidateBackfillRequest(req);
-            if (validation is not null)
-                return validation;
-
             try
             {
-                var request = new BackfillRequest(
-                    string.IsNullOrWhiteSpace(req.Provider) ? "stooq" : req.Provider!,
-                    req.Symbols!,
-                    req.From,
-                    req.To);
+                var request = CreateBackfillRequest(req);
+                var validation = ValidateBackfillRequest(req, request, backfill);
+                if (validation is not null)
+                    return validation;
 
                 var preview = await backfill.PreviewAsync(request);
                 return Results.Json(preview, jsonOptionsIndented);
@@ -84,17 +80,12 @@ public static class BackfillEndpoints
         // Run backfill
         group.MapPost(UiApiRoutes.BackfillRun, async (BackfillCoordinator backfill, BackfillRequestDto req) =>
         {
-            var validation = ValidateBackfillRequest(req);
-            if (validation is not null)
-                return validation;
-
             try
             {
-                var request = new BackfillRequest(
-                    string.IsNullOrWhiteSpace(req.Provider) ? "stooq" : req.Provider!,
-                    req.Symbols!,
-                    req.From,
-                    req.To);
+                var request = CreateBackfillRequest(req);
+                var validation = ValidateBackfillRequest(req, request, backfill);
+                if (validation is not null)
+                    return validation;
 
                 var result = await backfill.RunAsync(request);
                 return Results.Json(result, jsonOptionsIndented);
@@ -194,12 +185,12 @@ public static class BackfillEndpoints
         [
             new() { ProviderId = "alpaca", DisplayName = "Alpaca", Description = "Bars, trades, and quotes via REST API.", DataTypes = ["Bars", "Trades", "Quotes"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 5, DefaultRateLimitPerMinute = 200 },
             new() { ProviderId = "polygon", DisplayName = "Polygon", Description = "Full market data including aggregates.", DataTypes = ["Bars", "Trades", "Quotes", "Aggregates"], RequiresApiKey = true, FreeTier = false, DefaultPriority = 12, DefaultRateLimitPerMinute = 5 },
-            new() { ProviderId = "tiingo", DisplayName = "Tiingo", Description = "Daily bars and end-of-day data.", DataTypes = ["Daily bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 15, DefaultRateLimitPerHour = 500 },
-            new() { ProviderId = "finnhub", DisplayName = "Finnhub", Description = "Daily bars with international coverage.", DataTypes = ["Daily bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 20, DefaultRateLimitPerMinute = 60 },
-            new() { ProviderId = "stooq", DisplayName = "Stooq", Description = "Free daily bar data. No API key required.", DataTypes = ["Daily bars"], RequiresApiKey = false, FreeTier = true, DefaultPriority = 25 },
-            new() { ProviderId = "yahoo", DisplayName = "Yahoo Finance", Description = "Unofficial daily bar data.", DataTypes = ["Daily bars"], RequiresApiKey = false, FreeTier = true, DefaultPriority = 30 },
-            new() { ProviderId = "alphavantage", DisplayName = "Alpha Vantage", Description = "Daily bars with strict rate limits.", DataTypes = ["Daily bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 35, DefaultRateLimitPerMinute = 5, DefaultRateLimitPerHour = 500 },
-            new() { ProviderId = "nasdaqdatalink", DisplayName = "Nasdaq Data Link", Description = "Various market data sets.", DataTypes = ["Various"], RequiresApiKey = true, FreeTier = false, DefaultPriority = 40 },
+            new() { ProviderId = "tiingo", DisplayName = "Tiingo", Description = "Daily bars and end-of-day data.", DataTypes = ["Daily bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 15, DefaultRateLimitPerHour = 500, SupportedGranularities = ["Daily"] },
+            new() { ProviderId = "finnhub", DisplayName = "Finnhub", Description = "Daily bars with international coverage.", DataTypes = ["Daily bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 20, DefaultRateLimitPerMinute = 60, SupportedGranularities = ["Daily"] },
+            new() { ProviderId = "stooq", DisplayName = "Stooq", Description = "Free daily bar data. No API key required.", DataTypes = ["Daily bars"], RequiresApiKey = false, FreeTier = true, DefaultPriority = 25, SupportedGranularities = ["Daily"] },
+            new() { ProviderId = "yahoo", DisplayName = "Yahoo Finance", Description = "Unofficial daily and intraday bar data.", DataTypes = ["Daily bars", "Intraday bars", "Aggregates"], RequiresApiKey = false, FreeTier = true, DefaultPriority = 30, SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly", "4Hour"], FeatureFlags = new Dictionary<string, bool> { ["supportsIntraday"] = true, ["unofficial"] = true } },
+            new() { ProviderId = "alphavantage", DisplayName = "Alpha Vantage", Description = "Daily and intraday bars with strict rate limits.", DataTypes = ["Daily bars", "Intraday bars"], RequiresApiKey = true, FreeTier = true, DefaultPriority = 35, DefaultRateLimitPerMinute = 5, DefaultRateLimitPerHour = 500, SupportedGranularities = ["Daily", "1Min", "5Min", "15Min", "30Min", "Hourly"] },
+            new() { ProviderId = "nasdaqdatalink", DisplayName = "Nasdaq Data Link", Description = "Various market data sets.", DataTypes = ["Various"], RequiresApiKey = true, FreeTier = false, DefaultPriority = 40, SupportedGranularities = ["Daily"] },
         ];
     }
 
@@ -275,7 +266,7 @@ public static class BackfillEndpoints
         };
     }
 
-    private static IResult? ValidateBackfillRequest(BackfillRequestDto req)
+    private static IResult? ValidateBackfillRequest(BackfillRequestDto req, BackfillRequest request, BackfillCoordinator backfill)
     {
         if (req.Symbols is null || req.Symbols.Length == 0)
             return Results.BadRequest(new { error = "At least one symbol is required." });
@@ -296,6 +287,32 @@ public static class BackfillEndpoints
         if (req.To.HasValue && req.To.Value > DateOnly.FromDateTime(DateTime.UtcNow.AddDays(1)))
             return Results.BadRequest(new { error = "To date cannot be in the future." });
 
+        try
+        {
+            backfill.ValidateRequest(request);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+
         return null;
+    }
+
+    private static BackfillRequest CreateBackfillRequest(BackfillRequestDto req)
+    {
+        var granularity = string.IsNullOrWhiteSpace(req.Granularity)
+            ? DataGranularity.Daily
+            : DataGranularityExtensions.TryParseValue(req.Granularity, out var parsed)
+                ? parsed
+                : throw new InvalidOperationException(
+                    $"Unsupported granularity '{req.Granularity}'. Use Daily, Hourly, 1Min, 5Min, 15Min, 30Min, or 4Hour.");
+
+        return new BackfillRequest(
+            string.IsNullOrWhiteSpace(req.Provider) ? "stooq" : req.Provider!,
+            req.Symbols ?? Array.Empty<string>(),
+            req.From,
+            req.To,
+            granularity);
     }
 }

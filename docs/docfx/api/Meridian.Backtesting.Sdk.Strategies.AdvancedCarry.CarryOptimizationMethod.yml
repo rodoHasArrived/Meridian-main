@@ -1,0 +1,190 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  id: CarryOptimizationMethod
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MaximumSharpe
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MeanVariance
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MinimumVariance
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.RiskParity
+  langs:
+  - csharp
+  - vb
+  name: CarryOptimizationMethod
+  nameWithType: CarryOptimizationMethod
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CarryOptimizationMethod
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public enum CarryOptimizationMethod
+    content.vb: Public Enum CarryOptimizationMethod
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MeanVariance
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MeanVariance
+  id: MeanVariance
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  langs:
+  - csharp
+  - vb
+  name: MeanVariance
+  nameWithType: CarryOptimizationMethod.MeanVariance
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MeanVariance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MeanVariance
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: MeanVariance = 0
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.RiskParity
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.RiskParity
+  id: RiskParity
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  langs:
+  - csharp
+  - vb
+  name: RiskParity
+  nameWithType: CarryOptimizationMethod.RiskParity
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.RiskParity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RiskParity
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: RiskParity = 1
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MinimumVariance
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MinimumVariance
+  id: MinimumVariance
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  langs:
+  - csharp
+  - vb
+  name: MinimumVariance
+  nameWithType: CarryOptimizationMethod.MinimumVariance
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MinimumVariance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinimumVariance
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: MinimumVariance = 2
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MaximumSharpe
+  commentId: F:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MaximumSharpe
+  id: MaximumSharpe
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  langs:
+  - csharp
+  - vb
+  name: MaximumSharpe
+  nameWithType: CarryOptimizationMethod.MaximumSharpe
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.MaximumSharpe
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaximumSharpe
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: MaximumSharpe = 3
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod.html
+  name: CarryOptimizationMethod
+  nameWithType: CarryOptimizationMethod
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryOptimizationMethod

@@ -1,0 +1,419 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Derivatives.IDerivativePosition
+  commentId: T:Meridian.Execution.Derivatives.IDerivativePosition
+  id: IDerivativePosition
+  parent: Meridian.Execution.Derivatives
+  children:
+  - Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+  - Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+  - Meridian.Execution.Derivatives.IDerivativePosition.Kind
+  - Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+  - Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+  - Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+  - Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+  langs:
+  - csharp
+  - vb
+  name: IDerivativePosition
+  nameWithType: IDerivativePosition
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IDerivativePosition
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: >-
+    A polymorphic position interface for derivative instruments.
+
+    Extends the flat <xref href="Meridian.Execution.Models.ExecutionPosition" data-throw-if-not-resolved="false"></xref> record to carry
+
+    contract-specific details, Greeks (for options), and daily MTM state (for futures).
+  example: []
+  syntax:
+    content: public interface IDerivativePosition
+    content.vb: Public Interface IDerivativePosition
+  derivedClasses:
+  - Meridian.Execution.Derivatives.FuturePosition
+  - Meridian.Execution.Derivatives.OptionPosition
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+  id: Symbol
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: IDerivativePosition.Symbol
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Ticker symbol of the derivative contract (e.g., "AAPL240119C00150000").
+  example: []
+  syntax:
+    content: string Symbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Symbol As String
+  overload: Meridian.Execution.Derivatives.IDerivativePosition.Symbol*
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+  id: Contracts
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  langs:
+  - csharp
+  - vb
+  name: Contracts
+  nameWithType: IDerivativePosition.Contracts
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contracts
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Number of contracts held (positive = long, negative = short).
+  example: []
+  syntax:
+    content: long Contracts { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: ReadOnly Property Contracts As Long
+  overload: Meridian.Execution.Derivatives.IDerivativePosition.Contracts*
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+  id: AverageCostBasis
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  langs:
+  - csharp
+  - vb
+  name: AverageCostBasis
+  nameWithType: IDerivativePosition.AverageCostBasis
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageCostBasis
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Average cost basis per contract (in premium points or price units).
+  example: []
+  syntax:
+    content: decimal AverageCostBasis { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property AverageCostBasis As Decimal
+  overload: Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis*
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+  id: MarkPrice
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  langs:
+  - csharp
+  - vb
+  name: MarkPrice
+  nameWithType: IDerivativePosition.MarkPrice
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkPrice
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Current mark-to-market price of the contract.
+  example: []
+  syntax:
+    content: decimal MarkPrice { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property MarkPrice As Decimal
+  overload: Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice*
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+  id: UnrealizedPnl
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl
+  nameWithType: IDerivativePosition.UnrealizedPnl
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Unrealized P&amp;L at the current mark price.
+  example: []
+  syntax:
+    content: decimal UnrealizedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property UnrealizedPnl As Decimal
+  overload: Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl*
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+  id: RealizedPnl
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnl
+  nameWithType: IDerivativePosition.RealizedPnl
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnl
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Cumulative realized P&amp;L from partial or full closes on this position.
+  example: []
+  syntax:
+    content: decimal RealizedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: ReadOnly Property RealizedPnl As Decimal
+  overload: Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl*
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.Kind
+  commentId: P:Meridian.Execution.Derivatives.IDerivativePosition.Kind
+  id: Kind
+  parent: Meridian.Execution.Derivatives.IDerivativePosition
+  langs:
+  - csharp
+  - vb
+  name: Kind
+  nameWithType: IDerivativePosition.Kind
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.Kind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Kind
+    path: ../../src/Meridian.Execution/Derivatives/IDerivativePosition.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Derivatives
+  summary: Classification of the derivative contract type.
+  example: []
+  syntax:
+    content: DerivativeKind Kind { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Derivatives.DerivativeKind
+    content.vb: ReadOnly Property Kind As DerivativeKind
+  overload: Meridian.Execution.Derivatives.IDerivativePosition.Kind*
+references:
+- uid: Meridian.Execution.Models.ExecutionPosition
+  commentId: T:Meridian.Execution.Models.ExecutionPosition
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.ExecutionPosition.html
+  name: ExecutionPosition
+  nameWithType: ExecutionPosition
+  fullName: Meridian.Execution.Models.ExecutionPosition
+- uid: Meridian.Execution.Derivatives
+  commentId: N:Meridian.Execution.Derivatives
+  href: Meridian.html
+  name: Meridian.Execution.Derivatives
+  nameWithType: Meridian.Execution.Derivatives
+  fullName: Meridian.Execution.Derivatives
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Derivatives.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Derivatives.html
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.Symbol*
+  commentId: Overload:Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_Symbol
+  name: Symbol
+  nameWithType: IDerivativePosition.Symbol
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.Contracts*
+  commentId: Overload:Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_Contracts
+  name: Contracts
+  nameWithType: IDerivativePosition.Contracts
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.Contracts
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis*
+  commentId: Overload:Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_AverageCostBasis
+  name: AverageCostBasis
+  nameWithType: IDerivativePosition.AverageCostBasis
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.AverageCostBasis
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice*
+  commentId: Overload:Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_MarkPrice
+  name: MarkPrice
+  nameWithType: IDerivativePosition.MarkPrice
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.MarkPrice
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl*
+  commentId: Overload:Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: IDerivativePosition.UnrealizedPnl
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.UnrealizedPnl
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl*
+  commentId: Overload:Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_RealizedPnl
+  name: RealizedPnl
+  nameWithType: IDerivativePosition.RealizedPnl
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.RealizedPnl
+- uid: Meridian.Execution.Derivatives.IDerivativePosition.Kind*
+  commentId: Overload:Meridian.Execution.Derivatives.IDerivativePosition.Kind
+  href: Meridian.Execution.Derivatives.IDerivativePosition.html#Meridian_Execution_Derivatives_IDerivativePosition_Kind
+  name: Kind
+  nameWithType: IDerivativePosition.Kind
+  fullName: Meridian.Execution.Derivatives.IDerivativePosition.Kind
+- uid: Meridian.Execution.Derivatives.DerivativeKind
+  commentId: T:Meridian.Execution.Derivatives.DerivativeKind
+  parent: Meridian.Execution.Derivatives
+  href: Meridian.Execution.Derivatives.DerivativeKind.html
+  name: DerivativeKind
+  nameWithType: DerivativeKind
+  fullName: Meridian.Execution.Derivatives.DerivativeKind

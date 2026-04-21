@@ -1,0 +1,255 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.ISecurityReferenceLookup
+  commentId: T:Meridian.Strategies.Services.ISecurityReferenceLookup
+  id: ISecurityReferenceLookup
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.ISecurityReferenceLookup.GetBySymbolAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISecurityReferenceLookup
+  nameWithType: ISecurityReferenceLookup
+  fullName: Meridian.Strategies.Services.ISecurityReferenceLookup
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISecurityReferenceLookup
+    path: ../../src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Resolves workstation-friendly instrument metadata for portfolio and ledger drill-ins.
+  example: []
+  syntax:
+    content: public interface ISecurityReferenceLookup
+    content.vb: Public Interface ISecurityReferenceLookup
+  derivedClasses:
+  - Meridian.Ui.Shared.Services.SecurityMasterSecurityReferenceLookup
+- uid: Meridian.Strategies.Services.ISecurityReferenceLookup.GetBySymbolAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.ISecurityReferenceLookup.GetBySymbolAsync(System.String,System.Threading.CancellationToken)
+  id: GetBySymbolAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.ISecurityReferenceLookup
+  langs:
+  - csharp
+  - vb
+  name: GetBySymbolAsync(string, CancellationToken)
+  nameWithType: ISecurityReferenceLookup.GetBySymbolAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.ISecurityReferenceLookup.GetBySymbolAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBySymbolAsync
+    path: ../../src/Meridian.Strategies/Services/ISecurityReferenceLookup.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  syntax:
+    content: Task<WorkstationSecurityReference?> GetBySymbolAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.WorkstationSecurityReference}
+    content.vb: Function GetBySymbolAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of WorkstationSecurityReference)
+  overload: Meridian.Strategies.Services.ISecurityReferenceLookup.GetBySymbolAsync*
+  nameWithType.vb: ISecurityReferenceLookup.GetBySymbolAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.ISecurityReferenceLookup.GetBySymbolAsync(String, System.Threading.CancellationToken)
+  name.vb: GetBySymbolAsync(String, CancellationToken)
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: Meridian.Strategies.Services.ISecurityReferenceLookup.GetBySymbolAsync*
+  commentId: Overload:Meridian.Strategies.Services.ISecurityReferenceLookup.GetBySymbolAsync
+  href: Meridian.Strategies.Services.ISecurityReferenceLookup.html#Meridian_Strategies_Services_ISecurityReferenceLookup_GetBySymbolAsync_System_String_System_Threading_CancellationToken_
+  name: GetBySymbolAsync
+  nameWithType: ISecurityReferenceLookup.GetBySymbolAsync
+  fullName: Meridian.Strategies.Services.ISecurityReferenceLookup.GetBySymbolAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Workstation.WorkstationSecurityReference}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Workstation.WorkstationSecurityReference}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<WorkstationSecurityReference>
+  nameWithType: Task<WorkstationSecurityReference>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Workstation.WorkstationSecurityReference>
+  nameWithType.vb: Task(Of WorkstationSecurityReference)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Workstation.WorkstationSecurityReference)
+  name.vb: Task(Of WorkstationSecurityReference)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.WorkstationSecurityReference
+    name: WorkstationSecurityReference
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.WorkstationSecurityReference
+    name: WorkstationSecurityReference
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

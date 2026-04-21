@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.IndicatorType
+  commentId: T:Meridian.Ui.Services.IndicatorType
+  id: IndicatorType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.IndicatorType.Oscillator
+  - Meridian.Ui.Services.IndicatorType.Overlay
+  - Meridian.Ui.Services.IndicatorType.Separate
+  langs:
+  - csharp
+  - vb
+  name: IndicatorType
+  nameWithType: IndicatorType
+  fullName: Meridian.Ui.Services.IndicatorType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndicatorType
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 553
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Technical indicator type.
+  example: []
+  syntax:
+    content: 'public enum IndicatorType : byte'
+    content.vb: Public Enum IndicatorType As Byte
+- uid: Meridian.Ui.Services.IndicatorType.Overlay
+  commentId: F:Meridian.Ui.Services.IndicatorType.Overlay
+  id: Overlay
+  parent: Meridian.Ui.Services.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: Overlay
+  nameWithType: IndicatorType.Overlay
+  fullName: Meridian.Ui.Services.IndicatorType.Overlay
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Overlay
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 555
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Overlay = 0
+    return:
+      type: Meridian.Ui.Services.IndicatorType
+- uid: Meridian.Ui.Services.IndicatorType.Oscillator
+  commentId: F:Meridian.Ui.Services.IndicatorType.Oscillator
+  id: Oscillator
+  parent: Meridian.Ui.Services.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: Oscillator
+  nameWithType: IndicatorType.Oscillator
+  fullName: Meridian.Ui.Services.IndicatorType.Oscillator
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Oscillator
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 556
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Oscillator = 1
+    return:
+      type: Meridian.Ui.Services.IndicatorType
+- uid: Meridian.Ui.Services.IndicatorType.Separate
+  commentId: F:Meridian.Ui.Services.IndicatorType.Separate
+  id: Separate
+  parent: Meridian.Ui.Services.IndicatorType
+  langs:
+  - csharp
+  - vb
+  name: Separate
+  nameWithType: IndicatorType.Separate
+  fullName: Meridian.Ui.Services.IndicatorType.Separate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Separate
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 557
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Separate = 2
+    return:
+      type: Meridian.Ui.Services.IndicatorType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.IndicatorType
+  commentId: T:Meridian.Ui.Services.IndicatorType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.IndicatorType.html
+  name: IndicatorType
+  nameWithType: IndicatorType
+  fullName: Meridian.Ui.Services.IndicatorType

@@ -1,0 +1,623 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+  commentId: T:Meridian.Application.Monitoring.DataQuality.TimelineEntry
+  id: TimelineEntry
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntry.#ctor(System.DateTimeOffset,System.DateTimeOffset,Meridian.Application.Monitoring.DataQuality.TimelineEntryType,System.Int64,System.String)
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntry.Details
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntry.End
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntry.EventCount
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntry.Start
+  - Meridian.Application.Monitoring.DataQuality.TimelineEntry.Type
+  langs:
+  - csharp
+  - vb
+  name: TimelineEntry
+  nameWithType: TimelineEntry
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimelineEntry
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Timeline entry for visualizing data availability.
+  example: []
+  syntax:
+    content: 'public sealed record TimelineEntry : IEquatable<TimelineEntry>'
+    content.vb: Public NotInheritable Class TimelineEntry Implements IEquatable(Of TimelineEntry)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.TimelineEntry}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.#ctor(System.DateTimeOffset,System.DateTimeOffset,Meridian.Application.Monitoring.DataQuality.TimelineEntryType,System.Int64,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.TimelineEntry.#ctor(System.DateTimeOffset,System.DateTimeOffset,Meridian.Application.Monitoring.DataQuality.TimelineEntryType,System.Int64,System.String)
+  id: '#ctor(System.DateTimeOffset,System.DateTimeOffset,Meridian.Application.Monitoring.DataQuality.TimelineEntryType,System.Int64,System.String)'
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+  langs:
+  - csharp
+  - vb
+  name: TimelineEntry(DateTimeOffset, DateTimeOffset, TimelineEntryType, long, string?)
+  nameWithType: TimelineEntry.TimelineEntry(DateTimeOffset, DateTimeOffset, TimelineEntryType, long, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.TimelineEntry(System.DateTimeOffset, System.DateTimeOffset, Meridian.Application.Monitoring.DataQuality.TimelineEntryType, long, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Timeline entry for visualizing data availability.
+  example: []
+  syntax:
+    content: public TimelineEntry(DateTimeOffset Start, DateTimeOffset End, TimelineEntryType Type, long EventCount, string? Details)
+    parameters:
+    - id: Start
+      type: System.DateTimeOffset
+    - id: End
+      type: System.DateTimeOffset
+    - id: Type
+      type: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+    - id: EventCount
+      type: System.Int64
+    - id: Details
+      type: System.String
+    content.vb: Public Sub New(Start As DateTimeOffset, [End] As DateTimeOffset, Type As TimelineEntryType, EventCount As Long, Details As String)
+  overload: Meridian.Application.Monitoring.DataQuality.TimelineEntry.#ctor*
+  nameWithType.vb: TimelineEntry.New(DateTimeOffset, DateTimeOffset, TimelineEntryType, Long, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.TimelineEntry.New(System.DateTimeOffset, System.DateTimeOffset, Meridian.Application.Monitoring.DataQuality.TimelineEntryType, Long, String)
+  name.vb: New(DateTimeOffset, DateTimeOffset, TimelineEntryType, Long, String)
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Start
+  commentId: P:Meridian.Application.Monitoring.DataQuality.TimelineEntry.Start
+  id: Start
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+  langs:
+  - csharp
+  - vb
+  name: Start
+  nameWithType: TimelineEntry.Start
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Start
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset Start { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Start As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Start*
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.End
+  commentId: P:Meridian.Application.Monitoring.DataQuality.TimelineEntry.End
+  id: End
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+  langs:
+  - csharp
+  - vb
+  name: End
+  nameWithType: TimelineEntry.End
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.End
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: End
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset End { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property [End] As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.TimelineEntry.End*
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Type
+  commentId: P:Meridian.Application.Monitoring.DataQuality.TimelineEntry.Type
+  id: Type
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: TimelineEntry.Type
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public TimelineEntryType Type { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+    content.vb: Public Property Type As TimelineEntryType
+  overload: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Type*
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.EventCount
+  commentId: P:Meridian.Application.Monitoring.DataQuality.TimelineEntry.EventCount
+  id: EventCount
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+  langs:
+  - csharp
+  - vb
+  name: EventCount
+  nameWithType: TimelineEntry.EventCount
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.EventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCount
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long EventCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EventCount As Long
+  overload: Meridian.Application.Monitoring.DataQuality.TimelineEntry.EventCount*
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Details
+  commentId: P:Meridian.Application.Monitoring.DataQuality.TimelineEntry.Details
+  id: Details
+  parent: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+  langs:
+  - csharp
+  - vb
+  name: Details
+  nameWithType: TimelineEntry.Details
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Details
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Details
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string? Details { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Details As String
+  overload: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Details*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.TimelineEntry}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.TimelineEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TimelineEntry>
+  nameWithType: IEquatable<TimelineEntry>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.TimelineEntry>
+  nameWithType.vb: IEquatable(Of TimelineEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.TimelineEntry)
+  name.vb: IEquatable(Of TimelineEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+    name: TimelineEntry
+    href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry
+    name: TimelineEntry
+    href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.TimelineEntry.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html#Meridian_Application_Monitoring_DataQuality_TimelineEntry__ctor_System_DateTimeOffset_System_DateTimeOffset_Meridian_Application_Monitoring_DataQuality_TimelineEntryType_System_Int64_System_String_
+  name: TimelineEntry
+  nameWithType: TimelineEntry.TimelineEntry
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.TimelineEntry
+  nameWithType.vb: TimelineEntry.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.TimelineEntry.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.TimelineEntryType.html
+  name: TimelineEntryType
+  nameWithType: TimelineEntryType
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntryType
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Start*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.TimelineEntry.Start
+  href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html#Meridian_Application_Monitoring_DataQuality_TimelineEntry_Start
+  name: Start
+  nameWithType: TimelineEntry.Start
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Start
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.End*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.TimelineEntry.End
+  href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html#Meridian_Application_Monitoring_DataQuality_TimelineEntry_End
+  name: End
+  nameWithType: TimelineEntry.End
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.End
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Type*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.TimelineEntry.Type
+  href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html#Meridian_Application_Monitoring_DataQuality_TimelineEntry_Type
+  name: Type
+  nameWithType: TimelineEntry.Type
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Type
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.EventCount*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.TimelineEntry.EventCount
+  href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html#Meridian_Application_Monitoring_DataQuality_TimelineEntry_EventCount
+  name: EventCount
+  nameWithType: TimelineEntry.EventCount
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.EventCount
+- uid: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Details*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.TimelineEntry.Details
+  href: Meridian.Application.Monitoring.DataQuality.TimelineEntry.html#Meridian_Application_Monitoring_DataQuality_TimelineEntry_Details
+  name: Details
+  nameWithType: TimelineEntry.Details
+  fullName: Meridian.Application.Monitoring.DataQuality.TimelineEntry.Details

@@ -1,6 +1,8 @@
 # Agent Skills
 
-This directory indexes Meridian's portable Agent Skills packages. These packages live under `.claude/skills/` and are designed for progressive disclosure: advertise the skill, load `SKILL.md` only when needed, then read references or run scripts on demand.
+This directory indexes Meridian's AI skill surfaces. The current project-scoped workflow is
+centered on repo-local Codex skills under `.codex/skills/`, while `.claude/skills/` holds the
+portable mirrored skill packages for hosts that consume Claude-style Agent Skills.
 
 ---
 
@@ -19,6 +21,28 @@ Each portable skill package follows this shape:
 
 ---
 
+## Current Codex Skills
+
+These repo-local skills are the primary Meridian skill set for current AI work:
+
+| Skill | Purpose |
+|------|---------|
+| `meridian-archive-organizer` | Archive stale files and keep the repository structure tidy |
+| `meridian-blueprint` | Turn one idea into an implementation-ready technical blueprint |
+| `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
+| `meridian-cleanup` | Clean code and docs without changing observable behavior |
+| `meridian-code-review` | Review changes for bugs, regressions, and architecture drift |
+| `meridian-implementation-assurance` | Implement and verify work with explicit evidence |
+| `meridian-provider-builder` | Build and extend providers with the right contracts |
+| `meridian-repo-navigation` | Route large-repo tasks before deeper work |
+| `meridian-roadmap-strategist` | Refresh roadmap and target-state documents |
+| `meridian-simulated-user-panel` | Run manifest-driven design-partner, release-gate, and usability-lab reviews |
+| `meridian-test-writer` | Produce scenario-first Meridian tests |
+
+The shared Codex grounding file is [`../../../.codex/skills/_shared/project-context.md`](../../../.codex/skills/_shared/project-context.md).
+
+---
+
 ## Available Portable Skills
 
 | Skill | Purpose |
@@ -28,6 +52,7 @@ Each portable skill package follows this shape:
 | `meridian-code-review` | Apply Meridian’s 7-lens review framework |
 | `meridian-implementation-assurance` | Validate completed work against requirements and evidence |
 | `meridian-provider-builder` | Scaffold and extend providers with the right contracts and resilience patterns |
+| `meridian-simulated-user-panel` | Simulate realistic user panels and owner-minded product critique |
 | `meridian-test-writer` | Produce Meridian-style xUnit and FluentAssertions tests |
 
 Code-defined provider skills may also exist, such as AI documentation maintenance helpers exposed by the local skills provider.
@@ -41,7 +66,7 @@ Code-defined provider skills may also exist, such as AI documentation maintenanc
 | [`../README.md`](../README.md) | Master AI resource index |
 | [`../navigation/README.md`](../navigation/README.md) | Repo navigation workflow |
 | [`../agents/README.md`](../agents/README.md) | Agent catalog |
-| [`../../.codex/skills/README.md`](../../.codex/skills/README.md) | Codex repo-local skills, including `meridian-repo-navigation` |
+| [`../../../.codex/skills/README.md`](../../../.codex/skills/README.md) | Codex repo-local skills and their maintenance rules |
 
 ---
 
@@ -55,4 +80,4 @@ python3 build/scripts/docs/validate-skill-packages.py
 
 ---
 
-*Last Updated: 2026-03-31*
+*Last Updated: 2026-04-14*

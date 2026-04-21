@@ -133,3 +133,34 @@ public sealed record CorporateActionDto(
     decimal? ExchangeRatio,
     decimal? SubscriptionPricePerShare,
     decimal? RightsPerShare);
+
+/// <summary>
+/// Preferred-equity-specific terms returned by the preferred-terms query.
+/// </summary>
+public sealed record PreferredEquityTermsDto(
+    Guid SecurityId,
+    string? Classification,
+    decimal? DividendRate,
+    string? DividendType,
+    bool? IsCumulative,
+    decimal? RedemptionPrice,
+    DateOnly? RedemptionDate,
+    DateOnly? CallableDate,
+    bool? ParticipatesInCommonDividends,
+    decimal? AdditionalDividendThreshold,
+    string? LiquidationPreferenceKind,
+    decimal? LiquidationPreferenceMultiple,
+    long Version);
+
+/// <summary>
+/// Convertible-equity-specific terms returned by the convertible-equity-terms query.
+/// </summary>
+public sealed record ConvertibleEquityTermsDto(
+    Guid SecurityId,
+    string? Classification,
+    Guid? UnderlyingSecurityId,
+    decimal? ConversionRatio,
+    decimal? ConversionPrice,
+    DateOnly? ConversionStartDate,
+    DateOnly? ConversionEndDate,
+    long Version);

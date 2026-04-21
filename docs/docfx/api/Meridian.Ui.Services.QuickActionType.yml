@@ -1,0 +1,230 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.QuickActionType
+  commentId: T:Meridian.Ui.Services.QuickActionType
+  id: QuickActionType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.QuickActionType.BackfillNew
+  - Meridian.Ui.Services.QuickActionType.Custom
+  - Meridian.Ui.Services.QuickActionType.ExtendCoverage
+  - Meridian.Ui.Services.QuickActionType.FillGaps
+  - Meridian.Ui.Services.QuickActionType.UpdateLatest
+  - Meridian.Ui.Services.QuickActionType.ValidateData
+  langs:
+  - csharp
+  - vb
+  name: QuickActionType
+  nameWithType: QuickActionType
+  fullName: Meridian.Ui.Services.QuickActionType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuickActionType
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 588
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Types of quick actions.
+  example: []
+  syntax:
+    content: 'public enum QuickActionType : byte'
+    content.vb: Public Enum QuickActionType As Byte
+- uid: Meridian.Ui.Services.QuickActionType.FillGaps
+  commentId: F:Meridian.Ui.Services.QuickActionType.FillGaps
+  id: FillGaps
+  parent: Meridian.Ui.Services.QuickActionType
+  langs:
+  - csharp
+  - vb
+  name: FillGaps
+  nameWithType: QuickActionType.FillGaps
+  fullName: Meridian.Ui.Services.QuickActionType.FillGaps
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillGaps
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 590
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: FillGaps = 0
+    return:
+      type: Meridian.Ui.Services.QuickActionType
+- uid: Meridian.Ui.Services.QuickActionType.ExtendCoverage
+  commentId: F:Meridian.Ui.Services.QuickActionType.ExtendCoverage
+  id: ExtendCoverage
+  parent: Meridian.Ui.Services.QuickActionType
+  langs:
+  - csharp
+  - vb
+  name: ExtendCoverage
+  nameWithType: QuickActionType.ExtendCoverage
+  fullName: Meridian.Ui.Services.QuickActionType.ExtendCoverage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExtendCoverage
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 591
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ExtendCoverage = 1
+    return:
+      type: Meridian.Ui.Services.QuickActionType
+- uid: Meridian.Ui.Services.QuickActionType.BackfillNew
+  commentId: F:Meridian.Ui.Services.QuickActionType.BackfillNew
+  id: BackfillNew
+  parent: Meridian.Ui.Services.QuickActionType
+  langs:
+  - csharp
+  - vb
+  name: BackfillNew
+  nameWithType: QuickActionType.BackfillNew
+  fullName: Meridian.Ui.Services.QuickActionType.BackfillNew
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillNew
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 592
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: BackfillNew = 2
+    return:
+      type: Meridian.Ui.Services.QuickActionType
+- uid: Meridian.Ui.Services.QuickActionType.UpdateLatest
+  commentId: F:Meridian.Ui.Services.QuickActionType.UpdateLatest
+  id: UpdateLatest
+  parent: Meridian.Ui.Services.QuickActionType
+  langs:
+  - csharp
+  - vb
+  name: UpdateLatest
+  nameWithType: QuickActionType.UpdateLatest
+  fullName: Meridian.Ui.Services.QuickActionType.UpdateLatest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateLatest
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 593
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: UpdateLatest = 3
+    return:
+      type: Meridian.Ui.Services.QuickActionType
+- uid: Meridian.Ui.Services.QuickActionType.ValidateData
+  commentId: F:Meridian.Ui.Services.QuickActionType.ValidateData
+  id: ValidateData
+  parent: Meridian.Ui.Services.QuickActionType
+  langs:
+  - csharp
+  - vb
+  name: ValidateData
+  nameWithType: QuickActionType.ValidateData
+  fullName: Meridian.Ui.Services.QuickActionType.ValidateData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateData
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 594
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ValidateData = 4
+    return:
+      type: Meridian.Ui.Services.QuickActionType
+- uid: Meridian.Ui.Services.QuickActionType.Custom
+  commentId: F:Meridian.Ui.Services.QuickActionType.Custom
+  id: Custom
+  parent: Meridian.Ui.Services.QuickActionType
+  langs:
+  - csharp
+  - vb
+  name: Custom
+  nameWithType: QuickActionType.Custom
+  fullName: Meridian.Ui.Services.QuickActionType.Custom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custom
+    path: ../../src/Meridian.Ui.Services/Services/SmartRecommendationsService.cs
+    startLine: 595
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Custom = 5
+    return:
+      type: Meridian.Ui.Services.QuickActionType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.QuickActionType
+  commentId: T:Meridian.Ui.Services.QuickActionType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.QuickActionType.html
+  name: QuickActionType
+  nameWithType: QuickActionType
+  fullName: Meridian.Ui.Services.QuickActionType

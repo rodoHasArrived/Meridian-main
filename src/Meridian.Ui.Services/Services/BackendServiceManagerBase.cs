@@ -53,6 +53,8 @@ public abstract class BackendServiceManagerBase
     private readonly string _installationFilePath;
     private readonly string _runtimeFilePath;
     private readonly SemaphoreSlim _operationLock = new(1, 1);
+    private static readonly IReadOnlyDictionary<string, string?> EmptyProcessEnvironmentVariables =
+        new Dictionary<string, string?>(StringComparer.Ordinal);
 
     protected static readonly JsonSerializerOptions SerializerOptions = new()
     {
@@ -77,8 +79,20 @@ public abstract class BackendServiceManagerBase
     /// <summary>Resolves the backend executable path.</summary>
     protected abstract string? ResolveExecutablePath(string? preferredPath);
 
+    /// <summary>Gets process arguments for the backend executable.</summary>
+    protected virtual IReadOnlyList<string> GetProcessArguments(string executablePath)
+        => Array.Empty<string>();
+
+    /// <summary>Gets environment variables for the backend executable.</summary>
+    protected virtual IReadOnlyDictionary<string, string?> GetProcessEnvironmentVariables(string executablePath)
+        => EmptyProcessEnvironmentVariables;
+
     /// <summary>Starts a process and returns its process ID, or null if failed.</summary>
-    protected abstract int? StartProcess(string executablePath, string workingDirectory);
+    protected abstract int? StartProcess(
+        string executablePath,
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        IReadOnlyDictionary<string, string?> environmentVariables);
 
     /// <summary>Kills a process by ID. Returns true if the process was successfully terminated.</summary>
     protected abstract Task<bool> KillProcessAsync(int processId, CancellationToken ct);
@@ -170,8 +184,14 @@ public abstract class BackendServiceManagerBase
 
             var workingDirectory = Path.GetDirectoryName(installation.ExecutablePath)
                 ?? AppDomain.CurrentDomain.BaseDirectory;
+            var arguments = GetProcessArguments(installation.ExecutablePath);
+            var environmentVariables = GetProcessEnvironmentVariables(installation.ExecutablePath);
 
-            var processId = StartProcess(installation.ExecutablePath, workingDirectory);
+            var processId = StartProcess(
+                installation.ExecutablePath,
+                workingDirectory,
+                arguments,
+                environmentVariables);
             if (processId is null)
             {
                 return BackendServiceOperationResult.Failed("Failed to start backend process.");

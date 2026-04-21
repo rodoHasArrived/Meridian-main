@@ -1,0 +1,739 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.GovernanceExceptionService
+  commentId: T:Meridian.Application.Services.GovernanceExceptionService
+  id: GovernanceExceptionService
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.GovernanceExceptionService.GetDashboard(System.String)
+  - Meridian.Application.Services.GovernanceExceptionService.GetOpenExceptions(System.String,System.Nullable{Meridian.Application.Services.GovernanceExceptionSeverity})
+  - Meridian.Application.Services.GovernanceExceptionService.IngestBreaks(System.Guid,System.String,Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],System.DateTimeOffset)
+  - Meridian.Application.Services.GovernanceExceptionService.MarkInvestigating(System.Guid,System.String)
+  - Meridian.Application.Services.GovernanceExceptionService.Resolve(System.Guid,System.String)
+  langs:
+  - csharp
+  - vb
+  name: GovernanceExceptionService
+  nameWithType: GovernanceExceptionService
+  fullName: Meridian.Application.Services.GovernanceExceptionService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GovernanceExceptionService
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Manages the governance exception (break) queue: ingests new breaks from
+
+    reconciliation runs, enriches them with severity/classification metadata,
+
+    supports status transitions, and provides dashboard-ready projections.
+  example: []
+  syntax:
+    content: public sealed class GovernanceExceptionService
+    content.vb: Public NotInheritable Class GovernanceExceptionService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.GovernanceExceptionService.IngestBreaks(System.Guid,System.String,Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],System.DateTimeOffset)
+  commentId: M:Meridian.Application.Services.GovernanceExceptionService.IngestBreaks(System.Guid,System.String,Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],System.DateTimeOffset)
+  id: IngestBreaks(System.Guid,System.String,Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[],System.DateTimeOffset)
+  parent: Meridian.Application.Services.GovernanceExceptionService
+  langs:
+  - csharp
+  - vb
+  name: IngestBreaks(Guid, string, PortfolioLedgerCheckResultDto[], DateTimeOffset)
+  nameWithType: GovernanceExceptionService.IngestBreaks(Guid, string, PortfolioLedgerCheckResultDto[], DateTimeOffset)
+  fullName: Meridian.Application.Services.GovernanceExceptionService.IngestBreaks(System.Guid, string, Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[], System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IngestBreaks
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Ingests reconciliation results from a completed engine run and adds new
+
+    <xref href="Meridian.Application.Services.GovernanceException" data-throw-if-not-resolved="false"></xref> entries for each open break.
+  example: []
+  syntax:
+    content: public IReadOnlyList<GovernanceException> IngestBreaks(Guid runId, string portfolioId, PortfolioLedgerCheckResultDto[] breaks, DateTimeOffset asOf)
+    parameters:
+    - id: runId
+      type: System.Guid
+    - id: portfolioId
+      type: System.String
+    - id: breaks
+      type: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[]
+    - id: asOf
+      type: System.DateTimeOffset
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.GovernanceException}
+    content.vb: Public Function IngestBreaks(runId As Guid, portfolioId As String, breaks As PortfolioLedgerCheckResultDto(), asOf As DateTimeOffset) As IReadOnlyList(Of GovernanceException)
+  overload: Meridian.Application.Services.GovernanceExceptionService.IngestBreaks*
+  nameWithType.vb: GovernanceExceptionService.IngestBreaks(Guid, String, PortfolioLedgerCheckResultDto(), DateTimeOffset)
+  fullName.vb: Meridian.Application.Services.GovernanceExceptionService.IngestBreaks(System.Guid, String, Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto(), System.DateTimeOffset)
+  name.vb: IngestBreaks(Guid, String, PortfolioLedgerCheckResultDto(), DateTimeOffset)
+- uid: Meridian.Application.Services.GovernanceExceptionService.GetOpenExceptions(System.String,System.Nullable{Meridian.Application.Services.GovernanceExceptionSeverity})
+  commentId: M:Meridian.Application.Services.GovernanceExceptionService.GetOpenExceptions(System.String,System.Nullable{Meridian.Application.Services.GovernanceExceptionSeverity})
+  id: GetOpenExceptions(System.String,System.Nullable{Meridian.Application.Services.GovernanceExceptionSeverity})
+  parent: Meridian.Application.Services.GovernanceExceptionService
+  langs:
+  - csharp
+  - vb
+  name: GetOpenExceptions(string?, GovernanceExceptionSeverity?)
+  nameWithType: GovernanceExceptionService.GetOpenExceptions(string?, GovernanceExceptionSeverity?)
+  fullName: Meridian.Application.Services.GovernanceExceptionService.GetOpenExceptions(string?, Meridian.Application.Services.GovernanceExceptionSeverity?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetOpenExceptions
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Returns all open exceptions, optionally filtered by portfolio or severity.
+  example: []
+  syntax:
+    content: public IReadOnlyList<GovernanceException> GetOpenExceptions(string? portfolioId = null, GovernanceExceptionSeverity? minSeverity = null)
+    parameters:
+    - id: portfolioId
+      type: System.String
+    - id: minSeverity
+      type: System.Nullable{Meridian.Application.Services.GovernanceExceptionSeverity}
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.GovernanceException}
+    content.vb: Public Function GetOpenExceptions(portfolioId As String = Nothing, minSeverity As GovernanceExceptionSeverity? = Nothing) As IReadOnlyList(Of GovernanceException)
+  overload: Meridian.Application.Services.GovernanceExceptionService.GetOpenExceptions*
+  nameWithType.vb: GovernanceExceptionService.GetOpenExceptions(String, GovernanceExceptionSeverity?)
+  fullName.vb: Meridian.Application.Services.GovernanceExceptionService.GetOpenExceptions(String, Meridian.Application.Services.GovernanceExceptionSeverity?)
+  name.vb: GetOpenExceptions(String, GovernanceExceptionSeverity?)
+- uid: Meridian.Application.Services.GovernanceExceptionService.GetDashboard(System.String)
+  commentId: M:Meridian.Application.Services.GovernanceExceptionService.GetDashboard(System.String)
+  id: GetDashboard(System.String)
+  parent: Meridian.Application.Services.GovernanceExceptionService
+  langs:
+  - csharp
+  - vb
+  name: GetDashboard(string?)
+  nameWithType: GovernanceExceptionService.GetDashboard(string?)
+  fullName: Meridian.Application.Services.GovernanceExceptionService.GetDashboard(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDashboard
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Returns a summary of exception counts by severity for a governance dashboard.
+  example: []
+  syntax:
+    content: public GovernanceExceptionDashboard GetDashboard(string? portfolioId = null)
+    parameters:
+    - id: portfolioId
+      type: System.String
+    return:
+      type: Meridian.Application.Services.GovernanceExceptionDashboard
+    content.vb: Public Function GetDashboard(portfolioId As String = Nothing) As GovernanceExceptionDashboard
+  overload: Meridian.Application.Services.GovernanceExceptionService.GetDashboard*
+  nameWithType.vb: GovernanceExceptionService.GetDashboard(String)
+  fullName.vb: Meridian.Application.Services.GovernanceExceptionService.GetDashboard(String)
+  name.vb: GetDashboard(String)
+- uid: Meridian.Application.Services.GovernanceExceptionService.MarkInvestigating(System.Guid,System.String)
+  commentId: M:Meridian.Application.Services.GovernanceExceptionService.MarkInvestigating(System.Guid,System.String)
+  id: MarkInvestigating(System.Guid,System.String)
+  parent: Meridian.Application.Services.GovernanceExceptionService
+  langs:
+  - csharp
+  - vb
+  name: MarkInvestigating(Guid, string?)
+  nameWithType: GovernanceExceptionService.MarkInvestigating(Guid, string?)
+  fullName: Meridian.Application.Services.GovernanceExceptionService.MarkInvestigating(System.Guid, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarkInvestigating
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Transitions an exception to <xref href="Meridian.Application.Services.GovernanceExceptionStatus.Investigating" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public bool MarkInvestigating(Guid exceptionId, string? notes = null)
+    parameters:
+    - id: exceptionId
+      type: System.Guid
+    - id: notes
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function MarkInvestigating(exceptionId As Guid, notes As String = Nothing) As Boolean
+  overload: Meridian.Application.Services.GovernanceExceptionService.MarkInvestigating*
+  nameWithType.vb: GovernanceExceptionService.MarkInvestigating(Guid, String)
+  fullName.vb: Meridian.Application.Services.GovernanceExceptionService.MarkInvestigating(System.Guid, String)
+  name.vb: MarkInvestigating(Guid, String)
+- uid: Meridian.Application.Services.GovernanceExceptionService.Resolve(System.Guid,System.String)
+  commentId: M:Meridian.Application.Services.GovernanceExceptionService.Resolve(System.Guid,System.String)
+  id: Resolve(System.Guid,System.String)
+  parent: Meridian.Application.Services.GovernanceExceptionService
+  langs:
+  - csharp
+  - vb
+  name: Resolve(Guid, string?)
+  nameWithType: GovernanceExceptionService.Resolve(Guid, string?)
+  fullName: Meridian.Application.Services.GovernanceExceptionService.Resolve(System.Guid, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GovernanceExceptionService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Resolve
+    path: ../../src/Meridian.Application/Services/GovernanceExceptionService.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Marks an exception as resolved with an optional closing note.
+  example: []
+  syntax:
+    content: public bool Resolve(Guid exceptionId, string? notes = null)
+    parameters:
+    - id: exceptionId
+      type: System.Guid
+    - id: notes
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function Resolve(exceptionId As Guid, notes As String = Nothing) As Boolean
+  overload: Meridian.Application.Services.GovernanceExceptionService.Resolve*
+  nameWithType.vb: GovernanceExceptionService.Resolve(Guid, String)
+  fullName.vb: Meridian.Application.Services.GovernanceExceptionService.Resolve(System.Guid, String)
+  name.vb: Resolve(Guid, String)
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.GovernanceException
+  commentId: T:Meridian.Application.Services.GovernanceException
+  href: Meridian.Application.Services.GovernanceException.html
+  name: GovernanceException
+  nameWithType: GovernanceException
+  fullName: Meridian.Application.Services.GovernanceException
+- uid: Meridian.Application.Services.GovernanceExceptionService.IngestBreaks*
+  commentId: Overload:Meridian.Application.Services.GovernanceExceptionService.IngestBreaks
+  href: Meridian.Application.Services.GovernanceExceptionService.html#Meridian_Application_Services_GovernanceExceptionService_IngestBreaks_System_Guid_System_String_Meridian_FSharp_Ledger_PortfolioLedgerCheckResultDto___System_DateTimeOffset_
+  name: IngestBreaks
+  nameWithType: GovernanceExceptionService.IngestBreaks
+  fullName: Meridian.Application.Services.GovernanceExceptionService.IngestBreaks
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[]
+  isExternal: true
+  name: PortfolioLedgerCheckResultDto[]
+  nameWithType: PortfolioLedgerCheckResultDto[]
+  fullName: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto[]
+  nameWithType.vb: PortfolioLedgerCheckResultDto()
+  fullName.vb: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto()
+  name.vb: PortfolioLedgerCheckResultDto()
+  spec.csharp:
+  - uid: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto
+    name: PortfolioLedgerCheckResultDto
+    isExternal: true
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.FSharp.Ledger.PortfolioLedgerCheckResultDto
+    name: PortfolioLedgerCheckResultDto
+    isExternal: true
+  - name: (
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.GovernanceException}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.GovernanceException}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<GovernanceException>
+  nameWithType: IReadOnlyList<GovernanceException>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.GovernanceException>
+  nameWithType.vb: IReadOnlyList(Of GovernanceException)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.GovernanceException)
+  name.vb: IReadOnlyList(Of GovernanceException)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.GovernanceException
+    name: GovernanceException
+    href: Meridian.Application.Services.GovernanceException.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.GovernanceException
+    name: GovernanceException
+    href: Meridian.Application.Services.GovernanceException.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.GovernanceExceptionService.GetOpenExceptions*
+  commentId: Overload:Meridian.Application.Services.GovernanceExceptionService.GetOpenExceptions
+  href: Meridian.Application.Services.GovernanceExceptionService.html#Meridian_Application_Services_GovernanceExceptionService_GetOpenExceptions_System_String_System_Nullable_Meridian_Application_Services_GovernanceExceptionSeverity__
+  name: GetOpenExceptions
+  nameWithType: GovernanceExceptionService.GetOpenExceptions
+  fullName: Meridian.Application.Services.GovernanceExceptionService.GetOpenExceptions
+- uid: System.Nullable{Meridian.Application.Services.GovernanceExceptionSeverity}
+  commentId: T:System.Nullable{Meridian.Application.Services.GovernanceExceptionSeverity}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Application.Services.GovernanceExceptionSeverity.html
+  name: GovernanceExceptionSeverity?
+  nameWithType: GovernanceExceptionSeverity?
+  fullName: Meridian.Application.Services.GovernanceExceptionSeverity?
+  spec.csharp:
+  - uid: Meridian.Application.Services.GovernanceExceptionSeverity
+    name: GovernanceExceptionSeverity
+    href: Meridian.Application.Services.GovernanceExceptionSeverity.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Application.Services.GovernanceExceptionSeverity
+    name: GovernanceExceptionSeverity
+    href: Meridian.Application.Services.GovernanceExceptionSeverity.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Services.GovernanceExceptionService.GetDashboard*
+  commentId: Overload:Meridian.Application.Services.GovernanceExceptionService.GetDashboard
+  href: Meridian.Application.Services.GovernanceExceptionService.html#Meridian_Application_Services_GovernanceExceptionService_GetDashboard_System_String_
+  name: GetDashboard
+  nameWithType: GovernanceExceptionService.GetDashboard
+  fullName: Meridian.Application.Services.GovernanceExceptionService.GetDashboard
+- uid: Meridian.Application.Services.GovernanceExceptionDashboard
+  commentId: T:Meridian.Application.Services.GovernanceExceptionDashboard
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.GovernanceExceptionDashboard.html
+  name: GovernanceExceptionDashboard
+  nameWithType: GovernanceExceptionDashboard
+  fullName: Meridian.Application.Services.GovernanceExceptionDashboard
+- uid: Meridian.Application.Services.GovernanceExceptionStatus.Investigating
+  commentId: F:Meridian.Application.Services.GovernanceExceptionStatus.Investigating
+  href: Meridian.Application.Services.GovernanceExceptionStatus.html#Meridian_Application_Services_GovernanceExceptionStatus_Investigating
+  name: Investigating
+  nameWithType: GovernanceExceptionStatus.Investigating
+  fullName: Meridian.Application.Services.GovernanceExceptionStatus.Investigating
+- uid: Meridian.Application.Services.GovernanceExceptionService.MarkInvestigating*
+  commentId: Overload:Meridian.Application.Services.GovernanceExceptionService.MarkInvestigating
+  href: Meridian.Application.Services.GovernanceExceptionService.html#Meridian_Application_Services_GovernanceExceptionService_MarkInvestigating_System_Guid_System_String_
+  name: MarkInvestigating
+  nameWithType: GovernanceExceptionService.MarkInvestigating
+  fullName: Meridian.Application.Services.GovernanceExceptionService.MarkInvestigating
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Services.GovernanceExceptionService.Resolve*
+  commentId: Overload:Meridian.Application.Services.GovernanceExceptionService.Resolve
+  href: Meridian.Application.Services.GovernanceExceptionService.html#Meridian_Application_Services_GovernanceExceptionService_Resolve_System_Guid_System_String_
+  name: Resolve
+  nameWithType: GovernanceExceptionService.Resolve
+  fullName: Meridian.Application.Services.GovernanceExceptionService.Resolve

@@ -1,0 +1,1150 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem
+  commentId: T:Meridian.Contracts.Workstation.FundReconciliationItem
+  id: FundReconciliationItem
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundReconciliationItem.#ctor(System.Guid,System.Guid,System.String,System.DateOnly,System.String,System.Int32,System.Int32,System.Int32,System.Decimal,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.Int32,System.Boolean,System.String)
+  - Meridian.Contracts.Workstation.FundReconciliationItem.AccountDisplayName
+  - Meridian.Contracts.Workstation.FundReconciliationItem.AccountId
+  - Meridian.Contracts.Workstation.FundReconciliationItem.AsOfDate
+  - Meridian.Contracts.Workstation.FundReconciliationItem.BreakAmountTotal
+  - Meridian.Contracts.Workstation.FundReconciliationItem.CompletedAt
+  - Meridian.Contracts.Workstation.FundReconciliationItem.CoverageLabel
+  - Meridian.Contracts.Workstation.FundReconciliationItem.HasSecurityCoverageIssues
+  - Meridian.Contracts.Workstation.FundReconciliationItem.ReconciliationRunId
+  - Meridian.Contracts.Workstation.FundReconciliationItem.RequestedAt
+  - Meridian.Contracts.Workstation.FundReconciliationItem.RunId
+  - Meridian.Contracts.Workstation.FundReconciliationItem.ScopeLabel
+  - Meridian.Contracts.Workstation.FundReconciliationItem.SecurityIssueCount
+  - Meridian.Contracts.Workstation.FundReconciliationItem.Status
+  - Meridian.Contracts.Workstation.FundReconciliationItem.StrategyName
+  - Meridian.Contracts.Workstation.FundReconciliationItem.TotalBreaks
+  - Meridian.Contracts.Workstation.FundReconciliationItem.TotalChecks
+  - Meridian.Contracts.Workstation.FundReconciliationItem.TotalMatched
+  langs:
+  - csharp
+  - vb
+  name: FundReconciliationItem
+  nameWithType: FundReconciliationItem
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundReconciliationItem
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Reconciliation row shown in governance operator queues.
+  example: []
+  syntax:
+    content: 'public sealed record FundReconciliationItem : IEquatable<FundReconciliationItem>'
+    content.vb: Public NotInheritable Class FundReconciliationItem Implements IEquatable(Of FundReconciliationItem)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundReconciliationItem}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.#ctor(System.Guid,System.Guid,System.String,System.DateOnly,System.String,System.Int32,System.Int32,System.Int32,System.Decimal,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.Int32,System.Boolean,System.String)
+  commentId: M:Meridian.Contracts.Workstation.FundReconciliationItem.#ctor(System.Guid,System.Guid,System.String,System.DateOnly,System.String,System.Int32,System.Int32,System.Int32,System.Decimal,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.Int32,System.Boolean,System.String)
+  id: '#ctor(System.Guid,System.Guid,System.String,System.DateOnly,System.String,System.Int32,System.Int32,System.Int32,System.Decimal,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.String,System.String,System.String,System.Int32,System.Boolean,System.String)'
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: FundReconciliationItem(Guid, Guid, string, DateOnly, string, int, int, int, decimal, DateTimeOffset, DateTimeOffset?, string, string?, string?, int, bool, string)
+  nameWithType: FundReconciliationItem.FundReconciliationItem(Guid, Guid, string, DateOnly, string, int, int, int, decimal, DateTimeOffset, DateTimeOffset?, string, string?, string?, int, bool, string)
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.FundReconciliationItem(System.Guid, System.Guid, string, System.DateOnly, string, int, int, int, decimal, System.DateTimeOffset, System.DateTimeOffset?, string, string?, string?, int, bool, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Reconciliation row shown in governance operator queues.
+  example: []
+  syntax:
+    content: public FundReconciliationItem(Guid ReconciliationRunId, Guid AccountId, string AccountDisplayName, DateOnly AsOfDate, string Status, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string ScopeLabel = "Account", string? StrategyName = null, string? RunId = null, int SecurityIssueCount = 0, bool HasSecurityCoverageIssues = false, string CoverageLabel = "n/a")
+    parameters:
+    - id: ReconciliationRunId
+      type: System.Guid
+    - id: AccountId
+      type: System.Guid
+    - id: AccountDisplayName
+      type: System.String
+    - id: AsOfDate
+      type: System.DateOnly
+    - id: Status
+      type: System.String
+    - id: TotalChecks
+      type: System.Int32
+    - id: TotalMatched
+      type: System.Int32
+    - id: TotalBreaks
+      type: System.Int32
+    - id: BreakAmountTotal
+      type: System.Decimal
+    - id: RequestedAt
+      type: System.DateTimeOffset
+    - id: CompletedAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: ScopeLabel
+      type: System.String
+    - id: StrategyName
+      type: System.String
+    - id: RunId
+      type: System.String
+    - id: SecurityIssueCount
+      type: System.Int32
+    - id: HasSecurityCoverageIssues
+      type: System.Boolean
+    - id: CoverageLabel
+      type: System.String
+    content.vb: Public Sub New(ReconciliationRunId As Guid, AccountId As Guid, AccountDisplayName As String, AsOfDate As DateOnly, Status As String, TotalChecks As Integer, TotalMatched As Integer, TotalBreaks As Integer, BreakAmountTotal As Decimal, RequestedAt As DateTimeOffset, CompletedAt As DateTimeOffset?, ScopeLabel As String = "Account", StrategyName As String = Nothing, RunId As String = Nothing, SecurityIssueCount As Integer = 0, HasSecurityCoverageIssues As Boolean = False, CoverageLabel As String = "n/a")
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.#ctor*
+  nameWithType.vb: FundReconciliationItem.New(Guid, Guid, String, DateOnly, String, Integer, Integer, Integer, Decimal, DateTimeOffset, DateTimeOffset?, String, String, String, Integer, Boolean, String)
+  fullName.vb: Meridian.Contracts.Workstation.FundReconciliationItem.New(System.Guid, System.Guid, String, System.DateOnly, String, Integer, Integer, Integer, Decimal, System.DateTimeOffset, System.DateTimeOffset?, String, String, String, Integer, Boolean, String)
+  name.vb: New(Guid, Guid, String, DateOnly, String, Integer, Integer, Integer, Decimal, DateTimeOffset, DateTimeOffset?, String, String, String, Integer, Boolean, String)
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.ReconciliationRunId
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.ReconciliationRunId
+  id: ReconciliationRunId
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationRunId
+  nameWithType: FundReconciliationItem.ReconciliationRunId
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.ReconciliationRunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationRunId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid ReconciliationRunId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ReconciliationRunId As Guid
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.ReconciliationRunId*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.AccountId
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.AccountId
+  id: AccountId
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: FundReconciliationItem.AccountId
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property AccountId As Guid
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.AccountId*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.AccountDisplayName
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.AccountDisplayName
+  id: AccountDisplayName
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: AccountDisplayName
+  nameWithType: FundReconciliationItem.AccountDisplayName
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.AccountDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountDisplayName
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string AccountDisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountDisplayName As String
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.AccountDisplayName*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.AsOfDate
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.AsOfDate
+  id: AsOfDate
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: AsOfDate
+  nameWithType: FundReconciliationItem.AsOfDate
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.AsOfDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOfDate
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateOnly AsOfDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property AsOfDate As DateOnly
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.AsOfDate*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.Status
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.Status
+  id: Status
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: FundReconciliationItem.Status
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Status { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Status As String
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.Status*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.TotalChecks
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.TotalChecks
+  id: TotalChecks
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: TotalChecks
+  nameWithType: FundReconciliationItem.TotalChecks
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.TotalChecks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalChecks
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int TotalChecks { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalChecks As Integer
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.TotalChecks*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.TotalMatched
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.TotalMatched
+  id: TotalMatched
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: TotalMatched
+  nameWithType: FundReconciliationItem.TotalMatched
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.TotalMatched
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalMatched
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int TotalMatched { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalMatched As Integer
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.TotalMatched*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.TotalBreaks
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.TotalBreaks
+  id: TotalBreaks
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: TotalBreaks
+  nameWithType: FundReconciliationItem.TotalBreaks
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.TotalBreaks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBreaks
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int TotalBreaks { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalBreaks As Integer
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.TotalBreaks*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.BreakAmountTotal
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.BreakAmountTotal
+  id: BreakAmountTotal
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: BreakAmountTotal
+  nameWithType: FundReconciliationItem.BreakAmountTotal
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.BreakAmountTotal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BreakAmountTotal
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal BreakAmountTotal { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property BreakAmountTotal As Decimal
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.BreakAmountTotal*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.RequestedAt
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.RequestedAt
+  id: RequestedAt
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: RequestedAt
+  nameWithType: FundReconciliationItem.RequestedAt
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.RequestedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestedAt
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset RequestedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property RequestedAt As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.RequestedAt*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.CompletedAt
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: FundReconciliationItem.CompletedAt
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset? CompletedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CompletedAt As DateTimeOffset?
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.CompletedAt*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.ScopeLabel
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.ScopeLabel
+  id: ScopeLabel
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: ScopeLabel
+  nameWithType: FundReconciliationItem.ScopeLabel
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.ScopeLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScopeLabel
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string ScopeLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ScopeLabel As String
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.ScopeLabel*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.StrategyName
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.StrategyName
+  id: StrategyName
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: StrategyName
+  nameWithType: FundReconciliationItem.StrategyName
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.StrategyName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyName
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? StrategyName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyName As String
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.StrategyName*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.RunId
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: FundReconciliationItem.RunId
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.RunId*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.SecurityIssueCount
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.SecurityIssueCount
+  id: SecurityIssueCount
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: SecurityIssueCount
+  nameWithType: FundReconciliationItem.SecurityIssueCount
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.SecurityIssueCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityIssueCount
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int SecurityIssueCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SecurityIssueCount As Integer
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.SecurityIssueCount*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.HasSecurityCoverageIssues
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.HasSecurityCoverageIssues
+  id: HasSecurityCoverageIssues
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: HasSecurityCoverageIssues
+  nameWithType: FundReconciliationItem.HasSecurityCoverageIssues
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.HasSecurityCoverageIssues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasSecurityCoverageIssues
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public bool HasSecurityCoverageIssues { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property HasSecurityCoverageIssues As Boolean
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.HasSecurityCoverageIssues*
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.CoverageLabel
+  commentId: P:Meridian.Contracts.Workstation.FundReconciliationItem.CoverageLabel
+  id: CoverageLabel
+  parent: Meridian.Contracts.Workstation.FundReconciliationItem
+  langs:
+  - csharp
+  - vb
+  name: CoverageLabel
+  nameWithType: FundReconciliationItem.CoverageLabel
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.CoverageLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CoverageLabel
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string CoverageLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CoverageLabel As String
+  overload: Meridian.Contracts.Workstation.FundReconciliationItem.CoverageLabel*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundReconciliationItem}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundReconciliationItem}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundReconciliationItem>
+  nameWithType: IEquatable<FundReconciliationItem>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundReconciliationItem>
+  nameWithType.vb: IEquatable(Of FundReconciliationItem)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundReconciliationItem)
+  name.vb: IEquatable(Of FundReconciliationItem)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundReconciliationItem
+    name: FundReconciliationItem
+    href: Meridian.Contracts.Workstation.FundReconciliationItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundReconciliationItem
+    name: FundReconciliationItem
+    href: Meridian.Contracts.Workstation.FundReconciliationItem.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.#ctor
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem__ctor_System_Guid_System_Guid_System_String_System_DateOnly_System_String_System_Int32_System_Int32_System_Int32_System_Decimal_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_String_System_String_System_String_System_Int32_System_Boolean_System_String_
+  name: FundReconciliationItem
+  nameWithType: FundReconciliationItem.FundReconciliationItem
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.FundReconciliationItem
+  nameWithType.vb: FundReconciliationItem.New
+  fullName.vb: Meridian.Contracts.Workstation.FundReconciliationItem.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.ReconciliationRunId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.ReconciliationRunId
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_ReconciliationRunId
+  name: ReconciliationRunId
+  nameWithType: FundReconciliationItem.ReconciliationRunId
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.ReconciliationRunId
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.AccountId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.AccountId
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_AccountId
+  name: AccountId
+  nameWithType: FundReconciliationItem.AccountId
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.AccountId
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.AccountDisplayName*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.AccountDisplayName
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_AccountDisplayName
+  name: AccountDisplayName
+  nameWithType: FundReconciliationItem.AccountDisplayName
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.AccountDisplayName
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.AsOfDate*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.AsOfDate
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_AsOfDate
+  name: AsOfDate
+  nameWithType: FundReconciliationItem.AsOfDate
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.AsOfDate
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.Status*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.Status
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_Status
+  name: Status
+  nameWithType: FundReconciliationItem.Status
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.Status
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.TotalChecks*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.TotalChecks
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_TotalChecks
+  name: TotalChecks
+  nameWithType: FundReconciliationItem.TotalChecks
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.TotalChecks
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.TotalMatched*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.TotalMatched
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_TotalMatched
+  name: TotalMatched
+  nameWithType: FundReconciliationItem.TotalMatched
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.TotalMatched
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.TotalBreaks*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.TotalBreaks
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_TotalBreaks
+  name: TotalBreaks
+  nameWithType: FundReconciliationItem.TotalBreaks
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.TotalBreaks
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.BreakAmountTotal*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.BreakAmountTotal
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_BreakAmountTotal
+  name: BreakAmountTotal
+  nameWithType: FundReconciliationItem.BreakAmountTotal
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.BreakAmountTotal
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.RequestedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.RequestedAt
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_RequestedAt
+  name: RequestedAt
+  nameWithType: FundReconciliationItem.RequestedAt
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.RequestedAt
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.CompletedAt*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.CompletedAt
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_CompletedAt
+  name: CompletedAt
+  nameWithType: FundReconciliationItem.CompletedAt
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.CompletedAt
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.ScopeLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.ScopeLabel
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_ScopeLabel
+  name: ScopeLabel
+  nameWithType: FundReconciliationItem.ScopeLabel
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.ScopeLabel
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.StrategyName*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.StrategyName
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_StrategyName
+  name: StrategyName
+  nameWithType: FundReconciliationItem.StrategyName
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.StrategyName
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.RunId
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_RunId
+  name: RunId
+  nameWithType: FundReconciliationItem.RunId
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.RunId
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.SecurityIssueCount*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.SecurityIssueCount
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_SecurityIssueCount
+  name: SecurityIssueCount
+  nameWithType: FundReconciliationItem.SecurityIssueCount
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.SecurityIssueCount
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.HasSecurityCoverageIssues*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.HasSecurityCoverageIssues
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_HasSecurityCoverageIssues
+  name: HasSecurityCoverageIssues
+  nameWithType: FundReconciliationItem.HasSecurityCoverageIssues
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.HasSecurityCoverageIssues
+- uid: Meridian.Contracts.Workstation.FundReconciliationItem.CoverageLabel*
+  commentId: Overload:Meridian.Contracts.Workstation.FundReconciliationItem.CoverageLabel
+  href: Meridian.Contracts.Workstation.FundReconciliationItem.html#Meridian_Contracts_Workstation_FundReconciliationItem_CoverageLabel
+  name: CoverageLabel
+  nameWithType: FundReconciliationItem.CoverageLabel
+  fullName: Meridian.Contracts.Workstation.FundReconciliationItem.CoverageLabel

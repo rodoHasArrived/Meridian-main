@@ -1,0 +1,311 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ShutdownReason
+  commentId: T:Meridian.Application.Services.ShutdownReason
+  id: ShutdownReason
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ShutdownReason.ConfigurationChange
+  - Meridian.Application.Services.ShutdownReason.Error
+  - Meridian.Application.Services.ShutdownReason.HealthCheckFailed
+  - Meridian.Application.Services.ShutdownReason.MaintenanceWindow
+  - Meridian.Application.Services.ShutdownReason.ProcessExit
+  - Meridian.Application.Services.ShutdownReason.ResourceExhausted
+  - Meridian.Application.Services.ShutdownReason.SignalReceived
+  - Meridian.Application.Services.ShutdownReason.Unknown
+  - Meridian.Application.Services.ShutdownReason.UserRequested
+  langs:
+  - csharp
+  - vb
+  name: ShutdownReason
+  nameWithType: ShutdownReason
+  fullName: Meridian.Application.Services.ShutdownReason
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShutdownReason
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Reason for shutdown.
+  example: []
+  syntax:
+    content: 'public enum ShutdownReason : byte'
+    content.vb: Public Enum ShutdownReason As Byte
+- uid: Meridian.Application.Services.ShutdownReason.Unknown
+  commentId: F:Meridian.Application.Services.ShutdownReason.Unknown
+  id: Unknown
+  parent: Meridian.Application.Services.ShutdownReason
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: ShutdownReason.Unknown
+  fullName: Meridian.Application.Services.ShutdownReason.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 516
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Unknown = 0
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+- uid: Meridian.Application.Services.ShutdownReason.UserRequested
+  commentId: F:Meridian.Application.Services.ShutdownReason.UserRequested
+  id: UserRequested
+  parent: Meridian.Application.Services.ShutdownReason
+  langs:
+  - csharp
+  - vb
+  name: UserRequested
+  nameWithType: ShutdownReason.UserRequested
+  fullName: Meridian.Application.Services.ShutdownReason.UserRequested
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UserRequested
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: UserRequested = 1
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+- uid: Meridian.Application.Services.ShutdownReason.ProcessExit
+  commentId: F:Meridian.Application.Services.ShutdownReason.ProcessExit
+  id: ProcessExit
+  parent: Meridian.Application.Services.ShutdownReason
+  langs:
+  - csharp
+  - vb
+  name: ProcessExit
+  nameWithType: ShutdownReason.ProcessExit
+  fullName: Meridian.Application.Services.ShutdownReason.ProcessExit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessExit
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: ProcessExit = 2
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+- uid: Meridian.Application.Services.ShutdownReason.SignalReceived
+  commentId: F:Meridian.Application.Services.ShutdownReason.SignalReceived
+  id: SignalReceived
+  parent: Meridian.Application.Services.ShutdownReason
+  langs:
+  - csharp
+  - vb
+  name: SignalReceived
+  nameWithType: ShutdownReason.SignalReceived
+  fullName: Meridian.Application.Services.ShutdownReason.SignalReceived
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SignalReceived
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 519
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: SignalReceived = 3
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+- uid: Meridian.Application.Services.ShutdownReason.Error
+  commentId: F:Meridian.Application.Services.ShutdownReason.Error
+  id: Error
+  parent: Meridian.Application.Services.ShutdownReason
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: ShutdownReason.Error
+  fullName: Meridian.Application.Services.ShutdownReason.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Error = 4
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+- uid: Meridian.Application.Services.ShutdownReason.MaintenanceWindow
+  commentId: F:Meridian.Application.Services.ShutdownReason.MaintenanceWindow
+  id: MaintenanceWindow
+  parent: Meridian.Application.Services.ShutdownReason
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceWindow
+  nameWithType: ShutdownReason.MaintenanceWindow
+  fullName: Meridian.Application.Services.ShutdownReason.MaintenanceWindow
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceWindow
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 521
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: MaintenanceWindow = 5
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+- uid: Meridian.Application.Services.ShutdownReason.ConfigurationChange
+  commentId: F:Meridian.Application.Services.ShutdownReason.ConfigurationChange
+  id: ConfigurationChange
+  parent: Meridian.Application.Services.ShutdownReason
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationChange
+  nameWithType: ShutdownReason.ConfigurationChange
+  fullName: Meridian.Application.Services.ShutdownReason.ConfigurationChange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationChange
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 522
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: ConfigurationChange = 6
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+- uid: Meridian.Application.Services.ShutdownReason.HealthCheckFailed
+  commentId: F:Meridian.Application.Services.ShutdownReason.HealthCheckFailed
+  id: HealthCheckFailed
+  parent: Meridian.Application.Services.ShutdownReason
+  langs:
+  - csharp
+  - vb
+  name: HealthCheckFailed
+  nameWithType: ShutdownReason.HealthCheckFailed
+  fullName: Meridian.Application.Services.ShutdownReason.HealthCheckFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheckFailed
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 523
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: HealthCheckFailed = 7
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+- uid: Meridian.Application.Services.ShutdownReason.ResourceExhausted
+  commentId: F:Meridian.Application.Services.ShutdownReason.ResourceExhausted
+  id: ResourceExhausted
+  parent: Meridian.Application.Services.ShutdownReason
+  langs:
+  - csharp
+  - vb
+  name: ResourceExhausted
+  nameWithType: ShutdownReason.ResourceExhausted
+  fullName: Meridian.Application.Services.ShutdownReason.ResourceExhausted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResourceExhausted
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 524
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: ResourceExhausted = 8
+    return:
+      type: Meridian.Application.Services.ShutdownReason
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.ShutdownReason
+  commentId: T:Meridian.Application.Services.ShutdownReason
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ShutdownReason.html
+  name: ShutdownReason
+  nameWithType: ShutdownReason
+  fullName: Meridian.Application.Services.ShutdownReason

@@ -1,0 +1,752 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.FacetedSearchResult
+  commentId: T:Meridian.Storage.Services.FacetedSearchResult
+  id: FacetedSearchResult
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.FacetedSearchResult.#ctor(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.Dictionary{System.String,System.Int32}},System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.FileSearchResult})
+  - Meridian.Storage.Services.FacetedSearchResult.Facets
+  - Meridian.Storage.Services.FacetedSearchResult.FileCount
+  - Meridian.Storage.Services.FacetedSearchResult.Results
+  - Meridian.Storage.Services.FacetedSearchResult.TotalMatches
+  langs:
+  - csharp
+  - vb
+  name: FacetedSearchResult
+  nameWithType: FacetedSearchResult
+  fullName: Meridian.Storage.Services.FacetedSearchResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FacetedSearchResult
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 677
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record FacetedSearchResult : IEquatable<FacetedSearchResult>'
+    content.vb: Public NotInheritable Class FacetedSearchResult Implements IEquatable(Of FacetedSearchResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.FacetedSearchResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.FacetedSearchResult.#ctor(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.Dictionary{System.String,System.Int32}},System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.FileSearchResult})
+  commentId: M:Meridian.Storage.Services.FacetedSearchResult.#ctor(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.Dictionary{System.String,System.Int32}},System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.FileSearchResult})
+  id: '#ctor(System.Int32,System.Int32,System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.Dictionary{System.String,System.Int32}},System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.FileSearchResult})'
+  parent: Meridian.Storage.Services.FacetedSearchResult
+  langs:
+  - csharp
+  - vb
+  name: FacetedSearchResult(int, int, Dictionary<string, Dictionary<string, int>>, IReadOnlyList<FileSearchResult>)
+  nameWithType: FacetedSearchResult.FacetedSearchResult(int, int, Dictionary<string, Dictionary<string, int>>, IReadOnlyList<FileSearchResult>)
+  fullName: Meridian.Storage.Services.FacetedSearchResult.FacetedSearchResult(int, int, System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>, System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.FileSearchResult>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 677
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public FacetedSearchResult(int TotalMatches, int FileCount, Dictionary<string, Dictionary<string, int>> Facets, IReadOnlyList<FileSearchResult> Results)
+    parameters:
+    - id: TotalMatches
+      type: System.Int32
+    - id: FileCount
+      type: System.Int32
+    - id: Facets
+      type: System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.Dictionary{System.String,System.Int32}}
+    - id: Results
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.FileSearchResult}
+    content.vb: Public Sub New(TotalMatches As Integer, FileCount As Integer, Facets As Dictionary(Of String, Dictionary(Of String, Integer)), Results As IReadOnlyList(Of FileSearchResult))
+  overload: Meridian.Storage.Services.FacetedSearchResult.#ctor*
+  nameWithType.vb: FacetedSearchResult.New(Integer, Integer, Dictionary(Of String, Dictionary(Of String, Integer)), IReadOnlyList(Of FileSearchResult))
+  fullName.vb: Meridian.Storage.Services.FacetedSearchResult.New(Integer, Integer, System.Collections.Generic.Dictionary(Of String, System.Collections.Generic.Dictionary(Of String, Integer)), System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.FileSearchResult))
+  name.vb: New(Integer, Integer, Dictionary(Of String, Dictionary(Of String, Integer)), IReadOnlyList(Of FileSearchResult))
+- uid: Meridian.Storage.Services.FacetedSearchResult.TotalMatches
+  commentId: P:Meridian.Storage.Services.FacetedSearchResult.TotalMatches
+  id: TotalMatches
+  parent: Meridian.Storage.Services.FacetedSearchResult
+  langs:
+  - csharp
+  - vb
+  name: TotalMatches
+  nameWithType: FacetedSearchResult.TotalMatches
+  fullName: Meridian.Storage.Services.FacetedSearchResult.TotalMatches
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalMatches
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 678
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int TotalMatches { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalMatches As Integer
+  overload: Meridian.Storage.Services.FacetedSearchResult.TotalMatches*
+- uid: Meridian.Storage.Services.FacetedSearchResult.FileCount
+  commentId: P:Meridian.Storage.Services.FacetedSearchResult.FileCount
+  id: FileCount
+  parent: Meridian.Storage.Services.FacetedSearchResult
+  langs:
+  - csharp
+  - vb
+  name: FileCount
+  nameWithType: FacetedSearchResult.FileCount
+  fullName: Meridian.Storage.Services.FacetedSearchResult.FileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileCount
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 679
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public int FileCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FileCount As Integer
+  overload: Meridian.Storage.Services.FacetedSearchResult.FileCount*
+- uid: Meridian.Storage.Services.FacetedSearchResult.Facets
+  commentId: P:Meridian.Storage.Services.FacetedSearchResult.Facets
+  id: Facets
+  parent: Meridian.Storage.Services.FacetedSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Facets
+  nameWithType: FacetedSearchResult.Facets
+  fullName: Meridian.Storage.Services.FacetedSearchResult.Facets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Facets
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 680
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public Dictionary<string, Dictionary<string, int>> Facets { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.Dictionary{System.String,System.Int32}}
+    content.vb: Public Property Facets As Dictionary(Of String, Dictionary(Of String, Integer))
+  overload: Meridian.Storage.Services.FacetedSearchResult.Facets*
+- uid: Meridian.Storage.Services.FacetedSearchResult.Results
+  commentId: P:Meridian.Storage.Services.FacetedSearchResult.Results
+  id: Results
+  parent: Meridian.Storage.Services.FacetedSearchResult
+  langs:
+  - csharp
+  - vb
+  name: Results
+  nameWithType: FacetedSearchResult.Results
+  fullName: Meridian.Storage.Services.FacetedSearchResult.Results
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Results
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 681
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyList<FileSearchResult> Results { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.FileSearchResult}
+    content.vb: Public Property Results As IReadOnlyList(Of FileSearchResult)
+  overload: Meridian.Storage.Services.FacetedSearchResult.Results*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.FacetedSearchResult}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.FacetedSearchResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FacetedSearchResult>
+  nameWithType: IEquatable<FacetedSearchResult>
+  fullName: System.IEquatable<Meridian.Storage.Services.FacetedSearchResult>
+  nameWithType.vb: IEquatable(Of FacetedSearchResult)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.FacetedSearchResult)
+  name.vb: IEquatable(Of FacetedSearchResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.FacetedSearchResult
+    name: FacetedSearchResult
+    href: Meridian.Storage.Services.FacetedSearchResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.FacetedSearchResult
+    name: FacetedSearchResult
+    href: Meridian.Storage.Services.FacetedSearchResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.FacetedSearchResult.#ctor*
+  commentId: Overload:Meridian.Storage.Services.FacetedSearchResult.#ctor
+  href: Meridian.Storage.Services.FacetedSearchResult.html#Meridian_Storage_Services_FacetedSearchResult__ctor_System_Int32_System_Int32_System_Collections_Generic_Dictionary_System_String_System_Collections_Generic_Dictionary_System_String_System_Int32___System_Collections_Generic_IReadOnlyList_Meridian_Storage_Services_FileSearchResult__
+  name: FacetedSearchResult
+  nameWithType: FacetedSearchResult.FacetedSearchResult
+  fullName: Meridian.Storage.Services.FacetedSearchResult.FacetedSearchResult
+  nameWithType.vb: FacetedSearchResult.New
+  fullName.vb: Meridian.Storage.Services.FacetedSearchResult.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.Dictionary{System.String,System.Int32}}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Collections.Generic.Dictionary{System.String,System.Int32}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, Dictionary<string, int>>
+  nameWithType: Dictionary<string, Dictionary<string, int>>
+  fullName: System.Collections.Generic.Dictionary<string, System.Collections.Generic.Dictionary<string, int>>
+  nameWithType.vb: Dictionary(Of String, Dictionary(Of String, Integer))
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, System.Collections.Generic.Dictionary(Of String, Integer))
+  name.vb: Dictionary(Of String, Dictionary(Of String, Integer))
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.FileSearchResult}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.FileSearchResult}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<FileSearchResult>
+  nameWithType: IReadOnlyList<FileSearchResult>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.FileSearchResult>
+  nameWithType.vb: IReadOnlyList(Of FileSearchResult)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.FileSearchResult)
+  name.vb: IReadOnlyList(Of FileSearchResult)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Services.FileSearchResult
+    name: FileSearchResult
+    href: Meridian.Storage.Services.FileSearchResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.FileSearchResult
+    name: FileSearchResult
+    href: Meridian.Storage.Services.FileSearchResult.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.FacetedSearchResult.TotalMatches*
+  commentId: Overload:Meridian.Storage.Services.FacetedSearchResult.TotalMatches
+  href: Meridian.Storage.Services.FacetedSearchResult.html#Meridian_Storage_Services_FacetedSearchResult_TotalMatches
+  name: TotalMatches
+  nameWithType: FacetedSearchResult.TotalMatches
+  fullName: Meridian.Storage.Services.FacetedSearchResult.TotalMatches
+- uid: Meridian.Storage.Services.FacetedSearchResult.FileCount*
+  commentId: Overload:Meridian.Storage.Services.FacetedSearchResult.FileCount
+  href: Meridian.Storage.Services.FacetedSearchResult.html#Meridian_Storage_Services_FacetedSearchResult_FileCount
+  name: FileCount
+  nameWithType: FacetedSearchResult.FileCount
+  fullName: Meridian.Storage.Services.FacetedSearchResult.FileCount
+- uid: Meridian.Storage.Services.FacetedSearchResult.Facets*
+  commentId: Overload:Meridian.Storage.Services.FacetedSearchResult.Facets
+  href: Meridian.Storage.Services.FacetedSearchResult.html#Meridian_Storage_Services_FacetedSearchResult_Facets
+  name: Facets
+  nameWithType: FacetedSearchResult.Facets
+  fullName: Meridian.Storage.Services.FacetedSearchResult.Facets
+- uid: Meridian.Storage.Services.FacetedSearchResult.Results*
+  commentId: Overload:Meridian.Storage.Services.FacetedSearchResult.Results
+  href: Meridian.Storage.Services.FacetedSearchResult.html#Meridian_Storage_Services_FacetedSearchResult_Results
+  name: Results
+  nameWithType: FacetedSearchResult.Results
+  fullName: Meridian.Storage.Services.FacetedSearchResult.Results

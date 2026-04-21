@@ -1,0 +1,1347 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary
+  commentId: T:Meridian.Contracts.Workstation.CashFinancingSummary
+  id: CashFinancingSummary
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.CashFinancingSummary.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashLadderBucketDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto})
+  - Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowBuckets
+  - Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntries
+  - Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntryCount
+  - Meridian.Contracts.Workstation.CashFinancingSummary.Currency
+  - Meridian.Contracts.Workstation.CashFinancingSummary.FinancingCost
+  - Meridian.Contracts.Workstation.CashFinancingSummary.GrossExposure
+  - Meridian.Contracts.Workstation.CashFinancingSummary.Highlights
+  - Meridian.Contracts.Workstation.CashFinancingSummary.LongMarketValue
+  - Meridian.Contracts.Workstation.CashFinancingSummary.MarginBalance
+  - Meridian.Contracts.Workstation.CashFinancingSummary.NetExposure
+  - Meridian.Contracts.Workstation.CashFinancingSummary.NetProjectedCashFlow
+  - Meridian.Contracts.Workstation.CashFinancingSummary.PendingSettlement
+  - Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedInflows
+  - Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedOutflows
+  - Meridian.Contracts.Workstation.CashFinancingSummary.ProjectionBucketDays
+  - Meridian.Contracts.Workstation.CashFinancingSummary.RealizedPnl
+  - Meridian.Contracts.Workstation.CashFinancingSummary.ShortMarketValue
+  - Meridian.Contracts.Workstation.CashFinancingSummary.TotalCash
+  - Meridian.Contracts.Workstation.CashFinancingSummary.TotalEquity
+  - Meridian.Contracts.Workstation.CashFinancingSummary.UnrealizedPnl
+  langs:
+  - csharp
+  - vb
+  name: CashFinancingSummary
+  nameWithType: CashFinancingSummary
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashFinancingSummary
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared cash and financing rollup for governance and trading capital-control surfaces.
+  example: []
+  syntax:
+    content: 'public sealed record CashFinancingSummary : IEquatable<CashFinancingSummary>'
+    content.vb: Public NotInheritable Class CashFinancingSummary Implements IEquatable(Of CashFinancingSummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.CashFinancingSummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashLadderBucketDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto})
+  commentId: M:Meridian.Contracts.Workstation.CashFinancingSummary.#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashLadderBucketDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto})
+  id: '#ctor(System.String,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{System.String},System.Int32,System.Decimal,System.Decimal,System.Decimal,System.Int32,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashLadderBucketDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto})'
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: CashFinancingSummary(string, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<string>, int, decimal, decimal, decimal, int, IReadOnlyList<CashLadderBucketDto>?, IReadOnlyList<CashFlowEntryDto>?)
+  nameWithType: CashFinancingSummary.CashFinancingSummary(string, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, IReadOnlyList<string>, int, decimal, decimal, decimal, int, IReadOnlyList<CashLadderBucketDto>?, IReadOnlyList<CashFlowEntryDto>?)
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.CashFinancingSummary(string, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, decimal, System.Collections.Generic.IReadOnlyList<string>, int, decimal, decimal, decimal, int, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.CashLadderBucketDto>?, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.CashFlowEntryDto>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared cash and financing rollup for governance and trading capital-control surfaces.
+  example: []
+  syntax:
+    content: public CashFinancingSummary(string Currency, decimal TotalCash, decimal PendingSettlement, decimal FinancingCost, decimal MarginBalance, decimal RealizedPnl, decimal UnrealizedPnl, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, IReadOnlyList<string> Highlights, int CashFlowEntryCount = 0, decimal ProjectedInflows = 0, decimal ProjectedOutflows = 0, decimal NetProjectedCashFlow = 0, int ProjectionBucketDays = 0, IReadOnlyList<CashLadderBucketDto>? CashFlowBuckets = null, IReadOnlyList<CashFlowEntryDto>? CashFlowEntries = null)
+    parameters:
+    - id: Currency
+      type: System.String
+    - id: TotalCash
+      type: System.Decimal
+    - id: PendingSettlement
+      type: System.Decimal
+    - id: FinancingCost
+      type: System.Decimal
+    - id: MarginBalance
+      type: System.Decimal
+    - id: RealizedPnl
+      type: System.Decimal
+    - id: UnrealizedPnl
+      type: System.Decimal
+    - id: LongMarketValue
+      type: System.Decimal
+    - id: ShortMarketValue
+      type: System.Decimal
+    - id: GrossExposure
+      type: System.Decimal
+    - id: NetExposure
+      type: System.Decimal
+    - id: TotalEquity
+      type: System.Decimal
+    - id: Highlights
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: CashFlowEntryCount
+      type: System.Int32
+    - id: ProjectedInflows
+      type: System.Decimal
+    - id: ProjectedOutflows
+      type: System.Decimal
+    - id: NetProjectedCashFlow
+      type: System.Decimal
+    - id: ProjectionBucketDays
+      type: System.Int32
+    - id: CashFlowBuckets
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashLadderBucketDto}
+    - id: CashFlowEntries
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto}
+    content.vb: Public Sub New(Currency As String, TotalCash As Decimal, PendingSettlement As Decimal, FinancingCost As Decimal, MarginBalance As Decimal, RealizedPnl As Decimal, UnrealizedPnl As Decimal, LongMarketValue As Decimal, ShortMarketValue As Decimal, GrossExposure As Decimal, NetExposure As Decimal, TotalEquity As Decimal, Highlights As IReadOnlyList(Of String), CashFlowEntryCount As Integer = 0, ProjectedInflows As Decimal = 0, ProjectedOutflows As Decimal = 0, NetProjectedCashFlow As Decimal = 0, ProjectionBucketDays As Integer = 0, CashFlowBuckets As IReadOnlyList(Of CashLadderBucketDto) = Nothing, CashFlowEntries As IReadOnlyList(Of CashFlowEntryDto) = Nothing)
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.#ctor*
+  nameWithType.vb: CashFinancingSummary.New(String, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of String), Integer, Decimal, Decimal, Decimal, Integer, IReadOnlyList(Of CashLadderBucketDto), IReadOnlyList(Of CashFlowEntryDto))
+  fullName.vb: Meridian.Contracts.Workstation.CashFinancingSummary.New(String, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of String), Integer, Decimal, Decimal, Decimal, Integer, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.CashLadderBucketDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.CashFlowEntryDto))
+  name.vb: New(String, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, Decimal, IReadOnlyList(Of String), Integer, Decimal, Decimal, Decimal, Integer, IReadOnlyList(Of CashLadderBucketDto), IReadOnlyList(Of CashFlowEntryDto))
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.Currency
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.Currency
+  id: Currency
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: CashFinancingSummary.Currency
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.Currency*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.TotalCash
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.TotalCash
+  id: TotalCash
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalCash
+  nameWithType: CashFinancingSummary.TotalCash
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.TotalCash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCash
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalCash { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalCash As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.TotalCash*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.PendingSettlement
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.PendingSettlement
+  id: PendingSettlement
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: PendingSettlement
+  nameWithType: CashFinancingSummary.PendingSettlement
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.PendingSettlement
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingSettlement
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal PendingSettlement { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property PendingSettlement As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.PendingSettlement*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.FinancingCost
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.FinancingCost
+  id: FinancingCost
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: FinancingCost
+  nameWithType: CashFinancingSummary.FinancingCost
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.FinancingCost
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinancingCost
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal FinancingCost { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property FinancingCost As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.FinancingCost*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.MarginBalance
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.MarginBalance
+  id: MarginBalance
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: MarginBalance
+  nameWithType: CashFinancingSummary.MarginBalance
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.MarginBalance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginBalance
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal MarginBalance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property MarginBalance As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.MarginBalance*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.RealizedPnl
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.RealizedPnl
+  id: RealizedPnl
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnl
+  nameWithType: CashFinancingSummary.RealizedPnl
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.RealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnl
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal RealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property RealizedPnl As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.RealizedPnl*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.UnrealizedPnl
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.UnrealizedPnl
+  id: UnrealizedPnl
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedPnl
+  nameWithType: CashFinancingSummary.UnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.UnrealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedPnl
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal UnrealizedPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property UnrealizedPnl As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.UnrealizedPnl*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.LongMarketValue
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.LongMarketValue
+  id: LongMarketValue
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: LongMarketValue
+  nameWithType: CashFinancingSummary.LongMarketValue
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.LongMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LongMarketValue
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal LongMarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property LongMarketValue As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.LongMarketValue*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.ShortMarketValue
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.ShortMarketValue
+  id: ShortMarketValue
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: ShortMarketValue
+  nameWithType: CashFinancingSummary.ShortMarketValue
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.ShortMarketValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortMarketValue
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal ShortMarketValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ShortMarketValue As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.ShortMarketValue*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.GrossExposure
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.GrossExposure
+  id: GrossExposure
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: GrossExposure
+  nameWithType: CashFinancingSummary.GrossExposure
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.GrossExposure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GrossExposure
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal GrossExposure { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property GrossExposure As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.GrossExposure*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.NetExposure
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.NetExposure
+  id: NetExposure
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: NetExposure
+  nameWithType: CashFinancingSummary.NetExposure
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.NetExposure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetExposure
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal NetExposure { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetExposure As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.NetExposure*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.TotalEquity
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.TotalEquity
+  id: TotalEquity
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: TotalEquity
+  nameWithType: CashFinancingSummary.TotalEquity
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.TotalEquity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEquity
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal TotalEquity { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TotalEquity As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.TotalEquity*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.Highlights
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.Highlights
+  id: Highlights
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: Highlights
+  nameWithType: CashFinancingSummary.Highlights
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.Highlights
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Highlights
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<string> Highlights { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Highlights As IReadOnlyList(Of String)
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.Highlights*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntryCount
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntryCount
+  id: CashFlowEntryCount
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: CashFlowEntryCount
+  nameWithType: CashFinancingSummary.CashFlowEntryCount
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashFlowEntryCount
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int CashFlowEntryCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CashFlowEntryCount As Integer
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntryCount*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedInflows
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedInflows
+  id: ProjectedInflows
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: ProjectedInflows
+  nameWithType: CashFinancingSummary.ProjectedInflows
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedInflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedInflows
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal ProjectedInflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedInflows As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedInflows*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedOutflows
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedOutflows
+  id: ProjectedOutflows
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: ProjectedOutflows
+  nameWithType: CashFinancingSummary.ProjectedOutflows
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedOutflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedOutflows
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal ProjectedOutflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedOutflows As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedOutflows*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.NetProjectedCashFlow
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.NetProjectedCashFlow
+  id: NetProjectedCashFlow
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: NetProjectedCashFlow
+  nameWithType: CashFinancingSummary.NetProjectedCashFlow
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.NetProjectedCashFlow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetProjectedCashFlow
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal NetProjectedCashFlow { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetProjectedCashFlow As Decimal
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.NetProjectedCashFlow*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectionBucketDays
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.ProjectionBucketDays
+  id: ProjectionBucketDays
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: ProjectionBucketDays
+  nameWithType: CashFinancingSummary.ProjectionBucketDays
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectionBucketDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectionBucketDays
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int ProjectionBucketDays { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ProjectionBucketDays As Integer
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectionBucketDays*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowBuckets
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowBuckets
+  id: CashFlowBuckets
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: CashFlowBuckets
+  nameWithType: CashFinancingSummary.CashFlowBuckets
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowBuckets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashFlowBuckets
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<CashLadderBucketDto>? CashFlowBuckets { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashLadderBucketDto}
+    content.vb: Public Property CashFlowBuckets As IReadOnlyList(Of CashLadderBucketDto)
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowBuckets*
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntries
+  commentId: P:Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntries
+  id: CashFlowEntries
+  parent: Meridian.Contracts.Workstation.CashFinancingSummary
+  langs:
+  - csharp
+  - vb
+  name: CashFlowEntries
+  nameWithType: CashFinancingSummary.CashFlowEntries
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashFlowEntries
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<CashFlowEntryDto>? CashFlowEntries { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto}
+    content.vb: Public Property CashFlowEntries As IReadOnlyList(Of CashFlowEntryDto)
+  overload: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntries*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.CashFinancingSummary}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.CashFinancingSummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CashFinancingSummary>
+  nameWithType: IEquatable<CashFinancingSummary>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.CashFinancingSummary>
+  nameWithType.vb: IEquatable(Of CashFinancingSummary)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.CashFinancingSummary)
+  name.vb: IEquatable(Of CashFinancingSummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.CashFinancingSummary
+    name: CashFinancingSummary
+    href: Meridian.Contracts.Workstation.CashFinancingSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.CashFinancingSummary
+    name: CashFinancingSummary
+    href: Meridian.Contracts.Workstation.CashFinancingSummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.#ctor
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary__ctor_System_String_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_System_String__System_Int32_System_Decimal_System_Decimal_System_Decimal_System_Int32_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_CashLadderBucketDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_CashFlowEntryDto__
+  name: CashFinancingSummary
+  nameWithType: CashFinancingSummary.CashFinancingSummary
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.CashFinancingSummary
+  nameWithType.vb: CashFinancingSummary.New
+  fullName.vb: Meridian.Contracts.Workstation.CashFinancingSummary.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashLadderBucketDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashLadderBucketDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<CashLadderBucketDto>
+  nameWithType: IReadOnlyList<CashLadderBucketDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.CashLadderBucketDto>
+  nameWithType.vb: IReadOnlyList(Of CashLadderBucketDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.CashLadderBucketDto)
+  name.vb: IReadOnlyList(Of CashLadderBucketDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.CashLadderBucketDto
+    name: CashLadderBucketDto
+    href: Meridian.Contracts.Workstation.CashLadderBucketDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.CashLadderBucketDto
+    name: CashLadderBucketDto
+    href: Meridian.Contracts.Workstation.CashLadderBucketDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.CashFlowEntryDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<CashFlowEntryDto>
+  nameWithType: IReadOnlyList<CashFlowEntryDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.CashFlowEntryDto>
+  nameWithType.vb: IReadOnlyList(Of CashFlowEntryDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.CashFlowEntryDto)
+  name.vb: IReadOnlyList(Of CashFlowEntryDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.CashFlowEntryDto
+    name: CashFlowEntryDto
+    href: Meridian.Contracts.Workstation.CashFlowEntryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.CashFlowEntryDto
+    name: CashFlowEntryDto
+    href: Meridian.Contracts.Workstation.CashFlowEntryDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.Currency*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.Currency
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_Currency
+  name: Currency
+  nameWithType: CashFinancingSummary.Currency
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.Currency
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.TotalCash*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.TotalCash
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_TotalCash
+  name: TotalCash
+  nameWithType: CashFinancingSummary.TotalCash
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.TotalCash
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.PendingSettlement*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.PendingSettlement
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_PendingSettlement
+  name: PendingSettlement
+  nameWithType: CashFinancingSummary.PendingSettlement
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.PendingSettlement
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.FinancingCost*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.FinancingCost
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_FinancingCost
+  name: FinancingCost
+  nameWithType: CashFinancingSummary.FinancingCost
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.FinancingCost
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.MarginBalance*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.MarginBalance
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_MarginBalance
+  name: MarginBalance
+  nameWithType: CashFinancingSummary.MarginBalance
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.MarginBalance
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.RealizedPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.RealizedPnl
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_RealizedPnl
+  name: RealizedPnl
+  nameWithType: CashFinancingSummary.RealizedPnl
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.RealizedPnl
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.UnrealizedPnl*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.UnrealizedPnl
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_UnrealizedPnl
+  name: UnrealizedPnl
+  nameWithType: CashFinancingSummary.UnrealizedPnl
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.UnrealizedPnl
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.LongMarketValue*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.LongMarketValue
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_LongMarketValue
+  name: LongMarketValue
+  nameWithType: CashFinancingSummary.LongMarketValue
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.LongMarketValue
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.ShortMarketValue*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.ShortMarketValue
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_ShortMarketValue
+  name: ShortMarketValue
+  nameWithType: CashFinancingSummary.ShortMarketValue
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.ShortMarketValue
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.GrossExposure*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.GrossExposure
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_GrossExposure
+  name: GrossExposure
+  nameWithType: CashFinancingSummary.GrossExposure
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.GrossExposure
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.NetExposure*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.NetExposure
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_NetExposure
+  name: NetExposure
+  nameWithType: CashFinancingSummary.NetExposure
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.NetExposure
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.TotalEquity*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.TotalEquity
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_TotalEquity
+  name: TotalEquity
+  nameWithType: CashFinancingSummary.TotalEquity
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.TotalEquity
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.Highlights*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.Highlights
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_Highlights
+  name: Highlights
+  nameWithType: CashFinancingSummary.Highlights
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.Highlights
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntryCount*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntryCount
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_CashFlowEntryCount
+  name: CashFlowEntryCount
+  nameWithType: CashFinancingSummary.CashFlowEntryCount
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntryCount
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedInflows*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedInflows
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_ProjectedInflows
+  name: ProjectedInflows
+  nameWithType: CashFinancingSummary.ProjectedInflows
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedInflows
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedOutflows*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedOutflows
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_ProjectedOutflows
+  name: ProjectedOutflows
+  nameWithType: CashFinancingSummary.ProjectedOutflows
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectedOutflows
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.NetProjectedCashFlow*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.NetProjectedCashFlow
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_NetProjectedCashFlow
+  name: NetProjectedCashFlow
+  nameWithType: CashFinancingSummary.NetProjectedCashFlow
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.NetProjectedCashFlow
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectionBucketDays*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.ProjectionBucketDays
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_ProjectionBucketDays
+  name: ProjectionBucketDays
+  nameWithType: CashFinancingSummary.ProjectionBucketDays
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.ProjectionBucketDays
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowBuckets*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowBuckets
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_CashFlowBuckets
+  name: CashFlowBuckets
+  nameWithType: CashFinancingSummary.CashFlowBuckets
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowBuckets
+- uid: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntries*
+  commentId: Overload:Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntries
+  href: Meridian.Contracts.Workstation.CashFinancingSummary.html#Meridian_Contracts_Workstation_CashFinancingSummary_CashFlowEntries
+  name: CashFlowEntries
+  nameWithType: CashFinancingSummary.CashFlowEntries
+  fullName: Meridian.Contracts.Workstation.CashFinancingSummary.CashFlowEntries

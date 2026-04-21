@@ -1,0 +1,28 @@
+{
+  "schema_version": "2026-04-14",
+  "mode": "design_partner",
+  "artifact_type": "roadmap-review",
+  "artifact_paths": [
+    "docs/plans/example-roadmap-item.md",
+    "docs/status/ROADMAP.md"
+  ],
+  "artifact_summary": "Roadmap or blueprint review anchored in the current platform direction.",
+  "persona_set": {
+    "panel": "core-finance",
+    "required_roles": [
+      "Owner-Operator"
+    ]
+  },
+  "focus_areas": [
+    "adoption_and_positioning",
+    "power_user_depth"
+  ],
+  "constraints": [
+    "Stay grounded in what Meridian already appears to support."
+  ],
+  "success_criteria": [
+    "The idea strengthens product coherence.",
+    "Likely first adopters and blockers are clear."
+  ],
+  "decision_deadline": "before the next roadmap refresh"
+}

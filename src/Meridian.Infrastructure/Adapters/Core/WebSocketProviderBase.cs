@@ -13,7 +13,7 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// <summary>
 /// Abstract base class for WebSocket-based streaming market data providers.
 /// Consolidates connection lifecycle, heartbeat monitoring, and automatic reconnection
-/// logic that was previously duplicated across Alpaca, Polygon, NYSE, and StockSharp.
+/// logic that was previously duplicated across Alpaca, Polygon, and NYSE.
 ///
 /// Derived classes implement protocol-specific hooks:
 /// <list type="bullet">

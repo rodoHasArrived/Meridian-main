@@ -1,0 +1,712 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse
+  commentId: T:Meridian.Contracts.Api.SymbolResolutionResponse
+  id: SymbolResolutionResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.SymbolResolutionResponse.Currency
+  - Meridian.Contracts.Api.SymbolResolutionResponse.Exchange
+  - Meridian.Contracts.Api.SymbolResolutionResponse.ProviderMappings
+  - Meridian.Contracts.Api.SymbolResolutionResponse.ResolvedSymbol
+  - Meridian.Contracts.Api.SymbolResolutionResponse.SecurityType
+  - Meridian.Contracts.Api.SymbolResolutionResponse.Symbol
+  langs:
+  - csharp
+  - vb
+  name: SymbolResolutionResponse
+  nameWithType: SymbolResolutionResponse
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolResolutionResponse
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Symbol resolution result for backfill operations.
+  example: []
+  syntax:
+    content: public sealed class SymbolResolutionResponse
+    content.vb: Public NotInheritable Class SymbolResolutionResponse
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.Symbol
+  commentId: P:Meridian.Contracts.Api.SymbolResolutionResponse.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Api.SymbolResolutionResponse
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: SymbolResolutionResponse.Symbol
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the original symbol requested for resolution.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbol")]
+
+      public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("symbol")>
+
+      Public Property Symbol As String
+  overload: Meridian.Contracts.Api.SymbolResolutionResponse.Symbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbol
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.ResolvedSymbol
+  commentId: P:Meridian.Contracts.Api.SymbolResolutionResponse.ResolvedSymbol
+  id: ResolvedSymbol
+  parent: Meridian.Contracts.Api.SymbolResolutionResponse
+  langs:
+  - csharp
+  - vb
+  name: ResolvedSymbol
+  nameWithType: SymbolResolutionResponse.ResolvedSymbol
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.ResolvedSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolvedSymbol
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the resolved symbol returned by the provider.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("resolvedSymbol")]
+
+      public string? ResolvedSymbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("resolvedSymbol")>
+
+      Public Property ResolvedSymbol As String
+  overload: Meridian.Contracts.Api.SymbolResolutionResponse.ResolvedSymbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: resolvedSymbol
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.Exchange
+  commentId: P:Meridian.Contracts.Api.SymbolResolutionResponse.Exchange
+  id: Exchange
+  parent: Meridian.Contracts.Api.SymbolResolutionResponse
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: SymbolResolutionResponse.Exchange
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the exchange associated with the resolved symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("exchange")]
+
+      public string? Exchange { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("exchange")>
+
+      Public Property Exchange As String
+  overload: Meridian.Contracts.Api.SymbolResolutionResponse.Exchange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: exchange
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.Currency
+  commentId: P:Meridian.Contracts.Api.SymbolResolutionResponse.Currency
+  id: Currency
+  parent: Meridian.Contracts.Api.SymbolResolutionResponse
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: SymbolResolutionResponse.Currency
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the currency code associated with the resolved symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("currency")]
+
+      public string? Currency { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("currency")>
+
+      Public Property Currency As String
+  overload: Meridian.Contracts.Api.SymbolResolutionResponse.Currency*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: currency
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.SecurityType
+  commentId: P:Meridian.Contracts.Api.SymbolResolutionResponse.SecurityType
+  id: SecurityType
+  parent: Meridian.Contracts.Api.SymbolResolutionResponse
+  langs:
+  - csharp
+  - vb
+  name: SecurityType
+  nameWithType: SymbolResolutionResponse.SecurityType
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.SecurityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityType
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets the security type for the resolved symbol.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("securityType")]
+
+      public string? SecurityType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("securityType")>
+
+      Public Property SecurityType As String
+  overload: Meridian.Contracts.Api.SymbolResolutionResponse.SecurityType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: securityType
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.ProviderMappings
+  commentId: P:Meridian.Contracts.Api.SymbolResolutionResponse.ProviderMappings
+  id: ProviderMappings
+  parent: Meridian.Contracts.Api.SymbolResolutionResponse
+  langs:
+  - csharp
+  - vb
+  name: ProviderMappings
+  nameWithType: SymbolResolutionResponse.ProviderMappings
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.ProviderMappings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/BackfillApiModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderMappings
+    path: ../../src/Meridian.Contracts/Api/BackfillApiModels.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets or sets provider-specific symbol mapping values.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("providerMappings")]
+
+      public Dictionary<string, string>? ProviderMappings { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: >-
+      <JsonPropertyName("providerMappings")>
+
+      Public Property ProviderMappings As Dictionary(Of String, String)
+  overload: Meridian.Contracts.Api.SymbolResolutionResponse.ProviderMappings*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: providerMappings
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.Symbol*
+  commentId: Overload:Meridian.Contracts.Api.SymbolResolutionResponse.Symbol
+  href: Meridian.Contracts.Api.SymbolResolutionResponse.html#Meridian_Contracts_Api_SymbolResolutionResponse_Symbol
+  name: Symbol
+  nameWithType: SymbolResolutionResponse.Symbol
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.ResolvedSymbol*
+  commentId: Overload:Meridian.Contracts.Api.SymbolResolutionResponse.ResolvedSymbol
+  href: Meridian.Contracts.Api.SymbolResolutionResponse.html#Meridian_Contracts_Api_SymbolResolutionResponse_ResolvedSymbol
+  name: ResolvedSymbol
+  nameWithType: SymbolResolutionResponse.ResolvedSymbol
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.ResolvedSymbol
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.Exchange*
+  commentId: Overload:Meridian.Contracts.Api.SymbolResolutionResponse.Exchange
+  href: Meridian.Contracts.Api.SymbolResolutionResponse.html#Meridian_Contracts_Api_SymbolResolutionResponse_Exchange
+  name: Exchange
+  nameWithType: SymbolResolutionResponse.Exchange
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.Exchange
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.Currency*
+  commentId: Overload:Meridian.Contracts.Api.SymbolResolutionResponse.Currency
+  href: Meridian.Contracts.Api.SymbolResolutionResponse.html#Meridian_Contracts_Api_SymbolResolutionResponse_Currency
+  name: Currency
+  nameWithType: SymbolResolutionResponse.Currency
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.Currency
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.SecurityType*
+  commentId: Overload:Meridian.Contracts.Api.SymbolResolutionResponse.SecurityType
+  href: Meridian.Contracts.Api.SymbolResolutionResponse.html#Meridian_Contracts_Api_SymbolResolutionResponse_SecurityType
+  name: SecurityType
+  nameWithType: SymbolResolutionResponse.SecurityType
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.SecurityType
+- uid: Meridian.Contracts.Api.SymbolResolutionResponse.ProviderMappings*
+  commentId: Overload:Meridian.Contracts.Api.SymbolResolutionResponse.ProviderMappings
+  href: Meridian.Contracts.Api.SymbolResolutionResponse.html#Meridian_Contracts_Api_SymbolResolutionResponse_ProviderMappings
+  name: ProviderMappings
+  nameWithType: SymbolResolutionResponse.ProviderMappings
+  fullName: Meridian.Contracts.Api.SymbolResolutionResponse.ProviderMappings
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

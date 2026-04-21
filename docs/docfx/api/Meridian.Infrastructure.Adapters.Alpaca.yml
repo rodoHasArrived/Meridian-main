@@ -1,0 +1,65 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Alpaca
+  commentId: N:Meridian.Infrastructure.Adapters.Alpaca
+  id: Meridian.Infrastructure.Adapters.Alpaca
+  children:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Alpaca
+  nameWithType: Meridian.Infrastructure.Adapters.Alpaca
+  fullName: Meridian.Infrastructure.Adapters.Alpaca
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway.html
+  name: AlpacaBrokerageGateway
+  nameWithType: AlpacaBrokerageGateway
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaBrokerageGateway
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider.html
+  name: AlpacaCorporateActionProvider
+  nameWithType: AlpacaCorporateActionProvider
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider.html
+  name: AlpacaHistoricalDataProvider
+  nameWithType: AlpacaHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient.html
+  name: AlpacaMarketDataClient
+  nameWithType: AlpacaMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider.html
+  name: AlpacaOptionsChainProvider
+  nameWithType: AlpacaOptionsChainProvider
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaOptionsChainProvider
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule.html
+  name: AlpacaProviderModule
+  nameWithType: AlpacaProviderModule
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaProviderModule
+- uid: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  commentId: T:Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored
+  href: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored.html
+  name: AlpacaSymbolSearchProviderRefactored
+  nameWithType: AlpacaSymbolSearchProviderRefactored
+  fullName: Meridian.Infrastructure.Adapters.Alpaca.AlpacaSymbolSearchProviderRefactored

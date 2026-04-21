@@ -1,0 +1,37 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Mcp.Prompts
+  commentId: N:Meridian.Mcp.Prompts
+  id: Meridian.Mcp.Prompts
+  children:
+  - Meridian.Mcp.Prompts.CodeReviewPrompts
+  - Meridian.Mcp.Prompts.ProviderPrompts
+  - Meridian.Mcp.Prompts.TestWriterPrompts
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Mcp.Prompts
+  nameWithType: Meridian.Mcp.Prompts
+  fullName: Meridian.Mcp.Prompts
+  type: Namespace
+  assemblies:
+  - mdc-mcp
+references:
+- uid: Meridian.Mcp.Prompts.CodeReviewPrompts
+  commentId: T:Meridian.Mcp.Prompts.CodeReviewPrompts
+  href: Meridian.Mcp.Prompts.CodeReviewPrompts.html
+  name: CodeReviewPrompts
+  nameWithType: CodeReviewPrompts
+  fullName: Meridian.Mcp.Prompts.CodeReviewPrompts
+- uid: Meridian.Mcp.Prompts.ProviderPrompts
+  commentId: T:Meridian.Mcp.Prompts.ProviderPrompts
+  href: Meridian.Mcp.Prompts.ProviderPrompts.html
+  name: ProviderPrompts
+  nameWithType: ProviderPrompts
+  fullName: Meridian.Mcp.Prompts.ProviderPrompts
+- uid: Meridian.Mcp.Prompts.TestWriterPrompts
+  commentId: T:Meridian.Mcp.Prompts.TestWriterPrompts
+  href: Meridian.Mcp.Prompts.TestWriterPrompts.html
+  name: TestWriterPrompts
+  nameWithType: TestWriterPrompts
+  fullName: Meridian.Mcp.Prompts.TestWriterPrompts

@@ -1,0 +1,1196 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  id: EnvironmentNodeDefinitionDto
+  parent: Meridian.Contracts.EnvironmentDesign
+  children:
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.#ctor(System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind,System.String,System.String,System.String,System.String,System.String,System.Nullable{Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto},System.String,System.Nullable{Meridian.Contracts.FundStructure.BusinessKindDto},System.Nullable{Meridian.Contracts.FundStructure.LegalEntityTypeDto},System.Nullable{Meridian.Contracts.FundStructure.AccountTypeDto},Meridian.Contracts.FundStructure.ClientSegmentKind,System.String,System.String,System.String,System.Boolean)
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.AccountType
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BaseCurrency
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BusinessKind
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ClientSegmentKind
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Code
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Description
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Institution
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.IsActive
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Jurisdiction
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LaneId
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LedgerReference
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LegalEntityType
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Name
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeDefinitionId
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeKind
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentNodeDefinitionId
+  - Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentRelationshipType
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentNodeDefinitionDto
+  nameWithType: EnvironmentNodeDefinitionDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnvironmentNodeDefinitionDto
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: 'public sealed record EnvironmentNodeDefinitionDto : IEquatable<EnvironmentNodeDefinitionDto>'
+    content.vb: Public NotInheritable Class EnvironmentNodeDefinitionDto Implements IEquatable(Of EnvironmentNodeDefinitionDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.#ctor(System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind,System.String,System.String,System.String,System.String,System.String,System.Nullable{Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto},System.String,System.Nullable{Meridian.Contracts.FundStructure.BusinessKindDto},System.Nullable{Meridian.Contracts.FundStructure.LegalEntityTypeDto},System.Nullable{Meridian.Contracts.FundStructure.AccountTypeDto},Meridian.Contracts.FundStructure.ClientSegmentKind,System.String,System.String,System.String,System.Boolean)
+  commentId: M:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.#ctor(System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind,System.String,System.String,System.String,System.String,System.String,System.Nullable{Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto},System.String,System.Nullable{Meridian.Contracts.FundStructure.BusinessKindDto},System.Nullable{Meridian.Contracts.FundStructure.LegalEntityTypeDto},System.Nullable{Meridian.Contracts.FundStructure.AccountTypeDto},Meridian.Contracts.FundStructure.ClientSegmentKind,System.String,System.String,System.String,System.Boolean)
+  id: '#ctor(System.String,Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind,System.String,System.String,System.String,System.String,System.String,System.Nullable{Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto},System.String,System.Nullable{Meridian.Contracts.FundStructure.BusinessKindDto},System.Nullable{Meridian.Contracts.FundStructure.LegalEntityTypeDto},System.Nullable{Meridian.Contracts.FundStructure.AccountTypeDto},Meridian.Contracts.FundStructure.ClientSegmentKind,System.String,System.String,System.String,System.Boolean)'
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: EnvironmentNodeDefinitionDto(string, EnvironmentNodeKind, string, string, string, string?, string?, OwnershipRelationshipTypeDto?, string?, BusinessKindDto?, LegalEntityTypeDto?, AccountTypeDto?, ClientSegmentKind, string?, string?, string?, bool)
+  nameWithType: EnvironmentNodeDefinitionDto.EnvironmentNodeDefinitionDto(string, EnvironmentNodeKind, string, string, string, string?, string?, OwnershipRelationshipTypeDto?, string?, BusinessKindDto?, LegalEntityTypeDto?, AccountTypeDto?, ClientSegmentKind, string?, string?, string?, bool)
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.EnvironmentNodeDefinitionDto(string, Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind, string, string, string, string?, string?, Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto?, string?, Meridian.Contracts.FundStructure.BusinessKindDto?, Meridian.Contracts.FundStructure.LegalEntityTypeDto?, Meridian.Contracts.FundStructure.AccountTypeDto?, Meridian.Contracts.FundStructure.ClientSegmentKind, string?, string?, string?, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public EnvironmentNodeDefinitionDto(string NodeDefinitionId, EnvironmentNodeKind NodeKind, string Code, string Name, string BaseCurrency, string? Description = null, string? ParentNodeDefinitionId = null, OwnershipRelationshipTypeDto? ParentRelationshipType = null, string? LaneId = null, BusinessKindDto? BusinessKind = null, LegalEntityTypeDto? LegalEntityType = null, AccountTypeDto? AccountType = null, ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified, string? Jurisdiction = null, string? LedgerReference = null, string? Institution = null, bool IsActive = true)
+    parameters:
+    - id: NodeDefinitionId
+      type: System.String
+    - id: NodeKind
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+    - id: Code
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: BaseCurrency
+      type: System.String
+    - id: Description
+      type: System.String
+    - id: ParentNodeDefinitionId
+      type: System.String
+    - id: ParentRelationshipType
+      type: System.Nullable{Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto}
+    - id: LaneId
+      type: System.String
+    - id: BusinessKind
+      type: System.Nullable{Meridian.Contracts.FundStructure.BusinessKindDto}
+    - id: LegalEntityType
+      type: System.Nullable{Meridian.Contracts.FundStructure.LegalEntityTypeDto}
+    - id: AccountType
+      type: System.Nullable{Meridian.Contracts.FundStructure.AccountTypeDto}
+    - id: ClientSegmentKind
+      type: Meridian.Contracts.FundStructure.ClientSegmentKind
+    - id: Jurisdiction
+      type: System.String
+    - id: LedgerReference
+      type: System.String
+    - id: Institution
+      type: System.String
+    - id: IsActive
+      type: System.Boolean
+    content.vb: Public Sub New(NodeDefinitionId As String, NodeKind As EnvironmentNodeKind, Code As String, Name As String, BaseCurrency As String, Description As String = Nothing, ParentNodeDefinitionId As String = Nothing, ParentRelationshipType As OwnershipRelationshipTypeDto? = Nothing, LaneId As String = Nothing, BusinessKind As BusinessKindDto? = Nothing, LegalEntityType As LegalEntityTypeDto? = Nothing, AccountType As AccountTypeDto? = Nothing, ClientSegmentKind As ClientSegmentKind = ClientSegmentKind.Unspecified, Jurisdiction As String = Nothing, LedgerReference As String = Nothing, Institution As String = Nothing, IsActive As Boolean = True)
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.#ctor*
+  nameWithType.vb: EnvironmentNodeDefinitionDto.New(String, EnvironmentNodeKind, String, String, String, String, String, OwnershipRelationshipTypeDto?, String, BusinessKindDto?, LegalEntityTypeDto?, AccountTypeDto?, ClientSegmentKind, String, String, String, Boolean)
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.New(String, Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind, String, String, String, String, String, Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto?, String, Meridian.Contracts.FundStructure.BusinessKindDto?, Meridian.Contracts.FundStructure.LegalEntityTypeDto?, Meridian.Contracts.FundStructure.AccountTypeDto?, Meridian.Contracts.FundStructure.ClientSegmentKind, String, String, String, Boolean)
+  name.vb: New(String, EnvironmentNodeKind, String, String, String, String, String, OwnershipRelationshipTypeDto?, String, BusinessKindDto?, LegalEntityTypeDto?, AccountTypeDto?, ClientSegmentKind, String, String, String, Boolean)
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeDefinitionId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeDefinitionId
+  id: NodeDefinitionId
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: NodeDefinitionId
+  nameWithType: EnvironmentNodeDefinitionDto.NodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeDefinitionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NodeDefinitionId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string NodeDefinitionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property NodeDefinitionId As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeDefinitionId*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeKind
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeKind
+  id: NodeKind
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: NodeKind
+  nameWithType: EnvironmentNodeDefinitionDto.NodeKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NodeKind
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public EnvironmentNodeKind NodeKind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+    content.vb: Public Property NodeKind As EnvironmentNodeKind
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeKind*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Code
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Code
+  id: Code
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: EnvironmentNodeDefinitionDto.Code
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Code As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Code*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Name
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Name
+  id: Name
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: EnvironmentNodeDefinitionDto.Name
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Name*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BaseCurrency
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: EnvironmentNodeDefinitionDto.BaseCurrency
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BaseCurrency*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Description
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Description
+  id: Description
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: EnvironmentNodeDefinitionDto.Description
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Description*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentNodeDefinitionId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentNodeDefinitionId
+  id: ParentNodeDefinitionId
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: ParentNodeDefinitionId
+  nameWithType: EnvironmentNodeDefinitionDto.ParentNodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentNodeDefinitionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParentNodeDefinitionId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string? ParentNodeDefinitionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ParentNodeDefinitionId As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentNodeDefinitionId*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentRelationshipType
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentRelationshipType
+  id: ParentRelationshipType
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: ParentRelationshipType
+  nameWithType: EnvironmentNodeDefinitionDto.ParentRelationshipType
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentRelationshipType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParentRelationshipType
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public OwnershipRelationshipTypeDto? ParentRelationshipType { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto}
+    content.vb: Public Property ParentRelationshipType As OwnershipRelationshipTypeDto?
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentRelationshipType*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LaneId
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LaneId
+  id: LaneId
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: LaneId
+  nameWithType: EnvironmentNodeDefinitionDto.LaneId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LaneId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LaneId
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string? LaneId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LaneId As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LaneId*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BusinessKind
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BusinessKind
+  id: BusinessKind
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: BusinessKind
+  nameWithType: EnvironmentNodeDefinitionDto.BusinessKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BusinessKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BusinessKind
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public BusinessKindDto? BusinessKind { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.FundStructure.BusinessKindDto}
+    content.vb: Public Property BusinessKind As BusinessKindDto?
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BusinessKind*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LegalEntityType
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LegalEntityType
+  id: LegalEntityType
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: LegalEntityType
+  nameWithType: EnvironmentNodeDefinitionDto.LegalEntityType
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LegalEntityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LegalEntityType
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public LegalEntityTypeDto? LegalEntityType { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.FundStructure.LegalEntityTypeDto}
+    content.vb: Public Property LegalEntityType As LegalEntityTypeDto?
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LegalEntityType*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.AccountType
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.AccountType
+  id: AccountType
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: AccountType
+  nameWithType: EnvironmentNodeDefinitionDto.AccountType
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.AccountType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountType
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public AccountTypeDto? AccountType { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.FundStructure.AccountTypeDto}
+    content.vb: Public Property AccountType As AccountTypeDto?
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.AccountType*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ClientSegmentKind
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ClientSegmentKind
+  id: ClientSegmentKind
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: ClientSegmentKind
+  nameWithType: EnvironmentNodeDefinitionDto.ClientSegmentKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ClientSegmentKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClientSegmentKind
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public ClientSegmentKind ClientSegmentKind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.ClientSegmentKind
+    content.vb: Public Property ClientSegmentKind As ClientSegmentKind
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ClientSegmentKind*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Jurisdiction
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Jurisdiction
+  id: Jurisdiction
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: Jurisdiction
+  nameWithType: EnvironmentNodeDefinitionDto.Jurisdiction
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Jurisdiction
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Jurisdiction
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string? Jurisdiction { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Jurisdiction As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Jurisdiction*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LedgerReference
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LedgerReference
+  id: LedgerReference
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: LedgerReference
+  nameWithType: EnvironmentNodeDefinitionDto.LedgerReference
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LedgerReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerReference
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string? LedgerReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LedgerReference As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LedgerReference*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Institution
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Institution
+  id: Institution
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: Institution
+  nameWithType: EnvironmentNodeDefinitionDto.Institution
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Institution
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Institution
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public string? Institution { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Institution As String
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Institution*
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.IsActive
+  commentId: P:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.IsActive
+  id: IsActive
+  parent: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+  langs:
+  - csharp
+  - vb
+  name: IsActive
+  nameWithType: EnvironmentNodeDefinitionDto.IsActive
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.IsActive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsActive
+    path: ../../src/Meridian.Contracts/EnvironmentDesign/EnvironmentDesignDtos.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.EnvironmentDesign
+  syntax:
+    content: public bool IsActive { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsActive As Boolean
+  overload: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.IsActive*
+references:
+- uid: Meridian.Contracts.EnvironmentDesign
+  commentId: N:Meridian.Contracts.EnvironmentDesign
+  href: Meridian.html
+  name: Meridian.Contracts.EnvironmentDesign
+  nameWithType: Meridian.Contracts.EnvironmentDesign
+  fullName: Meridian.Contracts.EnvironmentDesign
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.EnvironmentDesign
+    name: EnvironmentDesign
+    href: Meridian.Contracts.EnvironmentDesign.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<EnvironmentNodeDefinitionDto>
+  nameWithType: IEquatable<EnvironmentNodeDefinitionDto>
+  fullName: System.IEquatable<Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto>
+  nameWithType.vb: IEquatable(Of EnvironmentNodeDefinitionDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto)
+  name.vb: IEquatable(Of EnvironmentNodeDefinitionDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+    name: EnvironmentNodeDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto
+    name: EnvironmentNodeDefinitionDto
+    href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.#ctor*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.#ctor
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto__ctor_System_String_Meridian_Contracts_EnvironmentDesign_EnvironmentNodeKind_System_String_System_String_System_String_System_String_System_String_System_Nullable_Meridian_Contracts_FundStructure_OwnershipRelationshipTypeDto__System_String_System_Nullable_Meridian_Contracts_FundStructure_BusinessKindDto__System_Nullable_Meridian_Contracts_FundStructure_LegalEntityTypeDto__System_Nullable_Meridian_Contracts_FundStructure_AccountTypeDto__Meridian_Contracts_FundStructure_ClientSegmentKind_System_String_System_String_System_String_System_Boolean_
+  name: EnvironmentNodeDefinitionDto
+  nameWithType: EnvironmentNodeDefinitionDto.EnvironmentNodeDefinitionDto
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.EnvironmentNodeDefinitionDto
+  nameWithType.vb: EnvironmentNodeDefinitionDto.New
+  fullName.vb: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  commentId: T:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+  parent: Meridian.Contracts.EnvironmentDesign
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind.html
+  name: EnvironmentNodeKind
+  nameWithType: EnvironmentNodeKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeKind
+- uid: System.Nullable{Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto}
+  commentId: T:System.Nullable{Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.html
+  name: OwnershipRelationshipTypeDto?
+  nameWithType: OwnershipRelationshipTypeDto?
+  fullName: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto?
+  spec.csharp:
+  - uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+    name: OwnershipRelationshipTypeDto
+    href: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto
+    name: OwnershipRelationshipTypeDto
+    href: Meridian.Contracts.FundStructure.OwnershipRelationshipTypeDto.html
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.FundStructure.BusinessKindDto}
+  commentId: T:System.Nullable{Meridian.Contracts.FundStructure.BusinessKindDto}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.FundStructure.BusinessKindDto.html
+  name: BusinessKindDto?
+  nameWithType: BusinessKindDto?
+  fullName: Meridian.Contracts.FundStructure.BusinessKindDto?
+  spec.csharp:
+  - uid: Meridian.Contracts.FundStructure.BusinessKindDto
+    name: BusinessKindDto
+    href: Meridian.Contracts.FundStructure.BusinessKindDto.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.FundStructure.BusinessKindDto
+    name: BusinessKindDto
+    href: Meridian.Contracts.FundStructure.BusinessKindDto.html
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.FundStructure.LegalEntityTypeDto}
+  commentId: T:System.Nullable{Meridian.Contracts.FundStructure.LegalEntityTypeDto}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.FundStructure.LegalEntityTypeDto.html
+  name: LegalEntityTypeDto?
+  nameWithType: LegalEntityTypeDto?
+  fullName: Meridian.Contracts.FundStructure.LegalEntityTypeDto?
+  spec.csharp:
+  - uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+    name: LegalEntityTypeDto
+    href: Meridian.Contracts.FundStructure.LegalEntityTypeDto.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.FundStructure.LegalEntityTypeDto
+    name: LegalEntityTypeDto
+    href: Meridian.Contracts.FundStructure.LegalEntityTypeDto.html
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.FundStructure.AccountTypeDto}
+  commentId: T:System.Nullable{Meridian.Contracts.FundStructure.AccountTypeDto}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.FundStructure.AccountTypeDto.html
+  name: AccountTypeDto?
+  nameWithType: AccountTypeDto?
+  fullName: Meridian.Contracts.FundStructure.AccountTypeDto?
+  spec.csharp:
+  - uid: Meridian.Contracts.FundStructure.AccountTypeDto
+    name: AccountTypeDto
+    href: Meridian.Contracts.FundStructure.AccountTypeDto.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.FundStructure.AccountTypeDto
+    name: AccountTypeDto
+    href: Meridian.Contracts.FundStructure.AccountTypeDto.html
+  - name: '?'
+- uid: Meridian.Contracts.FundStructure.ClientSegmentKind
+  commentId: T:Meridian.Contracts.FundStructure.ClientSegmentKind
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.ClientSegmentKind.html
+  name: ClientSegmentKind
+  nameWithType: ClientSegmentKind
+  fullName: Meridian.Contracts.FundStructure.ClientSegmentKind
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeDefinitionId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeDefinitionId
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_NodeDefinitionId
+  name: NodeDefinitionId
+  nameWithType: EnvironmentNodeDefinitionDto.NodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeDefinitionId
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeKind*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeKind
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_NodeKind
+  name: NodeKind
+  nameWithType: EnvironmentNodeDefinitionDto.NodeKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.NodeKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Code*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Code
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_Code
+  name: Code
+  nameWithType: EnvironmentNodeDefinitionDto.Code
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Code
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Name*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Name
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_Name
+  name: Name
+  nameWithType: EnvironmentNodeDefinitionDto.Name
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Name
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BaseCurrency*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BaseCurrency
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_BaseCurrency
+  name: BaseCurrency
+  nameWithType: EnvironmentNodeDefinitionDto.BaseCurrency
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BaseCurrency
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Description*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Description
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_Description
+  name: Description
+  nameWithType: EnvironmentNodeDefinitionDto.Description
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Description
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentNodeDefinitionId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentNodeDefinitionId
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_ParentNodeDefinitionId
+  name: ParentNodeDefinitionId
+  nameWithType: EnvironmentNodeDefinitionDto.ParentNodeDefinitionId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentNodeDefinitionId
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentRelationshipType*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentRelationshipType
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_ParentRelationshipType
+  name: ParentRelationshipType
+  nameWithType: EnvironmentNodeDefinitionDto.ParentRelationshipType
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ParentRelationshipType
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LaneId*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LaneId
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_LaneId
+  name: LaneId
+  nameWithType: EnvironmentNodeDefinitionDto.LaneId
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LaneId
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BusinessKind*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BusinessKind
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_BusinessKind
+  name: BusinessKind
+  nameWithType: EnvironmentNodeDefinitionDto.BusinessKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.BusinessKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LegalEntityType*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LegalEntityType
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_LegalEntityType
+  name: LegalEntityType
+  nameWithType: EnvironmentNodeDefinitionDto.LegalEntityType
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LegalEntityType
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.AccountType*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.AccountType
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_AccountType
+  name: AccountType
+  nameWithType: EnvironmentNodeDefinitionDto.AccountType
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.AccountType
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ClientSegmentKind*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ClientSegmentKind
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_ClientSegmentKind
+  name: ClientSegmentKind
+  nameWithType: EnvironmentNodeDefinitionDto.ClientSegmentKind
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.ClientSegmentKind
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Jurisdiction*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Jurisdiction
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_Jurisdiction
+  name: Jurisdiction
+  nameWithType: EnvironmentNodeDefinitionDto.Jurisdiction
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Jurisdiction
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LedgerReference*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LedgerReference
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_LedgerReference
+  name: LedgerReference
+  nameWithType: EnvironmentNodeDefinitionDto.LedgerReference
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.LedgerReference
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Institution*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Institution
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_Institution
+  name: Institution
+  nameWithType: EnvironmentNodeDefinitionDto.Institution
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.Institution
+- uid: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.IsActive*
+  commentId: Overload:Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.IsActive
+  href: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.html#Meridian_Contracts_EnvironmentDesign_EnvironmentNodeDefinitionDto_IsActive
+  name: IsActive
+  nameWithType: EnvironmentNodeDefinitionDto.IsActive
+  fullName: Meridian.Contracts.EnvironmentDesign.EnvironmentNodeDefinitionDto.IsActive

@@ -1,0 +1,779 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  id: ReportStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.#ctor(System.Int64,System.Int64,System.Int64,System.Int32,System.TimeSpan,System.Int32,System.Int32,System.Double,System.Double)
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.AverageLatencyMs
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.ExpectedEvents
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.MissingEvents
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.P99LatencyMs
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalAnomalies
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalEvents
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGapDuration
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGaps
+  - Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalSequenceErrors
+  langs:
+  - csharp
+  - vb
+  name: ReportStatistics
+  nameWithType: ReportStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Report statistics.
+  example: []
+  syntax:
+    content: 'public sealed record ReportStatistics : IEquatable<ReportStatistics>'
+    content.vb: Public NotInheritable Class ReportStatistics Implements IEquatable(Of ReportStatistics)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.ReportStatistics}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.#ctor(System.Int64,System.Int64,System.Int64,System.Int32,System.TimeSpan,System.Int32,System.Int32,System.Double,System.Double)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.ReportStatistics.#ctor(System.Int64,System.Int64,System.Int64,System.Int32,System.TimeSpan,System.Int32,System.Int32,System.Double,System.Double)
+  id: '#ctor(System.Int64,System.Int64,System.Int64,System.Int32,System.TimeSpan,System.Int32,System.Int32,System.Double,System.Double)'
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: ReportStatistics(long, long, long, int, TimeSpan, int, int, double, double)
+  nameWithType: ReportStatistics.ReportStatistics(long, long, long, int, TimeSpan, int, int, double, double)
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.ReportStatistics(long, long, long, int, System.TimeSpan, int, int, double, double)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Report statistics.
+  example: []
+  syntax:
+    content: public ReportStatistics(long TotalEvents, long ExpectedEvents, long MissingEvents, int TotalGaps, TimeSpan TotalGapDuration, int TotalSequenceErrors, int TotalAnomalies, double AverageLatencyMs, double P99LatencyMs)
+    parameters:
+    - id: TotalEvents
+      type: System.Int64
+    - id: ExpectedEvents
+      type: System.Int64
+    - id: MissingEvents
+      type: System.Int64
+    - id: TotalGaps
+      type: System.Int32
+    - id: TotalGapDuration
+      type: System.TimeSpan
+    - id: TotalSequenceErrors
+      type: System.Int32
+    - id: TotalAnomalies
+      type: System.Int32
+    - id: AverageLatencyMs
+      type: System.Double
+    - id: P99LatencyMs
+      type: System.Double
+    content.vb: Public Sub New(TotalEvents As Long, ExpectedEvents As Long, MissingEvents As Long, TotalGaps As Integer, TotalGapDuration As TimeSpan, TotalSequenceErrors As Integer, TotalAnomalies As Integer, AverageLatencyMs As Double, P99LatencyMs As Double)
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.#ctor*
+  nameWithType.vb: ReportStatistics.New(Long, Long, Long, Integer, TimeSpan, Integer, Integer, Double, Double)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.ReportStatistics.New(Long, Long, Long, Integer, System.TimeSpan, Integer, Integer, Double, Double)
+  name.vb: New(Long, Long, Long, Integer, TimeSpan, Integer, Integer, Double, Double)
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalEvents
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalEvents
+  id: TotalEvents
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalEvents
+  nameWithType: ReportStatistics.TotalEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEvents
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long TotalEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalEvents As Long
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalEvents*
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.ExpectedEvents
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ReportStatistics.ExpectedEvents
+  id: ExpectedEvents
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: ExpectedEvents
+  nameWithType: ReportStatistics.ExpectedEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.ExpectedEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedEvents
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 359
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long ExpectedEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ExpectedEvents As Long
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.ExpectedEvents*
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.MissingEvents
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ReportStatistics.MissingEvents
+  id: MissingEvents
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: MissingEvents
+  nameWithType: ReportStatistics.MissingEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.MissingEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MissingEvents
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 360
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public long MissingEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property MissingEvents As Long
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.MissingEvents*
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGaps
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGaps
+  id: TotalGaps
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalGaps
+  nameWithType: ReportStatistics.TotalGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGaps
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 361
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int TotalGaps { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalGaps As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGaps*
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGapDuration
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGapDuration
+  id: TotalGapDuration
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalGapDuration
+  nameWithType: ReportStatistics.TotalGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGapDuration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGapDuration
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 362
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public TimeSpan TotalGapDuration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property TotalGapDuration As TimeSpan
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGapDuration*
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalSequenceErrors
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalSequenceErrors
+  id: TotalSequenceErrors
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalSequenceErrors
+  nameWithType: ReportStatistics.TotalSequenceErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalSequenceErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSequenceErrors
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 363
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int TotalSequenceErrors { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalSequenceErrors As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalSequenceErrors*
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalAnomalies
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalAnomalies
+  id: TotalAnomalies
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: TotalAnomalies
+  nameWithType: ReportStatistics.TotalAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalAnomalies
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalAnomalies
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 364
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public int TotalAnomalies { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalAnomalies As Integer
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalAnomalies*
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.AverageLatencyMs
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ReportStatistics.AverageLatencyMs
+  id: AverageLatencyMs
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: AverageLatencyMs
+  nameWithType: ReportStatistics.AverageLatencyMs
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.AverageLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageLatencyMs
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 365
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double AverageLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageLatencyMs As Double
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.AverageLatencyMs*
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.P99LatencyMs
+  commentId: P:Meridian.Application.Monitoring.DataQuality.ReportStatistics.P99LatencyMs
+  id: P99LatencyMs
+  parent: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+  langs:
+  - csharp
+  - vb
+  name: P99LatencyMs
+  nameWithType: ReportStatistics.P99LatencyMs
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.P99LatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: P99LatencyMs
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 366
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double P99LatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property P99LatencyMs As Double
+  overload: Meridian.Application.Monitoring.DataQuality.ReportStatistics.P99LatencyMs*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.ReportStatistics}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.ReportStatistics}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ReportStatistics>
+  nameWithType: IEquatable<ReportStatistics>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.ReportStatistics>
+  nameWithType.vb: IEquatable(Of ReportStatistics)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.ReportStatistics)
+  name.vb: IEquatable(Of ReportStatistics)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+    name: ReportStatistics
+    href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics
+    name: ReportStatistics
+    href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics__ctor_System_Int64_System_Int64_System_Int64_System_Int32_System_TimeSpan_System_Int32_System_Int32_System_Double_System_Double_
+  name: ReportStatistics
+  nameWithType: ReportStatistics.ReportStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.ReportStatistics
+  nameWithType.vb: ReportStatistics.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.ReportStatistics.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalEvents*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalEvents
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics_TotalEvents
+  name: TotalEvents
+  nameWithType: ReportStatistics.TotalEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalEvents
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.ExpectedEvents*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.ExpectedEvents
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics_ExpectedEvents
+  name: ExpectedEvents
+  nameWithType: ReportStatistics.ExpectedEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.ExpectedEvents
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.MissingEvents*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.MissingEvents
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics_MissingEvents
+  name: MissingEvents
+  nameWithType: ReportStatistics.MissingEvents
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.MissingEvents
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGaps*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGaps
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics_TotalGaps
+  name: TotalGaps
+  nameWithType: ReportStatistics.TotalGaps
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGaps
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGapDuration*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGapDuration
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics_TotalGapDuration
+  name: TotalGapDuration
+  nameWithType: ReportStatistics.TotalGapDuration
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalGapDuration
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalSequenceErrors*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalSequenceErrors
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics_TotalSequenceErrors
+  name: TotalSequenceErrors
+  nameWithType: ReportStatistics.TotalSequenceErrors
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalSequenceErrors
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalAnomalies*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalAnomalies
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics_TotalAnomalies
+  name: TotalAnomalies
+  nameWithType: ReportStatistics.TotalAnomalies
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.TotalAnomalies
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.AverageLatencyMs*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.AverageLatencyMs
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics_AverageLatencyMs
+  name: AverageLatencyMs
+  nameWithType: ReportStatistics.AverageLatencyMs
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.AverageLatencyMs
+- uid: Meridian.Application.Monitoring.DataQuality.ReportStatistics.P99LatencyMs*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.ReportStatistics.P99LatencyMs
+  href: Meridian.Application.Monitoring.DataQuality.ReportStatistics.html#Meridian_Application_Monitoring_DataQuality_ReportStatistics_P99LatencyMs
+  name: P99LatencyMs
+  nameWithType: ReportStatistics.P99LatencyMs
+  fullName: Meridian.Application.Monitoring.DataQuality.ReportStatistics.P99LatencyMs

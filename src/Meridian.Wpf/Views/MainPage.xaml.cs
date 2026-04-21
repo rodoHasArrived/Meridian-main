@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.ViewModels;
 using WpfNavigationEventArgs = System.Windows.Navigation.NavigationEventArgs;
@@ -12,6 +13,7 @@ public partial class MainPage : Page
 {
     private readonly WpfNavigationService _navigationService;
     private readonly MainPageViewModel _viewModel;
+    private readonly TaskCompletionSource _shellReadyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public MainPage(MainPageViewModel viewModel)
     {
@@ -27,6 +29,7 @@ public partial class MainPage : Page
         _navigationService.Initialize(ContentFrame);
 
         _viewModel.ActivateShell();
+        _shellReadyTcs.TrySetResult();
     }
 
     private void OnPageUnloaded(object sender, RoutedEventArgs e)
@@ -54,15 +57,45 @@ public partial class MainPage : Page
         _viewModel.OpenSelectedCommandPalettePageCommand.Execute(null);
     }
 
+    private void WorkspaceNavigationList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ListBox { SelectedItem: ShellNavigationItem item })
+        {
+            return;
+        }
+
+        if (string.Equals(_viewModel.CurrentPageTag, item.PageTag, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        _viewModel.NavigateToPageCommand.Execute(item.PageTag);
+    }
+
     private void OnOpenCommandPaletteClick(object sender, RoutedEventArgs e)
+    {
+        ShowCommandPaletteOverlay();
+    }
+
+    private void OnContentFrameNavigated(object sender, WpfNavigationEventArgs e)
+    {
+        _viewModel.SyncNavigationState();
+    }
+
+    public void ShowCommandPaletteOverlay()
     {
         _viewModel.ShowCommandPaletteCommand.Execute(null);
         CommandPaletteTextBox.Focus();
         CommandPaletteTextBox.SelectAll();
     }
 
-    private void OnContentFrameNavigated(object sender, WpfNavigationEventArgs e)
+    public Task WaitForShellReadyAsync()
     {
-        _viewModel.SyncNavigationState();
+        if (IsLoaded)
+        {
+            _shellReadyTcs.TrySetResult();
+        }
+
+        return _shellReadyTcs.Task;
     }
 }

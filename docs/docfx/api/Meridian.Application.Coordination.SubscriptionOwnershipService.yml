@@ -1,0 +1,752 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Coordination.SubscriptionOwnershipService
+  commentId: T:Meridian.Application.Coordination.SubscriptionOwnershipService
+  id: SubscriptionOwnershipService
+  parent: Meridian.Application.Coordination
+  children:
+  - Meridian.Application.Coordination.SubscriptionOwnershipService.#ctor(Meridian.Application.Coordination.ILeaseManager)
+  - Meridian.Application.Coordination.SubscriptionOwnershipService.ReleaseAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.SubscriptionOwnershipService.TryAcquireAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionOwnershipService
+  nameWithType: SubscriptionOwnershipService
+  fullName: Meridian.Application.Coordination.SubscriptionOwnershipService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscriptionOwnershipService
+    path: ../../src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+    startLine: 2
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: 'public sealed class SubscriptionOwnershipService : ISubscriptionOwnershipService'
+    content.vb: Public NotInheritable Class SubscriptionOwnershipService Implements ISubscriptionOwnershipService
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Coordination.ISubscriptionOwnershipService
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Coordination.SubscriptionOwnershipService.#ctor(Meridian.Application.Coordination.ILeaseManager)
+  commentId: M:Meridian.Application.Coordination.SubscriptionOwnershipService.#ctor(Meridian.Application.Coordination.ILeaseManager)
+  id: '#ctor(Meridian.Application.Coordination.ILeaseManager)'
+  parent: Meridian.Application.Coordination.SubscriptionOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionOwnershipService(ILeaseManager)
+  nameWithType: SubscriptionOwnershipService.SubscriptionOwnershipService(ILeaseManager)
+  fullName: Meridian.Application.Coordination.SubscriptionOwnershipService.SubscriptionOwnershipService(Meridian.Application.Coordination.ILeaseManager)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public SubscriptionOwnershipService(ILeaseManager leaseManager)
+    parameters:
+    - id: leaseManager
+      type: Meridian.Application.Coordination.ILeaseManager
+    content.vb: Public Sub New(leaseManager As ILeaseManager)
+  overload: Meridian.Application.Coordination.SubscriptionOwnershipService.#ctor*
+  nameWithType.vb: SubscriptionOwnershipService.New(ILeaseManager)
+  fullName.vb: Meridian.Application.Coordination.SubscriptionOwnershipService.New(Meridian.Application.Coordination.ILeaseManager)
+  name.vb: New(ILeaseManager)
+- uid: Meridian.Application.Coordination.SubscriptionOwnershipService.TryAcquireAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.SubscriptionOwnershipService.TryAcquireAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: TryAcquireAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.SubscriptionOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: TryAcquireAsync(string, string, string, CancellationToken)
+  nameWithType: SubscriptionOwnershipService.TryAcquireAsync(string, string, string, CancellationToken)
+  fullName: Meridian.Application.Coordination.SubscriptionOwnershipService.TryAcquireAsync(string, string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryAcquireAsync
+    path: ../../src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<LeaseAcquireResult> TryAcquireAsync(string providerId, string kind, string symbol, CancellationToken ct = default)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: kind
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+    content.vb: Public Function TryAcquireAsync(providerId As String, kind As String, symbol As String, ct As CancellationToken = Nothing) As Task(Of LeaseAcquireResult)
+  overload: Meridian.Application.Coordination.SubscriptionOwnershipService.TryAcquireAsync*
+  implements:
+  - Meridian.Application.Coordination.ISubscriptionOwnershipService.TryAcquireAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  nameWithType.vb: SubscriptionOwnershipService.TryAcquireAsync(String, String, String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.SubscriptionOwnershipService.TryAcquireAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: TryAcquireAsync(String, String, String, CancellationToken)
+- uid: Meridian.Application.Coordination.SubscriptionOwnershipService.ReleaseAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.SubscriptionOwnershipService.ReleaseAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: ReleaseAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.SubscriptionOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: ReleaseAsync(string, string, string, CancellationToken)
+  nameWithType: SubscriptionOwnershipService.ReleaseAsync(string, string, string, CancellationToken)
+  fullName: Meridian.Application.Coordination.SubscriptionOwnershipService.ReleaseAsync(string, string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReleaseAsync
+    path: ../../src/Meridian.Application/Coordination/SubscriptionOwnershipService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<bool> ReleaseAsync(string providerId, string kind, string symbol, CancellationToken ct = default)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: kind
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function ReleaseAsync(providerId As String, kind As String, symbol As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Coordination.SubscriptionOwnershipService.ReleaseAsync*
+  implements:
+  - Meridian.Application.Coordination.ISubscriptionOwnershipService.ReleaseAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  nameWithType.vb: SubscriptionOwnershipService.ReleaseAsync(String, String, String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.SubscriptionOwnershipService.ReleaseAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: ReleaseAsync(String, String, String, CancellationToken)
+references:
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  href: Meridian.html
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Coordination.ISubscriptionOwnershipService
+  commentId: T:Meridian.Application.Coordination.ISubscriptionOwnershipService
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.ISubscriptionOwnershipService.html
+  name: ISubscriptionOwnershipService
+  nameWithType: ISubscriptionOwnershipService
+  fullName: Meridian.Application.Coordination.ISubscriptionOwnershipService
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Coordination.SubscriptionOwnershipService.#ctor*
+  commentId: Overload:Meridian.Application.Coordination.SubscriptionOwnershipService.#ctor
+  href: Meridian.Application.Coordination.SubscriptionOwnershipService.html#Meridian_Application_Coordination_SubscriptionOwnershipService__ctor_Meridian_Application_Coordination_ILeaseManager_
+  name: SubscriptionOwnershipService
+  nameWithType: SubscriptionOwnershipService.SubscriptionOwnershipService
+  fullName: Meridian.Application.Coordination.SubscriptionOwnershipService.SubscriptionOwnershipService
+  nameWithType.vb: SubscriptionOwnershipService.New
+  fullName.vb: Meridian.Application.Coordination.SubscriptionOwnershipService.New
+  name.vb: New
+- uid: Meridian.Application.Coordination.ILeaseManager
+  commentId: T:Meridian.Application.Coordination.ILeaseManager
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.ILeaseManager.html
+  name: ILeaseManager
+  nameWithType: ILeaseManager
+  fullName: Meridian.Application.Coordination.ILeaseManager
+- uid: Meridian.Application.Coordination.SubscriptionOwnershipService.TryAcquireAsync*
+  commentId: Overload:Meridian.Application.Coordination.SubscriptionOwnershipService.TryAcquireAsync
+  href: Meridian.Application.Coordination.SubscriptionOwnershipService.html#Meridian_Application_Coordination_SubscriptionOwnershipService_TryAcquireAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: TryAcquireAsync
+  nameWithType: SubscriptionOwnershipService.TryAcquireAsync
+  fullName: Meridian.Application.Coordination.SubscriptionOwnershipService.TryAcquireAsync
+- uid: Meridian.Application.Coordination.ISubscriptionOwnershipService.TryAcquireAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ISubscriptionOwnershipService.TryAcquireAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ISubscriptionOwnershipService
+  isExternal: true
+  href: Meridian.Application.Coordination.ISubscriptionOwnershipService.html#Meridian_Application_Coordination_ISubscriptionOwnershipService_TryAcquireAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: TryAcquireAsync(string, string, string, CancellationToken)
+  nameWithType: ISubscriptionOwnershipService.TryAcquireAsync(string, string, string, CancellationToken)
+  fullName: Meridian.Application.Coordination.ISubscriptionOwnershipService.TryAcquireAsync(string, string, string, System.Threading.CancellationToken)
+  nameWithType.vb: ISubscriptionOwnershipService.TryAcquireAsync(String, String, String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.ISubscriptionOwnershipService.TryAcquireAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: TryAcquireAsync(String, String, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.ISubscriptionOwnershipService.TryAcquireAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+    name: TryAcquireAsync
+    href: Meridian.Application.Coordination.ISubscriptionOwnershipService.html#Meridian_Application_Coordination_ISubscriptionOwnershipService_TryAcquireAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.ISubscriptionOwnershipService.TryAcquireAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+    name: TryAcquireAsync
+    href: Meridian.Application.Coordination.ISubscriptionOwnershipService.html#Meridian_Application_Coordination_ISubscriptionOwnershipService_TryAcquireAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LeaseAcquireResult>
+  nameWithType: Task<LeaseAcquireResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Coordination.LeaseAcquireResult>
+  nameWithType.vb: Task(Of LeaseAcquireResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Coordination.LeaseAcquireResult)
+  name.vb: Task(Of LeaseAcquireResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Coordination.LeaseAcquireResult
+    name: LeaseAcquireResult
+    href: Meridian.Application.Coordination.LeaseAcquireResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Coordination.LeaseAcquireResult
+    name: LeaseAcquireResult
+    href: Meridian.Application.Coordination.LeaseAcquireResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Coordination.SubscriptionOwnershipService.ReleaseAsync*
+  commentId: Overload:Meridian.Application.Coordination.SubscriptionOwnershipService.ReleaseAsync
+  href: Meridian.Application.Coordination.SubscriptionOwnershipService.html#Meridian_Application_Coordination_SubscriptionOwnershipService_ReleaseAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: ReleaseAsync
+  nameWithType: SubscriptionOwnershipService.ReleaseAsync
+  fullName: Meridian.Application.Coordination.SubscriptionOwnershipService.ReleaseAsync
+- uid: Meridian.Application.Coordination.ISubscriptionOwnershipService.ReleaseAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ISubscriptionOwnershipService.ReleaseAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ISubscriptionOwnershipService
+  isExternal: true
+  href: Meridian.Application.Coordination.ISubscriptionOwnershipService.html#Meridian_Application_Coordination_ISubscriptionOwnershipService_ReleaseAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: ReleaseAsync(string, string, string, CancellationToken)
+  nameWithType: ISubscriptionOwnershipService.ReleaseAsync(string, string, string, CancellationToken)
+  fullName: Meridian.Application.Coordination.ISubscriptionOwnershipService.ReleaseAsync(string, string, string, System.Threading.CancellationToken)
+  nameWithType.vb: ISubscriptionOwnershipService.ReleaseAsync(String, String, String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.ISubscriptionOwnershipService.ReleaseAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: ReleaseAsync(String, String, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.ISubscriptionOwnershipService.ReleaseAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+    name: ReleaseAsync
+    href: Meridian.Application.Coordination.ISubscriptionOwnershipService.html#Meridian_Application_Coordination_ISubscriptionOwnershipService_ReleaseAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.ISubscriptionOwnershipService.ReleaseAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+    name: ReleaseAsync
+    href: Meridian.Application.Coordination.ISubscriptionOwnershipService.html#Meridian_Application_Coordination_ISubscriptionOwnershipService_ReleaseAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )

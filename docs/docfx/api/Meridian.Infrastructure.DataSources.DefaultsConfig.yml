@@ -1,0 +1,481 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DefaultsConfig
+  commentId: T:Meridian.Infrastructure.DataSources.DefaultsConfig
+  id: DefaultsConfig
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DefaultsConfig.HealthCheck
+  - Meridian.Infrastructure.DataSources.DefaultsConfig.RateLimits
+  - Meridian.Infrastructure.DataSources.DefaultsConfig.RetryPolicy
+  langs:
+  - csharp
+  - vb
+  name: DefaultsConfig
+  nameWithType: DefaultsConfig
+  fullName: Meridian.Infrastructure.DataSources.DefaultsConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultsConfig
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Default settings applied to all data sources.
+  example: []
+  syntax:
+    content: 'public sealed record DefaultsConfig : IEquatable<DefaultsConfig>'
+    content.vb: Public NotInheritable Class DefaultsConfig Implements IEquatable(Of DefaultsConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.DefaultsConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.DefaultsConfig.RetryPolicy
+  commentId: P:Meridian.Infrastructure.DataSources.DefaultsConfig.RetryPolicy
+  id: RetryPolicy
+  parent: Meridian.Infrastructure.DataSources.DefaultsConfig
+  langs:
+  - csharp
+  - vb
+  name: RetryPolicy
+  nameWithType: DefaultsConfig.RetryPolicy
+  fullName: Meridian.Infrastructure.DataSources.DefaultsConfig.RetryPolicy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetryPolicy
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Default retry policy for all sources.
+  example: []
+  syntax:
+    content: public RetryPolicyConfig RetryPolicy { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+    content.vb: Public Property RetryPolicy As RetryPolicyConfig
+  overload: Meridian.Infrastructure.DataSources.DefaultsConfig.RetryPolicy*
+- uid: Meridian.Infrastructure.DataSources.DefaultsConfig.HealthCheck
+  commentId: P:Meridian.Infrastructure.DataSources.DefaultsConfig.HealthCheck
+  id: HealthCheck
+  parent: Meridian.Infrastructure.DataSources.DefaultsConfig
+  langs:
+  - csharp
+  - vb
+  name: HealthCheck
+  nameWithType: DefaultsConfig.HealthCheck
+  fullName: Meridian.Infrastructure.DataSources.DefaultsConfig.HealthCheck
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheck
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Default health check settings.
+  example: []
+  syntax:
+    content: public HealthCheckConfig HealthCheck { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.HealthCheckConfig
+    content.vb: Public Property HealthCheck As HealthCheckConfig
+  overload: Meridian.Infrastructure.DataSources.DefaultsConfig.HealthCheck*
+- uid: Meridian.Infrastructure.DataSources.DefaultsConfig.RateLimits
+  commentId: P:Meridian.Infrastructure.DataSources.DefaultsConfig.RateLimits
+  id: RateLimits
+  parent: Meridian.Infrastructure.DataSources.DefaultsConfig
+  langs:
+  - csharp
+  - vb
+  name: RateLimits
+  nameWithType: DefaultsConfig.RateLimits
+  fullName: Meridian.Infrastructure.DataSources.DefaultsConfig.RateLimits
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimits
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Default rate limit settings.
+  example: []
+  syntax:
+    content: public RateLimitConfig RateLimits { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.DataSources.RateLimitConfig
+    content.vb: Public Property RateLimits As RateLimitConfig
+  overload: Meridian.Infrastructure.DataSources.DefaultsConfig.RateLimits*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.DefaultsConfig}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.DefaultsConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DefaultsConfig>
+  nameWithType: IEquatable<DefaultsConfig>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.DefaultsConfig>
+  nameWithType.vb: IEquatable(Of DefaultsConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.DefaultsConfig)
+  name.vb: IEquatable(Of DefaultsConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DefaultsConfig
+    name: DefaultsConfig
+    href: Meridian.Infrastructure.DataSources.DefaultsConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DefaultsConfig
+    name: DefaultsConfig
+    href: Meridian.Infrastructure.DataSources.DefaultsConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DefaultsConfig.RetryPolicy*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DefaultsConfig.RetryPolicy
+  href: Meridian.Infrastructure.DataSources.DefaultsConfig.html#Meridian_Infrastructure_DataSources_DefaultsConfig_RetryPolicy
+  name: RetryPolicy
+  nameWithType: DefaultsConfig.RetryPolicy
+  fullName: Meridian.Infrastructure.DataSources.DefaultsConfig.RetryPolicy
+- uid: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  commentId: T:Meridian.Infrastructure.DataSources.RetryPolicyConfig
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.RetryPolicyConfig.html
+  name: RetryPolicyConfig
+  nameWithType: RetryPolicyConfig
+  fullName: Meridian.Infrastructure.DataSources.RetryPolicyConfig
+- uid: Meridian.Infrastructure.DataSources.DefaultsConfig.HealthCheck*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DefaultsConfig.HealthCheck
+  href: Meridian.Infrastructure.DataSources.DefaultsConfig.html#Meridian_Infrastructure_DataSources_DefaultsConfig_HealthCheck
+  name: HealthCheck
+  nameWithType: DefaultsConfig.HealthCheck
+  fullName: Meridian.Infrastructure.DataSources.DefaultsConfig.HealthCheck
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig
+  commentId: T:Meridian.Infrastructure.DataSources.HealthCheckConfig
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.HealthCheckConfig.html
+  name: HealthCheckConfig
+  nameWithType: HealthCheckConfig
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig
+- uid: Meridian.Infrastructure.DataSources.DefaultsConfig.RateLimits*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DefaultsConfig.RateLimits
+  href: Meridian.Infrastructure.DataSources.DefaultsConfig.html#Meridian_Infrastructure_DataSources_DefaultsConfig_RateLimits
+  name: RateLimits
+  nameWithType: DefaultsConfig.RateLimits
+  fullName: Meridian.Infrastructure.DataSources.DefaultsConfig.RateLimits
+- uid: Meridian.Infrastructure.DataSources.RateLimitConfig
+  commentId: T:Meridian.Infrastructure.DataSources.RateLimitConfig
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.RateLimitConfig.html
+  name: RateLimitConfig
+  nameWithType: RateLimitConfig
+  fullName: Meridian.Infrastructure.DataSources.RateLimitConfig

@@ -1,0 +1,886 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  commentId: T:Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  id: ServicerReportBatchDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.#ctor(System.Guid,System.String,System.String,System.String,System.DateOnly,System.DateTimeOffset,System.String,System.String,System.Int32,System.String,System.String,System.String)
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileHash
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileName
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.LoadedBy
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.Notes
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReceivedAt
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportAsOfDate
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportType
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.RowCount
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerName
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchId
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.SourceFormat
+  - Meridian.Contracts.DirectLending.ServicerReportBatchDto.Status
+  langs:
+  - csharp
+  - vb
+  name: ServicerReportBatchDto
+  nameWithType: ServicerReportBatchDto
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServicerReportBatchDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record ServicerReportBatchDto : IEquatable<ServicerReportBatchDto>'
+    content.vb: Public NotInheritable Class ServicerReportBatchDto Implements IEquatable(Of ServicerReportBatchDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.ServicerReportBatchDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.#ctor(System.Guid,System.String,System.String,System.String,System.DateOnly,System.DateTimeOffset,System.String,System.String,System.Int32,System.String,System.String,System.String)
+  commentId: M:Meridian.Contracts.DirectLending.ServicerReportBatchDto.#ctor(System.Guid,System.String,System.String,System.String,System.DateOnly,System.DateTimeOffset,System.String,System.String,System.Int32,System.String,System.String,System.String)
+  id: '#ctor(System.Guid,System.String,System.String,System.String,System.DateOnly,System.DateTimeOffset,System.String,System.String,System.Int32,System.String,System.String,System.String)'
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: ServicerReportBatchDto(Guid, string, string, string, DateOnly, DateTimeOffset, string?, string?, int, string, string?, string?)
+  nameWithType: ServicerReportBatchDto.ServicerReportBatchDto(Guid, string, string, string, DateOnly, DateTimeOffset, string?, string?, int, string, string?, string?)
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchDto(System.Guid, string, string, string, System.DateOnly, System.DateTimeOffset, string?, string?, int, string, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public ServicerReportBatchDto(Guid ServicerReportBatchId, string ServicerName, string ReportType, string SourceFormat, DateOnly ReportAsOfDate, DateTimeOffset ReceivedAt, string? FileName, string? FileHash, int RowCount, string Status, string? LoadedBy, string? Notes)
+    parameters:
+    - id: ServicerReportBatchId
+      type: System.Guid
+    - id: ServicerName
+      type: System.String
+    - id: ReportType
+      type: System.String
+    - id: SourceFormat
+      type: System.String
+    - id: ReportAsOfDate
+      type: System.DateOnly
+    - id: ReceivedAt
+      type: System.DateTimeOffset
+    - id: FileName
+      type: System.String
+    - id: FileHash
+      type: System.String
+    - id: RowCount
+      type: System.Int32
+    - id: Status
+      type: System.String
+    - id: LoadedBy
+      type: System.String
+    - id: Notes
+      type: System.String
+    content.vb: Public Sub New(ServicerReportBatchId As Guid, ServicerName As String, ReportType As String, SourceFormat As String, ReportAsOfDate As DateOnly, ReceivedAt As DateTimeOffset, FileName As String, FileHash As String, RowCount As Integer, Status As String, LoadedBy As String, Notes As String)
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.#ctor*
+  nameWithType.vb: ServicerReportBatchDto.New(Guid, String, String, String, DateOnly, DateTimeOffset, String, String, Integer, String, String, String)
+  fullName.vb: Meridian.Contracts.DirectLending.ServicerReportBatchDto.New(System.Guid, String, String, String, System.DateOnly, System.DateTimeOffset, String, String, Integer, String, String, String)
+  name.vb: New(Guid, String, String, String, DateOnly, DateTimeOffset, String, String, Integer, String, String, String)
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchId
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchId
+  id: ServicerReportBatchId
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: ServicerReportBatchId
+  nameWithType: ServicerReportBatchDto.ServicerReportBatchId
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServicerReportBatchId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid ServicerReportBatchId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ServicerReportBatchId As Guid
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchId*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerName
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerName
+  id: ServicerName
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: ServicerName
+  nameWithType: ServicerReportBatchDto.ServicerName
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServicerName
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string ServicerName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ServicerName As String
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerName*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportType
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportType
+  id: ReportType
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: ReportType
+  nameWithType: ServicerReportBatchDto.ReportType
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportType
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 216
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string ReportType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReportType As String
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportType*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.SourceFormat
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.SourceFormat
+  id: SourceFormat
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: SourceFormat
+  nameWithType: ServicerReportBatchDto.SourceFormat
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.SourceFormat
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceFormat
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string SourceFormat { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceFormat As String
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.SourceFormat*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportAsOfDate
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportAsOfDate
+  id: ReportAsOfDate
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: ReportAsOfDate
+  nameWithType: ServicerReportBatchDto.ReportAsOfDate
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportAsOfDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportAsOfDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly ReportAsOfDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property ReportAsOfDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportAsOfDate*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReceivedAt
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReceivedAt
+  id: ReceivedAt
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: ReceivedAt
+  nameWithType: ServicerReportBatchDto.ReceivedAt
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReceivedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReceivedAt
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 219
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateTimeOffset ReceivedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ReceivedAt As DateTimeOffset
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReceivedAt*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileName
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileName
+  id: FileName
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: FileName
+  nameWithType: ServicerReportBatchDto.FileName
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileName
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? FileName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FileName As String
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileName*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileHash
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileHash
+  id: FileHash
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: FileHash
+  nameWithType: ServicerReportBatchDto.FileHash
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileHash
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileHash
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? FileHash { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FileHash As String
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileHash*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.RowCount
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.RowCount
+  id: RowCount
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: RowCount
+  nameWithType: ServicerReportBatchDto.RowCount
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.RowCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RowCount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public int RowCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RowCount As Integer
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.RowCount*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Status
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.Status
+  id: Status
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ServicerReportBatchDto.Status
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string Status { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Status As String
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Status*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.LoadedBy
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.LoadedBy
+  id: LoadedBy
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: LoadedBy
+  nameWithType: ServicerReportBatchDto.LoadedBy
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.LoadedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadedBy
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? LoadedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LoadedBy As String
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.LoadedBy*
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Notes
+  commentId: P:Meridian.Contracts.DirectLending.ServicerReportBatchDto.Notes
+  id: Notes
+  parent: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: ServicerReportBatchDto.Notes
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? Notes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Notes As String
+  overload: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Notes*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.ServicerReportBatchDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.ServicerReportBatchDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ServicerReportBatchDto>
+  nameWithType: IEquatable<ServicerReportBatchDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.ServicerReportBatchDto>
+  nameWithType.vb: IEquatable(Of ServicerReportBatchDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.ServicerReportBatchDto)
+  name.vb: IEquatable(Of ServicerReportBatchDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+    name: ServicerReportBatchDto
+    href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto
+    name: ServicerReportBatchDto
+    href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.#ctor
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto__ctor_System_Guid_System_String_System_String_System_String_System_DateOnly_System_DateTimeOffset_System_String_System_String_System_Int32_System_String_System_String_System_String_
+  name: ServicerReportBatchDto
+  nameWithType: ServicerReportBatchDto.ServicerReportBatchDto
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchDto
+  nameWithType.vb: ServicerReportBatchDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.ServicerReportBatchDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchId*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchId
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_ServicerReportBatchId
+  name: ServicerReportBatchId
+  nameWithType: ServicerReportBatchDto.ServicerReportBatchId
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerReportBatchId
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerName*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerName
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_ServicerName
+  name: ServicerName
+  nameWithType: ServicerReportBatchDto.ServicerName
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ServicerName
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportType*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportType
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_ReportType
+  name: ReportType
+  nameWithType: ServicerReportBatchDto.ReportType
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportType
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.SourceFormat*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.SourceFormat
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_SourceFormat
+  name: SourceFormat
+  nameWithType: ServicerReportBatchDto.SourceFormat
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.SourceFormat
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportAsOfDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportAsOfDate
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_ReportAsOfDate
+  name: ReportAsOfDate
+  nameWithType: ServicerReportBatchDto.ReportAsOfDate
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReportAsOfDate
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReceivedAt*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReceivedAt
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_ReceivedAt
+  name: ReceivedAt
+  nameWithType: ServicerReportBatchDto.ReceivedAt
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.ReceivedAt
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileName*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileName
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_FileName
+  name: FileName
+  nameWithType: ServicerReportBatchDto.FileName
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileName
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileHash*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileHash
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_FileHash
+  name: FileHash
+  nameWithType: ServicerReportBatchDto.FileHash
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.FileHash
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.RowCount*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.RowCount
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_RowCount
+  name: RowCount
+  nameWithType: ServicerReportBatchDto.RowCount
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.RowCount
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Status*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.Status
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_Status
+  name: Status
+  nameWithType: ServicerReportBatchDto.Status
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Status
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.LoadedBy*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.LoadedBy
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_LoadedBy
+  name: LoadedBy
+  nameWithType: ServicerReportBatchDto.LoadedBy
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.LoadedBy
+- uid: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Notes*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerReportBatchDto.Notes
+  href: Meridian.Contracts.DirectLending.ServicerReportBatchDto.html#Meridian_Contracts_DirectLending_ServicerReportBatchDto_Notes
+  name: Notes
+  nameWithType: ServicerReportBatchDto.Notes
+  fullName: Meridian.Contracts.DirectLending.ServicerReportBatchDto.Notes

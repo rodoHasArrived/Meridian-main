@@ -10,7 +10,7 @@ param(
     [ValidateSet("all", "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")]
     [string]$Platform = "all",
 
-    [ValidateSet("all", "collector", "ui", "desktop")]
+    [ValidateSet("all", "collector", "desktop")]
     [string]$Project = "all",
 
     [string]$Version = "1.0.0",
@@ -27,14 +27,21 @@ $ErrorActionPreference = "Stop"
 
 # Script directory
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-Set-Location $ScriptDir
+$RepoRoot = (Resolve-Path (Join-Path $ScriptDir "..\..\..")).Path
+$ConfigDir = Join-Path $RepoRoot "config"
+Set-Location $RepoRoot
+$ResolvedOutputDir = if ([System.IO.Path]::IsPathRooted($OutputDir)) {
+    [System.IO.Path]::GetFullPath($OutputDir)
+}
+else {
+    [System.IO.Path]::GetFullPath((Join-Path $RepoRoot $OutputDir))
+}
 
 # Configuration
 $AllPlatforms = @("win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64")
 $WindowsPlatforms = @("win-x64", "win-arm64")
-$CollectorProject = "src/Meridian/Meridian.csproj"
-$UiProject = "src/Meridian.Ui/Meridian.Ui.csproj"
-$DesktopProject = "src/Meridian.Uwp/Meridian.Uwp.csproj"
+$CollectorProject = Join-Path $RepoRoot "src/Meridian/Meridian.csproj"
+$DesktopProject = Join-Path $RepoRoot "src/Meridian.Wpf/Meridian.Wpf.csproj"
 
 function Write-Info {
     param([string]$Message)
@@ -60,6 +67,63 @@ function Write-Error {
     Write-Host $Message
 }
 
+function Get-PublishOutputProcesses {
+    param([string]$PublishRoot)
+
+    $fullPublishRoot = [System.IO.Path]::GetFullPath($PublishRoot)
+
+    return @(Get-Process -Name 'Meridian', 'Meridian.Desktop' -ErrorAction SilentlyContinue | Where-Object {
+            try {
+                $processPath = $_.Path
+                if ([string]::IsNullOrWhiteSpace($processPath)) {
+                    return $false
+                }
+
+                $fullProcessPath = [System.IO.Path]::GetFullPath($processPath)
+                return $fullProcessPath.StartsWith($fullPublishRoot, [System.StringComparison]::OrdinalIgnoreCase)
+            }
+            catch {
+                return $false
+            }
+        })
+}
+
+function Stop-PublishOutputProcesses {
+    param([string]$PublishRoot)
+
+    $runningProcesses = @(Get-PublishOutputProcesses -PublishRoot $PublishRoot)
+    if ($runningProcesses.Count -eq 0) {
+        return
+    }
+
+    Write-Warning "Stopping $($runningProcesses.Count) running publish output process(es) so '$PublishRoot' can be cleaned..."
+
+    foreach ($process in $runningProcesses) {
+        try {
+            if ($process.HasExited) {
+                continue
+            }
+
+            $closed = $false
+            if ($process.MainWindowHandle -ne 0) {
+                $closed = $process.CloseMainWindow()
+            }
+
+            if ($closed -and $process.WaitForExit(5000)) {
+                Write-Success "Stopped process $($process.ProcessName) ($($process.Id))"
+                continue
+            }
+
+            Stop-Process -Id $process.Id -Force
+            $process.WaitForExit()
+            Write-Success "Stopped process $($process.ProcessName) ($($process.Id))"
+        }
+        catch {
+            throw "Failed to stop running publish output process $($process.ProcessName) ($($process.Id)): $($_.Exception.Message)"
+        }
+    }
+}
+
 function Show-Help {
     Write-Host @"
 Meridian - Single Executable Build Script (PowerShell)
@@ -79,8 +143,7 @@ Parameters:
   -Project      Target project (default: all)
                   all        Build all projects
                   collector  Build only Meridian (CLI)
-                  ui         Build only Meridian.Ui (Web Dashboard)
-                  desktop    Build only Meridian.Uwp (Windows Desktop App)
+                  desktop    Build only Meridian.Wpf / Meridian.Desktop (Windows Desktop App)
 
   -Version      Version number (default: 1.0.0)
   -Configuration Build configuration (default: Release)
@@ -103,7 +166,7 @@ function Publish-Project {
         [string]$OutputSubDir
     )
 
-    $outputPath = Join-Path $OutputDir $RuntimeId $OutputSubDir
+    $outputPath = Join-Path (Join-Path $ResolvedOutputDir $RuntimeId) $OutputSubDir
 
     Write-Info "Publishing $ProjectName for $RuntimeId..."
 
@@ -124,7 +187,7 @@ function Publish-Project {
     }
 
     # Copy configuration file
-    $configFile = Join-Path $ScriptDir "appsettings.json"
+    $configFile = Join-Path $ConfigDir "appsettings.json"
     if (Test-Path $configFile) {
         Copy-Item $configFile -Destination $outputPath
     }
@@ -135,28 +198,30 @@ function Publish-Project {
 function Publish-DesktopApp {
     param([string]$RuntimeId)
 
-    $outputPath = Join-Path $OutputDir $RuntimeId "desktop"
+    $outputPath = Join-Path (Join-Path $ResolvedOutputDir $RuntimeId) "desktop"
+    $platform = if ($RuntimeId -eq "win-arm64") { "ARM64" } else { "x64" }
 
-    Write-Info "Publishing Windows Desktop App for $RuntimeId..."
+    Write-Info "Publishing Meridian Desktop (WPF) for $RuntimeId..."
 
-    # Windows Desktop App uses WinUI 3, which requires special publish settings
+    # Meridian Desktop is a WPF app with a separate assembly name.
     dotnet publish $DesktopProject `
         -c $Configuration `
         -r $RuntimeId `
         -o $outputPath `
         -p:Version=$Version `
-        -p:Platform=x64 `
+        -p:EnableFullWpfBuild=true `
+        -p:Platform=$platform `
         --self-contained true `
         -p:WindowsPackageType=None `
-        -p:PublishReadyToRun=true
+        -p:PublishReadyToRun=false
 
     if ($LASTEXITCODE -ne 0) {
-        throw "Failed to publish Windows Desktop App for $RuntimeId"
+        throw "Failed to publish Meridian Desktop for $RuntimeId"
     }
 
     # Copy configuration files
-    $configFile = Join-Path $ScriptDir "appsettings.json"
-    $sampleConfigFile = Join-Path $ScriptDir "appsettings.sample.json"
+    $configFile = Join-Path $ConfigDir "appsettings.json"
+    $sampleConfigFile = Join-Path $ConfigDir "appsettings.sample.json"
 
     if (Test-Path $configFile) {
         Copy-Item $configFile -Destination $outputPath
@@ -169,19 +234,19 @@ function Publish-DesktopApp {
     $dataDir = Join-Path $outputPath "data"
     New-Item -ItemType Directory -Path $dataDir -Force | Out-Null
 
-    Write-Success "Published Windows Desktop App for $RuntimeId -> $outputPath"
+    Write-Success "Published Meridian Desktop (WPF) for $RuntimeId -> $outputPath"
 }
 
 function New-Package {
     param([string]$RuntimeId)
 
-    $outputPath = Join-Path $OutputDir $RuntimeId
+    $outputPath = Join-Path $ResolvedOutputDir $RuntimeId
     $packageName = "Meridian-$Version-$RuntimeId"
 
     if (Test-Path $outputPath) {
         Write-Info "Creating package for $RuntimeId..."
 
-        $archivePath = Join-Path $OutputDir "$packageName.zip"
+        $archivePath = Join-Path $ResolvedOutputDir "$packageName.zip"
 
         if (Test-Path $archivePath) {
             Remove-Item $archivePath -Force
@@ -202,11 +267,12 @@ if ($Help) {
 $TargetPlatforms = if ($Platform -eq "all") { $AllPlatforms } else { @($Platform) }
 
 # Clean output directory
-Write-Info "Cleaning output directory: $OutputDir"
-if (Test-Path $OutputDir) {
-    Remove-Item $OutputDir -Recurse -Force
+Write-Info "Cleaning output directory: $ResolvedOutputDir"
+if (Test-Path $ResolvedOutputDir) {
+    Stop-PublishOutputProcesses -PublishRoot $ResolvedOutputDir
+    Remove-Item $ResolvedOutputDir -Recurse -Force
 }
-New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+New-Item -ItemType Directory -Path $ResolvedOutputDir -Force | Out-Null
 
 # Build projects
 Write-Info "Building Meridian v$Version ($Configuration)"
@@ -221,13 +287,9 @@ foreach ($rid in $TargetPlatforms) {
         Publish-Project -ProjectPath $CollectorProject -RuntimeId $rid -ProjectName "Meridian" -OutputSubDir "collector"
     }
 
-    if ($Project -eq "all" -or $Project -eq "ui") {
-        Publish-Project -ProjectPath $UiProject -RuntimeId $rid -ProjectName "Meridian.Ui" -OutputSubDir "ui"
-    }
-
-    # Build Windows Desktop App only for Windows platforms
+    # Build the WPF desktop app only for Windows platforms
     if (($Project -eq "all" -or $Project -eq "desktop") -and ($rid -in $WindowsPlatforms)) {
-        Write-Info "Publishing Windows Desktop App for $rid..."
+        Write-Info "Publishing Meridian Desktop (WPF) for $rid..."
         Publish-DesktopApp -RuntimeId $rid
     }
 
@@ -240,15 +302,17 @@ foreach ($rid in $TargetPlatforms) {
 # Summary
 Write-Success "=== Build Complete ==="
 Write-Host ""
-Write-Info "Output directory: $OutputDir"
+Write-Info "Output directory: $ResolvedOutputDir"
 Write-Host ""
 
 # List outputs
-Get-ChildItem $OutputDir -Recurse -Filter "Meridian*" |
+Get-ChildItem $ResolvedOutputDir -Recurse -Filter "Meridian*" |
     Where-Object { $_.Extension -in @(".exe", "", ".zip", ".tar.gz") } |
     Select-Object -First 20 |
     ForEach-Object { Write-Host "  $($_.FullName)" }
 
 Write-Host ""
 Write-Info "To run the collector:"
-Write-Host "  $OutputDir\win-x64\collector\Meridian.exe"
+Write-Host "  $ResolvedOutputDir\win-x64\collector\Meridian.exe"
+Write-Info "To run the desktop app:"
+Write-Host "  $ResolvedOutputDir\win-x64\desktop\Meridian.Desktop.exe"

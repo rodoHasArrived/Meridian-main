@@ -1,0 +1,1278 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ResultTypes.OperationError
+  commentId: T:Meridian.Application.ResultTypes.OperationError
+  id: OperationError
+  parent: Meridian.Application.ResultTypes
+  children:
+  - Meridian.Application.ResultTypes.OperationError.Code
+  - Meridian.Application.ResultTypes.OperationError.Connection(System.String,System.String)
+  - Meridian.Application.ResultTypes.OperationError.Context
+  - Meridian.Application.ResultTypes.OperationError.Create(Meridian.Application.ResultTypes.ErrorCode,System.String,System.String)
+  - Meridian.Application.ResultTypes.OperationError.Detail
+  - Meridian.Application.ResultTypes.OperationError.Exception
+  - Meridian.Application.ResultTypes.OperationError.FromException(System.Exception,System.Nullable{Meridian.Application.ResultTypes.ErrorCode})
+  - Meridian.Application.ResultTypes.OperationError.Message
+  - Meridian.Application.ResultTypes.OperationError.NotFound(System.String,System.String)
+  - Meridian.Application.ResultTypes.OperationError.RateLimit(System.String,System.Nullable{System.TimeSpan})
+  - Meridian.Application.ResultTypes.OperationError.Timeout(System.String,System.TimeSpan)
+  - Meridian.Application.ResultTypes.OperationError.Timestamp
+  - Meridian.Application.ResultTypes.OperationError.ToString
+  - Meridian.Application.ResultTypes.OperationError.Validation(System.String,System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}})
+  - Meridian.Application.ResultTypes.OperationError.WithContext(System.String,System.Object)
+  langs:
+  - csharp
+  - vb
+  name: OperationError
+  nameWithType: OperationError
+  fullName: Meridian.Application.ResultTypes.OperationError
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OperationError
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: >-
+    Represents a standardized error from any operation in the system.
+
+    Can be used with Result&lt;T, OperationError&gt; for consistent error handling.
+  example: []
+  syntax:
+    content: 'public sealed record OperationError : IEquatable<OperationError>'
+    content.vb: Public NotInheritable Class OperationError Implements IEquatable(Of OperationError)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.ResultTypes.OperationError}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.ResultTypes.OperationError.Code
+  commentId: P:Meridian.Application.ResultTypes.OperationError.Code
+  id: Code
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: OperationError.Code
+  fullName: Meridian.Application.ResultTypes.OperationError.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public required ErrorCode Code { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+    content.vb: Public Property Code As ErrorCode
+  overload: Meridian.Application.ResultTypes.OperationError.Code*
+- uid: Meridian.Application.ResultTypes.OperationError.Message
+  commentId: P:Meridian.Application.ResultTypes.OperationError.Message
+  id: Message
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: OperationError.Message
+  fullName: Meridian.Application.ResultTypes.OperationError.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public required string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.ResultTypes.OperationError.Message*
+- uid: Meridian.Application.ResultTypes.OperationError.Detail
+  commentId: P:Meridian.Application.ResultTypes.OperationError.Detail
+  id: Detail
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Detail
+  nameWithType: OperationError.Detail
+  fullName: Meridian.Application.ResultTypes.OperationError.Detail
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Detail
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public string? Detail { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Detail As String
+  overload: Meridian.Application.ResultTypes.OperationError.Detail*
+- uid: Meridian.Application.ResultTypes.OperationError.Exception
+  commentId: P:Meridian.Application.ResultTypes.OperationError.Exception
+  id: Exception
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Exception
+  nameWithType: OperationError.Exception
+  fullName: Meridian.Application.ResultTypes.OperationError.Exception
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exception
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public Exception? Exception { get; init; }
+    parameters: []
+    return:
+      type: System.Exception
+    content.vb: Public Property Exception As Exception
+  overload: Meridian.Application.ResultTypes.OperationError.Exception*
+- uid: Meridian.Application.ResultTypes.OperationError.Context
+  commentId: P:Meridian.Application.ResultTypes.OperationError.Context
+  id: Context
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Context
+  nameWithType: OperationError.Context
+  fullName: Meridian.Application.ResultTypes.OperationError.Context
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Context
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public IReadOnlyDictionary<string, object?>? Context { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    content.vb: Public Property Context As IReadOnlyDictionary(Of String, Object)
+  overload: Meridian.Application.ResultTypes.OperationError.Context*
+- uid: Meridian.Application.ResultTypes.OperationError.Timestamp
+  commentId: P:Meridian.Application.ResultTypes.OperationError.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: OperationError.Timestamp
+  fullName: Meridian.Application.ResultTypes.OperationError.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.ResultTypes.OperationError.Timestamp*
+- uid: Meridian.Application.ResultTypes.OperationError.Create(Meridian.Application.ResultTypes.ErrorCode,System.String,System.String)
+  commentId: M:Meridian.Application.ResultTypes.OperationError.Create(Meridian.Application.ResultTypes.ErrorCode,System.String,System.String)
+  id: Create(Meridian.Application.ResultTypes.ErrorCode,System.String,System.String)
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Create(ErrorCode, string, string?)
+  nameWithType: OperationError.Create(ErrorCode, string, string?)
+  fullName: Meridian.Application.ResultTypes.OperationError.Create(Meridian.Application.ResultTypes.ErrorCode, string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Create
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static OperationError Create(ErrorCode code, string message, string? detail = null)
+    parameters:
+    - id: code
+      type: Meridian.Application.ResultTypes.ErrorCode
+    - id: message
+      type: System.String
+    - id: detail
+      type: System.String
+    return:
+      type: Meridian.Application.ResultTypes.OperationError
+    content.vb: Public Shared Function Create(code As ErrorCode, message As String, detail As String = Nothing) As OperationError
+  overload: Meridian.Application.ResultTypes.OperationError.Create*
+  nameWithType.vb: OperationError.Create(ErrorCode, String, String)
+  fullName.vb: Meridian.Application.ResultTypes.OperationError.Create(Meridian.Application.ResultTypes.ErrorCode, String, String)
+  name.vb: Create(ErrorCode, String, String)
+- uid: Meridian.Application.ResultTypes.OperationError.FromException(System.Exception,System.Nullable{Meridian.Application.ResultTypes.ErrorCode})
+  commentId: M:Meridian.Application.ResultTypes.OperationError.FromException(System.Exception,System.Nullable{Meridian.Application.ResultTypes.ErrorCode})
+  id: FromException(System.Exception,System.Nullable{Meridian.Application.ResultTypes.ErrorCode})
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: FromException(Exception, ErrorCode?)
+  nameWithType: OperationError.FromException(Exception, ErrorCode?)
+  fullName: Meridian.Application.ResultTypes.OperationError.FromException(System.Exception, Meridian.Application.ResultTypes.ErrorCode?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromException
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static OperationError FromException(Exception ex, ErrorCode? code = null)
+    parameters:
+    - id: ex
+      type: System.Exception
+    - id: code
+      type: System.Nullable{Meridian.Application.ResultTypes.ErrorCode}
+    return:
+      type: Meridian.Application.ResultTypes.OperationError
+    content.vb: Public Shared Function FromException(ex As Exception, code As ErrorCode? = Nothing) As OperationError
+  overload: Meridian.Application.ResultTypes.OperationError.FromException*
+- uid: Meridian.Application.ResultTypes.OperationError.NotFound(System.String,System.String)
+  commentId: M:Meridian.Application.ResultTypes.OperationError.NotFound(System.String,System.String)
+  id: NotFound(System.String,System.String)
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: NotFound(string, string)
+  nameWithType: OperationError.NotFound(string, string)
+  fullName: Meridian.Application.ResultTypes.OperationError.NotFound(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotFound
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static OperationError NotFound(string entityType, string entityId)
+    parameters:
+    - id: entityType
+      type: System.String
+    - id: entityId
+      type: System.String
+    return:
+      type: Meridian.Application.ResultTypes.OperationError
+    content.vb: Public Shared Function NotFound(entityType As String, entityId As String) As OperationError
+  overload: Meridian.Application.ResultTypes.OperationError.NotFound*
+  nameWithType.vb: OperationError.NotFound(String, String)
+  fullName.vb: Meridian.Application.ResultTypes.OperationError.NotFound(String, String)
+  name.vb: NotFound(String, String)
+- uid: Meridian.Application.ResultTypes.OperationError.Validation(System.String,System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}})
+  commentId: M:Meridian.Application.ResultTypes.OperationError.Validation(System.String,System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}})
+  id: Validation(System.String,System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}})
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Validation(string, IEnumerable<(string Field, string Error)>?)
+  nameWithType: OperationError.Validation(string, IEnumerable<(string Field, string Error)>?)
+  fullName: Meridian.Application.ResultTypes.OperationError.Validation(string, System.Collections.Generic.IEnumerable<(string Field, string Error)>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validation
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static OperationError Validation(string message, IEnumerable<(string Field, string Error)>? fieldErrors = null)
+    parameters:
+    - id: message
+      type: System.String
+    - id: fieldErrors
+      type: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}}
+    return:
+      type: Meridian.Application.ResultTypes.OperationError
+    content.vb: Public Shared Function Validation(message As String, fieldErrors As IEnumerable(Of (Field As String, [Error] As String)) = Nothing) As OperationError
+  overload: Meridian.Application.ResultTypes.OperationError.Validation*
+  nameWithType.vb: OperationError.Validation(String, IEnumerable(Of (Field As String, Error As String)))
+  fullName.vb: Meridian.Application.ResultTypes.OperationError.Validation(String, System.Collections.Generic.IEnumerable(Of (Field As String, Error As String)))
+  name.vb: Validation(String, IEnumerable(Of (Field As String, Error As String)))
+- uid: Meridian.Application.ResultTypes.OperationError.RateLimit(System.String,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Application.ResultTypes.OperationError.RateLimit(System.String,System.Nullable{System.TimeSpan})
+  id: RateLimit(System.String,System.Nullable{System.TimeSpan})
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: RateLimit(string, TimeSpan?)
+  nameWithType: OperationError.RateLimit(string, TimeSpan?)
+  fullName: Meridian.Application.ResultTypes.OperationError.RateLimit(string, System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimit
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static OperationError RateLimit(string provider, TimeSpan? retryAfter = null)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: retryAfter
+      type: System.Nullable{System.TimeSpan}
+    return:
+      type: Meridian.Application.ResultTypes.OperationError
+    content.vb: Public Shared Function RateLimit(provider As String, retryAfter As TimeSpan? = Nothing) As OperationError
+  overload: Meridian.Application.ResultTypes.OperationError.RateLimit*
+  nameWithType.vb: OperationError.RateLimit(String, TimeSpan?)
+  fullName.vb: Meridian.Application.ResultTypes.OperationError.RateLimit(String, System.TimeSpan?)
+  name.vb: RateLimit(String, TimeSpan?)
+- uid: Meridian.Application.ResultTypes.OperationError.Timeout(System.String,System.TimeSpan)
+  commentId: M:Meridian.Application.ResultTypes.OperationError.Timeout(System.String,System.TimeSpan)
+  id: Timeout(System.String,System.TimeSpan)
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Timeout(string, TimeSpan)
+  nameWithType: OperationError.Timeout(string, TimeSpan)
+  fullName: Meridian.Application.ResultTypes.OperationError.Timeout(string, System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timeout
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static OperationError Timeout(string operation, TimeSpan timeout)
+    parameters:
+    - id: operation
+      type: System.String
+    - id: timeout
+      type: System.TimeSpan
+    return:
+      type: Meridian.Application.ResultTypes.OperationError
+    content.vb: Public Shared Function Timeout(operation As String, timeout As TimeSpan) As OperationError
+  overload: Meridian.Application.ResultTypes.OperationError.Timeout*
+  nameWithType.vb: OperationError.Timeout(String, TimeSpan)
+  fullName.vb: Meridian.Application.ResultTypes.OperationError.Timeout(String, System.TimeSpan)
+  name.vb: Timeout(String, TimeSpan)
+- uid: Meridian.Application.ResultTypes.OperationError.Connection(System.String,System.String)
+  commentId: M:Meridian.Application.ResultTypes.OperationError.Connection(System.String,System.String)
+  id: Connection(System.String,System.String)
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: Connection(string, string?)
+  nameWithType: OperationError.Connection(string, string?)
+  fullName: Meridian.Application.ResultTypes.OperationError.Connection(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connection
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public static OperationError Connection(string provider, string? reason = null)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: reason
+      type: System.String
+    return:
+      type: Meridian.Application.ResultTypes.OperationError
+    content.vb: Public Shared Function Connection(provider As String, reason As String = Nothing) As OperationError
+  overload: Meridian.Application.ResultTypes.OperationError.Connection*
+  nameWithType.vb: OperationError.Connection(String, String)
+  fullName.vb: Meridian.Application.ResultTypes.OperationError.Connection(String, String)
+  name.vb: Connection(String, String)
+- uid: Meridian.Application.ResultTypes.OperationError.WithContext(System.String,System.Object)
+  commentId: M:Meridian.Application.ResultTypes.OperationError.WithContext(System.String,System.Object)
+  id: WithContext(System.String,System.Object)
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: WithContext(string, object?)
+  nameWithType: OperationError.WithContext(string, object?)
+  fullName: Meridian.Application.ResultTypes.OperationError.WithContext(string, object?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WithContext
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  syntax:
+    content: public OperationError WithContext(string key, object? value)
+    parameters:
+    - id: key
+      type: System.String
+    - id: value
+      type: System.Object
+    return:
+      type: Meridian.Application.ResultTypes.OperationError
+    content.vb: Public Function WithContext(key As String, value As Object) As OperationError
+  overload: Meridian.Application.ResultTypes.OperationError.WithContext*
+  nameWithType.vb: OperationError.WithContext(String, Object)
+  fullName.vb: Meridian.Application.ResultTypes.OperationError.WithContext(String, Object)
+  name.vb: WithContext(String, Object)
+- uid: Meridian.Application.ResultTypes.OperationError.ToString
+  commentId: M:Meridian.Application.ResultTypes.OperationError.ToString
+  id: ToString
+  parent: Meridian.Application.ResultTypes.OperationError
+  langs:
+  - csharp
+  - vb
+  name: ToString()
+  nameWithType: OperationError.ToString()
+  fullName: Meridian.Application.ResultTypes.OperationError.ToString()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Results/OperationError.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToString
+    path: ../../src/Meridian.Application/Results/OperationError.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Returns a string that represents the current object.
+  example: []
+  syntax:
+    content: public override string ToString()
+    return:
+      type: System.String
+      description: A string that represents the current object.
+    content.vb: Public Overrides Function ToString() As String
+  overridden: System.Object.ToString
+  overload: Meridian.Application.ResultTypes.OperationError.ToString*
+references:
+- uid: Meridian.Application.ResultTypes
+  commentId: N:Meridian.Application.ResultTypes
+  href: Meridian.html
+  name: Meridian.Application.ResultTypes
+  nameWithType: Meridian.Application.ResultTypes
+  fullName: Meridian.Application.ResultTypes
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.ResultTypes.OperationError}
+  commentId: T:System.IEquatable{Meridian.Application.ResultTypes.OperationError}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OperationError>
+  nameWithType: IEquatable<OperationError>
+  fullName: System.IEquatable<Meridian.Application.ResultTypes.OperationError>
+  nameWithType.vb: IEquatable(Of OperationError)
+  fullName.vb: System.IEquatable(Of Meridian.Application.ResultTypes.OperationError)
+  name.vb: IEquatable(Of OperationError)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.ResultTypes.OperationError
+    name: OperationError
+    href: Meridian.Application.ResultTypes.OperationError.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.ResultTypes.OperationError
+    name: OperationError
+    href: Meridian.Application.ResultTypes.OperationError.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.ResultTypes.OperationError.Code*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Code
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Code
+  name: Code
+  nameWithType: OperationError.Code
+  fullName: Meridian.Application.ResultTypes.OperationError.Code
+- uid: Meridian.Application.ResultTypes.ErrorCode
+  commentId: T:Meridian.Application.ResultTypes.ErrorCode
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.ErrorCode.html
+  name: ErrorCode
+  nameWithType: ErrorCode
+  fullName: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.OperationError.Message*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Message
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Message
+  name: Message
+  nameWithType: OperationError.Message
+  fullName: Meridian.Application.ResultTypes.OperationError.Message
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.ResultTypes.OperationError.Detail*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Detail
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Detail
+  name: Detail
+  nameWithType: OperationError.Detail
+  fullName: Meridian.Application.ResultTypes.OperationError.Detail
+- uid: Meridian.Application.ResultTypes.OperationError.Exception*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Exception
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Exception
+  name: Exception
+  nameWithType: OperationError.Exception
+  fullName: Meridian.Application.ResultTypes.OperationError.Exception
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: Meridian.Application.ResultTypes.OperationError.Context*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Context
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Context
+  name: Context
+  nameWithType: OperationError.Context
+  fullName: Meridian.Application.ResultTypes.OperationError.Context
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, object>
+  nameWithType: IReadOnlyDictionary<string, object>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, object>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Object)
+  name.vb: IReadOnlyDictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.ResultTypes.OperationError.Timestamp*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Timestamp
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Timestamp
+  name: Timestamp
+  nameWithType: OperationError.Timestamp
+  fullName: Meridian.Application.ResultTypes.OperationError.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.ResultTypes.OperationError.Create*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Create
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Create_Meridian_Application_ResultTypes_ErrorCode_System_String_System_String_
+  name: Create
+  nameWithType: OperationError.Create
+  fullName: Meridian.Application.ResultTypes.OperationError.Create
+- uid: Meridian.Application.ResultTypes.OperationError
+  commentId: T:Meridian.Application.ResultTypes.OperationError
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.OperationError.html
+  name: OperationError
+  nameWithType: OperationError
+  fullName: Meridian.Application.ResultTypes.OperationError
+- uid: Meridian.Application.ResultTypes.OperationError.FromException*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.FromException
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_FromException_System_Exception_System_Nullable_Meridian_Application_ResultTypes_ErrorCode__
+  name: FromException
+  nameWithType: OperationError.FromException
+  fullName: Meridian.Application.ResultTypes.OperationError.FromException
+- uid: System.Nullable{Meridian.Application.ResultTypes.ErrorCode}
+  commentId: T:System.Nullable{Meridian.Application.ResultTypes.ErrorCode}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Application.ResultTypes.ErrorCode.html
+  name: ErrorCode?
+  nameWithType: ErrorCode?
+  fullName: Meridian.Application.ResultTypes.ErrorCode?
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.ResultTypes.OperationError.NotFound*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.NotFound
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_NotFound_System_String_System_String_
+  name: NotFound
+  nameWithType: OperationError.NotFound
+  fullName: Meridian.Application.ResultTypes.OperationError.NotFound
+- uid: Meridian.Application.ResultTypes.OperationError.Validation*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Validation
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Validation_System_String_System_Collections_Generic_IEnumerable_System_ValueTuple_System_String_System_String___
+  name: Validation
+  nameWithType: OperationError.Validation
+  fullName: Meridian.Application.ResultTypes.OperationError.Validation
+- uid: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}}
+  commentId: T:System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<(string Field, string Error)>
+  nameWithType: IEnumerable<(string Field, string Error)>
+  fullName: System.Collections.Generic.IEnumerable<(string Field, string Error)>
+  nameWithType.vb: IEnumerable(Of (Field As String, Error As String))
+  fullName.vb: System.Collections.Generic.IEnumerable(Of (Field As String, Error As String))
+  name.vb: IEnumerable(Of (Field As String, Error As String))
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.Field
+    name: Field
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.field
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.Error
+    name: Error
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.error
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.Field
+    name: Field
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.field
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.Error
+    name: Error
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.error
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.ResultTypes.OperationError.RateLimit*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.RateLimit
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_RateLimit_System_String_System_Nullable_System_TimeSpan__
+  name: RateLimit
+  nameWithType: OperationError.RateLimit
+  fullName: Meridian.Application.ResultTypes.OperationError.RateLimit
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: Meridian.Application.ResultTypes.OperationError.Timeout*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Timeout
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Timeout_System_String_System_TimeSpan_
+  name: Timeout
+  nameWithType: OperationError.Timeout
+  fullName: Meridian.Application.ResultTypes.OperationError.Timeout
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.ResultTypes.OperationError.Connection*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.Connection
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_Connection_System_String_System_String_
+  name: Connection
+  nameWithType: OperationError.Connection
+  fullName: Meridian.Application.ResultTypes.OperationError.Connection
+- uid: Meridian.Application.ResultTypes.OperationError.WithContext*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.WithContext
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_WithContext_System_String_System_Object_
+  name: WithContext
+  nameWithType: OperationError.WithContext
+  fullName: Meridian.Application.ResultTypes.OperationError.WithContext
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Application.ResultTypes.OperationError.ToString*
+  commentId: Overload:Meridian.Application.ResultTypes.OperationError.ToString
+  href: Meridian.Application.ResultTypes.OperationError.html#Meridian_Application_ResultTypes_OperationError_ToString
+  name: ToString
+  nameWithType: OperationError.ToString
+  fullName: Meridian.Application.ResultTypes.OperationError.ToString

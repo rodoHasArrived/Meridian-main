@@ -1,0 +1,310 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.IBatchBacktestService
+  commentId: T:Meridian.Backtesting.IBatchBacktestService
+  id: IBatchBacktestService
+  parent: Meridian.Backtesting
+  children:
+  - Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IBatchBacktestService
+  nameWithType: IBatchBacktestService
+  fullName: Meridian.Backtesting.IBatchBacktestService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBatchBacktestService
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Batch backtest service contract for parameter grid sweeping.
+  example: []
+  syntax:
+    content: public interface IBatchBacktestService
+    content.vb: Public Interface IBatchBacktestService
+  derivedClasses:
+  - Meridian.Backtesting.BatchBacktestService
+- uid: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  id: RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest,System.IProgress{Meridian.Backtesting.BatchBacktestProgress},System.Threading.CancellationToken)
+  parent: Meridian.Backtesting.IBatchBacktestService
+  langs:
+  - csharp
+  - vb
+  name: RunBatchAsync(BatchBacktestRequest, IProgress<BatchBacktestProgress>, CancellationToken)
+  nameWithType: IBatchBacktestService.RunBatchAsync(BatchBacktestRequest, IProgress<BatchBacktestProgress>, CancellationToken)
+  fullName: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest, System.IProgress<Meridian.Backtesting.BatchBacktestProgress>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting/BatchBacktestService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunBatchAsync
+    path: ../../src/Meridian.Backtesting/BatchBacktestService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting
+  namespace: Meridian.Backtesting
+  summary: Runs multiple backtests with different parameter combinations in parallel, respecting MaxConcurrency.
+  example: []
+  syntax:
+    content: Task<BatchBacktestSummary> RunBatchAsync(BatchBacktestRequest request, IProgress<BatchBacktestProgress> progress, CancellationToken ct)
+    parameters:
+    - id: request
+      type: Meridian.Backtesting.BatchBacktestRequest
+    - id: progress
+      type: System.IProgress{Meridian.Backtesting.BatchBacktestProgress}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Backtesting.BatchBacktestSummary}
+    content.vb: Function RunBatchAsync(request As BatchBacktestRequest, progress As IProgress(Of BatchBacktestProgress), ct As CancellationToken) As Task(Of BatchBacktestSummary)
+  overload: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync*
+  nameWithType.vb: IBatchBacktestService.RunBatchAsync(BatchBacktestRequest, IProgress(Of BatchBacktestProgress), CancellationToken)
+  fullName.vb: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync(Meridian.Backtesting.BatchBacktestRequest, System.IProgress(Of Meridian.Backtesting.BatchBacktestProgress), System.Threading.CancellationToken)
+  name.vb: RunBatchAsync(BatchBacktestRequest, IProgress(Of BatchBacktestProgress), CancellationToken)
+references:
+- uid: Meridian.Backtesting
+  commentId: N:Meridian.Backtesting
+  href: Meridian.html
+  name: Meridian.Backtesting
+  nameWithType: Meridian.Backtesting
+  fullName: Meridian.Backtesting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+- uid: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync*
+  commentId: Overload:Meridian.Backtesting.IBatchBacktestService.RunBatchAsync
+  href: Meridian.Backtesting.IBatchBacktestService.html#Meridian_Backtesting_IBatchBacktestService_RunBatchAsync_Meridian_Backtesting_BatchBacktestRequest_System_IProgress_Meridian_Backtesting_BatchBacktestProgress__System_Threading_CancellationToken_
+  name: RunBatchAsync
+  nameWithType: IBatchBacktestService.RunBatchAsync
+  fullName: Meridian.Backtesting.IBatchBacktestService.RunBatchAsync
+- uid: Meridian.Backtesting.BatchBacktestRequest
+  commentId: T:Meridian.Backtesting.BatchBacktestRequest
+  parent: Meridian.Backtesting
+  href: Meridian.Backtesting.BatchBacktestRequest.html
+  name: BatchBacktestRequest
+  nameWithType: BatchBacktestRequest
+  fullName: Meridian.Backtesting.BatchBacktestRequest
+- uid: System.IProgress{Meridian.Backtesting.BatchBacktestProgress}
+  commentId: T:System.IProgress{Meridian.Backtesting.BatchBacktestProgress}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<BatchBacktestProgress>
+  nameWithType: IProgress<BatchBacktestProgress>
+  fullName: System.IProgress<Meridian.Backtesting.BatchBacktestProgress>
+  nameWithType.vb: IProgress(Of BatchBacktestProgress)
+  fullName.vb: System.IProgress(Of Meridian.Backtesting.BatchBacktestProgress)
+  name.vb: IProgress(Of BatchBacktestProgress)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Meridian.Backtesting.BatchBacktestProgress
+    name: BatchBacktestProgress
+    href: Meridian.Backtesting.BatchBacktestProgress.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.BatchBacktestProgress
+    name: BatchBacktestProgress
+    href: Meridian.Backtesting.BatchBacktestProgress.html
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Backtesting.BatchBacktestSummary}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Backtesting.BatchBacktestSummary}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BatchBacktestSummary>
+  nameWithType: Task<BatchBacktestSummary>
+  fullName: System.Threading.Tasks.Task<Meridian.Backtesting.BatchBacktestSummary>
+  nameWithType.vb: Task(Of BatchBacktestSummary)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Backtesting.BatchBacktestSummary)
+  name.vb: Task(Of BatchBacktestSummary)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Backtesting.BatchBacktestSummary
+    name: BatchBacktestSummary
+    href: Meridian.Backtesting.BatchBacktestSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.BatchBacktestSummary
+    name: BatchBacktestSummary
+    href: Meridian.Backtesting.BatchBacktestSummary.html
+  - name: )
+- uid: System.IProgress`1
+  commentId: T:System.IProgress`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<T>
+  nameWithType: IProgress<T>
+  fullName: System.IProgress<T>
+  nameWithType.vb: IProgress(Of T)
+  fullName.vb: System.IProgress(Of T)
+  name.vb: IProgress(Of T)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

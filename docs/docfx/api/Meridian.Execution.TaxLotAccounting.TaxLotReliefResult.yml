@@ -1,0 +1,703 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  commentId: T:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  id: TaxLotReliefResult
+  parent: Meridian.Execution.TaxLotAccounting
+  children:
+  - Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.TaxLotAccounting.RelievedLot},System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot})
+  - Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RelievedLots
+  - Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RemainingLots
+  - Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRealizedPnl
+  - Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRelievedQuantity
+  langs:
+  - csharp
+  - vb
+  name: TaxLotReliefResult
+  nameWithType: TaxLotReliefResult
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaxLotReliefResult
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: The aggregate result of relieving one or more tax lots to fill a closing order.
+  example: []
+  syntax:
+    content: 'public sealed record TaxLotReliefResult : IEquatable<TaxLotReliefResult>'
+    content.vb: Public NotInheritable Class TaxLotReliefResult Implements IEquatable(Of TaxLotReliefResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.TaxLotAccounting.TaxLotReliefResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.TaxLotAccounting.RelievedLot},System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot})
+  commentId: M:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.TaxLotAccounting.RelievedLot},System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot})
+  id: '#ctor(System.Collections.Generic.IReadOnlyList{Meridian.Execution.TaxLotAccounting.RelievedLot},System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot})'
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  langs:
+  - csharp
+  - vb
+  name: TaxLotReliefResult(IReadOnlyList<RelievedLot>, IReadOnlyList<TaxLot>)
+  nameWithType: TaxLotReliefResult.TaxLotReliefResult(IReadOnlyList<RelievedLot>, IReadOnlyList<TaxLot>)
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TaxLotReliefResult(System.Collections.Generic.IReadOnlyList<Meridian.Execution.TaxLotAccounting.RelievedLot>, System.Collections.Generic.IReadOnlyList<Meridian.Execution.Sdk.TaxLot>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: The aggregate result of relieving one or more tax lots to fill a closing order.
+  example: []
+  syntax:
+    content: public TaxLotReliefResult(IReadOnlyList<RelievedLot> RelievedLots, IReadOnlyList<TaxLot> RemainingLots)
+    parameters:
+    - id: RelievedLots
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.TaxLotAccounting.RelievedLot}
+      description: Individual lot-level relief details.
+    - id: RemainingLots
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot}
+      description: >-
+        The updated open-lot list after the relief has been applied.
+
+        Partially consumed lots appear here with their reduced quantity.
+    content.vb: Public Sub New(RelievedLots As IReadOnlyList(Of RelievedLot), RemainingLots As IReadOnlyList(Of TaxLot))
+  overload: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.#ctor*
+  nameWithType.vb: TaxLotReliefResult.New(IReadOnlyList(Of RelievedLot), IReadOnlyList(Of TaxLot))
+  fullName.vb: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.New(System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.TaxLotAccounting.RelievedLot), System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Sdk.TaxLot))
+  name.vb: New(IReadOnlyList(Of RelievedLot), IReadOnlyList(Of TaxLot))
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RelievedLots
+  commentId: P:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RelievedLots
+  id: RelievedLots
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  langs:
+  - csharp
+  - vb
+  name: RelievedLots
+  nameWithType: TaxLotReliefResult.RelievedLots
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RelievedLots
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RelievedLots
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: Individual lot-level relief details.
+  example: []
+  syntax:
+    content: public IReadOnlyList<RelievedLot> RelievedLots { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.TaxLotAccounting.RelievedLot}
+    content.vb: Public Property RelievedLots As IReadOnlyList(Of RelievedLot)
+  overload: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RelievedLots*
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RemainingLots
+  commentId: P:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RemainingLots
+  id: RemainingLots
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  langs:
+  - csharp
+  - vb
+  name: RemainingLots
+  nameWithType: TaxLotReliefResult.RemainingLots
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RemainingLots
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemainingLots
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: >-
+    The updated open-lot list after the relief has been applied.
+
+    Partially consumed lots appear here with their reduced quantity.
+  example: []
+  syntax:
+    content: public IReadOnlyList<TaxLot> RemainingLots { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot}
+    content.vb: Public Property RemainingLots As IReadOnlyList(Of TaxLot)
+  overload: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RemainingLots*
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRealizedPnl
+  commentId: P:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRealizedPnl
+  id: TotalRealizedPnl
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  langs:
+  - csharp
+  - vb
+  name: TotalRealizedPnl
+  nameWithType: TaxLotReliefResult.TotalRealizedPnl
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRealizedPnl
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: Total realized P&amp;L across all relieved lots.
+  example: []
+  syntax:
+    content: public decimal TotalRealizedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property TotalRealizedPnl As Decimal
+  overload: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRealizedPnl*
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRelievedQuantity
+  commentId: P:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRelievedQuantity
+  id: TotalRelievedQuantity
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  langs:
+  - csharp
+  - vb
+  name: TotalRelievedQuantity
+  nameWithType: TaxLotReliefResult.TotalRelievedQuantity
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRelievedQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalRelievedQuantity
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: Total number of shares/contracts relieved.
+  example: []
+  syntax:
+    content: public long TotalRelievedQuantity { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalRelievedQuantity As Long
+  overload: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRelievedQuantity*
+references:
+- uid: Meridian.Execution.TaxLotAccounting
+  commentId: N:Meridian.Execution.TaxLotAccounting
+  href: Meridian.html
+  name: Meridian.Execution.TaxLotAccounting
+  nameWithType: Meridian.Execution.TaxLotAccounting
+  fullName: Meridian.Execution.TaxLotAccounting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.TaxLotAccounting.TaxLotReliefResult}
+  commentId: T:System.IEquatable{Meridian.Execution.TaxLotAccounting.TaxLotReliefResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TaxLotReliefResult>
+  nameWithType: IEquatable<TaxLotReliefResult>
+  fullName: System.IEquatable<Meridian.Execution.TaxLotAccounting.TaxLotReliefResult>
+  nameWithType.vb: IEquatable(Of TaxLotReliefResult)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.TaxLotAccounting.TaxLotReliefResult)
+  name.vb: IEquatable(Of TaxLotReliefResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+    name: TaxLotReliefResult
+    href: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+    name: TaxLotReliefResult
+    href: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.#ctor*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.#ctor
+  href: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.html#Meridian_Execution_TaxLotAccounting_TaxLotReliefResult__ctor_System_Collections_Generic_IReadOnlyList_Meridian_Execution_TaxLotAccounting_RelievedLot__System_Collections_Generic_IReadOnlyList_Meridian_Execution_Sdk_TaxLot__
+  name: TaxLotReliefResult
+  nameWithType: TaxLotReliefResult.TaxLotReliefResult
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TaxLotReliefResult
+  nameWithType.vb: TaxLotReliefResult.New
+  fullName.vb: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.New
+  name.vb: New
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.TaxLotAccounting.RelievedLot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.TaxLotAccounting.RelievedLot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<RelievedLot>
+  nameWithType: IReadOnlyList<RelievedLot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.TaxLotAccounting.RelievedLot>
+  nameWithType.vb: IReadOnlyList(Of RelievedLot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.TaxLotAccounting.RelievedLot)
+  name.vb: IReadOnlyList(Of RelievedLot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.TaxLotAccounting.RelievedLot
+    name: RelievedLot
+    href: Meridian.Execution.TaxLotAccounting.RelievedLot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.TaxLotAccounting.RelievedLot
+    name: RelievedLot
+    href: Meridian.Execution.TaxLotAccounting.RelievedLot.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<TaxLot>
+  nameWithType: IReadOnlyList<TaxLot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Sdk.TaxLot>
+  nameWithType.vb: IReadOnlyList(Of TaxLot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Sdk.TaxLot)
+  name.vb: IReadOnlyList(Of TaxLot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.TaxLot
+    name: TaxLot
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.TaxLot
+    name: TaxLot
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RelievedLots*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RelievedLots
+  href: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.html#Meridian_Execution_TaxLotAccounting_TaxLotReliefResult_RelievedLots
+  name: RelievedLots
+  nameWithType: TaxLotReliefResult.RelievedLots
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RelievedLots
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RemainingLots*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RemainingLots
+  href: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.html#Meridian_Execution_TaxLotAccounting_TaxLotReliefResult_RemainingLots
+  name: RemainingLots
+  nameWithType: TaxLotReliefResult.RemainingLots
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.RemainingLots
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRealizedPnl*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRealizedPnl
+  href: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.html#Meridian_Execution_TaxLotAccounting_TaxLotReliefResult_TotalRealizedPnl
+  name: TotalRealizedPnl
+  nameWithType: TaxLotReliefResult.TotalRealizedPnl
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRealizedPnl
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRelievedQuantity*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRelievedQuantity
+  href: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.html#Meridian_Execution_TaxLotAccounting_TaxLotReliefResult_TotalRelievedQuantity
+  name: TotalRelievedQuantity
+  nameWithType: TaxLotReliefResult.TotalRelievedQuantity
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.TotalRelievedQuantity
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long

@@ -1,0 +1,444 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.IPositionTracker
+  commentId: T:Meridian.Execution.Sdk.IPositionTracker
+  id: IPositionTracker
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.IPositionTracker.GetAllPositions
+  - Meridian.Execution.Sdk.IPositionTracker.GetCash
+  - Meridian.Execution.Sdk.IPositionTracker.GetPortfolioValue
+  - Meridian.Execution.Sdk.IPositionTracker.GetPosition(System.String)
+  - Meridian.Execution.Sdk.IPositionTracker.GetRealizedPnl
+  - Meridian.Execution.Sdk.IPositionTracker.GetUnrealizedPnl
+  langs:
+  - csharp
+  - vb
+  name: IPositionTracker
+  nameWithType: IPositionTracker
+  fullName: Meridian.Execution.Sdk.IPositionTracker
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPositionTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IPositionTracker
+    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: >-
+    Tracks real-time position state across all symbols.
+
+    Updated by execution reports from the gateway.
+  example: []
+  syntax:
+    content: public interface IPositionTracker
+    content.vb: Public Interface IPositionTracker
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetPosition(System.String)
+  commentId: M:Meridian.Execution.Sdk.IPositionTracker.GetPosition(System.String)
+  id: GetPosition(System.String)
+  parent: Meridian.Execution.Sdk.IPositionTracker
+  langs:
+  - csharp
+  - vb
+  name: GetPosition(string)
+  nameWithType: IPositionTracker.GetPosition(string)
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetPosition(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPositionTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPosition
+    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Gets the current position for a symbol.
+  example: []
+  syntax:
+    content: PositionState GetPosition(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: Meridian.Execution.Sdk.PositionState
+    content.vb: Function GetPosition(symbol As String) As PositionState
+  overload: Meridian.Execution.Sdk.IPositionTracker.GetPosition*
+  nameWithType.vb: IPositionTracker.GetPosition(String)
+  fullName.vb: Meridian.Execution.Sdk.IPositionTracker.GetPosition(String)
+  name.vb: GetPosition(String)
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetAllPositions
+  commentId: M:Meridian.Execution.Sdk.IPositionTracker.GetAllPositions
+  id: GetAllPositions
+  parent: Meridian.Execution.Sdk.IPositionTracker
+  langs:
+  - csharp
+  - vb
+  name: GetAllPositions()
+  nameWithType: IPositionTracker.GetAllPositions()
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetAllPositions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPositionTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllPositions
+    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Gets all current positions.
+  example: []
+  syntax:
+    content: IReadOnlyDictionary<string, PositionState> GetAllPositions()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.PositionState}
+    content.vb: Function GetAllPositions() As IReadOnlyDictionary(Of String, PositionState)
+  overload: Meridian.Execution.Sdk.IPositionTracker.GetAllPositions*
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetPortfolioValue
+  commentId: M:Meridian.Execution.Sdk.IPositionTracker.GetPortfolioValue
+  id: GetPortfolioValue
+  parent: Meridian.Execution.Sdk.IPositionTracker
+  langs:
+  - csharp
+  - vb
+  name: GetPortfolioValue()
+  nameWithType: IPositionTracker.GetPortfolioValue()
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetPortfolioValue()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPositionTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPortfolioValue
+    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Gets the total portfolio value (cash + positions at mark).
+  example: []
+  syntax:
+    content: decimal GetPortfolioValue()
+    return:
+      type: System.Decimal
+    content.vb: Function GetPortfolioValue() As Decimal
+  overload: Meridian.Execution.Sdk.IPositionTracker.GetPortfolioValue*
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetCash
+  commentId: M:Meridian.Execution.Sdk.IPositionTracker.GetCash
+  id: GetCash
+  parent: Meridian.Execution.Sdk.IPositionTracker
+  langs:
+  - csharp
+  - vb
+  name: GetCash()
+  nameWithType: IPositionTracker.GetCash()
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetCash()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPositionTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCash
+    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Gets available cash.
+  example: []
+  syntax:
+    content: decimal GetCash()
+    return:
+      type: System.Decimal
+    content.vb: Function GetCash() As Decimal
+  overload: Meridian.Execution.Sdk.IPositionTracker.GetCash*
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetUnrealizedPnl
+  commentId: M:Meridian.Execution.Sdk.IPositionTracker.GetUnrealizedPnl
+  id: GetUnrealizedPnl
+  parent: Meridian.Execution.Sdk.IPositionTracker
+  langs:
+  - csharp
+  - vb
+  name: GetUnrealizedPnl()
+  nameWithType: IPositionTracker.GetUnrealizedPnl()
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetUnrealizedPnl()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPositionTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetUnrealizedPnl
+    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Gets total unrealized P&amp;L across all positions.
+  example: []
+  syntax:
+    content: decimal GetUnrealizedPnl()
+    return:
+      type: System.Decimal
+    content.vb: Function GetUnrealizedPnl() As Decimal
+  overload: Meridian.Execution.Sdk.IPositionTracker.GetUnrealizedPnl*
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetRealizedPnl
+  commentId: M:Meridian.Execution.Sdk.IPositionTracker.GetRealizedPnl
+  id: GetRealizedPnl
+  parent: Meridian.Execution.Sdk.IPositionTracker
+  langs:
+  - csharp
+  - vb
+  name: GetRealizedPnl()
+  nameWithType: IPositionTracker.GetRealizedPnl()
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetRealizedPnl()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/IPositionTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRealizedPnl
+    path: ../../src/Meridian.Execution.Sdk/IPositionTracker.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Gets total realized P&amp;L for the session.
+  example: []
+  syntax:
+    content: decimal GetRealizedPnl()
+    return:
+      type: System.Decimal
+    content.vb: Function GetRealizedPnl() As Decimal
+  overload: Meridian.Execution.Sdk.IPositionTracker.GetRealizedPnl*
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetPosition*
+  commentId: Overload:Meridian.Execution.Sdk.IPositionTracker.GetPosition
+  href: Meridian.Execution.Sdk.IPositionTracker.html#Meridian_Execution_Sdk_IPositionTracker_GetPosition_System_String_
+  name: GetPosition
+  nameWithType: IPositionTracker.GetPosition
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetPosition
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Sdk.PositionState
+  commentId: T:Meridian.Execution.Sdk.PositionState
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.PositionState.html
+  name: PositionState
+  nameWithType: PositionState
+  fullName: Meridian.Execution.Sdk.PositionState
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetAllPositions*
+  commentId: Overload:Meridian.Execution.Sdk.IPositionTracker.GetAllPositions
+  href: Meridian.Execution.Sdk.IPositionTracker.html#Meridian_Execution_Sdk_IPositionTracker_GetAllPositions
+  name: GetAllPositions
+  nameWithType: IPositionTracker.GetAllPositions
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetAllPositions
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.PositionState}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Execution.Sdk.PositionState}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, PositionState>
+  nameWithType: IReadOnlyDictionary<string, PositionState>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Execution.Sdk.PositionState>
+  nameWithType.vb: IReadOnlyDictionary(Of String, PositionState)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Execution.Sdk.PositionState)
+  name.vb: IReadOnlyDictionary(Of String, PositionState)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Sdk.PositionState
+    name: PositionState
+    href: Meridian.Execution.Sdk.PositionState.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Execution.Sdk.PositionState
+    name: PositionState
+    href: Meridian.Execution.Sdk.PositionState.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetPortfolioValue*
+  commentId: Overload:Meridian.Execution.Sdk.IPositionTracker.GetPortfolioValue
+  href: Meridian.Execution.Sdk.IPositionTracker.html#Meridian_Execution_Sdk_IPositionTracker_GetPortfolioValue
+  name: GetPortfolioValue
+  nameWithType: IPositionTracker.GetPortfolioValue
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetPortfolioValue
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetCash*
+  commentId: Overload:Meridian.Execution.Sdk.IPositionTracker.GetCash
+  href: Meridian.Execution.Sdk.IPositionTracker.html#Meridian_Execution_Sdk_IPositionTracker_GetCash
+  name: GetCash
+  nameWithType: IPositionTracker.GetCash
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetCash
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetUnrealizedPnl*
+  commentId: Overload:Meridian.Execution.Sdk.IPositionTracker.GetUnrealizedPnl
+  href: Meridian.Execution.Sdk.IPositionTracker.html#Meridian_Execution_Sdk_IPositionTracker_GetUnrealizedPnl
+  name: GetUnrealizedPnl
+  nameWithType: IPositionTracker.GetUnrealizedPnl
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetUnrealizedPnl
+- uid: Meridian.Execution.Sdk.IPositionTracker.GetRealizedPnl*
+  commentId: Overload:Meridian.Execution.Sdk.IPositionTracker.GetRealizedPnl
+  href: Meridian.Execution.Sdk.IPositionTracker.html#Meridian_Execution_Sdk_IPositionTracker_GetRealizedPnl
+  name: GetRealizedPnl
+  nameWithType: IPositionTracker.GetRealizedPnl
+  fullName: Meridian.Execution.Sdk.IPositionTracker.GetRealizedPnl

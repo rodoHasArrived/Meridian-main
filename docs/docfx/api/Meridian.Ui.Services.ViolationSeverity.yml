@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ViolationSeverity
+  commentId: T:Meridian.Ui.Services.ViolationSeverity
+  id: ViolationSeverity
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ViolationSeverity.Error
+  - Meridian.Ui.Services.ViolationSeverity.Info
+  - Meridian.Ui.Services.ViolationSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: ViolationSeverity
+  nameWithType: ViolationSeverity
+  fullName: Meridian.Ui.Services.ViolationSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ViolationSeverity
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Severity level for violations.
+  example: []
+  syntax:
+    content: 'public enum ViolationSeverity : byte'
+    content.vb: Public Enum ViolationSeverity As Byte
+- uid: Meridian.Ui.Services.ViolationSeverity.Info
+  commentId: F:Meridian.Ui.Services.ViolationSeverity.Info
+  id: Info
+  parent: Meridian.Ui.Services.ViolationSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: ViolationSeverity.Info
+  fullName: Meridian.Ui.Services.ViolationSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Ui.Services.ViolationSeverity
+- uid: Meridian.Ui.Services.ViolationSeverity.Warning
+  commentId: F:Meridian.Ui.Services.ViolationSeverity.Warning
+  id: Warning
+  parent: Meridian.Ui.Services.ViolationSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: ViolationSeverity.Warning
+  fullName: Meridian.Ui.Services.ViolationSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Ui.Services.ViolationSeverity
+- uid: Meridian.Ui.Services.ViolationSeverity.Error
+  commentId: F:Meridian.Ui.Services.ViolationSeverity.Error
+  id: Error
+  parent: Meridian.Ui.Services.ViolationSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: ViolationSeverity.Error
+  fullName: Meridian.Ui.Services.ViolationSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Services/RetentionAssuranceModels.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Ui.Services.ViolationSeverity
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.ViolationSeverity
+  commentId: T:Meridian.Ui.Services.ViolationSeverity
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ViolationSeverity.html
+  name: ViolationSeverity
+  nameWithType: ViolationSeverity
+  fullName: Meridian.Ui.Services.ViolationSeverity

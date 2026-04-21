@@ -14,12 +14,6 @@ public enum DataSourceKind : byte
     /// <summary>Polygon.io via WebSocket.</summary>
     Polygon = 2,
 
-    /// <summary>
-    /// StockSharp unified connector framework.
-    /// Provides access to 90+ data sources including Rithmic, IQFeed, CQG, and more.
-    /// </summary>
-    StockSharp = 3,
-
     /// <summary>NYSE market data feed.</summary>
     NYSE = 4,
 

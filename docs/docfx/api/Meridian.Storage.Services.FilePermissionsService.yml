@@ -1,0 +1,499 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.FilePermissionsService
+  commentId: T:Meridian.Storage.Services.FilePermissionsService
+  id: FilePermissionsService
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.FilePermissionsService.#ctor(Meridian.Storage.Services.FilePermissionsOptions)
+  - Meridian.Storage.Services.FilePermissionsService.EnsureDirectoryPermissions(System.String)
+  - Meridian.Storage.Services.FilePermissionsService.GetPermissionsDiagnostic(System.String)
+  - Meridian.Storage.Services.FilePermissionsService.VerifyWriteAccess(System.String)
+  langs:
+  - csharp
+  - vb
+  name: FilePermissionsService
+  nameWithType: FilePermissionsService
+  fullName: Meridian.Storage.Services.FilePermissionsService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FilePermissionsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilePermissionsService
+    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: >-
+    Cross-platform service for managing file and directory permissions.
+
+    Ensures the data directory is properly access-restricted for security.
+
+
+    Unix/Linux: Sets 0755 for directories (rwxr-xr-x), 0644 for files (rw-r--r--)
+
+    Windows: Configures NTFS ACLs to restrict access to current user + administrators
+  example: []
+  syntax:
+    content: public sealed class FilePermissionsService
+    content.vb: Public NotInheritable Class FilePermissionsService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.FilePermissionsService.#ctor(Meridian.Storage.Services.FilePermissionsOptions)
+  commentId: M:Meridian.Storage.Services.FilePermissionsService.#ctor(Meridian.Storage.Services.FilePermissionsOptions)
+  id: '#ctor(Meridian.Storage.Services.FilePermissionsOptions)'
+  parent: Meridian.Storage.Services.FilePermissionsService
+  langs:
+  - csharp
+  - vb
+  name: FilePermissionsService(FilePermissionsOptions?)
+  nameWithType: FilePermissionsService.FilePermissionsService(FilePermissionsOptions?)
+  fullName: Meridian.Storage.Services.FilePermissionsService.FilePermissionsService(Meridian.Storage.Services.FilePermissionsOptions?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FilePermissionsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public FilePermissionsService(FilePermissionsOptions? options = null)
+    parameters:
+    - id: options
+      type: Meridian.Storage.Services.FilePermissionsOptions
+    content.vb: Public Sub New(options As FilePermissionsOptions = Nothing)
+  overload: Meridian.Storage.Services.FilePermissionsService.#ctor*
+  nameWithType.vb: FilePermissionsService.New(FilePermissionsOptions)
+  fullName.vb: Meridian.Storage.Services.FilePermissionsService.New(Meridian.Storage.Services.FilePermissionsOptions)
+  name.vb: New(FilePermissionsOptions)
+- uid: Meridian.Storage.Services.FilePermissionsService.EnsureDirectoryPermissions(System.String)
+  commentId: M:Meridian.Storage.Services.FilePermissionsService.EnsureDirectoryPermissions(System.String)
+  id: EnsureDirectoryPermissions(System.String)
+  parent: Meridian.Storage.Services.FilePermissionsService
+  langs:
+  - csharp
+  - vb
+  name: EnsureDirectoryPermissions(string)
+  nameWithType: FilePermissionsService.EnsureDirectoryPermissions(string)
+  fullName: Meridian.Storage.Services.FilePermissionsService.EnsureDirectoryPermissions(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FilePermissionsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnsureDirectoryPermissions
+    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: >-
+    Ensures the specified directory exists with proper security permissions.
+
+    Creates the directory if it doesn't exist and sets OS-level permissions.
+  example: []
+  syntax:
+    content: public FilePermissionsResult EnsureDirectoryPermissions(string directoryPath)
+    parameters:
+    - id: directoryPath
+      type: System.String
+      description: Path to the directory to secure
+    return:
+      type: Meridian.Storage.Services.FilePermissionsResult
+      description: Result indicating success or failure with details
+    content.vb: Public Function EnsureDirectoryPermissions(directoryPath As String) As FilePermissionsResult
+  overload: Meridian.Storage.Services.FilePermissionsService.EnsureDirectoryPermissions*
+  nameWithType.vb: FilePermissionsService.EnsureDirectoryPermissions(String)
+  fullName.vb: Meridian.Storage.Services.FilePermissionsService.EnsureDirectoryPermissions(String)
+  name.vb: EnsureDirectoryPermissions(String)
+- uid: Meridian.Storage.Services.FilePermissionsService.VerifyWriteAccess(System.String)
+  commentId: M:Meridian.Storage.Services.FilePermissionsService.VerifyWriteAccess(System.String)
+  id: VerifyWriteAccess(System.String)
+  parent: Meridian.Storage.Services.FilePermissionsService
+  langs:
+  - csharp
+  - vb
+  name: VerifyWriteAccess(string)
+  nameWithType: FilePermissionsService.VerifyWriteAccess(string)
+  fullName: Meridian.Storage.Services.FilePermissionsService.VerifyWriteAccess(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FilePermissionsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifyWriteAccess
+    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Verifies that the application has write access to the directory.
+  example: []
+  syntax:
+    content: public FilePermissionsResult VerifyWriteAccess(string directoryPath)
+    parameters:
+    - id: directoryPath
+      type: System.String
+    return:
+      type: Meridian.Storage.Services.FilePermissionsResult
+    content.vb: Public Function VerifyWriteAccess(directoryPath As String) As FilePermissionsResult
+  overload: Meridian.Storage.Services.FilePermissionsService.VerifyWriteAccess*
+  nameWithType.vb: FilePermissionsService.VerifyWriteAccess(String)
+  fullName.vb: Meridian.Storage.Services.FilePermissionsService.VerifyWriteAccess(String)
+  name.vb: VerifyWriteAccess(String)
+- uid: Meridian.Storage.Services.FilePermissionsService.GetPermissionsDiagnostic(System.String)
+  commentId: M:Meridian.Storage.Services.FilePermissionsService.GetPermissionsDiagnostic(System.String)
+  id: GetPermissionsDiagnostic(System.String)
+  parent: Meridian.Storage.Services.FilePermissionsService
+  langs:
+  - csharp
+  - vb
+  name: GetPermissionsDiagnostic(string)
+  nameWithType: FilePermissionsService.GetPermissionsDiagnostic(string)
+  fullName: Meridian.Storage.Services.FilePermissionsService.GetPermissionsDiagnostic(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FilePermissionsService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPermissionsDiagnostic
+    path: ../../src/Meridian.Storage/Services/FilePermissionsService.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Checks current permissions on a directory and returns a diagnostic report.
+  example: []
+  syntax:
+    content: public FilePermissionsDiagnostic GetPermissionsDiagnostic(string directoryPath)
+    parameters:
+    - id: directoryPath
+      type: System.String
+    return:
+      type: Meridian.Storage.Services.FilePermissionsDiagnostic
+    content.vb: Public Function GetPermissionsDiagnostic(directoryPath As String) As FilePermissionsDiagnostic
+  overload: Meridian.Storage.Services.FilePermissionsService.GetPermissionsDiagnostic*
+  nameWithType.vb: FilePermissionsService.GetPermissionsDiagnostic(String)
+  fullName.vb: Meridian.Storage.Services.FilePermissionsService.GetPermissionsDiagnostic(String)
+  name.vb: GetPermissionsDiagnostic(String)
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.FilePermissionsService.#ctor*
+  commentId: Overload:Meridian.Storage.Services.FilePermissionsService.#ctor
+  href: Meridian.Storage.Services.FilePermissionsService.html#Meridian_Storage_Services_FilePermissionsService__ctor_Meridian_Storage_Services_FilePermissionsOptions_
+  name: FilePermissionsService
+  nameWithType: FilePermissionsService.FilePermissionsService
+  fullName: Meridian.Storage.Services.FilePermissionsService.FilePermissionsService
+  nameWithType.vb: FilePermissionsService.New
+  fullName.vb: Meridian.Storage.Services.FilePermissionsService.New
+  name.vb: New
+- uid: Meridian.Storage.Services.FilePermissionsOptions
+  commentId: T:Meridian.Storage.Services.FilePermissionsOptions
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.FilePermissionsOptions.html
+  name: FilePermissionsOptions
+  nameWithType: FilePermissionsOptions
+  fullName: Meridian.Storage.Services.FilePermissionsOptions
+- uid: Meridian.Storage.Services.FilePermissionsService.EnsureDirectoryPermissions*
+  commentId: Overload:Meridian.Storage.Services.FilePermissionsService.EnsureDirectoryPermissions
+  href: Meridian.Storage.Services.FilePermissionsService.html#Meridian_Storage_Services_FilePermissionsService_EnsureDirectoryPermissions_System_String_
+  name: EnsureDirectoryPermissions
+  nameWithType: FilePermissionsService.EnsureDirectoryPermissions
+  fullName: Meridian.Storage.Services.FilePermissionsService.EnsureDirectoryPermissions
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Services.FilePermissionsResult
+  commentId: T:Meridian.Storage.Services.FilePermissionsResult
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.FilePermissionsResult.html
+  name: FilePermissionsResult
+  nameWithType: FilePermissionsResult
+  fullName: Meridian.Storage.Services.FilePermissionsResult
+- uid: Meridian.Storage.Services.FilePermissionsService.VerifyWriteAccess*
+  commentId: Overload:Meridian.Storage.Services.FilePermissionsService.VerifyWriteAccess
+  href: Meridian.Storage.Services.FilePermissionsService.html#Meridian_Storage_Services_FilePermissionsService_VerifyWriteAccess_System_String_
+  name: VerifyWriteAccess
+  nameWithType: FilePermissionsService.VerifyWriteAccess
+  fullName: Meridian.Storage.Services.FilePermissionsService.VerifyWriteAccess
+- uid: Meridian.Storage.Services.FilePermissionsService.GetPermissionsDiagnostic*
+  commentId: Overload:Meridian.Storage.Services.FilePermissionsService.GetPermissionsDiagnostic
+  href: Meridian.Storage.Services.FilePermissionsService.html#Meridian_Storage_Services_FilePermissionsService_GetPermissionsDiagnostic_System_String_
+  name: GetPermissionsDiagnostic
+  nameWithType: FilePermissionsService.GetPermissionsDiagnostic
+  fullName: Meridian.Storage.Services.FilePermissionsService.GetPermissionsDiagnostic
+- uid: Meridian.Storage.Services.FilePermissionsDiagnostic
+  commentId: T:Meridian.Storage.Services.FilePermissionsDiagnostic
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.FilePermissionsDiagnostic.html
+  name: FilePermissionsDiagnostic
+  nameWithType: FilePermissionsDiagnostic
+  fullName: Meridian.Storage.Services.FilePermissionsDiagnostic

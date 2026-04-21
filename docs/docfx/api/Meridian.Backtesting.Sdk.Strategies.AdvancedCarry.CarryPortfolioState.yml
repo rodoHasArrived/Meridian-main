@@ -1,0 +1,641 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  id: CarryPortfolioState
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.#ctor(System.Decimal,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64})
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CurrentQuantities
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.NormalizedQuantities
+  - Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.PortfolioValue
+  langs:
+  - csharp
+  - vb
+  name: CarryPortfolioState
+  nameWithType: CarryPortfolioState
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CarryPortfolioState
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: 'public sealed record CarryPortfolioState : IEquatable<CarryPortfolioState>'
+    content.vb: Public NotInheritable Class CarryPortfolioState Implements IEquatable(Of CarryPortfolioState)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.#ctor(System.Decimal,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64})
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.#ctor(System.Decimal,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64})
+  id: '#ctor(System.Decimal,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64})'
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: CarryPortfolioState(decimal, IReadOnlyDictionary<string, long>?)
+  nameWithType: CarryPortfolioState.CarryPortfolioState(decimal, IReadOnlyDictionary<string, long>?)
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CarryPortfolioState(decimal, System.Collections.Generic.IReadOnlyDictionary<string, long>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public CarryPortfolioState(decimal PortfolioValue, IReadOnlyDictionary<string, long>? CurrentQuantities = null)
+    parameters:
+    - id: PortfolioValue
+      type: System.Decimal
+    - id: CurrentQuantities
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+    content.vb: Public Sub New(PortfolioValue As Decimal, CurrentQuantities As IReadOnlyDictionary(Of String, Long) = Nothing)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.#ctor*
+  nameWithType.vb: CarryPortfolioState.New(Decimal, IReadOnlyDictionary(Of String, Long))
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.New(Decimal, System.Collections.Generic.IReadOnlyDictionary(Of String, Long))
+  name.vb: New(Decimal, IReadOnlyDictionary(Of String, Long))
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.PortfolioValue
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.PortfolioValue
+  id: PortfolioValue
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: PortfolioValue
+  nameWithType: CarryPortfolioState.PortfolioValue
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.PortfolioValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PortfolioValue
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public decimal PortfolioValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property PortfolioValue As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.PortfolioValue*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CurrentQuantities
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CurrentQuantities
+  id: CurrentQuantities
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: CurrentQuantities
+  nameWithType: CarryPortfolioState.CurrentQuantities
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CurrentQuantities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentQuantities
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public IReadOnlyDictionary<string, long>? CurrentQuantities { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+    content.vb: Public Property CurrentQuantities As IReadOnlyDictionary(Of String, Long)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CurrentQuantities*
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.NormalizedQuantities
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.NormalizedQuantities
+  id: NormalizedQuantities
+  parent: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+  langs:
+  - csharp
+  - vb
+  name: NormalizedQuantities
+  nameWithType: CarryPortfolioState.NormalizedQuantities
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.NormalizedQuantities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NormalizedQuantities
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/AdvancedCarry/AdvancedCarryModels.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  syntax:
+    content: public IReadOnlyDictionary<string, long> NormalizedQuantities { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+    content.vb: Public ReadOnly Property NormalizedQuantities As IReadOnlyDictionary(Of String, Long)
+  overload: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.NormalizedQuantities*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry
+    name: AdvancedCarry
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CarryPortfolioState>
+  nameWithType: IEquatable<CarryPortfolioState>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState>
+  nameWithType.vb: IEquatable(Of CarryPortfolioState)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState)
+  name.vb: IEquatable(Of CarryPortfolioState)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+    name: CarryPortfolioState
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState
+    name: CarryPortfolioState
+    href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryPortfolioState__ctor_System_Decimal_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Int64__
+  name: CarryPortfolioState
+  nameWithType: CarryPortfolioState.CarryPortfolioState
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CarryPortfolioState
+  nameWithType.vb: CarryPortfolioState.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Int64}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, long>
+  nameWithType: IReadOnlyDictionary<string, long>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, long>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Long)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Long)
+  name.vb: IReadOnlyDictionary(Of String, Long)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.PortfolioValue*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.PortfolioValue
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryPortfolioState_PortfolioValue
+  name: PortfolioValue
+  nameWithType: CarryPortfolioState.PortfolioValue
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.PortfolioValue
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CurrentQuantities*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CurrentQuantities
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryPortfolioState_CurrentQuantities
+  name: CurrentQuantities
+  nameWithType: CarryPortfolioState.CurrentQuantities
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.CurrentQuantities
+- uid: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.NormalizedQuantities*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.NormalizedQuantities
+  href: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.html#Meridian_Backtesting_Sdk_Strategies_AdvancedCarry_CarryPortfolioState_NormalizedQuantities
+  name: NormalizedQuantities
+  nameWithType: CarryPortfolioState.NormalizedQuantities
+  fullName: Meridian.Backtesting.Sdk.Strategies.AdvancedCarry.CarryPortfolioState.NormalizedQuantities

@@ -1,0 +1,278 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+  commentId: T:Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+  id: IProviderFamilyCatalogService
+  parent: Meridian.Application.ProviderRouting
+  children:
+  - Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamilies
+  - Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamily(System.String)
+  langs:
+  - csharp
+  - vb
+  name: IProviderFamilyCatalogService
+  nameWithType: IProviderFamilyCatalogService
+  fullName: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IProviderFamilyCatalogService
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
+    startLine: 441
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public interface IProviderFamilyCatalogService
+    content.vb: Public Interface IProviderFamilyCatalogService
+- uid: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamilies
+  commentId: M:Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamilies
+  id: GetFamilies
+  parent: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+  langs:
+  - csharp
+  - vb
+  name: GetFamilies()
+  nameWithType: IProviderFamilyCatalogService.GetFamilies()
+  fullName: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamilies()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFamilies
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
+    startLine: 443
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: IReadOnlyList<IProviderFamilyAdapter> GetFamilies()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.ProviderSdk.IProviderFamilyAdapter}
+    content.vb: Function GetFamilies() As IReadOnlyList(Of IProviderFamilyAdapter)
+  overload: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamilies*
+- uid: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamily(System.String)
+  commentId: M:Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamily(System.String)
+  id: GetFamily(System.String)
+  parent: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService
+  langs:
+  - csharp
+  - vb
+  name: GetFamily(string)
+  nameWithType: IProviderFamilyCatalogService.GetFamily(string)
+  fullName: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamily(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFamily
+    path: ../../src/Meridian.Application/ProviderRouting/ProviderRoutingEngine.cs
+    startLine: 445
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: IProviderFamilyAdapter? GetFamily(string providerFamilyId)
+    parameters:
+    - id: providerFamilyId
+      type: System.String
+    return:
+      type: Meridian.ProviderSdk.IProviderFamilyAdapter
+    content.vb: Function GetFamily(providerFamilyId As String) As IProviderFamilyAdapter
+  overload: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamily*
+  nameWithType.vb: IProviderFamilyCatalogService.GetFamily(String)
+  fullName.vb: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamily(String)
+  name.vb: GetFamily(String)
+references:
+- uid: Meridian.Application.ProviderRouting
+  commentId: N:Meridian.Application.ProviderRouting
+  href: Meridian.html
+  name: Meridian.Application.ProviderRouting
+  nameWithType: Meridian.Application.ProviderRouting
+  fullName: Meridian.Application.ProviderRouting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+- uid: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamilies*
+  commentId: Overload:Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamilies
+  href: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.html#Meridian_Application_ProviderRouting_IProviderFamilyCatalogService_GetFamilies
+  name: GetFamilies
+  nameWithType: IProviderFamilyCatalogService.GetFamilies
+  fullName: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamilies
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.ProviderSdk.IProviderFamilyAdapter}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.ProviderSdk.IProviderFamilyAdapter}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IProviderFamilyAdapter>
+  nameWithType: IReadOnlyList<IProviderFamilyAdapter>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.ProviderSdk.IProviderFamilyAdapter>
+  nameWithType.vb: IReadOnlyList(Of IProviderFamilyAdapter)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.ProviderSdk.IProviderFamilyAdapter)
+  name.vb: IReadOnlyList(Of IProviderFamilyAdapter)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.ProviderSdk.IProviderFamilyAdapter
+    name: IProviderFamilyAdapter
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.ProviderSdk.IProviderFamilyAdapter
+    name: IProviderFamilyAdapter
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamily*
+  commentId: Overload:Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamily
+  href: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.html#Meridian_Application_ProviderRouting_IProviderFamilyCatalogService_GetFamily_System_String_
+  name: GetFamily
+  nameWithType: IProviderFamilyCatalogService.GetFamily
+  fullName: Meridian.Application.ProviderRouting.IProviderFamilyCatalogService.GetFamily
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter
+  commentId: T:Meridian.ProviderSdk.IProviderFamilyAdapter
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html
+  name: IProviderFamilyAdapter
+  nameWithType: IProviderFamilyAdapter
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html

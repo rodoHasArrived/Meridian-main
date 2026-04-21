@@ -1,0 +1,136 @@
+// Runtime Hosts and Startup Modes Diagram
+// Meridian v1.8.x
+// Last Updated: 2026-04-09
+//
+// This diagram shows the repo's runnable hosts and how src/Meridian selects
+// startup modes through SharedStartupBootstrapper and StartupOrchestrator.
+
+digraph RuntimeHosts {
+  rankdir=LR;
+  graph [fontname="Helvetica", fontsize=12, bgcolor="white", compound=true, pad=0.5];
+  node  [fontname="Helvetica", fontsize=10, shape=box, style="rounded,filled"];
+  edge  [fontname="Helvetica", fontsize=9, color="#4a5568"];
+
+  labelloc="t";
+  label="Meridian - Runtime Hosts and Startup Modes\nEntry points, host surfaces, and shared startup orchestration | v1.8.x";
+
+  subgraph cluster_clients {
+    label="Clients";
+    color="#4a5568";
+    style="rounded";
+    bgcolor="#f7fafc";
+
+    OPERATOR [shape=oval, fillcolor="#08427b", fontcolor="white",
+              label="Operator\n[Person]"];
+    LOCAL_CLIENT [shape=oval, fillcolor="#08427b", fontcolor="white",
+                  label="Local API Client\n[WPF / Swagger / scripts]"];
+    MCP_HOST [shape=oval, fillcolor="#08427b", fontcolor="white",
+              label="MCP Host\n[Claude / Cursor / Copilot]"];
+  }
+
+  subgraph cluster_entrypoints {
+    label="Runnable Projects";
+    color="#805ad5";
+    style="rounded";
+    bgcolor="#faf5ff";
+
+    MAIN_APP [fillcolor="#438dd5", fontcolor="white",
+              label="src/Meridian\nCLI / composite host\nProgram.cs"];
+    WPF_APP [fillcolor="#805ad5", fontcolor="white",
+             label="src/Meridian.Wpf\nWindows workstation shell\nApp.xaml.cs DI composition"];
+    MCP_REPO [fillcolor="#2c7a7b", fontcolor="white",
+              label="src/Meridian.Mcp\nRepo-navigation MCP server\nstdio transport"];
+    MCP_MARKET [fillcolor="#2c7a7b", fontcolor="white",
+                label="src/Meridian.McpServer\nMarket-data MCP server\nstdio transport"];
+  }
+
+  subgraph cluster_startup {
+    label="Shared Startup Flow Used By src/Meridian";
+    color="#2b6cb0";
+    style="rounded";
+    bgcolor="#dbeafe";
+
+    BOOTSTRAPPER [fillcolor="#bfdbfe",
+                  label="SharedStartupBootstrapper\nResolve config path\nLoad minimal config\nResolve deployment"];
+    ORCHESTRATOR [fillcolor="#93c5fd",
+                  label="StartupOrchestrator\n1. command dispatch\n2. mode validation\n3. runtime selection"];
+
+    COMMAND_MODE [fillcolor="#feebc8",
+                  label="CommandModeRunner\nhelp, config, symbols,\nvalidation, packaging"];
+    DESKTOP_MODE [fillcolor="#ddd6fe",
+                  label="DesktopModeRunner\nDeploymentMode.Desktop\nUiServer + collector/backfill"];
+    COLLECTOR_MODE [fillcolor="#bfdbfe",
+                    label="CollectorModeRunner\nDefault/headless streaming\nprovider connect + subscriptions"];
+    BACKFILL_MODE [fillcolor="#bfdbfe",
+                   label="BackfillModeRunner\nCLI/config backfill\ncheckpointed historical ingest"];
+  }
+
+  subgraph cluster_shared_runtime {
+    label="Shared Runtime Services";
+    color="#38a169";
+    style="rounded";
+    bgcolor="#f0fff4";
+
+    DASHBOARD_BRIDGE [fillcolor="#c4b5fd",
+                      label="UiServer\nEmbedded ASP.NET host\nlocalhost API + Swagger"];
+    UI_SHARED [fillcolor="#ddd6fe",
+               label="Meridian.Ui.Shared\nshared endpoints, auth,\nworkstation APIs"];
+    HOST_FACTORY [fillcolor="#a7f3d0",
+                  label="HostStartupFactory\nproviders, storage,\npipeline, monitoring"];
+    PIPELINE [fillcolor="#d1fae5",
+              label="EventPipeline + WAL\nRecoverAsync / PublishAsync / FlushAsync"];
+    STATUS_WRITER [shape=note, fillcolor="#feebc8",
+                   label="StatusWriter\n_status/status.json\nhealth snapshots"];
+    BACKFILL_SERVICES [fillcolor="#d1fae5",
+                       label="HistoricalBackfillService\nBackfillCoordinator\ncomposite provider selection"];
+    STORAGE [shape=cylinder, fillcolor="#fecaca",
+             label="data/\nJSONL, Parquet,\ncheckpoints, status"];
+  }
+
+  OPERATOR -> MAIN_APP [label="CLI / make targets"];
+  OPERATOR -> WPF_APP [label="Windows desktop app"];
+  LOCAL_CLIENT -> DASHBOARD_BRIDGE [label="localhost API / Swagger"];
+  MCP_HOST -> MCP_REPO [label="repo tools"];
+  MCP_HOST -> MCP_MARKET [label="provider tools"];
+
+  MAIN_APP -> BOOTSTRAPPER;
+  BOOTSTRAPPER -> ORCHESTRATOR;
+  ORCHESTRATOR -> COMMAND_MODE [label="phase 1"];
+  ORCHESTRATOR -> DESKTOP_MODE [label="DeploymentMode.Desktop"];
+  ORCHESTRATOR -> COLLECTOR_MODE [label="default/headless"];
+  ORCHESTRATOR -> BACKFILL_MODE [label="--backfill or config"];
+
+  DESKTOP_MODE -> DASHBOARD_BRIDGE [label="start local API host"];
+  DASHBOARD_BRIDGE -> UI_SHARED [label="map shared endpoints"];
+
+  DESKTOP_MODE -> COLLECTOR_MODE [label="normal desktop"];
+  DESKTOP_MODE -> BACKFILL_MODE [label="desktop backfill"];
+
+  COLLECTOR_MODE -> HOST_FACTORY [label="create runtime host"];
+  BACKFILL_MODE -> HOST_FACTORY [label="create runtime host"];
+  BACKFILL_MODE -> BACKFILL_SERVICES [label="run historical jobs"];
+  HOST_FACTORY -> PIPELINE;
+  HOST_FACTORY -> STATUS_WRITER;
+  BACKFILL_SERVICES -> PIPELINE [label="publish historical events"];
+  PIPELINE -> STORAGE [label="persist + flush"];
+  STATUS_WRITER -> STORAGE [label="write status"];
+  BACKFILL_SERVICES -> STORAGE [label="checkpoints / results"];
+
+  MCP_MARKET -> BACKFILL_SERVICES [style=dashed, color="#2c7a7b",
+                                   label="tool/resource access"];
+  MCP_MARKET -> STORAGE [style=dashed, color="#2c7a7b",
+                         label="catalog / inventory"];
+
+  subgraph cluster_legend {
+    label="Legend";
+    style="rounded";
+    color="#666666";
+    bgcolor="#fafafa";
+
+    LEG_PERSON [shape=oval, fillcolor="#08427b", fontcolor="white", label="User / client"];
+    LEG_HOST [fillcolor="#438dd5", fontcolor="white", label="Runnable host"];
+    LEG_MODE [fillcolor="#bfdbfe", label="Startup mode / service"];
+    LEG_UI [fillcolor="#ddd6fe", label="Local API / shared endpoint layer"];
+    LEG_STORE [shape=cylinder, fillcolor="#fecaca", label="Persistent state"];
+  }
+}

@@ -1,0 +1,228 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ExportJobStatus
+  commentId: T:Meridian.Ui.Services.ExportJobStatus
+  id: ExportJobStatus
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ExportJobStatus.Cancelled
+  - Meridian.Ui.Services.ExportJobStatus.Completed
+  - Meridian.Ui.Services.ExportJobStatus.Failed
+  - Meridian.Ui.Services.ExportJobStatus.Pending
+  - Meridian.Ui.Services.ExportJobStatus.Queued
+  - Meridian.Ui.Services.ExportJobStatus.Running
+  langs:
+  - csharp
+  - vb
+  name: ExportJobStatus
+  nameWithType: ExportJobStatus
+  fullName: Meridian.Ui.Services.ExportJobStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportJobStatus
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 720
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public enum ExportJobStatus : byte'
+    content.vb: Public Enum ExportJobStatus As Byte
+- uid: Meridian.Ui.Services.ExportJobStatus.Pending
+  commentId: F:Meridian.Ui.Services.ExportJobStatus.Pending
+  id: Pending
+  parent: Meridian.Ui.Services.ExportJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: ExportJobStatus.Pending
+  fullName: Meridian.Ui.Services.ExportJobStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 722
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Ui.Services.ExportJobStatus
+- uid: Meridian.Ui.Services.ExportJobStatus.Queued
+  commentId: F:Meridian.Ui.Services.ExportJobStatus.Queued
+  id: Queued
+  parent: Meridian.Ui.Services.ExportJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Queued
+  nameWithType: ExportJobStatus.Queued
+  fullName: Meridian.Ui.Services.ExportJobStatus.Queued
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Queued
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 723
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Queued = 1
+    return:
+      type: Meridian.Ui.Services.ExportJobStatus
+- uid: Meridian.Ui.Services.ExportJobStatus.Running
+  commentId: F:Meridian.Ui.Services.ExportJobStatus.Running
+  id: Running
+  parent: Meridian.Ui.Services.ExportJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Running
+  nameWithType: ExportJobStatus.Running
+  fullName: Meridian.Ui.Services.ExportJobStatus.Running
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Running
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 724
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Running = 2
+    return:
+      type: Meridian.Ui.Services.ExportJobStatus
+- uid: Meridian.Ui.Services.ExportJobStatus.Completed
+  commentId: F:Meridian.Ui.Services.ExportJobStatus.Completed
+  id: Completed
+  parent: Meridian.Ui.Services.ExportJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: ExportJobStatus.Completed
+  fullName: Meridian.Ui.Services.ExportJobStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 725
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Completed = 3
+    return:
+      type: Meridian.Ui.Services.ExportJobStatus
+- uid: Meridian.Ui.Services.ExportJobStatus.Failed
+  commentId: F:Meridian.Ui.Services.ExportJobStatus.Failed
+  id: Failed
+  parent: Meridian.Ui.Services.ExportJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: ExportJobStatus.Failed
+  fullName: Meridian.Ui.Services.ExportJobStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 726
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Failed = 4
+    return:
+      type: Meridian.Ui.Services.ExportJobStatus
+- uid: Meridian.Ui.Services.ExportJobStatus.Cancelled
+  commentId: F:Meridian.Ui.Services.ExportJobStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Ui.Services.ExportJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: ExportJobStatus.Cancelled
+  fullName: Meridian.Ui.Services.ExportJobStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Ui.Services/Services/BatchExportSchedulerService.cs
+    startLine: 727
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Cancelled = 5
+    return:
+      type: Meridian.Ui.Services.ExportJobStatus
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.ExportJobStatus
+  commentId: T:Meridian.Ui.Services.ExportJobStatus
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportJobStatus.html
+  name: ExportJobStatus
+  nameWithType: ExportJobStatus
+  fullName: Meridian.Ui.Services.ExportJobStatus

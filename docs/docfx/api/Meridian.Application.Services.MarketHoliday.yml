@@ -1,0 +1,485 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.MarketHoliday
+  commentId: T:Meridian.Application.Services.MarketHoliday
+  id: MarketHoliday
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.MarketHoliday.#ctor(System.DateOnly,System.String)
+  - Meridian.Application.Services.MarketHoliday.Date
+  - Meridian.Application.Services.MarketHoliday.Name
+  langs:
+  - csharp
+  - vb
+  name: MarketHoliday
+  nameWithType: MarketHoliday
+  fullName: Meridian.Application.Services.MarketHoliday
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketHoliday
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 601
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Market holiday information.
+  example: []
+  syntax:
+    content: 'public readonly record struct MarketHoliday : IEquatable<MarketHoliday>'
+    content.vb: Public Structure MarketHoliday Implements IEquatable(Of MarketHoliday)
+  implements:
+  - System.IEquatable{Meridian.Application.Services.MarketHoliday}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Services.MarketHoliday.#ctor(System.DateOnly,System.String)
+  commentId: M:Meridian.Application.Services.MarketHoliday.#ctor(System.DateOnly,System.String)
+  id: '#ctor(System.DateOnly,System.String)'
+  parent: Meridian.Application.Services.MarketHoliday
+  langs:
+  - csharp
+  - vb
+  name: MarketHoliday(DateOnly, string)
+  nameWithType: MarketHoliday.MarketHoliday(DateOnly, string)
+  fullName: Meridian.Application.Services.MarketHoliday.MarketHoliday(System.DateOnly, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 601
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Market holiday information.
+  example: []
+  syntax:
+    content: public MarketHoliday(DateOnly Date, string Name)
+    parameters:
+    - id: Date
+      type: System.DateOnly
+    - id: Name
+      type: System.String
+    content.vb: Public Sub New([Date] As DateOnly, Name As String)
+  overload: Meridian.Application.Services.MarketHoliday.#ctor*
+  nameWithType.vb: MarketHoliday.New(DateOnly, String)
+  fullName.vb: Meridian.Application.Services.MarketHoliday.New(System.DateOnly, String)
+  name.vb: New(DateOnly, String)
+- uid: Meridian.Application.Services.MarketHoliday.Date
+  commentId: P:Meridian.Application.Services.MarketHoliday.Date
+  id: Date
+  parent: Meridian.Application.Services.MarketHoliday
+  langs:
+  - csharp
+  - vb
+  name: Date
+  nameWithType: MarketHoliday.Date
+  fullName: Meridian.Application.Services.MarketHoliday.Date
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Date
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 601
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateOnly Date { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property [Date] As DateOnly
+  overload: Meridian.Application.Services.MarketHoliday.Date*
+- uid: Meridian.Application.Services.MarketHoliday.Name
+  commentId: P:Meridian.Application.Services.MarketHoliday.Name
+  id: Name
+  parent: Meridian.Application.Services.MarketHoliday
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: MarketHoliday.Name
+  fullName: Meridian.Application.Services.MarketHoliday.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/TradingCalendar.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Application/Services/TradingCalendar.cs
+    startLine: 601
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Services.MarketHoliday.Name*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.IEquatable{Meridian.Application.Services.MarketHoliday}
+  commentId: T:System.IEquatable{Meridian.Application.Services.MarketHoliday}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketHoliday>
+  nameWithType: IEquatable<MarketHoliday>
+  fullName: System.IEquatable<Meridian.Application.Services.MarketHoliday>
+  nameWithType.vb: IEquatable(Of MarketHoliday)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.MarketHoliday)
+  name.vb: IEquatable(Of MarketHoliday)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.MarketHoliday
+    name: MarketHoliday
+    href: Meridian.Application.Services.MarketHoliday.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.MarketHoliday
+    name: MarketHoliday
+    href: Meridian.Application.Services.MarketHoliday.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Services.MarketHoliday.#ctor*
+  commentId: Overload:Meridian.Application.Services.MarketHoliday.#ctor
+  href: Meridian.Application.Services.MarketHoliday.html#Meridian_Application_Services_MarketHoliday__ctor_System_DateOnly_System_String_
+  name: MarketHoliday
+  nameWithType: MarketHoliday.MarketHoliday
+  fullName: Meridian.Application.Services.MarketHoliday.MarketHoliday
+  nameWithType.vb: MarketHoliday.New
+  fullName.vb: Meridian.Application.Services.MarketHoliday.New
+  name.vb: New
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.MarketHoliday.Date*
+  commentId: Overload:Meridian.Application.Services.MarketHoliday.Date
+  href: Meridian.Application.Services.MarketHoliday.html#Meridian_Application_Services_MarketHoliday_Date
+  name: Date
+  nameWithType: MarketHoliday.Date
+  fullName: Meridian.Application.Services.MarketHoliday.Date
+- uid: Meridian.Application.Services.MarketHoliday.Name*
+  commentId: Overload:Meridian.Application.Services.MarketHoliday.Name
+  href: Meridian.Application.Services.MarketHoliday.html#Meridian_Application_Services_MarketHoliday_Name
+  name: Name
+  nameWithType: MarketHoliday.Name
+  fullName: Meridian.Application.Services.MarketHoliday.Name

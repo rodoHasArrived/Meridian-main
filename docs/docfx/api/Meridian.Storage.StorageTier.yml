@@ -1,0 +1,205 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.StorageTier
+  commentId: T:Meridian.Storage.StorageTier
+  id: StorageTier
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.StorageTier.Archive
+  - Meridian.Storage.StorageTier.Cold
+  - Meridian.Storage.StorageTier.Glacier
+  - Meridian.Storage.StorageTier.Hot
+  - Meridian.Storage.StorageTier.Warm
+  langs:
+  - csharp
+  - vb
+  name: StorageTier
+  nameWithType: StorageTier
+  fullName: Meridian.Storage.StorageTier
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageTier
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Storage tier designation.
+  example: []
+  syntax:
+    content: 'public enum StorageTier : byte'
+    content.vb: Public Enum StorageTier As Byte
+- uid: Meridian.Storage.StorageTier.Hot
+  commentId: F:Meridian.Storage.StorageTier.Hot
+  id: Hot
+  parent: Meridian.Storage.StorageTier
+  langs:
+  - csharp
+  - vb
+  name: Hot
+  nameWithType: StorageTier.Hot
+  fullName: Meridian.Storage.StorageTier.Hot
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hot
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Hot tier - real-time access, NVMe SSD.
+  example: []
+  syntax:
+    content: Hot = 0
+    return:
+      type: Meridian.Storage.StorageTier
+- uid: Meridian.Storage.StorageTier.Warm
+  commentId: F:Meridian.Storage.StorageTier.Warm
+  id: Warm
+  parent: Meridian.Storage.StorageTier
+  langs:
+  - csharp
+  - vb
+  name: Warm
+  nameWithType: StorageTier.Warm
+  fullName: Meridian.Storage.StorageTier.Warm
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warm
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Warm tier - daily batch access, SSD/HDD.
+  example: []
+  syntax:
+    content: Warm = 1
+    return:
+      type: Meridian.Storage.StorageTier
+- uid: Meridian.Storage.StorageTier.Cold
+  commentId: F:Meridian.Storage.StorageTier.Cold
+  id: Cold
+  parent: Meridian.Storage.StorageTier
+  langs:
+  - csharp
+  - vb
+  name: Cold
+  nameWithType: StorageTier.Cold
+  fullName: Meridian.Storage.StorageTier.Cold
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cold
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Cold tier - weekly/monthly access, HDD/NAS.
+  example: []
+  syntax:
+    content: Cold = 2
+    return:
+      type: Meridian.Storage.StorageTier
+- uid: Meridian.Storage.StorageTier.Archive
+  commentId: F:Meridian.Storage.StorageTier.Archive
+  id: Archive
+  parent: Meridian.Storage.StorageTier
+  langs:
+  - csharp
+  - vb
+  name: Archive
+  nameWithType: StorageTier.Archive
+  fullName: Meridian.Storage.StorageTier.Archive
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Archive
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Archive tier - rare bulk access, object storage.
+  example: []
+  syntax:
+    content: Archive = 3
+    return:
+      type: Meridian.Storage.StorageTier
+- uid: Meridian.Storage.StorageTier.Glacier
+  commentId: F:Meridian.Storage.StorageTier.Glacier
+  id: Glacier
+  parent: Meridian.Storage.StorageTier
+  langs:
+  - csharp
+  - vb
+  name: Glacier
+  nameWithType: StorageTier.Glacier
+  fullName: Meridian.Storage.StorageTier.Glacier
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Glacier
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Glacier tier - emergency only, tape/deep archive.
+  example: []
+  syntax:
+    content: Glacier = 4
+    return:
+      type: Meridian.Storage.StorageTier
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.StorageTier
+  commentId: T:Meridian.Storage.StorageTier
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageTier.html
+  name: StorageTier
+  nameWithType: StorageTier
+  fullName: Meridian.Storage.StorageTier

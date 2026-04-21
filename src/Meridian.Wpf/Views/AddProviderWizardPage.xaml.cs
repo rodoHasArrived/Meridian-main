@@ -271,7 +271,6 @@ internal sealed class ProviderCatalogViewModel
             ProviderTier.Premium         => "PREMIUM",
             _                            => "FREE",
         };
-
         TierBrush = entry.Tier switch
         {
             ProviderTier.Free or ProviderTier.FreeWithAccount =>

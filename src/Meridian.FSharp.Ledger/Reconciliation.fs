@@ -54,6 +54,8 @@ type ReconciliationResult = {
     ActualCurrency: string
     DueDate: System.DateTimeOffset
     PostedAt: System.DateTimeOffset
+    Outcome: ReconciliationOutcome
+    OutcomeLabel: string
     Status: ReconciliationStatus
 }
 
@@ -103,6 +105,14 @@ type PortfolioLedgerCheckResult = {
 [<RequireQualifiedAccess>]
 module Reconciliation =
 
+    let private statusOfOutcome = function
+        | ReconciliationOutcome.Matched -> ReconciliationStatus.Matched
+        | ReconciliationOutcome.UnderPaid _ -> ReconciliationStatus.UnderPaid
+        | ReconciliationOutcome.OverPaid _ -> ReconciliationStatus.OverPaid
+        | ReconciliationOutcome.CurrencyMismatch _ -> ReconciliationStatus.CurrencyMismatch
+        | ReconciliationOutcome.TimingMismatch _ -> ReconciliationStatus.TimingMismatch
+        | ReconciliationOutcome.MissingActual -> ReconciliationStatus.MissingActual
+
     let classifyDifference expected actual =
         let difference = actual - expected
         if difference = 0m then "matched"
@@ -127,15 +137,15 @@ module Reconciliation =
 
     let reconcilePayment toleranceDays (projected: ProjectedFlow) (actual: ActualCashEvent) =
         let variance = actual.ActualAmount - projected.ExpectedAmount
-        let status =
+        let outcome =
             if not (System.String.Equals(projected.ExpectedCurrency, actual.ActualCurrency, System.StringComparison.OrdinalIgnoreCase)) then
-                CurrencyMismatch
+                ReconciliationOutcome.CurrencyMismatch(projected.ExpectedCurrency, actual.ActualCurrency)
             else
                 let dayDelta = abs ((actual.PostedAt.Date - projected.DueDate.Date).Days)
-                if dayDelta > toleranceDays then TimingMismatch
-                elif variance = 0m then Matched
-                elif variance > 0m then OverPaid
-                else UnderPaid
+                if dayDelta > toleranceDays then ReconciliationOutcome.TimingMismatch dayDelta
+                elif variance = 0m then ReconciliationOutcome.Matched
+                elif variance > 0m then ReconciliationOutcome.OverPaid variance
+                else ReconciliationOutcome.UnderPaid variance
 
         {
             SecurityId = projected.SecurityId
@@ -148,10 +158,13 @@ module Reconciliation =
             ActualCurrency = actual.ActualCurrency
             DueDate = projected.DueDate
             PostedAt = actual.PostedAt
-            Status = status
+            Outcome = outcome
+            OutcomeLabel = ReconciliationOutcome.label outcome
+            Status = statusOfOutcome outcome
         }
 
     let private missingActualForProjection (projected: ProjectedFlow) =
+        let outcome = ReconciliationOutcome.MissingActual
         {
             SecurityId = projected.SecurityId
             FlowId = projected.FlowId
@@ -163,7 +176,9 @@ module Reconciliation =
             ActualCurrency = projected.ExpectedCurrency
             DueDate = projected.DueDate
             PostedAt = projected.DueDate
-            Status = MissingActual
+            Outcome = outcome
+            OutcomeLabel = ReconciliationOutcome.label outcome
+            Status = statusOfOutcome outcome
         }
 
     let foldActualCashEvents (events: CashLedgerEvent seq) =

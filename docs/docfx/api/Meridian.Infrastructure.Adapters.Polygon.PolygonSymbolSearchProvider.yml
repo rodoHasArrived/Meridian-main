@@ -1,0 +1,1523 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  id: PolygonSymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Polygon
+  children:
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.DisplayName
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Dispose
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Name
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Priority
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedAssetTypes
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedExchanges
+  langs:
+  - csharp
+  - vb
+  name: PolygonSymbolSearchProvider
+  nameWithType: PolygonSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PolygonSymbolSearchProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: >-
+    Symbol search provider using Polygon.io API.
+
+    Provides comprehensive ticker search with market data.
+
+    Free tier: 5 calls/minute for basic endpoints.
+  example: []
+  syntax:
+    content: 'public sealed class PolygonSymbolSearchProvider : IFilterableSymbolSearchProvider, ISymbolSearchProvider, IProviderMetadata, IDisposable'
+    content.vb: Public NotInheritable Class PolygonSymbolSearchProvider Implements IFilterableSymbolSearchProvider, ISymbolSearchProvider, IProviderMetadata, IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: PolygonSymbolSearchProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Provider identifier.
+  example: []
+  syntax:
+    content: public string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Name As String
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Name*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Name
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: PolygonSymbolSearchProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Human-readable provider name.
+  example: []
+  syntax:
+    content: public string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property DisplayName As String
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.DisplayName*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: PolygonSymbolSearchProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Priority for this provider (lower = higher priority).
+  example: []
+  syntax:
+    content: public int Priority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Priority As Integer
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Priority*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Priority
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedAssetTypes
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedAssetTypes
+  id: SupportedAssetTypes
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: SupportedAssetTypes
+  nameWithType: PolygonSymbolSearchProvider.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedAssetTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedAssetTypes
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Supported asset types for filtering.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SupportedAssetTypes { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public ReadOnly Property SupportedAssetTypes As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedAssetTypes*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedAssetTypes
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedExchanges
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedExchanges
+  id: SupportedExchanges
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: SupportedExchanges
+  nameWithType: PolygonSymbolSearchProvider.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedExchanges
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedExchanges
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Supported exchanges for filtering.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SupportedExchanges { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public ReadOnly Property SupportedExchanges As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedExchanges*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedExchanges
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  id: '#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: PolygonSymbolSearchProvider(string?, HttpClient?, ILogger?)
+  nameWithType: PolygonSymbolSearchProvider.PolygonSymbolSearchProvider(string?, HttpClient?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.PolygonSymbolSearchProvider(string?, System.Net.Http.HttpClient?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  syntax:
+    content: public PolygonSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
+    parameters:
+    - id: apiKey
+      type: System.String
+    - id: httpClient
+      type: System.Net.Http.HttpClient
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(apiKey As String = Nothing, httpClient As HttpClient = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.#ctor*
+  nameWithType.vb: PolygonSymbolSearchProvider.New(String, HttpClient, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.New(String, System.Net.Http.HttpClient, Serilog.ILogger)
+  name.vb: New(String, HttpClient, ILogger)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  id: IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: PolygonSymbolSearchProvider.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAvailableAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Check if the provider is available/configured.
+  example: []
+  syntax:
+    content: public Task<bool> IsAvailableAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function IsAvailableAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.IsAvailableAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  id: SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(string, int, CancellationToken)
+  nameWithType: PolygonSymbolSearchProvider.SearchAsync(string, int, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(string, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Search for symbols matching the query.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(string query, int limit = 10, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: System.String
+      description: Search query (partial symbol or company name).
+    - id: limit
+      type: System.Int32
+      description: Maximum number of results.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+      description: List of matching symbols.
+    content.vb: Public Function SearchAsync(query As String, limit As Integer = 10, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SymbolSearchResult))
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  nameWithType.vb: PolygonSymbolSearchProvider.SearchAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  id: SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(string, int, string?, string?, CancellationToken)
+  nameWithType: PolygonSymbolSearchProvider.SearchAsync(string, int, string?, string?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(string, int, string?, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Search for symbols with filtering options.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(string query, int limit = 10, string? assetType = null, string? exchange = null, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: System.String
+    - id: limit
+      type: System.Int32
+    - id: assetType
+      type: System.String
+    - id: exchange
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+    content.vb: Public Function SearchAsync(query As String, limit As Integer = 10, assetType As String = Nothing, exchange As String = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SymbolSearchResult))
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  nameWithType.vb: PolygonSymbolSearchProvider.SearchAsync(String, Integer, String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync(String, Integer, String, String, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  id: GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: GetDetailsAsync(SymbolId, CancellationToken)
+  nameWithType: PolygonSymbolSearchProvider.GetDetailsAsync(SymbolId, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDetailsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Get detailed information about a specific symbol.
+  example: []
+  syntax:
+    content: public Task<SymbolDetails?> GetDetailsAsync(SymbolId symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: Meridian.Contracts.Domain.SymbolId
+      description: Symbol ticker as a typed <xref href="Meridian.Contracts.Domain.SymbolId" data-throw-if-not-resolved="false"></xref>.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+      description: Symbol details or null if not found.
+    content.vb: Public Function GetDetailsAsync(symbol As SymbolId, ct As CancellationToken = Nothing) As Task(Of SymbolDetails)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.GetDetailsAsync*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: PolygonSymbolSearchProvider.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Infrastructure.Adapters.Polygon
+  commentId: N:Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Polygon
+  nameWithType: Meridian.Infrastructure.Adapters.Polygon
+  fullName: Meridian.Infrastructure.Adapters.Polygon
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html
+  name: IFilterableSymbolSearchProvider
+  nameWithType: IFilterableSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html
+  name: ISymbolSearchProvider
+  nameWithType: ISymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Name
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider_Name
+  name: Name
+  nameWithType: PolygonSymbolSearchProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Name
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Name
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_Name
+  name: Name
+  nameWithType: ISymbolSearchProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.DisplayName
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider_DisplayName
+  name: DisplayName
+  nameWithType: PolygonSymbolSearchProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.DisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_DisplayName
+  name: DisplayName
+  nameWithType: ISymbolSearchProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Priority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Priority
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider_Priority
+  name: Priority
+  nameWithType: PolygonSymbolSearchProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Priority
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Priority
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_Priority
+  name: Priority
+  nameWithType: ISymbolSearchProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.Priority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedAssetTypes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedAssetTypes
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider_SupportedAssetTypes
+  name: SupportedAssetTypes
+  nameWithType: PolygonSymbolSearchProvider.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedAssetTypes
+- uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedAssetTypes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedAssetTypes
+  parent: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SupportedAssetTypes
+  name: SupportedAssetTypes
+  nameWithType: IFilterableSymbolSearchProvider.SupportedAssetTypes
+  fullName: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedAssetTypes
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedExchanges*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedExchanges
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider_SupportedExchanges
+  name: SupportedExchanges
+  nameWithType: PolygonSymbolSearchProvider.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SupportedExchanges
+- uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedExchanges
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedExchanges
+  parent: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SupportedExchanges
+  name: SupportedExchanges
+  nameWithType: IFilterableSymbolSearchProvider.SupportedExchanges
+  fullName: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SupportedExchanges
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.#ctor
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider__ctor_System_String_System_Net_Http_HttpClient_Serilog_ILogger_
+  name: PolygonSymbolSearchProvider
+  nameWithType: PolygonSymbolSearchProvider.PolygonSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.PolygonSymbolSearchProvider
+  nameWithType.vb: PolygonSymbolSearchProvider.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.New
+  name.vb: New
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.IsAvailableAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.IsAvailableAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync
+  nameWithType: PolygonSymbolSearchProvider.IsAvailableAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.IsAvailableAsync
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: ISymbolSearchProvider.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: SearchAsync
+  nameWithType: PolygonSymbolSearchProvider.SearchAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.SearchAsync
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: SearchAsync(string, int, CancellationToken)
+  nameWithType: ISymbolSearchProvider.SearchAsync(string, int, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(string, int, System.Threading.CancellationToken)
+  nameWithType.vb: ISymbolSearchProvider.SearchAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolSearchResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SymbolSearchResult>>
+  nameWithType: Task<IReadOnlyList<SymbolSearchResult>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.SymbolSearchResult>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SymbolSearchResult))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.SymbolSearchResult))
+  name.vb: Task(Of IReadOnlyList(Of SymbolSearchResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolSearchResult
+    name: SymbolSearchResult
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  name: SearchAsync(string, int, string, string, CancellationToken)
+  nameWithType: IFilterableSymbolSearchProvider.SearchAsync(string, int, string, string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(string, int, string, string, System.Threading.CancellationToken)
+  nameWithType.vb: IFilterableSymbolSearchProvider.SearchAsync(String, Integer, String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(String, Integer, String, String, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, String, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.SearchAsync(System.String,System.Int32,System.String,System.String,System.Threading.CancellationToken)
+    name: SearchAsync
+    href: Meridian.Infrastructure.Adapters.Core.IFilterableSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_IFilterableSymbolSearchProvider_SearchAsync_System_String_System_Int32_System_String_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.Domain.SymbolId
+  commentId: T:Meridian.Contracts.Domain.SymbolId
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.SymbolId.html
+  name: SymbolId
+  nameWithType: SymbolId
+  fullName: Meridian.Contracts.Domain.SymbolId
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.GetDetailsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.GetDetailsAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  name: GetDetailsAsync
+  nameWithType: PolygonSymbolSearchProvider.GetDetailsAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.GetDetailsAsync
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  name: GetDetailsAsync(SymbolId, CancellationToken)
+  nameWithType: ISymbolSearchProvider.GetDetailsAsync(SymbolId, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+    name: GetDetailsAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Domain.SymbolId
+    name: SymbolId
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.GetDetailsAsync(Meridian.Contracts.Domain.SymbolId,System.Threading.CancellationToken)
+    name: GetDetailsAsync
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_GetDetailsAsync_Meridian_Contracts_Domain_SymbolId_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Domain.SymbolId
+    name: SymbolId
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolDetails}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolDetails>
+  nameWithType: Task<SymbolDetails>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.SymbolDetails>
+  nameWithType.vb: Task(Of SymbolDetails)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.SymbolDetails)
+  name.vb: Task(Of SymbolDetails)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolDetails
+    name: SymbolDetails
+  - name: )
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Dispose
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html#Meridian_Infrastructure_Adapters_Polygon_PolygonSymbolSearchProvider_Dispose
+  name: Dispose
+  nameWithType: PolygonSymbolSearchProvider.Dispose
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

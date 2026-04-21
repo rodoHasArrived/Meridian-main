@@ -126,7 +126,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             ManualTrigger = false
         };
 
-        _scheduleManager.ExecutionHistory.RecordExecution(execution);
+        await _scheduleManager.ExecutionHistory.RecordExecutionAsync(execution, ct).ConfigureAwait(false);
 
         await _executionQueue.Writer.WriteAsync(execution, ct);
 
@@ -142,7 +142,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         _currentExecution = execution;
 
         execution.Status = MaintenanceExecutionStatus.Running;
-        _scheduleManager.ExecutionHistory.UpdateExecution(execution);
+        await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
 
         ExecutionStarted?.Invoke(this, execution);
 
@@ -227,12 +227,12 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         {
             _runningExecutions.TryRemove(execution.ExecutionId, out _);
             _currentExecution = null;
-            _scheduleManager.ExecutionHistory.UpdateExecution(execution);
+            await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
 
             // Update schedule with execution results
             if (execution.ScheduleId != null)
             {
-                _scheduleManager.UpdateScheduleAfterExecution(execution.ScheduleId, execution);
+                await _scheduleManager.UpdateScheduleAfterExecutionAsync(execution.ScheduleId, execution, ct).ConfigureAwait(false);
             }
         }
     }
@@ -800,14 +800,14 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             ManualTrigger = true
         };
 
-        _scheduleManager.ExecutionHistory.RecordExecution(execution);
+        await _scheduleManager.ExecutionHistory.RecordExecutionAsync(execution, ct).ConfigureAwait(false);
 
         var executionCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
         _runningExecutions[execution.ExecutionId] = executionCts;
         _currentExecution = execution;
 
         execution.Status = MaintenanceExecutionStatus.Running;
-        _scheduleManager.ExecutionHistory.UpdateExecution(execution);
+        await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
 
         ExecutionStarted?.Invoke(this, execution);
 
@@ -847,7 +847,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
         {
             _runningExecutions.TryRemove(execution.ExecutionId, out _);
             _currentExecution = null;
-            _scheduleManager.ExecutionHistory.UpdateExecution(execution);
+            await _scheduleManager.ExecutionHistory.UpdateExecutionAsync(execution, ct).ConfigureAwait(false);
         }
 
         return execution;
@@ -866,7 +866,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             ManualTrigger = true
         };
 
-        _scheduleManager.ExecutionHistory.RecordExecution(execution);
+        await _scheduleManager.ExecutionHistory.RecordExecutionAsync(execution, ct).ConfigureAwait(false);
 
         await _executionQueue.Writer.WriteAsync(execution, ct);
 

@@ -23,20 +23,20 @@ public sealed class CliModeResolverTests
     public void TranslateLegacyFlags_WithExplicitMode_ShouldReturnMode()
     {
         // Arrange
-        var args = new[] { "--mode", "web" };
+        var args = new[] { "--mode", "desktop" };
 
         // Act
         var result = CliModeResolver.TranslateLegacyFlags(args);
 
         // Assert
-        result.Should().Be("web");
+        result.Should().Be("desktop");
     }
 
     [Theory]
     [InlineData("--ui")]
     [InlineData("--UI")]
     [InlineData("--Ui")]
-    public void TranslateLegacyFlags_WithUiFlag_ShouldReturnWeb(string flag)
+    public void TranslateLegacyFlags_WithUiFlag_ShouldReturnNull(string flag)
     {
         // Arrange
         var args = new[] { flag };
@@ -45,7 +45,7 @@ public sealed class CliModeResolverTests
         var result = CliModeResolver.TranslateLegacyFlags(args);
 
         // Assert
-        result.Should().Be("web");
+        result.Should().BeNull();
     }
 
     [Fact]
@@ -75,9 +75,6 @@ public sealed class CliModeResolverTests
     }
 
     [Theory]
-    [InlineData("web", CliModeResolver.RunMode.Web)]
-    [InlineData("WEB", CliModeResolver.RunMode.Web)]
-    [InlineData("Web", CliModeResolver.RunMode.Web)]
     [InlineData("desktop", CliModeResolver.RunMode.Desktop)]
     [InlineData("DESKTOP", CliModeResolver.RunMode.Desktop)]
     [InlineData("headless", CliModeResolver.RunMode.Headless)]
@@ -95,7 +92,7 @@ public sealed class CliModeResolverTests
     }
 
     [Fact]
-    public void Resolve_WithLegacyUiFlag_ShouldReturnWeb()
+    public void Resolve_WithLegacyUiFlag_ShouldFallBackToHeadless()
     {
         // Arrange
         var args = new[] { "--ui" };
@@ -104,21 +101,39 @@ public sealed class CliModeResolverTests
         var result = CliModeResolver.Resolve(args);
 
         // Assert
-        result.Should().Be(CliModeResolver.RunMode.Web);
+        result.Should().Be(CliModeResolver.RunMode.Headless);
     }
 
     [Fact]
     public void ResolveWithError_WithValidMode_ShouldHaveNoError()
     {
         // Arrange
-        var args = new[] { "--mode", "web" };
+        var args = new[] { "--mode", "desktop" };
 
         // Act
         var (mode, error) = CliModeResolver.ResolveWithError(args);
 
         // Assert
-        mode.Should().Be(CliModeResolver.RunMode.Web);
+        mode.Should().Be(CliModeResolver.RunMode.Desktop);
         error.Should().BeNull();
+    }
+
+    [Fact]
+    public void ResolveWithError_WithLegacyUiFlag_ShouldReturnRemovalGuidance()
+    {
+        var (mode, error) = CliModeResolver.ResolveWithError(["--ui"]);
+
+        mode.Should().Be(CliModeResolver.RunMode.Headless);
+        error.Should().Be("The web dashboard has been removed; use desktop or headless mode instead of '--ui'.");
+    }
+
+    [Fact]
+    public void ResolveWithError_WithWebMode_ShouldReturnRemovalGuidance()
+    {
+        var (mode, error) = CliModeResolver.ResolveWithError(["--mode", "web"]);
+
+        mode.Should().Be(CliModeResolver.RunMode.Headless);
+        error.Should().Be("The web dashboard has been removed; use desktop or headless mode instead of '--mode web'.");
     }
 
     [Fact]
@@ -134,7 +149,6 @@ public sealed class CliModeResolverTests
         mode.Should().Be(CliModeResolver.RunMode.Headless); // Default fallback
         error.Should().NotBeNullOrEmpty();
         error.Should().Contain("unknown");
-        error.Should().Contain("web");
         error.Should().Contain("desktop");
         error.Should().Contain("headless");
     }
@@ -266,7 +280,7 @@ public sealed class CliModeResolverTests
         var hasWatch = CliModeResolver.HasFlag(args, "--watch-config");
 
         // Assert
-        mode.Should().Be(CliModeResolver.RunMode.Web);
+        mode.Should().Be(CliModeResolver.RunMode.Headless);
         port.Should().Be("9000");
         hasWatch.Should().BeTrue();
     }

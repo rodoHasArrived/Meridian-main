@@ -1,0 +1,238 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  commentId: T:Meridian.Application.Subscriptions.Models.MarketCapCategory
+  id: MarketCapCategory
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.MarketCapCategory.Large
+  - Meridian.Application.Subscriptions.Models.MarketCapCategory.Mega
+  - Meridian.Application.Subscriptions.Models.MarketCapCategory.Micro
+  - Meridian.Application.Subscriptions.Models.MarketCapCategory.Mid
+  - Meridian.Application.Subscriptions.Models.MarketCapCategory.Nano
+  - Meridian.Application.Subscriptions.Models.MarketCapCategory.Small
+  langs:
+  - csharp
+  - vb
+  name: MarketCapCategory
+  nameWithType: MarketCapCategory
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketCapCategory
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Market capitalization categories.
+  example: []
+  syntax:
+    content: 'public enum MarketCapCategory : byte'
+    content.vb: Public Enum MarketCapCategory As Byte
+- uid: Meridian.Application.Subscriptions.Models.MarketCapCategory.Nano
+  commentId: F:Meridian.Application.Subscriptions.Models.MarketCapCategory.Nano
+  id: Nano
+  parent: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  langs:
+  - csharp
+  - vb
+  name: Nano
+  nameWithType: MarketCapCategory.Nano
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory.Nano
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Nano
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Nano = 0
+    return:
+      type: Meridian.Application.Subscriptions.Models.MarketCapCategory
+- uid: Meridian.Application.Subscriptions.Models.MarketCapCategory.Micro
+  commentId: F:Meridian.Application.Subscriptions.Models.MarketCapCategory.Micro
+  id: Micro
+  parent: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  langs:
+  - csharp
+  - vb
+  name: Micro
+  nameWithType: MarketCapCategory.Micro
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory.Micro
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Micro
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Micro = 1
+    return:
+      type: Meridian.Application.Subscriptions.Models.MarketCapCategory
+- uid: Meridian.Application.Subscriptions.Models.MarketCapCategory.Small
+  commentId: F:Meridian.Application.Subscriptions.Models.MarketCapCategory.Small
+  id: Small
+  parent: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  langs:
+  - csharp
+  - vb
+  name: Small
+  nameWithType: MarketCapCategory.Small
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory.Small
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Small
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Small = 2
+    return:
+      type: Meridian.Application.Subscriptions.Models.MarketCapCategory
+- uid: Meridian.Application.Subscriptions.Models.MarketCapCategory.Mid
+  commentId: F:Meridian.Application.Subscriptions.Models.MarketCapCategory.Mid
+  id: Mid
+  parent: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  langs:
+  - csharp
+  - vb
+  name: Mid
+  nameWithType: MarketCapCategory.Mid
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory.Mid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mid
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Mid = 3
+    return:
+      type: Meridian.Application.Subscriptions.Models.MarketCapCategory
+- uid: Meridian.Application.Subscriptions.Models.MarketCapCategory.Large
+  commentId: F:Meridian.Application.Subscriptions.Models.MarketCapCategory.Large
+  id: Large
+  parent: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  langs:
+  - csharp
+  - vb
+  name: Large
+  nameWithType: MarketCapCategory.Large
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory.Large
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Large
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Large = 4
+    return:
+      type: Meridian.Application.Subscriptions.Models.MarketCapCategory
+- uid: Meridian.Application.Subscriptions.Models.MarketCapCategory.Mega
+  commentId: F:Meridian.Application.Subscriptions.Models.MarketCapCategory.Mega
+  id: Mega
+  parent: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  langs:
+  - csharp
+  - vb
+  name: Mega
+  nameWithType: MarketCapCategory.Mega
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory.Mega
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mega
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolMetadata.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Mega = 5
+    return:
+      type: Meridian.Application.Subscriptions.Models.MarketCapCategory
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  commentId: T:Meridian.Application.Subscriptions.Models.MarketCapCategory
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.MarketCapCategory.html
+  name: MarketCapCategory
+  nameWithType: MarketCapCategory
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory

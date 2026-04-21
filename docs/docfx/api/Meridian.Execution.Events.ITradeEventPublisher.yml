@@ -1,0 +1,117 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Events.ITradeEventPublisher
+  commentId: T:Meridian.Execution.Events.ITradeEventPublisher
+  id: ITradeEventPublisher
+  parent: Meridian.Execution.Events
+  children:
+  - Meridian.Execution.Events.ITradeEventPublisher.Publish(Meridian.Execution.Events.TradeExecutedEvent)
+  langs:
+  - csharp
+  - vb
+  name: ITradeEventPublisher
+  nameWithType: ITradeEventPublisher
+  fullName: Meridian.Execution.Events.ITradeEventPublisher
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Events/ITradeEventPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ITradeEventPublisher
+    path: ../../src/Meridian.Execution/Events/ITradeEventPublisher.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Events
+  summary: >-
+    Abstraction for publishing <xref href="Meridian.Execution.Events.TradeExecutedEvent" data-throw-if-not-resolved="false"></xref> to interested consumers.
+
+    Decouples the portfolio/execution layer from the double-entry accounting layer so each
+
+    can evolve and scale independently.
+  example: []
+  syntax:
+    content: public interface ITradeEventPublisher
+    content.vb: Public Interface ITradeEventPublisher
+  derivedClasses:
+  - Meridian.Execution.Events.LedgerPostingConsumer
+- uid: Meridian.Execution.Events.ITradeEventPublisher.Publish(Meridian.Execution.Events.TradeExecutedEvent)
+  commentId: M:Meridian.Execution.Events.ITradeEventPublisher.Publish(Meridian.Execution.Events.TradeExecutedEvent)
+  id: Publish(Meridian.Execution.Events.TradeExecutedEvent)
+  parent: Meridian.Execution.Events.ITradeEventPublisher
+  langs:
+  - csharp
+  - vb
+  name: Publish(TradeExecutedEvent)
+  nameWithType: ITradeEventPublisher.Publish(TradeExecutedEvent)
+  fullName: Meridian.Execution.Events.ITradeEventPublisher.Publish(Meridian.Execution.Events.TradeExecutedEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Events/ITradeEventPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Publish
+    path: ../../src/Meridian.Execution/Events/ITradeEventPublisher.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Events
+  summary: >-
+    Publishes a <xref href="Meridian.Execution.Events.TradeExecutedEvent" data-throw-if-not-resolved="false"></xref> to all registered consumers.
+
+    Implementations must be thread-safe and non-blocking from the caller's perspective.
+  example: []
+  syntax:
+    content: void Publish(TradeExecutedEvent tradeEvent)
+    parameters:
+    - id: tradeEvent
+      type: Meridian.Execution.Events.TradeExecutedEvent
+      description: The trade event to publish.
+    content.vb: Sub Publish(tradeEvent As TradeExecutedEvent)
+  overload: Meridian.Execution.Events.ITradeEventPublisher.Publish*
+references:
+- uid: Meridian.Execution.Events.TradeExecutedEvent
+  commentId: T:Meridian.Execution.Events.TradeExecutedEvent
+  parent: Meridian.Execution.Events
+  href: Meridian.Execution.Events.TradeExecutedEvent.html
+  name: TradeExecutedEvent
+  nameWithType: TradeExecutedEvent
+  fullName: Meridian.Execution.Events.TradeExecutedEvent
+- uid: Meridian.Execution.Events
+  commentId: N:Meridian.Execution.Events
+  href: Meridian.html
+  name: Meridian.Execution.Events
+  nameWithType: Meridian.Execution.Events
+  fullName: Meridian.Execution.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Events
+    name: Events
+    href: Meridian.Execution.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Events
+    name: Events
+    href: Meridian.Execution.Events.html
+- uid: Meridian.Execution.Events.ITradeEventPublisher.Publish*
+  commentId: Overload:Meridian.Execution.Events.ITradeEventPublisher.Publish
+  href: Meridian.Execution.Events.ITradeEventPublisher.html#Meridian_Execution_Events_ITradeEventPublisher_Publish_Meridian_Execution_Events_TradeExecutedEvent_
+  name: Publish
+  nameWithType: ITradeEventPublisher.Publish
+  fullName: Meridian.Execution.Events.ITradeEventPublisher.Publish

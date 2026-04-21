@@ -1,0 +1,867 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationConfig
+  id: ProviderDegradationConfig
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.ConnectionWeight
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.Default
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.DegradationThreshold
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateThreshold
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateWeight
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorWindowSeconds
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.EvaluationIntervalSeconds
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyMaxMs
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyThresholdMs
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyWeight
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.MaxReconnectsPerHour
+  - Meridian.Application.Monitoring.ProviderDegradationConfig.ReconnectWeight
+  langs:
+  - csharp
+  - vb
+  name: ProviderDegradationConfig
+  nameWithType: ProviderDegradationConfig
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDegradationConfig
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 476
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Configuration for provider degradation scoring.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderDegradationConfig : IEquatable<ProviderDegradationConfig>'
+    content.vb: Public NotInheritable Class ProviderDegradationConfig Implements IEquatable(Of ProviderDegradationConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.ProviderDegradationConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.EvaluationIntervalSeconds
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.EvaluationIntervalSeconds
+  id: EvaluationIntervalSeconds
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: EvaluationIntervalSeconds
+  nameWithType: ProviderDegradationConfig.EvaluationIntervalSeconds
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.EvaluationIntervalSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EvaluationIntervalSeconds
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 479
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: How often to evaluate scores (seconds).
+  example: []
+  syntax:
+    content: public int EvaluationIntervalSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property EvaluationIntervalSeconds As Integer
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.EvaluationIntervalSeconds*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.DegradationThreshold
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.DegradationThreshold
+  id: DegradationThreshold
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: DegradationThreshold
+  nameWithType: ProviderDegradationConfig.DegradationThreshold
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.DegradationThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DegradationThreshold
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 482
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Composite score at or above which a provider is considered degraded (0.0-1.0).
+  example: []
+  syntax:
+    content: public double DegradationThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DegradationThreshold As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.DegradationThreshold*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyThresholdMs
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyThresholdMs
+  id: LatencyThresholdMs
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: LatencyThresholdMs
+  nameWithType: ProviderDegradationConfig.LatencyThresholdMs
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyThresholdMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyThresholdMs
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 485
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: P95 latency (ms) above which latency degradation begins.
+  example: []
+  syntax:
+    content: public double LatencyThresholdMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property LatencyThresholdMs As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyThresholdMs*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyMaxMs
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyMaxMs
+  id: LatencyMaxMs
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: LatencyMaxMs
+  nameWithType: ProviderDegradationConfig.LatencyMaxMs
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyMaxMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyMaxMs
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 488
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: P95 latency (ms) at which latency degradation is fully maxed out.
+  example: []
+  syntax:
+    content: public double LatencyMaxMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property LatencyMaxMs As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyMaxMs*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateThreshold
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateThreshold
+  id: ErrorRateThreshold
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: ErrorRateThreshold
+  nameWithType: ProviderDegradationConfig.ErrorRateThreshold
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorRateThreshold
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 491
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Error rate (0.0-1.0) above which error degradation begins.
+  example: []
+  syntax:
+    content: public double ErrorRateThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ErrorRateThreshold As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateThreshold*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorWindowSeconds
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorWindowSeconds
+  id: ErrorWindowSeconds
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: ErrorWindowSeconds
+  nameWithType: ProviderDegradationConfig.ErrorWindowSeconds
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorWindowSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorWindowSeconds
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 494
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Sliding window (seconds) for error rate calculation.
+  example: []
+  syntax:
+    content: public int ErrorWindowSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ErrorWindowSeconds As Integer
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorWindowSeconds*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxReconnectsPerHour
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.MaxReconnectsPerHour
+  id: MaxReconnectsPerHour
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxReconnectsPerHour
+  nameWithType: ProviderDegradationConfig.MaxReconnectsPerHour
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxReconnectsPerHour
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxReconnectsPerHour
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 497
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Reconnects per hour at which reconnect degradation is fully maxed out.
+  example: []
+  syntax:
+    content: public double MaxReconnectsPerHour { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxReconnectsPerHour As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxReconnectsPerHour*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation
+  id: MaxMissedHeartbeatsForFullDegradation
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: MaxMissedHeartbeatsForFullDegradation
+  nameWithType: ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxMissedHeartbeatsForFullDegradation
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 500
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Number of missed heartbeats for full connection degradation score.
+  example: []
+  syntax:
+    content: public int MaxMissedHeartbeatsForFullDegradation { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxMissedHeartbeatsForFullDegradation As Integer
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ConnectionWeight
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.ConnectionWeight
+  id: ConnectionWeight
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: ConnectionWeight
+  nameWithType: ProviderDegradationConfig.ConnectionWeight
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ConnectionWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionWeight
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 504
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Weight for connection health component.
+  example: []
+  syntax:
+    content: public double ConnectionWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ConnectionWeight As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.ConnectionWeight*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyWeight
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyWeight
+  id: LatencyWeight
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: LatencyWeight
+  nameWithType: ProviderDegradationConfig.LatencyWeight
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyWeight
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 507
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Weight for latency component.
+  example: []
+  syntax:
+    content: public double LatencyWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property LatencyWeight As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyWeight*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateWeight
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateWeight
+  id: ErrorRateWeight
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: ErrorRateWeight
+  nameWithType: ProviderDegradationConfig.ErrorRateWeight
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorRateWeight
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 510
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Weight for error rate component.
+  example: []
+  syntax:
+    content: public double ErrorRateWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ErrorRateWeight As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateWeight*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ReconnectWeight
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.ReconnectWeight
+  id: ReconnectWeight
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: ReconnectWeight
+  nameWithType: ProviderDegradationConfig.ReconnectWeight
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ReconnectWeight
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconnectWeight
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 513
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Weight for reconnect frequency component.
+  example: []
+  syntax:
+    content: public double ReconnectWeight { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ReconnectWeight As Double
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.ReconnectWeight*
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.Default
+  commentId: P:Meridian.Application.Monitoring.ProviderDegradationConfig.Default
+  id: Default
+  parent: Meridian.Application.Monitoring.ProviderDegradationConfig
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: ProviderDegradationConfig.Default
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static ProviderDegradationConfig Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.ProviderDegradationConfig
+    content.vb: Public Shared ReadOnly Property [Default] As ProviderDegradationConfig
+  overload: Meridian.Application.Monitoring.ProviderDegradationConfig.Default*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.ProviderDegradationConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.ProviderDegradationConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderDegradationConfig>
+  nameWithType: IEquatable<ProviderDegradationConfig>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.ProviderDegradationConfig>
+  nameWithType.vb: IEquatable(Of ProviderDegradationConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.ProviderDegradationConfig)
+  name.vb: IEquatable(Of ProviderDegradationConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderDegradationConfig
+    name: ProviderDegradationConfig
+    href: Meridian.Application.Monitoring.ProviderDegradationConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderDegradationConfig
+    name: ProviderDegradationConfig
+    href: Meridian.Application.Monitoring.ProviderDegradationConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.EvaluationIntervalSeconds*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.EvaluationIntervalSeconds
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_EvaluationIntervalSeconds
+  name: EvaluationIntervalSeconds
+  nameWithType: ProviderDegradationConfig.EvaluationIntervalSeconds
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.EvaluationIntervalSeconds
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.DegradationThreshold*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.DegradationThreshold
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_DegradationThreshold
+  name: DegradationThreshold
+  nameWithType: ProviderDegradationConfig.DegradationThreshold
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.DegradationThreshold
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyThresholdMs*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyThresholdMs
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_LatencyThresholdMs
+  name: LatencyThresholdMs
+  nameWithType: ProviderDegradationConfig.LatencyThresholdMs
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyThresholdMs
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyMaxMs*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyMaxMs
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_LatencyMaxMs
+  name: LatencyMaxMs
+  nameWithType: ProviderDegradationConfig.LatencyMaxMs
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyMaxMs
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateThreshold*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateThreshold
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_ErrorRateThreshold
+  name: ErrorRateThreshold
+  nameWithType: ProviderDegradationConfig.ErrorRateThreshold
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateThreshold
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorWindowSeconds*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorWindowSeconds
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_ErrorWindowSeconds
+  name: ErrorWindowSeconds
+  nameWithType: ProviderDegradationConfig.ErrorWindowSeconds
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorWindowSeconds
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxReconnectsPerHour*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.MaxReconnectsPerHour
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_MaxReconnectsPerHour
+  name: MaxReconnectsPerHour
+  nameWithType: ProviderDegradationConfig.MaxReconnectsPerHour
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxReconnectsPerHour
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_MaxMissedHeartbeatsForFullDegradation
+  name: MaxMissedHeartbeatsForFullDegradation
+  nameWithType: ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.MaxMissedHeartbeatsForFullDegradation
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ConnectionWeight*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.ConnectionWeight
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_ConnectionWeight
+  name: ConnectionWeight
+  nameWithType: ProviderDegradationConfig.ConnectionWeight
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ConnectionWeight
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyWeight*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyWeight
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_LatencyWeight
+  name: LatencyWeight
+  nameWithType: ProviderDegradationConfig.LatencyWeight
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.LatencyWeight
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateWeight*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateWeight
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_ErrorRateWeight
+  name: ErrorRateWeight
+  nameWithType: ProviderDegradationConfig.ErrorRateWeight
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ErrorRateWeight
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.ReconnectWeight*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.ReconnectWeight
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_ReconnectWeight
+  name: ReconnectWeight
+  nameWithType: ProviderDegradationConfig.ReconnectWeight
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.ReconnectWeight
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig.Default*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationConfig.Default
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html#Meridian_Application_Monitoring_ProviderDegradationConfig_Default
+  name: Default
+  nameWithType: ProviderDegradationConfig.Default
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig.Default
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationConfig
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html
+  name: ProviderDegradationConfig
+  nameWithType: ProviderDegradationConfig
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig

@@ -1,0 +1,768 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  id: ProviderHealthSnapshot
+  parent: Meridian.Infrastructure.Adapters.Failover
+  children:
+  - Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Double,System.String[])
+  - Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.AverageLatencyMs
+  - Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveFailures
+  - Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveSuccesses
+  - Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastFailureTime
+  - Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastSuccessTime
+  - Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderId
+  - Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.RecentIssues
+  langs:
+  - csharp
+  - vb
+  name: ProviderHealthSnapshot
+  nameWithType: ProviderHealthSnapshot
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderHealthSnapshot
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 510
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Point-in-time snapshot of a provider's health.
+  example: []
+  syntax:
+    content: 'public readonly record struct ProviderHealthSnapshot : IEquatable<ProviderHealthSnapshot>'
+    content.vb: Public Structure ProviderHealthSnapshot Implements IEquatable(Of ProviderHealthSnapshot)
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Double,System.String[])
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Double,System.String[])
+  id: '#ctor(System.String,System.Int32,System.Int32,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Double,System.String[])'
+  parent: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ProviderHealthSnapshot(string, int, int, DateTimeOffset?, DateTimeOffset?, double, string[])
+  nameWithType: ProviderHealthSnapshot.ProviderHealthSnapshot(string, int, int, DateTimeOffset?, DateTimeOffset?, double, string[])
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderHealthSnapshot(string, int, int, System.DateTimeOffset?, System.DateTimeOffset?, double, string[])
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 510
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Point-in-time snapshot of a provider's health.
+  example: []
+  syntax:
+    content: public ProviderHealthSnapshot(string ProviderId, int ConsecutiveFailures, int ConsecutiveSuccesses, DateTimeOffset? LastFailureTime, DateTimeOffset? LastSuccessTime, double AverageLatencyMs, string[] RecentIssues)
+    parameters:
+    - id: ProviderId
+      type: System.String
+    - id: ConsecutiveFailures
+      type: System.Int32
+    - id: ConsecutiveSuccesses
+      type: System.Int32
+    - id: LastFailureTime
+      type: System.Nullable{System.DateTimeOffset}
+    - id: LastSuccessTime
+      type: System.Nullable{System.DateTimeOffset}
+    - id: AverageLatencyMs
+      type: System.Double
+    - id: RecentIssues
+      type: System.String[]
+    content.vb: Public Sub New(ProviderId As String, ConsecutiveFailures As Integer, ConsecutiveSuccesses As Integer, LastFailureTime As DateTimeOffset?, LastSuccessTime As DateTimeOffset?, AverageLatencyMs As Double, RecentIssues As String())
+  overload: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.#ctor*
+  nameWithType.vb: ProviderHealthSnapshot.New(String, Integer, Integer, DateTimeOffset?, DateTimeOffset?, Double, String())
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.New(String, Integer, Integer, System.DateTimeOffset?, System.DateTimeOffset?, Double, String())
+  name.vb: New(String, Integer, Integer, DateTimeOffset?, DateTimeOffset?, Double, String())
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: ProviderHealthSnapshot.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string ProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderId As String
+  overload: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderId*
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveFailures
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveFailures
+  id: ConsecutiveFailures
+  parent: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ConsecutiveFailures
+  nameWithType: ProviderHealthSnapshot.ConsecutiveFailures
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsecutiveFailures
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 512
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public int ConsecutiveFailures { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ConsecutiveFailures As Integer
+  overload: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveFailures*
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveSuccesses
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveSuccesses
+  id: ConsecutiveSuccesses
+  parent: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ConsecutiveSuccesses
+  nameWithType: ProviderHealthSnapshot.ConsecutiveSuccesses
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveSuccesses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsecutiveSuccesses
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 513
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public int ConsecutiveSuccesses { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ConsecutiveSuccesses As Integer
+  overload: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveSuccesses*
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastFailureTime
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastFailureTime
+  id: LastFailureTime
+  parent: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LastFailureTime
+  nameWithType: ProviderHealthSnapshot.LastFailureTime
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastFailureTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastFailureTime
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public DateTimeOffset? LastFailureTime { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastFailureTime As DateTimeOffset?
+  overload: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastFailureTime*
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastSuccessTime
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastSuccessTime
+  id: LastSuccessTime
+  parent: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LastSuccessTime
+  nameWithType: ProviderHealthSnapshot.LastSuccessTime
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastSuccessTime
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastSuccessTime
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public DateTimeOffset? LastSuccessTime { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property LastSuccessTime As DateTimeOffset?
+  overload: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastSuccessTime*
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.AverageLatencyMs
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.AverageLatencyMs
+  id: AverageLatencyMs
+  parent: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AverageLatencyMs
+  nameWithType: ProviderHealthSnapshot.AverageLatencyMs
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.AverageLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageLatencyMs
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 516
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public double AverageLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageLatencyMs As Double
+  overload: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.AverageLatencyMs*
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.RecentIssues
+  commentId: P:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.RecentIssues
+  id: RecentIssues
+  parent: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+  langs:
+  - csharp
+  - vb
+  name: RecentIssues
+  nameWithType: ProviderHealthSnapshot.RecentIssues
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.RecentIssues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentIssues
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public string[] RecentIssues { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property RecentIssues As String()
+  overload: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.RecentIssues*
+references:
+- uid: Meridian.Infrastructure.Adapters.Failover
+  commentId: N:Meridian.Infrastructure.Adapters.Failover
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Failover
+  nameWithType: Meridian.Infrastructure.Adapters.Failover
+  fullName: Meridian.Infrastructure.Adapters.Failover
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderHealthSnapshot>
+  nameWithType: IEquatable<ProviderHealthSnapshot>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot>
+  nameWithType.vb: IEquatable(Of ProviderHealthSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot)
+  name.vb: IEquatable(Of ProviderHealthSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+    name: ProviderHealthSnapshot
+    href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+    name: ProviderHealthSnapshot
+    href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.#ctor
+  href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html#Meridian_Infrastructure_Adapters_Failover_ProviderHealthSnapshot__ctor_System_String_System_Int32_System_Int32_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Double_System_String___
+  name: ProviderHealthSnapshot
+  nameWithType: ProviderHealthSnapshot.ProviderHealthSnapshot
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderHealthSnapshot
+  nameWithType.vb: ProviderHealthSnapshot.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderId
+  href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html#Meridian_Infrastructure_Adapters_Failover_ProviderHealthSnapshot_ProviderId
+  name: ProviderId
+  nameWithType: ProviderHealthSnapshot.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveFailures*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveFailures
+  href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html#Meridian_Infrastructure_Adapters_Failover_ProviderHealthSnapshot_ConsecutiveFailures
+  name: ConsecutiveFailures
+  nameWithType: ProviderHealthSnapshot.ConsecutiveFailures
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveFailures
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveSuccesses*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveSuccesses
+  href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html#Meridian_Infrastructure_Adapters_Failover_ProviderHealthSnapshot_ConsecutiveSuccesses
+  name: ConsecutiveSuccesses
+  nameWithType: ProviderHealthSnapshot.ConsecutiveSuccesses
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.ConsecutiveSuccesses
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastFailureTime*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastFailureTime
+  href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html#Meridian_Infrastructure_Adapters_Failover_ProviderHealthSnapshot_LastFailureTime
+  name: LastFailureTime
+  nameWithType: ProviderHealthSnapshot.LastFailureTime
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastFailureTime
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastSuccessTime*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastSuccessTime
+  href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html#Meridian_Infrastructure_Adapters_Failover_ProviderHealthSnapshot_LastSuccessTime
+  name: LastSuccessTime
+  nameWithType: ProviderHealthSnapshot.LastSuccessTime
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.LastSuccessTime
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.AverageLatencyMs*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.AverageLatencyMs
+  href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html#Meridian_Infrastructure_Adapters_Failover_ProviderHealthSnapshot_AverageLatencyMs
+  name: AverageLatencyMs
+  nameWithType: ProviderHealthSnapshot.AverageLatencyMs
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.AverageLatencyMs
+- uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.RecentIssues*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.RecentIssues
+  href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html#Meridian_Infrastructure_Adapters_Failover_ProviderHealthSnapshot_RecentIssues
+  name: RecentIssues
+  nameWithType: ProviderHealthSnapshot.RecentIssues
+  fullName: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.RecentIssues

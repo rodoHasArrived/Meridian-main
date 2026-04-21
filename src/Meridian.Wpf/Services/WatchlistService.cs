@@ -12,16 +12,25 @@ using Meridian.Ui.Services;
 namespace Meridian.Wpf.Services;
 
 /// <summary>
+/// Read-only watchlist access used by shell surfaces and workstation services.
+/// </summary>
+public interface IWatchlistReader
+{
+    Task<IReadOnlyList<Watchlist>> GetAllWatchlistsAsync(CancellationToken ct = default);
+}
+
+/// <summary>
 /// Service for managing symbol watchlists in the WPF application.
 /// Provides local persistence and optional synchronization with the backend API.
 /// </summary>
-public sealed class WatchlistService
+public sealed class WatchlistService : IWatchlistReader
 {
     private static readonly Lazy<WatchlistService> _instance = new(() => new WatchlistService());
     private static readonly HttpClient _httpClient = new();
 
     private readonly string _watchlistsPath;
     private readonly object _lock = new();
+    private readonly SemaphoreSlim _loadGate = new(1, 1);
     private List<Watchlist> _watchlists = new();
     private bool _isLoaded;
 
@@ -484,8 +493,14 @@ public sealed class WatchlistService
     {
         if (_isLoaded) return;
 
+        await _loadGate.WaitAsync(ct);
         try
         {
+            if (_isLoaded)
+            {
+                return;
+            }
+
             if (File.Exists(_watchlistsPath))
             {
                 var json = await File.ReadAllTextAsync(_watchlistsPath, ct);
@@ -499,18 +514,26 @@ public sealed class WatchlistService
             }
             else
             {
-                // Create default watchlists
-                await CreateDefaultWatchlistsAsync(ct);
-                _isLoaded = true;
+                lock (_lock)
+                {
+                    _watchlists = CreateDefaultWatchlists();
+                    _isLoaded = true;
+                }
+
+                await SaveWatchlistsAsync(ct);
             }
         }
         catch
         {
             _isLoaded = true;
         }
+        finally
+        {
+            _loadGate.Release();
+        }
     }
 
-    private async Task CreateDefaultWatchlistsAsync(CancellationToken ct)
+    private static List<Watchlist> CreateDefaultWatchlists()
     {
         var defaults = new[]
         {
@@ -519,10 +542,19 @@ public sealed class WatchlistService
             ("Semiconductors", new[] { "NVDA", "AMD", "INTC", "TSM", "AVGO" }, "#9C27B0")
         };
 
-        foreach (var (name, symbols, color) in defaults)
-        {
-            await CreateWatchlistAsync(name, symbols, color, ct);
-        }
+        var createdAt = DateTimeOffset.UtcNow;
+        return defaults
+            .Select((entry, index) => new Watchlist
+            {
+                Id = $"wl_{Guid.NewGuid():N}"[..16],
+                Name = entry.Item1,
+                Symbols = entry.Item2.ToList(),
+                Color = entry.Item3,
+                SortOrder = index,
+                CreatedAt = createdAt,
+                ModifiedAt = createdAt
+            })
+            .ToList();
     }
 
     private async Task SaveWatchlistsAsync(CancellationToken ct)

@@ -1,0 +1,685 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  commentId: T:Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  id: DailyAccrualEntryDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.DailyAccrualEntryDto.#ctor(System.Guid,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)
+  - Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualDate
+  - Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualEntryId
+  - Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AnnualRateApplied
+  - Meridian.Contracts.DirectLending.DailyAccrualEntryDto.CommitmentFeeAmount
+  - Meridian.Contracts.DirectLending.DailyAccrualEntryDto.InterestAmount
+  - Meridian.Contracts.DirectLending.DailyAccrualEntryDto.PenaltyAmount
+  - Meridian.Contracts.DirectLending.DailyAccrualEntryDto.RecordedAt
+  langs:
+  - csharp
+  - vb
+  name: DailyAccrualEntryDto
+  nameWithType: DailyAccrualEntryDto
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DailyAccrualEntryDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record DailyAccrualEntryDto : IEquatable<DailyAccrualEntryDto>'
+    content.vb: Public NotInheritable Class DailyAccrualEntryDto Implements IEquatable(Of DailyAccrualEntryDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.DailyAccrualEntryDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.#ctor(System.Guid,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.#ctor(System.Guid,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)
+  id: '#ctor(System.Guid,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.Decimal,System.DateTimeOffset)'
+  parent: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  langs:
+  - csharp
+  - vb
+  name: DailyAccrualEntryDto(Guid, DateOnly, decimal, decimal, decimal, decimal, DateTimeOffset)
+  nameWithType: DailyAccrualEntryDto.DailyAccrualEntryDto(Guid, DateOnly, decimal, decimal, decimal, decimal, DateTimeOffset)
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.DailyAccrualEntryDto(System.Guid, System.DateOnly, decimal, decimal, decimal, decimal, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DailyAccrualEntryDto(Guid AccrualEntryId, DateOnly AccrualDate, decimal InterestAmount, decimal CommitmentFeeAmount, decimal PenaltyAmount, decimal AnnualRateApplied, DateTimeOffset RecordedAt)
+    parameters:
+    - id: AccrualEntryId
+      type: System.Guid
+    - id: AccrualDate
+      type: System.DateOnly
+    - id: InterestAmount
+      type: System.Decimal
+    - id: CommitmentFeeAmount
+      type: System.Decimal
+    - id: PenaltyAmount
+      type: System.Decimal
+    - id: AnnualRateApplied
+      type: System.Decimal
+    - id: RecordedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(AccrualEntryId As Guid, AccrualDate As DateOnly, InterestAmount As Decimal, CommitmentFeeAmount As Decimal, PenaltyAmount As Decimal, AnnualRateApplied As Decimal, RecordedAt As DateTimeOffset)
+  overload: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.#ctor*
+  nameWithType.vb: DailyAccrualEntryDto.New(Guid, DateOnly, Decimal, Decimal, Decimal, Decimal, DateTimeOffset)
+  fullName.vb: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.New(System.Guid, System.DateOnly, Decimal, Decimal, Decimal, Decimal, System.DateTimeOffset)
+  name.vb: New(Guid, DateOnly, Decimal, Decimal, Decimal, Decimal, DateTimeOffset)
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualEntryId
+  commentId: P:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualEntryId
+  id: AccrualEntryId
+  parent: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  langs:
+  - csharp
+  - vb
+  name: AccrualEntryId
+  nameWithType: DailyAccrualEntryDto.AccrualEntryId
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualEntryId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccrualEntryId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid AccrualEntryId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property AccrualEntryId As Guid
+  overload: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualEntryId*
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualDate
+  commentId: P:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualDate
+  id: AccrualDate
+  parent: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  langs:
+  - csharp
+  - vb
+  name: AccrualDate
+  nameWithType: DailyAccrualEntryDto.AccrualDate
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccrualDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly AccrualDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property AccrualDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualDate*
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.InterestAmount
+  commentId: P:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.InterestAmount
+  id: InterestAmount
+  parent: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  langs:
+  - csharp
+  - vb
+  name: InterestAmount
+  nameWithType: DailyAccrualEntryDto.InterestAmount
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.InterestAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InterestAmount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal InterestAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property InterestAmount As Decimal
+  overload: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.InterestAmount*
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.CommitmentFeeAmount
+  commentId: P:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.CommitmentFeeAmount
+  id: CommitmentFeeAmount
+  parent: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  langs:
+  - csharp
+  - vb
+  name: CommitmentFeeAmount
+  nameWithType: DailyAccrualEntryDto.CommitmentFeeAmount
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.CommitmentFeeAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommitmentFeeAmount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal CommitmentFeeAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property CommitmentFeeAmount As Decimal
+  overload: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.CommitmentFeeAmount*
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.PenaltyAmount
+  commentId: P:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.PenaltyAmount
+  id: PenaltyAmount
+  parent: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  langs:
+  - csharp
+  - vb
+  name: PenaltyAmount
+  nameWithType: DailyAccrualEntryDto.PenaltyAmount
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.PenaltyAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PenaltyAmount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal PenaltyAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property PenaltyAmount As Decimal
+  overload: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.PenaltyAmount*
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AnnualRateApplied
+  commentId: P:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AnnualRateApplied
+  id: AnnualRateApplied
+  parent: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  langs:
+  - csharp
+  - vb
+  name: AnnualRateApplied
+  nameWithType: DailyAccrualEntryDto.AnnualRateApplied
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AnnualRateApplied
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnnualRateApplied
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal AnnualRateApplied { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AnnualRateApplied As Decimal
+  overload: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AnnualRateApplied*
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.RecordedAt
+  commentId: P:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.RecordedAt
+  id: RecordedAt
+  parent: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+  langs:
+  - csharp
+  - vb
+  name: RecordedAt
+  nameWithType: DailyAccrualEntryDto.RecordedAt
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.RecordedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordedAt
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateTimeOffset RecordedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property RecordedAt As DateTimeOffset
+  overload: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.RecordedAt*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.DailyAccrualEntryDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.DailyAccrualEntryDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DailyAccrualEntryDto>
+  nameWithType: IEquatable<DailyAccrualEntryDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.DailyAccrualEntryDto>
+  nameWithType.vb: IEquatable(Of DailyAccrualEntryDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.DailyAccrualEntryDto)
+  name.vb: IEquatable(Of DailyAccrualEntryDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+    name: DailyAccrualEntryDto
+    href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto
+    name: DailyAccrualEntryDto
+    href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.#ctor
+  href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html#Meridian_Contracts_DirectLending_DailyAccrualEntryDto__ctor_System_Guid_System_DateOnly_System_Decimal_System_Decimal_System_Decimal_System_Decimal_System_DateTimeOffset_
+  name: DailyAccrualEntryDto
+  nameWithType: DailyAccrualEntryDto.DailyAccrualEntryDto
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.DailyAccrualEntryDto
+  nameWithType.vb: DailyAccrualEntryDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualEntryId*
+  commentId: Overload:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualEntryId
+  href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html#Meridian_Contracts_DirectLending_DailyAccrualEntryDto_AccrualEntryId
+  name: AccrualEntryId
+  nameWithType: DailyAccrualEntryDto.AccrualEntryId
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualEntryId
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualDate
+  href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html#Meridian_Contracts_DirectLending_DailyAccrualEntryDto_AccrualDate
+  name: AccrualDate
+  nameWithType: DailyAccrualEntryDto.AccrualDate
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AccrualDate
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.InterestAmount*
+  commentId: Overload:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.InterestAmount
+  href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html#Meridian_Contracts_DirectLending_DailyAccrualEntryDto_InterestAmount
+  name: InterestAmount
+  nameWithType: DailyAccrualEntryDto.InterestAmount
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.InterestAmount
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.CommitmentFeeAmount*
+  commentId: Overload:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.CommitmentFeeAmount
+  href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html#Meridian_Contracts_DirectLending_DailyAccrualEntryDto_CommitmentFeeAmount
+  name: CommitmentFeeAmount
+  nameWithType: DailyAccrualEntryDto.CommitmentFeeAmount
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.CommitmentFeeAmount
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.PenaltyAmount*
+  commentId: Overload:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.PenaltyAmount
+  href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html#Meridian_Contracts_DirectLending_DailyAccrualEntryDto_PenaltyAmount
+  name: PenaltyAmount
+  nameWithType: DailyAccrualEntryDto.PenaltyAmount
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.PenaltyAmount
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AnnualRateApplied*
+  commentId: Overload:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AnnualRateApplied
+  href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html#Meridian_Contracts_DirectLending_DailyAccrualEntryDto_AnnualRateApplied
+  name: AnnualRateApplied
+  nameWithType: DailyAccrualEntryDto.AnnualRateApplied
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.AnnualRateApplied
+- uid: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.RecordedAt*
+  commentId: Overload:Meridian.Contracts.DirectLending.DailyAccrualEntryDto.RecordedAt
+  href: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.html#Meridian_Contracts_DirectLending_DailyAccrualEntryDto_RecordedAt
+  name: RecordedAt
+  nameWithType: DailyAccrualEntryDto.RecordedAt
+  fullName: Meridian.Contracts.DirectLending.DailyAccrualEntryDto.RecordedAt

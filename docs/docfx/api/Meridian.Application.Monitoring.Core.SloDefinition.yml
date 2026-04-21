@@ -1,0 +1,860 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.SloDefinition
+  commentId: T:Meridian.Application.Monitoring.Core.SloDefinition
+  id: SloDefinition
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.SloDefinition.AlertRuleName
+  - Meridian.Application.Monitoring.Core.SloDefinition.CriticalThreshold
+  - Meridian.Application.Monitoring.Core.SloDefinition.Description
+  - Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetPercent
+  - Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetWindow
+  - Meridian.Application.Monitoring.Core.SloDefinition.Id
+  - Meridian.Application.Monitoring.Core.SloDefinition.MeasurementWindow
+  - Meridian.Application.Monitoring.Core.SloDefinition.MetricName
+  - Meridian.Application.Monitoring.Core.SloDefinition.Name
+  - Meridian.Application.Monitoring.Core.SloDefinition.RunbookSection
+  - Meridian.Application.Monitoring.Core.SloDefinition.SloDocSection
+  - Meridian.Application.Monitoring.Core.SloDefinition.Subsystem
+  - Meridian.Application.Monitoring.Core.SloDefinition.TargetValue
+  - Meridian.Application.Monitoring.Core.SloDefinition.Unit
+  langs:
+  - csharp
+  - vb
+  name: SloDefinition
+  nameWithType: SloDefinition
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SloDefinition
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 324
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Defines a single Service Level Objective with targets, thresholds, and linkage.
+  example: []
+  syntax:
+    content: public sealed class SloDefinition
+    content.vb: Public NotInheritable Class SloDefinition
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Id
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.Id
+  id: Id
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: SloDefinition.Id
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 327
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Unique SLO identifier (e.g., SLO-ING-001).
+  example: []
+  syntax:
+    content: public string Id { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.Id*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Subsystem
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.Subsystem
+  id: Subsystem
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: Subsystem
+  nameWithType: SloDefinition.Subsystem
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Subsystem
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subsystem
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 330
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Subsystem this SLO belongs to.
+  example: []
+  syntax:
+    content: public SloSubsystem Subsystem { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.Core.SloSubsystem
+    content.vb: Public Property Subsystem As SloSubsystem
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.Subsystem*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Name
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.Name
+  id: Name
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: SloDefinition.Name
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 333
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Human-readable name.
+  example: []
+  syntax:
+    content: public string Name { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.Name*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Description
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.Description
+  id: Description
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: SloDefinition.Description
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 336
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Description of what this SLO measures.
+  example: []
+  syntax:
+    content: public string Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.Description*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.MetricName
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.MetricName
+  id: MetricName
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: MetricName
+  nameWithType: SloDefinition.MetricName
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.MetricName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MetricName
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 339
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Prometheus metric name used for measurement.
+  example: []
+  syntax:
+    content: public string MetricName { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MetricName As String
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.MetricName*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.TargetValue
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.TargetValue
+  id: TargetValue
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: TargetValue
+  nameWithType: SloDefinition.TargetValue
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.TargetValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetValue
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 342
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Target value (the SLO threshold).
+  example: []
+  syntax:
+    content: public double TargetValue { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property TargetValue As Double
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.TargetValue*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.CriticalThreshold
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.CriticalThreshold
+  id: CriticalThreshold
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: CriticalThreshold
+  nameWithType: SloDefinition.CriticalThreshold
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.CriticalThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CriticalThreshold
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Critical threshold beyond which the SLO is violated.
+  example: []
+  syntax:
+    content: public double CriticalThreshold { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CriticalThreshold As Double
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.CriticalThreshold*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Unit
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.Unit
+  id: Unit
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: Unit
+  nameWithType: SloDefinition.Unit
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Unit
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unit
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Unit of measurement.
+  example: []
+  syntax:
+    content: public string Unit { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Unit As String
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.Unit*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.MeasurementWindow
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.MeasurementWindow
+  id: MeasurementWindow
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: MeasurementWindow
+  nameWithType: SloDefinition.MeasurementWindow
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.MeasurementWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MeasurementWindow
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Window over which the metric is measured.
+  example: []
+  syntax:
+    content: public TimeSpan MeasurementWindow { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property MeasurementWindow As TimeSpan
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.MeasurementWindow*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetPercent
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetPercent
+  id: ErrorBudgetPercent
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: ErrorBudgetPercent
+  nameWithType: SloDefinition.ErrorBudgetPercent
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorBudgetPercent
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 354
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Error budget as a percentage.
+  example: []
+  syntax:
+    content: public double ErrorBudgetPercent { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ErrorBudgetPercent As Double
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetPercent*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetWindow
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetWindow
+  id: ErrorBudgetWindow
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: ErrorBudgetWindow
+  nameWithType: SloDefinition.ErrorBudgetWindow
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorBudgetWindow
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Error budget window.
+  example: []
+  syntax:
+    content: public TimeSpan ErrorBudgetWindow { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property ErrorBudgetWindow As TimeSpan
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetWindow*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.AlertRuleName
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.AlertRuleName
+  id: AlertRuleName
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: AlertRuleName
+  nameWithType: SloDefinition.AlertRuleName
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.AlertRuleName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertRuleName
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 360
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Prometheus alert rule name linked to this SLO.
+  example: []
+  syntax:
+    content: public string AlertRuleName { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AlertRuleName As String
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.AlertRuleName*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.RunbookSection
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.RunbookSection
+  id: RunbookSection
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: RunbookSection
+  nameWithType: SloDefinition.RunbookSection
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.RunbookSection
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunbookSection
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 363
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Link to the operator runbook section.
+  example: []
+  syntax:
+    content: public string RunbookSection { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunbookSection As String
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.RunbookSection*
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.SloDocSection
+  commentId: P:Meridian.Application.Monitoring.Core.SloDefinition.SloDocSection
+  id: SloDocSection
+  parent: Meridian.Application.Monitoring.Core.SloDefinition
+  langs:
+  - csharp
+  - vb
+  name: SloDocSection
+  nameWithType: SloDefinition.SloDocSection
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.SloDocSection
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SloDocSection
+    path: ../../src/Meridian.Application/Monitoring/Core/SloDefinitionRegistry.cs
+    startLine: 366
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Link to the SLO documentation section.
+  example: []
+  syntax:
+    content: public string SloDocSection { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SloDocSection As String
+  overload: Meridian.Application.Monitoring.Core.SloDefinition.SloDocSection*
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Id*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.Id
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_Id
+  name: Id
+  nameWithType: SloDefinition.Id
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Subsystem*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.Subsystem
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_Subsystem
+  name: Subsystem
+  nameWithType: SloDefinition.Subsystem
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Subsystem
+- uid: Meridian.Application.Monitoring.Core.SloSubsystem
+  commentId: T:Meridian.Application.Monitoring.Core.SloSubsystem
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.SloSubsystem.html
+  name: SloSubsystem
+  nameWithType: SloSubsystem
+  fullName: Meridian.Application.Monitoring.Core.SloSubsystem
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Name*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.Name
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_Name
+  name: Name
+  nameWithType: SloDefinition.Name
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Name
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Description*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.Description
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_Description
+  name: Description
+  nameWithType: SloDefinition.Description
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Description
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.MetricName*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.MetricName
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_MetricName
+  name: MetricName
+  nameWithType: SloDefinition.MetricName
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.MetricName
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.TargetValue*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.TargetValue
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_TargetValue
+  name: TargetValue
+  nameWithType: SloDefinition.TargetValue
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.TargetValue
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.CriticalThreshold*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.CriticalThreshold
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_CriticalThreshold
+  name: CriticalThreshold
+  nameWithType: SloDefinition.CriticalThreshold
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.CriticalThreshold
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.Unit*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.Unit
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_Unit
+  name: Unit
+  nameWithType: SloDefinition.Unit
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.Unit
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.MeasurementWindow*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.MeasurementWindow
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_MeasurementWindow
+  name: MeasurementWindow
+  nameWithType: SloDefinition.MeasurementWindow
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.MeasurementWindow
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetPercent*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetPercent
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_ErrorBudgetPercent
+  name: ErrorBudgetPercent
+  nameWithType: SloDefinition.ErrorBudgetPercent
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetPercent
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetWindow*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetWindow
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_ErrorBudgetWindow
+  name: ErrorBudgetWindow
+  nameWithType: SloDefinition.ErrorBudgetWindow
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.ErrorBudgetWindow
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.AlertRuleName*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.AlertRuleName
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_AlertRuleName
+  name: AlertRuleName
+  nameWithType: SloDefinition.AlertRuleName
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.AlertRuleName
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.RunbookSection*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.RunbookSection
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_RunbookSection
+  name: RunbookSection
+  nameWithType: SloDefinition.RunbookSection
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.RunbookSection
+- uid: Meridian.Application.Monitoring.Core.SloDefinition.SloDocSection*
+  commentId: Overload:Meridian.Application.Monitoring.Core.SloDefinition.SloDocSection
+  href: Meridian.Application.Monitoring.Core.SloDefinition.html#Meridian_Application_Monitoring_Core_SloDefinition_SloDocSection
+  name: SloDocSection
+  nameWithType: SloDefinition.SloDocSection
+  fullName: Meridian.Application.Monitoring.Core.SloDefinition.SloDocSection

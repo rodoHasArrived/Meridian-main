@@ -1,0 +1,400 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.QuotaUsage
+  commentId: T:Meridian.Storage.Services.QuotaUsage
+  id: QuotaUsage
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.QuotaUsage.EventsToday
+  - Meridian.Storage.Services.QuotaUsage.FileCount
+  - Meridian.Storage.Services.QuotaUsage.TotalBytes
+  langs:
+  - csharp
+  - vb
+  name: QuotaUsage
+  nameWithType: QuotaUsage
+  fullName: Meridian.Storage.Services.QuotaUsage
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuotaUsage
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 355
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public sealed class QuotaUsage
+    content.vb: Public NotInheritable Class QuotaUsage
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.QuotaUsage.TotalBytes
+  commentId: P:Meridian.Storage.Services.QuotaUsage.TotalBytes
+  id: TotalBytes
+  parent: Meridian.Storage.Services.QuotaUsage
+  langs:
+  - csharp
+  - vb
+  name: TotalBytes
+  nameWithType: QuotaUsage.TotalBytes
+  fullName: Meridian.Storage.Services.QuotaUsage.TotalBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalBytes
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long TotalBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalBytes As Long
+  overload: Meridian.Storage.Services.QuotaUsage.TotalBytes*
+- uid: Meridian.Storage.Services.QuotaUsage.FileCount
+  commentId: P:Meridian.Storage.Services.QuotaUsage.FileCount
+  id: FileCount
+  parent: Meridian.Storage.Services.QuotaUsage
+  langs:
+  - csharp
+  - vb
+  name: FileCount
+  nameWithType: QuotaUsage.FileCount
+  fullName: Meridian.Storage.Services.QuotaUsage.FileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileCount
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 358
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long FileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property FileCount As Long
+  overload: Meridian.Storage.Services.QuotaUsage.FileCount*
+- uid: Meridian.Storage.Services.QuotaUsage.EventsToday
+  commentId: P:Meridian.Storage.Services.QuotaUsage.EventsToday
+  id: EventsToday
+  parent: Meridian.Storage.Services.QuotaUsage
+  langs:
+  - csharp
+  - vb
+  name: EventsToday
+  nameWithType: QuotaUsage.EventsToday
+  fullName: Meridian.Storage.Services.QuotaUsage.EventsToday
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventsToday
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 359
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long EventsToday { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EventsToday As Long
+  overload: Meridian.Storage.Services.QuotaUsage.EventsToday*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.QuotaUsage.TotalBytes*
+  commentId: Overload:Meridian.Storage.Services.QuotaUsage.TotalBytes
+  href: Meridian.Storage.Services.QuotaUsage.html#Meridian_Storage_Services_QuotaUsage_TotalBytes
+  name: TotalBytes
+  nameWithType: QuotaUsage.TotalBytes
+  fullName: Meridian.Storage.Services.QuotaUsage.TotalBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Services.QuotaUsage.FileCount*
+  commentId: Overload:Meridian.Storage.Services.QuotaUsage.FileCount
+  href: Meridian.Storage.Services.QuotaUsage.html#Meridian_Storage_Services_QuotaUsage_FileCount
+  name: FileCount
+  nameWithType: QuotaUsage.FileCount
+  fullName: Meridian.Storage.Services.QuotaUsage.FileCount
+- uid: Meridian.Storage.Services.QuotaUsage.EventsToday*
+  commentId: Overload:Meridian.Storage.Services.QuotaUsage.EventsToday
+  href: Meridian.Storage.Services.QuotaUsage.html#Meridian_Storage_Services_QuotaUsage_EventsToday
+  name: EventsToday
+  nameWithType: QuotaUsage.EventsToday
+  fullName: Meridian.Storage.Services.QuotaUsage.EventsToday

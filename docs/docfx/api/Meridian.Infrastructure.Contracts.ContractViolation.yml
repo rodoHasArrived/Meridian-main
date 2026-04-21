@@ -1,0 +1,551 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Contracts.ContractViolation
+  commentId: T:Meridian.Infrastructure.Contracts.ContractViolation
+  id: ContractViolation
+  parent: Meridian.Infrastructure.Contracts
+  children:
+  - Meridian.Infrastructure.Contracts.ContractViolation.#ctor(System.String,System.String,System.String)
+  - Meridian.Infrastructure.Contracts.ContractViolation.AdrId
+  - Meridian.Infrastructure.Contracts.ContractViolation.Message
+  - Meridian.Infrastructure.Contracts.ContractViolation.ToString
+  - Meridian.Infrastructure.Contracts.ContractViolation.TypeName
+  langs:
+  - csharp
+  - vb
+  name: ContractViolation
+  nameWithType: ContractViolation
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ContractViolation
+    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Represents a contract violation found during verification.
+  example: []
+  syntax:
+    content: 'public sealed record ContractViolation : IEquatable<ContractViolation>'
+    content.vb: Public NotInheritable Class ContractViolation Implements IEquatable(Of ContractViolation)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Contracts.ContractViolation}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.#ctor(System.String,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Contracts.ContractViolation.#ctor(System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String)'
+  parent: Meridian.Infrastructure.Contracts.ContractViolation
+  langs:
+  - csharp
+  - vb
+  name: ContractViolation(string, string, string)
+  nameWithType: ContractViolation.ContractViolation(string, string, string)
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.ContractViolation(string, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Represents a contract violation found during verification.
+  example: []
+  syntax:
+    content: public ContractViolation(string AdrId, string TypeName, string Message)
+    parameters:
+    - id: AdrId
+      type: System.String
+    - id: TypeName
+      type: System.String
+    - id: Message
+      type: System.String
+    content.vb: Public Sub New(AdrId As String, TypeName As String, Message As String)
+  overload: Meridian.Infrastructure.Contracts.ContractViolation.#ctor*
+  nameWithType.vb: ContractViolation.New(String, String, String)
+  fullName.vb: Meridian.Infrastructure.Contracts.ContractViolation.New(String, String, String)
+  name.vb: New(String, String, String)
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.AdrId
+  commentId: P:Meridian.Infrastructure.Contracts.ContractViolation.AdrId
+  id: AdrId
+  parent: Meridian.Infrastructure.Contracts.ContractViolation
+  langs:
+  - csharp
+  - vb
+  name: AdrId
+  nameWithType: ContractViolation.AdrId
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.AdrId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdrId
+    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Contracts
+  syntax:
+    content: public string AdrId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AdrId As String
+  overload: Meridian.Infrastructure.Contracts.ContractViolation.AdrId*
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.TypeName
+  commentId: P:Meridian.Infrastructure.Contracts.ContractViolation.TypeName
+  id: TypeName
+  parent: Meridian.Infrastructure.Contracts.ContractViolation
+  langs:
+  - csharp
+  - vb
+  name: TypeName
+  nameWithType: ContractViolation.TypeName
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.TypeName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TypeName
+    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Contracts
+  syntax:
+    content: public string TypeName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TypeName As String
+  overload: Meridian.Infrastructure.Contracts.ContractViolation.TypeName*
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.Message
+  commentId: P:Meridian.Infrastructure.Contracts.ContractViolation.Message
+  id: Message
+  parent: Meridian.Infrastructure.Contracts.ContractViolation
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: ContractViolation.Message
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Contracts
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Infrastructure.Contracts.ContractViolation.Message*
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.ToString
+  commentId: M:Meridian.Infrastructure.Contracts.ContractViolation.ToString
+  id: ToString
+  parent: Meridian.Infrastructure.Contracts.ContractViolation
+  langs:
+  - csharp
+  - vb
+  name: ToString()
+  nameWithType: ContractViolation.ToString()
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.ToString()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToString
+    path: ../../src/Meridian.Infrastructure/Contracts/ContractVerificationService.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Contracts
+  summary: Returns a string that represents the current object.
+  example: []
+  syntax:
+    content: public override string ToString()
+    return:
+      type: System.String
+      description: A string that represents the current object.
+    content.vb: Public Overrides Function ToString() As String
+  overridden: System.Object.ToString
+  overload: Meridian.Infrastructure.Contracts.ContractViolation.ToString*
+references:
+- uid: Meridian.Infrastructure.Contracts
+  commentId: N:Meridian.Infrastructure.Contracts
+  href: Meridian.html
+  name: Meridian.Infrastructure.Contracts
+  nameWithType: Meridian.Infrastructure.Contracts
+  fullName: Meridian.Infrastructure.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Contracts.ContractViolation}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Contracts.ContractViolation}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ContractViolation>
+  nameWithType: IEquatable<ContractViolation>
+  fullName: System.IEquatable<Meridian.Infrastructure.Contracts.ContractViolation>
+  nameWithType.vb: IEquatable(Of ContractViolation)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Contracts.ContractViolation)
+  name.vb: IEquatable(Of ContractViolation)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Contracts.ContractViolation
+    name: ContractViolation
+    href: Meridian.Infrastructure.Contracts.ContractViolation.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Contracts.ContractViolation
+    name: ContractViolation
+    href: Meridian.Infrastructure.Contracts.ContractViolation.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Contracts.ContractViolation.#ctor
+  href: Meridian.Infrastructure.Contracts.ContractViolation.html#Meridian_Infrastructure_Contracts_ContractViolation__ctor_System_String_System_String_System_String_
+  name: ContractViolation
+  nameWithType: ContractViolation.ContractViolation
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.ContractViolation
+  nameWithType.vb: ContractViolation.New
+  fullName.vb: Meridian.Infrastructure.Contracts.ContractViolation.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.AdrId*
+  commentId: Overload:Meridian.Infrastructure.Contracts.ContractViolation.AdrId
+  href: Meridian.Infrastructure.Contracts.ContractViolation.html#Meridian_Infrastructure_Contracts_ContractViolation_AdrId
+  name: AdrId
+  nameWithType: ContractViolation.AdrId
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.AdrId
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.TypeName*
+  commentId: Overload:Meridian.Infrastructure.Contracts.ContractViolation.TypeName
+  href: Meridian.Infrastructure.Contracts.ContractViolation.html#Meridian_Infrastructure_Contracts_ContractViolation_TypeName
+  name: TypeName
+  nameWithType: ContractViolation.TypeName
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.TypeName
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.Message*
+  commentId: Overload:Meridian.Infrastructure.Contracts.ContractViolation.Message
+  href: Meridian.Infrastructure.Contracts.ContractViolation.html#Meridian_Infrastructure_Contracts_ContractViolation_Message
+  name: Message
+  nameWithType: ContractViolation.Message
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.Message
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Contracts.ContractViolation.ToString*
+  commentId: Overload:Meridian.Infrastructure.Contracts.ContractViolation.ToString
+  href: Meridian.Infrastructure.Contracts.ContractViolation.html#Meridian_Infrastructure_Contracts_ContractViolation_ToString
+  name: ToString
+  nameWithType: ContractViolation.ToString
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation.ToString

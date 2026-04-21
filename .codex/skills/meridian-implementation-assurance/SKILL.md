@@ -11,7 +11,8 @@ Deliver production-ready code changes and leave documentation in a consistent, c
 > **Claude Code equivalent:** [`.claude/skills/meridian-implementation-assurance/SKILL.md`](../../../.claude/skills/meridian-implementation-assurance/SKILL.md)
 > **Navigation index:** [`docs/ai/skills/README.md`](../../../docs/ai/skills/README.md)
 
-Read `../_shared/project-context.md` before coding. Read `references/documentation-routing.md` before writing docs. Read `references/evaluation-harness.md` before finalizing output.
+Read `../_shared/project-context.md` before coding. Read `references/documentation-routing.md`
+before writing docs. Read `references/evaluation-harness.md` before finalizing output.
 
 ## Definition of Done
 
@@ -21,92 +22,100 @@ A task delivered by this skill is complete when **all** of the following are tru
 - [ ] **Tests cover the change:** tests for happy path, failure path, and cancellation/disposal exist or are cited as a gap.
 - [ ] **Validation evidence is explicit:** the final response includes exact commands and their pass/fail results.
 - [ ] **Documentation is in sync:** existing docs covering the changed behavior are updated in-place, or a new doc is created in the correct subtree with a cross-link from the nearest index.
-- [ ] **Rubric score ≥ 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
-- [ ] **Performance-sensitive paths are annotated:** any hot-path touched by the change includes an explicit note on allocation, async, or buffering risk.
-- [ ] **Summary is traceable:** the closing summary links requirement → files changed → validation artifact → doc update.
+- [ ] **Rubric score >= 8/10, no category at 0:** `scripts/score_eval.py` is run and the report is included in the response.
+- [ ] **Performance-sensitive paths are annotated:** any hot path touched by the change includes an explicit note on allocation, async, or buffering risk.
+- [ ] **Summary is traceable:** the closing summary links requirement -> files changed -> validation artifact -> doc update.
 
 ## Workflow
 
 1. Define requested behavior, risks, and acceptance checks.
 2. Identify impacted layers and likely performance-sensitive paths before editing.
 3. Implement the smallest safe change set that satisfies the request.
-4. Run targeted validation (tests/build/lint) and capture concrete command results.
+4. Run targeted validation and capture exact command results.
 5. Update related documentation; if missing, add docs in the correct doc area.
 6. Run the evaluation harness and report pass/fail with evidence.
-7. Summarize code + docs updates and call out residual risk.
+7. Summarize code and docs updates and call out residual risk.
 
 ## Requirement Type Detection
 
 Use this decision tree before starting any task to pick the right validation lane:
 
-```
+```text
 What are you assuring?
-├── Feature completeness vs. blueprint/acceptance criteria
-│   → Lane: requirement matrix + targeted unit/integration tests
-├── Scope alignment to an issue or roadmap item
-│   → Lane: requirement matrix + file mapping + acceptance criteria check
-├── Documentation sync after a code change
-│   → Lane: doc routing matrix + cross-reference validation
-├── Capability discovery / AI catalog update
-│   → Lane: agent/skill symmetry check (docs/ai/agents/ + docs/ai/skills/)
-└── Rollout readiness
-    → Lane: build gate + test gate + deployment gates (all CRITICAL)
+|-- Feature completeness vs. blueprint/acceptance criteria
+|   -> Lane: requirement matrix + targeted unit/integration tests
+|-- Scope alignment to an issue or roadmap item
+|   -> Lane: requirement matrix + file mapping + acceptance criteria check
+|-- Documentation sync after a code change
+|   -> Lane: doc routing matrix + cross-reference validation
+|-- Capability discovery / AI catalog update
+|   -> Lane: agent/skill symmetry check (docs/ai/agents/ + docs/ai/skills/)
+`-- Rollout readiness
+    -> Lane: build gate + test gate + deployment gates (all CRITICAL)
 ```
 
-Each lane produces different required artifacts — match the lane to the task before collecting evidence.
+Each lane produces different required artifacts. Match the lane to the task before collecting
+evidence.
+
+## Skill/Agent Authoring Lane
+
+Use this lane whenever the task creates or updates a Codex, Claude, or GitHub AI package.
+
+- Use `$skill-creator` when it is available, especially for `agents/openai.yaml` regeneration and quick package validation.
+- Inspect only the relevant Meridian project instincts when local learned behavior would help. Treat each instinct as a hint to verify against the current repo state before turning it into instructions.
+- Keep the main skill file concise and imperative. Move detailed material into `references/`, deterministic helpers into `scripts/`, and output resources into `assets/`.
+- Preserve host-specific metadata rules. For repo-local Codex skills, keep frontmatter to `name` and `description`. For portable Claude packages, preserve the metadata required by that host.
+- Keep mirrored Codex, Claude, and GitHub agent guidance aligned when a shared workflow or policy changes.
+- Avoid auxiliary docs inside skill folders unless they directly support execution or are required by the host format.
+- If `agents/openai.yaml` exists, regenerate or update it so the UI-facing metadata still matches the skill instructions.
+- Run package validation after editing, and run representative tests for any added or changed scripts.
 
 ## Correctness Guardrails
 
 - Preserve existing contracts, nullability expectations, and cancellation flow.
-- Keep layer boundaries explicit (UI/service/storage/provider/execution).
+- Keep layer boundaries explicit across UI, service, storage, provider, execution, and governance seams.
 - Add or extend tests for happy path, failure path, and cancellation/disposal where relevant.
 - Prefer deterministic behavior over timing-sensitive heuristics.
 
 ## Performance Guardrails
 
 - Inspect hot paths for avoidable allocations, synchronous blocking, and unbounded buffering.
-- Avoid `.Result`/`.Wait()` on async flows.
+- Avoid `.Result` and `.Wait()` on async flows.
 - Keep logging and serialization costs proportional to execution frequency.
 - When introducing loops or streams, define cancellation and backpressure behavior.
 
 ## Documentation Synchronization Rules
 
-- Update docs in the same PR as code changes when behavior, interfaces, architecture, or operations change.
+- Update docs in the same change when behavior, interfaces, architecture, or operations change.
 - Prefer editing an existing doc when one already covers the topic.
 - Create new docs only when no suitable home exists.
-- For new docs, choose placement using `references/documentation-routing.md` and add cross-links from the nearest index/README.
-- Keep documentation concrete: what changed, why, and how to use/operate it.
+- For new docs, choose placement using `references/documentation-routing.md` and add cross-links from the nearest index or README.
+- When runtime config or persistence semantics change, update the AI-facing docs and shared context in the same change: the relevant `docs/ai/*` pages, `../_shared/project-context.md`, and any mirrored Codex, Claude, or GitHub agent files that teach the affected workflow.
+- Keep documentation concrete: what changed, why, and how to use or operate it.
 
 ## Automation Scripts
 
 Use bundled scripts to keep execution fast and consistent:
 
-- `scripts/doc_route.py` — recommend documentation location + filename and whether cross-linking is required.
-  - Example: `python3 scripts/doc_route.py --kind architecture --topic "provider orchestration retries"`
+- `scripts/doc_route.py` — recommend documentation location, filename, and whether cross-linking is required.
 - `scripts/score_eval.py` — compute rubric totals and generate a standardized eval report.
-  - Example: `python3 scripts/score_eval.py --scenario C --scores '{"behavior_correctness":2,"validation_evidence":2,"performance_safety":2,"documentation_sync":1,"traceable_summary":2}'`
 - `scripts/run_evals.py` — run the deterministic eval harness against `evals/evals.json` cases.
-  - Dry-run (validate setup): `python3 scripts/run_evals.py --all --dry-run`
-  - Single case: `python3 scripts/run_evals.py --eval-id 1`
-  - All cases with regression check: `python3 scripts/run_evals.py --all --summary`
-
-Run these scripts from the skill directory or with full paths.
 
 ## Evaluation Requirement
 
 Treat `references/evaluation-harness.md` as mandatory for this skill. Always return:
 
-- Which scenario was evaluated.
-- Rubric scores by category.
-- Failing checks and corrective follow-ups.
-- Exact command evidence for tests/build checks.
+- which scenario was evaluated
+- rubric scores by category
+- failing checks and corrective follow-ups
+- exact command evidence for tests and build checks
 
 ## Output Checklist
 
 Before finishing, confirm:
 
-- [ ] Code compiles or tests pass for the touched surface.
-- [ ] Performance-sensitive changes were reviewed with explicit notes.
-- [ ] Docs were updated (or newly added in the correct location).
-- [ ] Evaluation harness was completed with a rubric score summary (≥ 8/10, no category at 0).
-- [ ] Summary includes validation commands and any residual risk.
+- [ ] code compiles or tests pass for the touched surface
+- [ ] performance-sensitive changes were reviewed with explicit notes
+- [ ] docs were updated, or newly added in the correct location
+- [ ] evaluation harness was completed with a rubric score summary (>= 8/10, no category at 0)
+- [ ] summary includes validation commands and any residual risk

@@ -1,0 +1,279 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  id: BackfillJobStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Cancelled
+  - Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Completed
+  - Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Failed
+  - Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Paused
+  - Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Pending
+  - Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.RateLimited
+  - Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Running
+  langs:
+  - csharp
+  - vb
+  name: BackfillJobStatus
+  nameWithType: BackfillJobStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillJobStatus
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 323
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Status of a backfill job.
+  example: []
+  syntax:
+    content: 'public enum BackfillJobStatus : byte'
+    content.vb: Public Enum BackfillJobStatus As Byte
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Pending
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Pending
+  id: Pending
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: BackfillJobStatus.Pending
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 326
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Job is created but not started.
+  example: []
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Running
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Running
+  id: Running
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Running
+  nameWithType: BackfillJobStatus.Running
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Running
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Running
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 329
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Job is actively running.
+  example: []
+  syntax:
+    content: Running = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Paused
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Paused
+  id: Paused
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Paused
+  nameWithType: BackfillJobStatus.Paused
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Paused
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Paused
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 332
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Job is paused by user or system.
+  example: []
+  syntax:
+    content: Paused = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.RateLimited
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.RateLimited
+  id: RateLimited
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  langs:
+  - csharp
+  - vb
+  name: RateLimited
+  nameWithType: BackfillJobStatus.RateLimited
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.RateLimited
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimited
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 335
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Job is waiting for rate limit to reset.
+  example: []
+  syntax:
+    content: RateLimited = 3
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Completed
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Completed
+  id: Completed
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: BackfillJobStatus.Completed
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 338
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Job completed successfully.
+  example: []
+  syntax:
+    content: Completed = 4
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Failed
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Failed
+  id: Failed
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: BackfillJobStatus.Failed
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Job failed with unrecoverable errors.
+  example: []
+  syntax:
+    content: Failed = 5
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Cancelled
+  commentId: F:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: BackfillJobStatus.Cancelled
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJob.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Job was cancelled by user.
+  example: []
+  syntax:
+    content: Cancelled = 6
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillJobStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus.html
+  name: BackfillJobStatus
+  nameWithType: BackfillJobStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobStatus

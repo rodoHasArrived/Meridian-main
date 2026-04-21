@@ -1,0 +1,1285 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService
+  commentId: T:Meridian.Application.Scheduling.ScheduledBackfillService
+  id: ScheduledBackfillService
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.ScheduledBackfillService.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.ScheduledBackfillService},Meridian.Application.Scheduling.BackfillScheduleManager,Meridian.Infrastructure.Adapters.Core.BackfillJobManager,Meridian.Infrastructure.Adapters.Core.BackfillWorkerService,Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,Meridian.Application.Coordination.IScheduledWorkOwnershipService,Meridian.Application.Scheduling.ScheduledBackfillOptions,System.Collections.Generic.IEnumerable{System.String})
+  - Meridian.Application.Scheduling.ScheduledBackfillService.DisposeAsync
+  - Meridian.Application.Scheduling.ScheduledBackfillService.ExecutionCompleted
+  - Meridian.Application.Scheduling.ScheduledBackfillService.ExecutionStarted
+  - Meridian.Application.Scheduling.ScheduledBackfillService.IsRunning
+  - Meridian.Application.Scheduling.ScheduledBackfillService.QueuedExecutions
+  - Meridian.Application.Scheduling.ScheduledBackfillService.RunImmediateGapFillAsync(System.Collections.Generic.IEnumerable{System.String},System.Int32,Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.ScheduledBackfillService.StartAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.ScheduledBackfillService.StopAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Scheduling.ScheduledBackfillService.TriggerManualExecutionAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ScheduledBackfillService
+  nameWithType: ScheduledBackfillService
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledBackfillService
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: >-
+    Background service that monitors backfill schedules and triggers executions at scheduled times.
+
+    Implements automatic gap-fill, catch-up for missed schedules, and job queue management.
+  example: []
+  syntax:
+    content: 'public sealed class ScheduledBackfillService : IAsyncDisposable'
+    content.vb: Public NotInheritable Class ScheduledBackfillService Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.ExecutionStarted
+  commentId: E:Meridian.Application.Scheduling.ScheduledBackfillService.ExecutionStarted
+  id: ExecutionStarted
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: ExecutionStarted
+  nameWithType: ScheduledBackfillService.ExecutionStarted
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.ExecutionStarted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionStarted
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Event raised when a scheduled execution starts.
+  example: []
+  syntax:
+    content: public event EventHandler<BackfillExecutionLog>? ExecutionStarted
+    return:
+      type: System.EventHandler{Meridian.Application.Scheduling.BackfillExecutionLog}
+    content.vb: Public Event ExecutionStarted As EventHandler(Of BackfillExecutionLog)
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.ExecutionCompleted
+  commentId: E:Meridian.Application.Scheduling.ScheduledBackfillService.ExecutionCompleted
+  id: ExecutionCompleted
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: ExecutionCompleted
+  nameWithType: ScheduledBackfillService.ExecutionCompleted
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.ExecutionCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionCompleted
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Event raised when a scheduled execution completes.
+  example: []
+  syntax:
+    content: public event EventHandler<BackfillExecutionLog>? ExecutionCompleted
+    return:
+      type: System.EventHandler{Meridian.Application.Scheduling.BackfillExecutionLog}
+    content.vb: Public Event ExecutionCompleted As EventHandler(Of BackfillExecutionLog)
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.ScheduledBackfillService},Meridian.Application.Scheduling.BackfillScheduleManager,Meridian.Infrastructure.Adapters.Core.BackfillJobManager,Meridian.Infrastructure.Adapters.Core.BackfillWorkerService,Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,Meridian.Application.Coordination.IScheduledWorkOwnershipService,Meridian.Application.Scheduling.ScheduledBackfillOptions,System.Collections.Generic.IEnumerable{System.String})
+  commentId: M:Meridian.Application.Scheduling.ScheduledBackfillService.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.ScheduledBackfillService},Meridian.Application.Scheduling.BackfillScheduleManager,Meridian.Infrastructure.Adapters.Core.BackfillJobManager,Meridian.Infrastructure.Adapters.Core.BackfillWorkerService,Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,Meridian.Application.Coordination.IScheduledWorkOwnershipService,Meridian.Application.Scheduling.ScheduledBackfillOptions,System.Collections.Generic.IEnumerable{System.String})
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.ScheduledBackfillService},Meridian.Application.Scheduling.BackfillScheduleManager,Meridian.Infrastructure.Adapters.Core.BackfillJobManager,Meridian.Infrastructure.Adapters.Core.BackfillWorkerService,Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,Meridian.Application.Coordination.IScheduledWorkOwnershipService,Meridian.Application.Scheduling.ScheduledBackfillOptions,System.Collections.Generic.IEnumerable{System.String})'
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: ScheduledBackfillService(ILogger<ScheduledBackfillService>, BackfillScheduleManager, BackfillJobManager, BackfillWorkerService, DataGapAnalyzer, IScheduledWorkOwnershipService?, ScheduledBackfillOptions?, IEnumerable<string>?)
+  nameWithType: ScheduledBackfillService.ScheduledBackfillService(ILogger<ScheduledBackfillService>, BackfillScheduleManager, BackfillJobManager, BackfillWorkerService, DataGapAnalyzer, IScheduledWorkOwnershipService?, ScheduledBackfillOptions?, IEnumerable<string>?)
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.ScheduledBackfillService(Microsoft.Extensions.Logging.ILogger<Meridian.Application.Scheduling.ScheduledBackfillService>, Meridian.Application.Scheduling.BackfillScheduleManager, Meridian.Infrastructure.Adapters.Core.BackfillJobManager, Meridian.Infrastructure.Adapters.Core.BackfillWorkerService, Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer, Meridian.Application.Coordination.IScheduledWorkOwnershipService?, Meridian.Application.Scheduling.ScheduledBackfillOptions?, System.Collections.Generic.IEnumerable<string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  syntax:
+    content: public ScheduledBackfillService(ILogger<ScheduledBackfillService> logger, BackfillScheduleManager scheduleManager, BackfillJobManager jobManager, BackfillWorkerService workerService, DataGapAnalyzer gapAnalyzer, IScheduledWorkOwnershipService? ownershipService = null, ScheduledBackfillOptions? options = null, IEnumerable<string>? defaultSymbols = null)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.ScheduledBackfillService}
+    - id: scheduleManager
+      type: Meridian.Application.Scheduling.BackfillScheduleManager
+    - id: jobManager
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobManager
+    - id: workerService
+      type: Meridian.Infrastructure.Adapters.Core.BackfillWorkerService
+    - id: gapAnalyzer
+      type: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+    - id: ownershipService
+      type: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+    - id: options
+      type: Meridian.Application.Scheduling.ScheduledBackfillOptions
+    - id: defaultSymbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    content.vb: Public Sub New(logger As ILogger(Of ScheduledBackfillService), scheduleManager As BackfillScheduleManager, jobManager As BackfillJobManager, workerService As BackfillWorkerService, gapAnalyzer As DataGapAnalyzer, ownershipService As IScheduledWorkOwnershipService = Nothing, options As ScheduledBackfillOptions = Nothing, defaultSymbols As IEnumerable(Of String) = Nothing)
+  overload: Meridian.Application.Scheduling.ScheduledBackfillService.#ctor*
+  nameWithType.vb: ScheduledBackfillService.New(ILogger(Of ScheduledBackfillService), BackfillScheduleManager, BackfillJobManager, BackfillWorkerService, DataGapAnalyzer, IScheduledWorkOwnershipService, ScheduledBackfillOptions, IEnumerable(Of String))
+  fullName.vb: Meridian.Application.Scheduling.ScheduledBackfillService.New(Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Scheduling.ScheduledBackfillService), Meridian.Application.Scheduling.BackfillScheduleManager, Meridian.Infrastructure.Adapters.Core.BackfillJobManager, Meridian.Infrastructure.Adapters.Core.BackfillWorkerService, Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer, Meridian.Application.Coordination.IScheduledWorkOwnershipService, Meridian.Application.Scheduling.ScheduledBackfillOptions, System.Collections.Generic.IEnumerable(Of String))
+  name.vb: New(ILogger(Of ScheduledBackfillService), BackfillScheduleManager, BackfillJobManager, BackfillWorkerService, DataGapAnalyzer, IScheduledWorkOwnershipService, ScheduledBackfillOptions, IEnumerable(Of String))
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.IsRunning
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillService.IsRunning
+  id: IsRunning
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: IsRunning
+  nameWithType: ScheduledBackfillService.IsRunning
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.IsRunning
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsRunning
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Whether the service is running.
+  example: []
+  syntax:
+    content: public bool IsRunning { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsRunning As Boolean
+  overload: Meridian.Application.Scheduling.ScheduledBackfillService.IsRunning*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.QueuedExecutions
+  commentId: P:Meridian.Application.Scheduling.ScheduledBackfillService.QueuedExecutions
+  id: QueuedExecutions
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: QueuedExecutions
+  nameWithType: ScheduledBackfillService.QueuedExecutions
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.QueuedExecutions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueuedExecutions
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Number of executions waiting in queue.
+  example: []
+  syntax:
+    content: public int QueuedExecutions { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property QueuedExecutions As Integer
+  overload: Meridian.Application.Scheduling.ScheduledBackfillService.QueuedExecutions*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.StartAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.ScheduledBackfillService.StartAsync(System.Threading.CancellationToken)
+  id: StartAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: StartAsync(CancellationToken)
+  nameWithType: ScheduledBackfillService.StartAsync(CancellationToken)
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.StartAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartAsync
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Start the scheduled backfill service.
+  example: []
+  syntax:
+    content: public Task StartAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StartAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Scheduling.ScheduledBackfillService.StartAsync*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.StopAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.ScheduledBackfillService.StopAsync(System.Threading.CancellationToken)
+  id: StopAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: StopAsync(CancellationToken)
+  nameWithType: ScheduledBackfillService.StopAsync(CancellationToken)
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.StopAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopAsync
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Stop the scheduled backfill service.
+  example: []
+  syntax:
+    content: public Task StopAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StopAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Scheduling.ScheduledBackfillService.StopAsync*
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.TriggerManualExecutionAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.ScheduledBackfillService.TriggerManualExecutionAsync(System.String,System.Threading.CancellationToken)
+  id: TriggerManualExecutionAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: TriggerManualExecutionAsync(string, CancellationToken)
+  nameWithType: ScheduledBackfillService.TriggerManualExecutionAsync(string, CancellationToken)
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.TriggerManualExecutionAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TriggerManualExecutionAsync
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Manually trigger a schedule execution.
+  example: []
+  syntax:
+    content: public Task<BackfillExecutionLog> TriggerManualExecutionAsync(string scheduleId, CancellationToken ct = default)
+    parameters:
+    - id: scheduleId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Scheduling.BackfillExecutionLog}
+    content.vb: Public Function TriggerManualExecutionAsync(scheduleId As String, ct As CancellationToken = Nothing) As Task(Of BackfillExecutionLog)
+  overload: Meridian.Application.Scheduling.ScheduledBackfillService.TriggerManualExecutionAsync*
+  nameWithType.vb: ScheduledBackfillService.TriggerManualExecutionAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Scheduling.ScheduledBackfillService.TriggerManualExecutionAsync(String, System.Threading.CancellationToken)
+  name.vb: TriggerManualExecutionAsync(String, CancellationToken)
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.RunImmediateGapFillAsync(System.Collections.Generic.IEnumerable{System.String},System.Int32,Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Scheduling.ScheduledBackfillService.RunImmediateGapFillAsync(System.Collections.Generic.IEnumerable{System.String},System.Int32,Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Threading.CancellationToken)
+  id: RunImmediateGapFillAsync(System.Collections.Generic.IEnumerable{System.String},System.Int32,Meridian.Infrastructure.Adapters.Core.BackfillPriority,System.Threading.CancellationToken)
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: RunImmediateGapFillAsync(IEnumerable<string>, int, BackfillPriority, CancellationToken)
+  nameWithType: ScheduledBackfillService.RunImmediateGapFillAsync(IEnumerable<string>, int, BackfillPriority, CancellationToken)
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.RunImmediateGapFillAsync(System.Collections.Generic.IEnumerable<string>, int, Meridian.Infrastructure.Adapters.Core.BackfillPriority, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunImmediateGapFillAsync
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Run an immediate gap-fill for specific symbols.
+  example: []
+  syntax:
+    content: public Task<BackfillExecutionLog> RunImmediateGapFillAsync(IEnumerable<string> symbols, int lookbackDays = 30, BackfillPriority priority = BackfillPriority.High, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: lookbackDays
+      type: System.Int32
+    - id: priority
+      type: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Scheduling.BackfillExecutionLog}
+    content.vb: Public Function RunImmediateGapFillAsync(symbols As IEnumerable(Of String), lookbackDays As Integer = 30, priority As BackfillPriority = BackfillPriority.High, ct As CancellationToken = Nothing) As Task(Of BackfillExecutionLog)
+  overload: Meridian.Application.Scheduling.ScheduledBackfillService.RunImmediateGapFillAsync*
+  nameWithType.vb: ScheduledBackfillService.RunImmediateGapFillAsync(IEnumerable(Of String), Integer, BackfillPriority, CancellationToken)
+  fullName.vb: Meridian.Application.Scheduling.ScheduledBackfillService.RunImmediateGapFillAsync(System.Collections.Generic.IEnumerable(Of String), Integer, Meridian.Infrastructure.Adapters.Core.BackfillPriority, System.Threading.CancellationToken)
+  name.vb: RunImmediateGapFillAsync(IEnumerable(Of String), Integer, BackfillPriority, CancellationToken)
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.DisposeAsync
+  commentId: M:Meridian.Application.Scheduling.ScheduledBackfillService.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Scheduling.ScheduledBackfillService
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: ScheduledBackfillService.DisposeAsync()
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Scheduling/ScheduledBackfillService.cs
+    startLine: 605
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Scheduling.ScheduledBackfillService.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.EventHandler{Meridian.Application.Scheduling.BackfillExecutionLog}
+  commentId: T:System.EventHandler{Meridian.Application.Scheduling.BackfillExecutionLog}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<BackfillExecutionLog>
+  nameWithType: EventHandler<BackfillExecutionLog>
+  fullName: System.EventHandler<Meridian.Application.Scheduling.BackfillExecutionLog>
+  nameWithType.vb: EventHandler(Of BackfillExecutionLog)
+  fullName.vb: System.EventHandler(Of Meridian.Application.Scheduling.BackfillExecutionLog)
+  name.vb: EventHandler(Of BackfillExecutionLog)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.BackfillExecutionLog
+    name: BackfillExecutionLog
+    href: Meridian.Application.Scheduling.BackfillExecutionLog.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.BackfillExecutionLog
+    name: BackfillExecutionLog
+    href: Meridian.Application.Scheduling.BackfillExecutionLog.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.#ctor*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillService.#ctor
+  href: Meridian.Application.Scheduling.ScheduledBackfillService.html#Meridian_Application_Scheduling_ScheduledBackfillService__ctor_Microsoft_Extensions_Logging_ILogger_Meridian_Application_Scheduling_ScheduledBackfillService__Meridian_Application_Scheduling_BackfillScheduleManager_Meridian_Infrastructure_Adapters_Core_BackfillJobManager_Meridian_Infrastructure_Adapters_Core_BackfillWorkerService_Meridian_Infrastructure_Adapters_Core_DataGapAnalyzer_Meridian_Application_Coordination_IScheduledWorkOwnershipService_Meridian_Application_Scheduling_ScheduledBackfillOptions_System_Collections_Generic_IEnumerable_System_String__
+  name: ScheduledBackfillService
+  nameWithType: ScheduledBackfillService.ScheduledBackfillService
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.ScheduledBackfillService
+  nameWithType.vb: ScheduledBackfillService.New
+  fullName.vb: Meridian.Application.Scheduling.ScheduledBackfillService.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.ScheduledBackfillService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.Scheduling.ScheduledBackfillService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<ScheduledBackfillService>
+  nameWithType: ILogger<ScheduledBackfillService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.Scheduling.ScheduledBackfillService>
+  nameWithType.vb: ILogger(Of ScheduledBackfillService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Scheduling.ScheduledBackfillService)
+  name.vb: ILogger(Of ScheduledBackfillService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.ScheduledBackfillService
+    name: ScheduledBackfillService
+    href: Meridian.Application.Scheduling.ScheduledBackfillService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.ScheduledBackfillService
+    name: ScheduledBackfillService
+    href: Meridian.Application.Scheduling.ScheduledBackfillService.html
+  - name: )
+- uid: Meridian.Application.Scheduling.BackfillScheduleManager
+  commentId: T:Meridian.Application.Scheduling.BackfillScheduleManager
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.BackfillScheduleManager.html
+  name: BackfillScheduleManager
+  nameWithType: BackfillScheduleManager
+  fullName: Meridian.Application.Scheduling.BackfillScheduleManager
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobManager
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillJobManager
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillJobManager.html
+  name: BackfillJobManager
+  nameWithType: BackfillJobManager
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobManager
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillWorkerService
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillWorkerService
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillWorkerService.html
+  name: BackfillWorkerService
+  nameWithType: BackfillWorkerService
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillWorkerService
+- uid: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer.html
+  name: DataGapAnalyzer
+  nameWithType: DataGapAnalyzer
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+- uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  commentId: T:Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html
+  name: IScheduledWorkOwnershipService
+  nameWithType: IScheduledWorkOwnershipService
+  fullName: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+- uid: Meridian.Application.Scheduling.ScheduledBackfillOptions
+  commentId: T:Meridian.Application.Scheduling.ScheduledBackfillOptions
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ScheduledBackfillOptions.html
+  name: ScheduledBackfillOptions
+  nameWithType: ScheduledBackfillOptions
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillOptions
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  href: Meridian.html
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.IsRunning*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillService.IsRunning
+  href: Meridian.Application.Scheduling.ScheduledBackfillService.html#Meridian_Application_Scheduling_ScheduledBackfillService_IsRunning
+  name: IsRunning
+  nameWithType: ScheduledBackfillService.IsRunning
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.IsRunning
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.QueuedExecutions*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillService.QueuedExecutions
+  href: Meridian.Application.Scheduling.ScheduledBackfillService.html#Meridian_Application_Scheduling_ScheduledBackfillService_QueuedExecutions
+  name: QueuedExecutions
+  nameWithType: ScheduledBackfillService.QueuedExecutions
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.QueuedExecutions
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.StartAsync*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillService.StartAsync
+  href: Meridian.Application.Scheduling.ScheduledBackfillService.html#Meridian_Application_Scheduling_ScheduledBackfillService_StartAsync_System_Threading_CancellationToken_
+  name: StartAsync
+  nameWithType: ScheduledBackfillService.StartAsync
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.StartAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.StopAsync*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillService.StopAsync
+  href: Meridian.Application.Scheduling.ScheduledBackfillService.html#Meridian_Application_Scheduling_ScheduledBackfillService_StopAsync_System_Threading_CancellationToken_
+  name: StopAsync
+  nameWithType: ScheduledBackfillService.StopAsync
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.StopAsync
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.TriggerManualExecutionAsync*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillService.TriggerManualExecutionAsync
+  href: Meridian.Application.Scheduling.ScheduledBackfillService.html#Meridian_Application_Scheduling_ScheduledBackfillService_TriggerManualExecutionAsync_System_String_System_Threading_CancellationToken_
+  name: TriggerManualExecutionAsync
+  nameWithType: ScheduledBackfillService.TriggerManualExecutionAsync
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.TriggerManualExecutionAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Application.Scheduling.BackfillExecutionLog}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Scheduling.BackfillExecutionLog}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BackfillExecutionLog>
+  nameWithType: Task<BackfillExecutionLog>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Scheduling.BackfillExecutionLog>
+  nameWithType.vb: Task(Of BackfillExecutionLog)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Scheduling.BackfillExecutionLog)
+  name.vb: Task(Of BackfillExecutionLog)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.BackfillExecutionLog
+    name: BackfillExecutionLog
+    href: Meridian.Application.Scheduling.BackfillExecutionLog.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.BackfillExecutionLog
+    name: BackfillExecutionLog
+    href: Meridian.Application.Scheduling.BackfillExecutionLog.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.RunImmediateGapFillAsync*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillService.RunImmediateGapFillAsync
+  href: Meridian.Application.Scheduling.ScheduledBackfillService.html#Meridian_Application_Scheduling_ScheduledBackfillService_RunImmediateGapFillAsync_System_Collections_Generic_IEnumerable_System_String__System_Int32_Meridian_Infrastructure_Adapters_Core_BackfillPriority_System_Threading_CancellationToken_
+  name: RunImmediateGapFillAsync
+  nameWithType: ScheduledBackfillService.RunImmediateGapFillAsync
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.RunImmediateGapFillAsync
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillPriority
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillPriority.html
+  name: BackfillPriority
+  nameWithType: BackfillPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillPriority
+- uid: Meridian.Application.Scheduling.ScheduledBackfillService.DisposeAsync*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduledBackfillService.DisposeAsync
+  href: Meridian.Application.Scheduling.ScheduledBackfillService.html#Meridian_Application_Scheduling_ScheduledBackfillService_DisposeAsync
+  name: DisposeAsync
+  nameWithType: ScheduledBackfillService.DisposeAsync
+  fullName: Meridian.Application.Scheduling.ScheduledBackfillService.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

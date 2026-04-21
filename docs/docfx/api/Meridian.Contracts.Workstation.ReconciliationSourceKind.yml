@@ -1,0 +1,188 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ReconciliationSourceKind
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationSourceKind
+  id: ReconciliationSourceKind
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ReconciliationSourceKind.Bank
+  - Meridian.Contracts.Workstation.ReconciliationSourceKind.Ledger
+  - Meridian.Contracts.Workstation.ReconciliationSourceKind.Portfolio
+  - Meridian.Contracts.Workstation.ReconciliationSourceKind.Unknown
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationSourceKind
+  nameWithType: ReconciliationSourceKind
+  fullName: Meridian.Contracts.Workstation.ReconciliationSourceKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationSourceKind
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Source type participating in a reconciliation comparison.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<ReconciliationSourceKind>))]
+
+      public enum ReconciliationSourceKind : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of ReconciliationSourceKind)))>
+
+      Public Enum ReconciliationSourceKind As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.Workstation.ReconciliationSourceKind}
+- uid: Meridian.Contracts.Workstation.ReconciliationSourceKind.Unknown
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationSourceKind.Unknown
+  id: Unknown
+  parent: Meridian.Contracts.Workstation.ReconciliationSourceKind
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: ReconciliationSourceKind.Unknown
+  fullName: Meridian.Contracts.Workstation.ReconciliationSourceKind.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Unknown = 0
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationSourceKind
+- uid: Meridian.Contracts.Workstation.ReconciliationSourceKind.Portfolio
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationSourceKind.Portfolio
+  id: Portfolio
+  parent: Meridian.Contracts.Workstation.ReconciliationSourceKind
+  langs:
+  - csharp
+  - vb
+  name: Portfolio
+  nameWithType: ReconciliationSourceKind.Portfolio
+  fullName: Meridian.Contracts.Workstation.ReconciliationSourceKind.Portfolio
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Portfolio
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Portfolio = 1
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationSourceKind
+- uid: Meridian.Contracts.Workstation.ReconciliationSourceKind.Ledger
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationSourceKind.Ledger
+  id: Ledger
+  parent: Meridian.Contracts.Workstation.ReconciliationSourceKind
+  langs:
+  - csharp
+  - vb
+  name: Ledger
+  nameWithType: ReconciliationSourceKind.Ledger
+  fullName: Meridian.Contracts.Workstation.ReconciliationSourceKind.Ledger
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ledger
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Ledger = 2
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationSourceKind
+- uid: Meridian.Contracts.Workstation.ReconciliationSourceKind.Bank
+  commentId: F:Meridian.Contracts.Workstation.ReconciliationSourceKind.Bank
+  id: Bank
+  parent: Meridian.Contracts.Workstation.ReconciliationSourceKind
+  langs:
+  - csharp
+  - vb
+  name: Bank
+  nameWithType: ReconciliationSourceKind.Bank
+  fullName: Meridian.Contracts.Workstation.ReconciliationSourceKind.Bank
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bank
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Bank = 3
+    return:
+      type: Meridian.Contracts.Workstation.ReconciliationSourceKind
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.ReconciliationSourceKind
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationSourceKind
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.ReconciliationSourceKind.html
+  name: ReconciliationSourceKind
+  nameWithType: ReconciliationSourceKind
+  fullName: Meridian.Contracts.Workstation.ReconciliationSourceKind

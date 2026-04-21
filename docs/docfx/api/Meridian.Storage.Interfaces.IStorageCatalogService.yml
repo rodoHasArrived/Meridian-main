@@ -1,0 +1,1305 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService
+  commentId: T:Meridian.Storage.Interfaces.IStorageCatalogService
+  id: IStorageCatalogService
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.IStorageCatalogService.ExportCatalogAsync(System.String,Meridian.Storage.Interfaces.CatalogExportFormat,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.GetCatalog
+  - Meridian.Storage.Interfaces.IStorageCatalogService.GetDirectoryIndexAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForDateRange(System.DateTime,System.DateTime)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForEventType(System.String)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForSymbol(System.String)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.GetStatistics
+  - Meridian.Storage.Interfaces.IStorageCatalogService.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.RebuildCatalogAsync(Meridian.Storage.Interfaces.CatalogRebuildOptions,System.IProgress{Meridian.Storage.Interfaces.CatalogRebuildProgress},System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.RemoveFileEntryAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.SaveCatalogAsync(System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.ScanDirectoryAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.SearchFiles(Meridian.Storage.Interfaces.CatalogSearchCriteria)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.UpdateDirectoryIndexAsync(Meridian.Contracts.Catalog.DirectoryIndex,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.UpdateFileEntryAsync(Meridian.Contracts.Catalog.IndexedFileEntry,System.Threading.CancellationToken)
+  - Meridian.Storage.Interfaces.IStorageCatalogService.VerifyIntegrityAsync(Meridian.Storage.Interfaces.CatalogVerificationOptions,System.IProgress{Meridian.Storage.Interfaces.CatalogVerificationProgress},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IStorageCatalogService
+  nameWithType: IStorageCatalogService
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IStorageCatalogService
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: >-
+    Service for managing the storage catalog and manifest system.
+
+    Provides comprehensive indexing, integrity verification, and metadata management.
+  example: []
+  syntax:
+    content: public interface IStorageCatalogService
+    content.vb: Public Interface IStorageCatalogService
+  derivedClasses:
+  - Meridian.Storage.Services.StorageCatalogService
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetCatalog
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.GetCatalog
+  id: GetCatalog
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: GetCatalog()
+  nameWithType: IStorageCatalogService.GetCatalog()
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetCatalog()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCatalog
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets the current storage catalog.
+  example: []
+  syntax:
+    content: StorageCatalog GetCatalog()
+    return:
+      type: Meridian.Contracts.Catalog.StorageCatalog
+    content.vb: Function GetCatalog() As StorageCatalog
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.GetCatalog*
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: IStorageCatalogService.InitializeAsync(CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Initializes or loads the catalog from the storage root.
+  example: []
+  syntax:
+    content: Task InitializeAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function InitializeAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.InitializeAsync*
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.RebuildCatalogAsync(Meridian.Storage.Interfaces.CatalogRebuildOptions,System.IProgress{Meridian.Storage.Interfaces.CatalogRebuildProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.RebuildCatalogAsync(Meridian.Storage.Interfaces.CatalogRebuildOptions,System.IProgress{Meridian.Storage.Interfaces.CatalogRebuildProgress},System.Threading.CancellationToken)
+  id: RebuildCatalogAsync(Meridian.Storage.Interfaces.CatalogRebuildOptions,System.IProgress{Meridian.Storage.Interfaces.CatalogRebuildProgress},System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: RebuildCatalogAsync(CatalogRebuildOptions?, IProgress<CatalogRebuildProgress>?, CancellationToken)
+  nameWithType: IStorageCatalogService.RebuildCatalogAsync(CatalogRebuildOptions?, IProgress<CatalogRebuildProgress>?, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.RebuildCatalogAsync(Meridian.Storage.Interfaces.CatalogRebuildOptions?, System.IProgress<Meridian.Storage.Interfaces.CatalogRebuildProgress>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RebuildCatalogAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Rebuilds the catalog by scanning all storage directories.
+  example: []
+  syntax:
+    content: Task<CatalogRebuildResult> RebuildCatalogAsync(CatalogRebuildOptions? options = null, IProgress<CatalogRebuildProgress>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Storage.Interfaces.CatalogRebuildOptions
+    - id: progress
+      type: System.IProgress{Meridian.Storage.Interfaces.CatalogRebuildProgress}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Interfaces.CatalogRebuildResult}
+    content.vb: Function RebuildCatalogAsync(options As CatalogRebuildOptions = Nothing, progress As IProgress(Of CatalogRebuildProgress) = Nothing, ct As CancellationToken = Nothing) As Task(Of CatalogRebuildResult)
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.RebuildCatalogAsync*
+  nameWithType.vb: IStorageCatalogService.RebuildCatalogAsync(CatalogRebuildOptions, IProgress(Of CatalogRebuildProgress), CancellationToken)
+  fullName.vb: Meridian.Storage.Interfaces.IStorageCatalogService.RebuildCatalogAsync(Meridian.Storage.Interfaces.CatalogRebuildOptions, System.IProgress(Of Meridian.Storage.Interfaces.CatalogRebuildProgress), System.Threading.CancellationToken)
+  name.vb: RebuildCatalogAsync(CatalogRebuildOptions, IProgress(Of CatalogRebuildProgress), CancellationToken)
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateFileEntryAsync(Meridian.Contracts.Catalog.IndexedFileEntry,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.UpdateFileEntryAsync(Meridian.Contracts.Catalog.IndexedFileEntry,System.Threading.CancellationToken)
+  id: UpdateFileEntryAsync(Meridian.Contracts.Catalog.IndexedFileEntry,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: UpdateFileEntryAsync(IndexedFileEntry, CancellationToken)
+  nameWithType: IStorageCatalogService.UpdateFileEntryAsync(IndexedFileEntry, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateFileEntryAsync(Meridian.Contracts.Catalog.IndexedFileEntry, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateFileEntryAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Updates the catalog with a new or modified file entry.
+  example: []
+  syntax:
+    content: Task UpdateFileEntryAsync(IndexedFileEntry entry, CancellationToken ct = default)
+    parameters:
+    - id: entry
+      type: Meridian.Contracts.Catalog.IndexedFileEntry
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function UpdateFileEntryAsync(entry As IndexedFileEntry, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateFileEntryAsync*
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.RemoveFileEntryAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.RemoveFileEntryAsync(System.String,System.Threading.CancellationToken)
+  id: RemoveFileEntryAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: RemoveFileEntryAsync(string, CancellationToken)
+  nameWithType: IStorageCatalogService.RemoveFileEntryAsync(string, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.RemoveFileEntryAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveFileEntryAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Removes a file entry from the catalog.
+  example: []
+  syntax:
+    content: Task RemoveFileEntryAsync(string relativePath, CancellationToken ct = default)
+    parameters:
+    - id: relativePath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function RemoveFileEntryAsync(relativePath As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.RemoveFileEntryAsync*
+  nameWithType.vb: IStorageCatalogService.RemoveFileEntryAsync(String, CancellationToken)
+  fullName.vb: Meridian.Storage.Interfaces.IStorageCatalogService.RemoveFileEntryAsync(String, System.Threading.CancellationToken)
+  name.vb: RemoveFileEntryAsync(String, CancellationToken)
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetDirectoryIndexAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.GetDirectoryIndexAsync(System.String,System.Threading.CancellationToken)
+  id: GetDirectoryIndexAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: GetDirectoryIndexAsync(string, CancellationToken)
+  nameWithType: IStorageCatalogService.GetDirectoryIndexAsync(string, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetDirectoryIndexAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDirectoryIndexAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets the directory index for a specific path.
+  example: []
+  syntax:
+    content: Task<DirectoryIndex?> GetDirectoryIndexAsync(string relativePath, CancellationToken ct = default)
+    parameters:
+    - id: relativePath
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Catalog.DirectoryIndex}
+    content.vb: Function GetDirectoryIndexAsync(relativePath As String, ct As CancellationToken = Nothing) As Task(Of DirectoryIndex)
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.GetDirectoryIndexAsync*
+  nameWithType.vb: IStorageCatalogService.GetDirectoryIndexAsync(String, CancellationToken)
+  fullName.vb: Meridian.Storage.Interfaces.IStorageCatalogService.GetDirectoryIndexAsync(String, System.Threading.CancellationToken)
+  name.vb: GetDirectoryIndexAsync(String, CancellationToken)
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateDirectoryIndexAsync(Meridian.Contracts.Catalog.DirectoryIndex,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.UpdateDirectoryIndexAsync(Meridian.Contracts.Catalog.DirectoryIndex,System.Threading.CancellationToken)
+  id: UpdateDirectoryIndexAsync(Meridian.Contracts.Catalog.DirectoryIndex,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: UpdateDirectoryIndexAsync(DirectoryIndex, CancellationToken)
+  nameWithType: IStorageCatalogService.UpdateDirectoryIndexAsync(DirectoryIndex, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateDirectoryIndexAsync(Meridian.Contracts.Catalog.DirectoryIndex, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateDirectoryIndexAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Updates or creates a directory index.
+  example: []
+  syntax:
+    content: Task UpdateDirectoryIndexAsync(DirectoryIndex index, CancellationToken ct = default)
+    parameters:
+    - id: index
+      type: Meridian.Contracts.Catalog.DirectoryIndex
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function UpdateDirectoryIndexAsync(index As DirectoryIndex, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateDirectoryIndexAsync*
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.ScanDirectoryAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.ScanDirectoryAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: ScanDirectoryAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: ScanDirectoryAsync(string, bool, CancellationToken)
+  nameWithType: IStorageCatalogService.ScanDirectoryAsync(string, bool, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.ScanDirectoryAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScanDirectoryAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Scans a directory and creates/updates its index.
+  example: []
+  syntax:
+    content: Task<DirectoryScanResult> ScanDirectoryAsync(string path, bool recursive = false, CancellationToken ct = default)
+    parameters:
+    - id: path
+      type: System.String
+    - id: recursive
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Catalog.DirectoryScanResult}
+    content.vb: Function ScanDirectoryAsync(path As String, recursive As Boolean = False, ct As CancellationToken = Nothing) As Task(Of DirectoryScanResult)
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.ScanDirectoryAsync*
+  nameWithType.vb: IStorageCatalogService.ScanDirectoryAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Storage.Interfaces.IStorageCatalogService.ScanDirectoryAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: ScanDirectoryAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetStatistics
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.GetStatistics
+  id: GetStatistics
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: GetStatistics()
+  nameWithType: IStorageCatalogService.GetStatistics()
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetStatistics()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatistics
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets catalog statistics.
+  example: []
+  syntax:
+    content: CatalogStatistics GetStatistics()
+    return:
+      type: Meridian.Contracts.Catalog.CatalogStatistics
+    content.vb: Function GetStatistics() As CatalogStatistics
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.GetStatistics*
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.VerifyIntegrityAsync(Meridian.Storage.Interfaces.CatalogVerificationOptions,System.IProgress{Meridian.Storage.Interfaces.CatalogVerificationProgress},System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.VerifyIntegrityAsync(Meridian.Storage.Interfaces.CatalogVerificationOptions,System.IProgress{Meridian.Storage.Interfaces.CatalogVerificationProgress},System.Threading.CancellationToken)
+  id: VerifyIntegrityAsync(Meridian.Storage.Interfaces.CatalogVerificationOptions,System.IProgress{Meridian.Storage.Interfaces.CatalogVerificationProgress},System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: VerifyIntegrityAsync(CatalogVerificationOptions?, IProgress<CatalogVerificationProgress>?, CancellationToken)
+  nameWithType: IStorageCatalogService.VerifyIntegrityAsync(CatalogVerificationOptions?, IProgress<CatalogVerificationProgress>?, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.VerifyIntegrityAsync(Meridian.Storage.Interfaces.CatalogVerificationOptions?, System.IProgress<Meridian.Storage.Interfaces.CatalogVerificationProgress>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VerifyIntegrityAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Verifies catalog integrity by checking all file checksums.
+  example: []
+  syntax:
+    content: Task<CatalogVerificationResult> VerifyIntegrityAsync(CatalogVerificationOptions? options = null, IProgress<CatalogVerificationProgress>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Storage.Interfaces.CatalogVerificationOptions
+    - id: progress
+      type: System.IProgress{Meridian.Storage.Interfaces.CatalogVerificationProgress}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Interfaces.CatalogVerificationResult}
+    content.vb: Function VerifyIntegrityAsync(options As CatalogVerificationOptions = Nothing, progress As IProgress(Of CatalogVerificationProgress) = Nothing, ct As CancellationToken = Nothing) As Task(Of CatalogVerificationResult)
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.VerifyIntegrityAsync*
+  nameWithType.vb: IStorageCatalogService.VerifyIntegrityAsync(CatalogVerificationOptions, IProgress(Of CatalogVerificationProgress), CancellationToken)
+  fullName.vb: Meridian.Storage.Interfaces.IStorageCatalogService.VerifyIntegrityAsync(Meridian.Storage.Interfaces.CatalogVerificationOptions, System.IProgress(Of Meridian.Storage.Interfaces.CatalogVerificationProgress), System.Threading.CancellationToken)
+  name.vb: VerifyIntegrityAsync(CatalogVerificationOptions, IProgress(Of CatalogVerificationProgress), CancellationToken)
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForSymbol(System.String)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForSymbol(System.String)
+  id: GetFilesForSymbol(System.String)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: GetFilesForSymbol(string)
+  nameWithType: IStorageCatalogService.GetFilesForSymbol(string)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForSymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFilesForSymbol
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets files for a specific symbol.
+  example: []
+  syntax:
+    content: IEnumerable<IndexedFileEntry> GetFilesForSymbol(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.IndexedFileEntry}
+    content.vb: Function GetFilesForSymbol(symbol As String) As IEnumerable(Of IndexedFileEntry)
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForSymbol*
+  nameWithType.vb: IStorageCatalogService.GetFilesForSymbol(String)
+  fullName.vb: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForSymbol(String)
+  name.vb: GetFilesForSymbol(String)
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForDateRange(System.DateTime,System.DateTime)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForDateRange(System.DateTime,System.DateTime)
+  id: GetFilesForDateRange(System.DateTime,System.DateTime)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: GetFilesForDateRange(DateTime, DateTime)
+  nameWithType: IStorageCatalogService.GetFilesForDateRange(DateTime, DateTime)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForDateRange(System.DateTime, System.DateTime)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFilesForDateRange
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets files for a specific date range.
+  example: []
+  syntax:
+    content: IEnumerable<IndexedFileEntry> GetFilesForDateRange(DateTime start, DateTime end)
+    parameters:
+    - id: start
+      type: System.DateTime
+    - id: end
+      type: System.DateTime
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.IndexedFileEntry}
+    content.vb: Function GetFilesForDateRange(start As Date, [end] As Date) As IEnumerable(Of IndexedFileEntry)
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForDateRange*
+  nameWithType.vb: IStorageCatalogService.GetFilesForDateRange(Date, Date)
+  fullName.vb: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForDateRange(Date, Date)
+  name.vb: GetFilesForDateRange(Date, Date)
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForEventType(System.String)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForEventType(System.String)
+  id: GetFilesForEventType(System.String)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: GetFilesForEventType(string)
+  nameWithType: IStorageCatalogService.GetFilesForEventType(string)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForEventType(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFilesForEventType
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Gets files by event type.
+  example: []
+  syntax:
+    content: IEnumerable<IndexedFileEntry> GetFilesForEventType(string eventType)
+    parameters:
+    - id: eventType
+      type: System.String
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.IndexedFileEntry}
+    content.vb: Function GetFilesForEventType(eventType As String) As IEnumerable(Of IndexedFileEntry)
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForEventType*
+  nameWithType.vb: IStorageCatalogService.GetFilesForEventType(String)
+  fullName.vb: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForEventType(String)
+  name.vb: GetFilesForEventType(String)
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.SearchFiles(Meridian.Storage.Interfaces.CatalogSearchCriteria)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.SearchFiles(Meridian.Storage.Interfaces.CatalogSearchCriteria)
+  id: SearchFiles(Meridian.Storage.Interfaces.CatalogSearchCriteria)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: SearchFiles(CatalogSearchCriteria)
+  nameWithType: IStorageCatalogService.SearchFiles(CatalogSearchCriteria)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.SearchFiles(Meridian.Storage.Interfaces.CatalogSearchCriteria)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchFiles
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Searches for files matching criteria.
+  example: []
+  syntax:
+    content: IEnumerable<IndexedFileEntry> SearchFiles(CatalogSearchCriteria criteria)
+    parameters:
+    - id: criteria
+      type: Meridian.Storage.Interfaces.CatalogSearchCriteria
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.IndexedFileEntry}
+    content.vb: Function SearchFiles(criteria As CatalogSearchCriteria) As IEnumerable(Of IndexedFileEntry)
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.SearchFiles*
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.SaveCatalogAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.SaveCatalogAsync(System.Threading.CancellationToken)
+  id: SaveCatalogAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: SaveCatalogAsync(CancellationToken)
+  nameWithType: IStorageCatalogService.SaveCatalogAsync(CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.SaveCatalogAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveCatalogAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 92
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Saves the catalog to disk.
+  example: []
+  syntax:
+    content: Task SaveCatalogAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveCatalogAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.SaveCatalogAsync*
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.ExportCatalogAsync(System.String,Meridian.Storage.Interfaces.CatalogExportFormat,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Interfaces.IStorageCatalogService.ExportCatalogAsync(System.String,Meridian.Storage.Interfaces.CatalogExportFormat,System.Threading.CancellationToken)
+  id: ExportCatalogAsync(System.String,Meridian.Storage.Interfaces.CatalogExportFormat,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Interfaces.IStorageCatalogService
+  langs:
+  - csharp
+  - vb
+  name: ExportCatalogAsync(string, CatalogExportFormat, CancellationToken)
+  nameWithType: IStorageCatalogService.ExportCatalogAsync(string, CatalogExportFormat, CancellationToken)
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.ExportCatalogAsync(string, Meridian.Storage.Interfaces.CatalogExportFormat, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportCatalogAsync
+    path: ../../src/Meridian.Storage/Interfaces/IStorageCatalogService.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  summary: Exports the catalog to a portable format.
+  example: []
+  syntax:
+    content: Task ExportCatalogAsync(string outputPath, CatalogExportFormat format = CatalogExportFormat.Json, CancellationToken ct = default)
+    parameters:
+    - id: outputPath
+      type: System.String
+    - id: format
+      type: Meridian.Storage.Interfaces.CatalogExportFormat
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function ExportCatalogAsync(outputPath As String, format As CatalogExportFormat = CatalogExportFormat.Json, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Interfaces.IStorageCatalogService.ExportCatalogAsync*
+  nameWithType.vb: IStorageCatalogService.ExportCatalogAsync(String, CatalogExportFormat, CancellationToken)
+  fullName.vb: Meridian.Storage.Interfaces.IStorageCatalogService.ExportCatalogAsync(String, Meridian.Storage.Interfaces.CatalogExportFormat, System.Threading.CancellationToken)
+  name.vb: ExportCatalogAsync(String, CatalogExportFormat, CancellationToken)
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetCatalog*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.GetCatalog
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_GetCatalog
+  name: GetCatalog
+  nameWithType: IStorageCatalogService.GetCatalog
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetCatalog
+- uid: Meridian.Contracts.Catalog.StorageCatalog
+  commentId: T:Meridian.Contracts.Catalog.StorageCatalog
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.StorageCatalog.html
+  name: StorageCatalog
+  nameWithType: StorageCatalog
+  fullName: Meridian.Contracts.Catalog.StorageCatalog
+- uid: Meridian.Contracts.Catalog
+  commentId: N:Meridian.Contracts.Catalog
+  href: Meridian.html
+  name: Meridian.Contracts.Catalog
+  nameWithType: Meridian.Contracts.Catalog
+  fullName: Meridian.Contracts.Catalog
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Catalog
+    name: Catalog
+    href: Meridian.Contracts.Catalog.html
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.InitializeAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.InitializeAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: IStorageCatalogService.InitializeAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.InitializeAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.RebuildCatalogAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.RebuildCatalogAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_RebuildCatalogAsync_Meridian_Storage_Interfaces_CatalogRebuildOptions_System_IProgress_Meridian_Storage_Interfaces_CatalogRebuildProgress__System_Threading_CancellationToken_
+  name: RebuildCatalogAsync
+  nameWithType: IStorageCatalogService.RebuildCatalogAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.RebuildCatalogAsync
+- uid: Meridian.Storage.Interfaces.CatalogRebuildOptions
+  commentId: T:Meridian.Storage.Interfaces.CatalogRebuildOptions
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.CatalogRebuildOptions.html
+  name: CatalogRebuildOptions
+  nameWithType: CatalogRebuildOptions
+  fullName: Meridian.Storage.Interfaces.CatalogRebuildOptions
+- uid: System.IProgress{Meridian.Storage.Interfaces.CatalogRebuildProgress}
+  commentId: T:System.IProgress{Meridian.Storage.Interfaces.CatalogRebuildProgress}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<CatalogRebuildProgress>
+  nameWithType: IProgress<CatalogRebuildProgress>
+  fullName: System.IProgress<Meridian.Storage.Interfaces.CatalogRebuildProgress>
+  nameWithType.vb: IProgress(Of CatalogRebuildProgress)
+  fullName.vb: System.IProgress(Of Meridian.Storage.Interfaces.CatalogRebuildProgress)
+  name.vb: IProgress(Of CatalogRebuildProgress)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Meridian.Storage.Interfaces.CatalogRebuildProgress
+    name: CatalogRebuildProgress
+    href: Meridian.Storage.Interfaces.CatalogRebuildProgress.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Interfaces.CatalogRebuildProgress
+    name: CatalogRebuildProgress
+    href: Meridian.Storage.Interfaces.CatalogRebuildProgress.html
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Interfaces.CatalogRebuildResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Interfaces.CatalogRebuildResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CatalogRebuildResult>
+  nameWithType: Task<CatalogRebuildResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Interfaces.CatalogRebuildResult>
+  nameWithType.vb: Task(Of CatalogRebuildResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Interfaces.CatalogRebuildResult)
+  name.vb: Task(Of CatalogRebuildResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Interfaces.CatalogRebuildResult
+    name: CatalogRebuildResult
+    href: Meridian.Storage.Interfaces.CatalogRebuildResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Interfaces.CatalogRebuildResult
+    name: CatalogRebuildResult
+    href: Meridian.Storage.Interfaces.CatalogRebuildResult.html
+  - name: )
+- uid: System.IProgress`1
+  commentId: T:System.IProgress`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<T>
+  nameWithType: IProgress<T>
+  fullName: System.IProgress<T>
+  nameWithType.vb: IProgress(Of T)
+  fullName.vb: System.IProgress(Of T)
+  name.vb: IProgress(Of T)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateFileEntryAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.UpdateFileEntryAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_UpdateFileEntryAsync_Meridian_Contracts_Catalog_IndexedFileEntry_System_Threading_CancellationToken_
+  name: UpdateFileEntryAsync
+  nameWithType: IStorageCatalogService.UpdateFileEntryAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateFileEntryAsync
+- uid: Meridian.Contracts.Catalog.IndexedFileEntry
+  commentId: T:Meridian.Contracts.Catalog.IndexedFileEntry
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.IndexedFileEntry.html
+  name: IndexedFileEntry
+  nameWithType: IndexedFileEntry
+  fullName: Meridian.Contracts.Catalog.IndexedFileEntry
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.RemoveFileEntryAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.RemoveFileEntryAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_RemoveFileEntryAsync_System_String_System_Threading_CancellationToken_
+  name: RemoveFileEntryAsync
+  nameWithType: IStorageCatalogService.RemoveFileEntryAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.RemoveFileEntryAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetDirectoryIndexAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.GetDirectoryIndexAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_GetDirectoryIndexAsync_System_String_System_Threading_CancellationToken_
+  name: GetDirectoryIndexAsync
+  nameWithType: IStorageCatalogService.GetDirectoryIndexAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetDirectoryIndexAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Catalog.DirectoryIndex}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Catalog.DirectoryIndex}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DirectoryIndex>
+  nameWithType: Task<DirectoryIndex>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Catalog.DirectoryIndex>
+  nameWithType.vb: Task(Of DirectoryIndex)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Catalog.DirectoryIndex)
+  name.vb: Task(Of DirectoryIndex)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Catalog.DirectoryIndex
+    name: DirectoryIndex
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.DirectoryIndex
+    name: DirectoryIndex
+  - name: )
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateDirectoryIndexAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.UpdateDirectoryIndexAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_UpdateDirectoryIndexAsync_Meridian_Contracts_Catalog_DirectoryIndex_System_Threading_CancellationToken_
+  name: UpdateDirectoryIndexAsync
+  nameWithType: IStorageCatalogService.UpdateDirectoryIndexAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.UpdateDirectoryIndexAsync
+- uid: Meridian.Contracts.Catalog.DirectoryIndex
+  commentId: T:Meridian.Contracts.Catalog.DirectoryIndex
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.DirectoryIndex.html
+  name: DirectoryIndex
+  nameWithType: DirectoryIndex
+  fullName: Meridian.Contracts.Catalog.DirectoryIndex
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.ScanDirectoryAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.ScanDirectoryAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_ScanDirectoryAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: ScanDirectoryAsync
+  nameWithType: IStorageCatalogService.ScanDirectoryAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.ScanDirectoryAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Catalog.DirectoryScanResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Catalog.DirectoryScanResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DirectoryScanResult>
+  nameWithType: Task<DirectoryScanResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Catalog.DirectoryScanResult>
+  nameWithType.vb: Task(Of DirectoryScanResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Catalog.DirectoryScanResult)
+  name.vb: Task(Of DirectoryScanResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Catalog.DirectoryScanResult
+    name: DirectoryScanResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.DirectoryScanResult
+    name: DirectoryScanResult
+  - name: )
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetStatistics*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.GetStatistics
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_GetStatistics
+  name: GetStatistics
+  nameWithType: IStorageCatalogService.GetStatistics
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetStatistics
+- uid: Meridian.Contracts.Catalog.CatalogStatistics
+  commentId: T:Meridian.Contracts.Catalog.CatalogStatistics
+  parent: Meridian.Contracts.Catalog
+  href: Meridian.Contracts.Catalog.CatalogStatistics.html
+  name: CatalogStatistics
+  nameWithType: CatalogStatistics
+  fullName: Meridian.Contracts.Catalog.CatalogStatistics
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.VerifyIntegrityAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.VerifyIntegrityAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_VerifyIntegrityAsync_Meridian_Storage_Interfaces_CatalogVerificationOptions_System_IProgress_Meridian_Storage_Interfaces_CatalogVerificationProgress__System_Threading_CancellationToken_
+  name: VerifyIntegrityAsync
+  nameWithType: IStorageCatalogService.VerifyIntegrityAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.VerifyIntegrityAsync
+- uid: Meridian.Storage.Interfaces.CatalogVerificationOptions
+  commentId: T:Meridian.Storage.Interfaces.CatalogVerificationOptions
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.CatalogVerificationOptions.html
+  name: CatalogVerificationOptions
+  nameWithType: CatalogVerificationOptions
+  fullName: Meridian.Storage.Interfaces.CatalogVerificationOptions
+- uid: System.IProgress{Meridian.Storage.Interfaces.CatalogVerificationProgress}
+  commentId: T:System.IProgress{Meridian.Storage.Interfaces.CatalogVerificationProgress}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<CatalogVerificationProgress>
+  nameWithType: IProgress<CatalogVerificationProgress>
+  fullName: System.IProgress<Meridian.Storage.Interfaces.CatalogVerificationProgress>
+  nameWithType.vb: IProgress(Of CatalogVerificationProgress)
+  fullName.vb: System.IProgress(Of Meridian.Storage.Interfaces.CatalogVerificationProgress)
+  name.vb: IProgress(Of CatalogVerificationProgress)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: Meridian.Storage.Interfaces.CatalogVerificationProgress
+    name: CatalogVerificationProgress
+    href: Meridian.Storage.Interfaces.CatalogVerificationProgress.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Interfaces.CatalogVerificationProgress
+    name: CatalogVerificationProgress
+    href: Meridian.Storage.Interfaces.CatalogVerificationProgress.html
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Interfaces.CatalogVerificationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Interfaces.CatalogVerificationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CatalogVerificationResult>
+  nameWithType: Task<CatalogVerificationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Interfaces.CatalogVerificationResult>
+  nameWithType.vb: Task(Of CatalogVerificationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Interfaces.CatalogVerificationResult)
+  name.vb: Task(Of CatalogVerificationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Interfaces.CatalogVerificationResult
+    name: CatalogVerificationResult
+    href: Meridian.Storage.Interfaces.CatalogVerificationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Interfaces.CatalogVerificationResult
+    name: CatalogVerificationResult
+    href: Meridian.Storage.Interfaces.CatalogVerificationResult.html
+  - name: )
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForSymbol*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForSymbol
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_GetFilesForSymbol_System_String_
+  name: GetFilesForSymbol
+  nameWithType: IStorageCatalogService.GetFilesForSymbol
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForSymbol
+- uid: System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.IndexedFileEntry}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Contracts.Catalog.IndexedFileEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<IndexedFileEntry>
+  nameWithType: IEnumerable<IndexedFileEntry>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Contracts.Catalog.IndexedFileEntry>
+  nameWithType.vb: IEnumerable(Of IndexedFileEntry)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Contracts.Catalog.IndexedFileEntry)
+  name.vb: IEnumerable(Of IndexedFileEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Contracts.Catalog.IndexedFileEntry
+    name: IndexedFileEntry
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Catalog.IndexedFileEntry
+    name: IndexedFileEntry
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForDateRange*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForDateRange
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_GetFilesForDateRange_System_DateTime_System_DateTime_
+  name: GetFilesForDateRange
+  nameWithType: IStorageCatalogService.GetFilesForDateRange
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForDateRange
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForEventType*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForEventType
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_GetFilesForEventType_System_String_
+  name: GetFilesForEventType
+  nameWithType: IStorageCatalogService.GetFilesForEventType
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.GetFilesForEventType
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.SearchFiles*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.SearchFiles
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_SearchFiles_Meridian_Storage_Interfaces_CatalogSearchCriteria_
+  name: SearchFiles
+  nameWithType: IStorageCatalogService.SearchFiles
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.SearchFiles
+- uid: Meridian.Storage.Interfaces.CatalogSearchCriteria
+  commentId: T:Meridian.Storage.Interfaces.CatalogSearchCriteria
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.CatalogSearchCriteria.html
+  name: CatalogSearchCriteria
+  nameWithType: CatalogSearchCriteria
+  fullName: Meridian.Storage.Interfaces.CatalogSearchCriteria
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.SaveCatalogAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.SaveCatalogAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_SaveCatalogAsync_System_Threading_CancellationToken_
+  name: SaveCatalogAsync
+  nameWithType: IStorageCatalogService.SaveCatalogAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.SaveCatalogAsync
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService.ExportCatalogAsync*
+  commentId: Overload:Meridian.Storage.Interfaces.IStorageCatalogService.ExportCatalogAsync
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html#Meridian_Storage_Interfaces_IStorageCatalogService_ExportCatalogAsync_System_String_Meridian_Storage_Interfaces_CatalogExportFormat_System_Threading_CancellationToken_
+  name: ExportCatalogAsync
+  nameWithType: IStorageCatalogService.ExportCatalogAsync
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService.ExportCatalogAsync
+- uid: Meridian.Storage.Interfaces.CatalogExportFormat
+  commentId: T:Meridian.Storage.Interfaces.CatalogExportFormat
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.CatalogExportFormat.html
+  name: CatalogExportFormat
+  nameWithType: CatalogExportFormat
+  fullName: Meridian.Storage.Interfaces.CatalogExportFormat

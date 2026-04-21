@@ -1,0 +1,28 @@
+{
+  "schema_version": "2026-04-14",
+  "mode": "design_partner",
+  "artifact_type": "screen-review",
+  "artifact_paths": [
+    "docs/screenshots/desktop/example-screen.png",
+    "src/Meridian.Wpf/Views/ExamplePage.xaml"
+  ],
+  "artifact_summary": "Static screen review for a WPF surface.",
+  "persona_set": {
+    "panel": "growth-adoption",
+    "required_roles": [
+      "Owner-Operator"
+    ]
+  },
+  "focus_areas": [
+    "first_impression",
+    "workflow_fit"
+  ],
+  "constraints": [
+    "Review what is visible in the supplied screenshots before inferring hidden behavior."
+  ],
+  "success_criteria": [
+    "The first-time user understands what the screen is for within two minutes.",
+    "The next action is obvious."
+  ],
+  "decision_deadline": "before UI sign-off"
+}

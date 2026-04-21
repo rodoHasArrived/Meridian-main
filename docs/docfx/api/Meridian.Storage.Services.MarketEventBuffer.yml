@@ -1,0 +1,1062 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.MarketEventBuffer
+  commentId: T:Meridian.Storage.Services.MarketEventBuffer
+  id: MarketEventBuffer
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.MarketEventBuffer.#ctor(System.Int32)
+  - Meridian.Storage.Services.MarketEventBuffer.DrainBySymbol(System.String)
+  langs:
+  - csharp
+  - vb
+  name: MarketEventBuffer
+  nameWithType: MarketEventBuffer
+  fullName: Meridian.Storage.Services.MarketEventBuffer
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/EventBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketEventBuffer
+    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    startLine: 230
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Specialized event buffer for <xref href="Meridian.Domain.Events.MarketEvent" data-throw-if-not-resolved="false"></xref> types.
+  example: []
+  syntax:
+    content: 'public sealed class MarketEventBuffer : EventBuffer<MarketEvent>, IDisposable'
+    content.vb: Public NotInheritable Class MarketEventBuffer Inherits EventBuffer(Of MarketEvent) Implements IDisposable
+  inheritance:
+  - System.Object
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Count
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.IsEmpty
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.ShouldFlush(System.Int32)
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Add(Meridian.Domain.Events.MarketEvent)
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.AddRange(System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent})
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.DrainAll
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Drain(System.Int32)
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.PeekAll
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Clear
+  - Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Dispose
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.MarketEventBuffer.#ctor(System.Int32)
+  commentId: M:Meridian.Storage.Services.MarketEventBuffer.#ctor(System.Int32)
+  id: '#ctor(System.Int32)'
+  parent: Meridian.Storage.Services.MarketEventBuffer
+  langs:
+  - csharp
+  - vb
+  name: MarketEventBuffer(int)
+  nameWithType: MarketEventBuffer.MarketEventBuffer(int)
+  fullName: Meridian.Storage.Services.MarketEventBuffer.MarketEventBuffer(int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/EventBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MarketEventBuffer(int initialCapacity = 1000)
+    parameters:
+    - id: initialCapacity
+      type: System.Int32
+    content.vb: Public Sub New(initialCapacity As Integer = 1000)
+  overload: Meridian.Storage.Services.MarketEventBuffer.#ctor*
+  nameWithType.vb: MarketEventBuffer.New(Integer)
+  fullName.vb: Meridian.Storage.Services.MarketEventBuffer.New(Integer)
+  name.vb: New(Integer)
+- uid: Meridian.Storage.Services.MarketEventBuffer.DrainBySymbol(System.String)
+  commentId: M:Meridian.Storage.Services.MarketEventBuffer.DrainBySymbol(System.String)
+  id: DrainBySymbol(System.String)
+  parent: Meridian.Storage.Services.MarketEventBuffer
+  langs:
+  - csharp
+  - vb
+  name: DrainBySymbol(string)
+  nameWithType: MarketEventBuffer.DrainBySymbol(string)
+  fullName: Meridian.Storage.Services.MarketEventBuffer.DrainBySymbol(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/EventBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DrainBySymbol
+    path: ../../src/Meridian.Storage/Services/EventBuffer.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: >-
+    Drain events for a specific symbol in a single lock acquisition.
+
+    Non-matching events remain in the buffer and preserve their original ordering.
+  remarks: >-
+    The previous implementation called <xref href="Meridian.Storage.Services.EventBuffer%601.DrainAll" data-throw-if-not-resolved="false"></xref> followed by
+
+    <xref href="Meridian.Storage.Services.EventBuffer%601.AddRange(System.Collections.Generic.IEnumerable%7b%600%7d)" data-throw-if-not-resolved="false"></xref> in two separate lock acquisitions, creating a
+
+    race window where concurrently produced events could be silently reordered. This
+
+    implementation partitions events in a single pass under one lock.
+  example: []
+  syntax:
+    content: public IReadOnlyList<MarketEvent> DrainBySymbol(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Domain.Events.MarketEvent}
+    content.vb: Public Function DrainBySymbol(symbol As String) As IReadOnlyList(Of MarketEvent)
+  overload: Meridian.Storage.Services.MarketEventBuffer.DrainBySymbol*
+  nameWithType.vb: MarketEventBuffer.DrainBySymbol(String)
+  fullName.vb: Meridian.Storage.Services.MarketEventBuffer.DrainBySymbol(String)
+  name.vb: DrainBySymbol(String)
+references:
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  commentId: T:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  parent: Meridian.Storage.Services
+  definition: Meridian.Storage.Services.EventBuffer`1
+  href: Meridian.Storage.Services.EventBuffer-1.html
+  name: EventBuffer<MarketEvent>
+  nameWithType: EventBuffer<MarketEvent>
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>
+  nameWithType.vb: EventBuffer(Of MarketEvent)
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent)
+  name.vb: EventBuffer(Of MarketEvent)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1
+    name: EventBuffer
+    href: Meridian.Storage.Services.EventBuffer-1.html
+  - name: <
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1
+    name: EventBuffer
+    href: Meridian.Storage.Services.EventBuffer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Count
+  commentId: P:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Count
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.Count
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Count
+  name: Count
+  nameWithType: EventBuffer<MarketEvent>.Count
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.Count
+  nameWithType.vb: EventBuffer(Of MarketEvent).Count
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).Count
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.IsEmpty
+  commentId: P:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.IsEmpty
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.IsEmpty
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_IsEmpty
+  name: IsEmpty
+  nameWithType: EventBuffer<MarketEvent>.IsEmpty
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.IsEmpty
+  nameWithType.vb: EventBuffer(Of MarketEvent).IsEmpty
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).IsEmpty
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.ShouldFlush(System.Int32)
+  commentId: M:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.ShouldFlush(System.Int32)
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.ShouldFlush(System.Int32)
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_ShouldFlush_System_Int32_
+  name: ShouldFlush(int)
+  nameWithType: EventBuffer<MarketEvent>.ShouldFlush(int)
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.ShouldFlush(int)
+  nameWithType.vb: EventBuffer(Of MarketEvent).ShouldFlush(Integer)
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).ShouldFlush(Integer)
+  name.vb: ShouldFlush(Integer)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.ShouldFlush(System.Int32)
+    name: ShouldFlush
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_ShouldFlush_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.ShouldFlush(System.Int32)
+    name: ShouldFlush
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_ShouldFlush_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Add(Meridian.Domain.Events.MarketEvent)
+  commentId: M:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Add(Meridian.Domain.Events.MarketEvent)
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.Add(`0)
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Add__0_
+  name: Add(MarketEvent)
+  nameWithType: EventBuffer<MarketEvent>.Add(MarketEvent)
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.Add(Meridian.Domain.Events.MarketEvent)
+  nameWithType.vb: EventBuffer(Of MarketEvent).Add(MarketEvent)
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).Add(Meridian.Domain.Events.MarketEvent)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Add(Meridian.Domain.Events.MarketEvent)
+    name: Add
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Add__0_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Add(Meridian.Domain.Events.MarketEvent)
+    name: Add
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Add__0_
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.AddRange(System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent})
+  commentId: M:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.AddRange(System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent})
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.AddRange(System.Collections.Generic.IEnumerable{`0})
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_AddRange_System_Collections_Generic_IEnumerable__0__
+  name: AddRange(IEnumerable<MarketEvent>)
+  nameWithType: EventBuffer<MarketEvent>.AddRange(IEnumerable<MarketEvent>)
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.AddRange(System.Collections.Generic.IEnumerable<Meridian.Domain.Events.MarketEvent>)
+  nameWithType.vb: EventBuffer(Of MarketEvent).AddRange(IEnumerable(Of MarketEvent))
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).AddRange(System.Collections.Generic.IEnumerable(Of Meridian.Domain.Events.MarketEvent))
+  name.vb: AddRange(IEnumerable(Of MarketEvent))
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.AddRange(System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent})
+    name: AddRange
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_AddRange_System_Collections_Generic_IEnumerable__0__
+  - name: (
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.AddRange(System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent})
+    name: AddRange
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_AddRange_System_Collections_Generic_IEnumerable__0__
+  - name: (
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.DrainAll
+  commentId: M:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.DrainAll
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.DrainAll
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_DrainAll
+  name: DrainAll()
+  nameWithType: EventBuffer<MarketEvent>.DrainAll()
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.DrainAll()
+  nameWithType.vb: EventBuffer(Of MarketEvent).DrainAll()
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).DrainAll()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.DrainAll
+    name: DrainAll
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_DrainAll
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.DrainAll
+    name: DrainAll
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_DrainAll
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Drain(System.Int32)
+  commentId: M:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Drain(System.Int32)
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.Drain(System.Int32)
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Drain_System_Int32_
+  name: Drain(int)
+  nameWithType: EventBuffer<MarketEvent>.Drain(int)
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.Drain(int)
+  nameWithType.vb: EventBuffer(Of MarketEvent).Drain(Integer)
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).Drain(Integer)
+  name.vb: Drain(Integer)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Drain(System.Int32)
+    name: Drain
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Drain_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Drain(System.Int32)
+    name: Drain
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Drain_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.PeekAll
+  commentId: M:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.PeekAll
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.PeekAll
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_PeekAll
+  name: PeekAll()
+  nameWithType: EventBuffer<MarketEvent>.PeekAll()
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.PeekAll()
+  nameWithType.vb: EventBuffer(Of MarketEvent).PeekAll()
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).PeekAll()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.PeekAll
+    name: PeekAll
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_PeekAll
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.PeekAll
+    name: PeekAll
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_PeekAll
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Clear
+  commentId: M:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Clear
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.Clear
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Clear
+  name: Clear()
+  nameWithType: EventBuffer<MarketEvent>.Clear()
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.Clear()
+  nameWithType.vb: EventBuffer(Of MarketEvent).Clear()
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).Clear()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Clear
+    name: Clear
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Clear
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Clear
+    name: Clear
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Clear
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Dispose
+  commentId: M:Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Dispose
+  parent: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}
+  definition: Meridian.Storage.Services.EventBuffer`1.Dispose
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Dispose
+  name: Dispose()
+  nameWithType: EventBuffer<MarketEvent>.Dispose()
+  fullName: Meridian.Storage.Services.EventBuffer<Meridian.Domain.Events.MarketEvent>.Dispose()
+  nameWithType.vb: EventBuffer(Of MarketEvent).Dispose()
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of Meridian.Domain.Events.MarketEvent).Dispose()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Dispose
+    name: Dispose
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer{Meridian.Domain.Events.MarketEvent}.Dispose
+    name: Dispose
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Dispose
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.EventBuffer`1
+  commentId: T:Meridian.Storage.Services.EventBuffer`1
+  href: Meridian.Storage.Services.EventBuffer-1.html
+  name: EventBuffer<T>
+  nameWithType: EventBuffer<T>
+  fullName: Meridian.Storage.Services.EventBuffer<T>
+  nameWithType.vb: EventBuffer(Of T)
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T)
+  name.vb: EventBuffer(Of T)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1
+    name: EventBuffer
+    href: Meridian.Storage.Services.EventBuffer-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1
+    name: EventBuffer
+    href: Meridian.Storage.Services.EventBuffer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer`1.Count
+  commentId: P:Meridian.Storage.Services.EventBuffer`1.Count
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Count
+  name: Count
+  nameWithType: EventBuffer<T>.Count
+  fullName: Meridian.Storage.Services.EventBuffer<T>.Count
+  nameWithType.vb: EventBuffer(Of T).Count
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).Count
+- uid: Meridian.Storage.Services.EventBuffer`1.IsEmpty
+  commentId: P:Meridian.Storage.Services.EventBuffer`1.IsEmpty
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_IsEmpty
+  name: IsEmpty
+  nameWithType: EventBuffer<T>.IsEmpty
+  fullName: Meridian.Storage.Services.EventBuffer<T>.IsEmpty
+  nameWithType.vb: EventBuffer(Of T).IsEmpty
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).IsEmpty
+- uid: Meridian.Storage.Services.EventBuffer`1.ShouldFlush(System.Int32)
+  commentId: M:Meridian.Storage.Services.EventBuffer`1.ShouldFlush(System.Int32)
+  isExternal: true
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_ShouldFlush_System_Int32_
+  name: ShouldFlush(int)
+  nameWithType: EventBuffer<T>.ShouldFlush(int)
+  fullName: Meridian.Storage.Services.EventBuffer<T>.ShouldFlush(int)
+  nameWithType.vb: EventBuffer(Of T).ShouldFlush(Integer)
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).ShouldFlush(Integer)
+  name.vb: ShouldFlush(Integer)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1.ShouldFlush(System.Int32)
+    name: ShouldFlush
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_ShouldFlush_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1.ShouldFlush(System.Int32)
+    name: ShouldFlush
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_ShouldFlush_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer`1.Add(`0)
+  commentId: M:Meridian.Storage.Services.EventBuffer`1.Add(`0)
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Add__0_
+  name: Add(T)
+  nameWithType: EventBuffer<T>.Add(T)
+  fullName: Meridian.Storage.Services.EventBuffer<T>.Add(T)
+  nameWithType.vb: EventBuffer(Of T).Add(T)
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).Add(T)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1.Add(`0)
+    name: Add
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Add__0_
+  - name: (
+  - name: T
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1.Add(`0)
+    name: Add
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Add__0_
+  - name: (
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer`1.AddRange(System.Collections.Generic.IEnumerable{`0})
+  commentId: M:Meridian.Storage.Services.EventBuffer`1.AddRange(System.Collections.Generic.IEnumerable{`0})
+  isExternal: true
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_AddRange_System_Collections_Generic_IEnumerable__0__
+  name: AddRange(IEnumerable<T>)
+  nameWithType: EventBuffer<T>.AddRange(IEnumerable<T>)
+  fullName: Meridian.Storage.Services.EventBuffer<T>.AddRange(System.Collections.Generic.IEnumerable<T>)
+  nameWithType.vb: EventBuffer(Of T).AddRange(IEnumerable(Of T))
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).AddRange(System.Collections.Generic.IEnumerable(Of T))
+  name.vb: AddRange(IEnumerable(Of T))
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1.AddRange(System.Collections.Generic.IEnumerable{`0})
+    name: AddRange
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_AddRange_System_Collections_Generic_IEnumerable__0__
+  - name: (
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1.AddRange(System.Collections.Generic.IEnumerable{`0})
+    name: AddRange
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_AddRange_System_Collections_Generic_IEnumerable__0__
+  - name: (
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer`1.DrainAll
+  commentId: M:Meridian.Storage.Services.EventBuffer`1.DrainAll
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_DrainAll
+  name: DrainAll()
+  nameWithType: EventBuffer<T>.DrainAll()
+  fullName: Meridian.Storage.Services.EventBuffer<T>.DrainAll()
+  nameWithType.vb: EventBuffer(Of T).DrainAll()
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).DrainAll()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1.DrainAll
+    name: DrainAll
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_DrainAll
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1.DrainAll
+    name: DrainAll
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_DrainAll
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer`1.Drain(System.Int32)
+  commentId: M:Meridian.Storage.Services.EventBuffer`1.Drain(System.Int32)
+  isExternal: true
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Drain_System_Int32_
+  name: Drain(int)
+  nameWithType: EventBuffer<T>.Drain(int)
+  fullName: Meridian.Storage.Services.EventBuffer<T>.Drain(int)
+  nameWithType.vb: EventBuffer(Of T).Drain(Integer)
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).Drain(Integer)
+  name.vb: Drain(Integer)
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1.Drain(System.Int32)
+    name: Drain
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Drain_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1.Drain(System.Int32)
+    name: Drain
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Drain_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer`1.PeekAll
+  commentId: M:Meridian.Storage.Services.EventBuffer`1.PeekAll
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_PeekAll
+  name: PeekAll()
+  nameWithType: EventBuffer<T>.PeekAll()
+  fullName: Meridian.Storage.Services.EventBuffer<T>.PeekAll()
+  nameWithType.vb: EventBuffer(Of T).PeekAll()
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).PeekAll()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1.PeekAll
+    name: PeekAll
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_PeekAll
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1.PeekAll
+    name: PeekAll
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_PeekAll
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer`1.Clear
+  commentId: M:Meridian.Storage.Services.EventBuffer`1.Clear
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Clear
+  name: Clear()
+  nameWithType: EventBuffer<T>.Clear()
+  fullName: Meridian.Storage.Services.EventBuffer<T>.Clear()
+  nameWithType.vb: EventBuffer(Of T).Clear()
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).Clear()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1.Clear
+    name: Clear
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Clear
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1.Clear
+    name: Clear
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Clear
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.EventBuffer`1.Dispose
+  commentId: M:Meridian.Storage.Services.EventBuffer`1.Dispose
+  href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Dispose
+  name: Dispose()
+  nameWithType: EventBuffer<T>.Dispose()
+  fullName: Meridian.Storage.Services.EventBuffer<T>.Dispose()
+  nameWithType.vb: EventBuffer(Of T).Dispose()
+  fullName.vb: Meridian.Storage.Services.EventBuffer(Of T).Dispose()
+  spec.csharp:
+  - uid: Meridian.Storage.Services.EventBuffer`1.Dispose
+    name: Dispose
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Storage.Services.EventBuffer`1.Dispose
+    name: Dispose
+    href: Meridian.Storage.Services.EventBuffer-1.html#Meridian_Storage_Services_EventBuffer_1_Dispose
+  - name: (
+  - name: )
+- uid: Meridian.Storage.Services.MarketEventBuffer.#ctor*
+  commentId: Overload:Meridian.Storage.Services.MarketEventBuffer.#ctor
+  href: Meridian.Storage.Services.MarketEventBuffer.html#Meridian_Storage_Services_MarketEventBuffer__ctor_System_Int32_
+  name: MarketEventBuffer
+  nameWithType: MarketEventBuffer.MarketEventBuffer
+  fullName: Meridian.Storage.Services.MarketEventBuffer.MarketEventBuffer
+  nameWithType.vb: MarketEventBuffer.New
+  fullName.vb: Meridian.Storage.Services.MarketEventBuffer.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Services.MarketEventBuffer.DrainBySymbol*
+  commentId: Overload:Meridian.Storage.Services.MarketEventBuffer.DrainBySymbol
+  href: Meridian.Storage.Services.MarketEventBuffer.html#Meridian_Storage_Services_MarketEventBuffer_DrainBySymbol_System_String_
+  name: DrainBySymbol
+  nameWithType: MarketEventBuffer.DrainBySymbol
+  fullName: Meridian.Storage.Services.MarketEventBuffer.DrainBySymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Domain.Events.MarketEvent}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Domain.Events.MarketEvent}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<MarketEvent>
+  nameWithType: IReadOnlyList<MarketEvent>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Domain.Events.MarketEvent>
+  nameWithType.vb: IReadOnlyList(Of MarketEvent)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Domain.Events.MarketEvent)
+  name.vb: IReadOnlyList(Of MarketEvent)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

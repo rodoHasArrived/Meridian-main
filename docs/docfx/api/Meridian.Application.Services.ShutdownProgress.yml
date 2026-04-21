@@ -1,0 +1,610 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ShutdownProgress
+  commentId: T:Meridian.Application.Services.ShutdownProgress
+  id: ShutdownProgress
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ShutdownProgress.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.DateTimeOffset)
+  - Meridian.Application.Services.ShutdownProgress.CurrentStep
+  - Meridian.Application.Services.ShutdownProgress.PercentComplete
+  - Meridian.Application.Services.ShutdownProgress.Phase
+  - Meridian.Application.Services.ShutdownProgress.Timestamp
+  - Meridian.Application.Services.ShutdownProgress.TotalSteps
+  langs:
+  - csharp
+  - vb
+  name: ShutdownProgress
+  nameWithType: ShutdownProgress
+  fullName: Meridian.Application.Services.ShutdownProgress
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShutdownProgress
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 503
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Progress information during shutdown.
+  example: []
+  syntax:
+    content: 'public readonly record struct ShutdownProgress : IEquatable<ShutdownProgress>'
+    content.vb: Public Structure ShutdownProgress Implements IEquatable(Of ShutdownProgress)
+  implements:
+  - System.IEquatable{Meridian.Application.Services.ShutdownProgress}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Services.ShutdownProgress.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Services.ShutdownProgress.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.DateTimeOffset)
+  id: '#ctor(System.String,System.Int32,System.Int32,System.Int32,System.DateTimeOffset)'
+  parent: Meridian.Application.Services.ShutdownProgress
+  langs:
+  - csharp
+  - vb
+  name: ShutdownProgress(string, int, int, int, DateTimeOffset)
+  nameWithType: ShutdownProgress.ShutdownProgress(string, int, int, int, DateTimeOffset)
+  fullName: Meridian.Application.Services.ShutdownProgress.ShutdownProgress(string, int, int, int, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 503
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Progress information during shutdown.
+  example: []
+  syntax:
+    content: public ShutdownProgress(string Phase, int CurrentStep, int TotalSteps, int PercentComplete, DateTimeOffset Timestamp)
+    parameters:
+    - id: Phase
+      type: System.String
+    - id: CurrentStep
+      type: System.Int32
+    - id: TotalSteps
+      type: System.Int32
+    - id: PercentComplete
+      type: System.Int32
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Phase As String, CurrentStep As Integer, TotalSteps As Integer, PercentComplete As Integer, Timestamp As DateTimeOffset)
+  overload: Meridian.Application.Services.ShutdownProgress.#ctor*
+  nameWithType.vb: ShutdownProgress.New(String, Integer, Integer, Integer, DateTimeOffset)
+  fullName.vb: Meridian.Application.Services.ShutdownProgress.New(String, Integer, Integer, Integer, System.DateTimeOffset)
+  name.vb: New(String, Integer, Integer, Integer, DateTimeOffset)
+- uid: Meridian.Application.Services.ShutdownProgress.Phase
+  commentId: P:Meridian.Application.Services.ShutdownProgress.Phase
+  id: Phase
+  parent: Meridian.Application.Services.ShutdownProgress
+  langs:
+  - csharp
+  - vb
+  name: Phase
+  nameWithType: ShutdownProgress.Phase
+  fullName: Meridian.Application.Services.ShutdownProgress.Phase
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Phase
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 504
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string Phase { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Phase As String
+  overload: Meridian.Application.Services.ShutdownProgress.Phase*
+- uid: Meridian.Application.Services.ShutdownProgress.CurrentStep
+  commentId: P:Meridian.Application.Services.ShutdownProgress.CurrentStep
+  id: CurrentStep
+  parent: Meridian.Application.Services.ShutdownProgress
+  langs:
+  - csharp
+  - vb
+  name: CurrentStep
+  nameWithType: ShutdownProgress.CurrentStep
+  fullName: Meridian.Application.Services.ShutdownProgress.CurrentStep
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentStep
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 505
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int CurrentStep { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CurrentStep As Integer
+  overload: Meridian.Application.Services.ShutdownProgress.CurrentStep*
+- uid: Meridian.Application.Services.ShutdownProgress.TotalSteps
+  commentId: P:Meridian.Application.Services.ShutdownProgress.TotalSteps
+  id: TotalSteps
+  parent: Meridian.Application.Services.ShutdownProgress
+  langs:
+  - csharp
+  - vb
+  name: TotalSteps
+  nameWithType: ShutdownProgress.TotalSteps
+  fullName: Meridian.Application.Services.ShutdownProgress.TotalSteps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSteps
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 506
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int TotalSteps { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalSteps As Integer
+  overload: Meridian.Application.Services.ShutdownProgress.TotalSteps*
+- uid: Meridian.Application.Services.ShutdownProgress.PercentComplete
+  commentId: P:Meridian.Application.Services.ShutdownProgress.PercentComplete
+  id: PercentComplete
+  parent: Meridian.Application.Services.ShutdownProgress
+  langs:
+  - csharp
+  - vb
+  name: PercentComplete
+  nameWithType: ShutdownProgress.PercentComplete
+  fullName: Meridian.Application.Services.ShutdownProgress.PercentComplete
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PercentComplete
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 507
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public int PercentComplete { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property PercentComplete As Integer
+  overload: Meridian.Application.Services.ShutdownProgress.PercentComplete*
+- uid: Meridian.Application.Services.ShutdownProgress.Timestamp
+  commentId: P:Meridian.Application.Services.ShutdownProgress.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Services.ShutdownProgress
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ShutdownProgress.Timestamp
+  fullName: Meridian.Application.Services.ShutdownProgress.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/GracefulShutdownHandler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Services/GracefulShutdownHandler.cs
+    startLine: 508
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Services.ShutdownProgress.Timestamp*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.IEquatable{Meridian.Application.Services.ShutdownProgress}
+  commentId: T:System.IEquatable{Meridian.Application.Services.ShutdownProgress}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ShutdownProgress>
+  nameWithType: IEquatable<ShutdownProgress>
+  fullName: System.IEquatable<Meridian.Application.Services.ShutdownProgress>
+  nameWithType.vb: IEquatable(Of ShutdownProgress)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Services.ShutdownProgress)
+  name.vb: IEquatable(Of ShutdownProgress)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Services.ShutdownProgress
+    name: ShutdownProgress
+    href: Meridian.Application.Services.ShutdownProgress.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.ShutdownProgress
+    name: ShutdownProgress
+    href: Meridian.Application.Services.ShutdownProgress.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Services.ShutdownProgress.#ctor*
+  commentId: Overload:Meridian.Application.Services.ShutdownProgress.#ctor
+  href: Meridian.Application.Services.ShutdownProgress.html#Meridian_Application_Services_ShutdownProgress__ctor_System_String_System_Int32_System_Int32_System_Int32_System_DateTimeOffset_
+  name: ShutdownProgress
+  nameWithType: ShutdownProgress.ShutdownProgress
+  fullName: Meridian.Application.Services.ShutdownProgress.ShutdownProgress
+  nameWithType.vb: ShutdownProgress.New
+  fullName.vb: Meridian.Application.Services.ShutdownProgress.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Services.ShutdownProgress.Phase*
+  commentId: Overload:Meridian.Application.Services.ShutdownProgress.Phase
+  href: Meridian.Application.Services.ShutdownProgress.html#Meridian_Application_Services_ShutdownProgress_Phase
+  name: Phase
+  nameWithType: ShutdownProgress.Phase
+  fullName: Meridian.Application.Services.ShutdownProgress.Phase
+- uid: Meridian.Application.Services.ShutdownProgress.CurrentStep*
+  commentId: Overload:Meridian.Application.Services.ShutdownProgress.CurrentStep
+  href: Meridian.Application.Services.ShutdownProgress.html#Meridian_Application_Services_ShutdownProgress_CurrentStep
+  name: CurrentStep
+  nameWithType: ShutdownProgress.CurrentStep
+  fullName: Meridian.Application.Services.ShutdownProgress.CurrentStep
+- uid: Meridian.Application.Services.ShutdownProgress.TotalSteps*
+  commentId: Overload:Meridian.Application.Services.ShutdownProgress.TotalSteps
+  href: Meridian.Application.Services.ShutdownProgress.html#Meridian_Application_Services_ShutdownProgress_TotalSteps
+  name: TotalSteps
+  nameWithType: ShutdownProgress.TotalSteps
+  fullName: Meridian.Application.Services.ShutdownProgress.TotalSteps
+- uid: Meridian.Application.Services.ShutdownProgress.PercentComplete*
+  commentId: Overload:Meridian.Application.Services.ShutdownProgress.PercentComplete
+  href: Meridian.Application.Services.ShutdownProgress.html#Meridian_Application_Services_ShutdownProgress_PercentComplete
+  name: PercentComplete
+  nameWithType: ShutdownProgress.PercentComplete
+  fullName: Meridian.Application.Services.ShutdownProgress.PercentComplete
+- uid: Meridian.Application.Services.ShutdownProgress.Timestamp*
+  commentId: Overload:Meridian.Application.Services.ShutdownProgress.Timestamp
+  href: Meridian.Application.Services.ShutdownProgress.html#Meridian_Application_Services_ShutdownProgress_Timestamp
+  name: Timestamp
+  nameWithType: ShutdownProgress.Timestamp
+  fullName: Meridian.Application.Services.ShutdownProgress.Timestamp

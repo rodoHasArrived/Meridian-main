@@ -1,0 +1,484 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.ExportProgressEventArgs
+  commentId: T:Meridian.Contracts.Export.ExportProgressEventArgs
+  id: ExportProgressEventArgs
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.ExportProgressEventArgs.CurrentSymbol
+  - Meridian.Contracts.Export.ExportProgressEventArgs.Elapsed
+  - Meridian.Contracts.Export.ExportProgressEventArgs.Progress
+  - Meridian.Contracts.Export.ExportProgressEventArgs.RowsProcessed
+  langs:
+  - csharp
+  - vb
+  name: ExportProgressEventArgs
+  nameWithType: ExportProgressEventArgs
+  fullName: Meridian.Contracts.Export.ExportProgressEventArgs
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportProgressEventArgs
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: 'public sealed class ExportProgressEventArgs : EventArgs'
+    content.vb: Public NotInheritable Class ExportProgressEventArgs Inherits EventArgs
+  inheritance:
+  - System.Object
+  - System.EventArgs
+  inheritedMembers:
+  - System.EventArgs.Empty
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Export.ExportProgressEventArgs.Progress
+  commentId: P:Meridian.Contracts.Export.ExportProgressEventArgs.Progress
+  id: Progress
+  parent: Meridian.Contracts.Export.ExportProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Progress
+  nameWithType: ExportProgressEventArgs.Progress
+  fullName: Meridian.Contracts.Export.ExportProgressEventArgs.Progress
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Progress
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public float Progress { get; set; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: Public Property Progress As Single
+  overload: Meridian.Contracts.Export.ExportProgressEventArgs.Progress*
+- uid: Meridian.Contracts.Export.ExportProgressEventArgs.CurrentSymbol
+  commentId: P:Meridian.Contracts.Export.ExportProgressEventArgs.CurrentSymbol
+  id: CurrentSymbol
+  parent: Meridian.Contracts.Export.ExportProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: CurrentSymbol
+  nameWithType: ExportProgressEventArgs.CurrentSymbol
+  fullName: Meridian.Contracts.Export.ExportProgressEventArgs.CurrentSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentSymbol
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public string? CurrentSymbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CurrentSymbol As String
+  overload: Meridian.Contracts.Export.ExportProgressEventArgs.CurrentSymbol*
+- uid: Meridian.Contracts.Export.ExportProgressEventArgs.RowsProcessed
+  commentId: P:Meridian.Contracts.Export.ExportProgressEventArgs.RowsProcessed
+  id: RowsProcessed
+  parent: Meridian.Contracts.Export.ExportProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: RowsProcessed
+  nameWithType: ExportProgressEventArgs.RowsProcessed
+  fullName: Meridian.Contracts.Export.ExportProgressEventArgs.RowsProcessed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RowsProcessed
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public int RowsProcessed { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RowsProcessed As Integer
+  overload: Meridian.Contracts.Export.ExportProgressEventArgs.RowsProcessed*
+- uid: Meridian.Contracts.Export.ExportProgressEventArgs.Elapsed
+  commentId: P:Meridian.Contracts.Export.ExportProgressEventArgs.Elapsed
+  id: Elapsed
+  parent: Meridian.Contracts.Export.ExportProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Elapsed
+  nameWithType: ExportProgressEventArgs.Elapsed
+  fullName: Meridian.Contracts.Export.ExportProgressEventArgs.Elapsed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Elapsed
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public TimeSpan Elapsed { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Elapsed As TimeSpan
+  overload: Meridian.Contracts.Export.ExportProgressEventArgs.Elapsed*
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.EventArgs
+  commentId: T:System.EventArgs
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs
+  name: EventArgs
+  nameWithType: EventArgs
+  fullName: System.EventArgs
+- uid: System.EventArgs.Empty
+  commentId: F:System.EventArgs.Empty
+  parent: System.EventArgs
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs.empty
+  name: Empty
+  nameWithType: EventArgs.Empty
+  fullName: System.EventArgs.Empty
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Export.ExportProgressEventArgs.Progress*
+  commentId: Overload:Meridian.Contracts.Export.ExportProgressEventArgs.Progress
+  href: Meridian.Contracts.Export.ExportProgressEventArgs.html#Meridian_Contracts_Export_ExportProgressEventArgs_Progress
+  name: Progress
+  nameWithType: ExportProgressEventArgs.Progress
+  fullName: Meridian.Contracts.Export.ExportProgressEventArgs.Progress
+- uid: System.Single
+  commentId: T:System.Single
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.single
+  name: float
+  nameWithType: float
+  fullName: float
+  nameWithType.vb: Single
+  fullName.vb: Single
+  name.vb: Single
+- uid: Meridian.Contracts.Export.ExportProgressEventArgs.CurrentSymbol*
+  commentId: Overload:Meridian.Contracts.Export.ExportProgressEventArgs.CurrentSymbol
+  href: Meridian.Contracts.Export.ExportProgressEventArgs.html#Meridian_Contracts_Export_ExportProgressEventArgs_CurrentSymbol
+  name: CurrentSymbol
+  nameWithType: ExportProgressEventArgs.CurrentSymbol
+  fullName: Meridian.Contracts.Export.ExportProgressEventArgs.CurrentSymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Export.ExportProgressEventArgs.RowsProcessed*
+  commentId: Overload:Meridian.Contracts.Export.ExportProgressEventArgs.RowsProcessed
+  href: Meridian.Contracts.Export.ExportProgressEventArgs.html#Meridian_Contracts_Export_ExportProgressEventArgs_RowsProcessed
+  name: RowsProcessed
+  nameWithType: ExportProgressEventArgs.RowsProcessed
+  fullName: Meridian.Contracts.Export.ExportProgressEventArgs.RowsProcessed
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Export.ExportProgressEventArgs.Elapsed*
+  commentId: Overload:Meridian.Contracts.Export.ExportProgressEventArgs.Elapsed
+  href: Meridian.Contracts.Export.ExportProgressEventArgs.html#Meridian_Contracts_Export_ExportProgressEventArgs_Elapsed
+  name: Elapsed
+  nameWithType: ExportProgressEventArgs.Elapsed
+  fullName: Meridian.Contracts.Export.ExportProgressEventArgs.Elapsed
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan

@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.DataClassification
+  commentId: T:Meridian.Storage.DataClassification
+  id: DataClassification
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.DataClassification.Critical
+  - Meridian.Storage.DataClassification.Derived
+  - Meridian.Storage.DataClassification.Standard
+  - Meridian.Storage.DataClassification.Transient
+  langs:
+  - csharp
+  - vb
+  name: DataClassification
+  nameWithType: DataClassification
+  fullName: Meridian.Storage.DataClassification
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataClassification
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 225
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Data classification for storage policies.
+  example: []
+  syntax:
+    content: 'public enum DataClassification : byte'
+    content.vb: Public Enum DataClassification As Byte
+- uid: Meridian.Storage.DataClassification.Critical
+  commentId: F:Meridian.Storage.DataClassification.Critical
+  id: Critical
+  parent: Meridian.Storage.DataClassification
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: DataClassification.Critical
+  fullName: Meridian.Storage.DataClassification.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 228
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Critical data - never delete (regulatory/compliance).
+  example: []
+  syntax:
+    content: Critical = 0
+    return:
+      type: Meridian.Storage.DataClassification
+- uid: Meridian.Storage.DataClassification.Standard
+  commentId: F:Meridian.Storage.DataClassification.Standard
+  id: Standard
+  parent: Meridian.Storage.DataClassification
+  langs:
+  - csharp
+  - vb
+  name: Standard
+  nameWithType: DataClassification.Standard
+  fullName: Meridian.Storage.DataClassification.Standard
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Standard
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 230
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Standard data - normal retention policies apply.
+  example: []
+  syntax:
+    content: Standard = 1
+    return:
+      type: Meridian.Storage.DataClassification
+- uid: Meridian.Storage.DataClassification.Transient
+  commentId: F:Meridian.Storage.DataClassification.Transient
+  id: Transient
+  parent: Meridian.Storage.DataClassification
+  langs:
+  - csharp
+  - vb
+  name: Transient
+  nameWithType: DataClassification.Transient
+  fullName: Meridian.Storage.DataClassification.Transient
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Transient
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Transient data - short-lived, deletable quickly.
+  example: []
+  syntax:
+    content: Transient = 2
+    return:
+      type: Meridian.Storage.DataClassification
+- uid: Meridian.Storage.DataClassification.Derived
+  commentId: F:Meridian.Storage.DataClassification.Derived
+  id: Derived
+  parent: Meridian.Storage.DataClassification
+  langs:
+  - csharp
+  - vb
+  name: Derived
+  nameWithType: DataClassification.Derived
+  fullName: Meridian.Storage.DataClassification.Derived
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Derived
+    path: ../../src/Meridian.Storage/StorageOptions.cs
+    startLine: 234
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Derived data - can be regenerated, aggressive cleanup.
+  example: []
+  syntax:
+    content: Derived = 3
+    return:
+      type: Meridian.Storage.DataClassification
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Storage.DataClassification
+  commentId: T:Meridian.Storage.DataClassification
+  parent: Meridian.Storage
+  href: Meridian.Storage.DataClassification.html
+  name: DataClassification
+  nameWithType: DataClassification
+  fullName: Meridian.Storage.DataClassification

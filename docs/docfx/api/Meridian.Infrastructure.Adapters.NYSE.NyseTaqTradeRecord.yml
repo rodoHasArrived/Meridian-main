@@ -1,0 +1,1073 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  id: NyseTaqTradeRecord
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  children:
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.#ctor(System.Int64,System.DateTimeOffset,System.String,System.Int32,System.Int64,System.Decimal,System.Int64,System.String,System.String,System.String,System.String)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.CorrectionIndicator
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeCode
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeSequenceNumber
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.GlobalSequenceNumber
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsFinalCorrection
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularHours
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularTrade
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsStoppedStock
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsTapeA
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Price
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.SaleCondition
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.StoppedStock
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Symbol
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Tape
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Timestamp
+  - Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Volume
+  langs:
+  - csharp
+  - vb
+  name: NyseTaqTradeRecord
+  nameWithType: NyseTaqTradeRecord
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NyseTaqTradeRecord
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    A parsed NYSE TAQ type-220 (National Trades) trade record.
+
+    All fields are mapped directly from the CSV columns; no interpretation is applied.
+  example: []
+  syntax:
+    content: 'public sealed record NyseTaqTradeRecord : IEquatable<NyseTaqTradeRecord>'
+    content.vb: Public NotInheritable Class NyseTaqTradeRecord Implements IEquatable(Of NyseTaqTradeRecord)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.#ctor(System.Int64,System.DateTimeOffset,System.String,System.Int32,System.Int64,System.Decimal,System.Int64,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.#ctor(System.Int64,System.DateTimeOffset,System.String,System.Int32,System.Int64,System.Decimal,System.Int64,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.Int64,System.DateTimeOffset,System.String,System.Int32,System.Int64,System.Decimal,System.Int64,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: NyseTaqTradeRecord(long, DateTimeOffset, string, int, long, decimal, long, string, string, string, string)
+  nameWithType: NyseTaqTradeRecord.NyseTaqTradeRecord(long, DateTimeOffset, string, int, long, decimal, long, string, string, string, string)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.NyseTaqTradeRecord(long, System.DateTimeOffset, string, int, long, decimal, long, string, string, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    A parsed NYSE TAQ type-220 (National Trades) trade record.
+
+    All fields are mapped directly from the CSV columns; no interpretation is applied.
+  example: []
+  syntax:
+    content: public NyseTaqTradeRecord(long GlobalSequenceNumber, DateTimeOffset Timestamp, string Symbol, int ExchangeCode, long ExchangeSequenceNumber, decimal Price, long Volume, string SaleCondition, string CorrectionIndicator, string Tape, string StoppedStock)
+    parameters:
+    - id: GlobalSequenceNumber
+      type: System.Int64
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Symbol
+      type: System.String
+    - id: ExchangeCode
+      type: System.Int32
+    - id: ExchangeSequenceNumber
+      type: System.Int64
+    - id: Price
+      type: System.Decimal
+    - id: Volume
+      type: System.Int64
+    - id: SaleCondition
+      type: System.String
+    - id: CorrectionIndicator
+      type: System.String
+    - id: Tape
+      type: System.String
+    - id: StoppedStock
+      type: System.String
+    content.vb: Public Sub New(GlobalSequenceNumber As Long, Timestamp As DateTimeOffset, Symbol As String, ExchangeCode As Integer, ExchangeSequenceNumber As Long, Price As Decimal, Volume As Long, SaleCondition As String, CorrectionIndicator As String, Tape As String, StoppedStock As String)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.#ctor*
+  nameWithType.vb: NyseTaqTradeRecord.New(Long, DateTimeOffset, String, Integer, Long, Decimal, Long, String, String, String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.New(Long, System.DateTimeOffset, String, Integer, Long, Decimal, Long, String, String, String, String)
+  name.vb: New(Long, DateTimeOffset, String, Integer, Long, Decimal, Long, String, String, String, String)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.GlobalSequenceNumber
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.GlobalSequenceNumber
+  id: GlobalSequenceNumber
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: GlobalSequenceNumber
+  nameWithType: NyseTaqTradeRecord.GlobalSequenceNumber
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.GlobalSequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GlobalSequenceNumber
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public long GlobalSequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property GlobalSequenceNumber As Long
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.GlobalSequenceNumber*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Timestamp
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Timestamp
+  id: Timestamp
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: NyseTaqTradeRecord.Timestamp
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Timestamp*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Symbol
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: NyseTaqTradeRecord.Symbol
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Symbol*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeCode
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeCode
+  id: ExchangeCode
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: ExchangeCode
+  nameWithType: NyseTaqTradeRecord.ExchangeCode
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExchangeCode
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public int ExchangeCode { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ExchangeCode As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeCode*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeSequenceNumber
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeSequenceNumber
+  id: ExchangeSequenceNumber
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: ExchangeSequenceNumber
+  nameWithType: NyseTaqTradeRecord.ExchangeSequenceNumber
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeSequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExchangeSequenceNumber
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 248
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public long ExchangeSequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ExchangeSequenceNumber As Long
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeSequenceNumber*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Price
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Price
+  id: Price
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: NyseTaqTradeRecord.Price
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public decimal Price { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Price*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Volume
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Volume
+  id: Volume
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: Volume
+  nameWithType: NyseTaqTradeRecord.Volume
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Volume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Volume
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public long Volume { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Volume As Long
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Volume*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.SaleCondition
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.SaleCondition
+  id: SaleCondition
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: SaleCondition
+  nameWithType: NyseTaqTradeRecord.SaleCondition
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.SaleCondition
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaleCondition
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 251
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public string SaleCondition { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SaleCondition As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.SaleCondition*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.CorrectionIndicator
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.CorrectionIndicator
+  id: CorrectionIndicator
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: CorrectionIndicator
+  nameWithType: NyseTaqTradeRecord.CorrectionIndicator
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.CorrectionIndicator
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorrectionIndicator
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public string CorrectionIndicator { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CorrectionIndicator As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.CorrectionIndicator*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Tape
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Tape
+  id: Tape
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: Tape
+  nameWithType: NyseTaqTradeRecord.Tape
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Tape
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tape
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public string Tape { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Tape As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Tape*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.StoppedStock
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.StoppedStock
+  id: StoppedStock
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: StoppedStock
+  nameWithType: NyseTaqTradeRecord.StoppedStock
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.StoppedStock
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StoppedStock
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  syntax:
+    content: public string StoppedStock { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StoppedStock As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.StoppedStock*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularTrade
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularTrade
+  id: IsRegularTrade
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: IsRegularTrade
+  nameWithType: NyseTaqTradeRecord.IsRegularTrade
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularTrade
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsRegularTrade
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: True when this is a regular round-lot trade (sale condition "@").
+  example: []
+  syntax:
+    content: public bool IsRegularTrade { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsRegularTrade As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularTrade*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsFinalCorrection
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsFinalCorrection
+  id: IsFinalCorrection
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: IsFinalCorrection
+  nameWithType: NyseTaqTradeRecord.IsFinalCorrection
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsFinalCorrection
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsFinalCorrection
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 260
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: True when the correction indicator is "F" (final/corrected print).
+  example: []
+  syntax:
+    content: public bool IsFinalCorrection { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsFinalCorrection As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsFinalCorrection*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsTapeA
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsTapeA
+  id: IsTapeA
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: IsTapeA
+  nameWithType: NyseTaqTradeRecord.IsTapeA
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsTapeA
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsTapeA
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 263
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: True when this record is on Consolidated Tape A (NYSE-listed securities).
+  example: []
+  syntax:
+    content: public bool IsTapeA { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsTapeA As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsTapeA*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsStoppedStock
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsStoppedStock
+  id: IsStoppedStock
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: IsStoppedStock
+  nameWithType: NyseTaqTradeRecord.IsStoppedStock
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsStoppedStock
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsStoppedStock
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: True when the stopped-stock indicator is set.
+  example: []
+  syntax:
+    content: public bool IsStoppedStock { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsStoppedStock As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsStoppedStock*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularHours
+  commentId: P:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularHours
+  id: IsRegularHours
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  langs:
+  - csharp
+  - vb
+  name: IsRegularHours
+  nameWithType: NyseTaqTradeRecord.IsRegularHours
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularHours
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsRegularHours
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 269
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Determines whether this trade occurred during regular market hours (09:30–16:00 ET).
+  example: []
+  syntax:
+    content: public bool IsRegularHours { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsRegularHours As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularHours*
+references:
+- uid: Meridian.Infrastructure.Adapters.NYSE
+  commentId: N:Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.NYSE
+  nameWithType: Meridian.Infrastructure.Adapters.NYSE
+  fullName: Meridian.Infrastructure.Adapters.NYSE
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<NyseTaqTradeRecord>
+  nameWithType: IEquatable<NyseTaqTradeRecord>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord>
+  nameWithType.vb: IEquatable(Of NyseTaqTradeRecord)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord)
+  name.vb: IEquatable(Of NyseTaqTradeRecord)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+    name: NyseTaqTradeRecord
+    href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+    name: NyseTaqTradeRecord
+    href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.#ctor
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord__ctor_System_Int64_System_DateTimeOffset_System_String_System_Int32_System_Int64_System_Decimal_System_Int64_System_String_System_String_System_String_System_String_
+  name: NyseTaqTradeRecord
+  nameWithType: NyseTaqTradeRecord.NyseTaqTradeRecord
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.NyseTaqTradeRecord
+  nameWithType.vb: NyseTaqTradeRecord.New
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.GlobalSequenceNumber*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.GlobalSequenceNumber
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_GlobalSequenceNumber
+  name: GlobalSequenceNumber
+  nameWithType: NyseTaqTradeRecord.GlobalSequenceNumber
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.GlobalSequenceNumber
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Timestamp*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Timestamp
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_Timestamp
+  name: Timestamp
+  nameWithType: NyseTaqTradeRecord.Timestamp
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Timestamp
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Symbol*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Symbol
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_Symbol
+  name: Symbol
+  nameWithType: NyseTaqTradeRecord.Symbol
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Symbol
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeCode*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeCode
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_ExchangeCode
+  name: ExchangeCode
+  nameWithType: NyseTaqTradeRecord.ExchangeCode
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeCode
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeSequenceNumber*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeSequenceNumber
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_ExchangeSequenceNumber
+  name: ExchangeSequenceNumber
+  nameWithType: NyseTaqTradeRecord.ExchangeSequenceNumber
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.ExchangeSequenceNumber
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Price*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Price
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_Price
+  name: Price
+  nameWithType: NyseTaqTradeRecord.Price
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Price
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Volume*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Volume
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_Volume
+  name: Volume
+  nameWithType: NyseTaqTradeRecord.Volume
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Volume
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.SaleCondition*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.SaleCondition
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_SaleCondition
+  name: SaleCondition
+  nameWithType: NyseTaqTradeRecord.SaleCondition
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.SaleCondition
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.CorrectionIndicator*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.CorrectionIndicator
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_CorrectionIndicator
+  name: CorrectionIndicator
+  nameWithType: NyseTaqTradeRecord.CorrectionIndicator
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.CorrectionIndicator
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Tape*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Tape
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_Tape
+  name: Tape
+  nameWithType: NyseTaqTradeRecord.Tape
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.Tape
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.StoppedStock*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.StoppedStock
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_StoppedStock
+  name: StoppedStock
+  nameWithType: NyseTaqTradeRecord.StoppedStock
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.StoppedStock
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularTrade*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularTrade
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_IsRegularTrade
+  name: IsRegularTrade
+  nameWithType: NyseTaqTradeRecord.IsRegularTrade
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularTrade
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsFinalCorrection*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsFinalCorrection
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_IsFinalCorrection
+  name: IsFinalCorrection
+  nameWithType: NyseTaqTradeRecord.IsFinalCorrection
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsFinalCorrection
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsTapeA*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsTapeA
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_IsTapeA
+  name: IsTapeA
+  nameWithType: NyseTaqTradeRecord.IsTapeA
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsTapeA
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsStoppedStock*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsStoppedStock
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_IsStoppedStock
+  name: IsStoppedStock
+  nameWithType: NyseTaqTradeRecord.IsStoppedStock
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsStoppedStock
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularHours*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularHours
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html#Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_IsRegularHours
+  name: IsRegularHours
+  nameWithType: NyseTaqTradeRecord.IsRegularHours
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.IsRegularHours

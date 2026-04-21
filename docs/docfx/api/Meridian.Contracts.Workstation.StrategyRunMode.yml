@@ -1,0 +1,161 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.StrategyRunMode
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunMode
+  id: StrategyRunMode
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.StrategyRunMode.Backtest
+  - Meridian.Contracts.Workstation.StrategyRunMode.Live
+  - Meridian.Contracts.Workstation.StrategyRunMode.Paper
+  langs:
+  - csharp
+  - vb
+  name: StrategyRunMode
+  nameWithType: StrategyRunMode
+  fullName: Meridian.Contracts.Workstation.StrategyRunMode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyRunMode
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Shared workstation-facing mode for a strategy run.
+  example: []
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<StrategyRunMode>))]
+
+      public enum StrategyRunMode : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of StrategyRunMode)))>
+
+      Public Enum StrategyRunMode As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.Workstation.StrategyRunMode}
+- uid: Meridian.Contracts.Workstation.StrategyRunMode.Backtest
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunMode.Backtest
+  id: Backtest
+  parent: Meridian.Contracts.Workstation.StrategyRunMode
+  langs:
+  - csharp
+  - vb
+  name: Backtest
+  nameWithType: StrategyRunMode.Backtest
+  fullName: Meridian.Contracts.Workstation.StrategyRunMode.Backtest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backtest
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Backtest = 0
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+- uid: Meridian.Contracts.Workstation.StrategyRunMode.Paper
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunMode.Paper
+  id: Paper
+  parent: Meridian.Contracts.Workstation.StrategyRunMode
+  langs:
+  - csharp
+  - vb
+  name: Paper
+  nameWithType: StrategyRunMode.Paper
+  fullName: Meridian.Contracts.Workstation.StrategyRunMode.Paper
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Paper
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Paper = 1
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+- uid: Meridian.Contracts.Workstation.StrategyRunMode.Live
+  commentId: F:Meridian.Contracts.Workstation.StrategyRunMode.Live
+  id: Live
+  parent: Meridian.Contracts.Workstation.StrategyRunMode
+  langs:
+  - csharp
+  - vb
+  name: Live
+  nameWithType: StrategyRunMode.Live
+  fullName: Meridian.Contracts.Workstation.StrategyRunMode.Live
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Live
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Live = 2
+    return:
+      type: Meridian.Contracts.Workstation.StrategyRunMode
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.StrategyRunMode
+  commentId: T:Meridian.Contracts.Workstation.StrategyRunMode
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.StrategyRunMode.html
+  name: StrategyRunMode
+  nameWithType: StrategyRunMode
+  fullName: Meridian.Contracts.Workstation.StrategyRunMode

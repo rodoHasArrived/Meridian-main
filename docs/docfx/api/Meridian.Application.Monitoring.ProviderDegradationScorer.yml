@@ -1,0 +1,1039 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationScorer
+  id: ProviderDegradationScorer
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.#ctor(Meridian.Application.Monitoring.ConnectionHealthMonitor,Meridian.Application.Monitoring.ProviderLatencyService,Meridian.Application.Monitoring.ProviderDegradationConfig)
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore@,Meridian.Application.Monitoring.ProviderDegradationScore@)
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.GetAllScores
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.GetProvidersByHealth
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.GetScore(System.String)
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded(System.String)
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.OnProviderDegraded
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.OnProviderRecovered
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.RecordError(System.String,System.String)
+  - Meridian.Application.Monitoring.ProviderDegradationScorer.RecordSuccess(System.String)
+  langs:
+  - csharp
+  - vb
+  name: ProviderDegradationScorer
+  nameWithType: ProviderDegradationScorer
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDegradationScorer
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Computes a composite health/degradation score per provider by combining
+
+    latency, error rate, missed heartbeats, reconnect frequency, and data quality signals.
+
+    Implements Roadmap H4: Graceful Provider Degradation Scoring.
+  example: []
+  syntax:
+    content: 'public sealed class ProviderDegradationScorer : IDisposable'
+    content.vb: Public NotInheritable Class ProviderDegradationScorer Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.OnProviderDegraded
+  commentId: E:Meridian.Application.Monitoring.ProviderDegradationScorer.OnProviderDegraded
+  id: OnProviderDegraded
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: OnProviderDegraded
+  nameWithType: ProviderDegradationScorer.OnProviderDegraded
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.OnProviderDegraded
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnProviderDegraded
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Raised when a provider's degradation score crosses the configured threshold.
+  example: []
+  syntax:
+    content: public event Action<ProviderDegradedEvent>? OnProviderDegraded
+    return:
+      type: System.Action{Meridian.Application.Monitoring.ProviderDegradedEvent}
+    content.vb: Public Event OnProviderDegraded As Action(Of ProviderDegradedEvent)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.OnProviderRecovered
+  commentId: E:Meridian.Application.Monitoring.ProviderDegradationScorer.OnProviderRecovered
+  id: OnProviderRecovered
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: OnProviderRecovered
+  nameWithType: ProviderDegradationScorer.OnProviderRecovered
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.OnProviderRecovered
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnProviderRecovered
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Raised when a provider recovers from a degraded state.
+  example: []
+  syntax:
+    content: public event Action<ProviderRecoveredEvent>? OnProviderRecovered
+    return:
+      type: System.Action{Meridian.Application.Monitoring.ProviderRecoveredEvent}
+    content.vb: Public Event OnProviderRecovered As Action(Of ProviderRecoveredEvent)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.#ctor(Meridian.Application.Monitoring.ConnectionHealthMonitor,Meridian.Application.Monitoring.ProviderLatencyService,Meridian.Application.Monitoring.ProviderDegradationConfig)
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.#ctor(Meridian.Application.Monitoring.ConnectionHealthMonitor,Meridian.Application.Monitoring.ProviderLatencyService,Meridian.Application.Monitoring.ProviderDegradationConfig)
+  id: '#ctor(Meridian.Application.Monitoring.ConnectionHealthMonitor,Meridian.Application.Monitoring.ProviderLatencyService,Meridian.Application.Monitoring.ProviderDegradationConfig)'
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: ProviderDegradationScorer(ConnectionHealthMonitor, ProviderLatencyService, ProviderDegradationConfig?)
+  nameWithType: ProviderDegradationScorer.ProviderDegradationScorer(ConnectionHealthMonitor, ProviderLatencyService, ProviderDegradationConfig?)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.ProviderDegradationScorer(Meridian.Application.Monitoring.ConnectionHealthMonitor, Meridian.Application.Monitoring.ProviderLatencyService, Meridian.Application.Monitoring.ProviderDegradationConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public ProviderDegradationScorer(ConnectionHealthMonitor healthMonitor, ProviderLatencyService latencyService, ProviderDegradationConfig? config = null)
+    parameters:
+    - id: healthMonitor
+      type: Meridian.Application.Monitoring.ConnectionHealthMonitor
+    - id: latencyService
+      type: Meridian.Application.Monitoring.ProviderLatencyService
+    - id: config
+      type: Meridian.Application.Monitoring.ProviderDegradationConfig
+    content.vb: Public Sub New(healthMonitor As ConnectionHealthMonitor, latencyService As ProviderLatencyService, config As ProviderDegradationConfig = Nothing)
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.#ctor*
+  nameWithType.vb: ProviderDegradationScorer.New(ConnectionHealthMonitor, ProviderLatencyService, ProviderDegradationConfig)
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScorer.New(Meridian.Application.Monitoring.ConnectionHealthMonitor, Meridian.Application.Monitoring.ProviderLatencyService, Meridian.Application.Monitoring.ProviderDegradationConfig)
+  name.vb: New(ConnectionHealthMonitor, ProviderLatencyService, ProviderDegradationConfig)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordError(System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.RecordError(System.String,System.String)
+  id: RecordError(System.String,System.String)
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: RecordError(string, string)
+  nameWithType: ProviderDegradationScorer.RecordError(string, string)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordError(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordError
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records an error for a provider.
+  example: []
+  syntax:
+    content: public void RecordError(string providerName, string errorType)
+    parameters:
+    - id: providerName
+      type: System.String
+    - id: errorType
+      type: System.String
+    content.vb: Public Sub RecordError(providerName As String, errorType As String)
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordError*
+  nameWithType.vb: ProviderDegradationScorer.RecordError(String, String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordError(String, String)
+  name.vb: RecordError(String, String)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordSuccess(System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.RecordSuccess(System.String)
+  id: RecordSuccess(System.String)
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: RecordSuccess(string)
+  nameWithType: ProviderDegradationScorer.RecordSuccess(string)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordSuccess(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordSuccess
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records a successful operation for a provider (reduces error rate).
+  example: []
+  syntax:
+    content: public void RecordSuccess(string providerName)
+    parameters:
+    - id: providerName
+      type: System.String
+    content.vb: Public Sub RecordSuccess(providerName As String)
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordSuccess*
+  nameWithType.vb: ProviderDegradationScorer.RecordSuccess(String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordSuccess(String)
+  name.vb: RecordSuccess(String)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.GetScore(System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.GetScore(System.String)
+  id: GetScore(System.String)
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: GetScore(string)
+  nameWithType: ProviderDegradationScorer.GetScore(string)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.GetScore(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetScore
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Gets the degradation score for a specific provider.
+
+    Score ranges from 0.0 (fully healthy) to 1.0 (fully degraded).
+  example: []
+  syntax:
+    content: public ProviderDegradationScore GetScore(string providerName)
+    parameters:
+    - id: providerName
+      type: System.String
+    return:
+      type: Meridian.Application.Monitoring.ProviderDegradationScore
+    content.vb: Public Function GetScore(providerName As String) As ProviderDegradationScore
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.GetScore*
+  nameWithType.vb: ProviderDegradationScorer.GetScore(String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScorer.GetScore(String)
+  name.vb: GetScore(String)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.GetAllScores
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.GetAllScores
+  id: GetAllScores
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: GetAllScores()
+  nameWithType: ProviderDegradationScorer.GetAllScores()
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.GetAllScores()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllScores
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets degradation scores for all known providers.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ProviderDegradationScore> GetAllScores()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderDegradationScore}
+    content.vb: Public Function GetAllScores() As IReadOnlyList(Of ProviderDegradationScore)
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.GetAllScores*
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.GetProvidersByHealth
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.GetProvidersByHealth
+  id: GetProvidersByHealth
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: GetProvidersByHealth()
+  nameWithType: ProviderDegradationScorer.GetProvidersByHealth()
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.GetProvidersByHealth()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProvidersByHealth
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets providers ranked by health (least degraded first).
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> GetProvidersByHealth()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Function GetProvidersByHealth() As IReadOnlyList(Of String)
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.GetProvidersByHealth*
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded(System.String)
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded(System.String)
+  id: IsDegraded(System.String)
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: IsDegraded(string)
+  nameWithType: ProviderDegradationScorer.IsDegraded(string)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsDegraded
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Returns true if the provider is considered degraded.
+  example: []
+  syntax:
+    content: public bool IsDegraded(string providerName)
+    parameters:
+    - id: providerName
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsDegraded(providerName As String) As Boolean
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded*
+  nameWithType.vb: ProviderDegradationScorer.IsDegraded(String)
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded(String)
+  name.vb: IsDegraded(String)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore@,Meridian.Application.Monitoring.ProviderDegradationScore@)
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore@,Meridian.Application.Monitoring.ProviderDegradationScore@)
+  id: ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore@,Meridian.Application.Monitoring.ProviderDegradationScore@)
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: ComputeDelta(in ProviderDegradationScore, in ProviderDegradationScore)
+  nameWithType: ProviderDegradationScorer.ComputeDelta(in ProviderDegradationScore, in ProviderDegradationScore)
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(in Meridian.Application.Monitoring.ProviderDegradationScore, in Meridian.Application.Monitoring.ProviderDegradationScore)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComputeDelta
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Computes score and reason-code deltas between two score snapshots.
+  example: []
+  syntax:
+    content: public static ProviderDegradationScoreDelta ComputeDelta(in ProviderDegradationScore previous, in ProviderDegradationScore current)
+    parameters:
+    - id: previous
+      type: Meridian.Application.Monitoring.ProviderDegradationScore
+    - id: current
+      type: Meridian.Application.Monitoring.ProviderDegradationScore
+    return:
+      type: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+    content.vb: Public Shared Function ComputeDelta(previous As ProviderDegradationScore, current As ProviderDegradationScore) As ProviderDegradationScoreDelta
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta*
+  nameWithType.vb: ProviderDegradationScorer.ComputeDelta(ProviderDegradationScore, ProviderDegradationScore)
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta(Meridian.Application.Monitoring.ProviderDegradationScore, Meridian.Application.Monitoring.ProviderDegradationScore)
+  name.vb: ComputeDelta(ProviderDegradationScore, ProviderDegradationScore)
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose
+  commentId: M:Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.ProviderDegradationScorer
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ProviderDegradationScorer.Dispose()
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/ProviderDegradationScorer.cs
+    startLine: 415
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Monitoring.ProviderDegradedEvent}
+  commentId: T:System.Action{Meridian.Application.Monitoring.ProviderDegradedEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ProviderDegradedEvent>
+  nameWithType: Action<ProviderDegradedEvent>
+  fullName: System.Action<Meridian.Application.Monitoring.ProviderDegradedEvent>
+  nameWithType.vb: Action(Of ProviderDegradedEvent)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.ProviderDegradedEvent)
+  name.vb: Action(Of ProviderDegradedEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderDegradedEvent
+    name: ProviderDegradedEvent
+    href: Meridian.Application.Monitoring.ProviderDegradedEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderDegradedEvent
+    name: ProviderDegradedEvent
+    href: Meridian.Application.Monitoring.ProviderDegradedEvent.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Action{Meridian.Application.Monitoring.ProviderRecoveredEvent}
+  commentId: T:System.Action{Meridian.Application.Monitoring.ProviderRecoveredEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ProviderRecoveredEvent>
+  nameWithType: Action<ProviderRecoveredEvent>
+  fullName: System.Action<Meridian.Application.Monitoring.ProviderRecoveredEvent>
+  nameWithType.vb: Action(Of ProviderRecoveredEvent)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.ProviderRecoveredEvent)
+  name.vb: Action(Of ProviderRecoveredEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderRecoveredEvent
+    name: ProviderRecoveredEvent
+    href: Meridian.Application.Monitoring.ProviderRecoveredEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderRecoveredEvent
+    name: ProviderRecoveredEvent
+    href: Meridian.Application.Monitoring.ProviderRecoveredEvent.html
+  - name: )
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.#ctor
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer__ctor_Meridian_Application_Monitoring_ConnectionHealthMonitor_Meridian_Application_Monitoring_ProviderLatencyService_Meridian_Application_Monitoring_ProviderDegradationConfig_
+  name: ProviderDegradationScorer
+  nameWithType: ProviderDegradationScorer.ProviderDegradationScorer
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.ProviderDegradationScorer
+  nameWithType.vb: ProviderDegradationScorer.New
+  fullName.vb: Meridian.Application.Monitoring.ProviderDegradationScorer.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.ConnectionHealthMonitor
+  commentId: T:Meridian.Application.Monitoring.ConnectionHealthMonitor
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ConnectionHealthMonitor.html
+  name: ConnectionHealthMonitor
+  nameWithType: ConnectionHealthMonitor
+  fullName: Meridian.Application.Monitoring.ConnectionHealthMonitor
+- uid: Meridian.Application.Monitoring.ProviderLatencyService
+  commentId: T:Meridian.Application.Monitoring.ProviderLatencyService
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderLatencyService.html
+  name: ProviderLatencyService
+  nameWithType: ProviderLatencyService
+  fullName: Meridian.Application.Monitoring.ProviderLatencyService
+- uid: Meridian.Application.Monitoring.ProviderDegradationConfig
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationConfig
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderDegradationConfig.html
+  name: ProviderDegradationConfig
+  nameWithType: ProviderDegradationConfig
+  fullName: Meridian.Application.Monitoring.ProviderDegradationConfig
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordError*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.RecordError
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_RecordError_System_String_System_String_
+  name: RecordError
+  nameWithType: ProviderDegradationScorer.RecordError
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordError
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordSuccess*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.RecordSuccess
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_RecordSuccess_System_String_
+  name: RecordSuccess
+  nameWithType: ProviderDegradationScorer.RecordSuccess
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.RecordSuccess
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.GetScore*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.GetScore
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_GetScore_System_String_
+  name: GetScore
+  nameWithType: ProviderDegradationScorer.GetScore
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.GetScore
+- uid: Meridian.Application.Monitoring.ProviderDegradationScore
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationScore
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderDegradationScore.html
+  name: ProviderDegradationScore
+  nameWithType: ProviderDegradationScore
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScore
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.GetAllScores*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.GetAllScores
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_GetAllScores
+  name: GetAllScores
+  nameWithType: ProviderDegradationScorer.GetAllScores
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.GetAllScores
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderDegradationScore}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ProviderDegradationScore}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderDegradationScore>
+  nameWithType: IReadOnlyList<ProviderDegradationScore>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ProviderDegradationScore>
+  nameWithType.vb: IReadOnlyList(Of ProviderDegradationScore)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ProviderDegradationScore)
+  name.vb: IReadOnlyList(Of ProviderDegradationScore)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ProviderDegradationScore
+    name: ProviderDegradationScore
+    href: Meridian.Application.Monitoring.ProviderDegradationScore.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ProviderDegradationScore
+    name: ProviderDegradationScore
+    href: Meridian.Application.Monitoring.ProviderDegradationScore.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.GetProvidersByHealth*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.GetProvidersByHealth
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_GetProvidersByHealth
+  name: GetProvidersByHealth
+  nameWithType: ProviderDegradationScorer.GetProvidersByHealth
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.GetProvidersByHealth
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_IsDegraded_System_String_
+  name: IsDegraded
+  nameWithType: ProviderDegradationScorer.IsDegraded
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.IsDegraded
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_ComputeDelta_Meridian_Application_Monitoring_ProviderDegradationScore__Meridian_Application_Monitoring_ProviderDegradationScore__
+  name: ComputeDelta
+  nameWithType: ProviderDegradationScorer.ComputeDelta
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.ComputeDelta
+- uid: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  commentId: T:Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderDegradationScoreDelta.html
+  name: ProviderDegradationScoreDelta
+  nameWithType: ProviderDegradationScoreDelta
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScoreDelta
+- uid: Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose
+  href: Meridian.Application.Monitoring.ProviderDegradationScorer.html#Meridian_Application_Monitoring_ProviderDegradationScorer_Dispose
+  name: Dispose
+  nameWithType: ProviderDegradationScorer.Dispose
+  fullName: Meridian.Application.Monitoring.ProviderDegradationScorer.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

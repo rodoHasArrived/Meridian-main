@@ -1,0 +1,728 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions
+  commentId: T:Meridian.Ui.Services.Collections.CircularBufferExtensions
+  id: CircularBufferExtensions
+  parent: Meridian.Ui.Services.Collections
+  children:
+  - Meridian.Ui.Services.Collections.CircularBufferExtensions.Average(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  - Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculatePercentageChange(Meridian.Ui.Services.Collections.CircularBuffer{System.Double},System.Int32,System.Int32)
+  - Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculateRate(Meridian.Ui.Services.Collections.CircularBuffer{System.Double},System.Double)
+  - Meridian.Ui.Services.Collections.CircularBufferExtensions.Max(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  - Meridian.Ui.Services.Collections.CircularBufferExtensions.Min(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  - Meridian.Ui.Services.Collections.CircularBufferExtensions.Sum(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  langs:
+  - csharp
+  - vb
+  name: CircularBufferExtensions
+  nameWithType: CircularBufferExtensions
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircularBufferExtensions
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Extension methods for CircularBuffer with numeric types.
+  example: []
+  syntax:
+    content: public static class CircularBufferExtensions
+    content.vb: Public Module CircularBufferExtensions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.Sum(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  commentId: M:Meridian.Ui.Services.Collections.CircularBufferExtensions.Sum(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  id: Sum(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  isExtensionMethod: true
+  parent: Meridian.Ui.Services.Collections.CircularBufferExtensions
+  langs:
+  - csharp
+  - vb
+  name: Sum(CircularBuffer<double>)
+  nameWithType: CircularBufferExtensions.Sum(CircularBuffer<double>)
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.Sum(Meridian.Ui.Services.Collections.CircularBuffer<double>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sum
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Calculates the sum of all elements in the buffer.
+  example: []
+  syntax:
+    content: public static double Sum(this CircularBuffer<double> buffer)
+    parameters:
+    - id: buffer
+      type: Meridian.Ui.Services.Collections.CircularBuffer{System.Double}
+    return:
+      type: System.Double
+    content.vb: Public Shared Function Sum(buffer As CircularBuffer(Of Double)) As Double
+  overload: Meridian.Ui.Services.Collections.CircularBufferExtensions.Sum*
+  nameWithType.vb: CircularBufferExtensions.Sum(CircularBuffer(Of Double))
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBufferExtensions.Sum(Meridian.Ui.Services.Collections.CircularBuffer(Of Double))
+  name.vb: Sum(CircularBuffer(Of Double))
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.Average(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  commentId: M:Meridian.Ui.Services.Collections.CircularBufferExtensions.Average(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  id: Average(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  isExtensionMethod: true
+  parent: Meridian.Ui.Services.Collections.CircularBufferExtensions
+  langs:
+  - csharp
+  - vb
+  name: Average(CircularBuffer<double>)
+  nameWithType: CircularBufferExtensions.Average(CircularBuffer<double>)
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.Average(Meridian.Ui.Services.Collections.CircularBuffer<double>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Average
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Calculates the average of all elements in the buffer.
+  example: []
+  syntax:
+    content: public static double Average(this CircularBuffer<double> buffer)
+    parameters:
+    - id: buffer
+      type: Meridian.Ui.Services.Collections.CircularBuffer{System.Double}
+    return:
+      type: System.Double
+    content.vb: Public Shared Function Average(buffer As CircularBuffer(Of Double)) As Double
+  overload: Meridian.Ui.Services.Collections.CircularBufferExtensions.Average*
+  nameWithType.vb: CircularBufferExtensions.Average(CircularBuffer(Of Double))
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBufferExtensions.Average(Meridian.Ui.Services.Collections.CircularBuffer(Of Double))
+  name.vb: Average(CircularBuffer(Of Double))
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.Max(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  commentId: M:Meridian.Ui.Services.Collections.CircularBufferExtensions.Max(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  id: Max(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  isExtensionMethod: true
+  parent: Meridian.Ui.Services.Collections.CircularBufferExtensions
+  langs:
+  - csharp
+  - vb
+  name: Max(CircularBuffer<double>)
+  nameWithType: CircularBufferExtensions.Max(CircularBuffer<double>)
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.Max(Meridian.Ui.Services.Collections.CircularBuffer<double>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Max
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Finds the maximum value in the buffer.
+  example: []
+  syntax:
+    content: public static double Max(this CircularBuffer<double> buffer)
+    parameters:
+    - id: buffer
+      type: Meridian.Ui.Services.Collections.CircularBuffer{System.Double}
+    return:
+      type: System.Double
+    content.vb: Public Shared Function Max(buffer As CircularBuffer(Of Double)) As Double
+  overload: Meridian.Ui.Services.Collections.CircularBufferExtensions.Max*
+  nameWithType.vb: CircularBufferExtensions.Max(CircularBuffer(Of Double))
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBufferExtensions.Max(Meridian.Ui.Services.Collections.CircularBuffer(Of Double))
+  name.vb: Max(CircularBuffer(Of Double))
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.Min(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  commentId: M:Meridian.Ui.Services.Collections.CircularBufferExtensions.Min(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  id: Min(Meridian.Ui.Services.Collections.CircularBuffer{System.Double})
+  isExtensionMethod: true
+  parent: Meridian.Ui.Services.Collections.CircularBufferExtensions
+  langs:
+  - csharp
+  - vb
+  name: Min(CircularBuffer<double>)
+  nameWithType: CircularBufferExtensions.Min(CircularBuffer<double>)
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.Min(Meridian.Ui.Services.Collections.CircularBuffer<double>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Min
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 249
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Finds the minimum value in the buffer.
+  example: []
+  syntax:
+    content: public static double Min(this CircularBuffer<double> buffer)
+    parameters:
+    - id: buffer
+      type: Meridian.Ui.Services.Collections.CircularBuffer{System.Double}
+    return:
+      type: System.Double
+    content.vb: Public Shared Function Min(buffer As CircularBuffer(Of Double)) As Double
+  overload: Meridian.Ui.Services.Collections.CircularBufferExtensions.Min*
+  nameWithType.vb: CircularBufferExtensions.Min(CircularBuffer(Of Double))
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBufferExtensions.Min(Meridian.Ui.Services.Collections.CircularBuffer(Of Double))
+  name.vb: Min(CircularBuffer(Of Double))
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculateRate(Meridian.Ui.Services.Collections.CircularBuffer{System.Double},System.Double)
+  commentId: M:Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculateRate(Meridian.Ui.Services.Collections.CircularBuffer{System.Double},System.Double)
+  id: CalculateRate(Meridian.Ui.Services.Collections.CircularBuffer{System.Double},System.Double)
+  isExtensionMethod: true
+  parent: Meridian.Ui.Services.Collections.CircularBufferExtensions
+  langs:
+  - csharp
+  - vb
+  name: CalculateRate(CircularBuffer<double>, double)
+  nameWithType: CircularBufferExtensions.CalculateRate(CircularBuffer<double>, double)
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculateRate(Meridian.Ui.Services.Collections.CircularBuffer<double>, double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculateRate
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 269
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Calculates the rate of change (delta) between the two most recent values.
+  example: []
+  syntax:
+    content: public static double CalculateRate(this CircularBuffer<double> buffer, double intervalSeconds = 1)
+    parameters:
+    - id: buffer
+      type: Meridian.Ui.Services.Collections.CircularBuffer{System.Double}
+      description: The buffer to calculate rate for.
+    - id: intervalSeconds
+      type: System.Double
+      description: The time interval between samples in seconds.
+    return:
+      type: System.Double
+      description: The rate of change per second, or 0 if insufficient data.
+    content.vb: Public Shared Function CalculateRate(buffer As CircularBuffer(Of Double), intervalSeconds As Double = 1) As Double
+  overload: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculateRate*
+  nameWithType.vb: CircularBufferExtensions.CalculateRate(CircularBuffer(Of Double), Double)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculateRate(Meridian.Ui.Services.Collections.CircularBuffer(Of Double), Double)
+  name.vb: CalculateRate(CircularBuffer(Of Double), Double)
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculatePercentageChange(Meridian.Ui.Services.Collections.CircularBuffer{System.Double},System.Int32,System.Int32)
+  commentId: M:Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculatePercentageChange(Meridian.Ui.Services.Collections.CircularBuffer{System.Double},System.Int32,System.Int32)
+  id: CalculatePercentageChange(Meridian.Ui.Services.Collections.CircularBuffer{System.Double},System.Int32,System.Int32)
+  isExtensionMethod: true
+  parent: Meridian.Ui.Services.Collections.CircularBufferExtensions
+  langs:
+  - csharp
+  - vb
+  name: CalculatePercentageChange(CircularBuffer<double>, int, int)
+  nameWithType: CircularBufferExtensions.CalculatePercentageChange(CircularBuffer<double>, int, int)
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculatePercentageChange(Meridian.Ui.Services.Collections.CircularBuffer<double>, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CalculatePercentageChange
+    path: ../../src/Meridian.Ui.Services/Collections/CircularBuffer.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Collections
+  summary: Calculates the percentage change between two values at specified offsets from the newest element.
+  remarks: >-
+    Formula: ((toValue - fromValue) / fromValue) * 100
+
+    Returns null if fromValue is zero to avoid division by zero.
+  example: []
+  syntax:
+    content: public static double? CalculatePercentageChange(this CircularBuffer<double> buffer, int fromOffset, int toOffset)
+    parameters:
+    - id: buffer
+      type: Meridian.Ui.Services.Collections.CircularBuffer{System.Double}
+      description: The buffer to calculate percentage change for.
+    - id: fromOffset
+      type: System.Int32
+      description: Offset of the base value from newest (1 = second newest).
+    - id: toOffset
+      type: System.Int32
+      description: Offset of the comparison value from newest (0 = newest).
+    return:
+      type: System.Nullable{System.Double}
+      description: The percentage change, or null if division by zero or insufficient data.
+    content.vb: Public Shared Function CalculatePercentageChange(buffer As CircularBuffer(Of Double), fromOffset As Integer, toOffset As Integer) As Double?
+  overload: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculatePercentageChange*
+  nameWithType.vb: CircularBufferExtensions.CalculatePercentageChange(CircularBuffer(Of Double), Integer, Integer)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculatePercentageChange(Meridian.Ui.Services.Collections.CircularBuffer(Of Double), Integer, Integer)
+  name.vb: CalculatePercentageChange(CircularBuffer(Of Double), Integer, Integer)
+references:
+- uid: Meridian.Ui.Services.Collections
+  commentId: N:Meridian.Ui.Services.Collections
+  href: Meridian.html
+  name: Meridian.Ui.Services.Collections
+  nameWithType: Meridian.Ui.Services.Collections
+  fullName: Meridian.Ui.Services.Collections
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Collections
+    name: Collections
+    href: Meridian.Ui.Services.Collections.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Collections
+    name: Collections
+    href: Meridian.Ui.Services.Collections.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.Sum*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBufferExtensions.Sum
+  href: Meridian.Ui.Services.Collections.CircularBufferExtensions.html#Meridian_Ui_Services_Collections_CircularBufferExtensions_Sum_Meridian_Ui_Services_Collections_CircularBuffer_System_Double__
+  name: Sum
+  nameWithType: CircularBufferExtensions.Sum
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.Sum
+- uid: Meridian.Ui.Services.Collections.CircularBuffer{System.Double}
+  commentId: T:Meridian.Ui.Services.Collections.CircularBuffer{System.Double}
+  parent: Meridian.Ui.Services.Collections
+  definition: Meridian.Ui.Services.Collections.CircularBuffer`1
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html
+  name: CircularBuffer<double>
+  nameWithType: CircularBuffer<double>
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<double>
+  nameWithType.vb: CircularBuffer(Of Double)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of Double)
+  name.vb: CircularBuffer(Of Double)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Collections.CircularBuffer`1
+    name: CircularBuffer
+    href: Meridian.Ui.Services.Collections.CircularBuffer-1.html
+  - name: <
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Ui.Services.Collections.CircularBuffer`1
+    name: CircularBuffer
+    href: Meridian.Ui.Services.Collections.CircularBuffer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.Collections.CircularBuffer`1
+  commentId: T:Meridian.Ui.Services.Collections.CircularBuffer`1
+  href: Meridian.Ui.Services.Collections.CircularBuffer-1.html
+  name: CircularBuffer<T>
+  nameWithType: CircularBuffer<T>
+  fullName: Meridian.Ui.Services.Collections.CircularBuffer<T>
+  nameWithType.vb: CircularBuffer(Of T)
+  fullName.vb: Meridian.Ui.Services.Collections.CircularBuffer(Of T)
+  name.vb: CircularBuffer(Of T)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.Collections.CircularBuffer`1
+    name: CircularBuffer
+    href: Meridian.Ui.Services.Collections.CircularBuffer-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Ui.Services.Collections.CircularBuffer`1
+    name: CircularBuffer
+    href: Meridian.Ui.Services.Collections.CircularBuffer-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.Average*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBufferExtensions.Average
+  href: Meridian.Ui.Services.Collections.CircularBufferExtensions.html#Meridian_Ui_Services_Collections_CircularBufferExtensions_Average_Meridian_Ui_Services_Collections_CircularBuffer_System_Double__
+  name: Average
+  nameWithType: CircularBufferExtensions.Average
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.Average
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.Max*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBufferExtensions.Max
+  href: Meridian.Ui.Services.Collections.CircularBufferExtensions.html#Meridian_Ui_Services_Collections_CircularBufferExtensions_Max_Meridian_Ui_Services_Collections_CircularBuffer_System_Double__
+  name: Max
+  nameWithType: CircularBufferExtensions.Max
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.Max
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.Min*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBufferExtensions.Min
+  href: Meridian.Ui.Services.Collections.CircularBufferExtensions.html#Meridian_Ui_Services_Collections_CircularBufferExtensions_Min_Meridian_Ui_Services_Collections_CircularBuffer_System_Double__
+  name: Min
+  nameWithType: CircularBufferExtensions.Min
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.Min
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculateRate*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculateRate
+  href: Meridian.Ui.Services.Collections.CircularBufferExtensions.html#Meridian_Ui_Services_Collections_CircularBufferExtensions_CalculateRate_Meridian_Ui_Services_Collections_CircularBuffer_System_Double__System_Double_
+  name: CalculateRate
+  nameWithType: CircularBufferExtensions.CalculateRate
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculateRate
+- uid: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculatePercentageChange*
+  commentId: Overload:Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculatePercentageChange
+  href: Meridian.Ui.Services.Collections.CircularBufferExtensions.html#Meridian_Ui_Services_Collections_CircularBufferExtensions_CalculatePercentageChange_Meridian_Ui_Services_Collections_CircularBuffer_System_Double__System_Int32_System_Int32_
+  name: CalculatePercentageChange
+  nameWithType: CircularBufferExtensions.CalculatePercentageChange
+  fullName: Meridian.Ui.Services.Collections.CircularBufferExtensions.CalculatePercentageChange
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

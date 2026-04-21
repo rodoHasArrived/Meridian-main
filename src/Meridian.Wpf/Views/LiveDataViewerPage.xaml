@@ -12,78 +12,72 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  Padding="28,20,28,32"
-                  Background="{DynamicResource ShellWindowBackgroundBrush}">
-        <StackPanel MaxWidth="1400">
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
+    <DockPanel Background="{DynamicResource ShellWindowBackgroundBrush}">
 
-                    <StackPanel Grid.Column="0">
+        <!-- ═══ HEADER TOOLBAR ═══ -->
+        <Border DockPanel.Dock="Top"
+                Height="52"
+                Background="{DynamicResource ConsoleBackgroundMediumBrush}"
+                BorderBrush="{DynamicResource ConsoleBorderBrush}"
+                BorderThickness="0,0,0,1"
+                Padding="16,0">
+            <Grid VerticalAlignment="Center">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Connection status badge -->
+                <StackPanel Orientation="Horizontal">
+                    <Border x:Name="ConnectionStatusBorder"
+                            Style="{StaticResource NeutralBadgeStyle}"
+                            Background="{StaticResource ConsoleBackgroundLightBrush}">
                         <StackPanel Orientation="Horizontal">
-                            <Border Width="44"
-                                    Height="44"
-                                    CornerRadius="14"
-                                    Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                                    BorderBrush="{StaticResource InfoColorBrush}"
-                                    BorderThickness="1">
-                                <TextBlock Text="&#xE7F4;"
-                                           FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                           FontSize="24"
-                                           Foreground="{StaticResource InfoColorBrush}"
-                                           VerticalAlignment="Center"
-                                           HorizontalAlignment="Center" />
-                            </Border>
-                            <StackPanel Margin="12,0,0,0">
-                                <TextBlock Text="Live Data Viewer" Style="{StaticResource PageTitleStyle}" />
-                                <TextBlock Text="Run a cleaner market-monitoring workstation for quotes, trades, and connection posture."
-                                           Style="{StaticResource CardDescriptionStyle}" />
-                            </StackPanel>
+                            <Ellipse x:Name="ConnectionIndicator"
+                                     Width="8" Height="8"
+                                     Fill="{Binding ConnectionIndicatorColor}"
+                                     VerticalAlignment="Center" />
+                            <TextBlock x:Name="ConnectionStatusText"
+                                       Text="{Binding ConnectionStatusText}"
+                                       Margin="8,0,0,0"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       VerticalAlignment="Center" />
                         </StackPanel>
+                    </Border>
+                </StackPanel>
 
-                        <WrapPanel Margin="0,16,0,0">
-                            <Border x:Name="ConnectionStatusBorder"
-                                    Style="{StaticResource NeutralBadgeStyle}"
-                                    Margin="0,0,10,10"
-                                    Background="{StaticResource ConsoleBackgroundMediumBrush}">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse x:Name="ConnectionIndicator"
-                                             Width="8"
-                                             Height="8"
-                                             Fill="{Binding ConnectionIndicatorColor}"
-                                             VerticalAlignment="Center" />
-                                    <TextBlock x:Name="ConnectionStatusText"
-                                               Text="{Binding ConnectionStatusText}"
-                                               Margin="8,0,0,0"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               VerticalAlignment="Center" />
-                                </StackPanel>
-                            </Border>
+                <!-- Action buttons -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Content="Strategy Runs"
+                            Click="OpenStrategyRuns_Click"
+                            Style="{StaticResource GhostButtonStyle}"
+                            Margin="0,0,8,0" />
+                    <Button x:Name="PauseResumeButton"
+                            Content="{Binding PauseResumeButtonText}"
+                            Click="PauseResume_Click"
+                            Style="{StaticResource PrimaryButtonStyle}" />
+                </StackPanel>
+            </Grid>
+        </Border>
 
-                            <Border Style="{StaticResource NeutralBadgeStyle}" Margin="0,0,10,10">
-                                <TextBlock Text="Quotes, trades, and session statistics in one view"
-                                           FontSize="12"
-                                           Foreground="{StaticResource ConsoleTextSecondaryBrush}" />
-                            </Border>
-                        </WrapPanel>
-                    </StackPanel>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      Padding="28,20,28,32">
+        <StackPanel MaxWidth="1400">
 
-                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                        <Button Content="Strategy Runs"
-                                Click="OpenStrategyRuns_Click"
-                                Style="{StaticResource GhostButtonStyle}"
-                                Margin="0,0,8,0" />
-                        <Button x:Name="PauseResumeButton"
-                                Content="{Binding PauseResumeButtonText}"
-                                Click="PauseResume_Click"
-                                Style="{StaticResource PrimaryButtonStyle}" />
-                    </StackPanel>
-                </Grid>
-            </Border>
+            <!-- Blue left-border page title -->
+            <Grid Margin="0,0,0,20" Style="{StaticResource EmbeddedShellHeaderGridStyle}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Rectangle Grid.Column="0" Fill="{StaticResource InfoColorBrush}" RadiusX="2" RadiusY="2" />
+                <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                    <TextBlock Text="Live Data Viewer" Style="{StaticResource PageTitleStyle}" />
+                    <TextBlock Text="Run a cleaner market-monitoring workstation for quotes, trades, and connection posture."
+                               Style="{StaticResource CardDescriptionStyle}" Margin="0,4,0,0" />
+                </StackPanel>
+            </Grid>
 
             <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
@@ -471,5 +465,6 @@
                 </StackPanel>
             </Grid>
         </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </DockPanel>
 </Page>

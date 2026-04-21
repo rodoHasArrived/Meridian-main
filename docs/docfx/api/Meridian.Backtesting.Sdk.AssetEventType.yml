@@ -1,0 +1,446 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.AssetEventType
+  commentId: T:Meridian.Backtesting.Sdk.AssetEventType
+  id: AssetEventType
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.AssetEventType.Acquisition
+  - Meridian.Backtesting.Sdk.AssetEventType.CashDistribution
+  - Meridian.Backtesting.Sdk.AssetEventType.Coupon
+  - Meridian.Backtesting.Sdk.AssetEventType.Delisting
+  - Meridian.Backtesting.Sdk.AssetEventType.Dividend
+  - Meridian.Backtesting.Sdk.AssetEventType.Fee
+  - Meridian.Backtesting.Sdk.AssetEventType.Merger
+  - Meridian.Backtesting.Sdk.AssetEventType.Other
+  - Meridian.Backtesting.Sdk.AssetEventType.Payment
+  - Meridian.Backtesting.Sdk.AssetEventType.ReturnOfCapital
+  - Meridian.Backtesting.Sdk.AssetEventType.ReverseSplit
+  - Meridian.Backtesting.Sdk.AssetEventType.SpinOff
+  - Meridian.Backtesting.Sdk.AssetEventType.Split
+  - Meridian.Backtesting.Sdk.AssetEventType.SymbolChange
+  langs:
+  - csharp
+  - vb
+  name: AssetEventType
+  nameWithType: AssetEventType
+  fullName: Meridian.Backtesting.Sdk.AssetEventType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetEventType
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Portfolio-affecting asset event types supported by the backtesting engine.
+  example: []
+  syntax:
+    content: 'public enum AssetEventType : byte'
+    content.vb: Public Enum AssetEventType As Byte
+- uid: Meridian.Backtesting.Sdk.AssetEventType.Dividend
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.Dividend
+  id: Dividend
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: Dividend
+  nameWithType: AssetEventType.Dividend
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.Dividend
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dividend
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Dividend = 0
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.Coupon
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.Coupon
+  id: Coupon
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: Coupon
+  nameWithType: AssetEventType.Coupon
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.Coupon
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Coupon
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Coupon = 1
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.Payment
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.Payment
+  id: Payment
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: Payment
+  nameWithType: AssetEventType.Payment
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.Payment
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Payment
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Payment = 2
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.CashDistribution
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.CashDistribution
+  id: CashDistribution
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: CashDistribution
+  nameWithType: AssetEventType.CashDistribution
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.CashDistribution
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashDistribution
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: CashDistribution = 3
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.ReturnOfCapital
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.ReturnOfCapital
+  id: ReturnOfCapital
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: ReturnOfCapital
+  nameWithType: AssetEventType.ReturnOfCapital
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.ReturnOfCapital
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReturnOfCapital
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: ReturnOfCapital = 4
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.Fee
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.Fee
+  id: Fee
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: Fee
+  nameWithType: AssetEventType.Fee
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.Fee
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fee
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Fee = 5
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.Split
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.Split
+  id: Split
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: Split
+  nameWithType: AssetEventType.Split
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.Split
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Split
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Split = 6
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.ReverseSplit
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.ReverseSplit
+  id: ReverseSplit
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: ReverseSplit
+  nameWithType: AssetEventType.ReverseSplit
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.ReverseSplit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReverseSplit
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: ReverseSplit = 7
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.Merger
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.Merger
+  id: Merger
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: Merger
+  nameWithType: AssetEventType.Merger
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.Merger
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Merger
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Merger = 8
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.Acquisition
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.Acquisition
+  id: Acquisition
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: Acquisition
+  nameWithType: AssetEventType.Acquisition
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.Acquisition
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Acquisition
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Acquisition = 9
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.SymbolChange
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.SymbolChange
+  id: SymbolChange
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: SymbolChange
+  nameWithType: AssetEventType.SymbolChange
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.SymbolChange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolChange
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: SymbolChange = 10
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.SpinOff
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.SpinOff
+  id: SpinOff
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: SpinOff
+  nameWithType: AssetEventType.SpinOff
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.SpinOff
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpinOff
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: SpinOff = 11
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.Delisting
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.Delisting
+  id: Delisting
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: Delisting
+  nameWithType: AssetEventType.Delisting
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.Delisting
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Delisting
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Delisting = 12
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+- uid: Meridian.Backtesting.Sdk.AssetEventType.Other
+  commentId: F:Meridian.Backtesting.Sdk.AssetEventType.Other
+  id: Other
+  parent: Meridian.Backtesting.Sdk.AssetEventType
+  langs:
+  - csharp
+  - vb
+  name: Other
+  nameWithType: AssetEventType.Other
+  fullName: Meridian.Backtesting.Sdk.AssetEventType.Other
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/AssetEvent.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Other
+    path: ../../src/Meridian.Backtesting.Sdk/AssetEvent.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: Other = 13
+    return:
+      type: Meridian.Backtesting.Sdk.AssetEventType
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.AssetEventType
+  commentId: T:Meridian.Backtesting.Sdk.AssetEventType
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.AssetEventType.html
+  name: AssetEventType
+  nameWithType: AssetEventType
+  fullName: Meridian.Backtesting.Sdk.AssetEventType

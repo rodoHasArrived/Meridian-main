@@ -1,0 +1,572 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType
+  commentId: T:Meridian.Contracts.Domain.Enums.InstrumentType
+  id: InstrumentType
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Bond
+  - Meridian.Contracts.Domain.Enums.InstrumentType.CFD
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Commodity
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Crypto
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Deposit
+  - Meridian.Contracts.Domain.Enums.InstrumentType.DirectLoan
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Equity
+  - Meridian.Contracts.Domain.Enums.InstrumentType.EquityOption
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Forex
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Future
+  - Meridian.Contracts.Domain.Enums.InstrumentType.FuturesOption
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Index
+  - Meridian.Contracts.Domain.Enums.InstrumentType.IndexOption
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Repo
+  - Meridian.Contracts.Domain.Enums.InstrumentType.SingleStockFuture
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Swap
+  - Meridian.Contracts.Domain.Enums.InstrumentType.Warrant
+  langs:
+  - csharp
+  - vb
+  name: InstrumentType
+  nameWithType: InstrumentType
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstrumentType
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Classification of financial instruments supported by the system.
+  example: []
+  syntax:
+    content: 'public enum InstrumentType : byte'
+    content.vb: Public Enum InstrumentType As Byte
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Equity
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Equity
+  id: Equity
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Equity
+  nameWithType: InstrumentType.Equity
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Equity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Equity
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Equity security (common stock, ETF, ADR).
+  example: []
+  syntax:
+    content: Equity = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.EquityOption
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.EquityOption
+  id: EquityOption
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: EquityOption
+  nameWithType: InstrumentType.EquityOption
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.EquityOption
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EquityOption
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Exchange-traded option on an individual equity or ETF.
+  example: []
+  syntax:
+    content: EquityOption = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.IndexOption
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.IndexOption
+  id: IndexOption
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: IndexOption
+  nameWithType: InstrumentType.IndexOption
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.IndexOption
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexOption
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: >-
+    Exchange-traded option on a market index (e.g., SPX, NDX, RUT, VIX).
+
+    Typically European-style, cash-settled.
+  example: []
+  syntax:
+    content: IndexOption = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Future
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Future
+  id: Future
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Future
+  nameWithType: InstrumentType.Future
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Future
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Future
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Exchange-traded futures contract.
+  example: []
+  syntax:
+    content: Future = 3
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.SingleStockFuture
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.SingleStockFuture
+  id: SingleStockFuture
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: SingleStockFuture
+  nameWithType: InstrumentType.SingleStockFuture
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.SingleStockFuture
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SingleStockFuture
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Single stock future — a futures contract on an individual equity.
+  example: []
+  syntax:
+    content: SingleStockFuture = 4
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Forex
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Forex
+  id: Forex
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Forex
+  nameWithType: InstrumentType.Forex
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Forex
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Forex
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Foreign exchange spot pair (e.g. EUR/USD). Maps to IB SecType "CASH".
+  example: []
+  syntax:
+    content: Forex = 5
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Commodity
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Commodity
+  id: Commodity
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Commodity
+  nameWithType: InstrumentType.Commodity
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Commodity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Commodity
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Physical or soft commodity (e.g. gold, oil, corn). Maps to IB SecType "CMDTY".
+  example: []
+  syntax:
+    content: Commodity = 6
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Crypto
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Crypto
+  id: Crypto
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Crypto
+  nameWithType: InstrumentType.Crypto
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Crypto
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Crypto
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Cryptocurrency spot instrument (e.g. BTC/USD). Maps to IB SecType "CRYPTO".
+  example: []
+  syntax:
+    content: Crypto = 7
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Bond
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Bond
+  id: Bond
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Bond
+  nameWithType: InstrumentType.Bond
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Bond
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bond
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Bond or fixed-income instrument. Maps to IB SecType "BOND".
+  example: []
+  syntax:
+    content: Bond = 8
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.FuturesOption
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.FuturesOption
+  id: FuturesOption
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: FuturesOption
+  nameWithType: InstrumentType.FuturesOption
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.FuturesOption
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FuturesOption
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Option on a futures contract (e.g. option on ES). Maps to IB SecType "FOP".
+  example: []
+  syntax:
+    content: FuturesOption = 9
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Index
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Index
+  id: Index
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Index
+  nameWithType: InstrumentType.Index
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Index
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Index
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Market index (non-tradeable reference, e.g. SPX, VIX). Maps to IB SecType "IND".
+  example: []
+  syntax:
+    content: Index = 10
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.CFD
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.CFD
+  id: CFD
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: CFD
+  nameWithType: InstrumentType.CFD
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.CFD
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CFD
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Contract for Difference. Maps to IB SecType "CFD".
+  example: []
+  syntax:
+    content: CFD = 11
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Warrant
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Warrant
+  id: Warrant
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Warrant
+  nameWithType: InstrumentType.Warrant
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Warrant
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warrant
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Equity or structured warrant. Maps to IB SecType "WAR".
+  example: []
+  syntax:
+    content: Warrant = 12
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Swap
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Swap
+  id: Swap
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Swap
+  nameWithType: InstrumentType.Swap
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Swap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Swap
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Over-the-counter or listed interest rate / credit / equity swap.
+  example: []
+  syntax:
+    content: Swap = 13
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.DirectLoan
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.DirectLoan
+  id: DirectLoan
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: DirectLoan
+  nameWithType: InstrumentType.DirectLoan
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.DirectLoan
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DirectLoan
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Direct lending / private credit loan instrument.
+  example: []
+  syntax:
+    content: DirectLoan = 14
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Repo
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Repo
+  id: Repo
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Repo
+  nameWithType: InstrumentType.Repo
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Repo
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Repo
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Repo or reverse repo financing instrument.
+  example: []
+  syntax:
+    content: Repo = 15
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType.Deposit
+  commentId: F:Meridian.Contracts.Domain.Enums.InstrumentType.Deposit
+  id: Deposit
+  parent: Meridian.Contracts.Domain.Enums.InstrumentType
+  langs:
+  - csharp
+  - vb
+  name: Deposit
+  nameWithType: InstrumentType.Deposit
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType.Deposit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Deposit
+    path: ../../src/Meridian.Contracts/Domain/Enums/InstrumentType.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Bank deposit, time deposit, or demand deposit.
+  example: []
+  syntax:
+    content: Deposit = 16
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType
+  commentId: T:Meridian.Contracts.Domain.Enums.InstrumentType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.InstrumentType.html
+  name: InstrumentType
+  nameWithType: InstrumentType
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType

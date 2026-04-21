@@ -1,0 +1,859 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  id: DataSourceCapabilities
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.ConsolidatedTape
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.ExchangeTimestamps
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalAdjustedPrices
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalCorporateActions
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalDailyBars
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalDividends
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalEarnings
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalIntradayBars
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalSplits
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalTicks
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.None
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.ParticipantIds
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeAggregateBars
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL1
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL2
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL3
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeQuotes
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeTrades
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.SequenceNumbers
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsBackfill
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsBatchRequests
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsMultiSubscription
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsPolling
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsStreaming
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsSymbolSearch
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsWebSocket
+  - Meridian.Infrastructure.DataSources.DataSourceCapabilities.TradeConditions
+  langs:
+  - csharp
+  - vb
+  name: DataSourceCapabilities
+  nameWithType: DataSourceCapabilities
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceCapabilities
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 165
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Bitwise capabilities supported by a data source.
+  example: []
+  syntax:
+    content: >-
+      [Flags]
+
+      public enum DataSourceCapabilities : long
+    content.vb: >-
+      <Flags>
+
+      Public Enum DataSourceCapabilities As Long
+  attributes:
+  - type: System.FlagsAttribute
+    ctor: System.FlagsAttribute.#ctor
+    arguments: []
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.None
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.None
+  id: None
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: DataSourceCapabilities.None
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 168
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeTrades
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeTrades
+  id: RealtimeTrades
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: RealtimeTrades
+  nameWithType: DataSourceCapabilities.RealtimeTrades
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeTrades
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeTrades
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 172
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time trade prints.
+  example: []
+  syntax:
+    content: RealtimeTrades = 1
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeQuotes
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeQuotes
+  id: RealtimeQuotes
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: RealtimeQuotes
+  nameWithType: DataSourceCapabilities.RealtimeQuotes
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeQuotes
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeQuotes
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 175
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time BBO quotes.
+  example: []
+  syntax:
+    content: RealtimeQuotes = 2
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL1
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL1
+  id: RealtimeDepthL1
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: RealtimeDepthL1
+  nameWithType: DataSourceCapabilities.RealtimeDepthL1
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeDepthL1
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 178
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Level 1 market depth.
+  example: []
+  syntax:
+    content: RealtimeDepthL1 = 4
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL2
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL2
+  id: RealtimeDepthL2
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: RealtimeDepthL2
+  nameWithType: DataSourceCapabilities.RealtimeDepthL2
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL2
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeDepthL2
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 181
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Level 2 market depth.
+  example: []
+  syntax:
+    content: RealtimeDepthL2 = 8
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL3
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL3
+  id: RealtimeDepthL3
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: RealtimeDepthL3
+  nameWithType: DataSourceCapabilities.RealtimeDepthL3
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeDepthL3
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeDepthL3
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 184
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Level 3 market depth (full order book).
+  example: []
+  syntax:
+    content: RealtimeDepthL3 = 16
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeAggregateBars
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeAggregateBars
+  id: RealtimeAggregateBars
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: RealtimeAggregateBars
+  nameWithType: DataSourceCapabilities.RealtimeAggregateBars
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.RealtimeAggregateBars
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeAggregateBars
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 187
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time aggregate bars.
+  example: []
+  syntax:
+    content: RealtimeAggregateBars = 32
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalDailyBars
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalDailyBars
+  id: HistoricalDailyBars
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HistoricalDailyBars
+  nameWithType: DataSourceCapabilities.HistoricalDailyBars
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalDailyBars
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalDailyBars
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 192
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Historical daily bars.
+  example: []
+  syntax:
+    content: HistoricalDailyBars = 1024
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalIntradayBars
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalIntradayBars
+  id: HistoricalIntradayBars
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HistoricalIntradayBars
+  nameWithType: DataSourceCapabilities.HistoricalIntradayBars
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalIntradayBars
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalIntradayBars
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 195
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Historical intraday bars (minute, hourly).
+  example: []
+  syntax:
+    content: HistoricalIntradayBars = 2048
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalTicks
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalTicks
+  id: HistoricalTicks
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HistoricalTicks
+  nameWithType: DataSourceCapabilities.HistoricalTicks
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalTicks
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalTicks
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 198
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Historical tick data.
+  example: []
+  syntax:
+    content: HistoricalTicks = 4096
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalAdjustedPrices
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalAdjustedPrices
+  id: HistoricalAdjustedPrices
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HistoricalAdjustedPrices
+  nameWithType: DataSourceCapabilities.HistoricalAdjustedPrices
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalAdjustedPrices
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalAdjustedPrices
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 201
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Split/dividend adjusted prices.
+  example: []
+  syntax:
+    content: HistoricalAdjustedPrices = 8192
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalDividends
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalDividends
+  id: HistoricalDividends
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HistoricalDividends
+  nameWithType: DataSourceCapabilities.HistoricalDividends
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalDividends
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalDividends
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 204
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Historical dividend data.
+  example: []
+  syntax:
+    content: HistoricalDividends = 16384
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalSplits
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalSplits
+  id: HistoricalSplits
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HistoricalSplits
+  nameWithType: DataSourceCapabilities.HistoricalSplits
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalSplits
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalSplits
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 207
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Historical split data.
+  example: []
+  syntax:
+    content: HistoricalSplits = 32768
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalCorporateActions
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalCorporateActions
+  id: HistoricalCorporateActions
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HistoricalCorporateActions
+  nameWithType: DataSourceCapabilities.HistoricalCorporateActions
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalCorporateActions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalCorporateActions
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 210
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Historical corporate actions.
+  example: []
+  syntax:
+    content: HistoricalCorporateActions = 65536
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalEarnings
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalEarnings
+  id: HistoricalEarnings
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: HistoricalEarnings
+  nameWithType: DataSourceCapabilities.HistoricalEarnings
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.HistoricalEarnings
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalEarnings
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 213
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Historical earnings data.
+  example: []
+  syntax:
+    content: HistoricalEarnings = 131072
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsBackfill
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsBackfill
+  id: SupportsBackfill
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsBackfill
+  nameWithType: DataSourceCapabilities.SupportsBackfill
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsBackfill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsBackfill
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 218
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Supports historical data backfill.
+  example: []
+  syntax:
+    content: SupportsBackfill = 1048576
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsStreaming
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsStreaming
+  id: SupportsStreaming
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsStreaming
+  nameWithType: DataSourceCapabilities.SupportsStreaming
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsStreaming
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsStreaming
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 221
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Supports real-time streaming (push).
+  example: []
+  syntax:
+    content: SupportsStreaming = 2097152
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsPolling
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsPolling
+  id: SupportsPolling
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsPolling
+  nameWithType: DataSourceCapabilities.SupportsPolling
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsPolling
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsPolling
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 224
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Supports polling (pull).
+  example: []
+  syntax:
+    content: SupportsPolling = 4194304
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsWebSocket
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsWebSocket
+  id: SupportsWebSocket
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsWebSocket
+  nameWithType: DataSourceCapabilities.SupportsWebSocket
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsWebSocket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsWebSocket
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 227
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Supports WebSocket connections.
+  example: []
+  syntax:
+    content: SupportsWebSocket = 8388608
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsBatchRequests
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsBatchRequests
+  id: SupportsBatchRequests
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsBatchRequests
+  nameWithType: DataSourceCapabilities.SupportsBatchRequests
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsBatchRequests
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsBatchRequests
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 230
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Supports batch/bulk requests.
+  example: []
+  syntax:
+    content: SupportsBatchRequests = 16777216
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsSymbolSearch
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsSymbolSearch
+  id: SupportsSymbolSearch
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsSymbolSearch
+  nameWithType: DataSourceCapabilities.SupportsSymbolSearch
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsSymbolSearch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsSymbolSearch
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 233
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Supports symbol search/lookup.
+  example: []
+  syntax:
+    content: SupportsSymbolSearch = 33554432
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsMultiSubscription
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsMultiSubscription
+  id: SupportsMultiSubscription
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SupportsMultiSubscription
+  nameWithType: DataSourceCapabilities.SupportsMultiSubscription
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SupportsMultiSubscription
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportsMultiSubscription
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 236
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Supports multiple simultaneous subscriptions.
+  example: []
+  syntax:
+    content: SupportsMultiSubscription = 67108864
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.ExchangeTimestamps
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.ExchangeTimestamps
+  id: ExchangeTimestamps
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: ExchangeTimestamps
+  nameWithType: DataSourceCapabilities.ExchangeTimestamps
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.ExchangeTimestamps
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExchangeTimestamps
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 241
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Provides exchange-level timestamps.
+  example: []
+  syntax:
+    content: ExchangeTimestamps = 1073741824
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SequenceNumbers
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.SequenceNumbers
+  id: SequenceNumbers
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumbers
+  nameWithType: DataSourceCapabilities.SequenceNumbers
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.SequenceNumbers
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumbers
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 244
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Provides sequence numbers for ordering.
+  example: []
+  syntax:
+    content: SequenceNumbers = 2147483648
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.TradeConditions
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.TradeConditions
+  id: TradeConditions
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: TradeConditions
+  nameWithType: DataSourceCapabilities.TradeConditions
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.TradeConditions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeConditions
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 247
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Provides trade condition codes.
+  example: []
+  syntax:
+    content: TradeConditions = 4294967296
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.ParticipantIds
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.ParticipantIds
+  id: ParticipantIds
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: ParticipantIds
+  nameWithType: DataSourceCapabilities.ParticipantIds
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.ParticipantIds
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParticipantIds
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 250
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Provides market maker/participant IDs.
+  example: []
+  syntax:
+    content: ParticipantIds = 8589934592
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities.ConsolidatedTape
+  commentId: F:Meridian.Infrastructure.DataSources.DataSourceCapabilities.ConsolidatedTape
+  id: ConsolidatedTape
+  parent: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  langs:
+  - csharp
+  - vb
+  name: ConsolidatedTape
+  nameWithType: DataSourceCapabilities.ConsolidatedTape
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities.ConsolidatedTape
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsolidatedTape
+    path: ../../src/Meridian.ProviderSdk/IDataSource.cs
+    startLine: 253
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Provides consolidated tape.
+  example: []
+  syntax:
+    content: ConsolidatedTape = 17179869184
+    return:
+      type: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceCapabilities
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.DataSourceCapabilities.html
+  name: DataSourceCapabilities
+  nameWithType: DataSourceCapabilities
+  fullName: Meridian.Infrastructure.DataSources.DataSourceCapabilities

@@ -130,16 +130,6 @@ PROJECT_SEEDS: dict[str, ProjectSeed] = {
         ("src/Meridian.Wpf/App.xaml.cs", "src/Meridian.Wpf/MainWindow.xaml"),
         ("App.xaml.cs", "MainWindow.xaml", "ViewModels"),
     ),
-    "Meridian.Ui": ProjectSeed(
-        "Meridian.Ui",
-        "workstation-ui",
-        "web-ui",
-        "Web UI surface and browser-facing application experiences.",
-        ("web ui", "frontend route", "page issue"),
-        ("ui", "web", "frontend", "page"),
-        ("src/Meridian.Ui",),
-        ("Program.cs", "Pages"),
-    ),
     "Meridian.Ui.Services": ProjectSeed(
         "Meridian.Ui.Services",
         "workstation-ui",
@@ -551,7 +541,7 @@ TASK_ROUTE_SEEDS: list[dict[str, Any]] = [
         "description": "Use when the task involves shell navigation, workspace composition, desktop view models, or desktop UX flows.",
         "keywords": ["wpf", "desktop", "workspace", "viewmodel", "shell"],
         "subsystems": ["workstation-ui"],
-        "startProjects": ["Meridian.Wpf", "Meridian.Ui.Services", "Meridian.Ui.Shared"],
+        "startProjects": ["Meridian.Wpf", "Meridian.Ui.Services", "Meridian.Ui.Shared", "Meridian"],
         "startSymbols": ["MainWindow"],
         "docs": [
             "docs/plans/trading-workstation-migration-blueprint.md",

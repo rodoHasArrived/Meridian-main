@@ -1,0 +1,530 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SymbolFileDto
+  commentId: T:Meridian.Ui.Services.SymbolFileDto
+  id: SymbolFileDto
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SymbolFileDto.CompressionType
+  - Meridian.Ui.Services.SymbolFileDto.DataType
+  - Meridian.Ui.Services.SymbolFileDto.FileName
+  - Meridian.Ui.Services.SymbolFileDto.ModifiedAt
+  - Meridian.Ui.Services.SymbolFileDto.RecordCount
+  - Meridian.Ui.Services.SymbolFileDto.SizeBytes
+  langs:
+  - csharp
+  - vb
+  name: SymbolFileDto
+  nameWithType: SymbolFileDto
+  fullName: Meridian.Ui.Services.SymbolFileDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolFileDto
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class SymbolFileDto
+    content.vb: Public NotInheritable Class SymbolFileDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SymbolFileDto.FileName
+  commentId: P:Meridian.Ui.Services.SymbolFileDto.FileName
+  id: FileName
+  parent: Meridian.Ui.Services.SymbolFileDto
+  langs:
+  - csharp
+  - vb
+  name: FileName
+  nameWithType: SymbolFileDto.FileName
+  fullName: Meridian.Ui.Services.SymbolFileDto.FileName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileName
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string FileName { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FileName As String
+  overload: Meridian.Ui.Services.SymbolFileDto.FileName*
+- uid: Meridian.Ui.Services.SymbolFileDto.DataType
+  commentId: P:Meridian.Ui.Services.SymbolFileDto.DataType
+  id: DataType
+  parent: Meridian.Ui.Services.SymbolFileDto
+  langs:
+  - csharp
+  - vb
+  name: DataType
+  nameWithType: SymbolFileDto.DataType
+  fullName: Meridian.Ui.Services.SymbolFileDto.DataType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataType
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string DataType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DataType As String
+  overload: Meridian.Ui.Services.SymbolFileDto.DataType*
+- uid: Meridian.Ui.Services.SymbolFileDto.SizeBytes
+  commentId: P:Meridian.Ui.Services.SymbolFileDto.SizeBytes
+  id: SizeBytes
+  parent: Meridian.Ui.Services.SymbolFileDto
+  langs:
+  - csharp
+  - vb
+  name: SizeBytes
+  nameWithType: SymbolFileDto.SizeBytes
+  fullName: Meridian.Ui.Services.SymbolFileDto.SizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SizeBytes
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long SizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SizeBytes As Long
+  overload: Meridian.Ui.Services.SymbolFileDto.SizeBytes*
+- uid: Meridian.Ui.Services.SymbolFileDto.ModifiedAt
+  commentId: P:Meridian.Ui.Services.SymbolFileDto.ModifiedAt
+  id: ModifiedAt
+  parent: Meridian.Ui.Services.SymbolFileDto
+  langs:
+  - csharp
+  - vb
+  name: ModifiedAt
+  nameWithType: SymbolFileDto.ModifiedAt
+  fullName: Meridian.Ui.Services.SymbolFileDto.ModifiedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModifiedAt
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime ModifiedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property ModifiedAt As Date
+  overload: Meridian.Ui.Services.SymbolFileDto.ModifiedAt*
+- uid: Meridian.Ui.Services.SymbolFileDto.RecordCount
+  commentId: P:Meridian.Ui.Services.SymbolFileDto.RecordCount
+  id: RecordCount
+  parent: Meridian.Ui.Services.SymbolFileDto
+  langs:
+  - csharp
+  - vb
+  name: RecordCount
+  nameWithType: SymbolFileDto.RecordCount
+  fullName: Meridian.Ui.Services.SymbolFileDto.RecordCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordCount
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long RecordCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property RecordCount As Long
+  overload: Meridian.Ui.Services.SymbolFileDto.RecordCount*
+- uid: Meridian.Ui.Services.SymbolFileDto.CompressionType
+  commentId: P:Meridian.Ui.Services.SymbolFileDto.CompressionType
+  id: CompressionType
+  parent: Meridian.Ui.Services.SymbolFileDto
+  langs:
+  - csharp
+  - vb
+  name: CompressionType
+  nameWithType: SymbolFileDto.CompressionType
+  fullName: Meridian.Ui.Services.SymbolFileDto.CompressionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionType
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? CompressionType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CompressionType As String
+  overload: Meridian.Ui.Services.SymbolFileDto.CompressionType*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SymbolFileDto.FileName*
+  commentId: Overload:Meridian.Ui.Services.SymbolFileDto.FileName
+  href: Meridian.Ui.Services.SymbolFileDto.html#Meridian_Ui_Services_SymbolFileDto_FileName
+  name: FileName
+  nameWithType: SymbolFileDto.FileName
+  fullName: Meridian.Ui.Services.SymbolFileDto.FileName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SymbolFileDto.DataType*
+  commentId: Overload:Meridian.Ui.Services.SymbolFileDto.DataType
+  href: Meridian.Ui.Services.SymbolFileDto.html#Meridian_Ui_Services_SymbolFileDto_DataType
+  name: DataType
+  nameWithType: SymbolFileDto.DataType
+  fullName: Meridian.Ui.Services.SymbolFileDto.DataType
+- uid: Meridian.Ui.Services.SymbolFileDto.SizeBytes*
+  commentId: Overload:Meridian.Ui.Services.SymbolFileDto.SizeBytes
+  href: Meridian.Ui.Services.SymbolFileDto.html#Meridian_Ui_Services_SymbolFileDto_SizeBytes
+  name: SizeBytes
+  nameWithType: SymbolFileDto.SizeBytes
+  fullName: Meridian.Ui.Services.SymbolFileDto.SizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.SymbolFileDto.ModifiedAt*
+  commentId: Overload:Meridian.Ui.Services.SymbolFileDto.ModifiedAt
+  href: Meridian.Ui.Services.SymbolFileDto.html#Meridian_Ui_Services_SymbolFileDto_ModifiedAt
+  name: ModifiedAt
+  nameWithType: SymbolFileDto.ModifiedAt
+  fullName: Meridian.Ui.Services.SymbolFileDto.ModifiedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.SymbolFileDto.RecordCount*
+  commentId: Overload:Meridian.Ui.Services.SymbolFileDto.RecordCount
+  href: Meridian.Ui.Services.SymbolFileDto.html#Meridian_Ui_Services_SymbolFileDto_RecordCount
+  name: RecordCount
+  nameWithType: SymbolFileDto.RecordCount
+  fullName: Meridian.Ui.Services.SymbolFileDto.RecordCount
+- uid: Meridian.Ui.Services.SymbolFileDto.CompressionType*
+  commentId: Overload:Meridian.Ui.Services.SymbolFileDto.CompressionType
+  href: Meridian.Ui.Services.SymbolFileDto.html#Meridian_Ui_Services_SymbolFileDto_CompressionType
+  name: CompressionType
+  nameWithType: SymbolFileDto.CompressionType
+  fullName: Meridian.Ui.Services.SymbolFileDto.CompressionType

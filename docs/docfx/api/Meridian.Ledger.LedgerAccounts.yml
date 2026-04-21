@@ -1,0 +1,2278 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ledger.LedgerAccounts
+  commentId: T:Meridian.Ledger.LedgerAccounts
+  id: LedgerAccounts
+  parent: Meridian.Ledger
+  children:
+  - Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable(System.String,System.String)
+  - Meridian.Ledger.LedgerAccounts.AllocationControl
+  - Meridian.Ledger.LedgerAccounts.CapitalAccount
+  - Meridian.Ledger.LedgerAccounts.CapitalAccountFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.Cash
+  - Meridian.Ledger.LedgerAccounts.CashAccount(System.String)
+  - Meridian.Ledger.LedgerAccounts.CashInCurrency(System.String,System.String)
+  - Meridian.Ledger.LedgerAccounts.CashInterestIncome
+  - Meridian.Ledger.LedgerAccounts.CashInterestIncomeFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.CommissionExpense
+  - Meridian.Ledger.LedgerAccounts.CommissionExpenseFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.CorpActionDistribution(System.String,System.String)
+  - Meridian.Ledger.LedgerAccounts.CorporateActionExpense
+  - Meridian.Ledger.LedgerAccounts.CorporateActionExpenseFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.CorporateActionIncome
+  - Meridian.Ledger.LedgerAccounts.CorporateActionIncomeFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.CouponExpense
+  - Meridian.Ledger.LedgerAccounts.CouponExpenseFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.CouponIncome
+  - Meridian.Ledger.LedgerAccounts.CouponIncomeFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.DividendExpense
+  - Meridian.Ledger.LedgerAccounts.DividendExpenseFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.DividendIncome
+  - Meridian.Ledger.LedgerAccounts.DividendIncomeFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.DividendReceivable(System.String,System.String)
+  - Meridian.Ledger.LedgerAccounts.FuturesMtmSettlement(System.String,System.String)
+  - Meridian.Ledger.LedgerAccounts.MarginInterestExpense
+  - Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.MarginLoanPayable
+  - Meridian.Ledger.LedgerAccounts.MarginLoanPayableFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.OptionPremiumAsset(System.String,System.String)
+  - Meridian.Ledger.LedgerAccounts.OptionPremiumLiability(System.String,System.String)
+  - Meridian.Ledger.LedgerAccounts.RealizedFxGain
+  - Meridian.Ledger.LedgerAccounts.RealizedFxLoss
+  - Meridian.Ledger.LedgerAccounts.RealizedGain
+  - Meridian.Ledger.LedgerAccounts.RealizedGainFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.RealizedLoss
+  - Meridian.Ledger.LedgerAccounts.RealizedLossFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.RetainedEarnings
+  - Meridian.Ledger.LedgerAccounts.RetainedEarningsFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.Securities(System.String,System.String)
+  - Meridian.Ledger.LedgerAccounts.ShortRebateIncome
+  - Meridian.Ledger.LedgerAccounts.ShortRebateIncomeFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.ShortSecuritiesPayable(System.String,System.String)
+  - Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpense
+  - Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpenseFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.UnrealizedFxGain
+  - Meridian.Ledger.LedgerAccounts.UnrealizedFxLoss
+  - Meridian.Ledger.LedgerAccounts.UnrealizedGain
+  - Meridian.Ledger.LedgerAccounts.UnrealizedGainFor(System.String)
+  - Meridian.Ledger.LedgerAccounts.UnrealizedLoss
+  - Meridian.Ledger.LedgerAccounts.UnrealizedLossFor(System.String)
+  langs:
+  - csharp
+  - vb
+  name: LedgerAccounts
+  nameWithType: LedgerAccounts
+  fullName: Meridian.Ledger.LedgerAccounts
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LedgerAccounts
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Well-known chart-of-accounts entries used in double-entry bookkeeping.
+  example: []
+  syntax:
+    content: public static class LedgerAccounts
+    content.vb: Public Module LedgerAccounts
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ledger.LedgerAccounts.Cash
+  commentId: F:Meridian.Ledger.LedgerAccounts.Cash
+  id: Cash
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: Cash
+  nameWithType: LedgerAccounts.Cash
+  fullName: Meridian.Ledger.LedgerAccounts.Cash
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cash
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Simulated cash held in the trading account.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount Cash
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly Cash As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CapitalAccount
+  commentId: F:Meridian.Ledger.LedgerAccounts.CapitalAccount
+  id: CapitalAccount
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CapitalAccount
+  nameWithType: LedgerAccounts.CapitalAccount
+  fullName: Meridian.Ledger.LedgerAccounts.CapitalAccount
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CapitalAccount
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Initial capital deposited into the account at the start of the run.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount CapitalAccount
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly CapitalAccount As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.RealizedGain
+  commentId: F:Meridian.Ledger.LedgerAccounts.RealizedGain
+  id: RealizedGain
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: RealizedGain
+  nameWithType: LedgerAccounts.RealizedGain
+  fullName: Meridian.Ledger.LedgerAccounts.RealizedGain
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedGain
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Realized gain on trades where proceeds exceed cost basis.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount RealizedGain
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly RealizedGain As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.RealizedLoss
+  commentId: F:Meridian.Ledger.LedgerAccounts.RealizedLoss
+  id: RealizedLoss
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: RealizedLoss
+  nameWithType: LedgerAccounts.RealizedLoss
+  fullName: Meridian.Ledger.LedgerAccounts.RealizedLoss
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedLoss
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Realized loss on trades where cost basis exceeds proceeds.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount RealizedLoss
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly RealizedLoss As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CommissionExpense
+  commentId: F:Meridian.Ledger.LedgerAccounts.CommissionExpense
+  id: CommissionExpense
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CommissionExpense
+  nameWithType: LedgerAccounts.CommissionExpense
+  fullName: Meridian.Ledger.LedgerAccounts.CommissionExpense
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionExpense
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Brokerage commission expense charged on each order fill.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount CommissionExpense
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly CommissionExpense As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.MarginInterestExpense
+  commentId: F:Meridian.Ledger.LedgerAccounts.MarginInterestExpense
+  id: MarginInterestExpense
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: MarginInterestExpense
+  nameWithType: LedgerAccounts.MarginInterestExpense
+  fullName: Meridian.Ledger.LedgerAccounts.MarginInterestExpense
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginInterestExpense
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Margin interest expense charged daily on debit (borrowed) balances.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount MarginInterestExpense
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly MarginInterestExpense As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CashInterestIncome
+  commentId: F:Meridian.Ledger.LedgerAccounts.CashInterestIncome
+  id: CashInterestIncome
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CashInterestIncome
+  nameWithType: LedgerAccounts.CashInterestIncome
+  fullName: Meridian.Ledger.LedgerAccounts.CashInterestIncome
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashInterestIncome
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Interest income credited to positive idle cash balances.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount CashInterestIncome
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly CashInterestIncome As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.ShortRebateIncome
+  commentId: F:Meridian.Ledger.LedgerAccounts.ShortRebateIncome
+  id: ShortRebateIncome
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: ShortRebateIncome
+  nameWithType: LedgerAccounts.ShortRebateIncome
+  fullName: Meridian.Ledger.LedgerAccounts.ShortRebateIncome
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortRebateIncome
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Short-sale rebate income credited daily by the broker on short positions.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount ShortRebateIncome
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly ShortRebateIncome As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.DividendIncome
+  commentId: F:Meridian.Ledger.LedgerAccounts.DividendIncome
+  id: DividendIncome
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: DividendIncome
+  nameWithType: LedgerAccounts.DividendIncome
+  fullName: Meridian.Ledger.LedgerAccounts.DividendIncome
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendIncome
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Dividend income received on long positions.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount DividendIncome
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly DividendIncome As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CashAccount(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CashAccount(System.String)
+  id: CashAccount(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CashAccount(string)
+  nameWithType: LedgerAccounts.CashAccount(string)
+  fullName: Meridian.Ledger.LedgerAccounts.CashAccount(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashAccount
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount CashAccount(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CashAccount(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CashAccount*
+  nameWithType.vb: LedgerAccounts.CashAccount(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CashAccount(String)
+  name.vb: CashAccount(String)
+- uid: Meridian.Ledger.LedgerAccounts.CapitalAccountFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CapitalAccountFor(System.String)
+  id: CapitalAccountFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CapitalAccountFor(string)
+  nameWithType: LedgerAccounts.CapitalAccountFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.CapitalAccountFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CapitalAccountFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount CapitalAccountFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CapitalAccountFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CapitalAccountFor*
+  nameWithType.vb: LedgerAccounts.CapitalAccountFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CapitalAccountFor(String)
+  name.vb: CapitalAccountFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.RealizedGainFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.RealizedGainFor(System.String)
+  id: RealizedGainFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: RealizedGainFor(string)
+  nameWithType: LedgerAccounts.RealizedGainFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.RealizedGainFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedGainFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount RealizedGainFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function RealizedGainFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.RealizedGainFor*
+  nameWithType.vb: LedgerAccounts.RealizedGainFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.RealizedGainFor(String)
+  name.vb: RealizedGainFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.RealizedLossFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.RealizedLossFor(System.String)
+  id: RealizedLossFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: RealizedLossFor(string)
+  nameWithType: LedgerAccounts.RealizedLossFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.RealizedLossFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedLossFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount RealizedLossFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function RealizedLossFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.RealizedLossFor*
+  nameWithType.vb: LedgerAccounts.RealizedLossFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.RealizedLossFor(String)
+  name.vb: RealizedLossFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.CommissionExpenseFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CommissionExpenseFor(System.String)
+  id: CommissionExpenseFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CommissionExpenseFor(string)
+  nameWithType: LedgerAccounts.CommissionExpenseFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.CommissionExpenseFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionExpenseFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount CommissionExpenseFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CommissionExpenseFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CommissionExpenseFor*
+  nameWithType.vb: LedgerAccounts.CommissionExpenseFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CommissionExpenseFor(String)
+  name.vb: CommissionExpenseFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor(System.String)
+  id: MarginInterestExpenseFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: MarginInterestExpenseFor(string)
+  nameWithType: LedgerAccounts.MarginInterestExpenseFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginInterestExpenseFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount MarginInterestExpenseFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function MarginInterestExpenseFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor*
+  nameWithType.vb: LedgerAccounts.MarginInterestExpenseFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor(String)
+  name.vb: MarginInterestExpenseFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.CashInterestIncomeFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CashInterestIncomeFor(System.String)
+  id: CashInterestIncomeFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CashInterestIncomeFor(string)
+  nameWithType: LedgerAccounts.CashInterestIncomeFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.CashInterestIncomeFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashInterestIncomeFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount CashInterestIncomeFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CashInterestIncomeFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CashInterestIncomeFor*
+  nameWithType.vb: LedgerAccounts.CashInterestIncomeFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CashInterestIncomeFor(String)
+  name.vb: CashInterestIncomeFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.ShortRebateIncomeFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.ShortRebateIncomeFor(System.String)
+  id: ShortRebateIncomeFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: ShortRebateIncomeFor(string)
+  nameWithType: LedgerAccounts.ShortRebateIncomeFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.ShortRebateIncomeFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortRebateIncomeFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount ShortRebateIncomeFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function ShortRebateIncomeFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.ShortRebateIncomeFor*
+  nameWithType.vb: LedgerAccounts.ShortRebateIncomeFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.ShortRebateIncomeFor(String)
+  name.vb: ShortRebateIncomeFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.DividendIncomeFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.DividendIncomeFor(System.String)
+  id: DividendIncomeFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: DividendIncomeFor(string)
+  nameWithType: LedgerAccounts.DividendIncomeFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.DividendIncomeFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendIncomeFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount DividendIncomeFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function DividendIncomeFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.DividendIncomeFor*
+  nameWithType.vb: LedgerAccounts.DividendIncomeFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.DividendIncomeFor(String)
+  name.vb: DividendIncomeFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.DividendExpenseFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.DividendExpenseFor(System.String)
+  id: DividendExpenseFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: DividendExpenseFor(string)
+  nameWithType: LedgerAccounts.DividendExpenseFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.DividendExpenseFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendExpenseFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount DividendExpenseFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function DividendExpenseFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.DividendExpenseFor*
+  nameWithType.vb: LedgerAccounts.DividendExpenseFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.DividendExpenseFor(String)
+  name.vb: DividendExpenseFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.CouponIncomeFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CouponIncomeFor(System.String)
+  id: CouponIncomeFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CouponIncomeFor(string)
+  nameWithType: LedgerAccounts.CouponIncomeFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.CouponIncomeFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CouponIncomeFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount CouponIncomeFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CouponIncomeFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CouponIncomeFor*
+  nameWithType.vb: LedgerAccounts.CouponIncomeFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CouponIncomeFor(String)
+  name.vb: CouponIncomeFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.CouponExpenseFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CouponExpenseFor(System.String)
+  id: CouponExpenseFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CouponExpenseFor(string)
+  nameWithType: LedgerAccounts.CouponExpenseFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.CouponExpenseFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CouponExpenseFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount CouponExpenseFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CouponExpenseFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CouponExpenseFor*
+  nameWithType.vb: LedgerAccounts.CouponExpenseFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CouponExpenseFor(String)
+  name.vb: CouponExpenseFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.CorporateActionIncomeFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CorporateActionIncomeFor(System.String)
+  id: CorporateActionIncomeFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CorporateActionIncomeFor(string)
+  nameWithType: LedgerAccounts.CorporateActionIncomeFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.CorporateActionIncomeFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorporateActionIncomeFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount CorporateActionIncomeFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CorporateActionIncomeFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CorporateActionIncomeFor*
+  nameWithType.vb: LedgerAccounts.CorporateActionIncomeFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CorporateActionIncomeFor(String)
+  name.vb: CorporateActionIncomeFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.CorporateActionExpenseFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CorporateActionExpenseFor(System.String)
+  id: CorporateActionExpenseFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CorporateActionExpenseFor(string)
+  nameWithType: LedgerAccounts.CorporateActionExpenseFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.CorporateActionExpenseFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorporateActionExpenseFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount CorporateActionExpenseFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CorporateActionExpenseFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CorporateActionExpenseFor*
+  nameWithType.vb: LedgerAccounts.CorporateActionExpenseFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CorporateActionExpenseFor(String)
+  name.vb: CorporateActionExpenseFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.UnrealizedGain
+  commentId: F:Meridian.Ledger.LedgerAccounts.UnrealizedGain
+  id: UnrealizedGain
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedGain
+  nameWithType: LedgerAccounts.UnrealizedGain
+  fullName: Meridian.Ledger.LedgerAccounts.UnrealizedGain
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedGain
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Unrealized gain on open long positions marked to current market value.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount UnrealizedGain
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly UnrealizedGain As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.UnrealizedLoss
+  commentId: F:Meridian.Ledger.LedgerAccounts.UnrealizedLoss
+  id: UnrealizedLoss
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedLoss
+  nameWithType: LedgerAccounts.UnrealizedLoss
+  fullName: Meridian.Ledger.LedgerAccounts.UnrealizedLoss
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedLoss
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Unrealized loss on open long positions marked to current market value.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount UnrealizedLoss
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly UnrealizedLoss As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.RetainedEarnings
+  commentId: F:Meridian.Ledger.LedgerAccounts.RetainedEarnings
+  id: RetainedEarnings
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: RetainedEarnings
+  nameWithType: LedgerAccounts.RetainedEarnings
+  fullName: Meridian.Ledger.LedgerAccounts.RetainedEarnings
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetainedEarnings
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Retained earnings carried forward from prior reporting periods.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount RetainedEarnings
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly RetainedEarnings As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.UnrealizedGainFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.UnrealizedGainFor(System.String)
+  id: UnrealizedGainFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedGainFor(string)
+  nameWithType: LedgerAccounts.UnrealizedGainFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.UnrealizedGainFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedGainFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount UnrealizedGainFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function UnrealizedGainFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.UnrealizedGainFor*
+  nameWithType.vb: LedgerAccounts.UnrealizedGainFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.UnrealizedGainFor(String)
+  name.vb: UnrealizedGainFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.UnrealizedLossFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.UnrealizedLossFor(System.String)
+  id: UnrealizedLossFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedLossFor(string)
+  nameWithType: LedgerAccounts.UnrealizedLossFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.UnrealizedLossFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedLossFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount UnrealizedLossFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function UnrealizedLossFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.UnrealizedLossFor*
+  nameWithType.vb: LedgerAccounts.UnrealizedLossFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.UnrealizedLossFor(String)
+  name.vb: UnrealizedLossFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.RetainedEarningsFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.RetainedEarningsFor(System.String)
+  id: RetainedEarningsFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: RetainedEarningsFor(string)
+  nameWithType: LedgerAccounts.RetainedEarningsFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.RetainedEarningsFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetainedEarningsFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public static LedgerAccount RetainedEarningsFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function RetainedEarningsFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.RetainedEarningsFor*
+  nameWithType.vb: LedgerAccounts.RetainedEarningsFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.RetainedEarningsFor(String)
+  name.vb: RetainedEarningsFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.DividendExpense
+  commentId: F:Meridian.Ledger.LedgerAccounts.DividendExpense
+  id: DividendExpense
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: DividendExpense
+  nameWithType: LedgerAccounts.DividendExpense
+  fullName: Meridian.Ledger.LedgerAccounts.DividendExpense
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendExpense
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Dividend expense owed on short positions or other negative dividend adjustments.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount DividendExpense
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly DividendExpense As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CouponIncome
+  commentId: F:Meridian.Ledger.LedgerAccounts.CouponIncome
+  id: CouponIncome
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CouponIncome
+  nameWithType: LedgerAccounts.CouponIncome
+  fullName: Meridian.Ledger.LedgerAccounts.CouponIncome
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CouponIncome
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Bond or fund coupon income received on held units.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount CouponIncome
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly CouponIncome As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CouponExpense
+  commentId: F:Meridian.Ledger.LedgerAccounts.CouponExpense
+  id: CouponExpense
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CouponExpense
+  nameWithType: LedgerAccounts.CouponExpense
+  fullName: Meridian.Ledger.LedgerAccounts.CouponExpense
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CouponExpense
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Coupon expense owed on short positions or negative coupon adjustments.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount CouponExpense
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly CouponExpense As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CorporateActionIncome
+  commentId: F:Meridian.Ledger.LedgerAccounts.CorporateActionIncome
+  id: CorporateActionIncome
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CorporateActionIncome
+  nameWithType: LedgerAccounts.CorporateActionIncome
+  fullName: Meridian.Ledger.LedgerAccounts.CorporateActionIncome
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorporateActionIncome
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Income from non-dividend corporate actions, merger cash, and miscellaneous asset events.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount CorporateActionIncome
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly CorporateActionIncome As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CorporateActionExpense
+  commentId: F:Meridian.Ledger.LedgerAccounts.CorporateActionExpense
+  id: CorporateActionExpense
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CorporateActionExpense
+  nameWithType: LedgerAccounts.CorporateActionExpense
+  fullName: Meridian.Ledger.LedgerAccounts.CorporateActionExpense
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorporateActionExpense
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Expense from fees, merger charges, and other negative asset-event cash adjustments.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount CorporateActionExpense
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly CorporateActionExpense As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.Securities(System.String,System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.Securities(System.String,System.String)
+  id: Securities(System.String,System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: Securities(string, string?)
+  nameWithType: LedgerAccounts.Securities(string, string?)
+  fullName: Meridian.Ledger.LedgerAccounts.Securities(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Securities
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Returns the asset account representing equity holdings in <code class="paramref">symbol</code>.
+
+    Each symbol has its own securities account so per-symbol cost-basis is tracked separately.
+
+    The symbol is normalized to upper-case so accounts are case-insensitive by identity.
+  example: []
+  syntax:
+    content: public static LedgerAccount Securities(string symbol, string? financialAccountId = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function Securities(symbol As String, financialAccountId As String = Nothing) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.Securities*
+  nameWithType.vb: LedgerAccounts.Securities(String, String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.Securities(String, String)
+  name.vb: Securities(String, String)
+- uid: Meridian.Ledger.LedgerAccounts.DividendReceivable(System.String,System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.DividendReceivable(System.String,System.String)
+  id: DividendReceivable(System.String,System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: DividendReceivable(string, string?)
+  nameWithType: LedgerAccounts.DividendReceivable(string, string?)
+  fullName: Meridian.Ledger.LedgerAccounts.DividendReceivable(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DividendReceivable
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Returns the asset account representing dividends declared but not yet received for
+
+    <code class="paramref">symbol</code> (ex-date passed; pay-date still pending).
+
+    Post: Dr DividendReceivable / Cr DividendIncome on declaration.
+           Dr Cash / Cr DividendReceivable when payment arrives.
+    The symbol is normalized to upper-case.
+  example: []
+  syntax:
+    content: public static LedgerAccount DividendReceivable(string symbol, string? financialAccountId = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function DividendReceivable(symbol As String, financialAccountId As String = Nothing) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.DividendReceivable*
+  nameWithType.vb: LedgerAccounts.DividendReceivable(String, String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.DividendReceivable(String, String)
+  name.vb: DividendReceivable(String, String)
+- uid: Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable(System.String,System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable(System.String,System.String)
+  id: AccruedInterestReceivable(System.String,System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: AccruedInterestReceivable(string, string?)
+  nameWithType: LedgerAccounts.AccruedInterestReceivable(string, string?)
+  fullName: Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccruedInterestReceivable
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Returns the asset account representing bond or fund coupon interest accrued but not yet
+
+    received for <code class="paramref">symbol</code>.
+
+    The symbol is normalized to upper-case.
+  example: []
+  syntax:
+    content: public static LedgerAccount AccruedInterestReceivable(string symbol, string? financialAccountId = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function AccruedInterestReceivable(symbol As String, financialAccountId As String = Nothing) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable*
+  nameWithType.vb: LedgerAccounts.AccruedInterestReceivable(String, String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable(String, String)
+  name.vb: AccruedInterestReceivable(String, String)
+- uid: Meridian.Ledger.LedgerAccounts.CorpActionDistribution(System.String,System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CorpActionDistribution(System.String,System.String)
+  id: CorpActionDistribution(System.String,System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CorpActionDistribution(string, string?)
+  nameWithType: LedgerAccounts.CorpActionDistribution(string, string?)
+  fullName: Meridian.Ledger.LedgerAccounts.CorpActionDistribution(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CorpActionDistribution
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Returns the revenue account for non-dividend corporate action distributions
+
+    (spin-off proceeds, rights issue income, merger cash, etc.) for <code class="paramref">symbol</code>.
+
+    The symbol is normalized to upper-case.
+  example: []
+  syntax:
+    content: public static LedgerAccount CorpActionDistribution(string symbol, string? financialAccountId = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CorpActionDistribution(symbol As String, financialAccountId As String = Nothing) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CorpActionDistribution*
+  nameWithType.vb: LedgerAccounts.CorpActionDistribution(String, String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CorpActionDistribution(String, String)
+  name.vb: CorpActionDistribution(String, String)
+- uid: Meridian.Ledger.LedgerAccounts.ShortSecuritiesPayable(System.String,System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.ShortSecuritiesPayable(System.String,System.String)
+  id: ShortSecuritiesPayable(System.String,System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: ShortSecuritiesPayable(string, string?)
+  nameWithType: LedgerAccounts.ShortSecuritiesPayable(string, string?)
+  fullName: Meridian.Ledger.LedgerAccounts.ShortSecuritiesPayable(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShortSecuritiesPayable
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Returns the liability account representing the obligation to return borrowed shares for
+
+    a short position in <code class="paramref">symbol</code>.
+
+    Each symbol has its own short payable account. The symbol is normalized to upper-case.
+  example: []
+  syntax:
+    content: public static LedgerAccount ShortSecuritiesPayable(string symbol, string? financialAccountId = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function ShortSecuritiesPayable(symbol As String, financialAccountId As String = Nothing) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.ShortSecuritiesPayable*
+  nameWithType.vb: LedgerAccounts.ShortSecuritiesPayable(String, String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.ShortSecuritiesPayable(String, String)
+  name.vb: ShortSecuritiesPayable(String, String)
+- uid: Meridian.Ledger.LedgerAccounts.UnrealizedFxGain
+  commentId: F:Meridian.Ledger.LedgerAccounts.UnrealizedFxGain
+  id: UnrealizedFxGain
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedFxGain
+  nameWithType: LedgerAccounts.UnrealizedFxGain
+  fullName: Meridian.Ledger.LedgerAccounts.UnrealizedFxGain
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedFxGain
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Unrealized FX gain on a foreign-currency cash balance or position translated to
+
+    the reporting (base) currency.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount UnrealizedFxGain
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly UnrealizedFxGain As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.UnrealizedFxLoss
+  commentId: F:Meridian.Ledger.LedgerAccounts.UnrealizedFxLoss
+  id: UnrealizedFxLoss
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: UnrealizedFxLoss
+  nameWithType: LedgerAccounts.UnrealizedFxLoss
+  fullName: Meridian.Ledger.LedgerAccounts.UnrealizedFxLoss
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnrealizedFxLoss
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Unrealized FX loss on a foreign-currency cash balance or position translated to
+
+    the reporting (base) currency.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount UnrealizedFxLoss
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly UnrealizedFxLoss As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.RealizedFxGain
+  commentId: F:Meridian.Ledger.LedgerAccounts.RealizedFxGain
+  id: RealizedFxGain
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: RealizedFxGain
+  nameWithType: LedgerAccounts.RealizedFxGain
+  fullName: Meridian.Ledger.LedgerAccounts.RealizedFxGain
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedFxGain
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Realized FX gain crystallized when a foreign-currency cash balance is repatriated.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount RealizedFxGain
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly RealizedFxGain As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.RealizedFxLoss
+  commentId: F:Meridian.Ledger.LedgerAccounts.RealizedFxLoss
+  id: RealizedFxLoss
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: RealizedFxLoss
+  nameWithType: LedgerAccounts.RealizedFxLoss
+  fullName: Meridian.Ledger.LedgerAccounts.RealizedFxLoss
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedFxLoss
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Realized FX loss crystallized when a foreign-currency cash balance is repatriated.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount RealizedFxLoss
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly RealizedFxLoss As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CashInCurrency(System.String,System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.CashInCurrency(System.String,System.String)
+  id: CashInCurrency(System.String,System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: CashInCurrency(string, string?)
+  nameWithType: LedgerAccounts.CashInCurrency(string, string?)
+  fullName: Meridian.Ledger.LedgerAccounts.CashInCurrency(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashInCurrency
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 215
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Cash account for a specific <code class="paramref">currencyCode</code> balance.
+
+    Enables per-currency cash tracking in multi-currency portfolios.
+  example: []
+  syntax:
+    content: public static LedgerAccount CashInCurrency(string currencyCode, string? financialAccountId = null)
+    parameters:
+    - id: currencyCode
+      type: System.String
+      description: ISO 4217 currency code (e.g., "EUR", "GBP").
+    - id: financialAccountId
+      type: System.String
+      description: Optional brokerage account scope.
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function CashInCurrency(currencyCode As String, financialAccountId As String = Nothing) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.CashInCurrency*
+  nameWithType.vb: LedgerAccounts.CashInCurrency(String, String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.CashInCurrency(String, String)
+  name.vb: CashInCurrency(String, String)
+- uid: Meridian.Ledger.LedgerAccounts.MarginLoanPayable
+  commentId: F:Meridian.Ledger.LedgerAccounts.MarginLoanPayable
+  id: MarginLoanPayable
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: MarginLoanPayable
+  nameWithType: LedgerAccounts.MarginLoanPayable
+  fullName: Meridian.Ledger.LedgerAccounts.MarginLoanPayable
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginLoanPayable
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 227
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Margin loan payable — the debit balance owed to the broker for leveraged positions.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount MarginLoanPayable
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly MarginLoanPayable As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpense
+  commentId: F:Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpense
+  id: StockBorrowFeeExpense
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: StockBorrowFeeExpense
+  nameWithType: LedgerAccounts.StockBorrowFeeExpense
+  fullName: Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpense
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StockBorrowFeeExpense
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 231
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Borrow fee expense charged daily on short-sold securities.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount StockBorrowFeeExpense
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly StockBorrowFeeExpense As LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.MarginLoanPayableFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.MarginLoanPayableFor(System.String)
+  id: MarginLoanPayableFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: MarginLoanPayableFor(string)
+  nameWithType: LedgerAccounts.MarginLoanPayableFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.MarginLoanPayableFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarginLoanPayableFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Margin loan payable scoped to a specific brokerage account.
+  example: []
+  syntax:
+    content: public static LedgerAccount MarginLoanPayableFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function MarginLoanPayableFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.MarginLoanPayableFor*
+  nameWithType.vb: LedgerAccounts.MarginLoanPayableFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.MarginLoanPayableFor(String)
+  name.vb: MarginLoanPayableFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpenseFor(System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpenseFor(System.String)
+  id: StockBorrowFeeExpenseFor(System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: StockBorrowFeeExpenseFor(string)
+  nameWithType: LedgerAccounts.StockBorrowFeeExpenseFor(string)
+  fullName: Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpenseFor(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StockBorrowFeeExpenseFor
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Stock borrow fee expense scoped to a specific brokerage account.
+  example: []
+  syntax:
+    content: public static LedgerAccount StockBorrowFeeExpenseFor(string financialAccountId)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function StockBorrowFeeExpenseFor(financialAccountId As String) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpenseFor*
+  nameWithType.vb: LedgerAccounts.StockBorrowFeeExpenseFor(String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpenseFor(String)
+  name.vb: StockBorrowFeeExpenseFor(String)
+- uid: Meridian.Ledger.LedgerAccounts.OptionPremiumAsset(System.String,System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.OptionPremiumAsset(System.String,System.String)
+  id: OptionPremiumAsset(System.String,System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: OptionPremiumAsset(string, string?)
+  nameWithType: LedgerAccounts.OptionPremiumAsset(string, string?)
+  fullName: Meridian.Ledger.LedgerAccounts.OptionPremiumAsset(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionPremiumAsset
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Option premium asset — the cost paid to acquire a long option position.
+
+    Amortized to zero on expiry; relieved on close or exercise.
+  example: []
+  syntax:
+    content: public static LedgerAccount OptionPremiumAsset(string symbol, string? financialAccountId = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function OptionPremiumAsset(symbol As String, financialAccountId As String = Nothing) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.OptionPremiumAsset*
+  nameWithType.vb: LedgerAccounts.OptionPremiumAsset(String, String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.OptionPremiumAsset(String, String)
+  name.vb: OptionPremiumAsset(String, String)
+- uid: Meridian.Ledger.LedgerAccounts.OptionPremiumLiability(System.String,System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.OptionPremiumLiability(System.String,System.String)
+  id: OptionPremiumLiability(System.String,System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: OptionPremiumLiability(string, string?)
+  nameWithType: LedgerAccounts.OptionPremiumLiability(string, string?)
+  fullName: Meridian.Ledger.LedgerAccounts.OptionPremiumLiability(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionPremiumLiability
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 264
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Option premium liability — the premium received for writing (selling) an option.
+
+    Recognized as revenue on expiry; offset on close or assignment.
+  example: []
+  syntax:
+    content: public static LedgerAccount OptionPremiumLiability(string symbol, string? financialAccountId = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function OptionPremiumLiability(symbol As String, financialAccountId As String = Nothing) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.OptionPremiumLiability*
+  nameWithType.vb: LedgerAccounts.OptionPremiumLiability(String, String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.OptionPremiumLiability(String, String)
+  name.vb: OptionPremiumLiability(String, String)
+- uid: Meridian.Ledger.LedgerAccounts.FuturesMtmSettlement(System.String,System.String)
+  commentId: M:Meridian.Ledger.LedgerAccounts.FuturesMtmSettlement(System.String,System.String)
+  id: FuturesMtmSettlement(System.String,System.String)
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: FuturesMtmSettlement(string, string?)
+  nameWithType: LedgerAccounts.FuturesMtmSettlement(string, string?)
+  fullName: Meridian.Ledger.LedgerAccounts.FuturesMtmSettlement(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FuturesMtmSettlement
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 274
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Daily mark-to-market cash settlement account for futures positions.
+
+    Debited or credited each day to reflect change in futures price.
+  example: []
+  syntax:
+    content: public static LedgerAccount FuturesMtmSettlement(string symbol, string? financialAccountId = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared Function FuturesMtmSettlement(symbol As String, financialAccountId As String = Nothing) As LedgerAccount
+  overload: Meridian.Ledger.LedgerAccounts.FuturesMtmSettlement*
+  nameWithType.vb: LedgerAccounts.FuturesMtmSettlement(String, String)
+  fullName.vb: Meridian.Ledger.LedgerAccounts.FuturesMtmSettlement(String, String)
+  name.vb: FuturesMtmSettlement(String, String)
+- uid: Meridian.Ledger.LedgerAccounts.AllocationControl
+  commentId: F:Meridian.Ledger.LedgerAccounts.AllocationControl
+  id: AllocationControl
+  parent: Meridian.Ledger.LedgerAccounts
+  langs:
+  - csharp
+  - vb
+  name: AllocationControl
+  nameWithType: LedgerAccounts.AllocationControl
+  fullName: Meridian.Ledger.LedgerAccounts.AllocationControl
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ledger/LedgerAccounts.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocationControl
+    path: ../../src/Meridian.Ledger/LedgerAccounts.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Allocation control account used as a clearing entry when a block trade is split
+
+    across multiple sleeves or vehicles before individual sleeve ledgers are posted.
+
+    Must net to zero across all posts in the same allocation batch.
+  example: []
+  syntax:
+    content: public static readonly LedgerAccount AllocationControl
+    return:
+      type: Meridian.Ledger.LedgerAccount
+    content.vb: Public Shared ReadOnly AllocationControl As LedgerAccount
+references:
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ledger.LedgerAccount
+  commentId: T:Meridian.Ledger.LedgerAccount
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerAccount.html
+  name: LedgerAccount
+  nameWithType: LedgerAccount
+  fullName: Meridian.Ledger.LedgerAccount
+- uid: Meridian.Ledger.LedgerAccounts.CashAccount*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CashAccount
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CashAccount_System_String_
+  name: CashAccount
+  nameWithType: LedgerAccounts.CashAccount
+  fullName: Meridian.Ledger.LedgerAccounts.CashAccount
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ledger.LedgerAccounts.CapitalAccountFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CapitalAccountFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CapitalAccountFor_System_String_
+  name: CapitalAccountFor
+  nameWithType: LedgerAccounts.CapitalAccountFor
+  fullName: Meridian.Ledger.LedgerAccounts.CapitalAccountFor
+- uid: Meridian.Ledger.LedgerAccounts.RealizedGainFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.RealizedGainFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_RealizedGainFor_System_String_
+  name: RealizedGainFor
+  nameWithType: LedgerAccounts.RealizedGainFor
+  fullName: Meridian.Ledger.LedgerAccounts.RealizedGainFor
+- uid: Meridian.Ledger.LedgerAccounts.RealizedLossFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.RealizedLossFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_RealizedLossFor_System_String_
+  name: RealizedLossFor
+  nameWithType: LedgerAccounts.RealizedLossFor
+  fullName: Meridian.Ledger.LedgerAccounts.RealizedLossFor
+- uid: Meridian.Ledger.LedgerAccounts.CommissionExpenseFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CommissionExpenseFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CommissionExpenseFor_System_String_
+  name: CommissionExpenseFor
+  nameWithType: LedgerAccounts.CommissionExpenseFor
+  fullName: Meridian.Ledger.LedgerAccounts.CommissionExpenseFor
+- uid: Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_MarginInterestExpenseFor_System_String_
+  name: MarginInterestExpenseFor
+  nameWithType: LedgerAccounts.MarginInterestExpenseFor
+  fullName: Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor
+- uid: Meridian.Ledger.LedgerAccounts.CashInterestIncomeFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CashInterestIncomeFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CashInterestIncomeFor_System_String_
+  name: CashInterestIncomeFor
+  nameWithType: LedgerAccounts.CashInterestIncomeFor
+  fullName: Meridian.Ledger.LedgerAccounts.CashInterestIncomeFor
+- uid: Meridian.Ledger.LedgerAccounts.ShortRebateIncomeFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.ShortRebateIncomeFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_ShortRebateIncomeFor_System_String_
+  name: ShortRebateIncomeFor
+  nameWithType: LedgerAccounts.ShortRebateIncomeFor
+  fullName: Meridian.Ledger.LedgerAccounts.ShortRebateIncomeFor
+- uid: Meridian.Ledger.LedgerAccounts.DividendIncomeFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.DividendIncomeFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_DividendIncomeFor_System_String_
+  name: DividendIncomeFor
+  nameWithType: LedgerAccounts.DividendIncomeFor
+  fullName: Meridian.Ledger.LedgerAccounts.DividendIncomeFor
+- uid: Meridian.Ledger.LedgerAccounts.DividendExpenseFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.DividendExpenseFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_DividendExpenseFor_System_String_
+  name: DividendExpenseFor
+  nameWithType: LedgerAccounts.DividendExpenseFor
+  fullName: Meridian.Ledger.LedgerAccounts.DividendExpenseFor
+- uid: Meridian.Ledger.LedgerAccounts.CouponIncomeFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CouponIncomeFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CouponIncomeFor_System_String_
+  name: CouponIncomeFor
+  nameWithType: LedgerAccounts.CouponIncomeFor
+  fullName: Meridian.Ledger.LedgerAccounts.CouponIncomeFor
+- uid: Meridian.Ledger.LedgerAccounts.CouponExpenseFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CouponExpenseFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CouponExpenseFor_System_String_
+  name: CouponExpenseFor
+  nameWithType: LedgerAccounts.CouponExpenseFor
+  fullName: Meridian.Ledger.LedgerAccounts.CouponExpenseFor
+- uid: Meridian.Ledger.LedgerAccounts.CorporateActionIncomeFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CorporateActionIncomeFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CorporateActionIncomeFor_System_String_
+  name: CorporateActionIncomeFor
+  nameWithType: LedgerAccounts.CorporateActionIncomeFor
+  fullName: Meridian.Ledger.LedgerAccounts.CorporateActionIncomeFor
+- uid: Meridian.Ledger.LedgerAccounts.CorporateActionExpenseFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CorporateActionExpenseFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CorporateActionExpenseFor_System_String_
+  name: CorporateActionExpenseFor
+  nameWithType: LedgerAccounts.CorporateActionExpenseFor
+  fullName: Meridian.Ledger.LedgerAccounts.CorporateActionExpenseFor
+- uid: Meridian.Ledger.LedgerAccounts.UnrealizedGainFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.UnrealizedGainFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_UnrealizedGainFor_System_String_
+  name: UnrealizedGainFor
+  nameWithType: LedgerAccounts.UnrealizedGainFor
+  fullName: Meridian.Ledger.LedgerAccounts.UnrealizedGainFor
+- uid: Meridian.Ledger.LedgerAccounts.UnrealizedLossFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.UnrealizedLossFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_UnrealizedLossFor_System_String_
+  name: UnrealizedLossFor
+  nameWithType: LedgerAccounts.UnrealizedLossFor
+  fullName: Meridian.Ledger.LedgerAccounts.UnrealizedLossFor
+- uid: Meridian.Ledger.LedgerAccounts.RetainedEarningsFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.RetainedEarningsFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_RetainedEarningsFor_System_String_
+  name: RetainedEarningsFor
+  nameWithType: LedgerAccounts.RetainedEarningsFor
+  fullName: Meridian.Ledger.LedgerAccounts.RetainedEarningsFor
+- uid: Meridian.Ledger.LedgerAccounts.Securities*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.Securities
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_Securities_System_String_System_String_
+  name: Securities
+  nameWithType: LedgerAccounts.Securities
+  fullName: Meridian.Ledger.LedgerAccounts.Securities
+- uid: Meridian.Ledger.LedgerAccounts.DividendReceivable*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.DividendReceivable
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_DividendReceivable_System_String_System_String_
+  name: DividendReceivable
+  nameWithType: LedgerAccounts.DividendReceivable
+  fullName: Meridian.Ledger.LedgerAccounts.DividendReceivable
+- uid: Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_AccruedInterestReceivable_System_String_System_String_
+  name: AccruedInterestReceivable
+  nameWithType: LedgerAccounts.AccruedInterestReceivable
+  fullName: Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable
+- uid: Meridian.Ledger.LedgerAccounts.CorpActionDistribution*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CorpActionDistribution
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CorpActionDistribution_System_String_System_String_
+  name: CorpActionDistribution
+  nameWithType: LedgerAccounts.CorpActionDistribution
+  fullName: Meridian.Ledger.LedgerAccounts.CorpActionDistribution
+- uid: Meridian.Ledger.LedgerAccounts.ShortSecuritiesPayable*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.ShortSecuritiesPayable
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_ShortSecuritiesPayable_System_String_System_String_
+  name: ShortSecuritiesPayable
+  nameWithType: LedgerAccounts.ShortSecuritiesPayable
+  fullName: Meridian.Ledger.LedgerAccounts.ShortSecuritiesPayable
+- uid: Meridian.Ledger.LedgerAccounts.CashInCurrency*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.CashInCurrency
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_CashInCurrency_System_String_System_String_
+  name: CashInCurrency
+  nameWithType: LedgerAccounts.CashInCurrency
+  fullName: Meridian.Ledger.LedgerAccounts.CashInCurrency
+- uid: Meridian.Ledger.LedgerAccounts.MarginLoanPayableFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.MarginLoanPayableFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_MarginLoanPayableFor_System_String_
+  name: MarginLoanPayableFor
+  nameWithType: LedgerAccounts.MarginLoanPayableFor
+  fullName: Meridian.Ledger.LedgerAccounts.MarginLoanPayableFor
+- uid: Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpenseFor*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpenseFor
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_StockBorrowFeeExpenseFor_System_String_
+  name: StockBorrowFeeExpenseFor
+  nameWithType: LedgerAccounts.StockBorrowFeeExpenseFor
+  fullName: Meridian.Ledger.LedgerAccounts.StockBorrowFeeExpenseFor
+- uid: Meridian.Ledger.LedgerAccounts.OptionPremiumAsset*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.OptionPremiumAsset
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_OptionPremiumAsset_System_String_System_String_
+  name: OptionPremiumAsset
+  nameWithType: LedgerAccounts.OptionPremiumAsset
+  fullName: Meridian.Ledger.LedgerAccounts.OptionPremiumAsset
+- uid: Meridian.Ledger.LedgerAccounts.OptionPremiumLiability*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.OptionPremiumLiability
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_OptionPremiumLiability_System_String_System_String_
+  name: OptionPremiumLiability
+  nameWithType: LedgerAccounts.OptionPremiumLiability
+  fullName: Meridian.Ledger.LedgerAccounts.OptionPremiumLiability
+- uid: Meridian.Ledger.LedgerAccounts.FuturesMtmSettlement*
+  commentId: Overload:Meridian.Ledger.LedgerAccounts.FuturesMtmSettlement
+  href: Meridian.Ledger.LedgerAccounts.html#Meridian_Ledger_LedgerAccounts_FuturesMtmSettlement_System_String_System_String_
+  name: FuturesMtmSettlement
+  nameWithType: LedgerAccounts.FuturesMtmSettlement
+  fullName: Meridian.Ledger.LedgerAccounts.FuturesMtmSettlement

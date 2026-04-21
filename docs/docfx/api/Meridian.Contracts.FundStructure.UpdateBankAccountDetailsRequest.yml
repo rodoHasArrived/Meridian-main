@@ -1,0 +1,482 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
+  commentId: T:Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
+  id: UpdateBankAccountDetailsRequest
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.#ctor(Meridian.Contracts.FundStructure.BankAccountDetailsDto,System.String)
+  - Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.Details
+  - Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdatedBy
+  langs:
+  - csharp
+  - vb
+  name: UpdateBankAccountDetailsRequest
+  nameWithType: UpdateBankAccountDetailsRequest
+  fullName: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateBankAccountDetailsRequest
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  summary: Request to update bank account details.
+  example: []
+  syntax:
+    content: 'public sealed record UpdateBankAccountDetailsRequest : IEquatable<UpdateBankAccountDetailsRequest>'
+    content.vb: Public NotInheritable Class UpdateBankAccountDetailsRequest Implements IEquatable(Of UpdateBankAccountDetailsRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.#ctor(Meridian.Contracts.FundStructure.BankAccountDetailsDto,System.String)
+  commentId: M:Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.#ctor(Meridian.Contracts.FundStructure.BankAccountDetailsDto,System.String)
+  id: '#ctor(Meridian.Contracts.FundStructure.BankAccountDetailsDto,System.String)'
+  parent: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
+  langs:
+  - csharp
+  - vb
+  name: UpdateBankAccountDetailsRequest(BankAccountDetailsDto, string)
+  nameWithType: UpdateBankAccountDetailsRequest.UpdateBankAccountDetailsRequest(BankAccountDetailsDto, string)
+  fullName: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdateBankAccountDetailsRequest(Meridian.Contracts.FundStructure.BankAccountDetailsDto, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  summary: Request to update bank account details.
+  example: []
+  syntax:
+    content: public UpdateBankAccountDetailsRequest(BankAccountDetailsDto Details, string UpdatedBy)
+    parameters:
+    - id: Details
+      type: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+    - id: UpdatedBy
+      type: System.String
+    content.vb: Public Sub New(Details As BankAccountDetailsDto, UpdatedBy As String)
+  overload: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.#ctor*
+  nameWithType.vb: UpdateBankAccountDetailsRequest.New(BankAccountDetailsDto, String)
+  fullName.vb: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.New(Meridian.Contracts.FundStructure.BankAccountDetailsDto, String)
+  name.vb: New(BankAccountDetailsDto, String)
+- uid: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.Details
+  commentId: P:Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.Details
+  id: Details
+  parent: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
+  langs:
+  - csharp
+  - vb
+  name: Details
+  nameWithType: UpdateBankAccountDetailsRequest.Details
+  fullName: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.Details
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Details
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public BankAccountDetailsDto Details { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+    content.vb: Public Property Details As BankAccountDetailsDto
+  overload: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.Details*
+- uid: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdatedBy
+  commentId: P:Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdatedBy
+  id: UpdatedBy
+  parent: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
+  langs:
+  - csharp
+  - vb
+  name: UpdatedBy
+  nameWithType: UpdateBankAccountDetailsRequest.UpdatedBy
+  fullName: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdatedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdatedBy
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string UpdatedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property UpdatedBy As String
+  overload: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdatedBy*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<UpdateBankAccountDetailsRequest>
+  nameWithType: IEquatable<UpdateBankAccountDetailsRequest>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest>
+  nameWithType.vb: IEquatable(Of UpdateBankAccountDetailsRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest)
+  name.vb: IEquatable(Of UpdateBankAccountDetailsRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
+    name: UpdateBankAccountDetailsRequest
+    href: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest
+    name: UpdateBankAccountDetailsRequest
+    href: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.#ctor
+  href: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.html#Meridian_Contracts_FundStructure_UpdateBankAccountDetailsRequest__ctor_Meridian_Contracts_FundStructure_BankAccountDetailsDto_System_String_
+  name: UpdateBankAccountDetailsRequest
+  nameWithType: UpdateBankAccountDetailsRequest.UpdateBankAccountDetailsRequest
+  fullName: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdateBankAccountDetailsRequest
+  nameWithType.vb: UpdateBankAccountDetailsRequest.New
+  fullName.vb: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.New
+  name.vb: New
+- uid: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  commentId: T:Meridian.Contracts.FundStructure.BankAccountDetailsDto
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.BankAccountDetailsDto.html
+  name: BankAccountDetailsDto
+  nameWithType: BankAccountDetailsDto
+  fullName: Meridian.Contracts.FundStructure.BankAccountDetailsDto
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.Details*
+  commentId: Overload:Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.Details
+  href: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.html#Meridian_Contracts_FundStructure_UpdateBankAccountDetailsRequest_Details
+  name: Details
+  nameWithType: UpdateBankAccountDetailsRequest.Details
+  fullName: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.Details
+- uid: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdatedBy*
+  commentId: Overload:Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdatedBy
+  href: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.html#Meridian_Contracts_FundStructure_UpdateBankAccountDetailsRequest_UpdatedBy
+  name: UpdatedBy
+  nameWithType: UpdateBankAccountDetailsRequest.UpdatedBy
+  fullName: Meridian.Contracts.FundStructure.UpdateBankAccountDetailsRequest.UpdatedBy

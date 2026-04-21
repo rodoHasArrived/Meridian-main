@@ -69,6 +69,28 @@ public sealed class ServiceManagerViewModel : BindableBase
         private set => SetProperty(ref _operationResultText, value);
     }
 
+    public string ServiceStateBadgeText => IsRunning
+        ? "Running"
+        : IsInstalled
+            ? "Installed / stopped"
+            : "Not installed";
+
+    public string RecommendedActionText => IsBusy
+        ? "An operation is in progress. Wait for the current lifecycle action to complete before issuing another command."
+        : !IsInstalled
+            ? "Install the workstation backend on this machine before opening execution-dependent pages."
+            : !IsRunning
+                ? "Start the backend before using live blotter, execution, or service-dependent diagnostics."
+                : "Service is running. Refresh after configuration or registration changes to confirm the current runtime posture.";
+
+    public string RuntimePostureText => IsRunning
+        ? $"Health posture: {HealthText}."
+        : "Runtime posture: offline until the backend service is started.";
+
+    public string RegistrationPostureText => string.Equals(ExecutablePathText, "Not registered", StringComparison.OrdinalIgnoreCase)
+        ? "No registered executable path is available yet."
+        : "Registered executable path is available for lifecycle management.";
+
     // ── State flags ────────────────────────────────────────────────────────
 
     public bool IsBusy
@@ -79,6 +101,7 @@ public sealed class ServiceManagerViewModel : BindableBase
             if (SetProperty(ref _isBusy, value))
             {
                 NotifyCanExecuteChanged();
+                RaiseDerivedStateChanged();
             }
         }
     }
@@ -91,6 +114,7 @@ public sealed class ServiceManagerViewModel : BindableBase
             if (SetProperty(ref _isRunning, value))
             {
                 NotifyCanExecuteChanged();
+                RaiseDerivedStateChanged();
             }
         }
     }
@@ -103,6 +127,7 @@ public sealed class ServiceManagerViewModel : BindableBase
             if (SetProperty(ref _isInstalled, value))
             {
                 NotifyCanExecuteChanged();
+                RaiseDerivedStateChanged();
             }
         }
     }
@@ -179,6 +204,7 @@ public sealed class ServiceManagerViewModel : BindableBase
 
         IsRunning = status.IsRunning;
         IsInstalled = status.IsInstalled;
+        RaiseDerivedStateChanged();
     }
 
     private void NotifyCanExecuteChanged()
@@ -193,5 +219,13 @@ public sealed class ServiceManagerViewModel : BindableBase
         StopCommand.NotifyCanExecuteChanged();
         RestartCommand.NotifyCanExecuteChanged();
         RefreshCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RaiseDerivedStateChanged()
+    {
+        RaisePropertyChanged(nameof(ServiceStateBadgeText));
+        RaisePropertyChanged(nameof(RecommendedActionText));
+        RaisePropertyChanged(nameof(RuntimePostureText));
+        RaisePropertyChanged(nameof(RegistrationPostureText));
     }
 }

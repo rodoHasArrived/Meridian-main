@@ -1,0 +1,271 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.ExecutionStatus
+  commentId: T:Meridian.Application.Scheduling.ExecutionStatus
+  id: ExecutionStatus
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.ExecutionStatus.Cancelled
+  - Meridian.Application.Scheduling.ExecutionStatus.Completed
+  - Meridian.Application.Scheduling.ExecutionStatus.Failed
+  - Meridian.Application.Scheduling.ExecutionStatus.PartialSuccess
+  - Meridian.Application.Scheduling.ExecutionStatus.Pending
+  - Meridian.Application.Scheduling.ExecutionStatus.Running
+  - Meridian.Application.Scheduling.ExecutionStatus.Skipped
+  langs:
+  - csharp
+  - vb
+  name: ExecutionStatus
+  nameWithType: ExecutionStatus
+  fullName: Meridian.Application.Scheduling.ExecutionStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionStatus
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Status of a scheduled execution.
+  example: []
+  syntax:
+    content: 'public enum ExecutionStatus : byte'
+    content.vb: Public Enum ExecutionStatus As Byte
+- uid: Meridian.Application.Scheduling.ExecutionStatus.Pending
+  commentId: F:Meridian.Application.Scheduling.ExecutionStatus.Pending
+  id: Pending
+  parent: Meridian.Application.Scheduling.ExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Pending
+  nameWithType: ExecutionStatus.Pending
+  fullName: Meridian.Application.Scheduling.ExecutionStatus.Pending
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pending
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Execution is queued.
+  example: []
+  syntax:
+    content: Pending = 0
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatus
+- uid: Meridian.Application.Scheduling.ExecutionStatus.Running
+  commentId: F:Meridian.Application.Scheduling.ExecutionStatus.Running
+  id: Running
+  parent: Meridian.Application.Scheduling.ExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Running
+  nameWithType: ExecutionStatus.Running
+  fullName: Meridian.Application.Scheduling.ExecutionStatus.Running
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Running
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Execution is running.
+  example: []
+  syntax:
+    content: Running = 1
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatus
+- uid: Meridian.Application.Scheduling.ExecutionStatus.Completed
+  commentId: F:Meridian.Application.Scheduling.ExecutionStatus.Completed
+  id: Completed
+  parent: Meridian.Application.Scheduling.ExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: ExecutionStatus.Completed
+  fullName: Meridian.Application.Scheduling.ExecutionStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completed
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Execution completed successfully.
+  example: []
+  syntax:
+    content: Completed = 2
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatus
+- uid: Meridian.Application.Scheduling.ExecutionStatus.PartialSuccess
+  commentId: F:Meridian.Application.Scheduling.ExecutionStatus.PartialSuccess
+  id: PartialSuccess
+  parent: Meridian.Application.Scheduling.ExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: PartialSuccess
+  nameWithType: ExecutionStatus.PartialSuccess
+  fullName: Meridian.Application.Scheduling.ExecutionStatus.PartialSuccess
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PartialSuccess
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Execution completed with some failures.
+  example: []
+  syntax:
+    content: PartialSuccess = 3
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatus
+- uid: Meridian.Application.Scheduling.ExecutionStatus.Failed
+  commentId: F:Meridian.Application.Scheduling.ExecutionStatus.Failed
+  id: Failed
+  parent: Meridian.Application.Scheduling.ExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: ExecutionStatus.Failed
+  fullName: Meridian.Application.Scheduling.ExecutionStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Execution failed.
+  example: []
+  syntax:
+    content: Failed = 4
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatus
+- uid: Meridian.Application.Scheduling.ExecutionStatus.Cancelled
+  commentId: F:Meridian.Application.Scheduling.ExecutionStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Application.Scheduling.ExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: ExecutionStatus.Cancelled
+  fullName: Meridian.Application.Scheduling.ExecutionStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Execution was cancelled.
+  example: []
+  syntax:
+    content: Cancelled = 5
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatus
+- uid: Meridian.Application.Scheduling.ExecutionStatus.Skipped
+  commentId: F:Meridian.Application.Scheduling.ExecutionStatus.Skipped
+  id: Skipped
+  parent: Meridian.Application.Scheduling.ExecutionStatus
+  langs:
+  - csharp
+  - vb
+  name: Skipped
+  nameWithType: ExecutionStatus.Skipped
+  fullName: Meridian.Application.Scheduling.ExecutionStatus.Skipped
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skipped
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 155
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Execution was skipped (e.g., already running).
+  example: []
+  syntax:
+    content: Skipped = 6
+    return:
+      type: Meridian.Application.Scheduling.ExecutionStatus
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: Meridian.Application.Scheduling.ExecutionStatus
+  commentId: T:Meridian.Application.Scheduling.ExecutionStatus
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ExecutionStatus.html
+  name: ExecutionStatus
+  nameWithType: ExecutionStatus
+  fullName: Meridian.Application.Scheduling.ExecutionStatus

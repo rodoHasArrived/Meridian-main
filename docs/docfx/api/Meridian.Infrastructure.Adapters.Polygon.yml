@@ -1,0 +1,119 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Polygon
+  commentId: N:Meridian.Infrastructure.Adapters.Polygon
+  id: Meridian.Infrastructure.Adapters.Polygon
+  children:
+  - Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher
+  - Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonCorporateActionFetcher
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  - Meridian.Infrastructure.Adapters.Polygon.TradingParametersBackfillService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Polygon
+  nameWithType: Meridian.Infrastructure.Adapters.Polygon
+  fullName: Meridian.Infrastructure.Adapters.Polygon
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  parent: Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html
+  name: ITradingParametersBackfillService
+  nameWithType: ITradingParametersBackfillService
+  fullName: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+- uid: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher
+  parent: Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher.html
+  name: IPolygonCorporateActionFetcher
+  nameWithType: IPolygonCorporateActionFetcher
+  fullName: Meridian.Infrastructure.Adapters.Polygon.IPolygonCorporateActionFetcher
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonCorporateActionFetcher
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonCorporateActionFetcher
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonCorporateActionFetcher.html
+  name: PolygonCorporateActionFetcher
+  nameWithType: PolygonCorporateActionFetcher
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonCorporateActionFetcher
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider.html
+  name: PolygonHistoricalDataProvider
+  nameWithType: PolygonHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html
+  name: PolygonMarketDataClient
+  nameWithType: PolygonMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider.html
+  name: PolygonOptionsChainProvider
+  nameWithType: PolygonOptionsChainProvider
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonOptionsChainProvider
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider.html
+  name: PolygonSecurityMasterIngestProvider
+  nameWithType: PolygonSecurityMasterIngestProvider
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSecurityMasterIngestProvider
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider.html
+  name: PolygonSymbolSearchProvider
+  nameWithType: PolygonSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonSymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Polygon.TradingParametersBackfillService
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.TradingParametersBackfillService
+  href: Meridian.Infrastructure.Adapters.Polygon.TradingParametersBackfillService.html
+  name: TradingParametersBackfillService
+  nameWithType: TradingParametersBackfillService
+  fullName: Meridian.Infrastructure.Adapters.Polygon.TradingParametersBackfillService
+- uid: Meridian.Infrastructure.Adapters.Polygon
+  commentId: N:Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Polygon
+  nameWithType: Meridian.Infrastructure.Adapters.Polygon
+  fullName: Meridian.Infrastructure.Adapters.Polygon
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html

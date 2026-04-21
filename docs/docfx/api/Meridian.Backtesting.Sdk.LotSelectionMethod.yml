@@ -1,0 +1,219 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.LotSelectionMethod
+  commentId: T:Meridian.Backtesting.Sdk.LotSelectionMethod
+  id: LotSelectionMethod
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.LotSelectionMethod.Fifo
+  - Meridian.Backtesting.Sdk.LotSelectionMethod.Hifo
+  - Meridian.Backtesting.Sdk.LotSelectionMethod.Lifo
+  - Meridian.Backtesting.Sdk.LotSelectionMethod.SpecificId
+  langs:
+  - csharp
+  - vb
+  name: LotSelectionMethod
+  nameWithType: LotSelectionMethod
+  fullName: Meridian.Backtesting.Sdk.LotSelectionMethod
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LotSelectionMethod
+    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Controls which open lots are selected first when a sell or cover order is processed.
+
+    The chosen method affects both realised P&amp;L timing and tax treatment.
+  example: []
+  syntax:
+    content: public enum LotSelectionMethod
+    content.vb: Public Enum LotSelectionMethod
+- uid: Meridian.Backtesting.Sdk.LotSelectionMethod.Fifo
+  commentId: F:Meridian.Backtesting.Sdk.LotSelectionMethod.Fifo
+  id: Fifo
+  parent: Meridian.Backtesting.Sdk.LotSelectionMethod
+  langs:
+  - csharp
+  - vb
+  name: Fifo
+  nameWithType: LotSelectionMethod.Fifo
+  fullName: Meridian.Backtesting.Sdk.LotSelectionMethod.Fifo
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fifo
+    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    First In, First Out — oldest lots are closed first.
+
+    This is the default and matches legacy behaviour.
+  example: []
+  syntax:
+    content: Fifo = 0
+    return:
+      type: Meridian.Backtesting.Sdk.LotSelectionMethod
+- uid: Meridian.Backtesting.Sdk.LotSelectionMethod.Lifo
+  commentId: F:Meridian.Backtesting.Sdk.LotSelectionMethod.Lifo
+  id: Lifo
+  parent: Meridian.Backtesting.Sdk.LotSelectionMethod
+  langs:
+  - csharp
+  - vb
+  name: Lifo
+  nameWithType: LotSelectionMethod.Lifo
+  fullName: Meridian.Backtesting.Sdk.LotSelectionMethod.Lifo
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lifo
+    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Last In, First Out — most recently opened lots are closed first.
+
+    Can defer gains by closing lower-cost lots later.
+  example: []
+  syntax:
+    content: Lifo = 1
+    return:
+      type: Meridian.Backtesting.Sdk.LotSelectionMethod
+- uid: Meridian.Backtesting.Sdk.LotSelectionMethod.Hifo
+  commentId: F:Meridian.Backtesting.Sdk.LotSelectionMethod.Hifo
+  id: Hifo
+  parent: Meridian.Backtesting.Sdk.LotSelectionMethod
+  langs:
+  - csharp
+  - vb
+  name: Hifo
+  nameWithType: LotSelectionMethod.Hifo
+  fullName: Meridian.Backtesting.Sdk.LotSelectionMethod.Hifo
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hifo
+    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Highest Cost In, First Out — the lot with the highest entry price is
+
+    closed first, minimising short-term capital gains (tax-loss harvesting).
+  example: []
+  syntax:
+    content: Hifo = 2
+    return:
+      type: Meridian.Backtesting.Sdk.LotSelectionMethod
+- uid: Meridian.Backtesting.Sdk.LotSelectionMethod.SpecificId
+  commentId: F:Meridian.Backtesting.Sdk.LotSelectionMethod.SpecificId
+  id: SpecificId
+  parent: Meridian.Backtesting.Sdk.LotSelectionMethod
+  langs:
+  - csharp
+  - vb
+  name: SpecificId
+  nameWithType: LotSelectionMethod.SpecificId
+  fullName: Meridian.Backtesting.Sdk.LotSelectionMethod.SpecificId
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpecificId
+    path: ../../src/Meridian.Backtesting.Sdk/LotSelectionMethod.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Specific Identification — the caller supplies a <xref href="Meridian.Backtesting.Sdk.OpenLot.LotId" data-throw-if-not-resolved="false"></xref>
+
+    via <xref href="Meridian.Backtesting.Sdk.FillEvent.TargetLotId" data-throw-if-not-resolved="false"></xref> to nominate the exact lot to close.
+
+    Falls back to <xref href="Meridian.Backtesting.Sdk.LotSelectionMethod.Fifo" data-throw-if-not-resolved="false"></xref> when no matching lot is found.
+  example: []
+  syntax:
+    content: SpecificId = 3
+    return:
+      type: Meridian.Backtesting.Sdk.LotSelectionMethod
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Backtesting.Sdk.LotSelectionMethod
+  commentId: T:Meridian.Backtesting.Sdk.LotSelectionMethod
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.LotSelectionMethod.html
+  name: LotSelectionMethod
+  nameWithType: LotSelectionMethod
+  fullName: Meridian.Backtesting.Sdk.LotSelectionMethod
+- uid: Meridian.Backtesting.Sdk.OpenLot.LotId
+  commentId: P:Meridian.Backtesting.Sdk.OpenLot.LotId
+  href: Meridian.Backtesting.Sdk.OpenLot.html#Meridian_Backtesting_Sdk_OpenLot_LotId
+  name: LotId
+  nameWithType: OpenLot.LotId
+  fullName: Meridian.Backtesting.Sdk.OpenLot.LotId
+- uid: Meridian.Backtesting.Sdk.FillEvent.TargetLotId
+  commentId: P:Meridian.Backtesting.Sdk.FillEvent.TargetLotId
+  href: Meridian.Backtesting.Sdk.FillEvent.html#Meridian_Backtesting_Sdk_FillEvent_TargetLotId
+  name: TargetLotId
+  nameWithType: FillEvent.TargetLotId
+  fullName: Meridian.Backtesting.Sdk.FillEvent.TargetLotId
+- uid: Meridian.Backtesting.Sdk.LotSelectionMethod.Fifo
+  commentId: F:Meridian.Backtesting.Sdk.LotSelectionMethod.Fifo
+  href: Meridian.Backtesting.Sdk.LotSelectionMethod.html#Meridian_Backtesting_Sdk_LotSelectionMethod_Fifo
+  name: Fifo
+  nameWithType: LotSelectionMethod.Fifo
+  fullName: Meridian.Backtesting.Sdk.LotSelectionMethod.Fifo

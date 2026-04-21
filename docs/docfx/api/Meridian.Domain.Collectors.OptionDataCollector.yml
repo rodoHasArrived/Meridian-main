@@ -1,0 +1,1262 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Domain.Collectors.OptionDataCollector
+  commentId: T:Meridian.Domain.Collectors.OptionDataCollector
+  id: OptionDataCollector
+  parent: Meridian.Domain.Collectors
+  children:
+  - Meridian.Domain.Collectors.OptionDataCollector.#ctor(Meridian.Domain.Events.IMarketEventPublisher)
+  - Meridian.Domain.Collectors.OptionDataCollector.GetChainsForUnderlying(System.String)
+  - Meridian.Domain.Collectors.OptionDataCollector.GetLatestChain(System.String,System.DateOnly)
+  - Meridian.Domain.Collectors.OptionDataCollector.GetLatestGreeks(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  - Meridian.Domain.Collectors.OptionDataCollector.GetLatestOpenInterest(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  - Meridian.Domain.Collectors.OptionDataCollector.GetLatestQuote(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  - Meridian.Domain.Collectors.OptionDataCollector.GetQuotesForUnderlying(System.String)
+  - Meridian.Domain.Collectors.OptionDataCollector.GetRecentTrades(Meridian.Contracts.Domain.Models.OptionContractSpec,System.Int32)
+  - Meridian.Domain.Collectors.OptionDataCollector.GetSummary
+  - Meridian.Domain.Collectors.OptionDataCollector.GetTrackedUnderlyings
+  - Meridian.Domain.Collectors.OptionDataCollector.OnChainSnapshot(Meridian.Contracts.Domain.Models.OptionChainSnapshot)
+  - Meridian.Domain.Collectors.OptionDataCollector.OnGreeksUpdate(Meridian.Contracts.Domain.Models.GreeksSnapshot)
+  - Meridian.Domain.Collectors.OptionDataCollector.OnOpenInterestUpdate(Meridian.Contracts.Domain.Models.OpenInterestUpdate)
+  - Meridian.Domain.Collectors.OptionDataCollector.OnOptionQuote(Meridian.Contracts.Domain.Models.OptionQuote)
+  - Meridian.Domain.Collectors.OptionDataCollector.OnOptionTrade(Meridian.Contracts.Domain.Models.OptionTrade)
+  langs:
+  - csharp
+  - vb
+  name: OptionDataCollector
+  nameWithType: OptionDataCollector
+  fullName: Meridian.Domain.Collectors.OptionDataCollector
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionDataCollector
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: >-
+    Captures option quotes, trades, greeks, and chain snapshots,
+
+    maintains per-contract state, and emits unified MarketEvents.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Option data collector implementing domain event publication")]
+
+      [ImplementsAdr("ADR-006", "Polymorphic MarketEvent payloads for option data types")]
+
+      public sealed class OptionDataCollector
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Option data collector implementing domain event publication")>
+
+      <ImplementsAdr("ADR-006", "Polymorphic MarketEvent payloads for option data types")>
+
+      Public NotInheritable Class OptionDataCollector
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Option data collector implementing domain event publication
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-006
+    - type: System.String
+      value: Polymorphic MarketEvent payloads for option data types
+- uid: Meridian.Domain.Collectors.OptionDataCollector.#ctor(Meridian.Domain.Events.IMarketEventPublisher)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.#ctor(Meridian.Domain.Events.IMarketEventPublisher)
+  id: '#ctor(Meridian.Domain.Events.IMarketEventPublisher)'
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: OptionDataCollector(IMarketEventPublisher)
+  nameWithType: OptionDataCollector.OptionDataCollector(IMarketEventPublisher)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OptionDataCollector(Meridian.Domain.Events.IMarketEventPublisher)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  syntax:
+    content: public OptionDataCollector(IMarketEventPublisher publisher)
+    parameters:
+    - id: publisher
+      type: Meridian.Domain.Events.IMarketEventPublisher
+    content.vb: Public Sub New(publisher As IMarketEventPublisher)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.#ctor*
+  nameWithType.vb: OptionDataCollector.New(IMarketEventPublisher)
+  fullName.vb: Meridian.Domain.Collectors.OptionDataCollector.New(Meridian.Domain.Events.IMarketEventPublisher)
+  name.vb: New(IMarketEventPublisher)
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnOptionQuote(Meridian.Contracts.Domain.Models.OptionQuote)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.OnOptionQuote(Meridian.Contracts.Domain.Models.OptionQuote)
+  id: OnOptionQuote(Meridian.Contracts.Domain.Models.OptionQuote)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: OnOptionQuote(OptionQuote)
+  nameWithType: OptionDataCollector.OnOptionQuote(OptionQuote)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnOptionQuote(Meridian.Contracts.Domain.Models.OptionQuote)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnOptionQuote
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Processes an incoming option quote and emits an OptionQuote market event.
+  example: []
+  syntax:
+    content: public void OnOptionQuote(OptionQuote quote)
+    parameters:
+    - id: quote
+      type: Meridian.Contracts.Domain.Models.OptionQuote
+    content.vb: Public Sub OnOptionQuote(quote As OptionQuote)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.OnOptionQuote*
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnOptionTrade(Meridian.Contracts.Domain.Models.OptionTrade)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.OnOptionTrade(Meridian.Contracts.Domain.Models.OptionTrade)
+  id: OnOptionTrade(Meridian.Contracts.Domain.Models.OptionTrade)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: OnOptionTrade(OptionTrade)
+  nameWithType: OptionDataCollector.OnOptionTrade(OptionTrade)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnOptionTrade(Meridian.Contracts.Domain.Models.OptionTrade)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnOptionTrade
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Processes an incoming option trade and emits an OptionTrade market event.
+  example: []
+  syntax:
+    content: public void OnOptionTrade(OptionTrade trade)
+    parameters:
+    - id: trade
+      type: Meridian.Contracts.Domain.Models.OptionTrade
+    content.vb: Public Sub OnOptionTrade(trade As OptionTrade)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.OnOptionTrade*
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnGreeksUpdate(Meridian.Contracts.Domain.Models.GreeksSnapshot)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.OnGreeksUpdate(Meridian.Contracts.Domain.Models.GreeksSnapshot)
+  id: OnGreeksUpdate(Meridian.Contracts.Domain.Models.GreeksSnapshot)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: OnGreeksUpdate(GreeksSnapshot)
+  nameWithType: OptionDataCollector.OnGreeksUpdate(GreeksSnapshot)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnGreeksUpdate(Meridian.Contracts.Domain.Models.GreeksSnapshot)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnGreeksUpdate
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Processes an incoming greeks snapshot and emits an OptionGreeks market event.
+  example: []
+  syntax:
+    content: public void OnGreeksUpdate(GreeksSnapshot greeks)
+    parameters:
+    - id: greeks
+      type: Meridian.Contracts.Domain.Models.GreeksSnapshot
+    content.vb: Public Sub OnGreeksUpdate(greeks As GreeksSnapshot)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.OnGreeksUpdate*
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnChainSnapshot(Meridian.Contracts.Domain.Models.OptionChainSnapshot)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.OnChainSnapshot(Meridian.Contracts.Domain.Models.OptionChainSnapshot)
+  id: OnChainSnapshot(Meridian.Contracts.Domain.Models.OptionChainSnapshot)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: OnChainSnapshot(OptionChainSnapshot)
+  nameWithType: OptionDataCollector.OnChainSnapshot(OptionChainSnapshot)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnChainSnapshot(Meridian.Contracts.Domain.Models.OptionChainSnapshot)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnChainSnapshot
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Processes an incoming option chain snapshot and emits an OptionChain market event.
+  example: []
+  syntax:
+    content: public void OnChainSnapshot(OptionChainSnapshot chain)
+    parameters:
+    - id: chain
+      type: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+    content.vb: Public Sub OnChainSnapshot(chain As OptionChainSnapshot)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.OnChainSnapshot*
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnOpenInterestUpdate(Meridian.Contracts.Domain.Models.OpenInterestUpdate)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.OnOpenInterestUpdate(Meridian.Contracts.Domain.Models.OpenInterestUpdate)
+  id: OnOpenInterestUpdate(Meridian.Contracts.Domain.Models.OpenInterestUpdate)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: OnOpenInterestUpdate(OpenInterestUpdate)
+  nameWithType: OptionDataCollector.OnOpenInterestUpdate(OpenInterestUpdate)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnOpenInterestUpdate(Meridian.Contracts.Domain.Models.OpenInterestUpdate)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnOpenInterestUpdate
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Processes an incoming open interest update and emits an OpenInterest market event.
+  example: []
+  syntax:
+    content: public void OnOpenInterestUpdate(OpenInterestUpdate update)
+    parameters:
+    - id: update
+      type: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+    content.vb: Public Sub OnOpenInterestUpdate(update As OpenInterestUpdate)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.OnOpenInterestUpdate*
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetLatestQuote(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.GetLatestQuote(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  id: GetLatestQuote(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: GetLatestQuote(OptionContractSpec)
+  nameWithType: OptionDataCollector.GetLatestQuote(OptionContractSpec)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetLatestQuote(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestQuote
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Returns the latest option quote for a contract, or null if none recorded.
+  example: []
+  syntax:
+    content: public OptionQuote? GetLatestQuote(OptionContractSpec contract)
+    parameters:
+    - id: contract
+      type: Meridian.Contracts.Domain.Models.OptionContractSpec
+    return:
+      type: Meridian.Contracts.Domain.Models.OptionQuote
+    content.vb: Public Function GetLatestQuote(contract As OptionContractSpec) As OptionQuote
+  overload: Meridian.Domain.Collectors.OptionDataCollector.GetLatestQuote*
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetLatestGreeks(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.GetLatestGreeks(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  id: GetLatestGreeks(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: GetLatestGreeks(OptionContractSpec)
+  nameWithType: OptionDataCollector.GetLatestGreeks(OptionContractSpec)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetLatestGreeks(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestGreeks
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Returns the latest greeks snapshot for a contract, or null if none recorded.
+  example: []
+  syntax:
+    content: public GreeksSnapshot? GetLatestGreeks(OptionContractSpec contract)
+    parameters:
+    - id: contract
+      type: Meridian.Contracts.Domain.Models.OptionContractSpec
+    return:
+      type: Meridian.Contracts.Domain.Models.GreeksSnapshot
+    content.vb: Public Function GetLatestGreeks(contract As OptionContractSpec) As GreeksSnapshot
+  overload: Meridian.Domain.Collectors.OptionDataCollector.GetLatestGreeks*
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetLatestChain(System.String,System.DateOnly)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.GetLatestChain(System.String,System.DateOnly)
+  id: GetLatestChain(System.String,System.DateOnly)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: GetLatestChain(string, DateOnly)
+  nameWithType: OptionDataCollector.GetLatestChain(string, DateOnly)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetLatestChain(string, System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestChain
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Returns the latest option chain snapshot for an underlying and expiration.
+  example: []
+  syntax:
+    content: public OptionChainSnapshot? GetLatestChain(string underlyingSymbol, DateOnly expiration)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+    - id: expiration
+      type: System.DateOnly
+    return:
+      type: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+    content.vb: Public Function GetLatestChain(underlyingSymbol As String, expiration As DateOnly) As OptionChainSnapshot
+  overload: Meridian.Domain.Collectors.OptionDataCollector.GetLatestChain*
+  nameWithType.vb: OptionDataCollector.GetLatestChain(String, DateOnly)
+  fullName.vb: Meridian.Domain.Collectors.OptionDataCollector.GetLatestChain(String, System.DateOnly)
+  name.vb: GetLatestChain(String, DateOnly)
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetChainsForUnderlying(System.String)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.GetChainsForUnderlying(System.String)
+  id: GetChainsForUnderlying(System.String)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: GetChainsForUnderlying(string)
+  nameWithType: OptionDataCollector.GetChainsForUnderlying(string)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetChainsForUnderlying(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetChainsForUnderlying
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Returns all cached chain snapshots for an underlying symbol.
+  example: []
+  syntax:
+    content: public IReadOnlyList<OptionChainSnapshot> GetChainsForUnderlying(string underlyingSymbol)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionChainSnapshot}
+    content.vb: Public Function GetChainsForUnderlying(underlyingSymbol As String) As IReadOnlyList(Of OptionChainSnapshot)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.GetChainsForUnderlying*
+  nameWithType.vb: OptionDataCollector.GetChainsForUnderlying(String)
+  fullName.vb: Meridian.Domain.Collectors.OptionDataCollector.GetChainsForUnderlying(String)
+  name.vb: GetChainsForUnderlying(String)
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetLatestOpenInterest(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.GetLatestOpenInterest(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  id: GetLatestOpenInterest(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: GetLatestOpenInterest(OptionContractSpec)
+  nameWithType: OptionDataCollector.GetLatestOpenInterest(OptionContractSpec)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetLatestOpenInterest(Meridian.Contracts.Domain.Models.OptionContractSpec)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestOpenInterest
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Returns the latest open interest update for a contract, or null if none recorded.
+  example: []
+  syntax:
+    content: public OpenInterestUpdate? GetLatestOpenInterest(OptionContractSpec contract)
+    parameters:
+    - id: contract
+      type: Meridian.Contracts.Domain.Models.OptionContractSpec
+    return:
+      type: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+    content.vb: Public Function GetLatestOpenInterest(contract As OptionContractSpec) As OpenInterestUpdate
+  overload: Meridian.Domain.Collectors.OptionDataCollector.GetLatestOpenInterest*
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetRecentTrades(Meridian.Contracts.Domain.Models.OptionContractSpec,System.Int32)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.GetRecentTrades(Meridian.Contracts.Domain.Models.OptionContractSpec,System.Int32)
+  id: GetRecentTrades(Meridian.Contracts.Domain.Models.OptionContractSpec,System.Int32)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: GetRecentTrades(OptionContractSpec, int)
+  nameWithType: OptionDataCollector.GetRecentTrades(OptionContractSpec, int)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetRecentTrades(Meridian.Contracts.Domain.Models.OptionContractSpec, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentTrades
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Returns recent option trades for a contract, newest first.
+  example: []
+  syntax:
+    content: public IReadOnlyList<OptionTrade> GetRecentTrades(OptionContractSpec contract, int limit = 50)
+    parameters:
+    - id: contract
+      type: Meridian.Contracts.Domain.Models.OptionContractSpec
+    - id: limit
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionTrade}
+    content.vb: Public Function GetRecentTrades(contract As OptionContractSpec, limit As Integer = 50) As IReadOnlyList(Of OptionTrade)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.GetRecentTrades*
+  nameWithType.vb: OptionDataCollector.GetRecentTrades(OptionContractSpec, Integer)
+  fullName.vb: Meridian.Domain.Collectors.OptionDataCollector.GetRecentTrades(Meridian.Contracts.Domain.Models.OptionContractSpec, Integer)
+  name.vb: GetRecentTrades(OptionContractSpec, Integer)
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetQuotesForUnderlying(System.String)
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.GetQuotesForUnderlying(System.String)
+  id: GetQuotesForUnderlying(System.String)
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: GetQuotesForUnderlying(string)
+  nameWithType: OptionDataCollector.GetQuotesForUnderlying(string)
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetQuotesForUnderlying(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetQuotesForUnderlying
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Returns all option quotes for a given underlying symbol.
+  example: []
+  syntax:
+    content: public IReadOnlyList<OptionQuote> GetQuotesForUnderlying(string underlyingSymbol)
+    parameters:
+    - id: underlyingSymbol
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote}
+    content.vb: Public Function GetQuotesForUnderlying(underlyingSymbol As String) As IReadOnlyList(Of OptionQuote)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.GetQuotesForUnderlying*
+  nameWithType.vb: OptionDataCollector.GetQuotesForUnderlying(String)
+  fullName.vb: Meridian.Domain.Collectors.OptionDataCollector.GetQuotesForUnderlying(String)
+  name.vb: GetQuotesForUnderlying(String)
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetTrackedUnderlyings
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.GetTrackedUnderlyings
+  id: GetTrackedUnderlyings
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: GetTrackedUnderlyings()
+  nameWithType: OptionDataCollector.GetTrackedUnderlyings()
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetTrackedUnderlyings()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTrackedUnderlyings
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Returns all underlying symbols that have active option data.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> GetTrackedUnderlyings()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Function GetTrackedUnderlyings() As IReadOnlyList(Of String)
+  overload: Meridian.Domain.Collectors.OptionDataCollector.GetTrackedUnderlyings*
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetSummary
+  commentId: M:Meridian.Domain.Collectors.OptionDataCollector.GetSummary
+  id: GetSummary
+  parent: Meridian.Domain.Collectors.OptionDataCollector
+  langs:
+  - csharp
+  - vb
+  name: GetSummary()
+  nameWithType: OptionDataCollector.GetSummary()
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetSummary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Domain/Collectors/OptionDataCollector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSummary
+    path: ../../src/Meridian.Domain/Collectors/OptionDataCollector.cs
+    startLine: 230
+  assemblies:
+  - Meridian.Domain
+  namespace: Meridian.Domain.Collectors
+  summary: Returns a summary snapshot of all option data currently held.
+  example: []
+  syntax:
+    content: public OptionDataSummary GetSummary()
+    return:
+      type: Meridian.Domain.Collectors.OptionDataSummary
+    content.vb: Public Function GetSummary() As OptionDataSummary
+  overload: Meridian.Domain.Collectors.OptionDataCollector.GetSummary*
+references:
+- uid: Meridian.Domain.Collectors
+  commentId: N:Meridian.Domain.Collectors
+  href: Meridian.html
+  name: Meridian.Domain.Collectors
+  nameWithType: Meridian.Domain.Collectors
+  fullName: Meridian.Domain.Collectors
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Domain.Collectors.OptionDataCollector.#ctor*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.#ctor
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector__ctor_Meridian_Domain_Events_IMarketEventPublisher_
+  name: OptionDataCollector
+  nameWithType: OptionDataCollector.OptionDataCollector
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OptionDataCollector
+  nameWithType.vb: OptionDataCollector.New
+  fullName.vb: Meridian.Domain.Collectors.OptionDataCollector.New
+  name.vb: New
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IMarketEventPublisher.html
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnOptionQuote*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.OnOptionQuote
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_OnOptionQuote_Meridian_Contracts_Domain_Models_OptionQuote_
+  name: OnOptionQuote
+  nameWithType: OptionDataCollector.OnOptionQuote
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnOptionQuote
+- uid: Meridian.Contracts.Domain.Models.OptionQuote
+  commentId: T:Meridian.Contracts.Domain.Models.OptionQuote
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionQuote.html
+  name: OptionQuote
+  nameWithType: OptionQuote
+  fullName: Meridian.Contracts.Domain.Models.OptionQuote
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnOptionTrade*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.OnOptionTrade
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_OnOptionTrade_Meridian_Contracts_Domain_Models_OptionTrade_
+  name: OnOptionTrade
+  nameWithType: OptionDataCollector.OnOptionTrade
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnOptionTrade
+- uid: Meridian.Contracts.Domain.Models.OptionTrade
+  commentId: T:Meridian.Contracts.Domain.Models.OptionTrade
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html
+  name: OptionTrade
+  nameWithType: OptionTrade
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnGreeksUpdate*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.OnGreeksUpdate
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_OnGreeksUpdate_Meridian_Contracts_Domain_Models_GreeksSnapshot_
+  name: OnGreeksUpdate
+  nameWithType: OptionDataCollector.OnGreeksUpdate
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnGreeksUpdate
+- uid: Meridian.Contracts.Domain.Models.GreeksSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.GreeksSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.GreeksSnapshot.html
+  name: GreeksSnapshot
+  nameWithType: GreeksSnapshot
+  fullName: Meridian.Contracts.Domain.Models.GreeksSnapshot
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnChainSnapshot*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.OnChainSnapshot
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_OnChainSnapshot_Meridian_Contracts_Domain_Models_OptionChainSnapshot_
+  name: OnChainSnapshot
+  nameWithType: OptionDataCollector.OnChainSnapshot
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnChainSnapshot
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html
+  name: OptionChainSnapshot
+  nameWithType: OptionChainSnapshot
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+- uid: Meridian.Domain.Collectors.OptionDataCollector.OnOpenInterestUpdate*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.OnOpenInterestUpdate
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_OnOpenInterestUpdate_Meridian_Contracts_Domain_Models_OpenInterestUpdate_
+  name: OnOpenInterestUpdate
+  nameWithType: OptionDataCollector.OnOpenInterestUpdate
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.OnOpenInterestUpdate
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  commentId: T:Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html
+  name: OpenInterestUpdate
+  nameWithType: OpenInterestUpdate
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetLatestQuote*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.GetLatestQuote
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_GetLatestQuote_Meridian_Contracts_Domain_Models_OptionContractSpec_
+  name: GetLatestQuote
+  nameWithType: OptionDataCollector.GetLatestQuote
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetLatestQuote
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec
+  commentId: T:Meridian.Contracts.Domain.Models.OptionContractSpec
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html
+  name: OptionContractSpec
+  nameWithType: OptionContractSpec
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetLatestGreeks*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.GetLatestGreeks
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_GetLatestGreeks_Meridian_Contracts_Domain_Models_OptionContractSpec_
+  name: GetLatestGreeks
+  nameWithType: OptionDataCollector.GetLatestGreeks
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetLatestGreeks
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetLatestChain*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.GetLatestChain
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_GetLatestChain_System_String_System_DateOnly_
+  name: GetLatestChain
+  nameWithType: OptionDataCollector.GetLatestChain
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetLatestChain
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetChainsForUnderlying*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.GetChainsForUnderlying
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_GetChainsForUnderlying_System_String_
+  name: GetChainsForUnderlying
+  nameWithType: OptionDataCollector.GetChainsForUnderlying
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetChainsForUnderlying
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionChainSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionChainSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<OptionChainSnapshot>
+  nameWithType: IReadOnlyList<OptionChainSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.OptionChainSnapshot>
+  nameWithType.vb: IReadOnlyList(Of OptionChainSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.OptionChainSnapshot)
+  name.vb: IReadOnlyList(Of OptionChainSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+    name: OptionChainSnapshot
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+    name: OptionChainSnapshot
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetLatestOpenInterest*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.GetLatestOpenInterest
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_GetLatestOpenInterest_Meridian_Contracts_Domain_Models_OptionContractSpec_
+  name: GetLatestOpenInterest
+  nameWithType: OptionDataCollector.GetLatestOpenInterest
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetLatestOpenInterest
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetRecentTrades*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.GetRecentTrades
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_GetRecentTrades_Meridian_Contracts_Domain_Models_OptionContractSpec_System_Int32_
+  name: GetRecentTrades
+  nameWithType: OptionDataCollector.GetRecentTrades
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetRecentTrades
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionTrade}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionTrade}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<OptionTrade>
+  nameWithType: IReadOnlyList<OptionTrade>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.OptionTrade>
+  nameWithType.vb: IReadOnlyList(Of OptionTrade)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.OptionTrade)
+  name.vb: IReadOnlyList(Of OptionTrade)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OptionTrade
+    name: OptionTrade
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OptionTrade
+    name: OptionTrade
+  - name: )
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetQuotesForUnderlying*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.GetQuotesForUnderlying
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_GetQuotesForUnderlying_System_String_
+  name: GetQuotesForUnderlying
+  nameWithType: OptionDataCollector.GetQuotesForUnderlying
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetQuotesForUnderlying
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<OptionQuote>
+  nameWithType: IReadOnlyList<OptionQuote>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.OptionQuote>
+  nameWithType.vb: IReadOnlyList(Of OptionQuote)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.OptionQuote)
+  name.vb: IReadOnlyList(Of OptionQuote)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OptionQuote
+    name: OptionQuote
+    href: Meridian.Contracts.Domain.Models.OptionQuote.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OptionQuote
+    name: OptionQuote
+    href: Meridian.Contracts.Domain.Models.OptionQuote.html
+  - name: )
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetTrackedUnderlyings*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.GetTrackedUnderlyings
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_GetTrackedUnderlyings
+  name: GetTrackedUnderlyings
+  nameWithType: OptionDataCollector.GetTrackedUnderlyings
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetTrackedUnderlyings
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Domain.Collectors.OptionDataCollector.GetSummary*
+  commentId: Overload:Meridian.Domain.Collectors.OptionDataCollector.GetSummary
+  href: Meridian.Domain.Collectors.OptionDataCollector.html#Meridian_Domain_Collectors_OptionDataCollector_GetSummary
+  name: GetSummary
+  nameWithType: OptionDataCollector.GetSummary
+  fullName: Meridian.Domain.Collectors.OptionDataCollector.GetSummary
+- uid: Meridian.Domain.Collectors.OptionDataSummary
+  commentId: T:Meridian.Domain.Collectors.OptionDataSummary
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.OptionDataSummary.html
+  name: OptionDataSummary
+  nameWithType: OptionDataSummary
+  fullName: Meridian.Domain.Collectors.OptionDataSummary

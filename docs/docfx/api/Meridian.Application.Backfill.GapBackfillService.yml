@@ -1,0 +1,740 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backfill.GapBackfillService
+  commentId: T:Meridian.Application.Backfill.GapBackfillService
+  id: GapBackfillService
+  parent: Meridian.Application.Backfill
+  children:
+  - Meridian.Application.Backfill.GapBackfillService.#ctor(System.Func{Meridian.Application.Backfill.BackfillRequest,System.Threading.CancellationToken,System.Threading.Tasks.Task{Meridian.Application.Backfill.BackfillResult}},System.String[],System.Boolean,System.Nullable{System.TimeSpan})
+  - Meridian.Application.Backfill.GapBackfillService.GapBackfillsSucceeded
+  - Meridian.Application.Backfill.GapBackfillService.GapBackfillsTriggered
+  - Meridian.Application.Backfill.GapBackfillService.Subscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  - Meridian.Application.Backfill.GapBackfillService.Unsubscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  langs:
+  - csharp
+  - vb
+  name: GapBackfillService
+  nameWithType: GapBackfillService
+  fullName: Meridian.Application.Backfill.GapBackfillService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/GapBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapBackfillService
+    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Automatically triggers targeted backfill when a streaming provider reconnects
+
+    after a disconnection. Covers the gap window [disconnect_time, reconnect_time]
+
+    for all subscribed symbols. Configurable minimum gap threshold prevents
+
+    unnecessary backfills for brief ping timeouts.
+  example: []
+  syntax:
+    content: public sealed class GapBackfillService
+    content.vb: Public NotInheritable Class GapBackfillService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Backfill.GapBackfillService.#ctor(System.Func{Meridian.Application.Backfill.BackfillRequest,System.Threading.CancellationToken,System.Threading.Tasks.Task{Meridian.Application.Backfill.BackfillResult}},System.String[],System.Boolean,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Application.Backfill.GapBackfillService.#ctor(System.Func{Meridian.Application.Backfill.BackfillRequest,System.Threading.CancellationToken,System.Threading.Tasks.Task{Meridian.Application.Backfill.BackfillResult}},System.String[],System.Boolean,System.Nullable{System.TimeSpan})
+  id: '#ctor(System.Func{Meridian.Application.Backfill.BackfillRequest,System.Threading.CancellationToken,System.Threading.Tasks.Task{Meridian.Application.Backfill.BackfillResult}},System.String[],System.Boolean,System.Nullable{System.TimeSpan})'
+  parent: Meridian.Application.Backfill.GapBackfillService
+  langs:
+  - csharp
+  - vb
+  name: GapBackfillService(Func<BackfillRequest, CancellationToken, Task<BackfillResult>>, string[]?, bool, TimeSpan?)
+  nameWithType: GapBackfillService.GapBackfillService(Func<BackfillRequest, CancellationToken, Task<BackfillResult>>, string[]?, bool, TimeSpan?)
+  fullName: Meridian.Application.Backfill.GapBackfillService.GapBackfillService(System.Func<Meridian.Application.Backfill.BackfillRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task<Meridian.Application.Backfill.BackfillResult>>, string[]?, bool, System.TimeSpan?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/GapBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Creates a new GapBackfillService.
+  example: []
+  syntax:
+    content: public GapBackfillService(Func<BackfillRequest, CancellationToken, Task<BackfillResult>> backfillExecutor, string[]? subscribedSymbols = null, bool enabled = true, TimeSpan? minimumGap = null)
+    parameters:
+    - id: backfillExecutor
+      type: System.Func{Meridian.Application.Backfill.BackfillRequest,System.Threading.CancellationToken,System.Threading.Tasks.Task{Meridian.Application.Backfill.BackfillResult}}
+      description: >-
+        Delegate that executes a backfill request. Typically wired to
+            HistoricalBackfillService.RunAsync or BackfillCoordinator.RunAsync.
+    - id: subscribedSymbols
+      type: System.String[]
+      description: Symbols currently being streamed.
+    - id: enabled
+      type: System.Boolean
+      description: Whether auto gap-fill is enabled.
+    - id: minimumGap
+      type: System.Nullable{System.TimeSpan}
+      description: Minimum gap duration before triggering backfill (default 10s).
+    content.vb: Public Sub New(backfillExecutor As Func(Of BackfillRequest, CancellationToken, Task(Of BackfillResult)), subscribedSymbols As String() = Nothing, enabled As Boolean = True, minimumGap As TimeSpan? = Nothing)
+  overload: Meridian.Application.Backfill.GapBackfillService.#ctor*
+  nameWithType.vb: GapBackfillService.New(Func(Of BackfillRequest, CancellationToken, Task(Of BackfillResult)), String(), Boolean, TimeSpan?)
+  fullName.vb: Meridian.Application.Backfill.GapBackfillService.New(System.Func(Of Meridian.Application.Backfill.BackfillRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Meridian.Application.Backfill.BackfillResult)), String(), Boolean, System.TimeSpan?)
+  name.vb: New(Func(Of BackfillRequest, CancellationToken, Task(Of BackfillResult)), String(), Boolean, TimeSpan?)
+- uid: Meridian.Application.Backfill.GapBackfillService.GapBackfillsTriggered
+  commentId: P:Meridian.Application.Backfill.GapBackfillService.GapBackfillsTriggered
+  id: GapBackfillsTriggered
+  parent: Meridian.Application.Backfill.GapBackfillService
+  langs:
+  - csharp
+  - vb
+  name: GapBackfillsTriggered
+  nameWithType: GapBackfillService.GapBackfillsTriggered
+  fullName: Meridian.Application.Backfill.GapBackfillService.GapBackfillsTriggered
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/GapBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapBackfillsTriggered
+    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Number of gap backfills triggered since startup.
+  example: []
+  syntax:
+    content: public int GapBackfillsTriggered { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapBackfillsTriggered As Integer
+  overload: Meridian.Application.Backfill.GapBackfillService.GapBackfillsTriggered*
+- uid: Meridian.Application.Backfill.GapBackfillService.GapBackfillsSucceeded
+  commentId: P:Meridian.Application.Backfill.GapBackfillService.GapBackfillsSucceeded
+  id: GapBackfillsSucceeded
+  parent: Meridian.Application.Backfill.GapBackfillService
+  langs:
+  - csharp
+  - vb
+  name: GapBackfillsSucceeded
+  nameWithType: GapBackfillService.GapBackfillsSucceeded
+  fullName: Meridian.Application.Backfill.GapBackfillService.GapBackfillsSucceeded
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/GapBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapBackfillsSucceeded
+    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Number of gap backfills that completed successfully.
+  example: []
+  syntax:
+    content: public int GapBackfillsSucceeded { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapBackfillsSucceeded As Integer
+  overload: Meridian.Application.Backfill.GapBackfillService.GapBackfillsSucceeded*
+- uid: Meridian.Application.Backfill.GapBackfillService.Subscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  commentId: M:Meridian.Application.Backfill.GapBackfillService.Subscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  id: Subscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  parent: Meridian.Application.Backfill.GapBackfillService
+  langs:
+  - csharp
+  - vb
+  name: Subscribe(WebSocketReconnectionHelper)
+  nameWithType: GapBackfillService.Subscribe(WebSocketReconnectionHelper)
+  fullName: Meridian.Application.Backfill.GapBackfillService.Subscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/GapBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subscribe
+    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Subscribes to reconnection events from a <xref href="Meridian.Infrastructure.Shared.WebSocketReconnectionHelper" data-throw-if-not-resolved="false"></xref>
+
+    to automatically trigger gap backfill on successful reconnection.
+  example: []
+  syntax:
+    content: public void Subscribe(WebSocketReconnectionHelper reconnectionHelper)
+    parameters:
+    - id: reconnectionHelper
+      type: Meridian.Infrastructure.Shared.WebSocketReconnectionHelper
+    content.vb: Public Sub Subscribe(reconnectionHelper As WebSocketReconnectionHelper)
+  overload: Meridian.Application.Backfill.GapBackfillService.Subscribe*
+- uid: Meridian.Application.Backfill.GapBackfillService.Unsubscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  commentId: M:Meridian.Application.Backfill.GapBackfillService.Unsubscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  id: Unsubscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  parent: Meridian.Application.Backfill.GapBackfillService
+  langs:
+  - csharp
+  - vb
+  name: Unsubscribe(WebSocketReconnectionHelper)
+  nameWithType: GapBackfillService.Unsubscribe(WebSocketReconnectionHelper)
+  fullName: Meridian.Application.Backfill.GapBackfillService.Unsubscribe(Meridian.Infrastructure.Shared.WebSocketReconnectionHelper)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/GapBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unsubscribe
+    path: ../../src/Meridian.Application/Backfill/GapBackfillService.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Unsubscribes from reconnection events.
+  example: []
+  syntax:
+    content: public void Unsubscribe(WebSocketReconnectionHelper reconnectionHelper)
+    parameters:
+    - id: reconnectionHelper
+      type: Meridian.Infrastructure.Shared.WebSocketReconnectionHelper
+    content.vb: Public Sub Unsubscribe(reconnectionHelper As WebSocketReconnectionHelper)
+  overload: Meridian.Application.Backfill.GapBackfillService.Unsubscribe*
+references:
+- uid: Meridian.Application.Backfill
+  commentId: N:Meridian.Application.Backfill
+  href: Meridian.html
+  name: Meridian.Application.Backfill
+  nameWithType: Meridian.Application.Backfill
+  fullName: Meridian.Application.Backfill
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Backfill.GapBackfillService.#ctor*
+  commentId: Overload:Meridian.Application.Backfill.GapBackfillService.#ctor
+  href: Meridian.Application.Backfill.GapBackfillService.html#Meridian_Application_Backfill_GapBackfillService__ctor_System_Func_Meridian_Application_Backfill_BackfillRequest_System_Threading_CancellationToken_System_Threading_Tasks_Task_Meridian_Application_Backfill_BackfillResult___System_String___System_Boolean_System_Nullable_System_TimeSpan__
+  name: GapBackfillService
+  nameWithType: GapBackfillService.GapBackfillService
+  fullName: Meridian.Application.Backfill.GapBackfillService.GapBackfillService
+  nameWithType.vb: GapBackfillService.New
+  fullName.vb: Meridian.Application.Backfill.GapBackfillService.New
+  name.vb: New
+- uid: System.Func{Meridian.Application.Backfill.BackfillRequest,System.Threading.CancellationToken,System.Threading.Tasks.Task{Meridian.Application.Backfill.BackfillResult}}
+  commentId: T:System.Func{Meridian.Application.Backfill.BackfillRequest,System.Threading.CancellationToken,System.Threading.Tasks.Task{Meridian.Application.Backfill.BackfillResult}}
+  parent: System
+  definition: System.Func`3
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: Func<BackfillRequest, CancellationToken, Task<BackfillResult>>
+  nameWithType: Func<BackfillRequest, CancellationToken, Task<BackfillResult>>
+  fullName: System.Func<Meridian.Application.Backfill.BackfillRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task<Meridian.Application.Backfill.BackfillResult>>
+  nameWithType.vb: Func(Of BackfillRequest, CancellationToken, Task(Of BackfillResult))
+  fullName.vb: System.Func(Of Meridian.Application.Backfill.BackfillRequest, System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Meridian.Application.Backfill.BackfillResult))
+  name.vb: Func(Of BackfillRequest, CancellationToken, Task(Of BackfillResult))
+  spec.csharp:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - uid: Meridian.Application.Backfill.BackfillRequest
+    name: BackfillRequest
+    href: Meridian.Application.Backfill.BackfillRequest.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Backfill.BackfillResult
+    name: BackfillResult
+    href: Meridian.Application.Backfill.BackfillResult.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backfill.BackfillRequest
+    name: BackfillRequest
+    href: Meridian.Application.Backfill.BackfillRequest.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backfill.BackfillResult
+    name: BackfillResult
+    href: Meridian.Application.Backfill.BackfillResult.html
+  - name: )
+  - name: )
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Func`3
+  commentId: T:System.Func`3
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-3
+  name: Func<T1, T2, TResult>
+  nameWithType: Func<T1, T2, TResult>
+  fullName: System.Func<T1, T2, TResult>
+  nameWithType.vb: Func(Of T1, T2, TResult)
+  fullName.vb: System.Func(Of T1, T2, TResult)
+  name.vb: Func(Of T1, T2, TResult)
+  spec.csharp:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: <
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`3
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-3
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Backfill.GapBackfillService.GapBackfillsTriggered*
+  commentId: Overload:Meridian.Application.Backfill.GapBackfillService.GapBackfillsTriggered
+  href: Meridian.Application.Backfill.GapBackfillService.html#Meridian_Application_Backfill_GapBackfillService_GapBackfillsTriggered
+  name: GapBackfillsTriggered
+  nameWithType: GapBackfillService.GapBackfillsTriggered
+  fullName: Meridian.Application.Backfill.GapBackfillService.GapBackfillsTriggered
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Backfill.GapBackfillService.GapBackfillsSucceeded*
+  commentId: Overload:Meridian.Application.Backfill.GapBackfillService.GapBackfillsSucceeded
+  href: Meridian.Application.Backfill.GapBackfillService.html#Meridian_Application_Backfill_GapBackfillService_GapBackfillsSucceeded
+  name: GapBackfillsSucceeded
+  nameWithType: GapBackfillService.GapBackfillsSucceeded
+  fullName: Meridian.Application.Backfill.GapBackfillService.GapBackfillsSucceeded
+- uid: Meridian.Infrastructure.Shared.WebSocketReconnectionHelper
+  commentId: T:Meridian.Infrastructure.Shared.WebSocketReconnectionHelper
+  parent: Meridian.Infrastructure.Shared
+  href: Meridian.Infrastructure.Shared.WebSocketReconnectionHelper.html
+  name: WebSocketReconnectionHelper
+  nameWithType: WebSocketReconnectionHelper
+  fullName: Meridian.Infrastructure.Shared.WebSocketReconnectionHelper
+- uid: Meridian.Application.Backfill.GapBackfillService.Subscribe*
+  commentId: Overload:Meridian.Application.Backfill.GapBackfillService.Subscribe
+  href: Meridian.Application.Backfill.GapBackfillService.html#Meridian_Application_Backfill_GapBackfillService_Subscribe_Meridian_Infrastructure_Shared_WebSocketReconnectionHelper_
+  name: Subscribe
+  nameWithType: GapBackfillService.Subscribe
+  fullName: Meridian.Application.Backfill.GapBackfillService.Subscribe
+- uid: Meridian.Infrastructure.Shared
+  commentId: N:Meridian.Infrastructure.Shared
+  href: Meridian.html
+  name: Meridian.Infrastructure.Shared
+  nameWithType: Meridian.Infrastructure.Shared
+  fullName: Meridian.Infrastructure.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html
+- uid: Meridian.Application.Backfill.GapBackfillService.Unsubscribe*
+  commentId: Overload:Meridian.Application.Backfill.GapBackfillService.Unsubscribe
+  href: Meridian.Application.Backfill.GapBackfillService.html#Meridian_Application_Backfill_GapBackfillService_Unsubscribe_Meridian_Infrastructure_Shared_WebSocketReconnectionHelper_
+  name: Unsubscribe
+  nameWithType: GapBackfillService.Unsubscribe
+  fullName: Meridian.Application.Backfill.GapBackfillService.Unsubscribe

@@ -1,0 +1,801 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  commentId: T:Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  id: ReconciliationExceptionDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.AssignedTo
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.CreatedAt
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionId
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionType
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationResultId
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolutionNote
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolvedAt
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Severity
+  - Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Status
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationExceptionDto
+  nameWithType: ReconciliationExceptionDto
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationExceptionDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record ReconciliationExceptionDto : IEquatable<ReconciliationExceptionDto>'
+    content.vb: Public NotInheritable Class ReconciliationExceptionDto Implements IEquatable(Of ReconciliationExceptionDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})
+  id: '#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationExceptionDto(Guid, Guid, string, string, string, string?, string?, DateTimeOffset, DateTimeOffset?)
+  nameWithType: ReconciliationExceptionDto.ReconciliationExceptionDto(Guid, Guid, string, string, string, string?, string?, DateTimeOffset, DateTimeOffset?)
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationExceptionDto(System.Guid, System.Guid, string, string, string, string?, string?, System.DateTimeOffset, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public ReconciliationExceptionDto(Guid ExceptionId, Guid ReconciliationResultId, string ExceptionType, string Severity, string Status, string? AssignedTo, string? ResolutionNote, DateTimeOffset CreatedAt, DateTimeOffset? ResolvedAt)
+    parameters:
+    - id: ExceptionId
+      type: System.Guid
+    - id: ReconciliationResultId
+      type: System.Guid
+    - id: ExceptionType
+      type: System.String
+    - id: Severity
+      type: System.String
+    - id: Status
+      type: System.String
+    - id: AssignedTo
+      type: System.String
+    - id: ResolutionNote
+      type: System.String
+    - id: CreatedAt
+      type: System.DateTimeOffset
+    - id: ResolvedAt
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(ExceptionId As Guid, ReconciliationResultId As Guid, ExceptionType As String, Severity As String, Status As String, AssignedTo As String, ResolutionNote As String, CreatedAt As DateTimeOffset, ResolvedAt As DateTimeOffset?)
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.#ctor*
+  nameWithType.vb: ReconciliationExceptionDto.New(Guid, Guid, String, String, String, String, String, DateTimeOffset, DateTimeOffset?)
+  fullName.vb: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.New(System.Guid, System.Guid, String, String, String, String, String, System.DateTimeOffset, System.DateTimeOffset?)
+  name.vb: New(Guid, Guid, String, String, String, String, String, DateTimeOffset, DateTimeOffset?)
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionId
+  commentId: P:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionId
+  id: ExceptionId
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: ExceptionId
+  nameWithType: ReconciliationExceptionDto.ExceptionId
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExceptionId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid ExceptionId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ExceptionId As Guid
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionId*
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationResultId
+  commentId: P:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationResultId
+  id: ReconciliationResultId
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationResultId
+  nameWithType: ReconciliationExceptionDto.ReconciliationResultId
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationResultId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationResultId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid ReconciliationResultId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ReconciliationResultId As Guid
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationResultId*
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionType
+  commentId: P:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionType
+  id: ExceptionType
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: ExceptionType
+  nameWithType: ReconciliationExceptionDto.ExceptionType
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExceptionType
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string ExceptionType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExceptionType As String
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionType*
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Severity
+  commentId: P:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Severity
+  id: Severity
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: ReconciliationExceptionDto.Severity
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string Severity { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Severity As String
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Severity*
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Status
+  commentId: P:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Status
+  id: Status
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ReconciliationExceptionDto.Status
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string Status { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Status As String
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Status*
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.AssignedTo
+  commentId: P:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.AssignedTo
+  id: AssignedTo
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: AssignedTo
+  nameWithType: ReconciliationExceptionDto.AssignedTo
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.AssignedTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssignedTo
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? AssignedTo { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssignedTo As String
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.AssignedTo*
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolutionNote
+  commentId: P:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolutionNote
+  id: ResolutionNote
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: ResolutionNote
+  nameWithType: ReconciliationExceptionDto.ResolutionNote
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolutionNote
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolutionNote
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? ResolutionNote { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ResolutionNote As String
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolutionNote*
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.CreatedAt
+  commentId: P:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: ReconciliationExceptionDto.CreatedAt
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateTimeOffset CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CreatedAt As DateTimeOffset
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.CreatedAt*
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolvedAt
+  commentId: P:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolvedAt
+  id: ResolvedAt
+  parent: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+  langs:
+  - csharp
+  - vb
+  name: ResolvedAt
+  nameWithType: ReconciliationExceptionDto.ResolvedAt
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolvedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolvedAt
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateTimeOffset? ResolvedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ResolvedAt As DateTimeOffset?
+  overload: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolvedAt*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.ReconciliationExceptionDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ReconciliationExceptionDto>
+  nameWithType: IEquatable<ReconciliationExceptionDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.ReconciliationExceptionDto>
+  nameWithType.vb: IEquatable(Of ReconciliationExceptionDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.ReconciliationExceptionDto)
+  name.vb: IEquatable(Of ReconciliationExceptionDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+    name: ReconciliationExceptionDto
+    href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto
+    name: ReconciliationExceptionDto
+    href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.#ctor
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto__ctor_System_Guid_System_Guid_System_String_System_String_System_String_System_String_System_String_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__
+  name: ReconciliationExceptionDto
+  nameWithType: ReconciliationExceptionDto.ReconciliationExceptionDto
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationExceptionDto
+  nameWithType.vb: ReconciliationExceptionDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionId*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionId
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto_ExceptionId
+  name: ExceptionId
+  nameWithType: ReconciliationExceptionDto.ExceptionId
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionId
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationResultId*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationResultId
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto_ReconciliationResultId
+  name: ReconciliationResultId
+  nameWithType: ReconciliationExceptionDto.ReconciliationResultId
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ReconciliationResultId
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionType*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionType
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto_ExceptionType
+  name: ExceptionType
+  nameWithType: ReconciliationExceptionDto.ExceptionType
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ExceptionType
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Severity*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Severity
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto_Severity
+  name: Severity
+  nameWithType: ReconciliationExceptionDto.Severity
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Severity
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Status*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Status
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto_Status
+  name: Status
+  nameWithType: ReconciliationExceptionDto.Status
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.Status
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.AssignedTo*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.AssignedTo
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto_AssignedTo
+  name: AssignedTo
+  nameWithType: ReconciliationExceptionDto.AssignedTo
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.AssignedTo
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolutionNote*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolutionNote
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto_ResolutionNote
+  name: ResolutionNote
+  nameWithType: ReconciliationExceptionDto.ResolutionNote
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolutionNote
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.CreatedAt*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.CreatedAt
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto_CreatedAt
+  name: CreatedAt
+  nameWithType: ReconciliationExceptionDto.CreatedAt
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.CreatedAt
+- uid: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolvedAt*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolvedAt
+  href: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.html#Meridian_Contracts_DirectLending_ReconciliationExceptionDto_ResolvedAt
+  name: ResolvedAt
+  nameWithType: ReconciliationExceptionDto.ResolvedAt
+  fullName: Meridian.Contracts.DirectLending.ReconciliationExceptionDto.ResolvedAt

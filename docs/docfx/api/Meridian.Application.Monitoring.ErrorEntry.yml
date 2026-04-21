@@ -1,0 +1,796 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ErrorEntry
+  commentId: T:Meridian.Application.Monitoring.ErrorEntry
+  id: ErrorEntry
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ErrorEntry.#ctor(System.String,System.DateTimeOffset,Meridian.Application.Monitoring.ErrorLevel,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Application.Monitoring.ErrorEntry.Context
+  - Meridian.Application.Monitoring.ErrorEntry.ExceptionType
+  - Meridian.Application.Monitoring.ErrorEntry.Id
+  - Meridian.Application.Monitoring.ErrorEntry.Level
+  - Meridian.Application.Monitoring.ErrorEntry.Message
+  - Meridian.Application.Monitoring.ErrorEntry.Provider
+  - Meridian.Application.Monitoring.ErrorEntry.Source
+  - Meridian.Application.Monitoring.ErrorEntry.StackTrace
+  - Meridian.Application.Monitoring.ErrorEntry.Symbol
+  - Meridian.Application.Monitoring.ErrorEntry.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: ErrorEntry
+  nameWithType: ErrorEntry
+  fullName: Meridian.Application.Monitoring.ErrorEntry
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorEntry
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Represents a recorded error entry.
+  example: []
+  syntax:
+    content: 'public readonly record struct ErrorEntry : IEquatable<ErrorEntry>'
+    content.vb: Public Structure ErrorEntry Implements IEquatable(Of ErrorEntry)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.ErrorEntry}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.ErrorEntry.#ctor(System.String,System.DateTimeOffset,Meridian.Application.Monitoring.ErrorLevel,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.ErrorEntry.#ctor(System.String,System.DateTimeOffset,Meridian.Application.Monitoring.ErrorLevel,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.DateTimeOffset,Meridian.Application.Monitoring.ErrorLevel,System.String,System.String,System.String,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: ErrorEntry(string, DateTimeOffset, ErrorLevel, string, string, string?, string?, string?, string?, string?)
+  nameWithType: ErrorEntry.ErrorEntry(string, DateTimeOffset, ErrorLevel, string, string, string?, string?, string?, string?, string?)
+  fullName: Meridian.Application.Monitoring.ErrorEntry.ErrorEntry(string, System.DateTimeOffset, Meridian.Application.Monitoring.ErrorLevel, string, string, string?, string?, string?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Represents a recorded error entry.
+  example: []
+  syntax:
+    content: public ErrorEntry(string Id, DateTimeOffset Timestamp, ErrorLevel Level, string Source, string Message, string? ExceptionType, string? StackTrace, string? Context, string? Symbol, string? Provider)
+    parameters:
+    - id: Id
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Level
+      type: Meridian.Application.Monitoring.ErrorLevel
+    - id: Source
+      type: System.String
+    - id: Message
+      type: System.String
+    - id: ExceptionType
+      type: System.String
+    - id: StackTrace
+      type: System.String
+    - id: Context
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: Provider
+      type: System.String
+    content.vb: Public Sub New(Id As String, Timestamp As DateTimeOffset, Level As ErrorLevel, Source As String, Message As String, ExceptionType As String, StackTrace As String, Context As String, Symbol As String, Provider As String)
+  overload: Meridian.Application.Monitoring.ErrorEntry.#ctor*
+  nameWithType.vb: ErrorEntry.New(String, DateTimeOffset, ErrorLevel, String, String, String, String, String, String, String)
+  fullName.vb: Meridian.Application.Monitoring.ErrorEntry.New(String, System.DateTimeOffset, Meridian.Application.Monitoring.ErrorLevel, String, String, String, String, String, String, String)
+  name.vb: New(String, DateTimeOffset, ErrorLevel, String, String, String, String, String, String, String)
+- uid: Meridian.Application.Monitoring.ErrorEntry.Id
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.Id
+  id: Id
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: ErrorEntry.Id
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Id { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Application.Monitoring.ErrorEntry.Id*
+- uid: Meridian.Application.Monitoring.ErrorEntry.Timestamp
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ErrorEntry.Timestamp
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.ErrorEntry.Timestamp*
+- uid: Meridian.Application.Monitoring.ErrorEntry.Level
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.Level
+  id: Level
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: Level
+  nameWithType: ErrorEntry.Level
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Level
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Level
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public ErrorLevel Level { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.ErrorLevel
+    content.vb: Public Property Level As ErrorLevel
+  overload: Meridian.Application.Monitoring.ErrorEntry.Level*
+- uid: Meridian.Application.Monitoring.ErrorEntry.Source
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.Source
+  id: Source
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: ErrorEntry.Source
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Source { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Source As String
+  overload: Meridian.Application.Monitoring.ErrorEntry.Source*
+- uid: Meridian.Application.Monitoring.ErrorEntry.Message
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.Message
+  id: Message
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: ErrorEntry.Message
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Monitoring.ErrorEntry.Message*
+- uid: Meridian.Application.Monitoring.ErrorEntry.ExceptionType
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.ExceptionType
+  id: ExceptionType
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: ExceptionType
+  nameWithType: ErrorEntry.ExceptionType
+  fullName: Meridian.Application.Monitoring.ErrorEntry.ExceptionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExceptionType
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string? ExceptionType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExceptionType As String
+  overload: Meridian.Application.Monitoring.ErrorEntry.ExceptionType*
+- uid: Meridian.Application.Monitoring.ErrorEntry.StackTrace
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.StackTrace
+  id: StackTrace
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: StackTrace
+  nameWithType: ErrorEntry.StackTrace
+  fullName: Meridian.Application.Monitoring.ErrorEntry.StackTrace
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StackTrace
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string? StackTrace { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StackTrace As String
+  overload: Meridian.Application.Monitoring.ErrorEntry.StackTrace*
+- uid: Meridian.Application.Monitoring.ErrorEntry.Context
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.Context
+  id: Context
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: Context
+  nameWithType: ErrorEntry.Context
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Context
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Context
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string? Context { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Context As String
+  overload: Meridian.Application.Monitoring.ErrorEntry.Context*
+- uid: Meridian.Application.Monitoring.ErrorEntry.Symbol
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: ErrorEntry.Symbol
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.ErrorEntry.Symbol*
+- uid: Meridian.Application.Monitoring.ErrorEntry.Provider
+  commentId: P:Meridian.Application.Monitoring.ErrorEntry.Provider
+  id: Provider
+  parent: Meridian.Application.Monitoring.ErrorEntry
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: ErrorEntry.Provider
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string? Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Monitoring.ErrorEntry.Provider*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.ErrorEntry}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.ErrorEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ErrorEntry>
+  nameWithType: IEquatable<ErrorEntry>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.ErrorEntry>
+  nameWithType.vb: IEquatable(Of ErrorEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.ErrorEntry)
+  name.vb: IEquatable(Of ErrorEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ErrorEntry
+    name: ErrorEntry
+    href: Meridian.Application.Monitoring.ErrorEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ErrorEntry
+    name: ErrorEntry
+    href: Meridian.Application.Monitoring.ErrorEntry.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.ErrorEntry.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.#ctor
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry__ctor_System_String_System_DateTimeOffset_Meridian_Application_Monitoring_ErrorLevel_System_String_System_String_System_String_System_String_System_String_System_String_System_String_
+  name: ErrorEntry
+  nameWithType: ErrorEntry.ErrorEntry
+  fullName: Meridian.Application.Monitoring.ErrorEntry.ErrorEntry
+  nameWithType.vb: ErrorEntry.New
+  fullName.vb: Meridian.Application.Monitoring.ErrorEntry.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.ErrorLevel
+  commentId: T:Meridian.Application.Monitoring.ErrorLevel
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ErrorLevel.html
+  name: ErrorLevel
+  nameWithType: ErrorLevel
+  fullName: Meridian.Application.Monitoring.ErrorLevel
+- uid: Meridian.Application.Monitoring.ErrorEntry.Id*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.Id
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_Id
+  name: Id
+  nameWithType: ErrorEntry.Id
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Id
+- uid: Meridian.Application.Monitoring.ErrorEntry.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.Timestamp
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_Timestamp
+  name: Timestamp
+  nameWithType: ErrorEntry.Timestamp
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Timestamp
+- uid: Meridian.Application.Monitoring.ErrorEntry.Level*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.Level
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_Level
+  name: Level
+  nameWithType: ErrorEntry.Level
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Level
+- uid: Meridian.Application.Monitoring.ErrorEntry.Source*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.Source
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_Source
+  name: Source
+  nameWithType: ErrorEntry.Source
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Source
+- uid: Meridian.Application.Monitoring.ErrorEntry.Message*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.Message
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_Message
+  name: Message
+  nameWithType: ErrorEntry.Message
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Message
+- uid: Meridian.Application.Monitoring.ErrorEntry.ExceptionType*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.ExceptionType
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_ExceptionType
+  name: ExceptionType
+  nameWithType: ErrorEntry.ExceptionType
+  fullName: Meridian.Application.Monitoring.ErrorEntry.ExceptionType
+- uid: Meridian.Application.Monitoring.ErrorEntry.StackTrace*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.StackTrace
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_StackTrace
+  name: StackTrace
+  nameWithType: ErrorEntry.StackTrace
+  fullName: Meridian.Application.Monitoring.ErrorEntry.StackTrace
+- uid: Meridian.Application.Monitoring.ErrorEntry.Context*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.Context
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_Context
+  name: Context
+  nameWithType: ErrorEntry.Context
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Context
+- uid: Meridian.Application.Monitoring.ErrorEntry.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.Symbol
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_Symbol
+  name: Symbol
+  nameWithType: ErrorEntry.Symbol
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Symbol
+- uid: Meridian.Application.Monitoring.ErrorEntry.Provider*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorEntry.Provider
+  href: Meridian.Application.Monitoring.ErrorEntry.html#Meridian_Application_Monitoring_ErrorEntry_Provider
+  name: Provider
+  nameWithType: ErrorEntry.Provider
+  fullName: Meridian.Application.Monitoring.ErrorEntry.Provider

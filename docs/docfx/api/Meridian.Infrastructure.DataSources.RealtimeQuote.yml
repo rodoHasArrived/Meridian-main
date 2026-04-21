@@ -1,0 +1,860 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote
+  commentId: T:Meridian.Infrastructure.DataSources.RealtimeQuote
+  id: RealtimeQuote
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.#ctor(System.String,System.Decimal,System.Int64,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.String,System.Nullable{System.Int64})
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.AskExchange
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.AskPrice
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.AskSize
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.BidExchange
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.BidPrice
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.BidSize
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.SequenceNumber
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.SourceId
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.Symbol
+  - Meridian.Infrastructure.DataSources.RealtimeQuote.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: RealtimeQuote
+  nameWithType: RealtimeQuote
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealtimeQuote
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 192
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time BBO quote event from a data source.
+  example: []
+  syntax:
+    content: 'public sealed record RealtimeQuote : IEquatable<RealtimeQuote>'
+    content.vb: Public NotInheritable Class RealtimeQuote Implements IEquatable(Of RealtimeQuote)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.#ctor(System.String,System.Decimal,System.Int64,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.String,System.Nullable{System.Int64})
+  commentId: M:Meridian.Infrastructure.DataSources.RealtimeQuote.#ctor(System.String,System.Decimal,System.Int64,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.String,System.Nullable{System.Int64})
+  id: '#ctor(System.String,System.Decimal,System.Int64,System.Decimal,System.Int64,System.DateTimeOffset,System.String,System.String,System.String,System.Nullable{System.Int64})'
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: RealtimeQuote(string, decimal, long, decimal, long, DateTimeOffset, string, string?, string?, long?)
+  nameWithType: RealtimeQuote.RealtimeQuote(string, decimal, long, decimal, long, DateTimeOffset, string, string?, string?, long?)
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.RealtimeQuote(string, decimal, long, decimal, long, System.DateTimeOffset, string, string?, string?, long?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 192
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Real-time BBO quote event from a data source.
+  example: []
+  syntax:
+    content: public RealtimeQuote(string Symbol, decimal BidPrice, long BidSize, decimal AskPrice, long AskSize, DateTimeOffset Timestamp, string SourceId, string? BidExchange = null, string? AskExchange = null, long? SequenceNumber = null)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: BidPrice
+      type: System.Decimal
+    - id: BidSize
+      type: System.Int64
+    - id: AskPrice
+      type: System.Decimal
+    - id: AskSize
+      type: System.Int64
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: SourceId
+      type: System.String
+    - id: BidExchange
+      type: System.String
+    - id: AskExchange
+      type: System.String
+    - id: SequenceNumber
+      type: System.Nullable{System.Int64}
+    content.vb: Public Sub New(Symbol As String, BidPrice As Decimal, BidSize As Long, AskPrice As Decimal, AskSize As Long, Timestamp As DateTimeOffset, SourceId As String, BidExchange As String = Nothing, AskExchange As String = Nothing, SequenceNumber As Long? = Nothing)
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.#ctor*
+  nameWithType.vb: RealtimeQuote.New(String, Decimal, Long, Decimal, Long, DateTimeOffset, String, String, String, Long?)
+  fullName.vb: Meridian.Infrastructure.DataSources.RealtimeQuote.New(String, Decimal, Long, Decimal, Long, System.DateTimeOffset, String, String, String, Long?)
+  name.vb: New(String, Decimal, Long, Decimal, Long, DateTimeOffset, String, String, String, Long?)
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.Symbol
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: RealtimeQuote.Symbol
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 193
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.Symbol*
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.BidPrice
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.BidPrice
+  id: BidPrice
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: BidPrice
+  nameWithType: RealtimeQuote.BidPrice
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.BidPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidPrice
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 194
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public decimal BidPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property BidPrice As Decimal
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.BidPrice*
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.BidSize
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.BidSize
+  id: BidSize
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: BidSize
+  nameWithType: RealtimeQuote.BidSize
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.BidSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidSize
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 195
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public long BidSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BidSize As Long
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.BidSize*
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.AskPrice
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.AskPrice
+  id: AskPrice
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: AskPrice
+  nameWithType: RealtimeQuote.AskPrice
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.AskPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskPrice
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 196
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public decimal AskPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AskPrice As Decimal
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.AskPrice*
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.AskSize
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.AskSize
+  id: AskSize
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: AskSize
+  nameWithType: RealtimeQuote.AskSize
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.AskSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskSize
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 197
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public long AskSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property AskSize As Long
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.AskSize*
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.Timestamp
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.Timestamp
+  id: Timestamp
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: RealtimeQuote.Timestamp
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 198
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.Timestamp*
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.SourceId
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.SourceId
+  id: SourceId
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: SourceId
+  nameWithType: RealtimeQuote.SourceId
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.SourceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceId
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 199
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string SourceId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceId As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.SourceId*
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.BidExchange
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.BidExchange
+  id: BidExchange
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: BidExchange
+  nameWithType: RealtimeQuote.BidExchange
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.BidExchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidExchange
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 200
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string? BidExchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BidExchange As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.BidExchange*
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.AskExchange
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.AskExchange
+  id: AskExchange
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: AskExchange
+  nameWithType: RealtimeQuote.AskExchange
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.AskExchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskExchange
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 201
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public string? AskExchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AskExchange As String
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.AskExchange*
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.SequenceNumber
+  commentId: P:Meridian.Infrastructure.DataSources.RealtimeQuote.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Infrastructure.DataSources.RealtimeQuote
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: RealtimeQuote.SequenceNumber
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 202
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  syntax:
+    content: public long? SequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public Property SequenceNumber As Long?
+  overload: Meridian.Infrastructure.DataSources.RealtimeQuote.SequenceNumber*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.RealtimeQuote}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RealtimeQuote>
+  nameWithType: IEquatable<RealtimeQuote>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.RealtimeQuote>
+  nameWithType.vb: IEquatable(Of RealtimeQuote)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.RealtimeQuote)
+  name.vb: IEquatable(Of RealtimeQuote)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeQuote
+    name: RealtimeQuote
+    href: Meridian.Infrastructure.DataSources.RealtimeQuote.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeQuote
+    name: RealtimeQuote
+    href: Meridian.Infrastructure.DataSources.RealtimeQuote.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.#ctor*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.#ctor
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote__ctor_System_String_System_Decimal_System_Int64_System_Decimal_System_Int64_System_DateTimeOffset_System_String_System_String_System_String_System_Nullable_System_Int64__
+  name: RealtimeQuote
+  nameWithType: RealtimeQuote.RealtimeQuote
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.RealtimeQuote
+  nameWithType.vb: RealtimeQuote.New
+  fullName.vb: Meridian.Infrastructure.DataSources.RealtimeQuote.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.Symbol*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.Symbol
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_Symbol
+  name: Symbol
+  nameWithType: RealtimeQuote.Symbol
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.Symbol
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.BidPrice*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.BidPrice
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_BidPrice
+  name: BidPrice
+  nameWithType: RealtimeQuote.BidPrice
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.BidPrice
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.BidSize*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.BidSize
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_BidSize
+  name: BidSize
+  nameWithType: RealtimeQuote.BidSize
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.BidSize
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.AskPrice*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.AskPrice
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_AskPrice
+  name: AskPrice
+  nameWithType: RealtimeQuote.AskPrice
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.AskPrice
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.AskSize*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.AskSize
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_AskSize
+  name: AskSize
+  nameWithType: RealtimeQuote.AskSize
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.AskSize
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.Timestamp*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.Timestamp
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_Timestamp
+  name: Timestamp
+  nameWithType: RealtimeQuote.Timestamp
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.Timestamp
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.SourceId*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.SourceId
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_SourceId
+  name: SourceId
+  nameWithType: RealtimeQuote.SourceId
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.SourceId
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.BidExchange*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.BidExchange
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_BidExchange
+  name: BidExchange
+  nameWithType: RealtimeQuote.BidExchange
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.BidExchange
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.AskExchange*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.AskExchange
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_AskExchange
+  name: AskExchange
+  nameWithType: RealtimeQuote.AskExchange
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.AskExchange
+- uid: Meridian.Infrastructure.DataSources.RealtimeQuote.SequenceNumber*
+  commentId: Overload:Meridian.Infrastructure.DataSources.RealtimeQuote.SequenceNumber
+  href: Meridian.Infrastructure.DataSources.RealtimeQuote.html#Meridian_Infrastructure_DataSources_RealtimeQuote_SequenceNumber
+  name: SequenceNumber
+  nameWithType: RealtimeQuote.SequenceNumber
+  fullName: Meridian.Infrastructure.DataSources.RealtimeQuote.SequenceNumber

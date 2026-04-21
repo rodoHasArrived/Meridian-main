@@ -1,0 +1,544 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.StooqConfig
+  commentId: T:Meridian.Application.Config.StooqConfig
+  id: StooqConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.StooqConfig.#ctor(System.Boolean,System.Int32,System.String)
+  - Meridian.Application.Config.StooqConfig.DefaultMarket
+  - Meridian.Application.Config.StooqConfig.Enabled
+  - Meridian.Application.Config.StooqConfig.Priority
+  langs:
+  - csharp
+  - vb
+  name: StooqConfig
+  nameWithType: StooqConfig
+  fullName: Meridian.Application.Config.StooqConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StooqConfig
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Stooq provider configuration.
+  example: []
+  syntax:
+    content: 'public sealed record StooqConfig : IEquatable<StooqConfig>'
+    content.vb: Public NotInheritable Class StooqConfig Implements IEquatable(Of StooqConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.StooqConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.StooqConfig.#ctor(System.Boolean,System.Int32,System.String)
+  commentId: M:Meridian.Application.Config.StooqConfig.#ctor(System.Boolean,System.Int32,System.String)
+  id: '#ctor(System.Boolean,System.Int32,System.String)'
+  parent: Meridian.Application.Config.StooqConfig
+  langs:
+  - csharp
+  - vb
+  name: StooqConfig(bool, int, string)
+  nameWithType: StooqConfig.StooqConfig(bool, int, string)
+  fullName: Meridian.Application.Config.StooqConfig.StooqConfig(bool, int, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Stooq provider configuration.
+  example: []
+  syntax:
+    content: public StooqConfig(bool Enabled = true, int Priority = 20, string DefaultMarket = "us")
+    parameters:
+    - id: Enabled
+      type: System.Boolean
+      description: Enable this provider.
+    - id: Priority
+      type: System.Int32
+      description: Priority in fallback chain (lower = tried first).
+    - id: DefaultMarket
+      type: System.String
+      description: Default market suffix (e.g., "us" for US equities).
+    content.vb: Public Sub New(Enabled As Boolean = True, Priority As Integer = 20, DefaultMarket As String = "us")
+  overload: Meridian.Application.Config.StooqConfig.#ctor*
+  nameWithType.vb: StooqConfig.New(Boolean, Integer, String)
+  fullName.vb: Meridian.Application.Config.StooqConfig.New(Boolean, Integer, String)
+  name.vb: New(Boolean, Integer, String)
+- uid: Meridian.Application.Config.StooqConfig.Enabled
+  commentId: P:Meridian.Application.Config.StooqConfig.Enabled
+  id: Enabled
+  parent: Meridian.Application.Config.StooqConfig
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: StooqConfig.Enabled
+  fullName: Meridian.Application.Config.StooqConfig.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Enable this provider.
+  example: []
+  syntax:
+    content: public bool Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Application.Config.StooqConfig.Enabled*
+- uid: Meridian.Application.Config.StooqConfig.Priority
+  commentId: P:Meridian.Application.Config.StooqConfig.Priority
+  id: Priority
+  parent: Meridian.Application.Config.StooqConfig
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: StooqConfig.Priority
+  fullName: Meridian.Application.Config.StooqConfig.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Priority in fallback chain (lower = tried first).
+  example: []
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Application.Config.StooqConfig.Priority*
+- uid: Meridian.Application.Config.StooqConfig.DefaultMarket
+  commentId: P:Meridian.Application.Config.StooqConfig.DefaultMarket
+  id: DefaultMarket
+  parent: Meridian.Application.Config.StooqConfig
+  langs:
+  - csharp
+  - vb
+  name: DefaultMarket
+  nameWithType: StooqConfig.DefaultMarket
+  fullName: Meridian.Application.Config.StooqConfig.DefaultMarket
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultMarket
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Default market suffix (e.g., "us" for US equities).
+  example: []
+  syntax:
+    content: public string DefaultMarket { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DefaultMarket As String
+  overload: Meridian.Application.Config.StooqConfig.DefaultMarket*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.StooqConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.StooqConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<StooqConfig>
+  nameWithType: IEquatable<StooqConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.StooqConfig>
+  nameWithType.vb: IEquatable(Of StooqConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.StooqConfig)
+  name.vb: IEquatable(Of StooqConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.StooqConfig
+    name: StooqConfig
+    href: Meridian.Application.Config.StooqConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.StooqConfig
+    name: StooqConfig
+    href: Meridian.Application.Config.StooqConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.StooqConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.StooqConfig.#ctor
+  href: Meridian.Application.Config.StooqConfig.html#Meridian_Application_Config_StooqConfig__ctor_System_Boolean_System_Int32_System_String_
+  name: StooqConfig
+  nameWithType: StooqConfig.StooqConfig
+  fullName: Meridian.Application.Config.StooqConfig.StooqConfig
+  nameWithType.vb: StooqConfig.New
+  fullName.vb: Meridian.Application.Config.StooqConfig.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Config.StooqConfig.Enabled*
+  commentId: Overload:Meridian.Application.Config.StooqConfig.Enabled
+  href: Meridian.Application.Config.StooqConfig.html#Meridian_Application_Config_StooqConfig_Enabled
+  name: Enabled
+  nameWithType: StooqConfig.Enabled
+  fullName: Meridian.Application.Config.StooqConfig.Enabled
+- uid: Meridian.Application.Config.StooqConfig.Priority*
+  commentId: Overload:Meridian.Application.Config.StooqConfig.Priority
+  href: Meridian.Application.Config.StooqConfig.html#Meridian_Application_Config_StooqConfig_Priority
+  name: Priority
+  nameWithType: StooqConfig.Priority
+  fullName: Meridian.Application.Config.StooqConfig.Priority
+- uid: Meridian.Application.Config.StooqConfig.DefaultMarket*
+  commentId: Overload:Meridian.Application.Config.StooqConfig.DefaultMarket
+  href: Meridian.Application.Config.StooqConfig.html#Meridian_Application_Config_StooqConfig_DefaultMarket
+  name: DefaultMarket
+  nameWithType: StooqConfig.DefaultMarket
+  fullName: Meridian.Application.Config.StooqConfig.DefaultMarket

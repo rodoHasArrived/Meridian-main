@@ -1,0 +1,572 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  commentId: T:Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  id: TaxLotSelectors
+  parent: Meridian.Execution.TaxLotAccounting
+  children:
+  - Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Fifo
+  - Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Hifo
+  - Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Lifo
+  - Meridian.Execution.TaxLotAccounting.TaxLotSelectors.SpecificId(System.Collections.Generic.IEnumerable{System.Guid})
+  langs:
+  - csharp
+  - vb
+  name: TaxLotSelectors
+  nameWithType: TaxLotSelectors
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaxLotSelectors
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: Default lot-relief selector implementations for common accounting methods.
+  example: []
+  syntax:
+    content: public static class TaxLotSelectors
+    content.vb: Public Module TaxLotSelectors
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Fifo
+  commentId: M:Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Fifo
+  id: Fifo
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  langs:
+  - csharp
+  - vb
+  name: Fifo()
+  nameWithType: TaxLotSelectors.Fifo()
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Fifo()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fifo
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: Returns a FIFO selector (oldest lots relieved first).
+  example: []
+  syntax:
+    content: public static ITaxLotSelector Fifo()
+    return:
+      type: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+    content.vb: Public Shared Function Fifo() As ITaxLotSelector
+  overload: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Fifo*
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Lifo
+  commentId: M:Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Lifo
+  id: Lifo
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  langs:
+  - csharp
+  - vb
+  name: Lifo()
+  nameWithType: TaxLotSelectors.Lifo()
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Lifo()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lifo
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: Returns a LIFO selector (most recent lots relieved first).
+  example: []
+  syntax:
+    content: public static ITaxLotSelector Lifo()
+    return:
+      type: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+    content.vb: Public Shared Function Lifo() As ITaxLotSelector
+  overload: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Lifo*
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Hifo
+  commentId: M:Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Hifo
+  id: Hifo
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  langs:
+  - csharp
+  - vb
+  name: Hifo()
+  nameWithType: TaxLotSelectors.Hifo()
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Hifo()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hifo
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: Returns a HIFO selector (highest cost-basis lots relieved first).
+  example: []
+  syntax:
+    content: public static ITaxLotSelector Hifo()
+    return:
+      type: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+    content.vb: Public Shared Function Hifo() As ITaxLotSelector
+  overload: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Hifo*
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.SpecificId(System.Collections.Generic.IEnumerable{System.Guid})
+  commentId: M:Meridian.Execution.TaxLotAccounting.TaxLotSelectors.SpecificId(System.Collections.Generic.IEnumerable{System.Guid})
+  id: SpecificId(System.Collections.Generic.IEnumerable{System.Guid})
+  parent: Meridian.Execution.TaxLotAccounting.TaxLotSelectors
+  langs:
+  - csharp
+  - vb
+  name: SpecificId(IEnumerable<Guid>)
+  nameWithType: TaxLotSelectors.SpecificId(IEnumerable<Guid>)
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.SpecificId(System.Collections.Generic.IEnumerable<System.Guid>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpecificId
+    path: ../../src/Meridian.Execution/TaxLotAccounting/TaxLotSelectors.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: >-
+    Returns a specific-lot selector that relieves exactly the lots identified by
+
+    <code class="paramref">lotIds</code> in the order provided.
+  example: []
+  syntax:
+    content: public static ITaxLotSelector SpecificId(IEnumerable<Guid> lotIds)
+    parameters:
+    - id: lotIds
+      type: System.Collections.Generic.IEnumerable{System.Guid}
+    return:
+      type: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+    content.vb: Public Shared Function SpecificId(lotIds As IEnumerable(Of Guid)) As ITaxLotSelector
+  overload: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.SpecificId*
+  nameWithType.vb: TaxLotSelectors.SpecificId(IEnumerable(Of Guid))
+  fullName.vb: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.SpecificId(System.Collections.Generic.IEnumerable(Of System.Guid))
+  name.vb: SpecificId(IEnumerable(Of Guid))
+references:
+- uid: Meridian.Execution.TaxLotAccounting
+  commentId: N:Meridian.Execution.TaxLotAccounting
+  href: Meridian.html
+  name: Meridian.Execution.TaxLotAccounting
+  nameWithType: Meridian.Execution.TaxLotAccounting
+  fullName: Meridian.Execution.TaxLotAccounting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Fifo*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Fifo
+  href: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.html#Meridian_Execution_TaxLotAccounting_TaxLotSelectors_Fifo
+  name: Fifo
+  nameWithType: TaxLotSelectors.Fifo
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Fifo
+- uid: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  commentId: T:Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  parent: Meridian.Execution.TaxLotAccounting
+  href: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.html
+  name: ITaxLotSelector
+  nameWithType: ITaxLotSelector
+  fullName: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Lifo*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Lifo
+  href: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.html#Meridian_Execution_TaxLotAccounting_TaxLotSelectors_Lifo
+  name: Lifo
+  nameWithType: TaxLotSelectors.Lifo
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Lifo
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Hifo*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Hifo
+  href: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.html#Meridian_Execution_TaxLotAccounting_TaxLotSelectors_Hifo
+  name: Hifo
+  nameWithType: TaxLotSelectors.Hifo
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.Hifo
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.SpecificId*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.TaxLotSelectors.SpecificId
+  href: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.html#Meridian_Execution_TaxLotAccounting_TaxLotSelectors_SpecificId_System_Collections_Generic_IEnumerable_System_Guid__
+  name: SpecificId
+  nameWithType: TaxLotSelectors.SpecificId
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotSelectors.SpecificId
+- uid: System.Collections.Generic.IEnumerable{System.Guid}
+  commentId: T:System.Collections.Generic.IEnumerable{System.Guid}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<Guid>
+  nameWithType: IEnumerable<Guid>
+  fullName: System.Collections.Generic.IEnumerable<System.Guid>
+  nameWithType.vb: IEnumerable(Of Guid)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of System.Guid)
+  name.vb: IEnumerable(Of Guid)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

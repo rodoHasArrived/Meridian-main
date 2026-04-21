@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.Features
+  commentId: N:Meridian.Application.Composition.Features
+  id: Meridian.Application.Composition.Features
+  children:
+  - Meridian.Application.Composition.Features.IServiceFeatureRegistration
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Composition.Features
+  nameWithType: Meridian.Application.Composition.Features
+  fullName: Meridian.Application.Composition.Features
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Composition.Features.IServiceFeatureRegistration
+  commentId: T:Meridian.Application.Composition.Features.IServiceFeatureRegistration
+  href: Meridian.Application.Composition.Features.IServiceFeatureRegistration.html
+  name: IServiceFeatureRegistration
+  nameWithType: IServiceFeatureRegistration
+  fullName: Meridian.Application.Composition.Features.IServiceFeatureRegistration

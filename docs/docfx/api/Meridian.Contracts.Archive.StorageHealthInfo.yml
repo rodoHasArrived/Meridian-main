@@ -1,0 +1,822 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Archive.StorageHealthInfo
+  commentId: T:Meridian.Contracts.Archive.StorageHealthInfo
+  id: StorageHealthInfo
+  parent: Meridian.Contracts.Archive
+  children:
+  - Meridian.Contracts.Archive.StorageHealthInfo.AverageWriteLatencyMs
+  - Meridian.Contracts.Archive.StorageHealthInfo.DaysUntilFull
+  - Meridian.Contracts.Archive.StorageHealthInfo.DriveType
+  - Meridian.Contracts.Archive.StorageHealthInfo.FreeSpace
+  - Meridian.Contracts.Archive.StorageHealthInfo.HealthStatus
+  - Meridian.Contracts.Archive.StorageHealthInfo.ReadSpeedMbps
+  - Meridian.Contracts.Archive.StorageHealthInfo.TotalCapacity
+  - Meridian.Contracts.Archive.StorageHealthInfo.UsedPercent
+  - Meridian.Contracts.Archive.StorageHealthInfo.WriteSpeedMbps
+  langs:
+  - csharp
+  - vb
+  name: StorageHealthInfo
+  nameWithType: StorageHealthInfo
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageHealthInfo
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 145
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  summary: Storage media health information.
+  example: []
+  syntax:
+    content: public sealed class StorageHealthInfo
+    content.vb: Public NotInheritable Class StorageHealthInfo
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.DriveType
+  commentId: P:Meridian.Contracts.Archive.StorageHealthInfo.DriveType
+  id: DriveType
+  parent: Meridian.Contracts.Archive.StorageHealthInfo
+  langs:
+  - csharp
+  - vb
+  name: DriveType
+  nameWithType: StorageHealthInfo.DriveType
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.DriveType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DriveType
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("driveType")]
+
+      public string DriveType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("driveType")>
+
+      Public Property DriveType As String
+  overload: Meridian.Contracts.Archive.StorageHealthInfo.DriveType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: driveType
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.HealthStatus
+  commentId: P:Meridian.Contracts.Archive.StorageHealthInfo.HealthStatus
+  id: HealthStatus
+  parent: Meridian.Contracts.Archive.StorageHealthInfo
+  langs:
+  - csharp
+  - vb
+  name: HealthStatus
+  nameWithType: StorageHealthInfo.HealthStatus
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.HealthStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthStatus
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("healthStatus")]
+
+      public string HealthStatus { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("healthStatus")>
+
+      Public Property HealthStatus As String
+  overload: Meridian.Contracts.Archive.StorageHealthInfo.HealthStatus*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: healthStatus
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.TotalCapacity
+  commentId: P:Meridian.Contracts.Archive.StorageHealthInfo.TotalCapacity
+  id: TotalCapacity
+  parent: Meridian.Contracts.Archive.StorageHealthInfo
+  langs:
+  - csharp
+  - vb
+  name: TotalCapacity
+  nameWithType: StorageHealthInfo.TotalCapacity
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.TotalCapacity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCapacity
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("totalCapacity")]
+
+      public long TotalCapacity { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalCapacity")>
+
+      Public Property TotalCapacity As Long
+  overload: Meridian.Contracts.Archive.StorageHealthInfo.TotalCapacity*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalCapacity
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.FreeSpace
+  commentId: P:Meridian.Contracts.Archive.StorageHealthInfo.FreeSpace
+  id: FreeSpace
+  parent: Meridian.Contracts.Archive.StorageHealthInfo
+  langs:
+  - csharp
+  - vb
+  name: FreeSpace
+  nameWithType: StorageHealthInfo.FreeSpace
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.FreeSpace
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FreeSpace
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("freeSpace")]
+
+      public long FreeSpace { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("freeSpace")>
+
+      Public Property FreeSpace As Long
+  overload: Meridian.Contracts.Archive.StorageHealthInfo.FreeSpace*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: freeSpace
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.UsedPercent
+  commentId: P:Meridian.Contracts.Archive.StorageHealthInfo.UsedPercent
+  id: UsedPercent
+  parent: Meridian.Contracts.Archive.StorageHealthInfo
+  langs:
+  - csharp
+  - vb
+  name: UsedPercent
+  nameWithType: StorageHealthInfo.UsedPercent
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.UsedPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UsedPercent
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("usedPercent")]
+
+      public float UsedPercent { get; set; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("usedPercent")>
+
+      Public Property UsedPercent As Single
+  overload: Meridian.Contracts.Archive.StorageHealthInfo.UsedPercent*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: usedPercent
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.AverageWriteLatencyMs
+  commentId: P:Meridian.Contracts.Archive.StorageHealthInfo.AverageWriteLatencyMs
+  id: AverageWriteLatencyMs
+  parent: Meridian.Contracts.Archive.StorageHealthInfo
+  langs:
+  - csharp
+  - vb
+  name: AverageWriteLatencyMs
+  nameWithType: StorageHealthInfo.AverageWriteLatencyMs
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.AverageWriteLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageWriteLatencyMs
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("averageWriteLatencyMs")]
+
+      public float? AverageWriteLatencyMs { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Single}
+    content.vb: >-
+      <JsonPropertyName("averageWriteLatencyMs")>
+
+      Public Property AverageWriteLatencyMs As Single?
+  overload: Meridian.Contracts.Archive.StorageHealthInfo.AverageWriteLatencyMs*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: averageWriteLatencyMs
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.ReadSpeedMbps
+  commentId: P:Meridian.Contracts.Archive.StorageHealthInfo.ReadSpeedMbps
+  id: ReadSpeedMbps
+  parent: Meridian.Contracts.Archive.StorageHealthInfo
+  langs:
+  - csharp
+  - vb
+  name: ReadSpeedMbps
+  nameWithType: StorageHealthInfo.ReadSpeedMbps
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.ReadSpeedMbps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReadSpeedMbps
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("readSpeedMbps")]
+
+      public float? ReadSpeedMbps { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Single}
+    content.vb: >-
+      <JsonPropertyName("readSpeedMbps")>
+
+      Public Property ReadSpeedMbps As Single?
+  overload: Meridian.Contracts.Archive.StorageHealthInfo.ReadSpeedMbps*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: readSpeedMbps
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.WriteSpeedMbps
+  commentId: P:Meridian.Contracts.Archive.StorageHealthInfo.WriteSpeedMbps
+  id: WriteSpeedMbps
+  parent: Meridian.Contracts.Archive.StorageHealthInfo
+  langs:
+  - csharp
+  - vb
+  name: WriteSpeedMbps
+  nameWithType: StorageHealthInfo.WriteSpeedMbps
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.WriteSpeedMbps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteSpeedMbps
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("writeSpeedMbps")]
+
+      public float? WriteSpeedMbps { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Single}
+    content.vb: >-
+      <JsonPropertyName("writeSpeedMbps")>
+
+      Public Property WriteSpeedMbps As Single?
+  overload: Meridian.Contracts.Archive.StorageHealthInfo.WriteSpeedMbps*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: writeSpeedMbps
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.DaysUntilFull
+  commentId: P:Meridian.Contracts.Archive.StorageHealthInfo.DaysUntilFull
+  id: DaysUntilFull
+  parent: Meridian.Contracts.Archive.StorageHealthInfo
+  langs:
+  - csharp
+  - vb
+  name: DaysUntilFull
+  nameWithType: StorageHealthInfo.DaysUntilFull
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.DaysUntilFull
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DaysUntilFull
+    path: ../../src/Meridian.Contracts/Archive/ArchiveHealthModels.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Archive
+  syntax:
+    content: >-
+      [JsonPropertyName("daysUntilFull")]
+
+      public int? DaysUntilFull { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: >-
+      <JsonPropertyName("daysUntilFull")>
+
+      Public Property DaysUntilFull As Integer?
+  overload: Meridian.Contracts.Archive.StorageHealthInfo.DaysUntilFull*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: daysUntilFull
+references:
+- uid: Meridian.Contracts.Archive
+  commentId: N:Meridian.Contracts.Archive
+  href: Meridian.html
+  name: Meridian.Contracts.Archive
+  nameWithType: Meridian.Contracts.Archive
+  fullName: Meridian.Contracts.Archive
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Archive
+    name: Archive
+    href: Meridian.Contracts.Archive.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Archive
+    name: Archive
+    href: Meridian.Contracts.Archive.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.DriveType*
+  commentId: Overload:Meridian.Contracts.Archive.StorageHealthInfo.DriveType
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html#Meridian_Contracts_Archive_StorageHealthInfo_DriveType
+  name: DriveType
+  nameWithType: StorageHealthInfo.DriveType
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.DriveType
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.HealthStatus*
+  commentId: Overload:Meridian.Contracts.Archive.StorageHealthInfo.HealthStatus
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html#Meridian_Contracts_Archive_StorageHealthInfo_HealthStatus
+  name: HealthStatus
+  nameWithType: StorageHealthInfo.HealthStatus
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.HealthStatus
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.TotalCapacity*
+  commentId: Overload:Meridian.Contracts.Archive.StorageHealthInfo.TotalCapacity
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html#Meridian_Contracts_Archive_StorageHealthInfo_TotalCapacity
+  name: TotalCapacity
+  nameWithType: StorageHealthInfo.TotalCapacity
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.TotalCapacity
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.FreeSpace*
+  commentId: Overload:Meridian.Contracts.Archive.StorageHealthInfo.FreeSpace
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html#Meridian_Contracts_Archive_StorageHealthInfo_FreeSpace
+  name: FreeSpace
+  nameWithType: StorageHealthInfo.FreeSpace
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.FreeSpace
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.UsedPercent*
+  commentId: Overload:Meridian.Contracts.Archive.StorageHealthInfo.UsedPercent
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html#Meridian_Contracts_Archive_StorageHealthInfo_UsedPercent
+  name: UsedPercent
+  nameWithType: StorageHealthInfo.UsedPercent
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.UsedPercent
+- uid: System.Single
+  commentId: T:System.Single
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.single
+  name: float
+  nameWithType: float
+  fullName: float
+  nameWithType.vb: Single
+  fullName.vb: Single
+  name.vb: Single
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.AverageWriteLatencyMs*
+  commentId: Overload:Meridian.Contracts.Archive.StorageHealthInfo.AverageWriteLatencyMs
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html#Meridian_Contracts_Archive_StorageHealthInfo_AverageWriteLatencyMs
+  name: AverageWriteLatencyMs
+  nameWithType: StorageHealthInfo.AverageWriteLatencyMs
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.AverageWriteLatencyMs
+- uid: System.Nullable{System.Single}
+  commentId: T:System.Nullable{System.Single}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.single
+  name: float?
+  nameWithType: float?
+  fullName: float?
+  nameWithType.vb: Single?
+  fullName.vb: Single?
+  name.vb: Single?
+  spec.csharp:
+  - uid: System.Single
+    name: float
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.single
+  - name: '?'
+  spec.vb:
+  - uid: System.Single
+    name: Single
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.single
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.ReadSpeedMbps*
+  commentId: Overload:Meridian.Contracts.Archive.StorageHealthInfo.ReadSpeedMbps
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html#Meridian_Contracts_Archive_StorageHealthInfo_ReadSpeedMbps
+  name: ReadSpeedMbps
+  nameWithType: StorageHealthInfo.ReadSpeedMbps
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.ReadSpeedMbps
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.WriteSpeedMbps*
+  commentId: Overload:Meridian.Contracts.Archive.StorageHealthInfo.WriteSpeedMbps
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html#Meridian_Contracts_Archive_StorageHealthInfo_WriteSpeedMbps
+  name: WriteSpeedMbps
+  nameWithType: StorageHealthInfo.WriteSpeedMbps
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.WriteSpeedMbps
+- uid: Meridian.Contracts.Archive.StorageHealthInfo.DaysUntilFull*
+  commentId: Overload:Meridian.Contracts.Archive.StorageHealthInfo.DaysUntilFull
+  href: Meridian.Contracts.Archive.StorageHealthInfo.html#Meridian_Contracts_Archive_StorageHealthInfo_DaysUntilFull
+  name: DaysUntilFull
+  nameWithType: StorageHealthInfo.DaysUntilFull
+  fullName: Meridian.Contracts.Archive.StorageHealthInfo.DaysUntilFull
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'

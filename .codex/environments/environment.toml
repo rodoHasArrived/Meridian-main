@@ -22,3 +22,21 @@ script = '''
 set -Eeuo pipefail
 bash scripts/ai/cleanup.sh "$@"
 '''
+
+[[actions]]
+name = "Build"
+icon = "tool"
+command = "dotnet build Meridian.sln"
+platform = "win32"
+
+[[actions]]
+name = "Test"
+icon = "test"
+command = "dotnet test Meridian.sln"
+platform = "win32"
+
+[[actions]]
+name = "Run Desktop"
+icon = "run"
+command = "dotnet run --project src/Meridian.Wpf/Meridian.Wpf.csproj"
+platform = "win32"

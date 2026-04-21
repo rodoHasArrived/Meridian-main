@@ -1,0 +1,801 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventType
+  id: MarketEventType
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.MarketEventType.AggregateBar
+  - Meridian.Contracts.Domain.Enums.MarketEventType.BboQuote
+  - Meridian.Contracts.Domain.Enums.MarketEventType.ConnectionStatus
+  - Meridian.Contracts.Domain.Enums.MarketEventType.Depth
+  - Meridian.Contracts.Domain.Enums.MarketEventType.Heartbeat
+  - Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalAuction
+  - Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalBar
+  - Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalQuote
+  - Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalTrade
+  - Meridian.Contracts.Domain.Enums.MarketEventType.Integrity
+  - Meridian.Contracts.Domain.Enums.MarketEventType.L2Snapshot
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OpenInterest
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OptionChain
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OptionGreeks
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OptionQuote
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OptionTrade
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OrderAdd
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OrderCancel
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OrderExecute
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OrderFlow
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OrderModify
+  - Meridian.Contracts.Domain.Enums.MarketEventType.OrderReplace
+  - Meridian.Contracts.Domain.Enums.MarketEventType.Quote
+  - Meridian.Contracts.Domain.Enums.MarketEventType.Trade
+  - Meridian.Contracts.Domain.Enums.MarketEventType.Unknown
+  langs:
+  - csharp
+  - vb
+  name: MarketEventType
+  nameWithType: MarketEventType
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketEventType
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Type of market event.
+  example: []
+  syntax:
+    content: 'public enum MarketEventType : byte'
+    content.vb: Public Enum MarketEventType As Byte
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.Unknown
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.Unknown
+  id: Unknown
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: MarketEventType.Unknown
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Unknown event type.
+  example: []
+  syntax:
+    content: Unknown = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.L2Snapshot
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.L2Snapshot
+  id: L2Snapshot
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: L2Snapshot
+  nameWithType: MarketEventType.L2Snapshot
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.L2Snapshot
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: L2Snapshot
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Level 2 order book snapshot.
+  example: []
+  syntax:
+    content: L2Snapshot = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.BboQuote
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.BboQuote
+  id: BboQuote
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: BboQuote
+  nameWithType: MarketEventType.BboQuote
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.BboQuote
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BboQuote
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Best bid/offer quote.
+  example: []
+  syntax:
+    content: BboQuote = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.Trade
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.Trade
+  id: Trade
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: Trade
+  nameWithType: MarketEventType.Trade
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.Trade
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trade
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Trade execution.
+  example: []
+  syntax:
+    content: Trade = 3
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OrderFlow
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OrderFlow
+  id: OrderFlow
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OrderFlow
+  nameWithType: MarketEventType.OrderFlow
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OrderFlow
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderFlow
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Order flow statistics.
+  example: []
+  syntax:
+    content: OrderFlow = 4
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.Heartbeat
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.Heartbeat
+  id: Heartbeat
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: Heartbeat
+  nameWithType: MarketEventType.Heartbeat
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.Heartbeat
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Heartbeat
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Heartbeat message.
+  example: []
+  syntax:
+    content: Heartbeat = 5
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.ConnectionStatus
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.ConnectionStatus
+  id: ConnectionStatus
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: ConnectionStatus
+  nameWithType: MarketEventType.ConnectionStatus
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.ConnectionStatus
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionStatus
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Connection status change.
+  example: []
+  syntax:
+    content: ConnectionStatus = 6
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.Integrity
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.Integrity
+  id: Integrity
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: Integrity
+  nameWithType: MarketEventType.Integrity
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.Integrity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Integrity
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Data integrity event.
+  example: []
+  syntax:
+    content: Integrity = 7
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalBar
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalBar
+  id: HistoricalBar
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: HistoricalBar
+  nameWithType: MarketEventType.HistoricalBar
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalBar
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalBar
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Historical bar data.
+  example: []
+  syntax:
+    content: HistoricalBar = 8
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalQuote
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalQuote
+  id: HistoricalQuote
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: HistoricalQuote
+  nameWithType: MarketEventType.HistoricalQuote
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalQuote
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalQuote
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Historical quote data.
+  example: []
+  syntax:
+    content: HistoricalQuote = 9
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalTrade
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalTrade
+  id: HistoricalTrade
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: HistoricalTrade
+  nameWithType: MarketEventType.HistoricalTrade
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalTrade
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalTrade
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Historical trade data.
+  example: []
+  syntax:
+    content: HistoricalTrade = 10
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalAuction
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalAuction
+  id: HistoricalAuction
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: HistoricalAuction
+  nameWithType: MarketEventType.HistoricalAuction
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.HistoricalAuction
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalAuction
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Historical auction data.
+  example: []
+  syntax:
+    content: HistoricalAuction = 11
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.AggregateBar
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.AggregateBar
+  id: AggregateBar
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: AggregateBar
+  nameWithType: MarketEventType.AggregateBar
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.AggregateBar
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AggregateBar
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Real-time aggregate bar (OHLCV) from streaming providers.
+  example: []
+  syntax:
+    content: AggregateBar = 12
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.Quote
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.Quote
+  id: Quote
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: Quote
+  nameWithType: MarketEventType.Quote
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.Quote
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quote
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Quote update event.
+  example: []
+  syntax:
+    content: Quote = 13
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.Depth
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.Depth
+  id: Depth
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: Depth
+  nameWithType: MarketEventType.Depth
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.Depth
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Depth
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Order book depth update.
+  example: []
+  syntax:
+    content: Depth = 14
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OptionQuote
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OptionQuote
+  id: OptionQuote
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OptionQuote
+  nameWithType: MarketEventType.OptionQuote
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OptionQuote
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionQuote
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Option quote with bid/ask, greeks, and implied volatility.
+  example: []
+  syntax:
+    content: OptionQuote = 15
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OptionTrade
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OptionTrade
+  id: OptionTrade
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OptionTrade
+  nameWithType: MarketEventType.OptionTrade
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OptionTrade
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionTrade
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Option trade execution.
+  example: []
+  syntax:
+    content: OptionTrade = 16
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OptionGreeks
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OptionGreeks
+  id: OptionGreeks
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OptionGreeks
+  nameWithType: MarketEventType.OptionGreeks
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OptionGreeks
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionGreeks
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Option greeks snapshot (delta, gamma, theta, vega, rho, IV).
+  example: []
+  syntax:
+    content: OptionGreeks = 17
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OptionChain
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OptionChain
+  id: OptionChain
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OptionChain
+  nameWithType: MarketEventType.OptionChain
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OptionChain
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionChain
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Option chain snapshot for an underlying and expiration.
+  example: []
+  syntax:
+    content: OptionChain = 18
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OpenInterest
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OpenInterest
+  id: OpenInterest
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OpenInterest
+  nameWithType: MarketEventType.OpenInterest
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OpenInterest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenInterest
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Open interest update for an option contract.
+  example: []
+  syntax:
+    content: OpenInterest = 19
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OrderAdd
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OrderAdd
+  id: OrderAdd
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OrderAdd
+  nameWithType: MarketEventType.OrderAdd
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OrderAdd
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderAdd
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: New order added to the matching engine's order book.
+  example: []
+  syntax:
+    content: OrderAdd = 20
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OrderModify
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OrderModify
+  id: OrderModify
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OrderModify
+  nameWithType: MarketEventType.OrderModify
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OrderModify
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderModify
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Existing order modified (price, size, or flags changed).
+  example: []
+  syntax:
+    content: OrderModify = 21
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OrderCancel
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OrderCancel
+  id: OrderCancel
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OrderCancel
+  nameWithType: MarketEventType.OrderCancel
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OrderCancel
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderCancel
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Existing order cancelled (full or partial removal from the book).
+  example: []
+  syntax:
+    content: OrderCancel = 22
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OrderExecute
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OrderExecute
+  id: OrderExecute
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OrderExecute
+  nameWithType: MarketEventType.OrderExecute
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OrderExecute
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderExecute
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Resting order executed (full or partial fill against an aggressor).
+  example: []
+  syntax:
+    content: OrderExecute = 23
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType.OrderReplace
+  commentId: F:Meridian.Contracts.Domain.Enums.MarketEventType.OrderReplace
+  id: OrderReplace
+  parent: Meridian.Contracts.Domain.Enums.MarketEventType
+  langs:
+  - csharp
+  - vb
+  name: OrderReplace
+  nameWithType: MarketEventType.OrderReplace
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType.OrderReplace
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderReplace
+    path: ../../src/Meridian.Contracts/Domain/Enums/MarketEventType.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Venue-side order replace where the venue reassigns the order identifier.
+  example: []
+  syntax:
+    content: OrderReplace = 24
+    return:
+      type: Meridian.Contracts.Domain.Enums.MarketEventType
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.MarketEventType
+  commentId: T:Meridian.Contracts.Domain.Enums.MarketEventType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.MarketEventType.html
+  name: MarketEventType
+  nameWithType: MarketEventType
+  fullName: Meridian.Contracts.Domain.Enums.MarketEventType

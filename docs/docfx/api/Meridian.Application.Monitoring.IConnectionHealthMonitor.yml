@@ -1,0 +1,521 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  commentId: T:Meridian.Application.Monitoring.IConnectionHealthMonitor
+  id: IConnectionHealthMonitor
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.IConnectionHealthMonitor.OnConnectionLost
+  - Meridian.Application.Monitoring.IConnectionHealthMonitor.OnConnectionRecovered
+  - Meridian.Application.Monitoring.IConnectionHealthMonitor.OnHeartbeatMissed
+  - Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordDataReceived(System.String)
+  - Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordHeartbeat(System.String)
+  - Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordLatency(System.String,System.Double)
+  - Meridian.Application.Monitoring.IConnectionHealthMonitor.RegisterConnection(System.String,System.String)
+  - Meridian.Application.Monitoring.IConnectionHealthMonitor.UnregisterConnection(System.String)
+  langs:
+  - csharp
+  - vb
+  name: IConnectionHealthMonitor
+  nameWithType: IConnectionHealthMonitor
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IConnectionHealthMonitor
+    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Interface for monitoring connection health of market data providers.
+
+    Provides events for connection state changes used by failover logic.
+  example: []
+  syntax:
+    content: public interface IConnectionHealthMonitor
+    content.vb: Public Interface IConnectionHealthMonitor
+  derivedClasses:
+  - Meridian.Application.Monitoring.ConnectionHealthMonitor
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.OnConnectionLost
+  commentId: E:Meridian.Application.Monitoring.IConnectionHealthMonitor.OnConnectionLost
+  id: OnConnectionLost
+  parent: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  langs:
+  - csharp
+  - vb
+  name: OnConnectionLost
+  nameWithType: IConnectionHealthMonitor.OnConnectionLost
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.OnConnectionLost
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnConnectionLost
+    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a connection is lost.
+  example: []
+  syntax:
+    content: event Action<ConnectionLostEvent>? OnConnectionLost
+    return:
+      type: System.Action{Meridian.Application.Monitoring.ConnectionLostEvent}
+    content.vb: Event OnConnectionLost As Action(Of ConnectionLostEvent)
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.OnConnectionRecovered
+  commentId: E:Meridian.Application.Monitoring.IConnectionHealthMonitor.OnConnectionRecovered
+  id: OnConnectionRecovered
+  parent: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  langs:
+  - csharp
+  - vb
+  name: OnConnectionRecovered
+  nameWithType: IConnectionHealthMonitor.OnConnectionRecovered
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.OnConnectionRecovered
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnConnectionRecovered
+    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a connection is recovered.
+  example: []
+  syntax:
+    content: event Action<ConnectionRecoveredEvent>? OnConnectionRecovered
+    return:
+      type: System.Action{Meridian.Application.Monitoring.ConnectionRecoveredEvent}
+    content.vb: Event OnConnectionRecovered As Action(Of ConnectionRecoveredEvent)
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.OnHeartbeatMissed
+  commentId: E:Meridian.Application.Monitoring.IConnectionHealthMonitor.OnHeartbeatMissed
+  id: OnHeartbeatMissed
+  parent: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  langs:
+  - csharp
+  - vb
+  name: OnHeartbeatMissed
+  nameWithType: IConnectionHealthMonitor.OnHeartbeatMissed
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.OnHeartbeatMissed
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnHeartbeatMissed
+    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when heartbeat is missed (potential connection issue).
+  example: []
+  syntax:
+    content: event Action<HeartbeatMissedEvent>? OnHeartbeatMissed
+    return:
+      type: System.Action{Meridian.Application.Monitoring.HeartbeatMissedEvent}
+    content.vb: Event OnHeartbeatMissed As Action(Of HeartbeatMissedEvent)
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.RegisterConnection(System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.IConnectionHealthMonitor.RegisterConnection(System.String,System.String)
+  id: RegisterConnection(System.String,System.String)
+  parent: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  langs:
+  - csharp
+  - vb
+  name: RegisterConnection(string, string)
+  nameWithType: IConnectionHealthMonitor.RegisterConnection(string, string)
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.RegisterConnection(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterConnection
+    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Registers a new connection for monitoring.
+  example: []
+  syntax:
+    content: void RegisterConnection(string connectionId, string providerName)
+    parameters:
+    - id: connectionId
+      type: System.String
+    - id: providerName
+      type: System.String
+    content.vb: Sub RegisterConnection(connectionId As String, providerName As String)
+  overload: Meridian.Application.Monitoring.IConnectionHealthMonitor.RegisterConnection*
+  nameWithType.vb: IConnectionHealthMonitor.RegisterConnection(String, String)
+  fullName.vb: Meridian.Application.Monitoring.IConnectionHealthMonitor.RegisterConnection(String, String)
+  name.vb: RegisterConnection(String, String)
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.UnregisterConnection(System.String)
+  commentId: M:Meridian.Application.Monitoring.IConnectionHealthMonitor.UnregisterConnection(System.String)
+  id: UnregisterConnection(System.String)
+  parent: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  langs:
+  - csharp
+  - vb
+  name: UnregisterConnection(string)
+  nameWithType: IConnectionHealthMonitor.UnregisterConnection(string)
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.UnregisterConnection(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnregisterConnection
+    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Unregisters a connection from monitoring.
+  example: []
+  syntax:
+    content: void UnregisterConnection(string connectionId)
+    parameters:
+    - id: connectionId
+      type: System.String
+    content.vb: Sub UnregisterConnection(connectionId As String)
+  overload: Meridian.Application.Monitoring.IConnectionHealthMonitor.UnregisterConnection*
+  nameWithType.vb: IConnectionHealthMonitor.UnregisterConnection(String)
+  fullName.vb: Meridian.Application.Monitoring.IConnectionHealthMonitor.UnregisterConnection(String)
+  name.vb: UnregisterConnection(String)
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordHeartbeat(System.String)
+  commentId: M:Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordHeartbeat(System.String)
+  id: RecordHeartbeat(System.String)
+  parent: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  langs:
+  - csharp
+  - vb
+  name: RecordHeartbeat(string)
+  nameWithType: IConnectionHealthMonitor.RecordHeartbeat(string)
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordHeartbeat(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordHeartbeat
+    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Records a heartbeat for a connection.
+  example: []
+  syntax:
+    content: void RecordHeartbeat(string connectionId)
+    parameters:
+    - id: connectionId
+      type: System.String
+    content.vb: Sub RecordHeartbeat(connectionId As String)
+  overload: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordHeartbeat*
+  nameWithType.vb: IConnectionHealthMonitor.RecordHeartbeat(String)
+  fullName.vb: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordHeartbeat(String)
+  name.vb: RecordHeartbeat(String)
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordLatency(System.String,System.Double)
+  commentId: M:Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordLatency(System.String,System.Double)
+  id: RecordLatency(System.String,System.Double)
+  parent: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  langs:
+  - csharp
+  - vb
+  name: RecordLatency(string, double)
+  nameWithType: IConnectionHealthMonitor.RecordLatency(string, double)
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordLatency(string, double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordLatency
+    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Records a latency sample for a connection.
+  example: []
+  syntax:
+    content: void RecordLatency(string connectionId, double latencyMs)
+    parameters:
+    - id: connectionId
+      type: System.String
+    - id: latencyMs
+      type: System.Double
+    content.vb: Sub RecordLatency(connectionId As String, latencyMs As Double)
+  overload: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordLatency*
+  nameWithType.vb: IConnectionHealthMonitor.RecordLatency(String, Double)
+  fullName.vb: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordLatency(String, Double)
+  name.vb: RecordLatency(String, Double)
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordDataReceived(System.String)
+  commentId: M:Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordDataReceived(System.String)
+  id: RecordDataReceived(System.String)
+  parent: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  langs:
+  - csharp
+  - vb
+  name: RecordDataReceived(string)
+  nameWithType: IConnectionHealthMonitor.RecordDataReceived(string)
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordDataReceived(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordDataReceived
+    path: ../../src/Meridian.Core/Monitoring/IConnectionHealthMonitor.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring
+  summary: Records that data was received on a connection (resets heartbeat timer).
+  example: []
+  syntax:
+    content: void RecordDataReceived(string connectionId)
+    parameters:
+    - id: connectionId
+      type: System.String
+    content.vb: Sub RecordDataReceived(connectionId As String)
+  overload: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordDataReceived*
+  nameWithType.vb: IConnectionHealthMonitor.RecordDataReceived(String)
+  fullName.vb: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordDataReceived(String)
+  name.vb: RecordDataReceived(String)
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Action{Meridian.Application.Monitoring.ConnectionLostEvent}
+  commentId: T:System.Action{Meridian.Application.Monitoring.ConnectionLostEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ConnectionLostEvent>
+  nameWithType: Action<ConnectionLostEvent>
+  fullName: System.Action<Meridian.Application.Monitoring.ConnectionLostEvent>
+  nameWithType.vb: Action(Of ConnectionLostEvent)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.ConnectionLostEvent)
+  name.vb: Action(Of ConnectionLostEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ConnectionLostEvent
+    name: ConnectionLostEvent
+    href: Meridian.Application.Monitoring.ConnectionLostEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ConnectionLostEvent
+    name: ConnectionLostEvent
+    href: Meridian.Application.Monitoring.ConnectionLostEvent.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Monitoring.ConnectionRecoveredEvent}
+  commentId: T:System.Action{Meridian.Application.Monitoring.ConnectionRecoveredEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<ConnectionRecoveredEvent>
+  nameWithType: Action<ConnectionRecoveredEvent>
+  fullName: System.Action<Meridian.Application.Monitoring.ConnectionRecoveredEvent>
+  nameWithType.vb: Action(Of ConnectionRecoveredEvent)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.ConnectionRecoveredEvent)
+  name.vb: Action(Of ConnectionRecoveredEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ConnectionRecoveredEvent
+    name: ConnectionRecoveredEvent
+    href: Meridian.Application.Monitoring.ConnectionRecoveredEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ConnectionRecoveredEvent
+    name: ConnectionRecoveredEvent
+    href: Meridian.Application.Monitoring.ConnectionRecoveredEvent.html
+  - name: )
+- uid: System.Action{Meridian.Application.Monitoring.HeartbeatMissedEvent}
+  commentId: T:System.Action{Meridian.Application.Monitoring.HeartbeatMissedEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<HeartbeatMissedEvent>
+  nameWithType: Action<HeartbeatMissedEvent>
+  fullName: System.Action<Meridian.Application.Monitoring.HeartbeatMissedEvent>
+  nameWithType.vb: Action(Of HeartbeatMissedEvent)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.HeartbeatMissedEvent)
+  name.vb: Action(Of HeartbeatMissedEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.HeartbeatMissedEvent
+    name: HeartbeatMissedEvent
+    href: Meridian.Application.Monitoring.HeartbeatMissedEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.HeartbeatMissedEvent
+    name: HeartbeatMissedEvent
+    href: Meridian.Application.Monitoring.HeartbeatMissedEvent.html
+  - name: )
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.RegisterConnection*
+  commentId: Overload:Meridian.Application.Monitoring.IConnectionHealthMonitor.RegisterConnection
+  href: Meridian.Application.Monitoring.IConnectionHealthMonitor.html#Meridian_Application_Monitoring_IConnectionHealthMonitor_RegisterConnection_System_String_System_String_
+  name: RegisterConnection
+  nameWithType: IConnectionHealthMonitor.RegisterConnection
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.RegisterConnection
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.UnregisterConnection*
+  commentId: Overload:Meridian.Application.Monitoring.IConnectionHealthMonitor.UnregisterConnection
+  href: Meridian.Application.Monitoring.IConnectionHealthMonitor.html#Meridian_Application_Monitoring_IConnectionHealthMonitor_UnregisterConnection_System_String_
+  name: UnregisterConnection
+  nameWithType: IConnectionHealthMonitor.UnregisterConnection
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.UnregisterConnection
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordHeartbeat*
+  commentId: Overload:Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordHeartbeat
+  href: Meridian.Application.Monitoring.IConnectionHealthMonitor.html#Meridian_Application_Monitoring_IConnectionHealthMonitor_RecordHeartbeat_System_String_
+  name: RecordHeartbeat
+  nameWithType: IConnectionHealthMonitor.RecordHeartbeat
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordHeartbeat
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordLatency*
+  commentId: Overload:Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordLatency
+  href: Meridian.Application.Monitoring.IConnectionHealthMonitor.html#Meridian_Application_Monitoring_IConnectionHealthMonitor_RecordLatency_System_String_System_Double_
+  name: RecordLatency
+  nameWithType: IConnectionHealthMonitor.RecordLatency
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordLatency
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordDataReceived*
+  commentId: Overload:Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordDataReceived
+  href: Meridian.Application.Monitoring.IConnectionHealthMonitor.html#Meridian_Application_Monitoring_IConnectionHealthMonitor_RecordDataReceived_System_String_
+  name: RecordDataReceived
+  nameWithType: IConnectionHealthMonitor.RecordDataReceived
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor.RecordDataReceived

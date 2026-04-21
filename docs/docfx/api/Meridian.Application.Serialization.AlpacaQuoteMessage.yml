@@ -1,0 +1,930 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage
+  commentId: T:Meridian.Application.Serialization.AlpacaQuoteMessage
+  id: AlpacaQuoteMessage
+  parent: Meridian.Application.Serialization
+  children:
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.AskExchange
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.AskPrice
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.AskSize
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.BidExchange
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.BidPrice
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.BidSize
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.Conditions
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.Symbol
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.Tape
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.Timestamp
+  - Meridian.Application.Serialization.AlpacaQuoteMessage.Type
+  langs:
+  - csharp
+  - vb
+  name: AlpacaQuoteMessage
+  nameWithType: AlpacaQuoteMessage
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlpacaQuoteMessage
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Alpaca quote message structure for source-generated parsing.
+  example: []
+  syntax:
+    content: 'public sealed record AlpacaQuoteMessage : IEquatable<AlpacaQuoteMessage>'
+    content.vb: Public NotInheritable Class AlpacaQuoteMessage Implements IEquatable(Of AlpacaQuoteMessage)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Serialization.AlpacaQuoteMessage}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Type
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.Type
+  id: Type
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: AlpacaQuoteMessage.Type
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("T")]
+
+      public string? Type { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("T")>
+
+      Public Property Type As String
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.Type*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: T
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Symbol
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.Symbol
+  id: Symbol
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: AlpacaQuoteMessage.Symbol
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("S")]
+
+      public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("S")>
+
+      Public Property Symbol As String
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.Symbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: S
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.BidPrice
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.BidPrice
+  id: BidPrice
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: BidPrice
+  nameWithType: AlpacaQuoteMessage.BidPrice
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.BidPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidPrice
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 229
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("bp")]
+
+      public decimal BidPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("bp")>
+
+      Public Property BidPrice As Decimal
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.BidPrice*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: bp
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.BidSize
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.BidSize
+  id: BidSize
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: BidSize
+  nameWithType: AlpacaQuoteMessage.BidSize
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.BidSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidSize
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("bs")]
+
+      public long BidSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("bs")>
+
+      Public Property BidSize As Long
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.BidSize*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: bs
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.AskPrice
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.AskPrice
+  id: AskPrice
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: AskPrice
+  nameWithType: AlpacaQuoteMessage.AskPrice
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.AskPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskPrice
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("ap")]
+
+      public decimal AskPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("ap")>
+
+      Public Property AskPrice As Decimal
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.AskPrice*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: ap
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.AskSize
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.AskSize
+  id: AskSize
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: AskSize
+  nameWithType: AlpacaQuoteMessage.AskSize
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.AskSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskSize
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("as")]
+
+      public long AskSize { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("as")>
+
+      Public Property AskSize As Long
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.AskSize*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: as
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Timestamp
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: AlpacaQuoteMessage.Timestamp
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("t")]
+
+      public string? Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("t")>
+
+      Public Property Timestamp As String
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.Timestamp*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: t
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.BidExchange
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.BidExchange
+  id: BidExchange
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: BidExchange
+  nameWithType: AlpacaQuoteMessage.BidExchange
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.BidExchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidExchange
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("bx")]
+
+      public string? BidExchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("bx")>
+
+      Public Property BidExchange As String
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.BidExchange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: bx
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.AskExchange
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.AskExchange
+  id: AskExchange
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: AskExchange
+  nameWithType: AlpacaQuoteMessage.AskExchange
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.AskExchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AskExchange
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("ax")]
+
+      public string? AskExchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("ax")>
+
+      Public Property AskExchange As String
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.AskExchange*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: ax
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Tape
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.Tape
+  id: Tape
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: Tape
+  nameWithType: AlpacaQuoteMessage.Tape
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Tape
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tape
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 250
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("z")]
+
+      public string? Tape { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("z")>
+
+      Public Property Tape As String
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.Tape*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: z
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Conditions
+  commentId: P:Meridian.Application.Serialization.AlpacaQuoteMessage.Conditions
+  id: Conditions
+  parent: Meridian.Application.Serialization.AlpacaQuoteMessage
+  langs:
+  - csharp
+  - vb
+  name: Conditions
+  nameWithType: AlpacaQuoteMessage.Conditions
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Conditions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Conditions
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  syntax:
+    content: >-
+      [JsonPropertyName("c")]
+
+      public string[]? Conditions { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("c")>
+
+      Public Property Conditions As String()
+  overload: Meridian.Application.Serialization.AlpacaQuoteMessage.Conditions*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: c
+references:
+- uid: Meridian.Application.Serialization
+  commentId: N:Meridian.Application.Serialization
+  href: Meridian.html
+  name: Meridian.Application.Serialization
+  nameWithType: Meridian.Application.Serialization
+  fullName: Meridian.Application.Serialization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Serialization
+    name: Serialization
+    href: Meridian.Application.Serialization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Serialization
+    name: Serialization
+    href: Meridian.Application.Serialization.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Serialization.AlpacaQuoteMessage}
+  commentId: T:System.IEquatable{Meridian.Application.Serialization.AlpacaQuoteMessage}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AlpacaQuoteMessage>
+  nameWithType: IEquatable<AlpacaQuoteMessage>
+  fullName: System.IEquatable<Meridian.Application.Serialization.AlpacaQuoteMessage>
+  nameWithType.vb: IEquatable(Of AlpacaQuoteMessage)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Serialization.AlpacaQuoteMessage)
+  name.vb: IEquatable(Of AlpacaQuoteMessage)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Serialization.AlpacaQuoteMessage
+    name: AlpacaQuoteMessage
+    href: Meridian.Application.Serialization.AlpacaQuoteMessage.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Serialization.AlpacaQuoteMessage
+    name: AlpacaQuoteMessage
+    href: Meridian.Application.Serialization.AlpacaQuoteMessage.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Type*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.Type
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_Type
+  name: Type
+  nameWithType: AlpacaQuoteMessage.Type
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Type
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Symbol*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.Symbol
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_Symbol
+  name: Symbol
+  nameWithType: AlpacaQuoteMessage.Symbol
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Symbol
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.BidPrice*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.BidPrice
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_BidPrice
+  name: BidPrice
+  nameWithType: AlpacaQuoteMessage.BidPrice
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.BidPrice
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.BidSize*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.BidSize
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_BidSize
+  name: BidSize
+  nameWithType: AlpacaQuoteMessage.BidSize
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.BidSize
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.AskPrice*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.AskPrice
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_AskPrice
+  name: AskPrice
+  nameWithType: AlpacaQuoteMessage.AskPrice
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.AskPrice
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.AskSize*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.AskSize
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_AskSize
+  name: AskSize
+  nameWithType: AlpacaQuoteMessage.AskSize
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.AskSize
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Timestamp*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.Timestamp
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_Timestamp
+  name: Timestamp
+  nameWithType: AlpacaQuoteMessage.Timestamp
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Timestamp
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.BidExchange*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.BidExchange
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_BidExchange
+  name: BidExchange
+  nameWithType: AlpacaQuoteMessage.BidExchange
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.BidExchange
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.AskExchange*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.AskExchange
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_AskExchange
+  name: AskExchange
+  nameWithType: AlpacaQuoteMessage.AskExchange
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.AskExchange
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Tape*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.Tape
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_Tape
+  name: Tape
+  nameWithType: AlpacaQuoteMessage.Tape
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Tape
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage.Conditions*
+  commentId: Overload:Meridian.Application.Serialization.AlpacaQuoteMessage.Conditions
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html#Meridian_Application_Serialization_AlpacaQuoteMessage_Conditions
+  name: Conditions
+  nameWithType: AlpacaQuoteMessage.Conditions
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage.Conditions
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )

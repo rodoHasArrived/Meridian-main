@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.ProviderTypeKind
+  commentId: T:Meridian.Contracts.Api.ProviderTypeKind
+  id: ProviderTypeKind
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.ProviderTypeKind.Backfill
+  - Meridian.Contracts.Api.ProviderTypeKind.Hybrid
+  - Meridian.Contracts.Api.ProviderTypeKind.Streaming
+  - Meridian.Contracts.Api.ProviderTypeKind.SymbolSearch
+  langs:
+  - csharp
+  - vb
+  name: ProviderTypeKind
+  nameWithType: ProviderTypeKind
+  fullName: Meridian.Contracts.Api.ProviderTypeKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderTypeKind
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 600
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Provider type classification for UI routing.
+  example: []
+  syntax:
+    content: 'public enum ProviderTypeKind : byte'
+    content.vb: Public Enum ProviderTypeKind As Byte
+- uid: Meridian.Contracts.Api.ProviderTypeKind.Streaming
+  commentId: F:Meridian.Contracts.Api.ProviderTypeKind.Streaming
+  id: Streaming
+  parent: Meridian.Contracts.Api.ProviderTypeKind
+  langs:
+  - csharp
+  - vb
+  name: Streaming
+  nameWithType: ProviderTypeKind.Streaming
+  fullName: Meridian.Contracts.Api.ProviderTypeKind.Streaming
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Streaming
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 603
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Real-time streaming data provider.
+  example: []
+  syntax:
+    content: Streaming = 0
+    return:
+      type: Meridian.Contracts.Api.ProviderTypeKind
+- uid: Meridian.Contracts.Api.ProviderTypeKind.Backfill
+  commentId: F:Meridian.Contracts.Api.ProviderTypeKind.Backfill
+  id: Backfill
+  parent: Meridian.Contracts.Api.ProviderTypeKind
+  langs:
+  - csharp
+  - vb
+  name: Backfill
+  nameWithType: ProviderTypeKind.Backfill
+  fullName: Meridian.Contracts.Api.ProviderTypeKind.Backfill
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backfill
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 606
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Historical backfill data provider.
+  example: []
+  syntax:
+    content: Backfill = 1
+    return:
+      type: Meridian.Contracts.Api.ProviderTypeKind
+- uid: Meridian.Contracts.Api.ProviderTypeKind.SymbolSearch
+  commentId: F:Meridian.Contracts.Api.ProviderTypeKind.SymbolSearch
+  id: SymbolSearch
+  parent: Meridian.Contracts.Api.ProviderTypeKind
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearch
+  nameWithType: ProviderTypeKind.SymbolSearch
+  fullName: Meridian.Contracts.Api.ProviderTypeKind.SymbolSearch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearch
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 609
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Symbol search/lookup provider.
+  example: []
+  syntax:
+    content: SymbolSearch = 2
+    return:
+      type: Meridian.Contracts.Api.ProviderTypeKind
+- uid: Meridian.Contracts.Api.ProviderTypeKind.Hybrid
+  commentId: F:Meridian.Contracts.Api.ProviderTypeKind.Hybrid
+  id: Hybrid
+  parent: Meridian.Contracts.Api.ProviderTypeKind
+  langs:
+  - csharp
+  - vb
+  name: Hybrid
+  nameWithType: ProviderTypeKind.Hybrid
+  fullName: Meridian.Contracts.Api.ProviderTypeKind.Hybrid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hybrid
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 612
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Supports both streaming and backfill.
+  example: []
+  syntax:
+    content: Hybrid = 3
+    return:
+      type: Meridian.Contracts.Api.ProviderTypeKind
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: Meridian.Contracts.Api.ProviderTypeKind
+  commentId: T:Meridian.Contracts.Api.ProviderTypeKind
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.ProviderTypeKind.html
+  name: ProviderTypeKind
+  nameWithType: ProviderTypeKind
+  fullName: Meridian.Contracts.Api.ProviderTypeKind

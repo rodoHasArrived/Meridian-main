@@ -1,0 +1,68 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.MultiCurrency
+  commentId: N:Meridian.Execution.MultiCurrency
+  id: Meridian.Execution.MultiCurrency
+  children:
+  - Meridian.Execution.MultiCurrency.FxRate
+  - Meridian.Execution.MultiCurrency.IFxRateProvider
+  - Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Execution.MultiCurrency
+  nameWithType: Meridian.Execution.MultiCurrency
+  fullName: Meridian.Execution.MultiCurrency
+  type: Namespace
+  assemblies:
+  - Meridian.Execution
+references:
+- uid: Meridian.Execution.MultiCurrency.FxRate
+  commentId: T:Meridian.Execution.MultiCurrency.FxRate
+  parent: Meridian.Execution.MultiCurrency
+  href: Meridian.Execution.MultiCurrency.FxRate.html
+  name: FxRate
+  nameWithType: FxRate
+  fullName: Meridian.Execution.MultiCurrency.FxRate
+- uid: Meridian.Execution.MultiCurrency.IFxRateProvider
+  commentId: T:Meridian.Execution.MultiCurrency.IFxRateProvider
+  href: Meridian.Execution.MultiCurrency.IFxRateProvider.html
+  name: IFxRateProvider
+  nameWithType: IFxRateProvider
+  fullName: Meridian.Execution.MultiCurrency.IFxRateProvider
+- uid: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  commentId: T:Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+  href: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance.html
+  name: MultiCurrencyCashBalance
+  nameWithType: MultiCurrencyCashBalance
+  fullName: Meridian.Execution.MultiCurrency.MultiCurrencyCashBalance
+- uid: Meridian.Execution.MultiCurrency
+  commentId: N:Meridian.Execution.MultiCurrency
+  href: Meridian.html
+  name: Meridian.Execution.MultiCurrency
+  nameWithType: Meridian.Execution.MultiCurrency
+  fullName: Meridian.Execution.MultiCurrency
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.MultiCurrency
+    name: MultiCurrency
+    href: Meridian.Execution.MultiCurrency.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.MultiCurrency
+    name: MultiCurrency
+    href: Meridian.Execution.MultiCurrency.html

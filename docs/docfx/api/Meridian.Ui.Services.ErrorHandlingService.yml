@@ -1,0 +1,1339 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ErrorHandlingService
+  commentId: T:Meridian.Ui.Services.ErrorHandlingService
+  id: ErrorHandlingService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ErrorHandlingService.ClearErrors
+  - Meridian.Ui.Services.ErrorHandlingService.Dispose
+  - Meridian.Ui.Services.ErrorHandlingService.ErrorHandled
+  - Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}},System.String,``0,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ErrorHandlingService.GetRemediationSteps(System.String)
+  - Meridian.Ui.Services.ErrorHandlingService.HandleErrorAsync(System.String,System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ErrorHandlingService.HandleExceptionAsync(System.Exception,System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ErrorHandlingService.HandleExceptionWithRemediationAsync(System.Exception,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ErrorHandlingService.Instance
+  - Meridian.Ui.Services.ErrorHandlingService.RecentErrors
+  langs:
+  - csharp
+  - vb
+  name: ErrorHandlingService
+  nameWithType: ErrorHandlingService
+  fullName: Meridian.Ui.Services.ErrorHandlingService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorHandlingService
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Centralized error handling service that provides consistent error processing,
+
+    logging, and user notification across the application.
+  example: []
+  syntax:
+    content: 'public sealed class ErrorHandlingService : IDisposable'
+    content.vb: Public NotInheritable Class ErrorHandlingService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ErrorHandlingService.Instance
+  commentId: P:Meridian.Ui.Services.ErrorHandlingService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: ErrorHandlingService.Instance
+  fullName: Meridian.Ui.Services.ErrorHandlingService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static ErrorHandlingService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ErrorHandlingService
+    content.vb: Public Shared ReadOnly Property Instance As ErrorHandlingService
+  overload: Meridian.Ui.Services.ErrorHandlingService.Instance*
+- uid: Meridian.Ui.Services.ErrorHandlingService.RecentErrors
+  commentId: P:Meridian.Ui.Services.ErrorHandlingService.RecentErrors
+  id: RecentErrors
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: RecentErrors
+  nameWithType: ErrorHandlingService.RecentErrors
+  fullName: Meridian.Ui.Services.ErrorHandlingService.RecentErrors
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentErrors
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets the recent errors collection.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ErrorRecord> RecentErrors { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.ErrorRecord}
+    content.vb: Public ReadOnly Property RecentErrors As IReadOnlyList(Of ErrorRecord)
+  overload: Meridian.Ui.Services.ErrorHandlingService.RecentErrors*
+- uid: Meridian.Ui.Services.ErrorHandlingService.ErrorHandled
+  commentId: E:Meridian.Ui.Services.ErrorHandlingService.ErrorHandled
+  id: ErrorHandled
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: ErrorHandled
+  nameWithType: ErrorHandlingService.ErrorHandled
+  fullName: Meridian.Ui.Services.ErrorHandlingService.ErrorHandled
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorHandled
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when an error is handled.
+  example: []
+  syntax:
+    content: public event EventHandler<ErrorHandledEventArgs>? ErrorHandled
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.ErrorHandledEventArgs}
+    content.vb: Public Event ErrorHandled As EventHandler(Of ErrorHandledEventArgs)
+- uid: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionAsync(System.Exception,System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ErrorHandlingService.HandleExceptionAsync(System.Exception,System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  id: HandleExceptionAsync(System.Exception,System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: HandleExceptionAsync(Exception, string, ErrorHandlingOptions?, CancellationToken)
+  nameWithType: ErrorHandlingService.HandleExceptionAsync(Exception, string, ErrorHandlingOptions?, CancellationToken)
+  fullName: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionAsync(System.Exception, string, Meridian.Ui.Services.ErrorHandlingOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HandleExceptionAsync
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Handles an exception with the specified context and options.
+  example: []
+  syntax:
+    content: public Task HandleExceptionAsync(Exception exception, string context, ErrorHandlingOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: exception
+      type: System.Exception
+      description: The exception to handle.
+    - id: context
+      type: System.String
+      description: Context describing where the error occurred.
+    - id: options
+      type: Meridian.Ui.Services.ErrorHandlingOptions
+      description: Options for how to handle the error.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function HandleExceptionAsync(exception As Exception, context As String, options As ErrorHandlingOptions = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionAsync*
+  nameWithType.vb: ErrorHandlingService.HandleExceptionAsync(Exception, String, ErrorHandlingOptions, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionAsync(System.Exception, String, Meridian.Ui.Services.ErrorHandlingOptions, System.Threading.CancellationToken)
+  name.vb: HandleExceptionAsync(Exception, String, ErrorHandlingOptions, CancellationToken)
+- uid: Meridian.Ui.Services.ErrorHandlingService.HandleErrorAsync(System.String,System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ErrorHandlingService.HandleErrorAsync(System.String,System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  id: HandleErrorAsync(System.String,System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: HandleErrorAsync(string, string, ErrorHandlingOptions?, CancellationToken)
+  nameWithType: ErrorHandlingService.HandleErrorAsync(string, string, ErrorHandlingOptions?, CancellationToken)
+  fullName: Meridian.Ui.Services.ErrorHandlingService.HandleErrorAsync(string, string, Meridian.Ui.Services.ErrorHandlingOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HandleErrorAsync
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Handles an error message with the specified context and options.
+  example: []
+  syntax:
+    content: public Task HandleErrorAsync(string errorMessage, string context, ErrorHandlingOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: errorMessage
+      type: System.String
+    - id: context
+      type: System.String
+    - id: options
+      type: Meridian.Ui.Services.ErrorHandlingOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function HandleErrorAsync(errorMessage As String, context As String, options As ErrorHandlingOptions = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.ErrorHandlingService.HandleErrorAsync*
+  nameWithType.vb: ErrorHandlingService.HandleErrorAsync(String, String, ErrorHandlingOptions, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ErrorHandlingService.HandleErrorAsync(String, String, Meridian.Ui.Services.ErrorHandlingOptions, System.Threading.CancellationToken)
+  name.vb: HandleErrorAsync(String, String, ErrorHandlingOptions, CancellationToken)
+- uid: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}},System.String,``0,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}},System.String,``0,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  id: ExecuteWithErrorHandlingAsync``1(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}},System.String,``0,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: ExecuteWithErrorHandlingAsync<T>(Func<CancellationToken, Task<T>>, string, T?, ErrorHandlingOptions?, CancellationToken)
+  nameWithType: ErrorHandlingService.ExecuteWithErrorHandlingAsync<T>(Func<CancellationToken, Task<T>>, string, T?, ErrorHandlingOptions?, CancellationToken)
+  fullName: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync<T>(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<T>>, string, T?, Meridian.Ui.Services.ErrorHandlingOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteWithErrorHandlingAsync
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Executes an action with automatic error handling.
+  example: []
+  syntax:
+    content: public Task<T?> ExecuteWithErrorHandlingAsync<T>(Func<CancellationToken, Task<T>> action, string context, T? defaultValue = default, ErrorHandlingOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: action
+      type: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{{T}}}
+      description: The action to execute.
+    - id: context
+      type: System.String
+      description: Context describing the action.
+    - id: defaultValue
+      type: '{T}'
+      description: Default value to return on error.
+    - id: options
+      type: Meridian.Ui.Services.ErrorHandlingOptions
+      description: Error handling options.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    typeParameters:
+    - id: T
+      description: The return type of the action.
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+      description: The action result or default value on error.
+    content.vb: Public Function ExecuteWithErrorHandlingAsync(Of T)(action As Func(Of CancellationToken, Task(Of T)), context As String, defaultValue As T = Nothing, options As ErrorHandlingOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync*
+  nameWithType.vb: ErrorHandlingService.ExecuteWithErrorHandlingAsync(Of T)(Func(Of CancellationToken, Task(Of T)), String, T, ErrorHandlingOptions, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync(Of T)(System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task(Of T)), String, T, Meridian.Ui.Services.ErrorHandlingOptions, System.Threading.CancellationToken)
+  name.vb: ExecuteWithErrorHandlingAsync(Of T)(Func(Of CancellationToken, Task(Of T)), String, T, ErrorHandlingOptions, CancellationToken)
+- uid: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  id: ExecuteWithErrorHandlingAsync(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task},System.String,Meridian.Ui.Services.ErrorHandlingOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: ExecuteWithErrorHandlingAsync(Func<CancellationToken, Task>, string, ErrorHandlingOptions?, CancellationToken)
+  nameWithType: ErrorHandlingService.ExecuteWithErrorHandlingAsync(Func<CancellationToken, Task>, string, ErrorHandlingOptions?, CancellationToken)
+  fullName: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task>, string, Meridian.Ui.Services.ErrorHandlingOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteWithErrorHandlingAsync
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Executes an action with automatic error handling.
+  example: []
+  syntax:
+    content: public Task ExecuteWithErrorHandlingAsync(Func<CancellationToken, Task> action, string context, ErrorHandlingOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: action
+      type: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+    - id: context
+      type: System.String
+    - id: options
+      type: Meridian.Ui.Services.ErrorHandlingOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ExecuteWithErrorHandlingAsync(action As Func(Of CancellationToken, Task), context As String, options As ErrorHandlingOptions = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync*
+  nameWithType.vb: ErrorHandlingService.ExecuteWithErrorHandlingAsync(Func(Of CancellationToken, Task), String, ErrorHandlingOptions, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync(System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task), String, Meridian.Ui.Services.ErrorHandlingOptions, System.Threading.CancellationToken)
+  name.vb: ExecuteWithErrorHandlingAsync(Func(Of CancellationToken, Task), String, ErrorHandlingOptions, CancellationToken)
+- uid: Meridian.Ui.Services.ErrorHandlingService.ClearErrors
+  commentId: M:Meridian.Ui.Services.ErrorHandlingService.ClearErrors
+  id: ClearErrors
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: ClearErrors()
+  nameWithType: ErrorHandlingService.ClearErrors()
+  fullName: Meridian.Ui.Services.ErrorHandlingService.ClearErrors()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearErrors
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Clears all recent errors.
+  example: []
+  syntax:
+    content: public void ClearErrors()
+    content.vb: Public Sub ClearErrors()
+  overload: Meridian.Ui.Services.ErrorHandlingService.ClearErrors*
+- uid: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionWithRemediationAsync(System.Exception,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ErrorHandlingService.HandleExceptionWithRemediationAsync(System.Exception,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Threading.CancellationToken)
+  id: HandleExceptionWithRemediationAsync(System.Exception,System.String,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: HandleExceptionWithRemediationAsync(Exception, string, string?, IReadOnlyList<string>?, CancellationToken)
+  nameWithType: ErrorHandlingService.HandleExceptionWithRemediationAsync(Exception, string, string?, IReadOnlyList<string>?, CancellationToken)
+  fullName: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionWithRemediationAsync(System.Exception, string, string?, System.Collections.Generic.IReadOnlyList<string>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HandleExceptionWithRemediationAsync
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Handles an exception with guided remediation by raising an alert with
+
+    playbook-based steps when applicable.
+  example: []
+  syntax:
+    content: public Task HandleExceptionWithRemediationAsync(Exception exception, string context, string? alertCategory = null, IReadOnlyList<string>? affectedResources = null, CancellationToken ct = default)
+    parameters:
+    - id: exception
+      type: System.Exception
+    - id: context
+      type: System.String
+    - id: alertCategory
+      type: System.String
+    - id: affectedResources
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function HandleExceptionWithRemediationAsync(exception As Exception, context As String, alertCategory As String = Nothing, affectedResources As IReadOnlyList(Of String) = Nothing, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionWithRemediationAsync*
+  nameWithType.vb: ErrorHandlingService.HandleExceptionWithRemediationAsync(Exception, String, String, IReadOnlyList(Of String), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionWithRemediationAsync(System.Exception, String, String, System.Collections.Generic.IReadOnlyList(Of String), System.Threading.CancellationToken)
+  name.vb: HandleExceptionWithRemediationAsync(Exception, String, String, IReadOnlyList(Of String), CancellationToken)
+- uid: Meridian.Ui.Services.ErrorHandlingService.GetRemediationSteps(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorHandlingService.GetRemediationSteps(System.String)
+  id: GetRemediationSteps(System.String)
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: GetRemediationSteps(string)
+  nameWithType: ErrorHandlingService.GetRemediationSteps(string)
+  fullName: Meridian.Ui.Services.ErrorHandlingService.GetRemediationSteps(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRemediationSteps
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 268
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets remediation steps for a given error category from registered playbooks.
+  example: []
+  syntax:
+    content: public IReadOnlyList<RemediationStep> GetRemediationSteps(string errorCategory)
+    parameters:
+    - id: errorCategory
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.RemediationStep}
+    content.vb: Public Function GetRemediationSteps(errorCategory As String) As IReadOnlyList(Of RemediationStep)
+  overload: Meridian.Ui.Services.ErrorHandlingService.GetRemediationSteps*
+  nameWithType.vb: ErrorHandlingService.GetRemediationSteps(String)
+  fullName.vb: Meridian.Ui.Services.ErrorHandlingService.GetRemediationSteps(String)
+  name.vb: GetRemediationSteps(String)
+- uid: Meridian.Ui.Services.ErrorHandlingService.Dispose
+  commentId: M:Meridian.Ui.Services.ErrorHandlingService.Dispose
+  id: Dispose
+  parent: Meridian.Ui.Services.ErrorHandlingService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ErrorHandlingService.Dispose()
+  fullName: Meridian.Ui.Services.ErrorHandlingService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Ui.Services/Services/ErrorHandlingService.cs
+    startLine: 315
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Ui.Services.ErrorHandlingService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ErrorHandlingService.Instance*
+  commentId: Overload:Meridian.Ui.Services.ErrorHandlingService.Instance
+  href: Meridian.Ui.Services.ErrorHandlingService.html#Meridian_Ui_Services_ErrorHandlingService_Instance
+  name: Instance
+  nameWithType: ErrorHandlingService.Instance
+  fullName: Meridian.Ui.Services.ErrorHandlingService.Instance
+- uid: Meridian.Ui.Services.ErrorHandlingService
+  commentId: T:Meridian.Ui.Services.ErrorHandlingService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ErrorHandlingService.html
+  name: ErrorHandlingService
+  nameWithType: ErrorHandlingService
+  fullName: Meridian.Ui.Services.ErrorHandlingService
+- uid: Meridian.Ui.Services.ErrorHandlingService.RecentErrors*
+  commentId: Overload:Meridian.Ui.Services.ErrorHandlingService.RecentErrors
+  href: Meridian.Ui.Services.ErrorHandlingService.html#Meridian_Ui_Services_ErrorHandlingService_RecentErrors
+  name: RecentErrors
+  nameWithType: ErrorHandlingService.RecentErrors
+  fullName: Meridian.Ui.Services.ErrorHandlingService.RecentErrors
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.ErrorRecord}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.ErrorRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ErrorRecord>
+  nameWithType: IReadOnlyList<ErrorRecord>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.ErrorRecord>
+  nameWithType.vb: IReadOnlyList(Of ErrorRecord)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.ErrorRecord)
+  name.vb: IReadOnlyList(Of ErrorRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.ErrorRecord
+    name: ErrorRecord
+    href: Meridian.Ui.Services.ErrorRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ErrorRecord
+    name: ErrorRecord
+    href: Meridian.Ui.Services.ErrorRecord.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.EventHandler{Meridian.Ui.Services.ErrorHandledEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.ErrorHandledEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<ErrorHandledEventArgs>
+  nameWithType: EventHandler<ErrorHandledEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.ErrorHandledEventArgs>
+  nameWithType.vb: EventHandler(Of ErrorHandledEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.ErrorHandledEventArgs)
+  name.vb: EventHandler(Of ErrorHandledEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.ErrorHandledEventArgs
+    name: ErrorHandledEventArgs
+    href: Meridian.Ui.Services.ErrorHandledEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ErrorHandledEventArgs
+    name: ErrorHandledEventArgs
+    href: Meridian.Ui.Services.ErrorHandledEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionAsync*
+  commentId: Overload:Meridian.Ui.Services.ErrorHandlingService.HandleExceptionAsync
+  href: Meridian.Ui.Services.ErrorHandlingService.html#Meridian_Ui_Services_ErrorHandlingService_HandleExceptionAsync_System_Exception_System_String_Meridian_Ui_Services_ErrorHandlingOptions_System_Threading_CancellationToken_
+  name: HandleExceptionAsync
+  nameWithType: ErrorHandlingService.HandleExceptionAsync
+  fullName: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionAsync
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ErrorHandlingOptions
+  commentId: T:Meridian.Ui.Services.ErrorHandlingOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ErrorHandlingOptions.html
+  name: ErrorHandlingOptions
+  nameWithType: ErrorHandlingOptions
+  fullName: Meridian.Ui.Services.ErrorHandlingOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.ErrorHandlingService.HandleErrorAsync*
+  commentId: Overload:Meridian.Ui.Services.ErrorHandlingService.HandleErrorAsync
+  href: Meridian.Ui.Services.ErrorHandlingService.html#Meridian_Ui_Services_ErrorHandlingService_HandleErrorAsync_System_String_System_String_Meridian_Ui_Services_ErrorHandlingOptions_System_Threading_CancellationToken_
+  name: HandleErrorAsync
+  nameWithType: ErrorHandlingService.HandleErrorAsync
+  fullName: Meridian.Ui.Services.ErrorHandlingService.HandleErrorAsync
+- uid: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync*
+  commentId: Overload:Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync
+  href: Meridian.Ui.Services.ErrorHandlingService.html#Meridian_Ui_Services_ErrorHandlingService_ExecuteWithErrorHandlingAsync__1_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task___0___System_String___0_Meridian_Ui_Services_ErrorHandlingOptions_System_Threading_CancellationToken_
+  name: ExecuteWithErrorHandlingAsync
+  nameWithType: ErrorHandlingService.ExecuteWithErrorHandlingAsync
+  fullName: Meridian.Ui.Services.ErrorHandlingService.ExecuteWithErrorHandlingAsync
+- uid: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{{T}}}
+  commentId: T:System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{``0}}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<CancellationToken, Task<T>>
+  nameWithType: Func<CancellationToken, Task<T>>
+  fullName: System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<T>>
+  nameWithType.vb: Func(Of CancellationToken, Task(Of T))
+  fullName.vb: System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task(Of T))
+  name.vb: Func(Of CancellationToken, Task(Of T))
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: T
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: )
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Threading.Tasks.Task{{T}}
+  commentId: T:System.Threading.Tasks.Task{``0}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<T>
+  nameWithType: Task<T>
+  fullName: System.Threading.Tasks.Task<T>
+  nameWithType.vb: Task(Of T)
+  fullName.vb: System.Threading.Tasks.Task(Of T)
+  name.vb: Task(Of T)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+  commentId: T:System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<CancellationToken, Task>
+  nameWithType: Func<CancellationToken, Task>
+  fullName: System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task>
+  nameWithType.vb: Func(Of CancellationToken, Task)
+  fullName.vb: System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task)
+  name.vb: Func(Of CancellationToken, Task)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+- uid: Meridian.Ui.Services.ErrorHandlingService.ClearErrors*
+  commentId: Overload:Meridian.Ui.Services.ErrorHandlingService.ClearErrors
+  href: Meridian.Ui.Services.ErrorHandlingService.html#Meridian_Ui_Services_ErrorHandlingService_ClearErrors
+  name: ClearErrors
+  nameWithType: ErrorHandlingService.ClearErrors
+  fullName: Meridian.Ui.Services.ErrorHandlingService.ClearErrors
+- uid: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionWithRemediationAsync*
+  commentId: Overload:Meridian.Ui.Services.ErrorHandlingService.HandleExceptionWithRemediationAsync
+  href: Meridian.Ui.Services.ErrorHandlingService.html#Meridian_Ui_Services_ErrorHandlingService_HandleExceptionWithRemediationAsync_System_Exception_System_String_System_String_System_Collections_Generic_IReadOnlyList_System_String__System_Threading_CancellationToken_
+  name: HandleExceptionWithRemediationAsync
+  nameWithType: ErrorHandlingService.HandleExceptionWithRemediationAsync
+  fullName: Meridian.Ui.Services.ErrorHandlingService.HandleExceptionWithRemediationAsync
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Ui.Services.ErrorHandlingService.GetRemediationSteps*
+  commentId: Overload:Meridian.Ui.Services.ErrorHandlingService.GetRemediationSteps
+  href: Meridian.Ui.Services.ErrorHandlingService.html#Meridian_Ui_Services_ErrorHandlingService_GetRemediationSteps_System_String_
+  name: GetRemediationSteps
+  nameWithType: ErrorHandlingService.GetRemediationSteps
+  fullName: Meridian.Ui.Services.ErrorHandlingService.GetRemediationSteps
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.RemediationStep}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.RemediationStep}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<RemediationStep>
+  nameWithType: IReadOnlyList<RemediationStep>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.RemediationStep>
+  nameWithType.vb: IReadOnlyList(Of RemediationStep)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.RemediationStep)
+  name.vb: IReadOnlyList(Of RemediationStep)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.RemediationStep
+    name: RemediationStep
+    href: Meridian.Ui.Services.RemediationStep.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.RemediationStep
+    name: RemediationStep
+    href: Meridian.Ui.Services.RemediationStep.html
+  - name: )
+- uid: Meridian.Ui.Services.ErrorHandlingService.Dispose*
+  commentId: Overload:Meridian.Ui.Services.ErrorHandlingService.Dispose
+  href: Meridian.Ui.Services.ErrorHandlingService.html#Meridian_Ui_Services_ErrorHandlingService_Dispose
+  name: Dispose
+  nameWithType: ErrorHandlingService.Dispose
+  fullName: Meridian.Ui.Services.ErrorHandlingService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

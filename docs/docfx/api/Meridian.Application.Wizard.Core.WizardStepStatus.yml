@@ -1,0 +1,192 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Wizard.Core.WizardStepStatus
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepStatus
+  id: WizardStepStatus
+  parent: Meridian.Application.Wizard.Core
+  children:
+  - Meridian.Application.Wizard.Core.WizardStepStatus.Cancelled
+  - Meridian.Application.Wizard.Core.WizardStepStatus.Failure
+  - Meridian.Application.Wizard.Core.WizardStepStatus.Skip
+  - Meridian.Application.Wizard.Core.WizardStepStatus.Success
+  langs:
+  - csharp
+  - vb
+  name: WizardStepStatus
+  nameWithType: WizardStepStatus
+  fullName: Meridian.Application.Wizard.Core.WizardStepStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WizardStepStatus
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Outcome of a single wizard step execution.
+  example: []
+  syntax:
+    content: 'public enum WizardStepStatus : byte'
+    content.vb: Public Enum WizardStepStatus As Byte
+- uid: Meridian.Application.Wizard.Core.WizardStepStatus.Success
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepStatus.Success
+  id: Success
+  parent: Meridian.Application.Wizard.Core.WizardStepStatus
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: WizardStepStatus.Success
+  fullName: Meridian.Application.Wizard.Core.WizardStepStatus.Success
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Step completed normally; continue to next step.
+  example: []
+  syntax:
+    content: Success = 0
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepStatus
+- uid: Meridian.Application.Wizard.Core.WizardStepStatus.Failure
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepStatus.Failure
+  id: Failure
+  parent: Meridian.Application.Wizard.Core.WizardStepStatus
+  langs:
+  - csharp
+  - vb
+  name: Failure
+  nameWithType: WizardStepStatus.Failure
+  fullName: Meridian.Application.Wizard.Core.WizardStepStatus.Failure
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failure
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Step failed; the wizard should surface an error.
+  example: []
+  syntax:
+    content: Failure = 1
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepStatus
+- uid: Meridian.Application.Wizard.Core.WizardStepStatus.Skip
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepStatus.Skip
+  id: Skip
+  parent: Meridian.Application.Wizard.Core.WizardStepStatus
+  langs:
+  - csharp
+  - vb
+  name: Skip
+  nameWithType: WizardStepStatus.Skip
+  fullName: Meridian.Application.Wizard.Core.WizardStepStatus.Skip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Skip
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Step was skipped (condition not met); continue to next step.
+  example: []
+  syntax:
+    content: Skip = 2
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepStatus
+- uid: Meridian.Application.Wizard.Core.WizardStepStatus.Cancelled
+  commentId: F:Meridian.Application.Wizard.Core.WizardStepStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Application.Wizard.Core.WizardStepStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: WizardStepStatus.Cancelled
+  fullName: Meridian.Application.Wizard.Core.WizardStepStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: User or code cancelled; stop the wizard immediately.
+  example: []
+  syntax:
+    content: Cancelled = 3
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepStatus
+references:
+- uid: Meridian.Application.Wizard.Core
+  commentId: N:Meridian.Application.Wizard.Core
+  href: Meridian.html
+  name: Meridian.Application.Wizard.Core
+  nameWithType: Meridian.Application.Wizard.Core
+  fullName: Meridian.Application.Wizard.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+- uid: Meridian.Application.Wizard.Core.WizardStepStatus
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepStatus
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardStepStatus.html
+  name: WizardStepStatus
+  nameWithType: WizardStepStatus
+  fullName: Meridian.Application.Wizard.Core.WizardStepStatus

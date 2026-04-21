@@ -1,0 +1,212 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Services.IConnectivityProbeService
+  commentId: T:Meridian.Contracts.Services.IConnectivityProbeService
+  id: IConnectivityProbeService
+  parent: Meridian.Contracts.Services
+  children:
+  - Meridian.Contracts.Services.IConnectivityProbeService.ConnectivityChanged
+  - Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+  langs:
+  - csharp
+  - vb
+  name: IConnectivityProbeService
+  nameWithType: IConnectivityProbeService
+  fullName: Meridian.Contracts.Services.IConnectivityProbeService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/Services/IConnectivityProbeService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IConnectivityProbeService
+    path: ../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Services
+  summary: Contract for probing internet connectivity and broadcasting state changes.
+  example: []
+  syntax:
+    content: public interface IConnectivityProbeService
+    content.vb: Public Interface IConnectivityProbeService
+  derivedClasses:
+  - Meridian.Application.Services.ConnectivityProbeService
+- uid: Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+  commentId: P:Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+  id: IsOnline
+  parent: Meridian.Contracts.Services.IConnectivityProbeService
+  langs:
+  - csharp
+  - vb
+  name: IsOnline
+  nameWithType: IConnectivityProbeService.IsOnline
+  fullName: Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Services/IConnectivityProbeService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsOnline
+    path: ../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Services
+  summary: Gets whether the system is currently online.
+  example: []
+  syntax:
+    content: bool IsOnline { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsOnline As Boolean
+  overload: Meridian.Contracts.Services.IConnectivityProbeService.IsOnline*
+- uid: Meridian.Contracts.Services.IConnectivityProbeService.ConnectivityChanged
+  commentId: E:Meridian.Contracts.Services.IConnectivityProbeService.ConnectivityChanged
+  id: ConnectivityChanged
+  parent: Meridian.Contracts.Services.IConnectivityProbeService
+  langs:
+  - csharp
+  - vb
+  name: ConnectivityChanged
+  nameWithType: IConnectivityProbeService.ConnectivityChanged
+  fullName: Meridian.Contracts.Services.IConnectivityProbeService.ConnectivityChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Contracts/Services/IConnectivityProbeService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectivityChanged
+    path: ../../src/Meridian.Contracts/Services/IConnectivityProbeService.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Services
+  summary: Raised when connectivity state changes (true = online, false = offline).
+  example: []
+  syntax:
+    content: event EventHandler<bool>? ConnectivityChanged
+    return:
+      type: System.EventHandler{System.Boolean}
+    content.vb: Event ConnectivityChanged As EventHandler(Of Boolean)
+references:
+- uid: Meridian.Contracts.Services
+  commentId: N:Meridian.Contracts.Services
+  href: Meridian.html
+  name: Meridian.Contracts.Services
+  nameWithType: Meridian.Contracts.Services
+  fullName: Meridian.Contracts.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Services
+    name: Services
+    href: Meridian.Contracts.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Services
+    name: Services
+    href: Meridian.Contracts.Services.html
+- uid: Meridian.Contracts.Services.IConnectivityProbeService.IsOnline*
+  commentId: Overload:Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+  href: Meridian.Contracts.Services.IConnectivityProbeService.html#Meridian_Contracts_Services_IConnectivityProbeService_IsOnline
+  name: IsOnline
+  nameWithType: IConnectivityProbeService.IsOnline
+  fullName: Meridian.Contracts.Services.IConnectivityProbeService.IsOnline
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.EventHandler{System.Boolean}
+  commentId: T:System.EventHandler{System.Boolean}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<bool>
+  nameWithType: EventHandler<bool>
+  fullName: System.EventHandler<bool>
+  nameWithType.vb: EventHandler(Of Boolean)
+  fullName.vb: System.EventHandler(Of Boolean)
+  name.vb: EventHandler(Of Boolean)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )

@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meridian.local/skills/meridian-simulated-user-panel/review-manifest.schema.json",
+  "title": "Meridian Simulated User Panel Review Manifest",
+  "type": "object",
+  "required": [
+    "mode",
+    "artifact_type",
+    "artifact_paths",
+    "persona_set",
+    "focus_areas",
+    "constraints",
+    "success_criteria"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "default": "2026-04-14"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "design_partner",
+        "release_gate",
+        "usability_lab"
+      ]
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": [
+        "screen-review",
+        "workflow-walkthrough",
+        "roadmap-review",
+        "ship-readiness"
+      ]
+    },
+    "artifact_paths": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "artifact_summary": {
+      "type": "string"
+    },
+    "persona_set": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "core-finance",
+            "research",
+            "operations-controls",
+            "growth-adoption"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "panel"
+          ],
+          "properties": {
+            "panel": {
+              "type": "string",
+              "enum": [
+                "core-finance",
+                "research",
+                "operations-controls",
+                "growth-adoption",
+                "custom"
+              ]
+            },
+            "required_roles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "optional_roles": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "focus_areas": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "first_impression",
+          "workflow_fit",
+          "trust_and_controls",
+          "power_user_depth",
+          "adoption_and_positioning",
+          "release_readiness"
+        ]
+      }
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "success_criteria": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "decision_deadline": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

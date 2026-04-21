@@ -31,8 +31,6 @@ public partial class SymbolsPage : Page
         WpfServices.NotificationService notificationService,
         WpfServices.NavigationService navigationService)
     {
-        InitializeComponent();
-
         _navigationService = navigationService;
         _workspaceService = WpfServices.WorkspaceService.Instance;
         _vm = new SymbolsPageViewModel(
@@ -43,6 +41,8 @@ public partial class SymbolsPage : Page
             navigationService,
             SymbolManagementService.Instance,
             CommandPaletteService.Instance);
+
+        InitializeComponent();
         DataContext = _vm;
 
         SymbolsListView.ItemsSource = _vm.FilteredSymbols;
@@ -64,11 +64,16 @@ public partial class SymbolsPage : Page
         CallApplyFilters();
     }
 
-    private void CallApplyFilters() =>
+    private void CallApplyFilters()
+    {
+        if (SymbolSearchBox is null || FilterCombo is null || ExchangeFilterCombo is null)
+            return;
+
         _vm.ApplyFilters(
-            SymbolSearchBox.Text?.ToUpper() ?? "",
+            SymbolSearchBox.Text?.ToUpper() ?? string.Empty,
             GetComboSelectedTag(FilterCombo) ?? "All",
             GetComboSelectedTag(ExchangeFilterCombo) ?? "All");
+    }
 
     private void SymbolSearch_TextChanged(object sender, TextChangedEventArgs e) => CallApplyFilters();
 
@@ -84,6 +89,9 @@ public partial class SymbolsPage : Page
 
     private void SecurityType_Changed(object sender, SelectionChangedEventArgs e)
     {
+        if (SecurityTypeCombo is null || OptionsExpander is null)
+            return;
+
         if (SecurityTypeCombo?.SelectedItem is ComboBoxItem item)
         {
             var tag = item.Tag?.ToString() ?? "STK";
@@ -309,6 +317,9 @@ public partial class SymbolsPage : Page
 
     private void SavePageFilterState()
     {
+        if (FilterCombo is null || ExchangeFilterCombo is null)
+            return;
+
         _workspaceService.UpdatePageFilterState(PageTag, "SearchText", SymbolSearchBox.Text);
         _workspaceService.UpdatePageFilterState(PageTag, "FilterCombo", GetComboSelectedTag(FilterCombo) ?? "All");
         _workspaceService.UpdatePageFilterState(PageTag, "ExchangeFilter", GetComboSelectedTag(ExchangeFilterCombo) ?? "All");
@@ -316,6 +327,9 @@ public partial class SymbolsPage : Page
 
     private void RestorePageFilterState()
     {
+        if (FilterCombo is null || ExchangeFilterCombo is null)
+            return;
+
         var searchText = _workspaceService.GetPageFilterState(PageTag, "SearchText");
         if (searchText is not null) SymbolSearchBox.Text = searchText;
         var filter = _workspaceService.GetPageFilterState(PageTag, "FilterCombo");

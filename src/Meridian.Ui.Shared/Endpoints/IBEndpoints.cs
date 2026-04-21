@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -20,23 +21,50 @@ public static class IBEndpoints
         var group = app.MapGroup("").WithTags("Interactive Brokers");
 
         // IB provider status - shows connection mode, capabilities, and simulation state
-        group.MapGet(UiApiRoutes.IBStatus, () =>
+        group.MapGet(UiApiRoutes.IBStatus, (ConfigStore configStore) =>
         {
-            var isIBApiAvailable =
-#if IBAPI
-                true;
-#else
-                false;
-#endif
+            var config = configStore.Load();
+            var socketConfig = config.IB;
+            var clientPortalConfig = config.IBClientPortal;
+            var buildMode = GetBuildMode();
+            var runtimeTarget = socketConfig?.UsePaperTrading ?? true ? "paper" : "live";
+            var socketReady = socketConfig is not null
+                && !string.IsNullOrWhiteSpace(socketConfig.Host)
+                && socketConfig.Port > 0
+                && socketConfig.Port <= 65535;
+            var clientPortalReady = clientPortalConfig is { Enabled: true }
+                && Uri.TryCreate(clientPortalConfig.BaseUrl, UriKind.Absolute, out var baseUri)
+                && (baseUri.Scheme == Uri.UriSchemeHttp || baseUri.Scheme == Uri.UriSchemeHttps);
+            var isIBApiAvailable = buildMode is "smoke" or "vendor";
 
             return Results.Json(new
             {
                 provider = "Interactive Brokers",
                 ibApiAvailable = isIBApiAvailable,
-                mode = isIBApiAvailable ? "live" : "simulation",
-                buildInstructions = isIBApiAvailable
-                    ? null
-                    : "Build with -p:DefineConstants=IBAPI and reference the official IBApi package for real TWS/Gateway connectivity.",
+                buildMode,
+                runtimeTarget,
+                buildInstructions = buildMode switch
+                {
+                    "guidance" => "Build with -p:EnableIbApiVendor=true (preferred) and place the official vendor SDK under external/IBApi. Legacy -p:DefineConstants=IBAPI remains supported. Use -p:EnableIbApiSmoke=true only for compile-only verification.",
+                    "smoke" => "This build includes the compile-only smoke path. Rebuild with -p:EnableIbApiVendor=true and the official vendor SDK for real TWS/Gateway connectivity.",
+                    _ => null
+                },
+                socket = new
+                {
+                    configured = socketConfig is not null,
+                    ready = socketReady,
+                    host = socketConfig?.Host,
+                    port = socketConfig?.Port,
+                    clientId = socketConfig?.ClientId,
+                    paper = socketConfig?.UsePaperTrading ?? true
+                },
+                clientPortal = new
+                {
+                    enabled = clientPortalConfig?.Enabled ?? false,
+                    ready = clientPortalReady,
+                    baseUrl = clientPortalConfig?.BaseUrl,
+                    allowSelfSignedCertificates = clientPortalConfig?.AllowSelfSignedCertificates ?? false
+                },
                 connectionPorts = new
                 {
                     twsPaper = IBApiLimits.TwsPaperPort,
@@ -125,5 +153,22 @@ public static class IBEndpoints
         })
         .WithName("GetIBLimits")
         .Produces(200);
+    }
+
+    private static string GetBuildMode()
+    {
+#if IBAPI
+        var referencedAssemblies = typeof(IBApiLimits).Assembly
+            .GetReferencedAssemblies()
+            .Select(a => a.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        if (referencedAssemblies.Contains("Meridian.IbApi.SmokeStub"))
+            return "smoke";
+
+        return "vendor";
+#else
+        return "guidance";
+#endif
     }
 }

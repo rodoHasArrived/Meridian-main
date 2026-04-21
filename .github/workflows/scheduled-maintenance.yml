@@ -904,7 +904,7 @@ jobs:
           TOTAL_SIZE=0
           MAIN_DLL_KB=0
 
-          for projdir in src/Meridian src/Meridian.Contracts src/Meridian.FSharp src/Meridian.Ui src/Meridian.Ui.Shared; do
+          for projdir in src/Meridian src/Meridian.Contracts src/Meridian.FSharp src/Meridian.Ui.Shared; do
             PROJNAME=$(basename "$projdir")
             BINDIR="$projdir/bin/Release"
 

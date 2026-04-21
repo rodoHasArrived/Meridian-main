@@ -1,0 +1,970 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ProviderConnectionConfig
+  commentId: T:Meridian.Application.Config.ProviderConnectionConfig
+  id: ProviderConnectionConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ProviderConnectionConfig.#ctor(System.String,System.String,System.String,Meridian.ProviderSdk.ProviderConnectionType,Meridian.ProviderSdk.ProviderConnectionMode,System.Boolean,System.String,System.String,System.String,Meridian.ProviderSdk.ProviderConnectionScope,System.String[],System.String,System.Boolean)
+  - Meridian.Application.Config.ProviderConnectionConfig.ConnectionId
+  - Meridian.Application.Config.ProviderConnectionConfig.ConnectionMode
+  - Meridian.Application.Config.ProviderConnectionConfig.ConnectionType
+  - Meridian.Application.Config.ProviderConnectionConfig.CredentialReference
+  - Meridian.Application.Config.ProviderConnectionConfig.Description
+  - Meridian.Application.Config.ProviderConnectionConfig.DisplayName
+  - Meridian.Application.Config.ProviderConnectionConfig.Enabled
+  - Meridian.Application.Config.ProviderConnectionConfig.ExternalAccountId
+  - Meridian.Application.Config.ProviderConnectionConfig.InstitutionId
+  - Meridian.Application.Config.ProviderConnectionConfig.ProductionReady
+  - Meridian.Application.Config.ProviderConnectionConfig.ProviderFamilyId
+  - Meridian.Application.Config.ProviderConnectionConfig.Scope
+  - Meridian.Application.Config.ProviderConnectionConfig.Tags
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnectionConfig
+  nameWithType: ProviderConnectionConfig
+  fullName: Meridian.Application.Config.ProviderConnectionConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderConnectionConfig
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: One credentialed provider relationship.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderConnectionConfig : IEquatable<ProviderConnectionConfig>'
+    content.vb: Public NotInheritable Class ProviderConnectionConfig Implements IEquatable(Of ProviderConnectionConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.ProviderConnectionConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.ProviderConnectionConfig.#ctor(System.String,System.String,System.String,Meridian.ProviderSdk.ProviderConnectionType,Meridian.ProviderSdk.ProviderConnectionMode,System.Boolean,System.String,System.String,System.String,Meridian.ProviderSdk.ProviderConnectionScope,System.String[],System.String,System.Boolean)
+  commentId: M:Meridian.Application.Config.ProviderConnectionConfig.#ctor(System.String,System.String,System.String,Meridian.ProviderSdk.ProviderConnectionType,Meridian.ProviderSdk.ProviderConnectionMode,System.Boolean,System.String,System.String,System.String,Meridian.ProviderSdk.ProviderConnectionScope,System.String[],System.String,System.Boolean)
+  id: '#ctor(System.String,System.String,System.String,Meridian.ProviderSdk.ProviderConnectionType,Meridian.ProviderSdk.ProviderConnectionMode,System.Boolean,System.String,System.String,System.String,Meridian.ProviderSdk.ProviderConnectionScope,System.String[],System.String,System.Boolean)'
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnectionConfig(string, string, string, ProviderConnectionType, ProviderConnectionMode, bool, string?, string?, string?, ProviderConnectionScope?, string[]?, string?, bool)
+  nameWithType: ProviderConnectionConfig.ProviderConnectionConfig(string, string, string, ProviderConnectionType, ProviderConnectionMode, bool, string?, string?, string?, ProviderConnectionScope?, string[]?, string?, bool)
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ProviderConnectionConfig(string, string, string, Meridian.ProviderSdk.ProviderConnectionType, Meridian.ProviderSdk.ProviderConnectionMode, bool, string?, string?, string?, Meridian.ProviderSdk.ProviderConnectionScope?, string[]?, string?, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: One credentialed provider relationship.
+  example: []
+  syntax:
+    content: public ProviderConnectionConfig(string ConnectionId, string ProviderFamilyId, string DisplayName, ProviderConnectionType ConnectionType = ProviderConnectionType.DataVendor, ProviderConnectionMode ConnectionMode = ProviderConnectionMode.ReadOnly, bool Enabled = true, string? CredentialReference = null, string? InstitutionId = null, string? ExternalAccountId = null, ProviderConnectionScope? Scope = null, string[]? Tags = null, string? Description = null, bool ProductionReady = false)
+    parameters:
+    - id: ConnectionId
+      type: System.String
+    - id: ProviderFamilyId
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: ConnectionType
+      type: Meridian.ProviderSdk.ProviderConnectionType
+    - id: ConnectionMode
+      type: Meridian.ProviderSdk.ProviderConnectionMode
+    - id: Enabled
+      type: System.Boolean
+    - id: CredentialReference
+      type: System.String
+    - id: InstitutionId
+      type: System.String
+    - id: ExternalAccountId
+      type: System.String
+    - id: Scope
+      type: Meridian.ProviderSdk.ProviderConnectionScope
+    - id: Tags
+      type: System.String[]
+    - id: Description
+      type: System.String
+    - id: ProductionReady
+      type: System.Boolean
+    content.vb: Public Sub New(ConnectionId As String, ProviderFamilyId As String, DisplayName As String, ConnectionType As ProviderConnectionType = ProviderConnectionType.DataVendor, ConnectionMode As ProviderConnectionMode = ProviderConnectionMode.ReadOnly, Enabled As Boolean = True, CredentialReference As String = Nothing, InstitutionId As String = Nothing, ExternalAccountId As String = Nothing, Scope As ProviderConnectionScope = Nothing, Tags As String() = Nothing, Description As String = Nothing, ProductionReady As Boolean = False)
+  overload: Meridian.Application.Config.ProviderConnectionConfig.#ctor*
+  nameWithType.vb: ProviderConnectionConfig.New(String, String, String, ProviderConnectionType, ProviderConnectionMode, Boolean, String, String, String, ProviderConnectionScope, String(), String, Boolean)
+  fullName.vb: Meridian.Application.Config.ProviderConnectionConfig.New(String, String, String, Meridian.ProviderSdk.ProviderConnectionType, Meridian.ProviderSdk.ProviderConnectionMode, Boolean, String, String, String, Meridian.ProviderSdk.ProviderConnectionScope, String(), String, Boolean)
+  name.vb: New(String, String, String, ProviderConnectionType, ProviderConnectionMode, Boolean, String, String, String, ProviderConnectionScope, String(), String, Boolean)
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ConnectionId
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.ConnectionId
+  id: ConnectionId
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: ConnectionId
+  nameWithType: ProviderConnectionConfig.ConnectionId
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ConnectionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionId
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string ConnectionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConnectionId As String
+  overload: Meridian.Application.Config.ProviderConnectionConfig.ConnectionId*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ProviderFamilyId
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.ProviderFamilyId
+  id: ProviderFamilyId
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: ProviderFamilyId
+  nameWithType: ProviderConnectionConfig.ProviderFamilyId
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ProviderFamilyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderFamilyId
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string ProviderFamilyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ProviderFamilyId As String
+  overload: Meridian.Application.Config.ProviderConnectionConfig.ProviderFamilyId*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.DisplayName
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.DisplayName
+  id: DisplayName
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: ProviderConnectionConfig.DisplayName
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Application.Config.ProviderConnectionConfig.DisplayName*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ConnectionType
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.ConnectionType
+  id: ConnectionType
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: ConnectionType
+  nameWithType: ProviderConnectionConfig.ConnectionType
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ConnectionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionType
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public ProviderConnectionType ConnectionType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionType
+    content.vb: Public Property ConnectionType As ProviderConnectionType
+  overload: Meridian.Application.Config.ProviderConnectionConfig.ConnectionType*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ConnectionMode
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.ConnectionMode
+  id: ConnectionMode
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: ConnectionMode
+  nameWithType: ProviderConnectionConfig.ConnectionMode
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ConnectionMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionMode
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public ProviderConnectionMode ConnectionMode { get; init; }
+    parameters: []
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionMode
+    content.vb: Public Property ConnectionMode As ProviderConnectionMode
+  overload: Meridian.Application.Config.ProviderConnectionConfig.ConnectionMode*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.Enabled
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.Enabled
+  id: Enabled
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: ProviderConnectionConfig.Enabled
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public bool Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Application.Config.ProviderConnectionConfig.Enabled*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.CredentialReference
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.CredentialReference
+  id: CredentialReference
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: CredentialReference
+  nameWithType: ProviderConnectionConfig.CredentialReference
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.CredentialReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialReference
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? CredentialReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CredentialReference As String
+  overload: Meridian.Application.Config.ProviderConnectionConfig.CredentialReference*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.InstitutionId
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.InstitutionId
+  id: InstitutionId
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: InstitutionId
+  nameWithType: ProviderConnectionConfig.InstitutionId
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.InstitutionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstitutionId
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? InstitutionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property InstitutionId As String
+  overload: Meridian.Application.Config.ProviderConnectionConfig.InstitutionId*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ExternalAccountId
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.ExternalAccountId
+  id: ExternalAccountId
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: ExternalAccountId
+  nameWithType: ProviderConnectionConfig.ExternalAccountId
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ExternalAccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExternalAccountId
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? ExternalAccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExternalAccountId As String
+  overload: Meridian.Application.Config.ProviderConnectionConfig.ExternalAccountId*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.Scope
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.Scope
+  id: Scope
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: Scope
+  nameWithType: ProviderConnectionConfig.Scope
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.Scope
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Scope
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public ProviderConnectionScope? Scope { get; init; }
+    parameters: []
+    return:
+      type: Meridian.ProviderSdk.ProviderConnectionScope
+    content.vb: Public Property Scope As ProviderConnectionScope
+  overload: Meridian.Application.Config.ProviderConnectionConfig.Scope*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.Tags
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.Tags
+  id: Tags
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: ProviderConnectionConfig.Tags
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string[]? Tags { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Tags As String()
+  overload: Meridian.Application.Config.ProviderConnectionConfig.Tags*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.Description
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.Description
+  id: Description
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: ProviderConnectionConfig.Description
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Application.Config.ProviderConnectionConfig.Description*
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ProductionReady
+  commentId: P:Meridian.Application.Config.ProviderConnectionConfig.ProductionReady
+  id: ProductionReady
+  parent: Meridian.Application.Config.ProviderConnectionConfig
+  langs:
+  - csharp
+  - vb
+  name: ProductionReady
+  nameWithType: ProviderConnectionConfig.ProductionReady
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ProductionReady
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProductionReady
+    path: ../../src/Meridian.Core/Config/ProviderConnectionsConfig.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public bool ProductionReady { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property ProductionReady As Boolean
+  overload: Meridian.Application.Config.ProviderConnectionConfig.ProductionReady*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.ProviderConnectionConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.ProviderConnectionConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderConnectionConfig>
+  nameWithType: IEquatable<ProviderConnectionConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.ProviderConnectionConfig>
+  nameWithType.vb: IEquatable(Of ProviderConnectionConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.ProviderConnectionConfig)
+  name.vb: IEquatable(Of ProviderConnectionConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.ProviderConnectionConfig
+    name: ProviderConnectionConfig
+    href: Meridian.Application.Config.ProviderConnectionConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ProviderConnectionConfig
+    name: ProviderConnectionConfig
+    href: Meridian.Application.Config.ProviderConnectionConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.ProviderConnectionConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.#ctor
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig__ctor_System_String_System_String_System_String_Meridian_ProviderSdk_ProviderConnectionType_Meridian_ProviderSdk_ProviderConnectionMode_System_Boolean_System_String_System_String_System_String_Meridian_ProviderSdk_ProviderConnectionScope_System_String___System_String_System_Boolean_
+  name: ProviderConnectionConfig
+  nameWithType: ProviderConnectionConfig.ProviderConnectionConfig
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ProviderConnectionConfig
+  nameWithType.vb: ProviderConnectionConfig.New
+  fullName.vb: Meridian.Application.Config.ProviderConnectionConfig.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.ProviderSdk.ProviderConnectionType
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionType
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderConnectionType.html
+  name: ProviderConnectionType
+  nameWithType: ProviderConnectionType
+  fullName: Meridian.ProviderSdk.ProviderConnectionType
+- uid: Meridian.ProviderSdk.ProviderConnectionMode
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionMode
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderConnectionMode.html
+  name: ProviderConnectionMode
+  nameWithType: ProviderConnectionMode
+  fullName: Meridian.ProviderSdk.ProviderConnectionMode
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.ProviderSdk.ProviderConnectionScope
+  commentId: T:Meridian.ProviderSdk.ProviderConnectionScope
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.ProviderConnectionScope.html
+  name: ProviderConnectionScope
+  nameWithType: ProviderConnectionScope
+  fullName: Meridian.ProviderSdk.ProviderConnectionScope
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ConnectionId*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.ConnectionId
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_ConnectionId
+  name: ConnectionId
+  nameWithType: ProviderConnectionConfig.ConnectionId
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ConnectionId
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ProviderFamilyId*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.ProviderFamilyId
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_ProviderFamilyId
+  name: ProviderFamilyId
+  nameWithType: ProviderConnectionConfig.ProviderFamilyId
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ProviderFamilyId
+- uid: Meridian.Application.Config.ProviderConnectionConfig.DisplayName*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.DisplayName
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_DisplayName
+  name: DisplayName
+  nameWithType: ProviderConnectionConfig.DisplayName
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.DisplayName
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ConnectionType*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.ConnectionType
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_ConnectionType
+  name: ConnectionType
+  nameWithType: ProviderConnectionConfig.ConnectionType
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ConnectionType
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ConnectionMode*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.ConnectionMode
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_ConnectionMode
+  name: ConnectionMode
+  nameWithType: ProviderConnectionConfig.ConnectionMode
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ConnectionMode
+- uid: Meridian.Application.Config.ProviderConnectionConfig.Enabled*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.Enabled
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_Enabled
+  name: Enabled
+  nameWithType: ProviderConnectionConfig.Enabled
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.Enabled
+- uid: Meridian.Application.Config.ProviderConnectionConfig.CredentialReference*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.CredentialReference
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_CredentialReference
+  name: CredentialReference
+  nameWithType: ProviderConnectionConfig.CredentialReference
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.CredentialReference
+- uid: Meridian.Application.Config.ProviderConnectionConfig.InstitutionId*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.InstitutionId
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_InstitutionId
+  name: InstitutionId
+  nameWithType: ProviderConnectionConfig.InstitutionId
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.InstitutionId
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ExternalAccountId*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.ExternalAccountId
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_ExternalAccountId
+  name: ExternalAccountId
+  nameWithType: ProviderConnectionConfig.ExternalAccountId
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ExternalAccountId
+- uid: Meridian.Application.Config.ProviderConnectionConfig.Scope*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.Scope
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_Scope
+  name: Scope
+  nameWithType: ProviderConnectionConfig.Scope
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.Scope
+- uid: Meridian.Application.Config.ProviderConnectionConfig.Tags*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.Tags
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_Tags
+  name: Tags
+  nameWithType: ProviderConnectionConfig.Tags
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.Tags
+- uid: Meridian.Application.Config.ProviderConnectionConfig.Description*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.Description
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_Description
+  name: Description
+  nameWithType: ProviderConnectionConfig.Description
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.Description
+- uid: Meridian.Application.Config.ProviderConnectionConfig.ProductionReady*
+  commentId: Overload:Meridian.Application.Config.ProviderConnectionConfig.ProductionReady
+  href: Meridian.Application.Config.ProviderConnectionConfig.html#Meridian_Application_Config_ProviderConnectionConfig_ProductionReady
+  name: ProductionReady
+  nameWithType: ProviderConnectionConfig.ProductionReady
+  fullName: Meridian.Application.Config.ProviderConnectionConfig.ProductionReady

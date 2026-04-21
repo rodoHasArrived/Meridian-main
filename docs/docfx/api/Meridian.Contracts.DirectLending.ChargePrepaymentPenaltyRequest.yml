@@ -1,0 +1,528 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest
+  commentId: T:Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest
+  id: ChargePrepaymentPenaltyRequest
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.#ctor(System.Decimal,System.DateOnly,System.String)
+  - Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.EffectiveDate
+  - Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ExternalRef
+  - Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.OutstandingPrincipal
+  langs:
+  - csharp
+  - vb
+  name: ChargePrepaymentPenaltyRequest
+  nameWithType: ChargePrepaymentPenaltyRequest
+  fullName: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChargePrepaymentPenaltyRequest
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record ChargePrepaymentPenaltyRequest : IEquatable<ChargePrepaymentPenaltyRequest>'
+    content.vb: Public NotInheritable Class ChargePrepaymentPenaltyRequest Implements IEquatable(Of ChargePrepaymentPenaltyRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.#ctor(System.Decimal,System.DateOnly,System.String)
+  commentId: M:Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.#ctor(System.Decimal,System.DateOnly,System.String)
+  id: '#ctor(System.Decimal,System.DateOnly,System.String)'
+  parent: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest
+  langs:
+  - csharp
+  - vb
+  name: ChargePrepaymentPenaltyRequest(decimal, DateOnly, string?)
+  nameWithType: ChargePrepaymentPenaltyRequest.ChargePrepaymentPenaltyRequest(decimal, DateOnly, string?)
+  fullName: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ChargePrepaymentPenaltyRequest(decimal, System.DateOnly, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 256
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public ChargePrepaymentPenaltyRequest(decimal OutstandingPrincipal, DateOnly EffectiveDate, string? ExternalRef)
+    parameters:
+    - id: OutstandingPrincipal
+      type: System.Decimal
+    - id: EffectiveDate
+      type: System.DateOnly
+    - id: ExternalRef
+      type: System.String
+    content.vb: Public Sub New(OutstandingPrincipal As Decimal, EffectiveDate As DateOnly, ExternalRef As String)
+  overload: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.#ctor*
+  nameWithType.vb: ChargePrepaymentPenaltyRequest.New(Decimal, DateOnly, String)
+  fullName.vb: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.New(Decimal, System.DateOnly, String)
+  name.vb: New(Decimal, DateOnly, String)
+- uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.OutstandingPrincipal
+  commentId: P:Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.OutstandingPrincipal
+  id: OutstandingPrincipal
+  parent: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest
+  langs:
+  - csharp
+  - vb
+  name: OutstandingPrincipal
+  nameWithType: ChargePrepaymentPenaltyRequest.OutstandingPrincipal
+  fullName: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.OutstandingPrincipal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutstandingPrincipal
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 257
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal OutstandingPrincipal { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property OutstandingPrincipal As Decimal
+  overload: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.OutstandingPrincipal*
+- uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.EffectiveDate
+  commentId: P:Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.EffectiveDate
+  id: EffectiveDate
+  parent: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest
+  langs:
+  - csharp
+  - vb
+  name: EffectiveDate
+  nameWithType: ChargePrepaymentPenaltyRequest.EffectiveDate
+  fullName: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.EffectiveDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 258
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly EffectiveDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property EffectiveDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.EffectiveDate*
+- uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ExternalRef
+  commentId: P:Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ExternalRef
+  id: ExternalRef
+  parent: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest
+  langs:
+  - csharp
+  - vb
+  name: ExternalRef
+  nameWithType: ChargePrepaymentPenaltyRequest.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ExternalRef
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExternalRef
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 259
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? ExternalRef { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExternalRef As String
+  overload: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ExternalRef*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ChargePrepaymentPenaltyRequest>
+  nameWithType: IEquatable<ChargePrepaymentPenaltyRequest>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest>
+  nameWithType.vb: IEquatable(Of ChargePrepaymentPenaltyRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest)
+  name.vb: IEquatable(Of ChargePrepaymentPenaltyRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest
+    name: ChargePrepaymentPenaltyRequest
+    href: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest
+    name: ChargePrepaymentPenaltyRequest
+    href: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.#ctor
+  href: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.html#Meridian_Contracts_DirectLending_ChargePrepaymentPenaltyRequest__ctor_System_Decimal_System_DateOnly_System_String_
+  name: ChargePrepaymentPenaltyRequest
+  nameWithType: ChargePrepaymentPenaltyRequest.ChargePrepaymentPenaltyRequest
+  fullName: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ChargePrepaymentPenaltyRequest
+  nameWithType.vb: ChargePrepaymentPenaltyRequest.New
+  fullName.vb: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.OutstandingPrincipal*
+  commentId: Overload:Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.OutstandingPrincipal
+  href: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.html#Meridian_Contracts_DirectLending_ChargePrepaymentPenaltyRequest_OutstandingPrincipal
+  name: OutstandingPrincipal
+  nameWithType: ChargePrepaymentPenaltyRequest.OutstandingPrincipal
+  fullName: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.OutstandingPrincipal
+- uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.EffectiveDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.EffectiveDate
+  href: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.html#Meridian_Contracts_DirectLending_ChargePrepaymentPenaltyRequest_EffectiveDate
+  name: EffectiveDate
+  nameWithType: ChargePrepaymentPenaltyRequest.EffectiveDate
+  fullName: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.EffectiveDate
+- uid: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ExternalRef*
+  commentId: Overload:Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ExternalRef
+  href: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.html#Meridian_Contracts_DirectLending_ChargePrepaymentPenaltyRequest_ExternalRef
+  name: ExternalRef
+  nameWithType: ChargePrepaymentPenaltyRequest.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.ChargePrepaymentPenaltyRequest.ExternalRef

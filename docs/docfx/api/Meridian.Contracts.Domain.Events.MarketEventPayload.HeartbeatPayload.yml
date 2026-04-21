@@ -1,0 +1,459 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+  id: MarketEventPayload.HeartbeatPayload
+  parent: Meridian.Contracts.Domain.Events
+  children:
+  - Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.#ctor
+  langs:
+  - csharp
+  - vb
+  name: MarketEventPayload.HeartbeatPayload
+  nameWithType: MarketEventPayload.HeartbeatPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeartbeatPayload
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: >-
+    Payload for heartbeat events. Carries no market data; exists to eliminate the
+
+    null-payload special case and enable exhaustive pattern matching over all event types.
+  example: []
+  syntax:
+    content: 'public sealed record MarketEventPayload.HeartbeatPayload : MarketEventPayload, IMarketEventPayload, IEquatable<MarketEventPayload>, IEquatable<MarketEventPayload.HeartbeatPayload>'
+    content.vb: Public NotInheritable Class MarketEventPayload.HeartbeatPayload Inherits MarketEventPayload Implements IMarketEventPayload, IEquatable(Of MarketEventPayload), IEquatable(Of MarketEventPayload.HeartbeatPayload)
+  inheritance:
+  - System.Object
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  implements:
+  - Meridian.Contracts.Domain.Events.IMarketEventPayload
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.#ctor
+  commentId: M:Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.#ctor
+  id: '#ctor'
+  parent: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+  langs:
+  - csharp
+  - vb
+  name: HeartbeatPayload()
+  nameWithType: MarketEventPayload.HeartbeatPayload.HeartbeatPayload()
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.HeartbeatPayload()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Events/MarketEventPayload.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Events
+  summary: >-
+    Payload for heartbeat events. Carries no market data; exists to eliminate the
+
+    null-payload special case and enable exhaustive pattern matching over all event types.
+  example: []
+  syntax:
+    content: public HeartbeatPayload()
+    content.vb: Public Sub New()
+  overload: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.#ctor*
+  nameWithType.vb: MarketEventPayload.HeartbeatPayload.New()
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.New()
+  name.vb: New()
+references:
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.IMarketEventPayload.html
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventPayload>
+  nameWithType: IEquatable<MarketEventPayload>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventPayload>
+  nameWithType.vb: IEquatable(Of MarketEventPayload)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventPayload)
+  name.vb: IEquatable(Of MarketEventPayload)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: )
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventPayload.HeartbeatPayload>
+  nameWithType: IEquatable<MarketEventPayload.HeartbeatPayload>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload>
+  nameWithType.vb: IEquatable(Of MarketEventPayload.HeartbeatPayload)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload)
+  name.vb: IEquatable(Of MarketEventPayload.HeartbeatPayload)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+    name: HeartbeatPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload
+    name: HeartbeatPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.#ctor
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.html#Meridian_Contracts_Domain_Events_MarketEventPayload_HeartbeatPayload__ctor
+  name: HeartbeatPayload
+  nameWithType: MarketEventPayload.HeartbeatPayload.HeartbeatPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.HeartbeatPayload
+  nameWithType.vb: MarketEventPayload.HeartbeatPayload.New
+  fullName.vb: Meridian.Contracts.Domain.Events.MarketEventPayload.HeartbeatPayload.New
+  name.vb: New

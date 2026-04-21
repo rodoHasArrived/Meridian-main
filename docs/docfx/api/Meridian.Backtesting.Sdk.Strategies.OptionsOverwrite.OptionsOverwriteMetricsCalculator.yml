@@ -1,0 +1,589 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator
+  id: OptionsOverwriteMetricsCalculator
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.Calculate(System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord},System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}},System.Double)
+  langs:
+  - csharp
+  - vb
+  name: OptionsOverwriteMetricsCalculator
+  nameWithType: OptionsOverwriteMetricsCalculator
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteMetricsCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionsOverwriteMetricsCalculator
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteMetricsCalculator.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    Computes <xref href="Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics" data-throw-if-not-resolved="false"></xref> from the strategy's trade history
+
+    and daily equity curve.
+  example: []
+  syntax:
+    content: public static class OptionsOverwriteMetricsCalculator
+    content.vb: Public Module OptionsOverwriteMetricsCalculator
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.Calculate(System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord},System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}},System.Double)
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.Calculate(System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord},System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}},System.Double)
+  id: Calculate(System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord},System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}},System.Double)
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator
+  langs:
+  - csharp
+  - vb
+  name: Calculate(IReadOnlyList<OptionsOverwriteTradeRecord>, IReadOnlyList<(DateOnly Date, decimal StrategyEquity, decimal UnderlyingEquity)>, double)
+  nameWithType: OptionsOverwriteMetricsCalculator.Calculate(IReadOnlyList<OptionsOverwriteTradeRecord>, IReadOnlyList<(DateOnly Date, decimal StrategyEquity, decimal UnderlyingEquity)>, double)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.Calculate(System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord>, System.Collections.Generic.IReadOnlyList<(System.DateOnly Date, decimal StrategyEquity, decimal UnderlyingEquity)>, double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteMetricsCalculator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Calculate
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteMetricsCalculator.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Derives all performance metrics from the completed trade history and equity curve.
+  example: []
+  syntax:
+    content: public static OptionsOverwriteMetrics Calculate(IReadOnlyList<OptionsOverwriteTradeRecord> trades, IReadOnlyList<(DateOnly Date, decimal StrategyEquity, decimal UnderlyingEquity)> equityCurve, double riskFreeRate)
+    parameters:
+    - id: trades
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord}
+      description: All completed option trade records.
+    - id: equityCurve
+      type: System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}}
+      description: >-
+        Daily equity data: (date, strategy equity, underlying-only equity).
+
+        The strategy equity includes both the underlying and accumulated option P&amp;L.
+    - id: riskFreeRate
+      type: System.Double
+      description: Annual risk-free rate (for Sharpe / Sortino).
+    return:
+      type: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+    content.vb: Public Shared Function Calculate(trades As IReadOnlyList(Of OptionsOverwriteTradeRecord), equityCurve As IReadOnlyList(Of ([Date] As DateOnly, StrategyEquity As Decimal, UnderlyingEquity As Decimal)), riskFreeRate As Double) As OptionsOverwriteMetrics
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.Calculate*
+  nameWithType.vb: OptionsOverwriteMetricsCalculator.Calculate(IReadOnlyList(Of OptionsOverwriteTradeRecord), IReadOnlyList(Of (Date As DateOnly, StrategyEquity As Decimal, UnderlyingEquity As Decimal)), Double)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.Calculate(System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord), System.Collections.Generic.IReadOnlyList(Of (Date As System.DateOnly, StrategyEquity As Decimal, UnderlyingEquity As Decimal)), Double)
+  name.vb: Calculate(IReadOnlyList(Of OptionsOverwriteTradeRecord), IReadOnlyList(Of (Date As DateOnly, StrategyEquity As Decimal, UnderlyingEquity As Decimal)), Double)
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics.html
+  name: OptionsOverwriteMetrics
+  nameWithType: OptionsOverwriteMetrics
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetrics
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.Calculate*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.Calculate
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteMetricsCalculator_Calculate_System_Collections_Generic_IReadOnlyList_Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionsOverwriteTradeRecord__System_Collections_Generic_IReadOnlyList_System_ValueTuple_System_DateOnly_System_Decimal_System_Decimal___System_Double_
+  name: Calculate
+  nameWithType: OptionsOverwriteMetricsCalculator.Calculate
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteMetricsCalculator.Calculate
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<OptionsOverwriteTradeRecord>
+  nameWithType: IReadOnlyList<OptionsOverwriteTradeRecord>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord>
+  nameWithType.vb: IReadOnlyList(Of OptionsOverwriteTradeRecord)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord)
+  name.vb: IReadOnlyList(Of OptionsOverwriteTradeRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord
+    name: OptionsOverwriteTradeRecord
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord
+    name: OptionsOverwriteTradeRecord
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionsOverwriteTradeRecord.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<(DateOnly Date, decimal StrategyEquity, decimal UnderlyingEquity)>
+  nameWithType: IReadOnlyList<(DateOnly Date, decimal StrategyEquity, decimal UnderlyingEquity)>
+  fullName: System.Collections.Generic.IReadOnlyList<(System.DateOnly Date, decimal StrategyEquity, decimal UnderlyingEquity)>
+  nameWithType.vb: IReadOnlyList(Of (Date As DateOnly, StrategyEquity As Decimal, UnderlyingEquity As Decimal))
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of (Date As System.DateOnly, StrategyEquity As Decimal, UnderlyingEquity As Decimal))
+  name.vb: IReadOnlyList(Of (Date As DateOnly, StrategyEquity As Decimal, UnderlyingEquity As Decimal))
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: (
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: " "
+  - uid: System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}.Date
+    name: Date
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.decimal,system.decimal-.date
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: " "
+  - uid: System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}.StrategyEquity
+    name: StrategyEquity
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.decimal,system.decimal-.strategyequity
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: " "
+  - uid: System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}.UnderlyingEquity
+    name: UnderlyingEquity
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.decimal,system.decimal-.underlyingequity
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}.Date
+    name: Date
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.decimal,system.decimal-.date
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}.StrategyEquity
+    name: StrategyEquity
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.decimal,system.decimal-.strategyequity
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.DateOnly,System.Decimal,System.Decimal}.UnderlyingEquity
+    name: UnderlyingEquity
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.dateonly,system.decimal,system.decimal-.underlyingequity
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  - name: )
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

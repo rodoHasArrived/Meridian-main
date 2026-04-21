@@ -1,0 +1,203 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Exceptions.SequenceValidationType
+  commentId: T:Meridian.Application.Exceptions.SequenceValidationType
+  id: SequenceValidationType
+  parent: Meridian.Application.Exceptions
+  children:
+  - Meridian.Application.Exceptions.SequenceValidationType.Duplicate
+  - Meridian.Application.Exceptions.SequenceValidationType.Gap
+  - Meridian.Application.Exceptions.SequenceValidationType.OutOfOrder
+  - Meridian.Application.Exceptions.SequenceValidationType.Reset
+  - Meridian.Application.Exceptions.SequenceValidationType.Unknown
+  langs:
+  - csharp
+  - vb
+  name: SequenceValidationType
+  nameWithType: SequenceValidationType
+  fullName: Meridian.Application.Exceptions.SequenceValidationType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceValidationType
+    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Exceptions
+  summary: Types of sequence validation failures
+  example: []
+  syntax:
+    content: 'public enum SequenceValidationType : byte'
+    content.vb: Public Enum SequenceValidationType As Byte
+- uid: Meridian.Application.Exceptions.SequenceValidationType.Unknown
+  commentId: F:Meridian.Application.Exceptions.SequenceValidationType.Unknown
+  id: Unknown
+  parent: Meridian.Application.Exceptions.SequenceValidationType
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: SequenceValidationType.Unknown
+  fullName: Meridian.Application.Exceptions.SequenceValidationType.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Exceptions
+  syntax:
+    content: Unknown = 0
+    return:
+      type: Meridian.Application.Exceptions.SequenceValidationType
+- uid: Meridian.Application.Exceptions.SequenceValidationType.Gap
+  commentId: F:Meridian.Application.Exceptions.SequenceValidationType.Gap
+  id: Gap
+  parent: Meridian.Application.Exceptions.SequenceValidationType
+  langs:
+  - csharp
+  - vb
+  name: Gap
+  nameWithType: SequenceValidationType.Gap
+  fullName: Meridian.Application.Exceptions.SequenceValidationType.Gap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gap
+    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Exceptions
+  syntax:
+    content: Gap = 1
+    return:
+      type: Meridian.Application.Exceptions.SequenceValidationType
+- uid: Meridian.Application.Exceptions.SequenceValidationType.OutOfOrder
+  commentId: F:Meridian.Application.Exceptions.SequenceValidationType.OutOfOrder
+  id: OutOfOrder
+  parent: Meridian.Application.Exceptions.SequenceValidationType
+  langs:
+  - csharp
+  - vb
+  name: OutOfOrder
+  nameWithType: SequenceValidationType.OutOfOrder
+  fullName: Meridian.Application.Exceptions.SequenceValidationType.OutOfOrder
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutOfOrder
+    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Exceptions
+  syntax:
+    content: OutOfOrder = 2
+    return:
+      type: Meridian.Application.Exceptions.SequenceValidationType
+- uid: Meridian.Application.Exceptions.SequenceValidationType.Duplicate
+  commentId: F:Meridian.Application.Exceptions.SequenceValidationType.Duplicate
+  id: Duplicate
+  parent: Meridian.Application.Exceptions.SequenceValidationType
+  langs:
+  - csharp
+  - vb
+  name: Duplicate
+  nameWithType: SequenceValidationType.Duplicate
+  fullName: Meridian.Application.Exceptions.SequenceValidationType.Duplicate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duplicate
+    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Exceptions
+  syntax:
+    content: Duplicate = 3
+    return:
+      type: Meridian.Application.Exceptions.SequenceValidationType
+- uid: Meridian.Application.Exceptions.SequenceValidationType.Reset
+  commentId: F:Meridian.Application.Exceptions.SequenceValidationType.Reset
+  id: Reset
+  parent: Meridian.Application.Exceptions.SequenceValidationType
+  langs:
+  - csharp
+  - vb
+  name: Reset
+  nameWithType: SequenceValidationType.Reset
+  fullName: Meridian.Application.Exceptions.SequenceValidationType.Reset
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Exceptions/SequenceValidationException.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Core/Exceptions/SequenceValidationException.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Exceptions
+  syntax:
+    content: Reset = 4
+    return:
+      type: Meridian.Application.Exceptions.SequenceValidationType
+references:
+- uid: Meridian.Application.Exceptions
+  commentId: N:Meridian.Application.Exceptions
+  href: Meridian.html
+  name: Meridian.Application.Exceptions
+  nameWithType: Meridian.Application.Exceptions
+  fullName: Meridian.Application.Exceptions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Exceptions
+    name: Exceptions
+    href: Meridian.Application.Exceptions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Exceptions
+    name: Exceptions
+    href: Meridian.Application.Exceptions.html
+- uid: Meridian.Application.Exceptions.SequenceValidationType
+  commentId: T:Meridian.Application.Exceptions.SequenceValidationType
+  parent: Meridian.Application.Exceptions
+  href: Meridian.Application.Exceptions.SequenceValidationType.html
+  name: SequenceValidationType
+  nameWithType: SequenceValidationType
+  fullName: Meridian.Application.Exceptions.SequenceValidationType

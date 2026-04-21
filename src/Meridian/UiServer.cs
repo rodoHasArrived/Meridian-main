@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Meridian.Application.Composition;
 using Meridian.Application.Config;
 using Meridian.Application.Monitoring;
@@ -29,7 +28,7 @@ using Microsoft.OpenApi;
 namespace Meridian;
 
 /// <summary>
-/// Embedded HTTP server for the web dashboard UI.
+/// Embedded HTTP server for the desktop-local API surface.
 /// Uses ServiceCompositionRoot for centralized service registration.
 /// All endpoints are organized in dedicated endpoint classes in Meridian.Ui.Shared/Endpoints/.
 /// </summary>
@@ -37,18 +36,6 @@ namespace Meridian;
 [ImplementsAdr("ADR-004", "Large file decomposition - endpoints extracted to dedicated modules")]
 public sealed class UiServer : IAsyncDisposable
 {
-    private static readonly JsonSerializerOptions s_jsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true
-    };
-
-    private static readonly JsonSerializerOptions s_jsonOptionsCompact = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
-    };
-
     private readonly WebApplication _app;
     private readonly ILogger<UiServer> _logger;
 
@@ -59,7 +46,11 @@ public sealed class UiServer : IAsyncDisposable
     /// <param name="port">HTTP port to listen on.</param>
     public UiServer(string configPath, int port = 8080)
     {
-        var builder = WebApplication.CreateBuilder();
+        var contentRootPath = Directory.GetCurrentDirectory();
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            ContentRootPath = contentRootPath
+        });
 
         // Minimize logging from ASP.NET Core
         builder.Logging.SetMinimumLevel(LogLevel.Warning);
@@ -114,6 +105,7 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<ReconciliationProjectionService>();
         builder.Services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
         builder.Services.AddSingleton<CashFlowProjectionService>();
+        builder.Services.AddSingleton<StrategyRunContinuityService>();
         builder.Services.AddSingleton<Meridian.Strategies.Promotions.BacktestToLivePromoter>();
         builder.Services.AddSingleton<Meridian.Strategies.Services.PromotionService>();
         builder.Services.AddSingleton<PaperSessionPersistenceService>();
@@ -123,13 +115,19 @@ public sealed class UiServer : IAsyncDisposable
         builder.Services.AddSingleton<IOrderGateway>(sp =>
             new Meridian.Execution.Adapters.PaperTradingGateway(
                 sp.GetRequiredService<ILogger<Meridian.Execution.Adapters.PaperTradingGateway>>()));
-        builder.Services.AddSingleton<IPortfolioState>(_ => new PaperTradingPortfolio(100_000m));
+        builder.Services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
+        builder.Services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
         builder.Services.AddSingleton<IOrderManager>(sp =>
         {
             var gateway = sp.GetRequiredService<IExecutionGateway>();
             var logger = sp.GetRequiredService<ILogger<OrderManagementSystem>>();
             var risk = sp.GetService<IRiskValidator>();
-            return new OrderManagementSystem(gateway, logger, risk);
+            var portfolio = sp.GetRequiredService<PaperTradingPortfolio>();
+            return new OrderManagementSystem(
+                gateway,
+                logger,
+                riskValidator: risk,
+                portfolioState: portfolio);
         });
         builder.Services.AddSingleton<IExecutionGateway>(sp =>
             new Meridian.Execution.PaperTradingGateway(
@@ -219,7 +217,6 @@ public sealed class UiServer : IAsyncDisposable
         ServiceCompositionRoot.InitializeCircuitBreakerCallbackRouter(_app.Services);
 
         // Enable session-based authentication middleware (optional in Development/Test, required elsewhere by default)
-        _app.UseStaticFiles();
         _app.UseLoginSessionAuthentication();
 
         // Enable Swagger middleware
@@ -239,12 +236,9 @@ public sealed class UiServer : IAsyncDisposable
         // ==================== UNIQUE ENDPOINT MODULES ====================
         // Endpoints not included in MapUiEndpoints and must be registered explicitly.
 
-        // Status API (requires StatusEndpointHandlers, not included in MapUiEndpoints).
-        // This registers all health/liveness/readiness probes (/health, /healthz, /ready,
-        // /readyz, /live, /livez) with proper handler logic (real readiness checks, full
-        // HealthCheckResponse). Do NOT register those routes inline above this call.
+        // Resolve the shared status handlers once and let the shared UI mapper own the
+        // actual status-route registration.
         var statusHandlers = _app.Services.GetRequiredService<StatusEndpointHandlers>();
-        _app.MapStatusEndpoints(statusHandlers, s_jsonOptions);
 
         // Data Packaging API (requires dataRoot, not included in MapUiEndpoints)
         var config = _app.Services.GetRequiredService<Meridian.Application.UI.ConfigStore>().Load();
@@ -253,15 +247,8 @@ public sealed class UiServer : IAsyncDisposable
         // Archive Maintenance API (not included in MapUiEndpoints)
         _app.MapArchiveMaintenanceEndpoints();
 
-        // Canonicalization parity dashboard (not included in MapUiEndpoints)
-        _app.MapCanonicalizationEndpoints(s_jsonOptions);
+        _app.MapUiEndpointsWithStatus(statusHandlers);
 
-        // Dashboard root page (maps GET / → HTML, not included in MapUiEndpoints)
-        _app.MapDashboard();
-
-        // ==================== AGGREGATED ENDPOINT MODULES ====================
-        // All remaining API endpoints (config, backfill, storage, providers, etc.)
-        _app.MapUiEndpoints(s_jsonOptions);
     }
 
     public async Task StartAsync(CancellationToken ct = default)

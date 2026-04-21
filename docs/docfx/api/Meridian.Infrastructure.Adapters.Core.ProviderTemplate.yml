@@ -1,0 +1,869 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  id: ProviderTemplate
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ProviderTemplate.#ctor(System.String,System.String,Meridian.Infrastructure.Adapters.Core.ProviderType,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile)
+  - Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Capabilities
+  - Meridian.Infrastructure.Adapters.Core.ProviderTemplate.DisplayName
+  - Meridian.Infrastructure.Adapters.Core.ProviderTemplate.IsEnabled
+  - Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Name
+  - Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Priority
+  - Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderType
+  - Meridian.Infrastructure.Adapters.Core.ProviderTemplate.RateLimit
+  - Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ToInfo
+  langs:
+  - csharp
+  - vb
+  name: ProviderTemplate
+  nameWithType: ProviderTemplate
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderTemplate
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Standardized provider metadata template for registry and UI surfaces.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderTemplate : IEquatable<ProviderTemplate>'
+    content.vb: Public NotInheritable Class ProviderTemplate Implements IEquatable(Of ProviderTemplate)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderTemplate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.#ctor(System.String,System.String,Meridian.Infrastructure.Adapters.Core.ProviderType,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.#ctor(System.String,System.String,Meridian.Infrastructure.Adapters.Core.ProviderType,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile)
+  id: '#ctor(System.String,System.String,Meridian.Infrastructure.Adapters.Core.ProviderType,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile)'
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  langs:
+  - csharp
+  - vb
+  name: ProviderTemplate(string, string, ProviderType, int, bool, IReadOnlyDictionary<string, object>, ProviderRateLimitProfile?)
+  nameWithType: ProviderTemplate.ProviderTemplate(string, string, ProviderType, int, bool, IReadOnlyDictionary<string, object>, ProviderRateLimitProfile?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderTemplate(string, string, Meridian.Infrastructure.Adapters.Core.ProviderType, int, bool, System.Collections.Generic.IReadOnlyDictionary<string, object>, Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Standardized provider metadata template for registry and UI surfaces.
+  example: []
+  syntax:
+    content: public ProviderTemplate(string Name, string DisplayName, ProviderType ProviderType, int Priority, bool IsEnabled, IReadOnlyDictionary<string, object> Capabilities, ProviderRateLimitProfile? RateLimit = null)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: DisplayName
+      type: System.String
+    - id: ProviderType
+      type: Meridian.Infrastructure.Adapters.Core.ProviderType
+    - id: Priority
+      type: System.Int32
+    - id: IsEnabled
+      type: System.Boolean
+    - id: Capabilities
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    - id: RateLimit
+      type: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+    content.vb: Public Sub New(Name As String, DisplayName As String, ProviderType As ProviderType, Priority As Integer, IsEnabled As Boolean, Capabilities As IReadOnlyDictionary(Of String, Object), RateLimit As ProviderRateLimitProfile = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.#ctor*
+  nameWithType.vb: ProviderTemplate.New(String, String, ProviderType, Integer, Boolean, IReadOnlyDictionary(Of String, Object), ProviderRateLimitProfile)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.New(String, String, Meridian.Infrastructure.Adapters.Core.ProviderType, Integer, Boolean, System.Collections.Generic.IReadOnlyDictionary(Of String, Object), Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile)
+  name.vb: New(String, String, ProviderType, Integer, Boolean, IReadOnlyDictionary(Of String, Object), ProviderRateLimitProfile)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: ProviderTemplate.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Name*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: ProviderTemplate.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.DisplayName*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderType
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderType
+  id: ProviderType
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  langs:
+  - csharp
+  - vb
+  name: ProviderType
+  nameWithType: ProviderTemplate.ProviderType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderType
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public ProviderType ProviderType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderType
+    content.vb: Public Property ProviderType As ProviderType
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderType*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: ProviderTemplate.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Priority*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.IsEnabled
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.IsEnabled
+  id: IsEnabled
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  langs:
+  - csharp
+  - vb
+  name: IsEnabled
+  nameWithType: ProviderTemplate.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.IsEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEnabled
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public bool IsEnabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsEnabled As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.IsEnabled*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Capabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Capabilities
+  id: Capabilities
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: ProviderTemplate.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public IReadOnlyDictionary<string, object> Capabilities { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    content.vb: Public Property Capabilities As IReadOnlyDictionary(Of String, Object)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Capabilities*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.RateLimit
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.RateLimit
+  id: RateLimit
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  langs:
+  - csharp
+  - vb
+  name: RateLimit
+  nameWithType: ProviderTemplate.RateLimit
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.RateLimit
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimit
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public ProviderRateLimitProfile? RateLimit { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+    content.vb: Public Property RateLimit As ProviderRateLimitProfile
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.RateLimit*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ToInfo
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ToInfo
+  id: ToInfo
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+  langs:
+  - csharp
+  - vb
+  name: ToInfo()
+  nameWithType: ProviderTemplate.ToInfo()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ToInfo()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToInfo
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderTemplate.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public ProviderInfo ToInfo()
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderInfo
+    content.vb: Public Function ToInfo() As ProviderInfo
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ToInfo*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderTemplate}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderTemplate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderTemplate>
+  nameWithType: IEquatable<ProviderTemplate>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.ProviderTemplate>
+  nameWithType.vb: IEquatable(Of ProviderTemplate)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.ProviderTemplate)
+  name.vb: IEquatable(Of ProviderTemplate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+    name: ProviderTemplate
+    href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate
+    name: ProviderTemplate
+    href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplate__ctor_System_String_System_String_Meridian_Infrastructure_Adapters_Core_ProviderType_System_Int32_System_Boolean_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__Meridian_Infrastructure_Adapters_Core_ProviderRateLimitProfile_
+  name: ProviderTemplate
+  nameWithType: ProviderTemplate.ProviderTemplate
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderTemplate
+  nameWithType.vb: ProviderTemplate.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderType
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderType
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderType.html
+  name: ProviderType
+  nameWithType: ProviderType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderType
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, object>
+  nameWithType: IReadOnlyDictionary<string, object>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, object>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Object)
+  name.vb: IReadOnlyDictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile.html
+  name: ProviderRateLimitProfile
+  nameWithType: ProviderRateLimitProfile
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitProfile
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Name
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplate_Name
+  name: Name
+  nameWithType: ProviderTemplate.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Name
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.DisplayName
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplate_DisplayName
+  name: DisplayName
+  nameWithType: ProviderTemplate.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderType*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderType
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplate_ProviderType
+  name: ProviderType
+  nameWithType: ProviderTemplate.ProviderType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ProviderType
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Priority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Priority
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplate_Priority
+  name: Priority
+  nameWithType: ProviderTemplate.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Priority
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.IsEnabled*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.IsEnabled
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplate_IsEnabled
+  name: IsEnabled
+  nameWithType: ProviderTemplate.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.IsEnabled
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Capabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Capabilities
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplate_Capabilities
+  name: Capabilities
+  nameWithType: ProviderTemplate.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.Capabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.RateLimit*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.RateLimit
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplate_RateLimit
+  name: RateLimit
+  nameWithType: ProviderTemplate.RateLimit
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.RateLimit
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ToInfo*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ToInfo
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplate_ToInfo
+  name: ToInfo
+  nameWithType: ProviderTemplate.ToInfo
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplate.ToInfo
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderInfo
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderInfo
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderInfo.html
+  name: ProviderInfo
+  nameWithType: ProviderInfo
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderInfo

@@ -1,0 +1,205 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.IWatchlistService
+  commentId: T:Meridian.Ui.Services.Contracts.IWatchlistService
+  id: IWatchlistService
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.IWatchlistService.LoadWatchlistAsync
+  langs:
+  - csharp
+  - vb
+  name: IWatchlistService
+  nameWithType: IWatchlistService
+  fullName: Meridian.Ui.Services.Contracts.IWatchlistService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IWatchlistService
+    path: ../../src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Interface for watchlist services used by shared UI services.
+
+    Implemented by platform-specific watchlist services (WPF).
+  example: []
+  syntax:
+    content: public interface IWatchlistService
+    content.vb: Public Interface IWatchlistService
+- uid: Meridian.Ui.Services.Contracts.IWatchlistService.LoadWatchlistAsync
+  commentId: M:Meridian.Ui.Services.Contracts.IWatchlistService.LoadWatchlistAsync
+  id: LoadWatchlistAsync
+  parent: Meridian.Ui.Services.Contracts.IWatchlistService
+  langs:
+  - csharp
+  - vb
+  name: LoadWatchlistAsync()
+  nameWithType: IWatchlistService.LoadWatchlistAsync()
+  fullName: Meridian.Ui.Services.Contracts.IWatchlistService.LoadWatchlistAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadWatchlistAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IWatchlistService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  syntax:
+    content: Task<WatchlistData> LoadWatchlistAsync()
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.WatchlistData}
+    content.vb: Function LoadWatchlistAsync() As Task(Of WatchlistData)
+  overload: Meridian.Ui.Services.Contracts.IWatchlistService.LoadWatchlistAsync*
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.IWatchlistService.LoadWatchlistAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IWatchlistService.LoadWatchlistAsync
+  href: Meridian.Ui.Services.Contracts.IWatchlistService.html#Meridian_Ui_Services_Contracts_IWatchlistService_LoadWatchlistAsync
+  name: LoadWatchlistAsync
+  nameWithType: IWatchlistService.LoadWatchlistAsync
+  fullName: Meridian.Ui.Services.Contracts.IWatchlistService.LoadWatchlistAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.WatchlistData}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.WatchlistData}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<WatchlistData>
+  nameWithType: Task<WatchlistData>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.WatchlistData>
+  nameWithType.vb: Task(Of WatchlistData)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.WatchlistData)
+  name.vb: Task(Of WatchlistData)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.WatchlistData
+    name: WatchlistData
+    href: Meridian.Ui.Services.WatchlistData.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.WatchlistData
+    name: WatchlistData
+    href: Meridian.Ui.Services.WatchlistData.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

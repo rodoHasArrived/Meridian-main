@@ -1,0 +1,120 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared
+  commentId: N:Meridian.Ui.Shared
+  id: Meridian.Ui.Shared
+  children:
+  - Meridian.Ui.Shared.DtoExtensions
+  - Meridian.Ui.Shared.HtmlTemplateGenerator
+  - Meridian.Ui.Shared.LeanAutoExportService
+  - Meridian.Ui.Shared.LeanSymbolMapper
+  - Meridian.Ui.Shared.LoginSessionService
+  - Meridian.Ui.Shared.ScoreExplanationProjection
+  - Meridian.Ui.Shared.ScoreReasonProjection
+  - Meridian.Ui.Shared.UserAccountConfig
+  - Meridian.Ui.Shared.UserProfile
+  - Meridian.Ui.Shared.UserProfileRegistry
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Ui.Shared
+  nameWithType: Meridian.Ui.Shared
+  fullName: Meridian.Ui.Shared
+  type: Namespace
+  assemblies:
+  - Meridian.Ui.Shared
+references:
+- uid: Meridian.Ui.Shared.DtoExtensions
+  commentId: T:Meridian.Ui.Shared.DtoExtensions
+  href: Meridian.Ui.Shared.DtoExtensions.html
+  name: DtoExtensions
+  nameWithType: DtoExtensions
+  fullName: Meridian.Ui.Shared.DtoExtensions
+- uid: Meridian.Ui.Shared.HtmlTemplateGenerator
+  commentId: T:Meridian.Ui.Shared.HtmlTemplateGenerator
+  href: Meridian.Ui.Shared.HtmlTemplateGenerator.html
+  name: HtmlTemplateGenerator
+  nameWithType: HtmlTemplateGenerator
+  fullName: Meridian.Ui.Shared.HtmlTemplateGenerator
+- uid: Meridian.Ui.Shared.LeanAutoExportService
+  commentId: T:Meridian.Ui.Shared.LeanAutoExportService
+  href: Meridian.Ui.Shared.LeanAutoExportService.html
+  name: LeanAutoExportService
+  nameWithType: LeanAutoExportService
+  fullName: Meridian.Ui.Shared.LeanAutoExportService
+- uid: Meridian.Ui.Shared.LeanSymbolMapper
+  commentId: T:Meridian.Ui.Shared.LeanSymbolMapper
+  href: Meridian.Ui.Shared.LeanSymbolMapper.html
+  name: LeanSymbolMapper
+  nameWithType: LeanSymbolMapper
+  fullName: Meridian.Ui.Shared.LeanSymbolMapper
+- uid: Meridian.Ui.Shared.LoginSessionService
+  commentId: T:Meridian.Ui.Shared.LoginSessionService
+  parent: Meridian.Ui.Shared
+  href: Meridian.Ui.Shared.LoginSessionService.html
+  name: LoginSessionService
+  nameWithType: LoginSessionService
+  fullName: Meridian.Ui.Shared.LoginSessionService
+- uid: Meridian.Ui.Shared.ScoreExplanationProjection
+  commentId: T:Meridian.Ui.Shared.ScoreExplanationProjection
+  parent: Meridian.Ui.Shared
+  href: Meridian.Ui.Shared.ScoreExplanationProjection.html
+  name: ScoreExplanationProjection
+  nameWithType: ScoreExplanationProjection
+  fullName: Meridian.Ui.Shared.ScoreExplanationProjection
+- uid: Meridian.Ui.Shared.ScoreReasonProjection
+  commentId: T:Meridian.Ui.Shared.ScoreReasonProjection
+  href: Meridian.Ui.Shared.ScoreReasonProjection.html
+  name: ScoreReasonProjection
+  nameWithType: ScoreReasonProjection
+  fullName: Meridian.Ui.Shared.ScoreReasonProjection
+- uid: Meridian.Ui.Shared.UserProfileRegistry
+  commentId: T:Meridian.Ui.Shared.UserProfileRegistry
+  parent: Meridian.Ui.Shared
+  href: Meridian.Ui.Shared.UserProfileRegistry.html
+  name: UserProfileRegistry
+  nameWithType: UserProfileRegistry
+  fullName: Meridian.Ui.Shared.UserProfileRegistry
+- uid: Meridian.Ui.Shared.UserProfile
+  commentId: T:Meridian.Ui.Shared.UserProfile
+  parent: Meridian.Ui.Shared
+  href: Meridian.Ui.Shared.UserProfile.html
+  name: UserProfile
+  nameWithType: UserProfile
+  fullName: Meridian.Ui.Shared.UserProfile
+- uid: Meridian.Ui.Shared.UserAccountConfig
+  commentId: T:Meridian.Ui.Shared.UserAccountConfig
+  href: Meridian.Ui.Shared.UserAccountConfig.html
+  name: UserAccountConfig
+  nameWithType: UserAccountConfig
+  fullName: Meridian.Ui.Shared.UserAccountConfig
+- uid: Meridian.Ui.Shared
+  commentId: N:Meridian.Ui.Shared
+  href: Meridian.html
+  name: Meridian.Ui.Shared
+  nameWithType: Meridian.Ui.Shared
+  fullName: Meridian.Ui.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html

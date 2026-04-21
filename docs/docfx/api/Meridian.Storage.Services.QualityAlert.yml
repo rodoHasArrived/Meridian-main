@@ -1,0 +1,596 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.QualityAlert
+  commentId: T:Meridian.Storage.Services.QualityAlert
+  id: QualityAlert
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.QualityAlert.#ctor(System.String,System.String,System.Double,System.Double,System.String)
+  - Meridian.Storage.Services.QualityAlert.CurrentScore
+  - Meridian.Storage.Services.QualityAlert.Issue
+  - Meridian.Storage.Services.QualityAlert.Recommendation
+  - Meridian.Storage.Services.QualityAlert.Symbol
+  - Meridian.Storage.Services.QualityAlert.Threshold
+  langs:
+  - csharp
+  - vb
+  name: QualityAlert
+  nameWithType: QualityAlert
+  fullName: Meridian.Storage.Services.QualityAlert
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QualityAlert
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 673
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record QualityAlert : IEquatable<QualityAlert>'
+    content.vb: Public NotInheritable Class QualityAlert Implements IEquatable(Of QualityAlert)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.QualityAlert}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.QualityAlert.#ctor(System.String,System.String,System.Double,System.Double,System.String)
+  commentId: M:Meridian.Storage.Services.QualityAlert.#ctor(System.String,System.String,System.Double,System.Double,System.String)
+  id: '#ctor(System.String,System.String,System.Double,System.Double,System.String)'
+  parent: Meridian.Storage.Services.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: QualityAlert(string, string, double, double, string)
+  nameWithType: QualityAlert.QualityAlert(string, string, double, double, string)
+  fullName: Meridian.Storage.Services.QualityAlert.QualityAlert(string, string, double, double, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 673
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public QualityAlert(string Symbol, string Issue, double CurrentScore, double Threshold, string Recommendation)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: Issue
+      type: System.String
+    - id: CurrentScore
+      type: System.Double
+    - id: Threshold
+      type: System.Double
+    - id: Recommendation
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, Issue As String, CurrentScore As Double, Threshold As Double, Recommendation As String)
+  overload: Meridian.Storage.Services.QualityAlert.#ctor*
+  nameWithType.vb: QualityAlert.New(String, String, Double, Double, String)
+  fullName.vb: Meridian.Storage.Services.QualityAlert.New(String, String, Double, Double, String)
+  name.vb: New(String, String, Double, Double, String)
+- uid: Meridian.Storage.Services.QualityAlert.Symbol
+  commentId: P:Meridian.Storage.Services.QualityAlert.Symbol
+  id: Symbol
+  parent: Meridian.Storage.Services.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: QualityAlert.Symbol
+  fullName: Meridian.Storage.Services.QualityAlert.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 674
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Storage.Services.QualityAlert.Symbol*
+- uid: Meridian.Storage.Services.QualityAlert.Issue
+  commentId: P:Meridian.Storage.Services.QualityAlert.Issue
+  id: Issue
+  parent: Meridian.Storage.Services.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: Issue
+  nameWithType: QualityAlert.Issue
+  fullName: Meridian.Storage.Services.QualityAlert.Issue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issue
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 675
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Issue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Issue As String
+  overload: Meridian.Storage.Services.QualityAlert.Issue*
+- uid: Meridian.Storage.Services.QualityAlert.CurrentScore
+  commentId: P:Meridian.Storage.Services.QualityAlert.CurrentScore
+  id: CurrentScore
+  parent: Meridian.Storage.Services.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: CurrentScore
+  nameWithType: QualityAlert.CurrentScore
+  fullName: Meridian.Storage.Services.QualityAlert.CurrentScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentScore
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 676
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public double CurrentScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CurrentScore As Double
+  overload: Meridian.Storage.Services.QualityAlert.CurrentScore*
+- uid: Meridian.Storage.Services.QualityAlert.Threshold
+  commentId: P:Meridian.Storage.Services.QualityAlert.Threshold
+  id: Threshold
+  parent: Meridian.Storage.Services.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: Threshold
+  nameWithType: QualityAlert.Threshold
+  fullName: Meridian.Storage.Services.QualityAlert.Threshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Threshold
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 677
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public double Threshold { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Threshold As Double
+  overload: Meridian.Storage.Services.QualityAlert.Threshold*
+- uid: Meridian.Storage.Services.QualityAlert.Recommendation
+  commentId: P:Meridian.Storage.Services.QualityAlert.Recommendation
+  id: Recommendation
+  parent: Meridian.Storage.Services.QualityAlert
+  langs:
+  - csharp
+  - vb
+  name: Recommendation
+  nameWithType: QualityAlert.Recommendation
+  fullName: Meridian.Storage.Services.QualityAlert.Recommendation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Recommendation
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 678
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Recommendation { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Recommendation As String
+  overload: Meridian.Storage.Services.QualityAlert.Recommendation*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.QualityAlert}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.QualityAlert}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<QualityAlert>
+  nameWithType: IEquatable<QualityAlert>
+  fullName: System.IEquatable<Meridian.Storage.Services.QualityAlert>
+  nameWithType.vb: IEquatable(Of QualityAlert)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.QualityAlert)
+  name.vb: IEquatable(Of QualityAlert)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.QualityAlert
+    name: QualityAlert
+    href: Meridian.Storage.Services.QualityAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QualityAlert
+    name: QualityAlert
+    href: Meridian.Storage.Services.QualityAlert.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.QualityAlert.#ctor*
+  commentId: Overload:Meridian.Storage.Services.QualityAlert.#ctor
+  href: Meridian.Storage.Services.QualityAlert.html#Meridian_Storage_Services_QualityAlert__ctor_System_String_System_String_System_Double_System_Double_System_String_
+  name: QualityAlert
+  nameWithType: QualityAlert.QualityAlert
+  fullName: Meridian.Storage.Services.QualityAlert.QualityAlert
+  nameWithType.vb: QualityAlert.New
+  fullName.vb: Meridian.Storage.Services.QualityAlert.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Storage.Services.QualityAlert.Symbol*
+  commentId: Overload:Meridian.Storage.Services.QualityAlert.Symbol
+  href: Meridian.Storage.Services.QualityAlert.html#Meridian_Storage_Services_QualityAlert_Symbol
+  name: Symbol
+  nameWithType: QualityAlert.Symbol
+  fullName: Meridian.Storage.Services.QualityAlert.Symbol
+- uid: Meridian.Storage.Services.QualityAlert.Issue*
+  commentId: Overload:Meridian.Storage.Services.QualityAlert.Issue
+  href: Meridian.Storage.Services.QualityAlert.html#Meridian_Storage_Services_QualityAlert_Issue
+  name: Issue
+  nameWithType: QualityAlert.Issue
+  fullName: Meridian.Storage.Services.QualityAlert.Issue
+- uid: Meridian.Storage.Services.QualityAlert.CurrentScore*
+  commentId: Overload:Meridian.Storage.Services.QualityAlert.CurrentScore
+  href: Meridian.Storage.Services.QualityAlert.html#Meridian_Storage_Services_QualityAlert_CurrentScore
+  name: CurrentScore
+  nameWithType: QualityAlert.CurrentScore
+  fullName: Meridian.Storage.Services.QualityAlert.CurrentScore
+- uid: Meridian.Storage.Services.QualityAlert.Threshold*
+  commentId: Overload:Meridian.Storage.Services.QualityAlert.Threshold
+  href: Meridian.Storage.Services.QualityAlert.html#Meridian_Storage_Services_QualityAlert_Threshold
+  name: Threshold
+  nameWithType: QualityAlert.Threshold
+  fullName: Meridian.Storage.Services.QualityAlert.Threshold
+- uid: Meridian.Storage.Services.QualityAlert.Recommendation*
+  commentId: Overload:Meridian.Storage.Services.QualityAlert.Recommendation
+  href: Meridian.Storage.Services.QualityAlert.html#Meridian_Storage_Services_QualityAlert_Recommendation
+  name: Recommendation
+  nameWithType: QualityAlert.Recommendation
+  fullName: Meridian.Storage.Services.QualityAlert.Recommendation

@@ -1,0 +1,593 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Scheduling.CronExpressionParser
+  commentId: T:Meridian.Core.Scheduling.CronExpressionParser
+  id: CronExpressionParser
+  parent: Meridian.Core.Scheduling
+  children:
+  - Meridian.Core.Scheduling.CronExpressionParser.GetDescription(System.String)
+  - Meridian.Core.Scheduling.CronExpressionParser.GetNextOccurrence(System.String,System.TimeZoneInfo,System.DateTimeOffset)
+  - Meridian.Core.Scheduling.CronExpressionParser.IsValid(System.String)
+  - Meridian.Core.Scheduling.CronExpressionParser.TryParse(System.String,Meridian.Core.Scheduling.CronSchedule@)
+  langs:
+  - csharp
+  - vb
+  name: CronExpressionParser
+  nameWithType: CronExpressionParser
+  fullName: Meridian.Core.Scheduling.CronExpressionParser
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CronExpressionParser
+    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Scheduling
+  summary: >-
+    Lightweight cron expression parser supporting standard 5-field format.
+
+    Format: minute hour day-of-month month day-of-week
+
+    Examples:
+      "0 2 * * *"     - Daily at 2:00 AM
+      "0 3 * * 0"     - Every Sunday at 3:00 AM
+      "30 6 * * 1-5"  - Weekdays at 6:30 AM
+      "0 0 1 * *"     - First day of each month at midnight
+      "*/15 * * * *"  - Every 15 minutes
+  example: []
+  syntax:
+    content: public static class CronExpressionParser
+    content.vb: Public Module CronExpressionParser
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Core.Scheduling.CronExpressionParser.GetNextOccurrence(System.String,System.TimeZoneInfo,System.DateTimeOffset)
+  commentId: M:Meridian.Core.Scheduling.CronExpressionParser.GetNextOccurrence(System.String,System.TimeZoneInfo,System.DateTimeOffset)
+  id: GetNextOccurrence(System.String,System.TimeZoneInfo,System.DateTimeOffset)
+  parent: Meridian.Core.Scheduling.CronExpressionParser
+  langs:
+  - csharp
+  - vb
+  name: GetNextOccurrence(string, TimeZoneInfo, DateTimeOffset)
+  nameWithType: CronExpressionParser.GetNextOccurrence(string, TimeZoneInfo, DateTimeOffset)
+  fullName: Meridian.Core.Scheduling.CronExpressionParser.GetNextOccurrence(string, System.TimeZoneInfo, System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetNextOccurrence
+    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Scheduling
+  summary: Calculate the next occurrence of a cron expression.
+  example: []
+  syntax:
+    content: public static DateTimeOffset? GetNextOccurrence(string cronExpression, TimeZoneInfo timeZone, DateTimeOffset from)
+    parameters:
+    - id: cronExpression
+      type: System.String
+      description: 5-field cron expression.
+    - id: timeZone
+      type: System.TimeZoneInfo
+      description: Timezone for evaluation.
+    - id: from
+      type: System.DateTimeOffset
+      description: Start time for calculation.
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+      description: Next occurrence or null if expression is invalid.
+    content.vb: Public Shared Function GetNextOccurrence(cronExpression As String, timeZone As TimeZoneInfo, from As DateTimeOffset) As DateTimeOffset?
+  overload: Meridian.Core.Scheduling.CronExpressionParser.GetNextOccurrence*
+  nameWithType.vb: CronExpressionParser.GetNextOccurrence(String, TimeZoneInfo, DateTimeOffset)
+  fullName.vb: Meridian.Core.Scheduling.CronExpressionParser.GetNextOccurrence(String, System.TimeZoneInfo, System.DateTimeOffset)
+  name.vb: GetNextOccurrence(String, TimeZoneInfo, DateTimeOffset)
+- uid: Meridian.Core.Scheduling.CronExpressionParser.IsValid(System.String)
+  commentId: M:Meridian.Core.Scheduling.CronExpressionParser.IsValid(System.String)
+  id: IsValid(System.String)
+  parent: Meridian.Core.Scheduling.CronExpressionParser
+  langs:
+  - csharp
+  - vb
+  name: IsValid(string)
+  nameWithType: CronExpressionParser.IsValid(string)
+  fullName: Meridian.Core.Scheduling.CronExpressionParser.IsValid(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsValid
+    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Scheduling
+  summary: Validate a cron expression.
+  example: []
+  syntax:
+    content: public static bool IsValid(string cronExpression)
+    parameters:
+    - id: cronExpression
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function IsValid(cronExpression As String) As Boolean
+  overload: Meridian.Core.Scheduling.CronExpressionParser.IsValid*
+  nameWithType.vb: CronExpressionParser.IsValid(String)
+  fullName.vb: Meridian.Core.Scheduling.CronExpressionParser.IsValid(String)
+  name.vb: IsValid(String)
+- uid: Meridian.Core.Scheduling.CronExpressionParser.GetDescription(System.String)
+  commentId: M:Meridian.Core.Scheduling.CronExpressionParser.GetDescription(System.String)
+  id: GetDescription(System.String)
+  parent: Meridian.Core.Scheduling.CronExpressionParser
+  langs:
+  - csharp
+  - vb
+  name: GetDescription(string)
+  nameWithType: CronExpressionParser.GetDescription(string)
+  fullName: Meridian.Core.Scheduling.CronExpressionParser.GetDescription(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDescription
+    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Scheduling
+  summary: Get a human-readable description of a cron expression.
+  example: []
+  syntax:
+    content: public static string GetDescription(string cronExpression)
+    parameters:
+    - id: cronExpression
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetDescription(cronExpression As String) As String
+  overload: Meridian.Core.Scheduling.CronExpressionParser.GetDescription*
+  nameWithType.vb: CronExpressionParser.GetDescription(String)
+  fullName.vb: Meridian.Core.Scheduling.CronExpressionParser.GetDescription(String)
+  name.vb: GetDescription(String)
+- uid: Meridian.Core.Scheduling.CronExpressionParser.TryParse(System.String,Meridian.Core.Scheduling.CronSchedule@)
+  commentId: M:Meridian.Core.Scheduling.CronExpressionParser.TryParse(System.String,Meridian.Core.Scheduling.CronSchedule@)
+  id: TryParse(System.String,Meridian.Core.Scheduling.CronSchedule@)
+  parent: Meridian.Core.Scheduling.CronExpressionParser
+  langs:
+  - csharp
+  - vb
+  name: TryParse(string, out CronSchedule)
+  nameWithType: CronExpressionParser.TryParse(string, out CronSchedule)
+  fullName: Meridian.Core.Scheduling.CronExpressionParser.TryParse(string, out Meridian.Core.Scheduling.CronSchedule)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Scheduling/CronExpressionParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryParse
+    path: ../../src/Meridian.Core/Scheduling/CronExpressionParser.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Scheduling
+  summary: Parse a cron expression into a schedule.
+  example: []
+  syntax:
+    content: public static bool TryParse(string cronExpression, out CronSchedule schedule)
+    parameters:
+    - id: cronExpression
+      type: System.String
+    - id: schedule
+      type: Meridian.Core.Scheduling.CronSchedule
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function TryParse(cronExpression As String, schedule As CronSchedule) As Boolean
+  overload: Meridian.Core.Scheduling.CronExpressionParser.TryParse*
+  nameWithType.vb: CronExpressionParser.TryParse(String, CronSchedule)
+  fullName.vb: Meridian.Core.Scheduling.CronExpressionParser.TryParse(String, Meridian.Core.Scheduling.CronSchedule)
+  name.vb: TryParse(String, CronSchedule)
+references:
+- uid: Meridian.Core.Scheduling
+  commentId: N:Meridian.Core.Scheduling
+  href: Meridian.html
+  name: Meridian.Core.Scheduling
+  nameWithType: Meridian.Core.Scheduling
+  fullName: Meridian.Core.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Scheduling
+    name: Scheduling
+    href: Meridian.Core.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Scheduling
+    name: Scheduling
+    href: Meridian.Core.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Core.Scheduling.CronExpressionParser.GetNextOccurrence*
+  commentId: Overload:Meridian.Core.Scheduling.CronExpressionParser.GetNextOccurrence
+  href: Meridian.Core.Scheduling.CronExpressionParser.html#Meridian_Core_Scheduling_CronExpressionParser_GetNextOccurrence_System_String_System_TimeZoneInfo_System_DateTimeOffset_
+  name: GetNextOccurrence
+  nameWithType: CronExpressionParser.GetNextOccurrence
+  fullName: Meridian.Core.Scheduling.CronExpressionParser.GetNextOccurrence
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.TimeZoneInfo
+  commentId: T:System.TimeZoneInfo
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timezoneinfo
+  name: TimeZoneInfo
+  nameWithType: TimeZoneInfo
+  fullName: System.TimeZoneInfo
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Core.Scheduling.CronExpressionParser.IsValid*
+  commentId: Overload:Meridian.Core.Scheduling.CronExpressionParser.IsValid
+  href: Meridian.Core.Scheduling.CronExpressionParser.html#Meridian_Core_Scheduling_CronExpressionParser_IsValid_System_String_
+  name: IsValid
+  nameWithType: CronExpressionParser.IsValid
+  fullName: Meridian.Core.Scheduling.CronExpressionParser.IsValid
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Core.Scheduling.CronExpressionParser.GetDescription*
+  commentId: Overload:Meridian.Core.Scheduling.CronExpressionParser.GetDescription
+  href: Meridian.Core.Scheduling.CronExpressionParser.html#Meridian_Core_Scheduling_CronExpressionParser_GetDescription_System_String_
+  name: GetDescription
+  nameWithType: CronExpressionParser.GetDescription
+  fullName: Meridian.Core.Scheduling.CronExpressionParser.GetDescription
+- uid: Meridian.Core.Scheduling.CronExpressionParser.TryParse*
+  commentId: Overload:Meridian.Core.Scheduling.CronExpressionParser.TryParse
+  href: Meridian.Core.Scheduling.CronExpressionParser.html#Meridian_Core_Scheduling_CronExpressionParser_TryParse_System_String_Meridian_Core_Scheduling_CronSchedule__
+  name: TryParse
+  nameWithType: CronExpressionParser.TryParse
+  fullName: Meridian.Core.Scheduling.CronExpressionParser.TryParse
+- uid: Meridian.Core.Scheduling.CronSchedule
+  commentId: T:Meridian.Core.Scheduling.CronSchedule
+  parent: Meridian.Core.Scheduling
+  href: Meridian.Core.Scheduling.CronSchedule.html
+  name: CronSchedule
+  nameWithType: CronSchedule
+  fullName: Meridian.Core.Scheduling.CronSchedule

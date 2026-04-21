@@ -1,0 +1,850 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector
+  commentId: T:Meridian.Ui.Services.Services.FixtureModeDetector
+  id: FixtureModeDetector
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+  - Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor
+  - Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
+  - Meridian.Ui.Services.Services.FixtureModeDetector.Instance
+  - Meridian.Ui.Services.Services.FixtureModeDetector.IsBackendReachable
+  - Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode
+  - Meridian.Ui.Services.Services.FixtureModeDetector.IsNonLiveMode
+  - Meridian.Ui.Services.Services.FixtureModeDetector.IsOfflineMode
+  - Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged
+  - Meridian.Ui.Services.Services.FixtureModeDetector.ModeLabel
+  - Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+  - Meridian.Ui.Services.Services.FixtureModeDetector.SetFixtureMode(System.Boolean)
+  - Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability(System.Boolean)
+  langs:
+  - csharp
+  - vb
+  name: FixtureModeDetector
+  nameWithType: FixtureModeDetector
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FixtureModeDetector
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Detects and tracks whether the application is running in fixture/offline mode.
+
+    Provides a centralized check so all UI pages can show a hard visual distinction
+
+    when viewing sample data instead of live backend data.
+  remarks: >-
+    Fixture mode is activated by:
+
+    - Command-line flag: --fixture
+
+    - Environment variable: MDC_FIXTURE_MODE=1
+
+    - Backend unreachable (auto-detected, triggers offline mode banner)
+  example: []
+  syntax:
+    content: public sealed class FixtureModeDetector
+    content.vb: Public NotInheritable Class FixtureModeDetector
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.Instance
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: FixtureModeDetector.Instance
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public static FixtureModeDetector Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Services.FixtureModeDetector
+    content.vb: Public Shared ReadOnly Property Instance As FixtureModeDetector
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.Instance*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode
+  id: IsFixtureMode
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: IsFixtureMode
+  nameWithType: FixtureModeDetector.IsFixtureMode
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsFixtureMode
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets whether the application is explicitly running in fixture mode.
+  example: []
+  syntax:
+    content: public bool IsFixtureMode { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsFixtureMode As Boolean
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.IsOfflineMode
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.IsOfflineMode
+  id: IsOfflineMode
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: IsOfflineMode
+  nameWithType: FixtureModeDetector.IsOfflineMode
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.IsOfflineMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsOfflineMode
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets whether the application is in offline mode (backend unreachable).
+  example: []
+  syntax:
+    content: public bool IsOfflineMode { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsOfflineMode As Boolean
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.IsOfflineMode*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.IsBackendReachable
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.IsBackendReachable
+  id: IsBackendReachable
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: IsBackendReachable
+  nameWithType: FixtureModeDetector.IsBackendReachable
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.IsBackendReachable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsBackendReachable
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets whether the backend is currently reachable.
+  example: []
+  syntax:
+    content: public bool IsBackendReachable { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsBackendReachable As Boolean
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.IsBackendReachable*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.IsNonLiveMode
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.IsNonLiveMode
+  id: IsNonLiveMode
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: IsNonLiveMode
+  nameWithType: FixtureModeDetector.IsNonLiveMode
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.IsNonLiveMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsNonLiveMode
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets whether any non-live mode is active (fixture or offline).
+  example: []
+  syntax:
+    content: public bool IsNonLiveMode { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsNonLiveMode As Boolean
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.IsNonLiveMode*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ModeLabel
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.ModeLabel
+  id: ModeLabel
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: ModeLabel
+  nameWithType: FixtureModeDetector.ModeLabel
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ModeLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModeLabel
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets a human-readable mode label for display in the UI banner.
+  example: []
+  syntax:
+    content: public string ModeLabel { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ModeLabel As String
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.ModeLabel*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor
+  id: BannerColor
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: BannerColor
+  nameWithType: FixtureModeDetector.BannerColor
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BannerColor
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Gets the banner background color suggestion.
+
+    Fixture mode: amber/orange, Offline: red.
+  example: []
+  syntax:
+    content: public string BannerColor { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property BannerColor As String
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.SetFixtureMode(System.Boolean)
+  commentId: M:Meridian.Ui.Services.Services.FixtureModeDetector.SetFixtureMode(System.Boolean)
+  id: SetFixtureMode(System.Boolean)
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: SetFixtureMode(bool)
+  nameWithType: FixtureModeDetector.SetFixtureMode(bool)
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.SetFixtureMode(bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetFixtureMode
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Sets explicit fixture mode state.
+  example: []
+  syntax:
+    content: public void SetFixtureMode(bool enabled)
+    parameters:
+    - id: enabled
+      type: System.Boolean
+    content.vb: Public Sub SetFixtureMode(enabled As Boolean)
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.SetFixtureMode*
+  nameWithType.vb: FixtureModeDetector.SetFixtureMode(Boolean)
+  fullName.vb: Meridian.Ui.Services.Services.FixtureModeDetector.SetFixtureMode(Boolean)
+  name.vb: SetFixtureMode(Boolean)
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability(System.Boolean)
+  commentId: M:Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability(System.Boolean)
+  id: UpdateBackendReachability(System.Boolean)
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: UpdateBackendReachability(bool)
+  nameWithType: FixtureModeDetector.UpdateBackendReachability(bool)
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability(bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateBackendReachability
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Updates backend reachability state.
+
+    Automatically triggers offline mode when backend is unreachable.
+  example: []
+  syntax:
+    content: public void UpdateBackendReachability(bool isReachable)
+    parameters:
+    - id: isReachable
+      type: System.Boolean
+    content.vb: Public Sub UpdateBackendReachability(isReachable As Boolean)
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability*
+  nameWithType.vb: FixtureModeDetector.UpdateBackendReachability(Boolean)
+  fullName.vb: Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability(Boolean)
+  name.vb: UpdateBackendReachability(Boolean)
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+  id: ScenarioLabel
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: ScenarioLabel
+  nameWithType: FixtureModeDetector.ScenarioLabel
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScenarioLabel
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the currently active fixture scenario label for display in the UI.
+  example: []
+  syntax:
+    content: public string ScenarioLabel { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ScenarioLabel As String
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+  commentId: P:Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+  id: ActiveScenario
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: ActiveScenario
+  nameWithType: FixtureModeDetector.ActiveScenario
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveScenario
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the currently active fixture scenario.
+  example: []
+  syntax:
+    content: public FixtureScenario ActiveScenario { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+    content.vb: Public ReadOnly Property ActiveScenario As FixtureScenario
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
+  commentId: M:Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
+  id: CycleScenario
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: CycleScenario()
+  nameWithType: FixtureModeDetector.CycleScenario()
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CycleScenario
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Cycles to the next scenario in the <xref href="Meridian.Ui.Services.Services.FixtureScenario" data-throw-if-not-resolved="false"></xref> sequence.
+
+    No-op when fixture mode is off.
+  example: []
+  syntax:
+    content: public FixtureScenario CycleScenario()
+    return:
+      type: Meridian.Ui.Services.Services.FixtureScenario
+      description: The scenario that is now active after the cycle.
+    content.vb: Public Function CycleScenario() As FixtureScenario
+  overload: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario*
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged
+  commentId: E:Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged
+  id: ModeChanged
+  parent: Meridian.Ui.Services.Services.FixtureModeDetector
+  langs:
+  - csharp
+  - vb
+  name: ModeChanged
+  nameWithType: FixtureModeDetector.ModeChanged
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ModeChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModeChanged
+    path: ../../src/Meridian.Ui.Services/Services/FixtureModeDetector.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Event raised when fixture/offline mode changes.
+
+    UI pages should subscribe to this to update their visual state.
+  example: []
+  syntax:
+    content: public event EventHandler? ModeChanged
+    return:
+      type: System.EventHandler
+    content.vb: Public Event ModeChanged As EventHandler
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.Instance*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.Instance
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_Instance
+  name: Instance
+  nameWithType: FixtureModeDetector.Instance
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.Instance
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector
+  commentId: T:Meridian.Ui.Services.Services.FixtureModeDetector
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html
+  name: FixtureModeDetector
+  nameWithType: FixtureModeDetector
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_IsFixtureMode
+  name: IsFixtureMode
+  nameWithType: FixtureModeDetector.IsFixtureMode
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.IsFixtureMode
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.IsOfflineMode*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.IsOfflineMode
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_IsOfflineMode
+  name: IsOfflineMode
+  nameWithType: FixtureModeDetector.IsOfflineMode
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.IsOfflineMode
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.IsBackendReachable*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.IsBackendReachable
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_IsBackendReachable
+  name: IsBackendReachable
+  nameWithType: FixtureModeDetector.IsBackendReachable
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.IsBackendReachable
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.IsNonLiveMode*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.IsNonLiveMode
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_IsNonLiveMode
+  name: IsNonLiveMode
+  nameWithType: FixtureModeDetector.IsNonLiveMode
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.IsNonLiveMode
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ModeLabel*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.ModeLabel
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_ModeLabel
+  name: ModeLabel
+  nameWithType: FixtureModeDetector.ModeLabel
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ModeLabel
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_BannerColor
+  name: BannerColor
+  nameWithType: FixtureModeDetector.BannerColor
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.BannerColor
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.SetFixtureMode*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.SetFixtureMode
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_SetFixtureMode_System_Boolean_
+  name: SetFixtureMode
+  nameWithType: FixtureModeDetector.SetFixtureMode
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.SetFixtureMode
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_UpdateBackendReachability_System_Boolean_
+  name: UpdateBackendReachability
+  nameWithType: FixtureModeDetector.UpdateBackendReachability
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.UpdateBackendReachability
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_ScenarioLabel
+  name: ScenarioLabel
+  nameWithType: FixtureModeDetector.ScenarioLabel
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ScenarioLabel
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_ActiveScenario
+  name: ActiveScenario
+  nameWithType: FixtureModeDetector.ActiveScenario
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.ActiveScenario
+- uid: Meridian.Ui.Services.Services.FixtureScenario
+  commentId: T:Meridian.Ui.Services.Services.FixtureScenario
+  parent: Meridian.Ui.Services.Services
+  href: Meridian.Ui.Services.Services.FixtureScenario.html
+  name: FixtureScenario
+  nameWithType: FixtureScenario
+  fullName: Meridian.Ui.Services.Services.FixtureScenario
+- uid: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario*
+  commentId: Overload:Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
+  href: Meridian.Ui.Services.Services.FixtureModeDetector.html#Meridian_Ui_Services_Services_FixtureModeDetector_CycleScenario
+  name: CycleScenario
+  nameWithType: FixtureModeDetector.CycleScenario
+  fullName: Meridian.Ui.Services.Services.FixtureModeDetector.CycleScenario
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler

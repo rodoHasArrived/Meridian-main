@@ -1,0 +1,1115 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Serialization.HighPerformanceJson
+  commentId: T:Meridian.Application.Serialization.HighPerformanceJson
+  id: HighPerformanceJson
+  parent: Meridian.Application.Serialization
+  children:
+  - Meridian.Application.Serialization.HighPerformanceJson.Deserialize(System.String)
+  - Meridian.Application.Serialization.HighPerformanceJson.DeserializeFromUtf8Bytes(System.ReadOnlySpan{System.Byte})
+  - Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaMessages(System.ReadOnlySpan{System.Byte})
+  - Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaQuote(System.ReadOnlySpan{System.Byte})
+  - Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaTrade(System.ReadOnlySpan{System.Byte})
+  - Meridian.Application.Serialization.HighPerformanceJson.Serialize(Meridian.Domain.Events.MarketEvent)
+  - Meridian.Application.Serialization.HighPerformanceJson.SerializeToStreamAsync(System.IO.Stream,System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent},System.Threading.CancellationToken)
+  - Meridian.Application.Serialization.HighPerformanceJson.SerializeToUtf8Bytes(Meridian.Domain.Events.MarketEvent)
+  - Meridian.Application.Serialization.HighPerformanceJson.WriteTo(System.Text.Json.Utf8JsonWriter,Meridian.Domain.Events.MarketEvent)
+  langs:
+  - csharp
+  - vb
+  name: HighPerformanceJson
+  nameWithType: HighPerformanceJson
+  fullName: Meridian.Application.Serialization.HighPerformanceJson
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighPerformanceJson
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: High-performance JSON utilities using source-generated serializers.
+  example: []
+  syntax:
+    content: public static class HighPerformanceJson
+    content.vb: Public Module HighPerformanceJson
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Serialization.HighPerformanceJson.SerializeToUtf8Bytes(Meridian.Domain.Events.MarketEvent)
+  commentId: M:Meridian.Application.Serialization.HighPerformanceJson.SerializeToUtf8Bytes(Meridian.Domain.Events.MarketEvent)
+  id: SerializeToUtf8Bytes(Meridian.Domain.Events.MarketEvent)
+  parent: Meridian.Application.Serialization.HighPerformanceJson
+  langs:
+  - csharp
+  - vb
+  name: SerializeToUtf8Bytes(MarketEvent)
+  nameWithType: HighPerformanceJson.SerializeToUtf8Bytes(MarketEvent)
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.SerializeToUtf8Bytes(Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SerializeToUtf8Bytes
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 280
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Serialize a market event to JSON bytes without reflection.
+  example: []
+  syntax:
+    content: public static byte[] SerializeToUtf8Bytes(MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    return:
+      type: System.Byte[]
+    content.vb: Public Shared Function SerializeToUtf8Bytes(evt As MarketEvent) As Byte()
+  overload: Meridian.Application.Serialization.HighPerformanceJson.SerializeToUtf8Bytes*
+- uid: Meridian.Application.Serialization.HighPerformanceJson.Serialize(Meridian.Domain.Events.MarketEvent)
+  commentId: M:Meridian.Application.Serialization.HighPerformanceJson.Serialize(Meridian.Domain.Events.MarketEvent)
+  id: Serialize(Meridian.Domain.Events.MarketEvent)
+  parent: Meridian.Application.Serialization.HighPerformanceJson
+  langs:
+  - csharp
+  - vb
+  name: Serialize(MarketEvent)
+  nameWithType: HighPerformanceJson.Serialize(MarketEvent)
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.Serialize(Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Serialize
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 288
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Serialize a market event to a string without reflection.
+  example: []
+  syntax:
+    content: public static string Serialize(MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    return:
+      type: System.String
+    content.vb: Public Shared Function Serialize(evt As MarketEvent) As String
+  overload: Meridian.Application.Serialization.HighPerformanceJson.Serialize*
+- uid: Meridian.Application.Serialization.HighPerformanceJson.DeserializeFromUtf8Bytes(System.ReadOnlySpan{System.Byte})
+  commentId: M:Meridian.Application.Serialization.HighPerformanceJson.DeserializeFromUtf8Bytes(System.ReadOnlySpan{System.Byte})
+  id: DeserializeFromUtf8Bytes(System.ReadOnlySpan{System.Byte})
+  parent: Meridian.Application.Serialization.HighPerformanceJson
+  langs:
+  - csharp
+  - vb
+  name: DeserializeFromUtf8Bytes(ReadOnlySpan<byte>)
+  nameWithType: HighPerformanceJson.DeserializeFromUtf8Bytes(ReadOnlySpan<byte>)
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.DeserializeFromUtf8Bytes(System.ReadOnlySpan<byte>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeserializeFromUtf8Bytes
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 296
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Deserialize a market event from JSON bytes without reflection.
+  example: []
+  syntax:
+    content: public static MarketEvent? DeserializeFromUtf8Bytes(ReadOnlySpan<byte> utf8Json)
+    parameters:
+    - id: utf8Json
+      type: System.ReadOnlySpan{System.Byte}
+    return:
+      type: Meridian.Domain.Events.MarketEvent
+    content.vb: Public Shared Function DeserializeFromUtf8Bytes(utf8Json As ReadOnlySpan(Of Byte)) As MarketEvent
+  overload: Meridian.Application.Serialization.HighPerformanceJson.DeserializeFromUtf8Bytes*
+  nameWithType.vb: HighPerformanceJson.DeserializeFromUtf8Bytes(ReadOnlySpan(Of Byte))
+  fullName.vb: Meridian.Application.Serialization.HighPerformanceJson.DeserializeFromUtf8Bytes(System.ReadOnlySpan(Of Byte))
+  name.vb: DeserializeFromUtf8Bytes(ReadOnlySpan(Of Byte))
+- uid: Meridian.Application.Serialization.HighPerformanceJson.Deserialize(System.String)
+  commentId: M:Meridian.Application.Serialization.HighPerformanceJson.Deserialize(System.String)
+  id: Deserialize(System.String)
+  parent: Meridian.Application.Serialization.HighPerformanceJson
+  langs:
+  - csharp
+  - vb
+  name: Deserialize(string)
+  nameWithType: HighPerformanceJson.Deserialize(string)
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.Deserialize(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Deserialize
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 304
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Deserialize a market event from a string without reflection.
+  example: []
+  syntax:
+    content: public static MarketEvent? Deserialize(string json)
+    parameters:
+    - id: json
+      type: System.String
+    return:
+      type: Meridian.Domain.Events.MarketEvent
+    content.vb: Public Shared Function Deserialize(json As String) As MarketEvent
+  overload: Meridian.Application.Serialization.HighPerformanceJson.Deserialize*
+  nameWithType.vb: HighPerformanceJson.Deserialize(String)
+  fullName.vb: Meridian.Application.Serialization.HighPerformanceJson.Deserialize(String)
+  name.vb: Deserialize(String)
+- uid: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaTrade(System.ReadOnlySpan{System.Byte})
+  commentId: M:Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaTrade(System.ReadOnlySpan{System.Byte})
+  id: ParseAlpacaTrade(System.ReadOnlySpan{System.Byte})
+  parent: Meridian.Application.Serialization.HighPerformanceJson
+  langs:
+  - csharp
+  - vb
+  name: ParseAlpacaTrade(ReadOnlySpan<byte>)
+  nameWithType: HighPerformanceJson.ParseAlpacaTrade(ReadOnlySpan<byte>)
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaTrade(System.ReadOnlySpan<byte>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseAlpacaTrade
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Parse an Alpaca trade message without reflection.
+  example: []
+  syntax:
+    content: public static AlpacaTradeMessage? ParseAlpacaTrade(ReadOnlySpan<byte> utf8Json)
+    parameters:
+    - id: utf8Json
+      type: System.ReadOnlySpan{System.Byte}
+    return:
+      type: Meridian.Application.Serialization.AlpacaTradeMessage
+    content.vb: Public Shared Function ParseAlpacaTrade(utf8Json As ReadOnlySpan(Of Byte)) As AlpacaTradeMessage
+  overload: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaTrade*
+  nameWithType.vb: HighPerformanceJson.ParseAlpacaTrade(ReadOnlySpan(Of Byte))
+  fullName.vb: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaTrade(System.ReadOnlySpan(Of Byte))
+  name.vb: ParseAlpacaTrade(ReadOnlySpan(Of Byte))
+- uid: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaQuote(System.ReadOnlySpan{System.Byte})
+  commentId: M:Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaQuote(System.ReadOnlySpan{System.Byte})
+  id: ParseAlpacaQuote(System.ReadOnlySpan{System.Byte})
+  parent: Meridian.Application.Serialization.HighPerformanceJson
+  langs:
+  - csharp
+  - vb
+  name: ParseAlpacaQuote(ReadOnlySpan<byte>)
+  nameWithType: HighPerformanceJson.ParseAlpacaQuote(ReadOnlySpan<byte>)
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaQuote(System.ReadOnlySpan<byte>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseAlpacaQuote
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 320
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Parse an Alpaca quote message without reflection.
+  example: []
+  syntax:
+    content: public static AlpacaQuoteMessage? ParseAlpacaQuote(ReadOnlySpan<byte> utf8Json)
+    parameters:
+    - id: utf8Json
+      type: System.ReadOnlySpan{System.Byte}
+    return:
+      type: Meridian.Application.Serialization.AlpacaQuoteMessage
+    content.vb: Public Shared Function ParseAlpacaQuote(utf8Json As ReadOnlySpan(Of Byte)) As AlpacaQuoteMessage
+  overload: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaQuote*
+  nameWithType.vb: HighPerformanceJson.ParseAlpacaQuote(ReadOnlySpan(Of Byte))
+  fullName.vb: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaQuote(System.ReadOnlySpan(Of Byte))
+  name.vb: ParseAlpacaQuote(ReadOnlySpan(Of Byte))
+- uid: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaMessages(System.ReadOnlySpan{System.Byte})
+  commentId: M:Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaMessages(System.ReadOnlySpan{System.Byte})
+  id: ParseAlpacaMessages(System.ReadOnlySpan{System.Byte})
+  parent: Meridian.Application.Serialization.HighPerformanceJson
+  langs:
+  - csharp
+  - vb
+  name: ParseAlpacaMessages(ReadOnlySpan<byte>)
+  nameWithType: HighPerformanceJson.ParseAlpacaMessages(ReadOnlySpan<byte>)
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaMessages(System.ReadOnlySpan<byte>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseAlpacaMessages
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 328
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Parse Alpaca messages array without reflection.
+  example: []
+  syntax:
+    content: public static AlpacaMessage[]? ParseAlpacaMessages(ReadOnlySpan<byte> utf8Json)
+    parameters:
+    - id: utf8Json
+      type: System.ReadOnlySpan{System.Byte}
+    return:
+      type: Meridian.Application.Serialization.AlpacaMessage[]
+    content.vb: Public Shared Function ParseAlpacaMessages(utf8Json As ReadOnlySpan(Of Byte)) As AlpacaMessage()
+  overload: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaMessages*
+  nameWithType.vb: HighPerformanceJson.ParseAlpacaMessages(ReadOnlySpan(Of Byte))
+  fullName.vb: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaMessages(System.ReadOnlySpan(Of Byte))
+  name.vb: ParseAlpacaMessages(ReadOnlySpan(Of Byte))
+- uid: Meridian.Application.Serialization.HighPerformanceJson.WriteTo(System.Text.Json.Utf8JsonWriter,Meridian.Domain.Events.MarketEvent)
+  commentId: M:Meridian.Application.Serialization.HighPerformanceJson.WriteTo(System.Text.Json.Utf8JsonWriter,Meridian.Domain.Events.MarketEvent)
+  id: WriteTo(System.Text.Json.Utf8JsonWriter,Meridian.Domain.Events.MarketEvent)
+  parent: Meridian.Application.Serialization.HighPerformanceJson
+  langs:
+  - csharp
+  - vb
+  name: WriteTo(Utf8JsonWriter, MarketEvent)
+  nameWithType: HighPerformanceJson.WriteTo(Utf8JsonWriter, MarketEvent)
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.WriteTo(System.Text.Json.Utf8JsonWriter, Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteTo
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 336
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Write a market event to a Utf8JsonWriter without reflection.
+  example: []
+  syntax:
+    content: public static void WriteTo(Utf8JsonWriter writer, MarketEvent evt)
+    parameters:
+    - id: writer
+      type: System.Text.Json.Utf8JsonWriter
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    content.vb: Public Shared Sub WriteTo(writer As Utf8JsonWriter, evt As MarketEvent)
+  overload: Meridian.Application.Serialization.HighPerformanceJson.WriteTo*
+- uid: Meridian.Application.Serialization.HighPerformanceJson.SerializeToStreamAsync(System.IO.Stream,System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Serialization.HighPerformanceJson.SerializeToStreamAsync(System.IO.Stream,System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent},System.Threading.CancellationToken)
+  id: SerializeToStreamAsync(System.IO.Stream,System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent},System.Threading.CancellationToken)
+  parent: Meridian.Application.Serialization.HighPerformanceJson
+  langs:
+  - csharp
+  - vb
+  name: SerializeToStreamAsync(Stream, IEnumerable<MarketEvent>, CancellationToken)
+  nameWithType: HighPerformanceJson.SerializeToStreamAsync(Stream, IEnumerable<MarketEvent>, CancellationToken)
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.SerializeToStreamAsync(System.IO.Stream, System.Collections.Generic.IEnumerable<Meridian.Domain.Events.MarketEvent>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SerializeToStreamAsync
+    path: ../../src/Meridian.Core/Serialization/MarketDataJsonContext.cs
+    startLine: 344
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Serialization
+  summary: Serialize multiple events efficiently to a stream.
+  example: []
+  syntax:
+    content: public static Task SerializeToStreamAsync(Stream stream, IEnumerable<MarketEvent> events, CancellationToken ct = default)
+    parameters:
+    - id: stream
+      type: System.IO.Stream
+    - id: events
+      type: System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Shared Function SerializeToStreamAsync(stream As Stream, events As IEnumerable(Of MarketEvent), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Serialization.HighPerformanceJson.SerializeToStreamAsync*
+  nameWithType.vb: HighPerformanceJson.SerializeToStreamAsync(Stream, IEnumerable(Of MarketEvent), CancellationToken)
+  fullName.vb: Meridian.Application.Serialization.HighPerformanceJson.SerializeToStreamAsync(System.IO.Stream, System.Collections.Generic.IEnumerable(Of Meridian.Domain.Events.MarketEvent), System.Threading.CancellationToken)
+  name.vb: SerializeToStreamAsync(Stream, IEnumerable(Of MarketEvent), CancellationToken)
+references:
+- uid: Meridian.Application.Serialization
+  commentId: N:Meridian.Application.Serialization
+  href: Meridian.html
+  name: Meridian.Application.Serialization
+  nameWithType: Meridian.Application.Serialization
+  fullName: Meridian.Application.Serialization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Serialization
+    name: Serialization
+    href: Meridian.Application.Serialization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Serialization
+    name: Serialization
+    href: Meridian.Application.Serialization.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Serialization.HighPerformanceJson.SerializeToUtf8Bytes*
+  commentId: Overload:Meridian.Application.Serialization.HighPerformanceJson.SerializeToUtf8Bytes
+  href: Meridian.Application.Serialization.HighPerformanceJson.html#Meridian_Application_Serialization_HighPerformanceJson_SerializeToUtf8Bytes_Meridian_Domain_Events_MarketEvent_
+  name: SerializeToUtf8Bytes
+  nameWithType: HighPerformanceJson.SerializeToUtf8Bytes
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.SerializeToUtf8Bytes
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.Byte[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte[]
+  nameWithType: byte[]
+  fullName: byte[]
+  nameWithType.vb: Byte()
+  fullName.vb: Byte()
+  name.vb: Byte()
+  spec.csharp:
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: (
+  - name: )
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Application.Serialization.HighPerformanceJson.Serialize*
+  commentId: Overload:Meridian.Application.Serialization.HighPerformanceJson.Serialize
+  href: Meridian.Application.Serialization.HighPerformanceJson.html#Meridian_Application_Serialization_HighPerformanceJson_Serialize_Meridian_Domain_Events_MarketEvent_
+  name: Serialize
+  nameWithType: HighPerformanceJson.Serialize
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.Serialize
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Serialization.HighPerformanceJson.DeserializeFromUtf8Bytes*
+  commentId: Overload:Meridian.Application.Serialization.HighPerformanceJson.DeserializeFromUtf8Bytes
+  href: Meridian.Application.Serialization.HighPerformanceJson.html#Meridian_Application_Serialization_HighPerformanceJson_DeserializeFromUtf8Bytes_System_ReadOnlySpan_System_Byte__
+  name: DeserializeFromUtf8Bytes
+  nameWithType: HighPerformanceJson.DeserializeFromUtf8Bytes
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.DeserializeFromUtf8Bytes
+- uid: System.ReadOnlySpan{System.Byte}
+  commentId: T:System.ReadOnlySpan{System.Byte}
+  parent: System
+  definition: System.ReadOnlySpan`1
+  href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  name: ReadOnlySpan<byte>
+  nameWithType: ReadOnlySpan<byte>
+  fullName: System.ReadOnlySpan<byte>
+  nameWithType.vb: ReadOnlySpan(Of Byte)
+  fullName.vb: System.ReadOnlySpan(Of Byte)
+  name.vb: ReadOnlySpan(Of Byte)
+  spec.csharp:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: <
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: '>'
+  spec.vb:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: )
+- uid: System.ReadOnlySpan`1
+  commentId: T:System.ReadOnlySpan`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  name: ReadOnlySpan<T>
+  nameWithType: ReadOnlySpan<T>
+  fullName: System.ReadOnlySpan<T>
+  nameWithType.vb: ReadOnlySpan(Of T)
+  fullName.vb: System.ReadOnlySpan(Of T)
+  name.vb: ReadOnlySpan(Of T)
+  spec.csharp:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.ReadOnlySpan`1
+    name: ReadOnlySpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.readonlyspan-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Serialization.HighPerformanceJson.Deserialize*
+  commentId: Overload:Meridian.Application.Serialization.HighPerformanceJson.Deserialize
+  href: Meridian.Application.Serialization.HighPerformanceJson.html#Meridian_Application_Serialization_HighPerformanceJson_Deserialize_System_String_
+  name: Deserialize
+  nameWithType: HighPerformanceJson.Deserialize
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.Deserialize
+- uid: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaTrade*
+  commentId: Overload:Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaTrade
+  href: Meridian.Application.Serialization.HighPerformanceJson.html#Meridian_Application_Serialization_HighPerformanceJson_ParseAlpacaTrade_System_ReadOnlySpan_System_Byte__
+  name: ParseAlpacaTrade
+  nameWithType: HighPerformanceJson.ParseAlpacaTrade
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaTrade
+- uid: Meridian.Application.Serialization.AlpacaTradeMessage
+  commentId: T:Meridian.Application.Serialization.AlpacaTradeMessage
+  parent: Meridian.Application.Serialization
+  href: Meridian.Application.Serialization.AlpacaTradeMessage.html
+  name: AlpacaTradeMessage
+  nameWithType: AlpacaTradeMessage
+  fullName: Meridian.Application.Serialization.AlpacaTradeMessage
+- uid: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaQuote*
+  commentId: Overload:Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaQuote
+  href: Meridian.Application.Serialization.HighPerformanceJson.html#Meridian_Application_Serialization_HighPerformanceJson_ParseAlpacaQuote_System_ReadOnlySpan_System_Byte__
+  name: ParseAlpacaQuote
+  nameWithType: HighPerformanceJson.ParseAlpacaQuote
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaQuote
+- uid: Meridian.Application.Serialization.AlpacaQuoteMessage
+  commentId: T:Meridian.Application.Serialization.AlpacaQuoteMessage
+  parent: Meridian.Application.Serialization
+  href: Meridian.Application.Serialization.AlpacaQuoteMessage.html
+  name: AlpacaQuoteMessage
+  nameWithType: AlpacaQuoteMessage
+  fullName: Meridian.Application.Serialization.AlpacaQuoteMessage
+- uid: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaMessages*
+  commentId: Overload:Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaMessages
+  href: Meridian.Application.Serialization.HighPerformanceJson.html#Meridian_Application_Serialization_HighPerformanceJson_ParseAlpacaMessages_System_ReadOnlySpan_System_Byte__
+  name: ParseAlpacaMessages
+  nameWithType: HighPerformanceJson.ParseAlpacaMessages
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.ParseAlpacaMessages
+- uid: Meridian.Application.Serialization.AlpacaMessage[]
+  isExternal: true
+  href: Meridian.Application.Serialization.AlpacaMessage.html
+  name: AlpacaMessage[]
+  nameWithType: AlpacaMessage[]
+  fullName: Meridian.Application.Serialization.AlpacaMessage[]
+  nameWithType.vb: AlpacaMessage()
+  fullName.vb: Meridian.Application.Serialization.AlpacaMessage()
+  name.vb: AlpacaMessage()
+  spec.csharp:
+  - uid: Meridian.Application.Serialization.AlpacaMessage
+    name: AlpacaMessage
+    href: Meridian.Application.Serialization.AlpacaMessage.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Application.Serialization.AlpacaMessage
+    name: AlpacaMessage
+    href: Meridian.Application.Serialization.AlpacaMessage.html
+  - name: (
+  - name: )
+- uid: Meridian.Application.Serialization.HighPerformanceJson.WriteTo*
+  commentId: Overload:Meridian.Application.Serialization.HighPerformanceJson.WriteTo
+  href: Meridian.Application.Serialization.HighPerformanceJson.html#Meridian_Application_Serialization_HighPerformanceJson_WriteTo_System_Text_Json_Utf8JsonWriter_Meridian_Domain_Events_MarketEvent_
+  name: WriteTo
+  nameWithType: HighPerformanceJson.WriteTo
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.WriteTo
+- uid: System.Text.Json.Utf8JsonWriter
+  commentId: T:System.Text.Json.Utf8JsonWriter
+  parent: System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.utf8jsonwriter
+  name: Utf8JsonWriter
+  nameWithType: Utf8JsonWriter
+  fullName: System.Text.Json.Utf8JsonWriter
+- uid: System.Text.Json
+  commentId: N:System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.Json
+  nameWithType: System.Text.Json
+  fullName: System.Text.Json
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+- uid: Meridian.Application.Serialization.HighPerformanceJson.SerializeToStreamAsync*
+  commentId: Overload:Meridian.Application.Serialization.HighPerformanceJson.SerializeToStreamAsync
+  href: Meridian.Application.Serialization.HighPerformanceJson.html#Meridian_Application_Serialization_HighPerformanceJson_SerializeToStreamAsync_System_IO_Stream_System_Collections_Generic_IEnumerable_Meridian_Domain_Events_MarketEvent__System_Threading_CancellationToken_
+  name: SerializeToStreamAsync
+  nameWithType: HighPerformanceJson.SerializeToStreamAsync
+  fullName: Meridian.Application.Serialization.HighPerformanceJson.SerializeToStreamAsync
+- uid: System.IO.Stream
+  commentId: T:System.IO.Stream
+  parent: System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.stream
+  name: Stream
+  nameWithType: Stream
+  fullName: System.IO.Stream
+- uid: System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Domain.Events.MarketEvent}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<MarketEvent>
+  nameWithType: IEnumerable<MarketEvent>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Domain.Events.MarketEvent>
+  nameWithType.vb: IEnumerable(Of MarketEvent)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Domain.Events.MarketEvent)
+  name.vb: IEnumerable(Of MarketEvent)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.IO
+  commentId: N:System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.IO
+  nameWithType: System.IO
+  fullName: System.IO
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

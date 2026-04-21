@@ -1,0 +1,715 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions
+  commentId: T:Meridian.Contracts.Export.OrderFlowExportOptions
+  id: OrderFlowExportOptions
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.OrderFlowExportOptions.Aggregation
+  - Meridian.Contracts.Export.OrderFlowExportOptions.Format
+  - Meridian.Contracts.Export.OrderFlowExportOptions.FromDate
+  - Meridian.Contracts.Export.OrderFlowExportOptions.Metrics
+  - Meridian.Contracts.Export.OrderFlowExportOptions.OutputPath
+  - Meridian.Contracts.Export.OrderFlowExportOptions.Symbols
+  - Meridian.Contracts.Export.OrderFlowExportOptions.ToDate
+  langs:
+  - csharp
+  - vb
+  name: OrderFlowExportOptions
+  nameWithType: OrderFlowExportOptions
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderFlowExportOptions
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public sealed class OrderFlowExportOptions
+    content.vb: Public NotInheritable Class OrderFlowExportOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.Symbols
+  commentId: P:Meridian.Contracts.Export.OrderFlowExportOptions.Symbols
+  id: Symbols
+  parent: Meridian.Contracts.Export.OrderFlowExportOptions
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: OrderFlowExportOptions.Symbols
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public List<string>? Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property Symbols As List(Of String)
+  overload: Meridian.Contracts.Export.OrderFlowExportOptions.Symbols*
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.FromDate
+  commentId: P:Meridian.Contracts.Export.OrderFlowExportOptions.FromDate
+  id: FromDate
+  parent: Meridian.Contracts.Export.OrderFlowExportOptions
+  langs:
+  - csharp
+  - vb
+  name: FromDate
+  nameWithType: OrderFlowExportOptions.FromDate
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.FromDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromDate
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public DateOnly? FromDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property FromDate As DateOnly?
+  overload: Meridian.Contracts.Export.OrderFlowExportOptions.FromDate*
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.ToDate
+  commentId: P:Meridian.Contracts.Export.OrderFlowExportOptions.ToDate
+  id: ToDate
+  parent: Meridian.Contracts.Export.OrderFlowExportOptions
+  langs:
+  - csharp
+  - vb
+  name: ToDate
+  nameWithType: OrderFlowExportOptions.ToDate
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.ToDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDate
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public DateOnly? ToDate { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property ToDate As DateOnly?
+  overload: Meridian.Contracts.Export.OrderFlowExportOptions.ToDate*
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.Metrics
+  commentId: P:Meridian.Contracts.Export.OrderFlowExportOptions.Metrics
+  id: Metrics
+  parent: Meridian.Contracts.Export.OrderFlowExportOptions
+  langs:
+  - csharp
+  - vb
+  name: Metrics
+  nameWithType: OrderFlowExportOptions.Metrics
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.Metrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metrics
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public string[]? Metrics { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Metrics As String()
+  overload: Meridian.Contracts.Export.OrderFlowExportOptions.Metrics*
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.Aggregation
+  commentId: P:Meridian.Contracts.Export.OrderFlowExportOptions.Aggregation
+  id: Aggregation
+  parent: Meridian.Contracts.Export.OrderFlowExportOptions
+  langs:
+  - csharp
+  - vb
+  name: Aggregation
+  nameWithType: OrderFlowExportOptions.Aggregation
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.Aggregation
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Aggregation
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public string Aggregation { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Aggregation As String
+  overload: Meridian.Contracts.Export.OrderFlowExportOptions.Aggregation*
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.Format
+  commentId: P:Meridian.Contracts.Export.OrderFlowExportOptions.Format
+  id: Format
+  parent: Meridian.Contracts.Export.OrderFlowExportOptions
+  langs:
+  - csharp
+  - vb
+  name: Format
+  nameWithType: OrderFlowExportOptions.Format
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.Format
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public string Format { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Format As String
+  overload: Meridian.Contracts.Export.OrderFlowExportOptions.Format*
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.OutputPath
+  commentId: P:Meridian.Contracts.Export.OrderFlowExportOptions.OutputPath
+  id: OutputPath
+  parent: Meridian.Contracts.Export.OrderFlowExportOptions
+  langs:
+  - csharp
+  - vb
+  name: OutputPath
+  nameWithType: OrderFlowExportOptions.OutputPath
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.OutputPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/AnalysisExportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutputPath
+    path: ../../src/Meridian.Contracts/Export/AnalysisExportModels.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  syntax:
+    content: public string? OutputPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OutputPath As String
+  overload: Meridian.Contracts.Export.OrderFlowExportOptions.OutputPath*
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.Symbols*
+  commentId: Overload:Meridian.Contracts.Export.OrderFlowExportOptions.Symbols
+  href: Meridian.Contracts.Export.OrderFlowExportOptions.html#Meridian_Contracts_Export_OrderFlowExportOptions_Symbols
+  name: Symbols
+  nameWithType: OrderFlowExportOptions.Symbols
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.Symbols
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.FromDate*
+  commentId: Overload:Meridian.Contracts.Export.OrderFlowExportOptions.FromDate
+  href: Meridian.Contracts.Export.OrderFlowExportOptions.html#Meridian_Contracts_Export_OrderFlowExportOptions_FromDate
+  name: FromDate
+  nameWithType: OrderFlowExportOptions.FromDate
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.FromDate
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.ToDate*
+  commentId: Overload:Meridian.Contracts.Export.OrderFlowExportOptions.ToDate
+  href: Meridian.Contracts.Export.OrderFlowExportOptions.html#Meridian_Contracts_Export_OrderFlowExportOptions_ToDate
+  name: ToDate
+  nameWithType: OrderFlowExportOptions.ToDate
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.ToDate
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.Metrics*
+  commentId: Overload:Meridian.Contracts.Export.OrderFlowExportOptions.Metrics
+  href: Meridian.Contracts.Export.OrderFlowExportOptions.html#Meridian_Contracts_Export_OrderFlowExportOptions_Metrics
+  name: Metrics
+  nameWithType: OrderFlowExportOptions.Metrics
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.Metrics
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.Aggregation*
+  commentId: Overload:Meridian.Contracts.Export.OrderFlowExportOptions.Aggregation
+  href: Meridian.Contracts.Export.OrderFlowExportOptions.html#Meridian_Contracts_Export_OrderFlowExportOptions_Aggregation
+  name: Aggregation
+  nameWithType: OrderFlowExportOptions.Aggregation
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.Aggregation
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.Format*
+  commentId: Overload:Meridian.Contracts.Export.OrderFlowExportOptions.Format
+  href: Meridian.Contracts.Export.OrderFlowExportOptions.html#Meridian_Contracts_Export_OrderFlowExportOptions_Format
+  name: Format
+  nameWithType: OrderFlowExportOptions.Format
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.Format
+- uid: Meridian.Contracts.Export.OrderFlowExportOptions.OutputPath*
+  commentId: Overload:Meridian.Contracts.Export.OrderFlowExportOptions.OutputPath
+  href: Meridian.Contracts.Export.OrderFlowExportOptions.html#Meridian_Contracts_Export_OrderFlowExportOptions_OutputPath
+  name: OutputPath
+  nameWithType: OrderFlowExportOptions.OutputPath
+  fullName: Meridian.Contracts.Export.OrderFlowExportOptions.OutputPath

@@ -1,0 +1,961 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.StorageAnalytics
+  commentId: T:Meridian.Contracts.Api.StorageAnalytics
+  id: StorageAnalytics
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.StorageAnalytics.DailyGrowthBytes
+  - Meridian.Contracts.Api.StorageAnalytics.DepthFileCount
+  - Meridian.Contracts.Api.StorageAnalytics.DepthSizeBytes
+  - Meridian.Contracts.Api.StorageAnalytics.HistoricalFileCount
+  - Meridian.Contracts.Api.StorageAnalytics.HistoricalSizeBytes
+  - Meridian.Contracts.Api.StorageAnalytics.LastUpdated
+  - Meridian.Contracts.Api.StorageAnalytics.ProjectedDaysUntilFull
+  - Meridian.Contracts.Api.StorageAnalytics.SymbolBreakdown
+  - Meridian.Contracts.Api.StorageAnalytics.TotalFileCount
+  - Meridian.Contracts.Api.StorageAnalytics.TotalSizeBytes
+  - Meridian.Contracts.Api.StorageAnalytics.TradeFileCount
+  - Meridian.Contracts.Api.StorageAnalytics.TradeSizeBytes
+  langs:
+  - csharp
+  - vb
+  name: StorageAnalytics
+  nameWithType: StorageAnalytics
+  fullName: Meridian.Contracts.Api.StorageAnalytics
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageAnalytics
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 354
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Storage analytics data.
+  example: []
+  syntax:
+    content: public sealed class StorageAnalytics
+    content.vb: Public NotInheritable Class StorageAnalytics
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.StorageAnalytics.TotalSizeBytes
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.TotalSizeBytes
+  id: TotalSizeBytes
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: TotalSizeBytes
+  nameWithType: StorageAnalytics.TotalSizeBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.TotalSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalSizeBytes
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("totalSizeBytes")]
+
+      public long TotalSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("totalSizeBytes")>
+
+      Public Property TotalSizeBytes As Long
+  overload: Meridian.Contracts.Api.StorageAnalytics.TotalSizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalSizeBytes
+- uid: Meridian.Contracts.Api.StorageAnalytics.TradeSizeBytes
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.TradeSizeBytes
+  id: TradeSizeBytes
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: TradeSizeBytes
+  nameWithType: StorageAnalytics.TradeSizeBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.TradeSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeSizeBytes
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 359
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("tradeSizeBytes")]
+
+      public long TradeSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("tradeSizeBytes")>
+
+      Public Property TradeSizeBytes As Long
+  overload: Meridian.Contracts.Api.StorageAnalytics.TradeSizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: tradeSizeBytes
+- uid: Meridian.Contracts.Api.StorageAnalytics.DepthSizeBytes
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.DepthSizeBytes
+  id: DepthSizeBytes
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: DepthSizeBytes
+  nameWithType: StorageAnalytics.DepthSizeBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.DepthSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthSizeBytes
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 362
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("depthSizeBytes")]
+
+      public long DepthSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("depthSizeBytes")>
+
+      Public Property DepthSizeBytes As Long
+  overload: Meridian.Contracts.Api.StorageAnalytics.DepthSizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: depthSizeBytes
+- uid: Meridian.Contracts.Api.StorageAnalytics.HistoricalSizeBytes
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.HistoricalSizeBytes
+  id: HistoricalSizeBytes
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: HistoricalSizeBytes
+  nameWithType: StorageAnalytics.HistoricalSizeBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.HistoricalSizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalSizeBytes
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 365
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("historicalSizeBytes")]
+
+      public long HistoricalSizeBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("historicalSizeBytes")>
+
+      Public Property HistoricalSizeBytes As Long
+  overload: Meridian.Contracts.Api.StorageAnalytics.HistoricalSizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: historicalSizeBytes
+- uid: Meridian.Contracts.Api.StorageAnalytics.TotalFileCount
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.TotalFileCount
+  id: TotalFileCount
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: TotalFileCount
+  nameWithType: StorageAnalytics.TotalFileCount
+  fullName: Meridian.Contracts.Api.StorageAnalytics.TotalFileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFileCount
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 368
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("totalFileCount")]
+
+      public int TotalFileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("totalFileCount")>
+
+      Public Property TotalFileCount As Integer
+  overload: Meridian.Contracts.Api.StorageAnalytics.TotalFileCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: totalFileCount
+- uid: Meridian.Contracts.Api.StorageAnalytics.TradeFileCount
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.TradeFileCount
+  id: TradeFileCount
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: TradeFileCount
+  nameWithType: StorageAnalytics.TradeFileCount
+  fullName: Meridian.Contracts.Api.StorageAnalytics.TradeFileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeFileCount
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 371
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("tradeFileCount")]
+
+      public int TradeFileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("tradeFileCount")>
+
+      Public Property TradeFileCount As Integer
+  overload: Meridian.Contracts.Api.StorageAnalytics.TradeFileCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: tradeFileCount
+- uid: Meridian.Contracts.Api.StorageAnalytics.DepthFileCount
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.DepthFileCount
+  id: DepthFileCount
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: DepthFileCount
+  nameWithType: StorageAnalytics.DepthFileCount
+  fullName: Meridian.Contracts.Api.StorageAnalytics.DepthFileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthFileCount
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 374
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("depthFileCount")]
+
+      public int DepthFileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("depthFileCount")>
+
+      Public Property DepthFileCount As Integer
+  overload: Meridian.Contracts.Api.StorageAnalytics.DepthFileCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: depthFileCount
+- uid: Meridian.Contracts.Api.StorageAnalytics.HistoricalFileCount
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.HistoricalFileCount
+  id: HistoricalFileCount
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: HistoricalFileCount
+  nameWithType: StorageAnalytics.HistoricalFileCount
+  fullName: Meridian.Contracts.Api.StorageAnalytics.HistoricalFileCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalFileCount
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("historicalFileCount")]
+
+      public int HistoricalFileCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("historicalFileCount")>
+
+      Public Property HistoricalFileCount As Integer
+  overload: Meridian.Contracts.Api.StorageAnalytics.HistoricalFileCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: historicalFileCount
+- uid: Meridian.Contracts.Api.StorageAnalytics.LastUpdated
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.LastUpdated
+  id: LastUpdated
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: LastUpdated
+  nameWithType: StorageAnalytics.LastUpdated
+  fullName: Meridian.Contracts.Api.StorageAnalytics.LastUpdated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdated
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("lastUpdated")]
+
+      public DateTimeOffset LastUpdated { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: >-
+      <JsonPropertyName("lastUpdated")>
+
+      Public Property LastUpdated As DateTimeOffset
+  overload: Meridian.Contracts.Api.StorageAnalytics.LastUpdated*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastUpdated
+- uid: Meridian.Contracts.Api.StorageAnalytics.SymbolBreakdown
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.SymbolBreakdown
+  id: SymbolBreakdown
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: SymbolBreakdown
+  nameWithType: StorageAnalytics.SymbolBreakdown
+  fullName: Meridian.Contracts.Api.StorageAnalytics.SymbolBreakdown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolBreakdown
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 383
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("symbolBreakdown")]
+
+      public StorageSymbolBreakdown[]? SymbolBreakdown { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Api.StorageSymbolBreakdown[]
+    content.vb: >-
+      <JsonPropertyName("symbolBreakdown")>
+
+      Public Property SymbolBreakdown As StorageSymbolBreakdown()
+  overload: Meridian.Contracts.Api.StorageAnalytics.SymbolBreakdown*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbolBreakdown
+- uid: Meridian.Contracts.Api.StorageAnalytics.DailyGrowthBytes
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.DailyGrowthBytes
+  id: DailyGrowthBytes
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: DailyGrowthBytes
+  nameWithType: StorageAnalytics.DailyGrowthBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.DailyGrowthBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DailyGrowthBytes
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("dailyGrowthBytes")]
+
+      public long DailyGrowthBytes { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("dailyGrowthBytes")>
+
+      Public Property DailyGrowthBytes As Long
+  overload: Meridian.Contracts.Api.StorageAnalytics.DailyGrowthBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: dailyGrowthBytes
+- uid: Meridian.Contracts.Api.StorageAnalytics.ProjectedDaysUntilFull
+  commentId: P:Meridian.Contracts.Api.StorageAnalytics.ProjectedDaysUntilFull
+  id: ProjectedDaysUntilFull
+  parent: Meridian.Contracts.Api.StorageAnalytics
+  langs:
+  - csharp
+  - vb
+  name: ProjectedDaysUntilFull
+  nameWithType: StorageAnalytics.ProjectedDaysUntilFull
+  fullName: Meridian.Contracts.Api.StorageAnalytics.ProjectedDaysUntilFull
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedDaysUntilFull
+    path: ../../src/Meridian.Contracts/Api/StatusModels.cs
+    startLine: 389
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: >-
+      [JsonPropertyName("projectedDaysUntilFull")]
+
+      public int? ProjectedDaysUntilFull { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: >-
+      <JsonPropertyName("projectedDaysUntilFull")>
+
+      Public Property ProjectedDaysUntilFull As Integer?
+  overload: Meridian.Contracts.Api.StorageAnalytics.ProjectedDaysUntilFull*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: projectedDaysUntilFull
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.StorageAnalytics.TotalSizeBytes*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.TotalSizeBytes
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_TotalSizeBytes
+  name: TotalSizeBytes
+  nameWithType: StorageAnalytics.TotalSizeBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.TotalSizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Api.StorageAnalytics.TradeSizeBytes*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.TradeSizeBytes
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_TradeSizeBytes
+  name: TradeSizeBytes
+  nameWithType: StorageAnalytics.TradeSizeBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.TradeSizeBytes
+- uid: Meridian.Contracts.Api.StorageAnalytics.DepthSizeBytes*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.DepthSizeBytes
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_DepthSizeBytes
+  name: DepthSizeBytes
+  nameWithType: StorageAnalytics.DepthSizeBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.DepthSizeBytes
+- uid: Meridian.Contracts.Api.StorageAnalytics.HistoricalSizeBytes*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.HistoricalSizeBytes
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_HistoricalSizeBytes
+  name: HistoricalSizeBytes
+  nameWithType: StorageAnalytics.HistoricalSizeBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.HistoricalSizeBytes
+- uid: Meridian.Contracts.Api.StorageAnalytics.TotalFileCount*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.TotalFileCount
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_TotalFileCount
+  name: TotalFileCount
+  nameWithType: StorageAnalytics.TotalFileCount
+  fullName: Meridian.Contracts.Api.StorageAnalytics.TotalFileCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.StorageAnalytics.TradeFileCount*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.TradeFileCount
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_TradeFileCount
+  name: TradeFileCount
+  nameWithType: StorageAnalytics.TradeFileCount
+  fullName: Meridian.Contracts.Api.StorageAnalytics.TradeFileCount
+- uid: Meridian.Contracts.Api.StorageAnalytics.DepthFileCount*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.DepthFileCount
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_DepthFileCount
+  name: DepthFileCount
+  nameWithType: StorageAnalytics.DepthFileCount
+  fullName: Meridian.Contracts.Api.StorageAnalytics.DepthFileCount
+- uid: Meridian.Contracts.Api.StorageAnalytics.HistoricalFileCount*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.HistoricalFileCount
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_HistoricalFileCount
+  name: HistoricalFileCount
+  nameWithType: StorageAnalytics.HistoricalFileCount
+  fullName: Meridian.Contracts.Api.StorageAnalytics.HistoricalFileCount
+- uid: Meridian.Contracts.Api.StorageAnalytics.LastUpdated*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.LastUpdated
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_LastUpdated
+  name: LastUpdated
+  nameWithType: StorageAnalytics.LastUpdated
+  fullName: Meridian.Contracts.Api.StorageAnalytics.LastUpdated
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Api.StorageAnalytics.SymbolBreakdown*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.SymbolBreakdown
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_SymbolBreakdown
+  name: SymbolBreakdown
+  nameWithType: StorageAnalytics.SymbolBreakdown
+  fullName: Meridian.Contracts.Api.StorageAnalytics.SymbolBreakdown
+- uid: Meridian.Contracts.Api.StorageSymbolBreakdown[]
+  isExternal: true
+  href: Meridian.Contracts.Api.StorageSymbolBreakdown.html
+  name: StorageSymbolBreakdown[]
+  nameWithType: StorageSymbolBreakdown[]
+  fullName: Meridian.Contracts.Api.StorageSymbolBreakdown[]
+  nameWithType.vb: StorageSymbolBreakdown()
+  fullName.vb: Meridian.Contracts.Api.StorageSymbolBreakdown()
+  name.vb: StorageSymbolBreakdown()
+  spec.csharp:
+  - uid: Meridian.Contracts.Api.StorageSymbolBreakdown
+    name: StorageSymbolBreakdown
+    href: Meridian.Contracts.Api.StorageSymbolBreakdown.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Api.StorageSymbolBreakdown
+    name: StorageSymbolBreakdown
+    href: Meridian.Contracts.Api.StorageSymbolBreakdown.html
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Api.StorageAnalytics.DailyGrowthBytes*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.DailyGrowthBytes
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_DailyGrowthBytes
+  name: DailyGrowthBytes
+  nameWithType: StorageAnalytics.DailyGrowthBytes
+  fullName: Meridian.Contracts.Api.StorageAnalytics.DailyGrowthBytes
+- uid: Meridian.Contracts.Api.StorageAnalytics.ProjectedDaysUntilFull*
+  commentId: Overload:Meridian.Contracts.Api.StorageAnalytics.ProjectedDaysUntilFull
+  href: Meridian.Contracts.Api.StorageAnalytics.html#Meridian_Contracts_Api_StorageAnalytics_ProjectedDaysUntilFull
+  name: ProjectedDaysUntilFull
+  nameWithType: StorageAnalytics.ProjectedDaysUntilFull
+  fullName: Meridian.Contracts.Api.StorageAnalytics.ProjectedDaysUntilFull
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

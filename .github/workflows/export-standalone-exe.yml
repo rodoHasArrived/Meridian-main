@@ -1,0 +1,208 @@
+# Export Standalone Executable
+#
+# Builds the Meridian Desktop (WPF) application as a self-contained, single-file
+# executable and uploads it as a GitHub Release asset.
+#
+# Triggers:
+#   - Push to a version tag (v*): attaches artifacts to the matching GitHub Release.
+#   - workflow_dispatch: manually build and optionally attach to a named release tag.
+#
+# Outputs per run:
+#   - Meridian.Desktop-<version>-win-x64-standalone.zip  (self-contained)
+#   - Meridian.Desktop-<version>-win-arm64-standalone.zip (self-contained)
+#
+# Each archive contains:
+#   - Meridian.Desktop.exe  — single-file, no .NET runtime installation required
+#   - appsettings.json      — copy of config/appsettings.sample.json
+
+name: Export Standalone Executable
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Existing release tag to attach artifacts to (e.g. v1.2.0). Leave blank to upload artifacts only.'
+        required: false
+        type: string
+      build_config:
+        description: 'Build configuration'
+        required: false
+        default: 'Release'
+        type: choice
+        options:
+          - Release
+          - Debug
+
+permissions:
+  contents: write
+
+concurrency:
+  group: export-standalone-exe-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  WPF_PROJECT: 'src/Meridian.Wpf/Meridian.Wpf.csproj'
+  BUILD_CONFIG: ${{ inputs.build_config || 'Release' }}
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 1
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+jobs:
+  publish:
+    name: Publish (${{ matrix.rid }})
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: win-x64
+            artifact_suffix: x64
+          - rid: win-arm64
+            artifact_suffix: arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Setup .NET with Cache
+        uses: ./.github/actions/setup-dotnet-cache
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          cache-suffix: standalone-${{ matrix.artifact_suffix }}
+
+      # Determine the version label used in artifact names and release uploads.
+      # Priority: (1) tag ref, (2) workflow_dispatch release_tag input, (3) short SHA fallback.
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ inputs.release_tag }}"
+          if ("${{ github.ref }}" -match "^refs/tags/(v[^/]+)$") {
+            $v = $Matches[1]
+          } elseif ($tag -ne "") {
+            # Validate that a manually supplied tag follows vX.Y.Z[-suffix] format.
+            if ($tag -notmatch "^v\d+\.\d+\.\d+") {
+              Write-Error "release_tag '$tag' must start with 'v' followed by a semantic version (e.g. v1.2.0)."
+              exit 1
+            }
+            $v = $tag
+          } else {
+            $sha = "${{ github.sha }}".Substring(0, 7)
+            $v = "dev-$sha"
+          }
+          Write-Host "Resolved version: $v"
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.WPF_PROJECT }} --verbosity minimal
+
+      - name: Publish self-contained single-file executable
+        run: |
+          # The explicit TargetFramework override is intentional: on the windows-latest
+          # runner the project builds as net9.0-windows10.0.19041.0 (the full WPF TFM),
+          # but without the override MSBuild would select the stub net9.0 target used
+          # on non-Windows systems. This matches the same flag in desktop-builds.yml.
+          #
+          # PublishReadyToRun is intentionally omitted (defaults to false in the project)
+          # because the Sharpino.Lib dependency contains F# async state machine methods
+          # that fail R2R code generation (NETSDK1096 / ILCompiler.CodeGenerationFailedException).
+          dotnet publish ${{ env.WPF_PROJECT }} `
+            -c ${{ env.BUILD_CONFIG }} `
+            -r ${{ matrix.rid }} `
+            -o ./publish/${{ matrix.rid }} `
+            --self-contained true `
+            -p:TargetFramework=net9.0-windows10.0.19041.0 `
+            -p:PublishSingleFile=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Copy sample configuration
+        shell: pwsh
+        run: |
+          $src = "config/appsettings.sample.json"
+          $dst = "./publish/${{ matrix.rid }}/appsettings.json"
+          if (Test-Path $src) {
+            Copy-Item $src $dst
+            Write-Host "Copied $src -> $dst"
+          } else {
+            Write-Warning "No sample config found at $src; skipping."
+          }
+
+      - name: Create zip archive
+        id: archive
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $name = "Meridian.Desktop-$version-${{ matrix.rid }}-standalone.zip"
+          Compress-Archive -Path "./publish/${{ matrix.rid }}/*" -DestinationPath $name -Force
+          Write-Host "Created archive: $name"
+          "archive_name=$name" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      # Always upload as a GitHub Actions artifact so the zip is accessible even
+      # when the run is not associated with a versioned release.
+      - name: Upload Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Meridian.Desktop-${{ steps.version.outputs.version }}-${{ matrix.rid }}-standalone
+          path: ${{ steps.archive.outputs.archive_name }}
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Upload to GitHub Release
+        if: >
+          startsWith(github.ref, 'refs/tags/v') ||
+          (inputs.release_tag != '' && inputs.release_tag != null)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || inputs.release_tag }}"
+          ARCHIVE="${{ steps.archive.outputs.archive_name }}"
+
+          echo "Uploading $ARCHIVE to release $TAG"
+
+          # Check whether the release already exists before attempting creation so
+          # that errors from gh release create only surface for genuine failures,
+          # not the benign "release already exists" case.
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            echo "Release $TAG not found — creating it."
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes "Standalone executable build for $TAG" \
+              --draft=false
+          else
+            echo "Release $TAG already exists — skipping creation."
+          fi
+
+          # Upload the archive, replacing any previous asset with the same name.
+          gh release upload "$TAG" "$ARCHIVE" --clobber
+
+      - name: Write step summary
+        if: always()
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          ARCHIVE="${{ steps.archive.outputs.archive_name }}"
+          RID="${{ matrix.rid }}"
+          CONFIG="${{ env.BUILD_CONFIG }}"
+
+          {
+            echo "## Standalone Executable — ${RID}"
+            echo ""
+            echo "| Item | Value |"
+            echo "|------|-------|"
+            echo "| Version | \`${VERSION}\` |"
+            echo "| Runtime | \`${RID}\` |"
+            echo "| Configuration | \`${CONFIG}\` |"
+            echo "| Archive | \`${ARCHIVE}\` |"
+            echo "| Commit | \`${{ github.sha }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"

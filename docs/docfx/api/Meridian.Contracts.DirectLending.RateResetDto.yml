@@ -1,0 +1,642 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.RateResetDto
+  commentId: T:Meridian.Contracts.DirectLending.RateResetDto
+  id: RateResetDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.RateResetDto.#ctor(System.DateOnly,System.String,System.Decimal,System.Decimal,System.Decimal,System.String)
+  - Meridian.Contracts.DirectLending.RateResetDto.AllInRate
+  - Meridian.Contracts.DirectLending.RateResetDto.EffectiveDate
+  - Meridian.Contracts.DirectLending.RateResetDto.IndexName
+  - Meridian.Contracts.DirectLending.RateResetDto.ObservedRate
+  - Meridian.Contracts.DirectLending.RateResetDto.SourceRef
+  - Meridian.Contracts.DirectLending.RateResetDto.SpreadBps
+  langs:
+  - csharp
+  - vb
+  name: RateResetDto
+  nameWithType: RateResetDto
+  fullName: Meridian.Contracts.DirectLending.RateResetDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateResetDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record RateResetDto : IEquatable<RateResetDto>'
+    content.vb: Public NotInheritable Class RateResetDto Implements IEquatable(Of RateResetDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.RateResetDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.RateResetDto.#ctor(System.DateOnly,System.String,System.Decimal,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Contracts.DirectLending.RateResetDto.#ctor(System.DateOnly,System.String,System.Decimal,System.Decimal,System.Decimal,System.String)
+  id: '#ctor(System.DateOnly,System.String,System.Decimal,System.Decimal,System.Decimal,System.String)'
+  parent: Meridian.Contracts.DirectLending.RateResetDto
+  langs:
+  - csharp
+  - vb
+  name: RateResetDto(DateOnly, string, decimal, decimal, decimal, string?)
+  nameWithType: RateResetDto.RateResetDto(DateOnly, string, decimal, decimal, decimal, string?)
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.RateResetDto(System.DateOnly, string, decimal, decimal, decimal, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public RateResetDto(DateOnly EffectiveDate, string IndexName, decimal ObservedRate, decimal SpreadBps, decimal AllInRate, string? SourceRef)
+    parameters:
+    - id: EffectiveDate
+      type: System.DateOnly
+    - id: IndexName
+      type: System.String
+    - id: ObservedRate
+      type: System.Decimal
+    - id: SpreadBps
+      type: System.Decimal
+    - id: AllInRate
+      type: System.Decimal
+    - id: SourceRef
+      type: System.String
+    content.vb: Public Sub New(EffectiveDate As DateOnly, IndexName As String, ObservedRate As Decimal, SpreadBps As Decimal, AllInRate As Decimal, SourceRef As String)
+  overload: Meridian.Contracts.DirectLending.RateResetDto.#ctor*
+  nameWithType.vb: RateResetDto.New(DateOnly, String, Decimal, Decimal, Decimal, String)
+  fullName.vb: Meridian.Contracts.DirectLending.RateResetDto.New(System.DateOnly, String, Decimal, Decimal, Decimal, String)
+  name.vb: New(DateOnly, String, Decimal, Decimal, Decimal, String)
+- uid: Meridian.Contracts.DirectLending.RateResetDto.EffectiveDate
+  commentId: P:Meridian.Contracts.DirectLending.RateResetDto.EffectiveDate
+  id: EffectiveDate
+  parent: Meridian.Contracts.DirectLending.RateResetDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveDate
+  nameWithType: RateResetDto.EffectiveDate
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.EffectiveDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly EffectiveDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property EffectiveDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.RateResetDto.EffectiveDate*
+- uid: Meridian.Contracts.DirectLending.RateResetDto.IndexName
+  commentId: P:Meridian.Contracts.DirectLending.RateResetDto.IndexName
+  id: IndexName
+  parent: Meridian.Contracts.DirectLending.RateResetDto
+  langs:
+  - csharp
+  - vb
+  name: IndexName
+  nameWithType: RateResetDto.IndexName
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.IndexName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexName
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string IndexName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IndexName As String
+  overload: Meridian.Contracts.DirectLending.RateResetDto.IndexName*
+- uid: Meridian.Contracts.DirectLending.RateResetDto.ObservedRate
+  commentId: P:Meridian.Contracts.DirectLending.RateResetDto.ObservedRate
+  id: ObservedRate
+  parent: Meridian.Contracts.DirectLending.RateResetDto
+  langs:
+  - csharp
+  - vb
+  name: ObservedRate
+  nameWithType: RateResetDto.ObservedRate
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.ObservedRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ObservedRate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal ObservedRate { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ObservedRate As Decimal
+  overload: Meridian.Contracts.DirectLending.RateResetDto.ObservedRate*
+- uid: Meridian.Contracts.DirectLending.RateResetDto.SpreadBps
+  commentId: P:Meridian.Contracts.DirectLending.RateResetDto.SpreadBps
+  id: SpreadBps
+  parent: Meridian.Contracts.DirectLending.RateResetDto
+  langs:
+  - csharp
+  - vb
+  name: SpreadBps
+  nameWithType: RateResetDto.SpreadBps
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.SpreadBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpreadBps
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal SpreadBps { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property SpreadBps As Decimal
+  overload: Meridian.Contracts.DirectLending.RateResetDto.SpreadBps*
+- uid: Meridian.Contracts.DirectLending.RateResetDto.AllInRate
+  commentId: P:Meridian.Contracts.DirectLending.RateResetDto.AllInRate
+  id: AllInRate
+  parent: Meridian.Contracts.DirectLending.RateResetDto
+  langs:
+  - csharp
+  - vb
+  name: AllInRate
+  nameWithType: RateResetDto.AllInRate
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.AllInRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllInRate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal AllInRate { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AllInRate As Decimal
+  overload: Meridian.Contracts.DirectLending.RateResetDto.AllInRate*
+- uid: Meridian.Contracts.DirectLending.RateResetDto.SourceRef
+  commentId: P:Meridian.Contracts.DirectLending.RateResetDto.SourceRef
+  id: SourceRef
+  parent: Meridian.Contracts.DirectLending.RateResetDto
+  langs:
+  - csharp
+  - vb
+  name: SourceRef
+  nameWithType: RateResetDto.SourceRef
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.SourceRef
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceRef
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? SourceRef { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SourceRef As String
+  overload: Meridian.Contracts.DirectLending.RateResetDto.SourceRef*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.RateResetDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.RateResetDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<RateResetDto>
+  nameWithType: IEquatable<RateResetDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.RateResetDto>
+  nameWithType.vb: IEquatable(Of RateResetDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.RateResetDto)
+  name.vb: IEquatable(Of RateResetDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.RateResetDto
+    name: RateResetDto
+    href: Meridian.Contracts.DirectLending.RateResetDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.RateResetDto
+    name: RateResetDto
+    href: Meridian.Contracts.DirectLending.RateResetDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.RateResetDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.RateResetDto.#ctor
+  href: Meridian.Contracts.DirectLending.RateResetDto.html#Meridian_Contracts_DirectLending_RateResetDto__ctor_System_DateOnly_System_String_System_Decimal_System_Decimal_System_Decimal_System_String_
+  name: RateResetDto
+  nameWithType: RateResetDto.RateResetDto
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.RateResetDto
+  nameWithType.vb: RateResetDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.RateResetDto.New
+  name.vb: New
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.DirectLending.RateResetDto.EffectiveDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.RateResetDto.EffectiveDate
+  href: Meridian.Contracts.DirectLending.RateResetDto.html#Meridian_Contracts_DirectLending_RateResetDto_EffectiveDate
+  name: EffectiveDate
+  nameWithType: RateResetDto.EffectiveDate
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.EffectiveDate
+- uid: Meridian.Contracts.DirectLending.RateResetDto.IndexName*
+  commentId: Overload:Meridian.Contracts.DirectLending.RateResetDto.IndexName
+  href: Meridian.Contracts.DirectLending.RateResetDto.html#Meridian_Contracts_DirectLending_RateResetDto_IndexName
+  name: IndexName
+  nameWithType: RateResetDto.IndexName
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.IndexName
+- uid: Meridian.Contracts.DirectLending.RateResetDto.ObservedRate*
+  commentId: Overload:Meridian.Contracts.DirectLending.RateResetDto.ObservedRate
+  href: Meridian.Contracts.DirectLending.RateResetDto.html#Meridian_Contracts_DirectLending_RateResetDto_ObservedRate
+  name: ObservedRate
+  nameWithType: RateResetDto.ObservedRate
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.ObservedRate
+- uid: Meridian.Contracts.DirectLending.RateResetDto.SpreadBps*
+  commentId: Overload:Meridian.Contracts.DirectLending.RateResetDto.SpreadBps
+  href: Meridian.Contracts.DirectLending.RateResetDto.html#Meridian_Contracts_DirectLending_RateResetDto_SpreadBps
+  name: SpreadBps
+  nameWithType: RateResetDto.SpreadBps
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.SpreadBps
+- uid: Meridian.Contracts.DirectLending.RateResetDto.AllInRate*
+  commentId: Overload:Meridian.Contracts.DirectLending.RateResetDto.AllInRate
+  href: Meridian.Contracts.DirectLending.RateResetDto.html#Meridian_Contracts_DirectLending_RateResetDto_AllInRate
+  name: AllInRate
+  nameWithType: RateResetDto.AllInRate
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.AllInRate
+- uid: Meridian.Contracts.DirectLending.RateResetDto.SourceRef*
+  commentId: Overload:Meridian.Contracts.DirectLending.RateResetDto.SourceRef
+  href: Meridian.Contracts.DirectLending.RateResetDto.html#Meridian_Contracts_DirectLending_RateResetDto_SourceRef
+  name: SourceRef
+  nameWithType: RateResetDto.SourceRef
+  fullName: Meridian.Contracts.DirectLending.RateResetDto.SourceRef

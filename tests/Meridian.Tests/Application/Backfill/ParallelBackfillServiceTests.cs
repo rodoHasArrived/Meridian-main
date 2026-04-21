@@ -702,6 +702,104 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task RunAsync_ResumeFromCheckpoint_WithYahooProvider_PreservesLongerWindowMetadataAndSignals()
+    {
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_cp_{Guid.NewGuid():N}");
+        try
+        {
+            var requestedFrom = new ConcurrentDictionary<string, DateOnly?>(StringComparer.OrdinalIgnoreCase);
+            var provider = new ControllableProvider("yahoo", (symbol, from, to, ct) =>
+            {
+                requestedFrom[symbol] = from;
+
+                if (symbol == "QQQ")
+                    throw new InvalidOperationException("simulated yahoo interruption");
+
+                IReadOnlyList<HistoricalBar> bars =
+                [
+                    new(symbol, new DateOnly(2024, 2, 16), 100m, 101m, 99m, 100.5m, 1000),
+                    new(symbol, new DateOnly(2024, 3, 29), 101m, 102m, 100m, 101.5m, 1200),
+                ];
+                return Task.FromResult(bars);
+            });
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", new DateOnly(2024, 2, 15), barsWritten: 31);
+
+            var svc = new HistoricalBackfillService([provider], checkpointStore: checkpointStore);
+            var request = new AppBackfillRequest(
+                "yahoo",
+                ["SPY", "QQQ"],
+                From: new DateOnly(2024, 1, 1),
+                To: new DateOnly(2024, 3, 31),
+                ResumeFromCheckpoint: true);
+
+            var result = await svc.RunAsync(request, _pipeline);
+
+            requestedFrom["SPY"].Should().Be(new DateOnly(2024, 2, 16));
+            requestedFrom["QQQ"].Should().Be(new DateOnly(2024, 1, 1));
+            result.Provider.Should().Be("yahoo");
+            result.From.Should().Be(new DateOnly(2024, 1, 1));
+            result.To.Should().Be(new DateOnly(2024, 3, 31));
+            result.Success.Should().BeFalse();
+            result.Error.Should().Contain("QQQ");
+
+            var spySignal = result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "SPY").Which;
+            spySignal.Status.Should().Be("Pass");
+            spySignal.EffectiveFrom.Should().Be(new DateOnly(2024, 2, 16));
+            spySignal.EffectiveTo.Should().Be(new DateOnly(2024, 3, 29));
+
+            var qqqSignal = result.SymbolValidationSignals.Should().Contain(s => s.Symbol == "QQQ").Which;
+            qqqSignal.Status.Should().Be("Fail");
+            qqqSignal.EffectiveFrom.Should().Be(new DateOnly(2024, 1, 1));
+            qqqSignal.EffectiveTo.Should().Be(new DateOnly(2024, 3, 31));
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_ResumeFromCheckpoint_IgnoresCheckpointFromDifferentGranularity()
+    {
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_cp_{Guid.NewGuid():N}");
+        try
+        {
+            var fetchedSymbols = new ConcurrentBag<string>();
+            var provider = new ControllableProvider("test", (symbol, ct) =>
+            {
+                fetchedSymbols.Add(symbol);
+                return Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) });
+            });
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+            var toDate = new DateOnly(2024, 1, 31);
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", DataGranularity.Minute1, toDate, barsWritten: 390);
+
+            var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
+            var request = new AppBackfillRequest(
+                "test",
+                new[] { "SPY" },
+                From: new DateOnly(2024, 1, 1),
+                To: toDate,
+                Granularity: DataGranularity.Daily,
+                ResumeFromCheckpoint: true);
+
+            await svc.RunAsync(request, _pipeline);
+
+            fetchedSymbols.Should().Contain("SPY",
+                "daily resumes must not be suppressed by checkpoints recorded for intraday storage lanes");
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task RunAsync_WithoutResumeFlag_ClearsExistingCheckpoints()
     {
         var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_cp_{Guid.NewGuid():N}");
@@ -731,6 +829,45 @@ public sealed class ParallelBackfillServiceTests : IAsyncLifetime
             checkpoints!.Should().NotContainKey("AAPL");
             // SPY should have a new checkpoint from this run's bar
             checkpoints.Should().ContainKey("SPY");
+        }
+        finally
+        {
+            if (Directory.Exists(testRoot))
+                Directory.Delete(testRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_WithoutResumeFlag_ClearsOnlyMatchingGranularityCheckpoints()
+    {
+        var testRoot = Path.Combine(Path.GetTempPath(), $"mdc_cp_{Guid.NewGuid():N}");
+        try
+        {
+            var provider = new ControllableProvider("test", (symbol, ct) =>
+                Task.FromResult<IReadOnlyList<HistoricalBar>>(new[] { MakeBar(symbol) }));
+
+            var checkpointStore = new BackfillStatusStore(testRoot);
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", DataGranularity.Daily, new DateOnly(2024, 1, 15));
+            await checkpointStore.WriteSymbolCheckpointAsync("SPY", DataGranularity.Minute1, new DateOnly(2024, 1, 20), barsWritten: 390);
+
+            var svc = new HistoricalBackfillService(new[] { provider }, checkpointStore: checkpointStore);
+            var request = new AppBackfillRequest(
+                "test",
+                new[] { "SPY" },
+                From: new DateOnly(2024, 1, 1),
+                To: new DateOnly(2024, 1, 31),
+                Granularity: DataGranularity.Daily);
+
+            await svc.RunAsync(request, _pipeline);
+
+            var dailyCheckpoints = checkpointStore.TryReadSymbolCheckpoints(DataGranularity.Daily);
+            var intradayCheckpoints = checkpointStore.TryReadSymbolCheckpoints(DataGranularity.Minute1);
+
+            dailyCheckpoints.Should().NotBeNull();
+            intradayCheckpoints.Should().NotBeNull();
+            dailyCheckpoints!.Should().ContainKey("SPY");
+            intradayCheckpoints!.Should().ContainKey("SPY",
+                "fresh daily runs should not wipe resume state for intraday backfills");
         }
         finally
         {

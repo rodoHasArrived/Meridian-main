@@ -1,0 +1,249 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
+  commentId: T:Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
+  id: ISecurityMasterAmender
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync(Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISecurityMasterAmender
+  nameWithType: ISecurityMasterAmender
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterAmender.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISecurityMasterAmender
+    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterAmender.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  summary: >-
+    Narrow write interface for amending security master terms.
+
+    Used by infrastructure-layer services that need to persist enriched trading parameters
+
+    without taking a dependency on the application-layer <code>ISecurityMasterService</code>.
+  example: []
+  syntax:
+    content: public interface ISecurityMasterAmender
+    content.vb: Public Interface ISecurityMasterAmender
+  derivedClasses:
+  - Meridian.Application.SecurityMaster.NullSecurityMasterService
+  - Meridian.Application.SecurityMaster.SecurityMasterService
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync(Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync(Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest,System.Threading.CancellationToken)
+  id: AmendTermsAsync(Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
+  langs:
+  - csharp
+  - vb
+  name: AmendTermsAsync(AmendSecurityTermsRequest, CancellationToken)
+  nameWithType: ISecurityMasterAmender.AmendTermsAsync(AmendSecurityTermsRequest, CancellationToken)
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync(Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/ISecurityMasterAmender.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AmendTermsAsync
+    path: ../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterAmender.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+    content.vb: Function AmendTermsAsync(request As AmendSecurityTermsRequest, ct As CancellationToken = Nothing) As Task(Of SecurityDetailDto)
+  overload: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync
+  href: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.html#Meridian_Contracts_SecurityMaster_ISecurityMasterAmender_AmendTermsAsync_Meridian_Contracts_SecurityMaster_AmendSecurityTermsRequest_System_Threading_CancellationToken_
+  name: AmendTermsAsync
+  nameWithType: ISecurityMasterAmender.AmendTermsAsync
+  fullName: Meridian.Contracts.SecurityMaster.ISecurityMasterAmender.AmendTermsAsync
+- uid: Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest.html
+  name: AmendSecurityTermsRequest
+  nameWithType: AmendSecurityTermsRequest
+  fullName: Meridian.Contracts.SecurityMaster.AmendSecurityTermsRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityDetailDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityDetailDto>
+  nameWithType: Task<SecurityDetailDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.SecurityDetailDto>
+  nameWithType.vb: Task(Of SecurityDetailDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.SecurityDetailDto)
+  name.vb: Task(Of SecurityDetailDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+    name: SecurityDetailDto
+    href: Meridian.Contracts.SecurityMaster.SecurityDetailDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityDetailDto
+    name: SecurityDetailDto
+    href: Meridian.Contracts.SecurityMaster.SecurityDetailDto.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

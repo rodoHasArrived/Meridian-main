@@ -1,0 +1,560 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.FieldConstraints
+  commentId: T:Meridian.Storage.Archival.FieldConstraints
+  id: FieldConstraints
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.FieldConstraints.AllowedValues
+  - Meridian.Storage.Archival.FieldConstraints.MaxValue
+  - Meridian.Storage.Archival.FieldConstraints.MinValue
+  - Meridian.Storage.Archival.FieldConstraints.Pattern
+  langs:
+  - csharp
+  - vb
+  name: FieldConstraints
+  nameWithType: FieldConstraints
+  fullName: Meridian.Storage.Archival.FieldConstraints
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FieldConstraints
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 604
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Constraints for field validation.
+  example: []
+  syntax:
+    content: public sealed class FieldConstraints
+    content.vb: Public NotInheritable Class FieldConstraints
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Archival.FieldConstraints.MinValue
+  commentId: P:Meridian.Storage.Archival.FieldConstraints.MinValue
+  id: MinValue
+  parent: Meridian.Storage.Archival.FieldConstraints
+  langs:
+  - csharp
+  - vb
+  name: MinValue
+  nameWithType: FieldConstraints.MinValue
+  fullName: Meridian.Storage.Archival.FieldConstraints.MinValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinValue
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 606
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("minValue")]
+
+      public double? MinValue { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: >-
+      <JsonPropertyName("minValue")>
+
+      Public Property MinValue As Double?
+  overload: Meridian.Storage.Archival.FieldConstraints.MinValue*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: minValue
+- uid: Meridian.Storage.Archival.FieldConstraints.MaxValue
+  commentId: P:Meridian.Storage.Archival.FieldConstraints.MaxValue
+  id: MaxValue
+  parent: Meridian.Storage.Archival.FieldConstraints
+  langs:
+  - csharp
+  - vb
+  name: MaxValue
+  nameWithType: FieldConstraints.MaxValue
+  fullName: Meridian.Storage.Archival.FieldConstraints.MaxValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxValue
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 609
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("maxValue")]
+
+      public double? MaxValue { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: >-
+      <JsonPropertyName("maxValue")>
+
+      Public Property MaxValue As Double?
+  overload: Meridian.Storage.Archival.FieldConstraints.MaxValue*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: maxValue
+- uid: Meridian.Storage.Archival.FieldConstraints.Pattern
+  commentId: P:Meridian.Storage.Archival.FieldConstraints.Pattern
+  id: Pattern
+  parent: Meridian.Storage.Archival.FieldConstraints
+  langs:
+  - csharp
+  - vb
+  name: Pattern
+  nameWithType: FieldConstraints.Pattern
+  fullName: Meridian.Storage.Archival.FieldConstraints.Pattern
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pattern
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 612
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("pattern")]
+
+      public string? Pattern { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("pattern")>
+
+      Public Property Pattern As String
+  overload: Meridian.Storage.Archival.FieldConstraints.Pattern*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: pattern
+- uid: Meridian.Storage.Archival.FieldConstraints.AllowedValues
+  commentId: P:Meridian.Storage.Archival.FieldConstraints.AllowedValues
+  id: AllowedValues
+  parent: Meridian.Storage.Archival.FieldConstraints
+  langs:
+  - csharp
+  - vb
+  name: AllowedValues
+  nameWithType: FieldConstraints.AllowedValues
+  fullName: Meridian.Storage.Archival.FieldConstraints.AllowedValues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllowedValues
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 615
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("allowedValues")]
+
+      public string[]? AllowedValues { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("allowedValues")>
+
+      Public Property AllowedValues As String()
+  overload: Meridian.Storage.Archival.FieldConstraints.AllowedValues*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: allowedValues
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Archival.FieldConstraints.MinValue*
+  commentId: Overload:Meridian.Storage.Archival.FieldConstraints.MinValue
+  href: Meridian.Storage.Archival.FieldConstraints.html#Meridian_Storage_Archival_FieldConstraints_MinValue
+  name: MinValue
+  nameWithType: FieldConstraints.MinValue
+  fullName: Meridian.Storage.Archival.FieldConstraints.MinValue
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Archival.FieldConstraints.MaxValue*
+  commentId: Overload:Meridian.Storage.Archival.FieldConstraints.MaxValue
+  href: Meridian.Storage.Archival.FieldConstraints.html#Meridian_Storage_Archival_FieldConstraints_MaxValue
+  name: MaxValue
+  nameWithType: FieldConstraints.MaxValue
+  fullName: Meridian.Storage.Archival.FieldConstraints.MaxValue
+- uid: Meridian.Storage.Archival.FieldConstraints.Pattern*
+  commentId: Overload:Meridian.Storage.Archival.FieldConstraints.Pattern
+  href: Meridian.Storage.Archival.FieldConstraints.html#Meridian_Storage_Archival_FieldConstraints_Pattern
+  name: Pattern
+  nameWithType: FieldConstraints.Pattern
+  fullName: Meridian.Storage.Archival.FieldConstraints.Pattern
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Archival.FieldConstraints.AllowedValues*
+  commentId: Overload:Meridian.Storage.Archival.FieldConstraints.AllowedValues
+  href: Meridian.Storage.Archival.FieldConstraints.html#Meridian_Storage_Archival_FieldConstraints_AllowedValues
+  name: AllowedValues
+  nameWithType: FieldConstraints.AllowedValues
+  fullName: Meridian.Storage.Archival.FieldConstraints.AllowedValues
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )

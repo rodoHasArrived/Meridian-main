@@ -1,0 +1,657 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  commentId: T:Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  id: PositionDiffEntry
+  parent: Meridian.Ui.Shared.Endpoints
+  children:
+  - Meridian.Ui.Shared.Endpoints.PositionDiffEntry.#ctor(System.String,System.Int64,System.Int64,System.Decimal,System.Decimal,System.String)
+  - Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BasePnl
+  - Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BaseQuantity
+  - Meridian.Ui.Shared.Endpoints.PositionDiffEntry.ChangeType
+  - Meridian.Ui.Shared.Endpoints.PositionDiffEntry.Symbol
+  - Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetPnl
+  - Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetQuantity
+  langs:
+  - csharp
+  - vb
+  name: PositionDiffEntry
+  nameWithType: PositionDiffEntry
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PositionDiffEntry
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3061
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: A single position change between two runs.
+  example: []
+  syntax:
+    content: 'public sealed record PositionDiffEntry : IEquatable<PositionDiffEntry>'
+    content.vb: Public NotInheritable Class PositionDiffEntry Implements IEquatable(Of PositionDiffEntry)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Shared.Endpoints.PositionDiffEntry}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.#ctor(System.String,System.Int64,System.Int64,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.#ctor(System.String,System.Int64,System.Int64,System.Decimal,System.Decimal,System.String)
+  id: '#ctor(System.String,System.Int64,System.Int64,System.Decimal,System.Decimal,System.String)'
+  parent: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  langs:
+  - csharp
+  - vb
+  name: PositionDiffEntry(string, long, long, decimal, decimal, string)
+  nameWithType: PositionDiffEntry.PositionDiffEntry(string, long, long, decimal, decimal, string)
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.PositionDiffEntry(string, long, long, decimal, decimal, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3061
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: A single position change between two runs.
+  example: []
+  syntax:
+    content: public PositionDiffEntry(string Symbol, long BaseQuantity, long TargetQuantity, decimal BasePnl, decimal TargetPnl, string ChangeType)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: BaseQuantity
+      type: System.Int64
+    - id: TargetQuantity
+      type: System.Int64
+    - id: BasePnl
+      type: System.Decimal
+    - id: TargetPnl
+      type: System.Decimal
+    - id: ChangeType
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, BaseQuantity As Long, TargetQuantity As Long, BasePnl As Decimal, TargetPnl As Decimal, ChangeType As String)
+  overload: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.#ctor*
+  nameWithType.vb: PositionDiffEntry.New(String, Long, Long, Decimal, Decimal, String)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.New(String, Long, Long, Decimal, Decimal, String)
+  name.vb: New(String, Long, Long, Decimal, Decimal, String)
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.Symbol
+  commentId: P:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: PositionDiffEntry.Symbol
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3062
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.Symbol*
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BaseQuantity
+  commentId: P:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BaseQuantity
+  id: BaseQuantity
+  parent: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  langs:
+  - csharp
+  - vb
+  name: BaseQuantity
+  nameWithType: PositionDiffEntry.BaseQuantity
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BaseQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseQuantity
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3063
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public long BaseQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BaseQuantity As Long
+  overload: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BaseQuantity*
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetQuantity
+  commentId: P:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetQuantity
+  id: TargetQuantity
+  parent: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  langs:
+  - csharp
+  - vb
+  name: TargetQuantity
+  nameWithType: PositionDiffEntry.TargetQuantity
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetQuantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetQuantity
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3064
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public long TargetQuantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TargetQuantity As Long
+  overload: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetQuantity*
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BasePnl
+  commentId: P:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BasePnl
+  id: BasePnl
+  parent: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  langs:
+  - csharp
+  - vb
+  name: BasePnl
+  nameWithType: PositionDiffEntry.BasePnl
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BasePnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BasePnl
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3065
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal BasePnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property BasePnl As Decimal
+  overload: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BasePnl*
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetPnl
+  commentId: P:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetPnl
+  id: TargetPnl
+  parent: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  langs:
+  - csharp
+  - vb
+  name: TargetPnl
+  nameWithType: PositionDiffEntry.TargetPnl
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetPnl
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3066
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public decimal TargetPnl { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TargetPnl As Decimal
+  overload: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetPnl*
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.ChangeType
+  commentId: P:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.ChangeType
+  id: ChangeType
+  parent: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+  langs:
+  - csharp
+  - vb
+  name: ChangeType
+  nameWithType: PositionDiffEntry.ChangeType
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.ChangeType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChangeType
+    path: ../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs
+    startLine: 3067
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string ChangeType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ChangeType As String
+  overload: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.ChangeType*
+references:
+- uid: Meridian.Ui.Shared.Endpoints
+  commentId: N:Meridian.Ui.Shared.Endpoints
+  href: Meridian.html
+  name: Meridian.Ui.Shared.Endpoints
+  nameWithType: Meridian.Ui.Shared.Endpoints
+  fullName: Meridian.Ui.Shared.Endpoints
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Shared.Endpoints.PositionDiffEntry}
+  commentId: T:System.IEquatable{Meridian.Ui.Shared.Endpoints.PositionDiffEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PositionDiffEntry>
+  nameWithType: IEquatable<PositionDiffEntry>
+  fullName: System.IEquatable<Meridian.Ui.Shared.Endpoints.PositionDiffEntry>
+  nameWithType.vb: IEquatable(Of PositionDiffEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Shared.Endpoints.PositionDiffEntry)
+  name.vb: IEquatable(Of PositionDiffEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+    name: PositionDiffEntry
+    href: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry
+    name: PositionDiffEntry
+    href: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.#ctor
+  href: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.html#Meridian_Ui_Shared_Endpoints_PositionDiffEntry__ctor_System_String_System_Int64_System_Int64_System_Decimal_System_Decimal_System_String_
+  name: PositionDiffEntry
+  nameWithType: PositionDiffEntry.PositionDiffEntry
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.PositionDiffEntry
+  nameWithType.vb: PositionDiffEntry.New
+  fullName.vb: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.Symbol*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.Symbol
+  href: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.html#Meridian_Ui_Shared_Endpoints_PositionDiffEntry_Symbol
+  name: Symbol
+  nameWithType: PositionDiffEntry.Symbol
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.Symbol
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BaseQuantity*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BaseQuantity
+  href: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.html#Meridian_Ui_Shared_Endpoints_PositionDiffEntry_BaseQuantity
+  name: BaseQuantity
+  nameWithType: PositionDiffEntry.BaseQuantity
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BaseQuantity
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetQuantity*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetQuantity
+  href: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.html#Meridian_Ui_Shared_Endpoints_PositionDiffEntry_TargetQuantity
+  name: TargetQuantity
+  nameWithType: PositionDiffEntry.TargetQuantity
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetQuantity
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BasePnl*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BasePnl
+  href: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.html#Meridian_Ui_Shared_Endpoints_PositionDiffEntry_BasePnl
+  name: BasePnl
+  nameWithType: PositionDiffEntry.BasePnl
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.BasePnl
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetPnl*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetPnl
+  href: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.html#Meridian_Ui_Shared_Endpoints_PositionDiffEntry_TargetPnl
+  name: TargetPnl
+  nameWithType: PositionDiffEntry.TargetPnl
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.TargetPnl
+- uid: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.ChangeType*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.PositionDiffEntry.ChangeType
+  href: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.html#Meridian_Ui_Shared_Endpoints_PositionDiffEntry_ChangeType
+  name: ChangeType
+  nameWithType: PositionDiffEntry.ChangeType
+  fullName: Meridian.Ui.Shared.Endpoints.PositionDiffEntry.ChangeType

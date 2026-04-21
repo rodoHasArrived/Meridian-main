@@ -69,7 +69,7 @@ public static class ProviderCatalog
         {
             ProviderId = "yahoo",
             DisplayName = "Yahoo Finance",
-            Description = "Unofficial free historical data from Yahoo Finance",
+            Description = "Unofficial free daily and regular-hours intraday data from Yahoo Finance",
             ProviderType = ProviderTypeKind.Backfill,
             RequiresCredentials = false,
             CredentialFields = Array.Empty<CredentialFieldInfo>(),
@@ -83,7 +83,8 @@ public static class ProviderCatalog
             Notes = new[]
             {
                 "Yahoo Finance data is unofficial and may have gaps.",
-                "Good for basic daily OHLCV data and dividend/split information."
+                "Supports daily bars plus regular-hours 1m, 5m, 15m, 30m, 1h, and synthetic 4h aggregates.",
+                "Good for basic OHLCV data and dividend/split information."
             },
             Warnings = new[]
             {
@@ -91,13 +92,13 @@ public static class ProviderCatalog
                 "Data quality may vary for less liquid securities."
             },
             SupportedMarkets = new[] { "US", "UK", "EU", "APAC" },
-            DataTypes = new[] { "DailyBars", "Dividends", "Splits" },
+            DataTypes = new[] { "DailyBars", "IntradayBars", "Aggregates", "Dividends", "Splits" },
             Capabilities = new CapabilityInfo
             {
                 SupportsAdjustedPrices = true,
                 SupportsDividends = true,
                 SupportsSplits = true,
-                SupportsIntraday = false,
+                SupportsIntraday = true,
                 SupportsTrades = false,
                 SupportsQuotes = false
             }
@@ -185,6 +186,45 @@ public static class ProviderCatalog
             }
         },
 
+        ["robinhood"] = new ProviderCatalogEntry
+        {
+            ProviderId = "robinhood",
+            DisplayName = "Robinhood",
+            Description = "Broker-backed Robinhood integration for quotes, options chains, and live positions/orders",
+            ProviderType = ProviderTypeKind.Streaming,
+            RequiresCredentials = true,
+            CredentialFields = new[]
+            {
+                new CredentialFieldInfo("AccessToken", "ROBINHOOD_ACCESS_TOKEN", "Robinhood Access Token", true)
+            },
+            RateLimit = new RateLimitInfo
+            {
+                MaxRequestsPerWindow = 60,
+                WindowSeconds = 60,
+                MinDelayMs = 1000,
+                Description = "Broker-session rate limits vary"
+            },
+            Notes = new[]
+            {
+                "Requires a valid Robinhood access token.",
+                "Supports Robinhood symbol lookup, brokerage reads, and option-chain retrieval.",
+                "Live option orders require broker instrument metadata supplied by the app."
+            },
+            Warnings = new[]
+            {
+                "Uses the unofficial Robinhood API.",
+                "Options support is limited to US equity options."
+            },
+            SupportedMarkets = new[] { "US" },
+            DataTypes = new[] { "Quotes", "OptionsChain", "Brokerage", "SymbolSearch" },
+            Capabilities = new CapabilityInfo
+            {
+                SupportsQuotes = true,
+                SupportsOptionsChain = true,
+                SupportsBrokerage = true
+            }
+        },
+
         ["tiingo"] = new ProviderCatalogEntry
         {
             ProviderId = "tiingo",
@@ -265,7 +305,7 @@ public static class ProviderCatalog
         {
             ProviderId = "alphavantage",
             DisplayName = "Alpha Vantage",
-            Description = "Free stock APIs with technical indicators",
+            Description = "Free stock APIs with daily and intraday bars plus technical indicators",
             ProviderType = ProviderTypeKind.Backfill,
             RequiresCredentials = true,
             CredentialFields = new[]
@@ -283,7 +323,7 @@ public static class ProviderCatalog
             {
                 "Alpha Vantage offers free API keys.",
                 "Rate limit: 5 requests/minute (free tier).",
-                "Supports stocks, forex, and crypto."
+                "Supports stocks, forex, and crypto intraday and daily bars."
             },
             Warnings = new[]
             {
@@ -353,8 +393,8 @@ public static class ProviderCatalog
             CredentialFields = new[]
             {
                 new CredentialFieldInfo("Host", null, "TWS/Gateway Host", false, "127.0.0.1"),
-                new CredentialFieldInfo("Port", null, "TWS/Gateway Port", false, "7496"),
-                new CredentialFieldInfo("ClientId", null, "Client ID", false, "0")
+                new CredentialFieldInfo("Port", null, "TWS/Gateway Port", false, "7497"),
+                new CredentialFieldInfo("ClientId", null, "Client ID", false, "1")
             },
             RateLimit = new RateLimitInfo
             {
@@ -430,38 +470,6 @@ public static class ProviderCatalog
             }
         },
 
-        ["stocksharp"] = new ProviderCatalogEntry
-        {
-            ProviderId = "stocksharp",
-            DisplayName = "StockSharp",
-            Description = "Multi-connector trading framework",
-            ProviderType = ProviderTypeKind.Streaming,
-            RequiresCredentials = true,
-            CredentialFields = new[]
-            {
-                new CredentialFieldInfo("ConnectorType", null, "Connector Type", true, "Rithmic")
-            },
-            RateLimit = null,
-            Notes = new[]
-            {
-                "Supports multiple underlying connectors.",
-                "Configure specific connector settings in StockSharp section.",
-                "Supports Rithmic, IQFeed, CQG, and more."
-            },
-            Warnings = new[]
-            {
-                "Requires StockSharp connector-specific credentials."
-            },
-            SupportedMarkets = new[] { "US", "Futures" },
-            DataTypes = new[] { "Trades", "Quotes", "MarketDepth" },
-            Capabilities = new CapabilityInfo
-            {
-                SupportsStreaming = true,
-                SupportsMarketDepth = true,
-                SupportsTrades = true,
-                SupportsQuotes = true
-            }
-        }
     };
 
     /// <summary>
@@ -478,6 +486,11 @@ public static class ProviderCatalog
         }
         return _entries.Values.ToList();
     }
+
+    /// <summary>
+    /// Gets the built-in static catalog entries without consulting runtime providers.
+    /// </summary>
+    public static IReadOnlyList<ProviderCatalogEntry> GetStaticEntries() => _entries.Values.ToList();
 
     /// <summary>
     /// Gets providers of a specific type.
@@ -534,6 +547,12 @@ public static class ProviderCatalog
         }
         return _entries.TryGetValue(providerId, out var entry) ? entry : null;
     }
+
+    /// <summary>
+    /// Gets a built-in static catalog entry by ID without consulting runtime providers.
+    /// </summary>
+    public static ProviderCatalogEntry? GetStaticEntry(string providerId)
+        => _entries.TryGetValue(providerId, out var entry) ? entry : null;
 
     /// <summary>
     /// Gets provider notes for UI display.
@@ -802,6 +821,18 @@ public sealed class CapabilityInfo
     public bool SupportsQuotes { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether options chain data is supported.
+    /// </summary>
+    [JsonPropertyName("supportsOptionsChain")]
+    public bool SupportsOptionsChain { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether brokerage execution is supported.
+    /// </summary>
+    [JsonPropertyName("supportsBrokerage")]
+    public bool SupportsBrokerage { get; init; }
+
+    /// <summary>
     /// Gets a value indicating whether auction data is supported.
     /// </summary>
     [JsonPropertyName("supportsAuctions")]
@@ -832,6 +863,10 @@ public sealed class CapabilityInfo
             dict["SupportsTrades"] = true;
         if (SupportsQuotes)
             dict["SupportsQuotes"] = true;
+        if (SupportsOptionsChain)
+            dict["SupportsOptionsChain"] = true;
+        if (SupportsBrokerage)
+            dict["SupportsBrokerage"] = true;
         if (SupportsAuctions)
             dict["SupportsAuctions"] = true;
 

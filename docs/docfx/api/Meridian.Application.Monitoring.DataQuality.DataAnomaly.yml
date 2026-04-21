@@ -1,0 +1,945 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  commentId: T:Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  id: DataAnomaly
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.#ctor(System.String,System.DateTimeOffset,System.String,Meridian.Application.Monitoring.DataQuality.AnomalyType,Meridian.Application.Monitoring.DataQuality.AnomalySeverity,System.String,System.Double,System.Double,System.Double,System.Double,System.String,System.Boolean,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.ActualValue
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.Description
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.DetectedAt
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.DeviationPercent
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.ExpectedValue
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.Id
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.IsAcknowledged
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.Provider
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.Severity
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.Symbol
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.Timestamp
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.Type
+  - Meridian.Application.Monitoring.DataQuality.DataAnomaly.ZScore
+  langs:
+  - csharp
+  - vb
+  name: DataAnomaly
+  nameWithType: DataAnomaly
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataAnomaly
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 233
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Detected anomaly in market data.
+  example: []
+  syntax:
+    content: 'public sealed record DataAnomaly : IEquatable<DataAnomaly>'
+    content.vb: Public NotInheritable Class DataAnomaly Implements IEquatable(Of DataAnomaly)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.#ctor(System.String,System.DateTimeOffset,System.String,Meridian.Application.Monitoring.DataQuality.AnomalyType,Meridian.Application.Monitoring.DataQuality.AnomalySeverity,System.String,System.Double,System.Double,System.Double,System.Double,System.String,System.Boolean,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.DataAnomaly.#ctor(System.String,System.DateTimeOffset,System.String,Meridian.Application.Monitoring.DataQuality.AnomalyType,Meridian.Application.Monitoring.DataQuality.AnomalySeverity,System.String,System.Double,System.Double,System.Double,System.Double,System.String,System.Boolean,System.DateTimeOffset)
+  id: '#ctor(System.String,System.DateTimeOffset,System.String,Meridian.Application.Monitoring.DataQuality.AnomalyType,Meridian.Application.Monitoring.DataQuality.AnomalySeverity,System.String,System.Double,System.Double,System.Double,System.Double,System.String,System.Boolean,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: DataAnomaly(string, DateTimeOffset, string, AnomalyType, AnomalySeverity, string, double, double, double, double, string?, bool, DateTimeOffset)
+  nameWithType: DataAnomaly.DataAnomaly(string, DateTimeOffset, string, AnomalyType, AnomalySeverity, string, double, double, double, double, string?, bool, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DataAnomaly(string, System.DateTimeOffset, string, Meridian.Application.Monitoring.DataQuality.AnomalyType, Meridian.Application.Monitoring.DataQuality.AnomalySeverity, string, double, double, double, double, string?, bool, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 233
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Detected anomaly in market data.
+  example: []
+  syntax:
+    content: public DataAnomaly(string Id, DateTimeOffset Timestamp, string Symbol, AnomalyType Type, AnomalySeverity Severity, string Description, double ExpectedValue, double ActualValue, double DeviationPercent, double ZScore, string? Provider, bool IsAcknowledged, DateTimeOffset DetectedAt)
+    parameters:
+    - id: Id
+      type: System.String
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Symbol
+      type: System.String
+    - id: Type
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+    - id: Severity
+      type: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+    - id: Description
+      type: System.String
+    - id: ExpectedValue
+      type: System.Double
+    - id: ActualValue
+      type: System.Double
+    - id: DeviationPercent
+      type: System.Double
+    - id: ZScore
+      type: System.Double
+    - id: Provider
+      type: System.String
+    - id: IsAcknowledged
+      type: System.Boolean
+    - id: DetectedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Id As String, Timestamp As DateTimeOffset, Symbol As String, Type As AnomalyType, Severity As AnomalySeverity, Description As String, ExpectedValue As Double, ActualValue As Double, DeviationPercent As Double, ZScore As Double, Provider As String, IsAcknowledged As Boolean, DetectedAt As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.#ctor*
+  nameWithType.vb: DataAnomaly.New(String, DateTimeOffset, String, AnomalyType, AnomalySeverity, String, Double, Double, Double, Double, String, Boolean, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataAnomaly.New(String, System.DateTimeOffset, String, Meridian.Application.Monitoring.DataQuality.AnomalyType, Meridian.Application.Monitoring.DataQuality.AnomalySeverity, String, Double, Double, Double, Double, String, Boolean, System.DateTimeOffset)
+  name.vb: New(String, DateTimeOffset, String, AnomalyType, AnomalySeverity, String, Double, Double, Double, Double, String, Boolean, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Id
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Id
+  id: Id
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: DataAnomaly.Id
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 234
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Id { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Id*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Timestamp
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: DataAnomaly.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Timestamp*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Symbol
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: DataAnomaly.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 236
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Symbol*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Type
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Type
+  id: Type
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: DataAnomaly.Type
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public AnomalyType Type { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalyType
+    content.vb: Public Property Type As AnomalyType
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Type*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Severity
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Severity
+  id: Severity
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: DataAnomaly.Severity
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 238
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public AnomalySeverity Severity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+    content.vb: Public Property Severity As AnomalySeverity
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Severity*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Description
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Description
+  id: Description
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: DataAnomaly.Description
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Description*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ExpectedValue
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.ExpectedValue
+  id: ExpectedValue
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: ExpectedValue
+  nameWithType: DataAnomaly.ExpectedValue
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ExpectedValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedValue
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double ExpectedValue { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ExpectedValue As Double
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ExpectedValue*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ActualValue
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.ActualValue
+  id: ActualValue
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: ActualValue
+  nameWithType: DataAnomaly.ActualValue
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ActualValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActualValue
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double ActualValue { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ActualValue As Double
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ActualValue*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DeviationPercent
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.DeviationPercent
+  id: DeviationPercent
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: DeviationPercent
+  nameWithType: DataAnomaly.DeviationPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DeviationPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeviationPercent
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double DeviationPercent { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DeviationPercent As Double
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DeviationPercent*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ZScore
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.ZScore
+  id: ZScore
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: ZScore
+  nameWithType: DataAnomaly.ZScore
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ZScore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ZScore
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public double ZScore { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ZScore As Double
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ZScore*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Provider
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Provider
+  id: Provider
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: DataAnomaly.Provider
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 244
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public string? Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Provider*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.IsAcknowledged
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.IsAcknowledged
+  id: IsAcknowledged
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: IsAcknowledged
+  nameWithType: DataAnomaly.IsAcknowledged
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.IsAcknowledged
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAcknowledged
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public bool IsAcknowledged { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsAcknowledged As Boolean
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.IsAcknowledged*
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DetectedAt
+  commentId: P:Meridian.Application.Monitoring.DataQuality.DataAnomaly.DetectedAt
+  id: DetectedAt
+  parent: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+  langs:
+  - csharp
+  - vb
+  name: DetectedAt
+  nameWithType: DataAnomaly.DetectedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DetectedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectedAt
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 246
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public DateTimeOffset DetectedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property DetectedAt As DateTimeOffset
+  overload: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DetectedAt*
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.DataQuality.DataAnomaly}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DataAnomaly>
+  nameWithType: IEquatable<DataAnomaly>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.DataQuality.DataAnomaly>
+  nameWithType.vb: IEquatable(Of DataAnomaly)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.DataQuality.DataAnomaly)
+  name.vb: IEquatable(Of DataAnomaly)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly
+    name: DataAnomaly
+    href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly__ctor_System_String_System_DateTimeOffset_System_String_Meridian_Application_Monitoring_DataQuality_AnomalyType_Meridian_Application_Monitoring_DataQuality_AnomalySeverity_System_String_System_Double_System_Double_System_Double_System_Double_System_String_System_Boolean_System_DateTimeOffset_
+  name: DataAnomaly
+  nameWithType: DataAnomaly.DataAnomaly
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DataAnomaly
+  nameWithType.vb: DataAnomaly.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.DataAnomaly.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalyType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalyType
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalyType.html
+  name: AnomalyType
+  nameWithType: AnomalyType
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalyType
+- uid: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.AnomalySeverity.html
+  name: AnomalySeverity
+  nameWithType: AnomalySeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.AnomalySeverity
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Id*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Id
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_Id
+  name: Id
+  nameWithType: DataAnomaly.Id
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Id
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Timestamp*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Timestamp
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_Timestamp
+  name: Timestamp
+  nameWithType: DataAnomaly.Timestamp
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Timestamp
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Symbol
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_Symbol
+  name: Symbol
+  nameWithType: DataAnomaly.Symbol
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Symbol
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Type*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Type
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_Type
+  name: Type
+  nameWithType: DataAnomaly.Type
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Type
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Severity*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Severity
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_Severity
+  name: Severity
+  nameWithType: DataAnomaly.Severity
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Severity
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Description*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Description
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_Description
+  name: Description
+  nameWithType: DataAnomaly.Description
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Description
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ExpectedValue*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.ExpectedValue
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_ExpectedValue
+  name: ExpectedValue
+  nameWithType: DataAnomaly.ExpectedValue
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ExpectedValue
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ActualValue*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.ActualValue
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_ActualValue
+  name: ActualValue
+  nameWithType: DataAnomaly.ActualValue
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ActualValue
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DeviationPercent*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.DeviationPercent
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_DeviationPercent
+  name: DeviationPercent
+  nameWithType: DataAnomaly.DeviationPercent
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DeviationPercent
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ZScore*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.ZScore
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_ZScore
+  name: ZScore
+  nameWithType: DataAnomaly.ZScore
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.ZScore
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Provider*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.Provider
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_Provider
+  name: Provider
+  nameWithType: DataAnomaly.Provider
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.Provider
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.IsAcknowledged*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.IsAcknowledged
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_IsAcknowledged
+  name: IsAcknowledged
+  nameWithType: DataAnomaly.IsAcknowledged
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.IsAcknowledged
+- uid: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DetectedAt*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.DataAnomaly.DetectedAt
+  href: Meridian.Application.Monitoring.DataQuality.DataAnomaly.html#Meridian_Application_Monitoring_DataQuality_DataAnomaly_DetectedAt
+  name: DetectedAt
+  nameWithType: DataAnomaly.DetectedAt
+  fullName: Meridian.Application.Monitoring.DataQuality.DataAnomaly.DetectedAt

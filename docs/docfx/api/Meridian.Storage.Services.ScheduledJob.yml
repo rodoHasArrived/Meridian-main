@@ -1,0 +1,607 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.ScheduledJob
+  commentId: T:Meridian.Storage.Services.ScheduledJob
+  id: ScheduledJob
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.ScheduledJob.#ctor(System.String,Meridian.Storage.Services.MaintenanceJob,System.DateTimeOffset,Meridian.Storage.Services.JobStatus,System.DateTimeOffset)
+  - Meridian.Storage.Services.ScheduledJob.CreatedAt
+  - Meridian.Storage.Services.ScheduledJob.Id
+  - Meridian.Storage.Services.ScheduledJob.Job
+  - Meridian.Storage.Services.ScheduledJob.ScheduledStart
+  - Meridian.Storage.Services.ScheduledJob.Status
+  langs:
+  - csharp
+  - vb
+  name: ScheduledJob
+  nameWithType: ScheduledJob
+  fullName: Meridian.Storage.Services.ScheduledJob
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledJob
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 675
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record ScheduledJob : IEquatable<ScheduledJob>'
+    content.vb: Public NotInheritable Class ScheduledJob Implements IEquatable(Of ScheduledJob)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.ScheduledJob}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.ScheduledJob.#ctor(System.String,Meridian.Storage.Services.MaintenanceJob,System.DateTimeOffset,Meridian.Storage.Services.JobStatus,System.DateTimeOffset)
+  commentId: M:Meridian.Storage.Services.ScheduledJob.#ctor(System.String,Meridian.Storage.Services.MaintenanceJob,System.DateTimeOffset,Meridian.Storage.Services.JobStatus,System.DateTimeOffset)
+  id: '#ctor(System.String,Meridian.Storage.Services.MaintenanceJob,System.DateTimeOffset,Meridian.Storage.Services.JobStatus,System.DateTimeOffset)'
+  parent: Meridian.Storage.Services.ScheduledJob
+  langs:
+  - csharp
+  - vb
+  name: ScheduledJob(string, MaintenanceJob, DateTimeOffset, JobStatus, DateTimeOffset)
+  nameWithType: ScheduledJob.ScheduledJob(string, MaintenanceJob, DateTimeOffset, JobStatus, DateTimeOffset)
+  fullName: Meridian.Storage.Services.ScheduledJob.ScheduledJob(string, Meridian.Storage.Services.MaintenanceJob, System.DateTimeOffset, Meridian.Storage.Services.JobStatus, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 675
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public ScheduledJob(string Id, MaintenanceJob Job, DateTimeOffset ScheduledStart, JobStatus Status, DateTimeOffset CreatedAt)
+    parameters:
+    - id: Id
+      type: System.String
+    - id: Job
+      type: Meridian.Storage.Services.MaintenanceJob
+    - id: ScheduledStart
+      type: System.DateTimeOffset
+    - id: Status
+      type: Meridian.Storage.Services.JobStatus
+    - id: CreatedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Id As String, Job As MaintenanceJob, ScheduledStart As DateTimeOffset, Status As JobStatus, CreatedAt As DateTimeOffset)
+  overload: Meridian.Storage.Services.ScheduledJob.#ctor*
+  nameWithType.vb: ScheduledJob.New(String, MaintenanceJob, DateTimeOffset, JobStatus, DateTimeOffset)
+  fullName.vb: Meridian.Storage.Services.ScheduledJob.New(String, Meridian.Storage.Services.MaintenanceJob, System.DateTimeOffset, Meridian.Storage.Services.JobStatus, System.DateTimeOffset)
+  name.vb: New(String, MaintenanceJob, DateTimeOffset, JobStatus, DateTimeOffset)
+- uid: Meridian.Storage.Services.ScheduledJob.Id
+  commentId: P:Meridian.Storage.Services.ScheduledJob.Id
+  id: Id
+  parent: Meridian.Storage.Services.ScheduledJob
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: ScheduledJob.Id
+  fullName: Meridian.Storage.Services.ScheduledJob.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 676
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string Id { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Storage.Services.ScheduledJob.Id*
+- uid: Meridian.Storage.Services.ScheduledJob.Job
+  commentId: P:Meridian.Storage.Services.ScheduledJob.Job
+  id: Job
+  parent: Meridian.Storage.Services.ScheduledJob
+  langs:
+  - csharp
+  - vb
+  name: Job
+  nameWithType: ScheduledJob.Job
+  fullName: Meridian.Storage.Services.ScheduledJob.Job
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Job
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 677
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public MaintenanceJob Job { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.MaintenanceJob
+    content.vb: Public Property Job As MaintenanceJob
+  overload: Meridian.Storage.Services.ScheduledJob.Job*
+- uid: Meridian.Storage.Services.ScheduledJob.ScheduledStart
+  commentId: P:Meridian.Storage.Services.ScheduledJob.ScheduledStart
+  id: ScheduledStart
+  parent: Meridian.Storage.Services.ScheduledJob
+  langs:
+  - csharp
+  - vb
+  name: ScheduledStart
+  nameWithType: ScheduledJob.ScheduledStart
+  fullName: Meridian.Storage.Services.ScheduledJob.ScheduledStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduledStart
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 678
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset ScheduledStart { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ScheduledStart As DateTimeOffset
+  overload: Meridian.Storage.Services.ScheduledJob.ScheduledStart*
+- uid: Meridian.Storage.Services.ScheduledJob.Status
+  commentId: P:Meridian.Storage.Services.ScheduledJob.Status
+  id: Status
+  parent: Meridian.Storage.Services.ScheduledJob
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ScheduledJob.Status
+  fullName: Meridian.Storage.Services.ScheduledJob.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 679
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public JobStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.JobStatus
+    content.vb: Public Property Status As JobStatus
+  overload: Meridian.Storage.Services.ScheduledJob.Status*
+- uid: Meridian.Storage.Services.ScheduledJob.CreatedAt
+  commentId: P:Meridian.Storage.Services.ScheduledJob.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Storage.Services.ScheduledJob
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: ScheduledJob.CreatedAt
+  fullName: Meridian.Storage.Services.ScheduledJob.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/MaintenanceScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Storage/Services/MaintenanceScheduler.cs
+    startLine: 680
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTimeOffset CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CreatedAt As DateTimeOffset
+  overload: Meridian.Storage.Services.ScheduledJob.CreatedAt*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.ScheduledJob}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.ScheduledJob}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ScheduledJob>
+  nameWithType: IEquatable<ScheduledJob>
+  fullName: System.IEquatable<Meridian.Storage.Services.ScheduledJob>
+  nameWithType.vb: IEquatable(Of ScheduledJob)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.ScheduledJob)
+  name.vb: IEquatable(Of ScheduledJob)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.ScheduledJob
+    name: ScheduledJob
+    href: Meridian.Storage.Services.ScheduledJob.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.ScheduledJob
+    name: ScheduledJob
+    href: Meridian.Storage.Services.ScheduledJob.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.ScheduledJob.#ctor*
+  commentId: Overload:Meridian.Storage.Services.ScheduledJob.#ctor
+  href: Meridian.Storage.Services.ScheduledJob.html#Meridian_Storage_Services_ScheduledJob__ctor_System_String_Meridian_Storage_Services_MaintenanceJob_System_DateTimeOffset_Meridian_Storage_Services_JobStatus_System_DateTimeOffset_
+  name: ScheduledJob
+  nameWithType: ScheduledJob.ScheduledJob
+  fullName: Meridian.Storage.Services.ScheduledJob.ScheduledJob
+  nameWithType.vb: ScheduledJob.New
+  fullName.vb: Meridian.Storage.Services.ScheduledJob.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Services.MaintenanceJob
+  commentId: T:Meridian.Storage.Services.MaintenanceJob
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.MaintenanceJob.html
+  name: MaintenanceJob
+  nameWithType: MaintenanceJob
+  fullName: Meridian.Storage.Services.MaintenanceJob
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Storage.Services.JobStatus
+  commentId: T:Meridian.Storage.Services.JobStatus
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.JobStatus.html
+  name: JobStatus
+  nameWithType: JobStatus
+  fullName: Meridian.Storage.Services.JobStatus
+- uid: Meridian.Storage.Services.ScheduledJob.Id*
+  commentId: Overload:Meridian.Storage.Services.ScheduledJob.Id
+  href: Meridian.Storage.Services.ScheduledJob.html#Meridian_Storage_Services_ScheduledJob_Id
+  name: Id
+  nameWithType: ScheduledJob.Id
+  fullName: Meridian.Storage.Services.ScheduledJob.Id
+- uid: Meridian.Storage.Services.ScheduledJob.Job*
+  commentId: Overload:Meridian.Storage.Services.ScheduledJob.Job
+  href: Meridian.Storage.Services.ScheduledJob.html#Meridian_Storage_Services_ScheduledJob_Job
+  name: Job
+  nameWithType: ScheduledJob.Job
+  fullName: Meridian.Storage.Services.ScheduledJob.Job
+- uid: Meridian.Storage.Services.ScheduledJob.ScheduledStart*
+  commentId: Overload:Meridian.Storage.Services.ScheduledJob.ScheduledStart
+  href: Meridian.Storage.Services.ScheduledJob.html#Meridian_Storage_Services_ScheduledJob_ScheduledStart
+  name: ScheduledStart
+  nameWithType: ScheduledJob.ScheduledStart
+  fullName: Meridian.Storage.Services.ScheduledJob.ScheduledStart
+- uid: Meridian.Storage.Services.ScheduledJob.Status*
+  commentId: Overload:Meridian.Storage.Services.ScheduledJob.Status
+  href: Meridian.Storage.Services.ScheduledJob.html#Meridian_Storage_Services_ScheduledJob_Status
+  name: Status
+  nameWithType: ScheduledJob.Status
+  fullName: Meridian.Storage.Services.ScheduledJob.Status
+- uid: Meridian.Storage.Services.ScheduledJob.CreatedAt*
+  commentId: Overload:Meridian.Storage.Services.ScheduledJob.CreatedAt
+  href: Meridian.Storage.Services.ScheduledJob.html#Meridian_Storage_Services_ScheduledJob_CreatedAt
+  name: CreatedAt
+  nameWithType: ScheduledJob.CreatedAt
+  fullName: Meridian.Storage.Services.ScheduledJob.CreatedAt

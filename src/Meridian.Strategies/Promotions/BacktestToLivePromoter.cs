@@ -16,15 +16,23 @@ public sealed class BacktestToLivePromoter
     /// </summary>
     public bool MeetsPromotionThresholds(BacktestResult result, PromotionCriteria criteria)
     {
+        var decision = EvaluatePromotionThresholds(result, criteria);
+        return decision.Eligible;
+    }
+
+    /// <summary>
+    /// Returns the typed promotion threshold decision from the F# policy kernel.
+    /// </summary>
+    public Interop.PromotionDecisionDto EvaluatePromotionThresholds(BacktestResult result, PromotionCriteria criteria)
+    {
         ArgumentNullException.ThrowIfNull(result);
         ArgumentNullException.ThrowIfNull(criteria);
 
-        var decision = Interop.PromotionInterop.EvaluateBacktestPromotion(
+        return Interop.PromotionInterop.EvaluateBacktestPromotion(
             result,
             criteria.MinSharpeRatio,
             criteria.MaxAllowedDrawdownPercent,
             criteria.MinTotalReturn);
-        return decision.Eligible;
     }
 
     /// <summary>
@@ -35,10 +43,13 @@ public sealed class BacktestToLivePromoter
         BacktestResult result,
         string strategyId,
         string strategyName,
-        RunType targetRunType)
+        RunType targetRunType,
+        string? approvedBy = null,
+        string? manualOverrideId = null)
     {
         ArgumentNullException.ThrowIfNull(result);
 
+        var auditReference = Guid.NewGuid().ToString("N");
         return new StrategyPromotionRecord(
             PromotionId: Guid.NewGuid().ToString("N"),
             StrategyId: strategyId,
@@ -48,7 +59,10 @@ public sealed class BacktestToLivePromoter
             QualifyingSharpe: result.Metrics.SharpeRatio,
             QualifyingMaxDrawdownPercent: result.Metrics.MaxDrawdownPercent,
             QualifyingTotalReturn: result.Metrics.TotalReturn,
-            PromotedAt: DateTimeOffset.UtcNow);
+            PromotedAt: DateTimeOffset.UtcNow,
+            AuditReference: auditReference,
+            ApprovedBy: approvedBy,
+            ManualOverrideId: manualOverrideId);
     }
 }
 
@@ -78,4 +92,7 @@ public sealed record StrategyPromotionRecord(
     double QualifyingSharpe,
     decimal QualifyingMaxDrawdownPercent,
     decimal QualifyingTotalReturn,
-    DateTimeOffset PromotedAt);
+    DateTimeOffset PromotedAt,
+    string? AuditReference = null,
+    string? ApprovedBy = null,
+    string? ManualOverrideId = null);

@@ -1,0 +1,503 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Interfaces.ILiveStrategy
+  commentId: T:Meridian.Strategies.Interfaces.ILiveStrategy
+  id: ILiveStrategy
+  parent: Meridian.Strategies.Interfaces
+  children: []
+  langs:
+  - csharp
+  - vb
+  name: ILiveStrategy
+  nameWithType: ILiveStrategy
+  fullName: Meridian.Strategies.Interfaces.ILiveStrategy
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/ILiveStrategy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ILiveStrategy
+    path: ../../src/Meridian.Strategies/Interfaces/ILiveStrategy.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: >-
+    A strategy that can participate in both the backtest engine and live execution.
+
+    Combines the <xref href="Meridian.Backtesting.Sdk.IBacktestStrategy" data-throw-if-not-resolved="false"></xref> replay callbacks with the
+
+    <xref href="Meridian.Strategies.Interfaces.IStrategyLifecycle" data-throw-if-not-resolved="false"></xref> live-mode management contract.
+  remarks: >-
+    Not all strategies need live execution capability. Strategies that implement
+
+    this interface are intended to support both backtesting and live execution,
+
+    while strategies that only implement <xref href="Meridian.Backtesting.Sdk.IBacktestStrategy" data-throw-if-not-resolved="false"></xref> remain
+
+    backtest-only.
+  example: []
+  syntax:
+    content: 'public interface ILiveStrategy : IBacktestStrategy, IStrategyLifecycle'
+    content.vb: Public Interface ILiveStrategy Inherits IBacktestStrategy, IStrategyLifecycle
+  inheritedMembers:
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+references:
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy
+  commentId: T:Meridian.Backtesting.Sdk.IBacktestStrategy
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html
+  name: IBacktestStrategy
+  nameWithType: IBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyLifecycle
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html
+  name: IStrategyLifecycle
+  nameWithType: IStrategyLifecycle
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+  commentId: P:Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Name
+  name: Name
+  nameWithType: IBacktestStrategy.Name
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.Name
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: Initialize(IBacktestContext)
+  nameWithType: IBacktestStrategy.Initialize(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: Initialize
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.Initialize(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: Initialize
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_Initialize_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnTrade(Trade, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnTrade(Trade, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnTrade
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.Trade
+    name: Trade
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnTrade(Meridian.Contracts.Domain.Models.Trade,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnTrade
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnTrade_Meridian_Contracts_Domain_Models_Trade_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.Trade
+    name: Trade
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnQuote(BboQuotePayload, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnQuote(BboQuotePayload, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnQuote
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnQuote(Meridian.Contracts.Domain.Models.BboQuotePayload,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnQuote
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnQuote_Meridian_Contracts_Domain_Models_BboQuotePayload_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.BboQuotePayload
+    name: BboQuotePayload
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnBar(HistoricalBar, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnBar(HistoricalBar, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnBar
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnBar(Meridian.Contracts.Domain.Models.HistoricalBar,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnBar
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnBar_Meridian_Contracts_Domain_Models_HistoricalBar_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderBook(LOBSnapshot, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnOrderBook(LOBSnapshot, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderBook
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+    name: LOBSnapshot
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderBook(Meridian.Contracts.Domain.Models.LOBSnapshot,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderBook
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderBook_Meridian_Contracts_Domain_Models_LOBSnapshot_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+    name: LOBSnapshot
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnOrderFill(FillEvent, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnOrderFill(FillEvent, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderFill
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnOrderFill(Meridian.Backtesting.Sdk.FillEvent,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnOrderFill
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnOrderFill_Meridian_Backtesting_Sdk_FillEvent_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.FillEvent
+    name: FillEvent
+    href: Meridian.Backtesting.Sdk.FillEvent.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  isExternal: true
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnDayEnd(DateOnly, IBacktestContext)
+  nameWithType: IBacktestStrategy.OnDayEnd(DateOnly, IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly, Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnDayEnd
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnDayEnd(System.DateOnly,Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnDayEnd
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnDayEnd_System_DateOnly_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: ','
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  commentId: M:Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  parent: Meridian.Backtesting.Sdk.IBacktestStrategy
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  name: OnFinished(IBacktestContext)
+  nameWithType: IBacktestStrategy.OnFinished(IBacktestContext)
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+  spec.csharp:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnFinished
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Backtesting.Sdk.IBacktestStrategy.OnFinished(Meridian.Backtesting.Sdk.IBacktestContext)
+    name: OnFinished
+    href: Meridian.Backtesting.Sdk.IBacktestStrategy.html#Meridian_Backtesting_Sdk_IBacktestStrategy_OnFinished_Meridian_Backtesting_Sdk_IBacktestContext_
+  - name: (
+  - uid: Meridian.Backtesting.Sdk.IBacktestContext
+    name: IBacktestContext
+    href: Meridian.Backtesting.Sdk.IBacktestContext.html
+  - name: )
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+  commentId: P:Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StrategyId
+  name: StrategyId
+  nameWithType: IStrategyLifecycle.StrategyId
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+  commentId: P:Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_Status
+  name: Status
+  nameWithType: IStrategyLifecycle.Status
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StartAsync_Meridian_Execution_Interfaces_IExecutionContext_System_Threading_CancellationToken_
+  name: StartAsync(IExecutionContext, CancellationToken)
+  nameWithType: IStrategyLifecycle.StartAsync(IExecutionContext, CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+    name: StartAsync
+    href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StartAsync_Meridian_Execution_Interfaces_IExecutionContext_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Interfaces.IExecutionContext
+    name: IExecutionContext
+    href: Meridian.Execution.Interfaces.IExecutionContext.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+    name: StartAsync
+    href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StartAsync_Meridian_Execution_Interfaces_IExecutionContext_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Interfaces.IExecutionContext
+    name: IExecutionContext
+    href: Meridian.Execution.Interfaces.IExecutionContext.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_PauseAsync_System_Threading_CancellationToken_
+  name: PauseAsync(CancellationToken)
+  nameWithType: IStrategyLifecycle.PauseAsync(CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+    name: PauseAsync
+    href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_PauseAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+    name: PauseAsync
+    href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_PauseAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StopAsync_System_Threading_CancellationToken_
+  name: StopAsync(CancellationToken)
+  nameWithType: IStrategyLifecycle.StopAsync(CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+    name: StopAsync
+    href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StopAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+    name: StopAsync
+    href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StopAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html

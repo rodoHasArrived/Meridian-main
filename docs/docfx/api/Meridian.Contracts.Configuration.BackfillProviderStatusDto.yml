@@ -1,0 +1,765 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  commentId: T:Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  id: BackfillProviderStatusDto
+  parent: Meridian.Contracts.Configuration
+  children:
+  - Meridian.Contracts.Configuration.BackfillProviderStatusDto.EffectiveConfigSource
+  - Meridian.Contracts.Configuration.BackfillProviderStatusDto.HealthStatus
+  - Meridian.Contracts.Configuration.BackfillProviderStatusDto.IsThrottled
+  - Meridian.Contracts.Configuration.BackfillProviderStatusDto.LastUsed
+  - Meridian.Contracts.Configuration.BackfillProviderStatusDto.Metadata
+  - Meridian.Contracts.Configuration.BackfillProviderStatusDto.Options
+  - Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedHour
+  - Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedMinute
+  langs:
+  - csharp
+  - vb
+  name: BackfillProviderStatusDto
+  nameWithType: BackfillProviderStatusDto
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillProviderStatusDto
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 299
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  summary: Combined view of provider configuration with runtime health status for the desktop UI.
+  example: []
+  syntax:
+    content: public sealed class BackfillProviderStatusDto
+    content.vb: Public NotInheritable Class BackfillProviderStatusDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Metadata
+  commentId: P:Meridian.Contracts.Configuration.BackfillProviderStatusDto.Metadata
+  id: Metadata
+  parent: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  langs:
+  - csharp
+  - vb
+  name: Metadata
+  nameWithType: BackfillProviderStatusDto.Metadata
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Metadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metadata
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 301
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("metadata")]
+
+      public BackfillProviderMetadataDto Metadata { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.BackfillProviderMetadataDto
+    content.vb: >-
+      <JsonPropertyName("metadata")>
+
+      Public Property Metadata As BackfillProviderMetadataDto
+  overload: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Metadata*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: metadata
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Options
+  commentId: P:Meridian.Contracts.Configuration.BackfillProviderStatusDto.Options
+  id: Options
+  parent: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  langs:
+  - csharp
+  - vb
+  name: Options
+  nameWithType: BackfillProviderStatusDto.Options
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Options
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Options
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 304
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("options")]
+
+      public BackfillProviderOptionsDto Options { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+    content.vb: >-
+      <JsonPropertyName("options")>
+
+      Public Property Options As BackfillProviderOptionsDto
+  overload: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Options*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: options
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.HealthStatus
+  commentId: P:Meridian.Contracts.Configuration.BackfillProviderStatusDto.HealthStatus
+  id: HealthStatus
+  parent: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  langs:
+  - csharp
+  - vb
+  name: HealthStatus
+  nameWithType: BackfillProviderStatusDto.HealthStatus
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.HealthStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthStatus
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 307
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("healthStatus")]
+
+      public string HealthStatus { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("healthStatus")>
+
+      Public Property HealthStatus As String
+  overload: Meridian.Contracts.Configuration.BackfillProviderStatusDto.HealthStatus*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: healthStatus
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.LastUsed
+  commentId: P:Meridian.Contracts.Configuration.BackfillProviderStatusDto.LastUsed
+  id: LastUsed
+  parent: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  langs:
+  - csharp
+  - vb
+  name: LastUsed
+  nameWithType: BackfillProviderStatusDto.LastUsed
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.LastUsed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUsed
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 310
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("lastUsed")]
+
+      public DateTime? LastUsed { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("lastUsed")>
+
+      Public Property LastUsed As Date?
+  overload: Meridian.Contracts.Configuration.BackfillProviderStatusDto.LastUsed*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastUsed
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedMinute
+  commentId: P:Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedMinute
+  id: RequestsUsedMinute
+  parent: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  langs:
+  - csharp
+  - vb
+  name: RequestsUsedMinute
+  nameWithType: BackfillProviderStatusDto.RequestsUsedMinute
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedMinute
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestsUsedMinute
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 313
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("requestsUsedMinute")]
+
+      public int RequestsUsedMinute { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("requestsUsedMinute")>
+
+      Public Property RequestsUsedMinute As Integer
+  overload: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedMinute*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: requestsUsedMinute
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedHour
+  commentId: P:Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedHour
+  id: RequestsUsedHour
+  parent: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  langs:
+  - csharp
+  - vb
+  name: RequestsUsedHour
+  nameWithType: BackfillProviderStatusDto.RequestsUsedHour
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedHour
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestsUsedHour
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("requestsUsedHour")]
+
+      public int RequestsUsedHour { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("requestsUsedHour")>
+
+      Public Property RequestsUsedHour As Integer
+  overload: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedHour*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: requestsUsedHour
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.IsThrottled
+  commentId: P:Meridian.Contracts.Configuration.BackfillProviderStatusDto.IsThrottled
+  id: IsThrottled
+  parent: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  langs:
+  - csharp
+  - vb
+  name: IsThrottled
+  nameWithType: BackfillProviderStatusDto.IsThrottled
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.IsThrottled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsThrottled
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 319
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("isThrottled")]
+
+      public bool IsThrottled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isThrottled")>
+
+      Public Property IsThrottled As Boolean
+  overload: Meridian.Contracts.Configuration.BackfillProviderStatusDto.IsThrottled*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isThrottled
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.EffectiveConfigSource
+  commentId: P:Meridian.Contracts.Configuration.BackfillProviderStatusDto.EffectiveConfigSource
+  id: EffectiveConfigSource
+  parent: Meridian.Contracts.Configuration.BackfillProviderStatusDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveConfigSource
+  nameWithType: BackfillProviderStatusDto.EffectiveConfigSource
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.EffectiveConfigSource
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/AppConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveConfigSource
+    path: ../../src/Meridian.Contracts/Configuration/AppConfigDto.cs
+    startLine: 322
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("effectiveConfigSource")]
+
+      public string EffectiveConfigSource { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("effectiveConfigSource")>
+
+      Public Property EffectiveConfigSource As String
+  overload: Meridian.Contracts.Configuration.BackfillProviderStatusDto.EffectiveConfigSource*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: effectiveConfigSource
+references:
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Metadata*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderStatusDto.Metadata
+  href: Meridian.Contracts.Configuration.BackfillProviderStatusDto.html#Meridian_Contracts_Configuration_BackfillProviderStatusDto_Metadata
+  name: Metadata
+  nameWithType: BackfillProviderStatusDto.Metadata
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Metadata
+- uid: Meridian.Contracts.Configuration.BackfillProviderMetadataDto
+  commentId: T:Meridian.Contracts.Configuration.BackfillProviderMetadataDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.BackfillProviderMetadataDto.html
+  name: BackfillProviderMetadataDto
+  nameWithType: BackfillProviderMetadataDto
+  fullName: Meridian.Contracts.Configuration.BackfillProviderMetadataDto
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Options*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderStatusDto.Options
+  href: Meridian.Contracts.Configuration.BackfillProviderStatusDto.html#Meridian_Contracts_Configuration_BackfillProviderStatusDto_Options
+  name: Options
+  nameWithType: BackfillProviderStatusDto.Options
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.Options
+- uid: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.BackfillProviderOptionsDto.html
+  name: BackfillProviderOptionsDto
+  nameWithType: BackfillProviderOptionsDto
+  fullName: Meridian.Contracts.Configuration.BackfillProviderOptionsDto
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.HealthStatus*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderStatusDto.HealthStatus
+  href: Meridian.Contracts.Configuration.BackfillProviderStatusDto.html#Meridian_Contracts_Configuration_BackfillProviderStatusDto_HealthStatus
+  name: HealthStatus
+  nameWithType: BackfillProviderStatusDto.HealthStatus
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.HealthStatus
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.LastUsed*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderStatusDto.LastUsed
+  href: Meridian.Contracts.Configuration.BackfillProviderStatusDto.html#Meridian_Contracts_Configuration_BackfillProviderStatusDto_LastUsed
+  name: LastUsed
+  nameWithType: BackfillProviderStatusDto.LastUsed
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.LastUsed
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedMinute*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedMinute
+  href: Meridian.Contracts.Configuration.BackfillProviderStatusDto.html#Meridian_Contracts_Configuration_BackfillProviderStatusDto_RequestsUsedMinute
+  name: RequestsUsedMinute
+  nameWithType: BackfillProviderStatusDto.RequestsUsedMinute
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedMinute
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedHour*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedHour
+  href: Meridian.Contracts.Configuration.BackfillProviderStatusDto.html#Meridian_Contracts_Configuration_BackfillProviderStatusDto_RequestsUsedHour
+  name: RequestsUsedHour
+  nameWithType: BackfillProviderStatusDto.RequestsUsedHour
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.RequestsUsedHour
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.IsThrottled*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderStatusDto.IsThrottled
+  href: Meridian.Contracts.Configuration.BackfillProviderStatusDto.html#Meridian_Contracts_Configuration_BackfillProviderStatusDto_IsThrottled
+  name: IsThrottled
+  nameWithType: BackfillProviderStatusDto.IsThrottled
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.IsThrottled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Configuration.BackfillProviderStatusDto.EffectiveConfigSource*
+  commentId: Overload:Meridian.Contracts.Configuration.BackfillProviderStatusDto.EffectiveConfigSource
+  href: Meridian.Contracts.Configuration.BackfillProviderStatusDto.html#Meridian_Contracts_Configuration_BackfillProviderStatusDto_EffectiveConfigSource
+  name: EffectiveConfigSource
+  nameWithType: BackfillProviderStatusDto.EffectiveConfigSource
+  fullName: Meridian.Contracts.Configuration.BackfillProviderStatusDto.EffectiveConfigSource

@@ -1,0 +1,1103 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  id: BackfillRequest
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.AssignedProvider
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.BarsRetrieved
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.CompletedAt
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.CreatedAt
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.ErrorMessage
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.FromDate
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.Granularity
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.JobId
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.MaxRetries
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.PreferredProviders
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.Priority
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.RequestId
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.RetryCount
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.StartedAt
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.Status
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.Symbol
+  - Meridian.Infrastructure.Adapters.Core.BackfillRequest.ToDate
+  langs:
+  - csharp
+  - vb
+  name: BackfillRequest
+  nameWithType: BackfillRequest
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillRequest
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 459
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Represents a single backfill request.
+  example: []
+  syntax:
+    content: public sealed class BackfillRequest
+    content.vb: Public NotInheritable Class BackfillRequest
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RequestId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.RequestId
+  id: RequestId
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: RequestId
+  nameWithType: BackfillRequest.RequestId
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RequestId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestId
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 461
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string RequestId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RequestId As String
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RequestId*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.JobId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.JobId
+  id: JobId
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: JobId
+  nameWithType: BackfillRequest.JobId
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.JobId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobId
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 462
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string JobId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property JobId As String
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.JobId*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Symbol
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.Symbol
+  id: Symbol
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: BackfillRequest.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 463
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Symbol*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.FromDate
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.FromDate
+  id: FromDate
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: FromDate
+  nameWithType: BackfillRequest.FromDate
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.FromDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromDate
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 464
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DateOnly FromDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property FromDate As DateOnly
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.FromDate*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ToDate
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.ToDate
+  id: ToDate
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: ToDate
+  nameWithType: BackfillRequest.ToDate
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ToDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDate
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 465
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DateOnly ToDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property ToDate As DateOnly
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ToDate*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Granularity
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.Granularity
+  id: Granularity
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: Granularity
+  nameWithType: BackfillRequest.Granularity
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Granularity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Granularity
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 466
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DataGranularity Granularity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.DataGranularity
+    content.vb: Public Property Granularity As DataGranularity
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Granularity*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.PreferredProviders
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.PreferredProviders
+  id: PreferredProviders
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: PreferredProviders
+  nameWithType: BackfillRequest.PreferredProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.PreferredProviders
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreferredProviders
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 467
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public List<string> PreferredProviders { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property PreferredProviders As List(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.PreferredProviders*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.AssignedProvider
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.AssignedProvider
+  id: AssignedProvider
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: AssignedProvider
+  nameWithType: BackfillRequest.AssignedProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.AssignedProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssignedProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 468
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string? AssignedProvider { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssignedProvider As String
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.AssignedProvider*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: BackfillRequest.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 469
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int Priority { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Priority*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.MaxRetries
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.MaxRetries
+  id: MaxRetries
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: MaxRetries
+  nameWithType: BackfillRequest.MaxRetries
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.MaxRetries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRetries
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 470
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int MaxRetries { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxRetries As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.MaxRetries*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RetryCount
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.RetryCount
+  id: RetryCount
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: RetryCount
+  nameWithType: BackfillRequest.RetryCount
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RetryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RetryCount
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 471
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int RetryCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RetryCount As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RetryCount*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Status
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.Status
+  id: Status
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: BackfillRequest.Status
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 472
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public BackfillRequestStatus Status { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+    content.vb: Public Property Status As BackfillRequestStatus
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Status*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CreatedAt
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: BackfillRequest.CreatedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 473
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DateTimeOffset CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CreatedAt As DateTimeOffset
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CreatedAt*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.StartedAt
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.StartedAt
+  id: StartedAt
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: StartedAt
+  nameWithType: BackfillRequest.StartedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.StartedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedAt
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 474
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DateTimeOffset? StartedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property StartedAt As DateTimeOffset?
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.StartedAt*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CompletedAt
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.CompletedAt
+  id: CompletedAt
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: CompletedAt
+  nameWithType: BackfillRequest.CompletedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CompletedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedAt
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 475
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DateTimeOffset? CompletedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property CompletedAt As DateTimeOffset?
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CompletedAt*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ErrorMessage
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.ErrorMessage
+  id: ErrorMessage
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessage
+  nameWithType: BackfillRequest.ErrorMessage
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ErrorMessage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessage
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 476
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public string? ErrorMessage { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ErrorMessage As String
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ErrorMessage*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.BarsRetrieved
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillRequest.BarsRetrieved
+  id: BarsRetrieved
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillRequest
+  langs:
+  - csharp
+  - vb
+  name: BarsRetrieved
+  nameWithType: BackfillRequest.BarsRetrieved
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.BarsRetrieved
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BarsRetrieved
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs
+    startLine: 477
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public int BarsRetrieved { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BarsRetrieved As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillRequest.BarsRetrieved*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RequestId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.RequestId
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_RequestId
+  name: RequestId
+  nameWithType: BackfillRequest.RequestId
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RequestId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.JobId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.JobId
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_JobId
+  name: JobId
+  nameWithType: BackfillRequest.JobId
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.JobId
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Symbol*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.Symbol
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_Symbol
+  name: Symbol
+  nameWithType: BackfillRequest.Symbol
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Symbol
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.FromDate*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.FromDate
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_FromDate
+  name: FromDate
+  nameWithType: BackfillRequest.FromDate
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.FromDate
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ToDate*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.ToDate
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_ToDate
+  name: ToDate
+  nameWithType: BackfillRequest.ToDate
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ToDate
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Granularity*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.Granularity
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_Granularity
+  name: Granularity
+  nameWithType: BackfillRequest.Granularity
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Granularity
+- uid: Meridian.Infrastructure.Adapters.Core.DataGranularity
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGranularity
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGranularity.html
+  name: DataGranularity
+  nameWithType: DataGranularity
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGranularity
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.PreferredProviders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.PreferredProviders
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_PreferredProviders
+  name: PreferredProviders
+  nameWithType: BackfillRequest.PreferredProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.PreferredProviders
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.AssignedProvider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.AssignedProvider
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_AssignedProvider
+  name: AssignedProvider
+  nameWithType: BackfillRequest.AssignedProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.AssignedProvider
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Priority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.Priority
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_Priority
+  name: Priority
+  nameWithType: BackfillRequest.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Priority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.MaxRetries*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.MaxRetries
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_MaxRetries
+  name: MaxRetries
+  nameWithType: BackfillRequest.MaxRetries
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.MaxRetries
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RetryCount*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.RetryCount
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_RetryCount
+  name: RetryCount
+  nameWithType: BackfillRequest.RetryCount
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.RetryCount
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Status*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.Status
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_Status
+  name: Status
+  nameWithType: BackfillRequest.Status
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.Status
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus.html
+  name: BackfillRequestStatus
+  nameWithType: BackfillRequestStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CreatedAt*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.CreatedAt
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_CreatedAt
+  name: CreatedAt
+  nameWithType: BackfillRequest.CreatedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CreatedAt
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.StartedAt*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.StartedAt
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_StartedAt
+  name: StartedAt
+  nameWithType: BackfillRequest.StartedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.StartedAt
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CompletedAt*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.CompletedAt
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_CompletedAt
+  name: CompletedAt
+  nameWithType: BackfillRequest.CompletedAt
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.CompletedAt
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ErrorMessage*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.ErrorMessage
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_ErrorMessage
+  name: ErrorMessage
+  nameWithType: BackfillRequest.ErrorMessage
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.ErrorMessage
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequest.BarsRetrieved*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillRequest.BarsRetrieved
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequest.html#Meridian_Infrastructure_Adapters_Core_BackfillRequest_BarsRetrieved
+  name: BarsRetrieved
+  nameWithType: BackfillRequest.BarsRetrieved
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequest.BarsRetrieved

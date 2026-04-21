@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+  id: SequenceErrorType
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Duplicate
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Gap
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorType.OutOfOrder
+  - Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Reset
+  langs:
+  - csharp
+  - vb
+  name: SequenceErrorType
+  nameWithType: SequenceErrorType
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceErrorType
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Type of sequence error.
+  example: []
+  syntax:
+    content: 'public enum SequenceErrorType : byte'
+    content.vb: Public Enum SequenceErrorType As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Gap
+  commentId: F:Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Gap
+  id: Gap
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+  langs:
+  - csharp
+  - vb
+  name: Gap
+  nameWithType: SequenceErrorType.Gap
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Gap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gap
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Gap = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.OutOfOrder
+  commentId: F:Meridian.Application.Monitoring.DataQuality.SequenceErrorType.OutOfOrder
+  id: OutOfOrder
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+  langs:
+  - csharp
+  - vb
+  name: OutOfOrder
+  nameWithType: SequenceErrorType.OutOfOrder
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.OutOfOrder
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutOfOrder
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: OutOfOrder = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Duplicate
+  commentId: F:Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Duplicate
+  id: Duplicate
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+  langs:
+  - csharp
+  - vb
+  name: Duplicate
+  nameWithType: SequenceErrorType.Duplicate
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Duplicate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duplicate
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Duplicate = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Reset
+  commentId: F:Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Reset
+  id: Reset
+  parent: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+  langs:
+  - csharp
+  - vb
+  name: Reset
+  nameWithType: SequenceErrorType.Reset
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.Reset
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Reset = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+  commentId: T:Meridian.Application.Monitoring.DataQuality.SequenceErrorType
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.SequenceErrorType.html
+  name: SequenceErrorType
+  nameWithType: SequenceErrorType
+  fullName: Meridian.Application.Monitoring.DataQuality.SequenceErrorType

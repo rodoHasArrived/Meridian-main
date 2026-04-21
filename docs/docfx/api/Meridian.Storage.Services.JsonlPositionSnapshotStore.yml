@@ -1,0 +1,1134 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.JsonlPositionSnapshotStore
+  commentId: T:Meridian.Storage.Services.JsonlPositionSnapshotStore
+  id: JsonlPositionSnapshotStore
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.JsonlPositionSnapshotStore.#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.JsonlPositionSnapshotStore})
+  - Meridian.Storage.Services.JsonlPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.JsonlPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  - Meridian.Storage.Services.JsonlPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: JsonlPositionSnapshotStore
+  nameWithType: JsonlPositionSnapshotStore
+  fullName: Meridian.Storage.Services.JsonlPositionSnapshotStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JsonlPositionSnapshotStore
+    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: >-
+    JSONL-backed implementation of <xref href="Meridian.Contracts.Domain.IPositionSnapshotStore" data-throw-if-not-resolved="false"></xref>.
+
+
+    <p>
+
+    Path convention: <code>{StorageRoot}/portfolios/{runId}/{accountId}/snapshots.jsonl</code>
+
+    This path falls under <code>StorageOptions.RootPath</code> so the
+
+    <xref href="Meridian.Storage.Services.LifecyclePolicyEngine" data-throw-if-not-resolved="false"></xref> automatically picks it up for tiered-storage
+
+    lifecycle enforcement (ADR-002).  Each snapshot is a single JSON line appended
+
+    atomically (ADR-007) — position snapshots are idempotent (latest wins), so
+
+    recovery simply reads to the last successfully written line.
+
+    </p>
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-007", "WAL/atomic write pattern for crash-safe position snapshot persistence")]
+
+      [ImplementsAdr("ADR-002", "Snapshot files stored under StorageRoot so LifecyclePolicyEngine governs retention")]
+
+      [ImplementsAdr("ADR-014", "Serialisation via ExecutionSnapshotJsonContext — no reflection")]
+
+      public sealed class JsonlPositionSnapshotStore : IPositionSnapshotStore
+    content.vb: >-
+      <ImplementsAdr("ADR-007", "WAL/atomic write pattern for crash-safe position snapshot persistence")>
+
+      <ImplementsAdr("ADR-002", "Snapshot files stored under StorageRoot so LifecyclePolicyEngine governs retention")>
+
+      <ImplementsAdr("ADR-014", "Serialisation via ExecutionSnapshotJsonContext — no reflection")>
+
+      Public NotInheritable Class JsonlPositionSnapshotStore Implements IPositionSnapshotStore
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Contracts.Domain.IPositionSnapshotStore
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-007
+    - type: System.String
+      value: WAL/atomic write pattern for crash-safe position snapshot persistence
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-002
+    - type: System.String
+      value: Snapshot files stored under StorageRoot so LifecyclePolicyEngine governs retention
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-014
+    - type: System.String
+      value: Serialisation via ExecutionSnapshotJsonContext — no reflection
+- uid: Meridian.Storage.Services.JsonlPositionSnapshotStore.#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.JsonlPositionSnapshotStore})
+  commentId: M:Meridian.Storage.Services.JsonlPositionSnapshotStore.#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.JsonlPositionSnapshotStore})
+  id: '#ctor(Meridian.Storage.StorageOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.JsonlPositionSnapshotStore})'
+  parent: Meridian.Storage.Services.JsonlPositionSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: JsonlPositionSnapshotStore(StorageOptions, ILogger<JsonlPositionSnapshotStore>)
+  nameWithType: JsonlPositionSnapshotStore.JsonlPositionSnapshotStore(StorageOptions, ILogger<JsonlPositionSnapshotStore>)
+  fullName: Meridian.Storage.Services.JsonlPositionSnapshotStore.JsonlPositionSnapshotStore(Meridian.Storage.StorageOptions, Microsoft.Extensions.Logging.ILogger<Meridian.Storage.Services.JsonlPositionSnapshotStore>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public JsonlPositionSnapshotStore(StorageOptions options, ILogger<JsonlPositionSnapshotStore> logger)
+    parameters:
+    - id: options
+      type: Meridian.Storage.StorageOptions
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.JsonlPositionSnapshotStore}
+    content.vb: Public Sub New(options As StorageOptions, logger As ILogger(Of JsonlPositionSnapshotStore))
+  overload: Meridian.Storage.Services.JsonlPositionSnapshotStore.#ctor*
+  nameWithType.vb: JsonlPositionSnapshotStore.New(StorageOptions, ILogger(Of JsonlPositionSnapshotStore))
+  fullName.vb: Meridian.Storage.Services.JsonlPositionSnapshotStore.New(Meridian.Storage.StorageOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.Services.JsonlPositionSnapshotStore))
+  name.vb: New(StorageOptions, ILogger(Of JsonlPositionSnapshotStore))
+- uid: Meridian.Storage.Services.JsonlPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.JsonlPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  id: SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.JsonlPositionSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: SaveSnapshotAsync(AccountSnapshotRecord, CancellationToken)
+  nameWithType: JsonlPositionSnapshotStore.SaveSnapshotAsync(AccountSnapshotRecord, CancellationToken)
+  fullName: Meridian.Storage.Services.JsonlPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveSnapshotAsync
+    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Persists an account snapshot.  Idempotent — latest write wins.
+  example: []
+  syntax:
+    content: public Task SaveSnapshotAsync(AccountSnapshotRecord snapshot, CancellationToken ct = default)
+    parameters:
+    - id: snapshot
+      type: Meridian.Contracts.Domain.AccountSnapshotRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SaveSnapshotAsync(snapshot As AccountSnapshotRecord, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Services.JsonlPositionSnapshotStore.SaveSnapshotAsync*
+  implements:
+  - Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+- uid: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.JsonlPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.JsonlPositionSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: GetLatestSnapshotAsync(string, string, CancellationToken)
+  nameWithType: JsonlPositionSnapshotStore.GetLatestSnapshotAsync(string, string, CancellationToken)
+  fullName: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetLatestSnapshotAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatestSnapshotAsync
+    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: >-
+    Retrieves the most recent snapshot for the given run / account pair.
+
+    Returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when none exists.
+  example: []
+  syntax:
+    content: public Task<AccountSnapshotRecord?> GetLatestSnapshotAsync(string runId, string accountId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: accountId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Domain.AccountSnapshotRecord}
+    content.vb: Public Function GetLatestSnapshotAsync(runId As String, accountId As String, ct As CancellationToken = Nothing) As Task(Of AccountSnapshotRecord)
+  overload: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetLatestSnapshotAsync*
+  implements:
+  - Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  nameWithType.vb: JsonlPositionSnapshotStore.GetLatestSnapshotAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetLatestSnapshotAsync(String, String, System.Threading.CancellationToken)
+  name.vb: GetLatestSnapshotAsync(String, String, CancellationToken)
+- uid: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.JsonlPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  id: GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.JsonlPositionSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshotHistoryAsync(string, string, DateTimeOffset, DateTimeOffset, CancellationToken)
+  nameWithType: JsonlPositionSnapshotStore.GetSnapshotHistoryAsync(string, string, DateTimeOffset, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetSnapshotHistoryAsync(string, string, System.DateTimeOffset, System.DateTimeOffset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshotHistoryAsync
+    path: ../../src/Meridian.Storage/Services/JsonlPositionSnapshotStore.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: >-
+    Streams all snapshots for the given run / account pair between
+
+    <code class="paramref">from</code> and <code class="paramref">to</code> (both inclusive, UTC).
+  example: []
+  syntax:
+    content: public IAsyncEnumerable<AccountSnapshotRecord> GetSnapshotHistoryAsync(string runId, string accountId, DateTimeOffset from, DateTimeOffset to, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: accountId
+      type: System.String
+    - id: from
+      type: System.DateTimeOffset
+    - id: to
+      type: System.DateTimeOffset
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Collections.Generic.IAsyncEnumerable{Meridian.Contracts.Domain.AccountSnapshotRecord}
+    content.vb: Public Function GetSnapshotHistoryAsync(runId As String, accountId As String, from As DateTimeOffset, [to] As DateTimeOffset, ct As CancellationToken = Nothing) As IAsyncEnumerable(Of AccountSnapshotRecord)
+  overload: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetSnapshotHistoryAsync*
+  implements:
+  - Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  nameWithType.vb: JsonlPositionSnapshotStore.GetSnapshotHistoryAsync(String, String, DateTimeOffset, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetSnapshotHistoryAsync(String, String, System.DateTimeOffset, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: GetSnapshotHistoryAsync(String, String, DateTimeOffset, DateTimeOffset, CancellationToken)
+references:
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore
+  commentId: T:Meridian.Contracts.Domain.IPositionSnapshotStore
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.IPositionSnapshotStore.html
+  name: IPositionSnapshotStore
+  nameWithType: IPositionSnapshotStore
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore
+- uid: Meridian.Storage.Services.LifecyclePolicyEngine
+  commentId: T:Meridian.Storage.Services.LifecyclePolicyEngine
+  href: Meridian.Storage.Services.LifecyclePolicyEngine.html
+  name: LifecyclePolicyEngine
+  nameWithType: LifecyclePolicyEngine
+  fullName: Meridian.Storage.Services.LifecyclePolicyEngine
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.JsonlPositionSnapshotStore.#ctor*
+  commentId: Overload:Meridian.Storage.Services.JsonlPositionSnapshotStore.#ctor
+  href: Meridian.Storage.Services.JsonlPositionSnapshotStore.html#Meridian_Storage_Services_JsonlPositionSnapshotStore__ctor_Meridian_Storage_StorageOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Storage_Services_JsonlPositionSnapshotStore__
+  name: JsonlPositionSnapshotStore
+  nameWithType: JsonlPositionSnapshotStore.JsonlPositionSnapshotStore
+  fullName: Meridian.Storage.Services.JsonlPositionSnapshotStore.JsonlPositionSnapshotStore
+  nameWithType.vb: JsonlPositionSnapshotStore.New
+  fullName.vb: Meridian.Storage.Services.JsonlPositionSnapshotStore.New
+  name.vb: New
+- uid: Meridian.Storage.StorageOptions
+  commentId: T:Meridian.Storage.StorageOptions
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageOptions.html
+  name: StorageOptions
+  nameWithType: StorageOptions
+  fullName: Meridian.Storage.StorageOptions
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.JsonlPositionSnapshotStore}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Storage.Services.JsonlPositionSnapshotStore}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<JsonlPositionSnapshotStore>
+  nameWithType: ILogger<JsonlPositionSnapshotStore>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Storage.Services.JsonlPositionSnapshotStore>
+  nameWithType.vb: ILogger(Of JsonlPositionSnapshotStore)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Storage.Services.JsonlPositionSnapshotStore)
+  name.vb: ILogger(Of JsonlPositionSnapshotStore)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Storage.Services.JsonlPositionSnapshotStore
+    name: JsonlPositionSnapshotStore
+    href: Meridian.Storage.Services.JsonlPositionSnapshotStore.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.JsonlPositionSnapshotStore
+    name: JsonlPositionSnapshotStore
+    href: Meridian.Storage.Services.JsonlPositionSnapshotStore.html
+  - name: )
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Storage.Services.JsonlPositionSnapshotStore.SaveSnapshotAsync*
+  commentId: Overload:Meridian.Storage.Services.JsonlPositionSnapshotStore.SaveSnapshotAsync
+  href: Meridian.Storage.Services.JsonlPositionSnapshotStore.html#Meridian_Storage_Services_JsonlPositionSnapshotStore_SaveSnapshotAsync_Meridian_Contracts_Domain_AccountSnapshotRecord_System_Threading_CancellationToken_
+  name: SaveSnapshotAsync
+  nameWithType: JsonlPositionSnapshotStore.SaveSnapshotAsync
+  fullName: Meridian.Storage.Services.JsonlPositionSnapshotStore.SaveSnapshotAsync
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Domain.IPositionSnapshotStore
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: SaveSnapshotAsync(AccountSnapshotRecord, CancellationToken)
+  nameWithType: IPositionSnapshotStore.SaveSnapshotAsync(AccountSnapshotRecord, CancellationToken)
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+    name: SaveSnapshotAsync
+  - name: (
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.IPositionSnapshotStore.SaveSnapshotAsync(Meridian.Contracts.Domain.AccountSnapshotRecord,System.Threading.CancellationToken)
+    name: SaveSnapshotAsync
+  - name: (
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+  commentId: T:Meridian.Contracts.Domain.AccountSnapshotRecord
+  parent: Meridian.Contracts.Domain
+  href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  name: AccountSnapshotRecord
+  nameWithType: AccountSnapshotRecord
+  fullName: Meridian.Contracts.Domain.AccountSnapshotRecord
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetLatestSnapshotAsync*
+  commentId: Overload:Meridian.Storage.Services.JsonlPositionSnapshotStore.GetLatestSnapshotAsync
+  href: Meridian.Storage.Services.JsonlPositionSnapshotStore.html#Meridian_Storage_Services_JsonlPositionSnapshotStore_GetLatestSnapshotAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: GetLatestSnapshotAsync
+  nameWithType: JsonlPositionSnapshotStore.GetLatestSnapshotAsync
+  fullName: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetLatestSnapshotAsync
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Domain.IPositionSnapshotStore
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: GetLatestSnapshotAsync(string, string, CancellationToken)
+  nameWithType: IPositionSnapshotStore.GetLatestSnapshotAsync(string, string, CancellationToken)
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(string, string, System.Threading.CancellationToken)
+  nameWithType.vb: IPositionSnapshotStore.GetLatestSnapshotAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(String, String, System.Threading.CancellationToken)
+  name.vb: GetLatestSnapshotAsync(String, String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+    name: GetLatestSnapshotAsync
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetLatestSnapshotAsync(System.String,System.String,System.Threading.CancellationToken)
+    name: GetLatestSnapshotAsync
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Domain.AccountSnapshotRecord}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Domain.AccountSnapshotRecord}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AccountSnapshotRecord>
+  nameWithType: Task<AccountSnapshotRecord>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Domain.AccountSnapshotRecord>
+  nameWithType.vb: Task(Of AccountSnapshotRecord)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Domain.AccountSnapshotRecord)
+  name.vb: Task(Of AccountSnapshotRecord)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+    href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+    href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetSnapshotHistoryAsync*
+  commentId: Overload:Meridian.Storage.Services.JsonlPositionSnapshotStore.GetSnapshotHistoryAsync
+  href: Meridian.Storage.Services.JsonlPositionSnapshotStore.html#Meridian_Storage_Services_JsonlPositionSnapshotStore_GetSnapshotHistoryAsync_System_String_System_String_System_DateTimeOffset_System_DateTimeOffset_System_Threading_CancellationToken_
+  name: GetSnapshotHistoryAsync
+  nameWithType: JsonlPositionSnapshotStore.GetSnapshotHistoryAsync
+  fullName: Meridian.Storage.Services.JsonlPositionSnapshotStore.GetSnapshotHistoryAsync
+- uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Domain.IPositionSnapshotStore
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: GetSnapshotHistoryAsync(string, string, DateTimeOffset, DateTimeOffset, CancellationToken)
+  nameWithType: IPositionSnapshotStore.GetSnapshotHistoryAsync(string, string, DateTimeOffset, DateTimeOffset, CancellationToken)
+  fullName: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(string, string, System.DateTimeOffset, System.DateTimeOffset, System.Threading.CancellationToken)
+  nameWithType.vb: IPositionSnapshotStore.GetSnapshotHistoryAsync(String, String, DateTimeOffset, DateTimeOffset, CancellationToken)
+  fullName.vb: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(String, String, System.DateTimeOffset, System.DateTimeOffset, System.Threading.CancellationToken)
+  name.vb: GetSnapshotHistoryAsync(String, String, DateTimeOffset, DateTimeOffset, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: GetSnapshotHistoryAsync
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.Domain.IPositionSnapshotStore.GetSnapshotHistoryAsync(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Threading.CancellationToken)
+    name: GetSnapshotHistoryAsync
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IAsyncEnumerable{Meridian.Contracts.Domain.AccountSnapshotRecord}
+  commentId: T:System.Collections.Generic.IAsyncEnumerable{Meridian.Contracts.Domain.AccountSnapshotRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IAsyncEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<AccountSnapshotRecord>
+  nameWithType: IAsyncEnumerable<AccountSnapshotRecord>
+  fullName: System.Collections.Generic.IAsyncEnumerable<Meridian.Contracts.Domain.AccountSnapshotRecord>
+  nameWithType.vb: IAsyncEnumerable(Of AccountSnapshotRecord)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of Meridian.Contracts.Domain.AccountSnapshotRecord)
+  name.vb: IAsyncEnumerable(Of AccountSnapshotRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+    href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.AccountSnapshotRecord
+    name: AccountSnapshotRecord
+    href: Meridian.Contracts.Domain.AccountSnapshotRecord.html
+  - name: )
+- uid: System.Collections.Generic.IAsyncEnumerable`1
+  commentId: T:System.Collections.Generic.IAsyncEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  name: IAsyncEnumerable<T>
+  nameWithType: IAsyncEnumerable<T>
+  fullName: System.Collections.Generic.IAsyncEnumerable<T>
+  nameWithType.vb: IAsyncEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IAsyncEnumerable(Of T)
+  name.vb: IAsyncEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IAsyncEnumerable`1
+    name: IAsyncEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.iasyncenumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

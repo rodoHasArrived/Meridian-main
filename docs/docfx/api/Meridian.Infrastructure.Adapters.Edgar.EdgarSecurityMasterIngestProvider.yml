@@ -1,0 +1,880 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+  id: EdgarSecurityMasterIngestProvider
+  parent: Meridian.Infrastructure.Adapters.Edgar
+  children:
+  - Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider},System.Net.Http.HttpClient,System.Net.Http.HttpClient)
+  - Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.Dispose
+  - Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.FetchAllAsync(System.Boolean,System.IProgress{System.Int32},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: EdgarSecurityMasterIngestProvider
+  nameWithType: EdgarSecurityMasterIngestProvider
+  fullName: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EdgarSecurityMasterIngestProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Edgar
+  summary: >-
+    Pages through the SEC EDGAR <code>company_tickers.json</code> endpoint and optionally enriches
+
+    each record with submission-level metadata (SIC code, exchanges, state of incorporation)
+
+    by fetching individual <code>/submissions/CIK{cik}.json</code> records.
+
+    Yields <xref href="Meridian.Contracts.SecurityMaster.CreateSecurityRequest" data-throw-if-not-resolved="false"></xref> objects ready for Security Master bulk ingest.
+  remarks: >-
+    No API key is required — the SEC EDGAR API is freely accessible.
+
+    The SEC asks callers to include a <code>User-Agent</code> header identifying the application and
+
+    to respect the 10-request-per-second rate limit.
+
+    See https://www.sec.gov/developer for guidance.
+  example: []
+  syntax:
+    content: 'public sealed class EdgarSecurityMasterIngestProvider : IDisposable'
+    content.vb: Public NotInheritable Class EdgarSecurityMasterIngestProvider Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider},System.Net.Http.HttpClient,System.Net.Http.HttpClient)
+  commentId: M:Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider},System.Net.Http.HttpClient,System.Net.Http.HttpClient)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider},System.Net.Http.HttpClient,System.Net.Http.HttpClient)'
+  parent: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+  langs:
+  - csharp
+  - vb
+  name: EdgarSecurityMasterIngestProvider(ILogger<EdgarSecurityMasterIngestProvider>, HttpClient?, HttpClient?)
+  nameWithType: EdgarSecurityMasterIngestProvider.EdgarSecurityMasterIngestProvider(ILogger<EdgarSecurityMasterIngestProvider>, HttpClient?, HttpClient?)
+  fullName: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.EdgarSecurityMasterIngestProvider(Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider>, System.Net.Http.HttpClient?, System.Net.Http.HttpClient?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Edgar
+  example: []
+  syntax:
+    content: public EdgarSecurityMasterIngestProvider(ILogger<EdgarSecurityMasterIngestProvider> logger, HttpClient? tickersClient = null, HttpClient? submissionsClient = null)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider}
+      description: Application logger.
+    - id: tickersClient
+      type: System.Net.Http.HttpClient
+      description: Optional HTTP client aimed at <code>www.sec.gov</code>. A new instance is created if null.
+    - id: submissionsClient
+      type: System.Net.Http.HttpClient
+      description: Optional HTTP client aimed at <code>data.sec.gov</code>. A new instance is created if null.
+    content.vb: Public Sub New(logger As ILogger(Of EdgarSecurityMasterIngestProvider), tickersClient As HttpClient = Nothing, submissionsClient As HttpClient = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.#ctor*
+  nameWithType.vb: EdgarSecurityMasterIngestProvider.New(ILogger(Of EdgarSecurityMasterIngestProvider), HttpClient, HttpClient)
+  fullName.vb: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.New(Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider), System.Net.Http.HttpClient, System.Net.Http.HttpClient)
+  name.vb: New(ILogger(Of EdgarSecurityMasterIngestProvider), HttpClient, HttpClient)
+- uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.FetchAllAsync(System.Boolean,System.IProgress{System.Int32},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.FetchAllAsync(System.Boolean,System.IProgress{System.Int32},System.Threading.CancellationToken)
+  id: FetchAllAsync(System.Boolean,System.IProgress{System.Int32},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+  langs:
+  - csharp
+  - vb
+  name: FetchAllAsync(bool, IProgress<int>?, CancellationToken)
+  nameWithType: EdgarSecurityMasterIngestProvider.FetchAllAsync(bool, IProgress<int>?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.FetchAllAsync(bool, System.IProgress<int>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FetchAllAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Edgar
+  summary: Fetches all companies from EDGAR and returns them as Security Master create-requests.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<CreateSecurityRequest>> FetchAllAsync(bool enrichWithSubmissions = false, IProgress<int>? progress = null, CancellationToken ct = default)
+    parameters:
+    - id: enrichWithSubmissions
+      type: System.Boolean
+      description: >-
+        When <code>true</code>, each company's <code>/submissions/CIK*.json</code> record is fetched to
+
+        populate SIC code, exchanges, and state-of-incorporation.  This is much slower (one
+
+        extra HTTP call per company) and is disabled by default.
+    - id: progress
+      type: System.IProgress{System.Int32}
+      description: Optional progress callback invoked after each processed page.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CreateSecurityRequest}}
+      description: All matching companies as create-security requests.
+    content.vb: Public Function FetchAllAsync(enrichWithSubmissions As Boolean = False, progress As IProgress(Of Integer) = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CreateSecurityRequest))
+  overload: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.FetchAllAsync*
+  nameWithType.vb: EdgarSecurityMasterIngestProvider.FetchAllAsync(Boolean, IProgress(Of Integer), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.FetchAllAsync(Boolean, System.IProgress(Of Integer), System.Threading.CancellationToken)
+  name.vb: FetchAllAsync(Boolean, IProgress(Of Integer), CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: EdgarSecurityMasterIngestProvider.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Edgar/EdgarSecurityMasterIngestProvider.cs
+    startLine: 306
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Edgar
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+  commentId: T:Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.CreateSecurityRequest.html
+  name: CreateSecurityRequest
+  nameWithType: CreateSecurityRequest
+  fullName: Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+- uid: Meridian.Infrastructure.Adapters.Edgar
+  commentId: N:Meridian.Infrastructure.Adapters.Edgar
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Edgar
+  nameWithType: Meridian.Infrastructure.Adapters.Edgar
+  fullName: Meridian.Infrastructure.Adapters.Edgar
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Edgar
+    name: Edgar
+    href: Meridian.Infrastructure.Adapters.Edgar.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Edgar
+    name: Edgar
+    href: Meridian.Infrastructure.Adapters.Edgar.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.#ctor
+  href: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.html#Meridian_Infrastructure_Adapters_Edgar_EdgarSecurityMasterIngestProvider__ctor_Microsoft_Extensions_Logging_ILogger_Meridian_Infrastructure_Adapters_Edgar_EdgarSecurityMasterIngestProvider__System_Net_Http_HttpClient_System_Net_Http_HttpClient_
+  name: EdgarSecurityMasterIngestProvider
+  nameWithType: EdgarSecurityMasterIngestProvider.EdgarSecurityMasterIngestProvider
+  fullName: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.EdgarSecurityMasterIngestProvider
+  nameWithType.vb: EdgarSecurityMasterIngestProvider.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<EdgarSecurityMasterIngestProvider>
+  nameWithType: ILogger<EdgarSecurityMasterIngestProvider>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider>
+  nameWithType.vb: ILogger(Of EdgarSecurityMasterIngestProvider)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider)
+  name.vb: ILogger(Of EdgarSecurityMasterIngestProvider)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+    name: EdgarSecurityMasterIngestProvider
+    href: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider
+    name: EdgarSecurityMasterIngestProvider
+    href: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.html
+  - name: )
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.FetchAllAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.FetchAllAsync
+  href: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.html#Meridian_Infrastructure_Adapters_Edgar_EdgarSecurityMasterIngestProvider_FetchAllAsync_System_Boolean_System_IProgress_System_Int32__System_Threading_CancellationToken_
+  name: FetchAllAsync
+  nameWithType: EdgarSecurityMasterIngestProvider.FetchAllAsync
+  fullName: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.FetchAllAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.IProgress{System.Int32}
+  commentId: T:System.IProgress{System.Int32}
+  parent: System
+  definition: System.IProgress`1
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<int>
+  nameWithType: IProgress<int>
+  fullName: System.IProgress<int>
+  nameWithType.vb: IProgress(Of Integer)
+  fullName.vb: System.IProgress(Of Integer)
+  name.vb: IProgress(Of Integer)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CreateSecurityRequest}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CreateSecurityRequest}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CreateSecurityRequest>>
+  nameWithType: Task<IReadOnlyList<CreateSecurityRequest>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.CreateSecurityRequest>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CreateSecurityRequest))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.CreateSecurityRequest))
+  name.vb: Task(Of IReadOnlyList(Of CreateSecurityRequest))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+    name: CreateSecurityRequest
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.CreateSecurityRequest
+    name: CreateSecurityRequest
+  - name: )
+  - name: )
+- uid: System.IProgress`1
+  commentId: T:System.IProgress`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  name: IProgress<T>
+  nameWithType: IProgress<T>
+  fullName: System.IProgress<T>
+  nameWithType.vb: IProgress(Of T)
+  fullName.vb: System.IProgress(Of T)
+  name.vb: IProgress(Of T)
+  spec.csharp:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IProgress`1
+    name: IProgress
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iprogress-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.Dispose
+  href: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.html#Meridian_Infrastructure_Adapters_Edgar_EdgarSecurityMasterIngestProvider_Dispose
+  name: Dispose
+  nameWithType: EdgarSecurityMasterIngestProvider.Dispose
+  fullName: Meridian.Infrastructure.Adapters.Edgar.EdgarSecurityMasterIngestProvider.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

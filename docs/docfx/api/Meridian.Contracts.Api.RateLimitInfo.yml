@@ -1,0 +1,505 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.RateLimitInfo
+  commentId: T:Meridian.Contracts.Api.RateLimitInfo
+  id: RateLimitInfo
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.RateLimitInfo.Description
+  - Meridian.Contracts.Api.RateLimitInfo.MaxRequestsPerWindow
+  - Meridian.Contracts.Api.RateLimitInfo.MinDelayMs
+  - Meridian.Contracts.Api.RateLimitInfo.WindowSeconds
+  langs:
+  - csharp
+  - vb
+  name: RateLimitInfo
+  nameWithType: RateLimitInfo
+  fullName: Meridian.Contracts.Api.RateLimitInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitInfo
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 735
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Rate limit information for UI display and validation.
+  example: []
+  syntax:
+    content: public sealed class RateLimitInfo
+    content.vb: Public NotInheritable Class RateLimitInfo
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.RateLimitInfo.MaxRequestsPerWindow
+  commentId: P:Meridian.Contracts.Api.RateLimitInfo.MaxRequestsPerWindow
+  id: MaxRequestsPerWindow
+  parent: Meridian.Contracts.Api.RateLimitInfo
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestsPerWindow
+  nameWithType: RateLimitInfo.MaxRequestsPerWindow
+  fullName: Meridian.Contracts.Api.RateLimitInfo.MaxRequestsPerWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestsPerWindow
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 740
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the maximum requests allowed per time window.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("maxRequestsPerWindow")]
+
+      public int MaxRequestsPerWindow { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("maxRequestsPerWindow")>
+
+      Public Property MaxRequestsPerWindow As Integer
+  overload: Meridian.Contracts.Api.RateLimitInfo.MaxRequestsPerWindow*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: maxRequestsPerWindow
+- uid: Meridian.Contracts.Api.RateLimitInfo.WindowSeconds
+  commentId: P:Meridian.Contracts.Api.RateLimitInfo.WindowSeconds
+  id: WindowSeconds
+  parent: Meridian.Contracts.Api.RateLimitInfo
+  langs:
+  - csharp
+  - vb
+  name: WindowSeconds
+  nameWithType: RateLimitInfo.WindowSeconds
+  fullName: Meridian.Contracts.Api.RateLimitInfo.WindowSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WindowSeconds
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 746
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the length of the rate-limit window in seconds.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("windowSeconds")]
+
+      public int WindowSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("windowSeconds")>
+
+      Public Property WindowSeconds As Integer
+  overload: Meridian.Contracts.Api.RateLimitInfo.WindowSeconds*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: windowSeconds
+- uid: Meridian.Contracts.Api.RateLimitInfo.MinDelayMs
+  commentId: P:Meridian.Contracts.Api.RateLimitInfo.MinDelayMs
+  id: MinDelayMs
+  parent: Meridian.Contracts.Api.RateLimitInfo
+  langs:
+  - csharp
+  - vb
+  name: MinDelayMs
+  nameWithType: RateLimitInfo.MinDelayMs
+  fullName: Meridian.Contracts.Api.RateLimitInfo.MinDelayMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MinDelayMs
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 752
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the minimum delay between requests in milliseconds.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("minDelayMs")]
+
+      public int MinDelayMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: >-
+      <JsonPropertyName("minDelayMs")>
+
+      Public Property MinDelayMs As Integer
+  overload: Meridian.Contracts.Api.RateLimitInfo.MinDelayMs*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: minDelayMs
+- uid: Meridian.Contracts.Api.RateLimitInfo.Description
+  commentId: P:Meridian.Contracts.Api.RateLimitInfo.Description
+  id: Description
+  parent: Meridian.Contracts.Api.RateLimitInfo
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: RateLimitInfo.Description
+  fullName: Meridian.Contracts.Api.RateLimitInfo.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/ProviderCatalog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/Api/ProviderCatalog.cs
+    startLine: 758
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the rate-limit description for display purposes.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Contracts.Api.RateLimitInfo.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Api.RateLimitInfo.MaxRequestsPerWindow*
+  commentId: Overload:Meridian.Contracts.Api.RateLimitInfo.MaxRequestsPerWindow
+  href: Meridian.Contracts.Api.RateLimitInfo.html#Meridian_Contracts_Api_RateLimitInfo_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: RateLimitInfo.MaxRequestsPerWindow
+  fullName: Meridian.Contracts.Api.RateLimitInfo.MaxRequestsPerWindow
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Api.RateLimitInfo.WindowSeconds*
+  commentId: Overload:Meridian.Contracts.Api.RateLimitInfo.WindowSeconds
+  href: Meridian.Contracts.Api.RateLimitInfo.html#Meridian_Contracts_Api_RateLimitInfo_WindowSeconds
+  name: WindowSeconds
+  nameWithType: RateLimitInfo.WindowSeconds
+  fullName: Meridian.Contracts.Api.RateLimitInfo.WindowSeconds
+- uid: Meridian.Contracts.Api.RateLimitInfo.MinDelayMs*
+  commentId: Overload:Meridian.Contracts.Api.RateLimitInfo.MinDelayMs
+  href: Meridian.Contracts.Api.RateLimitInfo.html#Meridian_Contracts_Api_RateLimitInfo_MinDelayMs
+  name: MinDelayMs
+  nameWithType: RateLimitInfo.MinDelayMs
+  fullName: Meridian.Contracts.Api.RateLimitInfo.MinDelayMs
+- uid: Meridian.Contracts.Api.RateLimitInfo.Description*
+  commentId: Overload:Meridian.Contracts.Api.RateLimitInfo.Description
+  href: Meridian.Contracts.Api.RateLimitInfo.html#Meridian_Contracts_Api_RateLimitInfo_Description
+  name: Description
+  nameWithType: RateLimitInfo.Description
+  fullName: Meridian.Contracts.Api.RateLimitInfo.Description
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

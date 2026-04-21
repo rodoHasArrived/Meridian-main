@@ -1,0 +1,695 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto
+  commentId: T:Meridian.Contracts.Workstation.CashLadderBucketDto
+  id: CashLadderBucketDto
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.CashLadderBucketDto.#ctor(System.DateTimeOffset,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.String,System.Int32)
+  - Meridian.Contracts.Workstation.CashLadderBucketDto.BucketEnd
+  - Meridian.Contracts.Workstation.CashLadderBucketDto.BucketStart
+  - Meridian.Contracts.Workstation.CashLadderBucketDto.Currency
+  - Meridian.Contracts.Workstation.CashLadderBucketDto.EventCount
+  - Meridian.Contracts.Workstation.CashLadderBucketDto.NetFlow
+  - Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedInflows
+  - Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedOutflows
+  langs:
+  - csharp
+  - vb
+  name: CashLadderBucketDto
+  nameWithType: CashLadderBucketDto
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashLadderBucketDto
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: A single time-bucket within a projected cash ladder.
+  example: []
+  syntax:
+    content: 'public sealed record CashLadderBucketDto : IEquatable<CashLadderBucketDto>'
+    content.vb: Public NotInheritable Class CashLadderBucketDto Implements IEquatable(Of CashLadderBucketDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.CashLadderBucketDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.#ctor(System.DateTimeOffset,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.String,System.Int32)
+  commentId: M:Meridian.Contracts.Workstation.CashLadderBucketDto.#ctor(System.DateTimeOffset,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.String,System.Int32)
+  id: '#ctor(System.DateTimeOffset,System.DateTimeOffset,System.Decimal,System.Decimal,System.Decimal,System.String,System.Int32)'
+  parent: Meridian.Contracts.Workstation.CashLadderBucketDto
+  langs:
+  - csharp
+  - vb
+  name: CashLadderBucketDto(DateTimeOffset, DateTimeOffset, decimal, decimal, decimal, string, int)
+  nameWithType: CashLadderBucketDto.CashLadderBucketDto(DateTimeOffset, DateTimeOffset, decimal, decimal, decimal, string, int)
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.CashLadderBucketDto(System.DateTimeOffset, System.DateTimeOffset, decimal, decimal, decimal, string, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: A single time-bucket within a projected cash ladder.
+  example: []
+  syntax:
+    content: public CashLadderBucketDto(DateTimeOffset BucketStart, DateTimeOffset BucketEnd, decimal ProjectedInflows, decimal ProjectedOutflows, decimal NetFlow, string Currency, int EventCount)
+    parameters:
+    - id: BucketStart
+      type: System.DateTimeOffset
+    - id: BucketEnd
+      type: System.DateTimeOffset
+    - id: ProjectedInflows
+      type: System.Decimal
+    - id: ProjectedOutflows
+      type: System.Decimal
+    - id: NetFlow
+      type: System.Decimal
+    - id: Currency
+      type: System.String
+    - id: EventCount
+      type: System.Int32
+    content.vb: Public Sub New(BucketStart As DateTimeOffset, BucketEnd As DateTimeOffset, ProjectedInflows As Decimal, ProjectedOutflows As Decimal, NetFlow As Decimal, Currency As String, EventCount As Integer)
+  overload: Meridian.Contracts.Workstation.CashLadderBucketDto.#ctor*
+  nameWithType.vb: CashLadderBucketDto.New(DateTimeOffset, DateTimeOffset, Decimal, Decimal, Decimal, String, Integer)
+  fullName.vb: Meridian.Contracts.Workstation.CashLadderBucketDto.New(System.DateTimeOffset, System.DateTimeOffset, Decimal, Decimal, Decimal, String, Integer)
+  name.vb: New(DateTimeOffset, DateTimeOffset, Decimal, Decimal, Decimal, String, Integer)
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketStart
+  commentId: P:Meridian.Contracts.Workstation.CashLadderBucketDto.BucketStart
+  id: BucketStart
+  parent: Meridian.Contracts.Workstation.CashLadderBucketDto
+  langs:
+  - csharp
+  - vb
+  name: BucketStart
+  nameWithType: CashLadderBucketDto.BucketStart
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BucketStart
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset BucketStart { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property BucketStart As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketStart*
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketEnd
+  commentId: P:Meridian.Contracts.Workstation.CashLadderBucketDto.BucketEnd
+  id: BucketEnd
+  parent: Meridian.Contracts.Workstation.CashLadderBucketDto
+  langs:
+  - csharp
+  - vb
+  name: BucketEnd
+  nameWithType: CashLadderBucketDto.BucketEnd
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BucketEnd
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 403
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public DateTimeOffset BucketEnd { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property BucketEnd As DateTimeOffset
+  overload: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketEnd*
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedInflows
+  commentId: P:Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedInflows
+  id: ProjectedInflows
+  parent: Meridian.Contracts.Workstation.CashLadderBucketDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedInflows
+  nameWithType: CashLadderBucketDto.ProjectedInflows
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedInflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedInflows
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal ProjectedInflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedInflows As Decimal
+  overload: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedInflows*
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedOutflows
+  commentId: P:Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedOutflows
+  id: ProjectedOutflows
+  parent: Meridian.Contracts.Workstation.CashLadderBucketDto
+  langs:
+  - csharp
+  - vb
+  name: ProjectedOutflows
+  nameWithType: CashLadderBucketDto.ProjectedOutflows
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedOutflows
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProjectedOutflows
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 405
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal ProjectedOutflows { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ProjectedOutflows As Decimal
+  overload: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedOutflows*
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.NetFlow
+  commentId: P:Meridian.Contracts.Workstation.CashLadderBucketDto.NetFlow
+  id: NetFlow
+  parent: Meridian.Contracts.Workstation.CashLadderBucketDto
+  langs:
+  - csharp
+  - vb
+  name: NetFlow
+  nameWithType: CashLadderBucketDto.NetFlow
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.NetFlow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetFlow
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 406
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal NetFlow { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetFlow As Decimal
+  overload: Meridian.Contracts.Workstation.CashLadderBucketDto.NetFlow*
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.Currency
+  commentId: P:Meridian.Contracts.Workstation.CashLadderBucketDto.Currency
+  id: Currency
+  parent: Meridian.Contracts.Workstation.CashLadderBucketDto
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: CashLadderBucketDto.Currency
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 407
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.Workstation.CashLadderBucketDto.Currency*
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.EventCount
+  commentId: P:Meridian.Contracts.Workstation.CashLadderBucketDto.EventCount
+  id: EventCount
+  parent: Meridian.Contracts.Workstation.CashLadderBucketDto
+  langs:
+  - csharp
+  - vb
+  name: EventCount
+  nameWithType: CashLadderBucketDto.EventCount
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.EventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCount
+    path: ../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs
+    startLine: 408
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int EventCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property EventCount As Integer
+  overload: Meridian.Contracts.Workstation.CashLadderBucketDto.EventCount*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.CashLadderBucketDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.CashLadderBucketDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CashLadderBucketDto>
+  nameWithType: IEquatable<CashLadderBucketDto>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.CashLadderBucketDto>
+  nameWithType.vb: IEquatable(Of CashLadderBucketDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.CashLadderBucketDto)
+  name.vb: IEquatable(Of CashLadderBucketDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.CashLadderBucketDto
+    name: CashLadderBucketDto
+    href: Meridian.Contracts.Workstation.CashLadderBucketDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.CashLadderBucketDto
+    name: CashLadderBucketDto
+    href: Meridian.Contracts.Workstation.CashLadderBucketDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.CashLadderBucketDto.#ctor
+  href: Meridian.Contracts.Workstation.CashLadderBucketDto.html#Meridian_Contracts_Workstation_CashLadderBucketDto__ctor_System_DateTimeOffset_System_DateTimeOffset_System_Decimal_System_Decimal_System_Decimal_System_String_System_Int32_
+  name: CashLadderBucketDto
+  nameWithType: CashLadderBucketDto.CashLadderBucketDto
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.CashLadderBucketDto
+  nameWithType.vb: CashLadderBucketDto.New
+  fullName.vb: Meridian.Contracts.Workstation.CashLadderBucketDto.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketStart*
+  commentId: Overload:Meridian.Contracts.Workstation.CashLadderBucketDto.BucketStart
+  href: Meridian.Contracts.Workstation.CashLadderBucketDto.html#Meridian_Contracts_Workstation_CashLadderBucketDto_BucketStart
+  name: BucketStart
+  nameWithType: CashLadderBucketDto.BucketStart
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketStart
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketEnd*
+  commentId: Overload:Meridian.Contracts.Workstation.CashLadderBucketDto.BucketEnd
+  href: Meridian.Contracts.Workstation.CashLadderBucketDto.html#Meridian_Contracts_Workstation_CashLadderBucketDto_BucketEnd
+  name: BucketEnd
+  nameWithType: CashLadderBucketDto.BucketEnd
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.BucketEnd
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedInflows*
+  commentId: Overload:Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedInflows
+  href: Meridian.Contracts.Workstation.CashLadderBucketDto.html#Meridian_Contracts_Workstation_CashLadderBucketDto_ProjectedInflows
+  name: ProjectedInflows
+  nameWithType: CashLadderBucketDto.ProjectedInflows
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedInflows
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedOutflows*
+  commentId: Overload:Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedOutflows
+  href: Meridian.Contracts.Workstation.CashLadderBucketDto.html#Meridian_Contracts_Workstation_CashLadderBucketDto_ProjectedOutflows
+  name: ProjectedOutflows
+  nameWithType: CashLadderBucketDto.ProjectedOutflows
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.ProjectedOutflows
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.NetFlow*
+  commentId: Overload:Meridian.Contracts.Workstation.CashLadderBucketDto.NetFlow
+  href: Meridian.Contracts.Workstation.CashLadderBucketDto.html#Meridian_Contracts_Workstation_CashLadderBucketDto_NetFlow
+  name: NetFlow
+  nameWithType: CashLadderBucketDto.NetFlow
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.NetFlow
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.Currency*
+  commentId: Overload:Meridian.Contracts.Workstation.CashLadderBucketDto.Currency
+  href: Meridian.Contracts.Workstation.CashLadderBucketDto.html#Meridian_Contracts_Workstation_CashLadderBucketDto_Currency
+  name: Currency
+  nameWithType: CashLadderBucketDto.Currency
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.Currency
+- uid: Meridian.Contracts.Workstation.CashLadderBucketDto.EventCount*
+  commentId: Overload:Meridian.Contracts.Workstation.CashLadderBucketDto.EventCount
+  href: Meridian.Contracts.Workstation.CashLadderBucketDto.html#Meridian_Contracts_Workstation_CashLadderBucketDto_EventCount
+  name: EventCount
+  nameWithType: CashLadderBucketDto.EventCount
+  fullName: Meridian.Contracts.Workstation.CashLadderBucketDto.EventCount

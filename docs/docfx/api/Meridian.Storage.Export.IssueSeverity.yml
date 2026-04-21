@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.IssueSeverity
+  commentId: T:Meridian.Storage.Export.IssueSeverity
+  id: IssueSeverity
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.IssueSeverity.Error
+  - Meridian.Storage.Export.IssueSeverity.Info
+  - Meridian.Storage.Export.IssueSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: IssueSeverity
+  nameWithType: IssueSeverity
+  fullName: Meridian.Storage.Export.IssueSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IssueSeverity
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 852
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Issue severity level.
+  example: []
+  syntax:
+    content: 'public enum IssueSeverity : byte'
+    content.vb: Public Enum IssueSeverity As Byte
+- uid: Meridian.Storage.Export.IssueSeverity.Info
+  commentId: F:Meridian.Storage.Export.IssueSeverity.Info
+  id: Info
+  parent: Meridian.Storage.Export.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: IssueSeverity.Info
+  fullName: Meridian.Storage.Export.IssueSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 854
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Storage.Export.IssueSeverity
+- uid: Meridian.Storage.Export.IssueSeverity.Warning
+  commentId: F:Meridian.Storage.Export.IssueSeverity.Warning
+  id: Warning
+  parent: Meridian.Storage.Export.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: IssueSeverity.Warning
+  fullName: Meridian.Storage.Export.IssueSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 855
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Storage.Export.IssueSeverity
+- uid: Meridian.Storage.Export.IssueSeverity.Error
+  commentId: F:Meridian.Storage.Export.IssueSeverity.Error
+  id: Error
+  parent: Meridian.Storage.Export.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: IssueSeverity.Error
+  fullName: Meridian.Storage.Export.IssueSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 856
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Storage.Export.IssueSeverity
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.IssueSeverity
+  commentId: T:Meridian.Storage.Export.IssueSeverity
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.IssueSeverity.html
+  name: IssueSeverity
+  nameWithType: IssueSeverity
+  fullName: Meridian.Storage.Export.IssueSeverity

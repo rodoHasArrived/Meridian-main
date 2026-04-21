@@ -1,0 +1,612 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto
+  commentId: T:Meridian.Contracts.DirectLending.ServicingRevisionDto
+  id: ServicingRevisionDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.ServicingRevisionDto.#ctor(System.Int64,System.String,System.DateOnly,System.DateTimeOffset,System.String)
+  - Meridian.Contracts.DirectLending.ServicingRevisionDto.CreatedAt
+  - Meridian.Contracts.DirectLending.ServicingRevisionDto.EffectiveAsOfDate
+  - Meridian.Contracts.DirectLending.ServicingRevisionDto.Notes
+  - Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionNumber
+  - Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionSourceType
+  langs:
+  - csharp
+  - vb
+  name: ServicingRevisionDto
+  nameWithType: ServicingRevisionDto
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServicingRevisionDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record ServicingRevisionDto : IEquatable<ServicingRevisionDto>'
+    content.vb: Public NotInheritable Class ServicingRevisionDto Implements IEquatable(Of ServicingRevisionDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.ServicingRevisionDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.#ctor(System.Int64,System.String,System.DateOnly,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Contracts.DirectLending.ServicingRevisionDto.#ctor(System.Int64,System.String,System.DateOnly,System.DateTimeOffset,System.String)
+  id: '#ctor(System.Int64,System.String,System.DateOnly,System.DateTimeOffset,System.String)'
+  parent: Meridian.Contracts.DirectLending.ServicingRevisionDto
+  langs:
+  - csharp
+  - vb
+  name: ServicingRevisionDto(long, string, DateOnly, DateTimeOffset, string)
+  nameWithType: ServicingRevisionDto.ServicingRevisionDto(long, string, DateOnly, DateTimeOffset, string)
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.ServicingRevisionDto(long, string, System.DateOnly, System.DateTimeOffset, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public ServicingRevisionDto(long RevisionNumber, string RevisionSourceType, DateOnly EffectiveAsOfDate, DateTimeOffset CreatedAt, string Notes)
+    parameters:
+    - id: RevisionNumber
+      type: System.Int64
+    - id: RevisionSourceType
+      type: System.String
+    - id: EffectiveAsOfDate
+      type: System.DateOnly
+    - id: CreatedAt
+      type: System.DateTimeOffset
+    - id: Notes
+      type: System.String
+    content.vb: Public Sub New(RevisionNumber As Long, RevisionSourceType As String, EffectiveAsOfDate As DateOnly, CreatedAt As DateTimeOffset, Notes As String)
+  overload: Meridian.Contracts.DirectLending.ServicingRevisionDto.#ctor*
+  nameWithType.vb: ServicingRevisionDto.New(Long, String, DateOnly, DateTimeOffset, String)
+  fullName.vb: Meridian.Contracts.DirectLending.ServicingRevisionDto.New(Long, String, System.DateOnly, System.DateTimeOffset, String)
+  name.vb: New(Long, String, DateOnly, DateTimeOffset, String)
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionNumber
+  commentId: P:Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionNumber
+  id: RevisionNumber
+  parent: Meridian.Contracts.DirectLending.ServicingRevisionDto
+  langs:
+  - csharp
+  - vb
+  name: RevisionNumber
+  nameWithType: ServicingRevisionDto.RevisionNumber
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RevisionNumber
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public long RevisionNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property RevisionNumber As Long
+  overload: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionNumber*
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionSourceType
+  commentId: P:Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionSourceType
+  id: RevisionSourceType
+  parent: Meridian.Contracts.DirectLending.ServicingRevisionDto
+  langs:
+  - csharp
+  - vb
+  name: RevisionSourceType
+  nameWithType: ServicingRevisionDto.RevisionSourceType
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionSourceType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RevisionSourceType
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string RevisionSourceType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RevisionSourceType As String
+  overload: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionSourceType*
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.EffectiveAsOfDate
+  commentId: P:Meridian.Contracts.DirectLending.ServicingRevisionDto.EffectiveAsOfDate
+  id: EffectiveAsOfDate
+  parent: Meridian.Contracts.DirectLending.ServicingRevisionDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveAsOfDate
+  nameWithType: ServicingRevisionDto.EffectiveAsOfDate
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.EffectiveAsOfDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveAsOfDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly EffectiveAsOfDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property EffectiveAsOfDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.ServicingRevisionDto.EffectiveAsOfDate*
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.CreatedAt
+  commentId: P:Meridian.Contracts.DirectLending.ServicingRevisionDto.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Contracts.DirectLending.ServicingRevisionDto
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: ServicingRevisionDto.CreatedAt
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateTimeOffset CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CreatedAt As DateTimeOffset
+  overload: Meridian.Contracts.DirectLending.ServicingRevisionDto.CreatedAt*
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.Notes
+  commentId: P:Meridian.Contracts.DirectLending.ServicingRevisionDto.Notes
+  id: Notes
+  parent: Meridian.Contracts.DirectLending.ServicingRevisionDto
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: ServicingRevisionDto.Notes
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string Notes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Notes As String
+  overload: Meridian.Contracts.DirectLending.ServicingRevisionDto.Notes*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.ServicingRevisionDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.ServicingRevisionDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ServicingRevisionDto>
+  nameWithType: IEquatable<ServicingRevisionDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.ServicingRevisionDto>
+  nameWithType.vb: IEquatable(Of ServicingRevisionDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.ServicingRevisionDto)
+  name.vb: IEquatable(Of ServicingRevisionDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ServicingRevisionDto
+    name: ServicingRevisionDto
+    href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ServicingRevisionDto
+    name: ServicingRevisionDto
+    href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicingRevisionDto.#ctor
+  href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html#Meridian_Contracts_DirectLending_ServicingRevisionDto__ctor_System_Int64_System_String_System_DateOnly_System_DateTimeOffset_System_String_
+  name: ServicingRevisionDto
+  nameWithType: ServicingRevisionDto.ServicingRevisionDto
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.ServicingRevisionDto
+  nameWithType.vb: ServicingRevisionDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.ServicingRevisionDto.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionNumber*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionNumber
+  href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html#Meridian_Contracts_DirectLending_ServicingRevisionDto_RevisionNumber
+  name: RevisionNumber
+  nameWithType: ServicingRevisionDto.RevisionNumber
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionNumber
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionSourceType*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionSourceType
+  href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html#Meridian_Contracts_DirectLending_ServicingRevisionDto_RevisionSourceType
+  name: RevisionSourceType
+  nameWithType: ServicingRevisionDto.RevisionSourceType
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.RevisionSourceType
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.EffectiveAsOfDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicingRevisionDto.EffectiveAsOfDate
+  href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html#Meridian_Contracts_DirectLending_ServicingRevisionDto_EffectiveAsOfDate
+  name: EffectiveAsOfDate
+  nameWithType: ServicingRevisionDto.EffectiveAsOfDate
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.EffectiveAsOfDate
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.CreatedAt*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicingRevisionDto.CreatedAt
+  href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html#Meridian_Contracts_DirectLending_ServicingRevisionDto_CreatedAt
+  name: CreatedAt
+  nameWithType: ServicingRevisionDto.CreatedAt
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.CreatedAt
+- uid: Meridian.Contracts.DirectLending.ServicingRevisionDto.Notes*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicingRevisionDto.Notes
+  href: Meridian.Contracts.DirectLending.ServicingRevisionDto.html#Meridian_Contracts_DirectLending_ServicingRevisionDto_Notes
+  name: Notes
+  nameWithType: ServicingRevisionDto.Notes
+  fullName: Meridian.Contracts.DirectLending.ServicingRevisionDto.Notes

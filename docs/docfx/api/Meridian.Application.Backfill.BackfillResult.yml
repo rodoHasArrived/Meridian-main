@@ -1,0 +1,1127 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Backfill.BackfillResult
+  commentId: T:Meridian.Application.Backfill.BackfillResult
+  id: BackfillResult
+  parent: Meridian.Application.Backfill
+  children:
+  - Meridian.Application.Backfill.BackfillResult.#ctor(System.Boolean,System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Int64,System.DateTimeOffset,System.DateTimeOffset,System.String,System.String[],Meridian.Application.Backfill.SymbolValidationSignal[])
+  - Meridian.Application.Backfill.BackfillResult.BarsWritten
+  - Meridian.Application.Backfill.BackfillResult.CompletedUtc
+  - Meridian.Application.Backfill.BackfillResult.Error
+  - Meridian.Application.Backfill.BackfillResult.Failed(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.DateTimeOffset,System.Exception)
+  - Meridian.Application.Backfill.BackfillResult.From
+  - Meridian.Application.Backfill.BackfillResult.Provider
+  - Meridian.Application.Backfill.BackfillResult.SkippedSymbols
+  - Meridian.Application.Backfill.BackfillResult.StartedUtc
+  - Meridian.Application.Backfill.BackfillResult.Success
+  - Meridian.Application.Backfill.BackfillResult.SymbolValidationSignals
+  - Meridian.Application.Backfill.BackfillResult.Symbols
+  - Meridian.Application.Backfill.BackfillResult.To
+  langs:
+  - csharp
+  - vb
+  name: BackfillResult
+  nameWithType: BackfillResult
+  fullName: Meridian.Application.Backfill.BackfillResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillResult
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Outcome of a single historical backfill run.
+  example: []
+  syntax:
+    content: 'public sealed record BackfillResult : IEquatable<BackfillResult>'
+    content.vb: Public NotInheritable Class BackfillResult Implements IEquatable(Of BackfillResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Backfill.BackfillResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Backfill.BackfillResult.#ctor(System.Boolean,System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Int64,System.DateTimeOffset,System.DateTimeOffset,System.String,System.String[],Meridian.Application.Backfill.SymbolValidationSignal[])
+  commentId: M:Meridian.Application.Backfill.BackfillResult.#ctor(System.Boolean,System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Int64,System.DateTimeOffset,System.DateTimeOffset,System.String,System.String[],Meridian.Application.Backfill.SymbolValidationSignal[])
+  id: '#ctor(System.Boolean,System.String,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Int64,System.DateTimeOffset,System.DateTimeOffset,System.String,System.String[],Meridian.Application.Backfill.SymbolValidationSignal[])'
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: BackfillResult(bool, string, string[], DateOnly?, DateOnly?, long, DateTimeOffset, DateTimeOffset, string?, string[]?, SymbolValidationSignal[]?)
+  nameWithType: BackfillResult.BackfillResult(bool, string, string[], DateOnly?, DateOnly?, long, DateTimeOffset, DateTimeOffset, string?, string[]?, SymbolValidationSignal[]?)
+  fullName: Meridian.Application.Backfill.BackfillResult.BackfillResult(bool, string, string[], System.DateOnly?, System.DateOnly?, long, System.DateTimeOffset, System.DateTimeOffset, string?, string[]?, Meridian.Application.Backfill.SymbolValidationSignal[]?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: Outcome of a single historical backfill run.
+  example: []
+  syntax:
+    content: public BackfillResult(bool Success, string Provider, string[] Symbols, DateOnly? From, DateOnly? To, long BarsWritten, DateTimeOffset StartedUtc, DateTimeOffset CompletedUtc, string? Error = null, string[]? SkippedSymbols = null, SymbolValidationSignal[]? SymbolValidationSignals = null)
+    parameters:
+    - id: Success
+      type: System.Boolean
+    - id: Provider
+      type: System.String
+    - id: Symbols
+      type: System.String[]
+    - id: From
+      type: System.Nullable{System.DateOnly}
+    - id: To
+      type: System.Nullable{System.DateOnly}
+    - id: BarsWritten
+      type: System.Int64
+    - id: StartedUtc
+      type: System.DateTimeOffset
+    - id: CompletedUtc
+      type: System.DateTimeOffset
+    - id: Error
+      type: System.String
+    - id: SkippedSymbols
+      type: System.String[]
+    - id: SymbolValidationSignals
+      type: Meridian.Application.Backfill.SymbolValidationSignal[]
+    content.vb: Public Sub New(Success As Boolean, Provider As String, Symbols As String(), From As DateOnly?, [To] As DateOnly?, BarsWritten As Long, StartedUtc As DateTimeOffset, CompletedUtc As DateTimeOffset, [Error] As String = Nothing, SkippedSymbols As String() = Nothing, SymbolValidationSignals As SymbolValidationSignal() = Nothing)
+  overload: Meridian.Application.Backfill.BackfillResult.#ctor*
+  nameWithType.vb: BackfillResult.New(Boolean, String, String(), DateOnly?, DateOnly?, Long, DateTimeOffset, DateTimeOffset, String, String(), SymbolValidationSignal())
+  fullName.vb: Meridian.Application.Backfill.BackfillResult.New(Boolean, String, String(), System.DateOnly?, System.DateOnly?, Long, System.DateTimeOffset, System.DateTimeOffset, String, String(), Meridian.Application.Backfill.SymbolValidationSignal())
+  name.vb: New(Boolean, String, String(), DateOnly?, DateOnly?, Long, DateTimeOffset, DateTimeOffset, String, String(), SymbolValidationSignal())
+- uid: Meridian.Application.Backfill.BackfillResult.Success
+  commentId: P:Meridian.Application.Backfill.BackfillResult.Success
+  id: Success
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: BackfillResult.Success
+  fullName: Meridian.Application.Backfill.BackfillResult.Success
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public bool Success { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Success As Boolean
+  overload: Meridian.Application.Backfill.BackfillResult.Success*
+- uid: Meridian.Application.Backfill.BackfillResult.Provider
+  commentId: P:Meridian.Application.Backfill.BackfillResult.Provider
+  id: Provider
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: BackfillResult.Provider
+  fullName: Meridian.Application.Backfill.BackfillResult.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public string Provider { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Provider As String
+  overload: Meridian.Application.Backfill.BackfillResult.Provider*
+- uid: Meridian.Application.Backfill.BackfillResult.Symbols
+  commentId: P:Meridian.Application.Backfill.BackfillResult.Symbols
+  id: Symbols
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: BackfillResult.Symbols
+  fullName: Meridian.Application.Backfill.BackfillResult.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public string[] Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Application.Backfill.BackfillResult.Symbols*
+- uid: Meridian.Application.Backfill.BackfillResult.From
+  commentId: P:Meridian.Application.Backfill.BackfillResult.From
+  id: From
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: From
+  nameWithType: BackfillResult.From
+  fullName: Meridian.Application.Backfill.BackfillResult.From
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: From
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public DateOnly? From { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property From As DateOnly?
+  overload: Meridian.Application.Backfill.BackfillResult.From*
+- uid: Meridian.Application.Backfill.BackfillResult.To
+  commentId: P:Meridian.Application.Backfill.BackfillResult.To
+  id: To
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: To
+  nameWithType: BackfillResult.To
+  fullName: Meridian.Application.Backfill.BackfillResult.To
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: To
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public DateOnly? To { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property [To] As DateOnly?
+  overload: Meridian.Application.Backfill.BackfillResult.To*
+- uid: Meridian.Application.Backfill.BackfillResult.BarsWritten
+  commentId: P:Meridian.Application.Backfill.BackfillResult.BarsWritten
+  id: BarsWritten
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: BarsWritten
+  nameWithType: BackfillResult.BarsWritten
+  fullName: Meridian.Application.Backfill.BackfillResult.BarsWritten
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BarsWritten
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public long BarsWritten { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property BarsWritten As Long
+  overload: Meridian.Application.Backfill.BackfillResult.BarsWritten*
+- uid: Meridian.Application.Backfill.BackfillResult.StartedUtc
+  commentId: P:Meridian.Application.Backfill.BackfillResult.StartedUtc
+  id: StartedUtc
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: StartedUtc
+  nameWithType: BackfillResult.StartedUtc
+  fullName: Meridian.Application.Backfill.BackfillResult.StartedUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartedUtc
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public DateTimeOffset StartedUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property StartedUtc As DateTimeOffset
+  overload: Meridian.Application.Backfill.BackfillResult.StartedUtc*
+- uid: Meridian.Application.Backfill.BackfillResult.CompletedUtc
+  commentId: P:Meridian.Application.Backfill.BackfillResult.CompletedUtc
+  id: CompletedUtc
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: CompletedUtc
+  nameWithType: BackfillResult.CompletedUtc
+  fullName: Meridian.Application.Backfill.BackfillResult.CompletedUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletedUtc
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public DateTimeOffset CompletedUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CompletedUtc As DateTimeOffset
+  overload: Meridian.Application.Backfill.BackfillResult.CompletedUtc*
+- uid: Meridian.Application.Backfill.BackfillResult.Error
+  commentId: P:Meridian.Application.Backfill.BackfillResult.Error
+  id: Error
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: BackfillResult.Error
+  fullName: Meridian.Application.Backfill.BackfillResult.Error
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public string? Error { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property [Error] As String
+  overload: Meridian.Application.Backfill.BackfillResult.Error*
+- uid: Meridian.Application.Backfill.BackfillResult.SkippedSymbols
+  commentId: P:Meridian.Application.Backfill.BackfillResult.SkippedSymbols
+  id: SkippedSymbols
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: SkippedSymbols
+  nameWithType: BackfillResult.SkippedSymbols
+  fullName: Meridian.Application.Backfill.BackfillResult.SkippedSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkippedSymbols
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Symbols skipped because their checkpoint already covered the requested date range.
+
+    Only populated when <xref href="Meridian.Application.Backfill.BackfillRequest.ResumeFromCheckpoint" data-throw-if-not-resolved="false"></xref> is <code>true</code>.
+  example: []
+  syntax:
+    content: public string[] SkippedSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property SkippedSymbols As String()
+  overload: Meridian.Application.Backfill.BackfillResult.SkippedSymbols*
+- uid: Meridian.Application.Backfill.BackfillResult.SymbolValidationSignals
+  commentId: P:Meridian.Application.Backfill.BackfillResult.SymbolValidationSignals
+  id: SymbolValidationSignals
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: SymbolValidationSignals
+  nameWithType: BackfillResult.SymbolValidationSignals
+  fullName: Meridian.Application.Backfill.BackfillResult.SymbolValidationSignals
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolValidationSignals
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  summary: >-
+    Per-symbol completeness signals (pass / warn / fail) produced at the end of the run.
+
+    Provides operator-visible trust data for each symbol in <xref href="Meridian.Application.Backfill.BackfillResult.Symbols" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public SymbolValidationSignal[] SymbolValidationSignals { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Backfill.SymbolValidationSignal[]
+    content.vb: Public Property SymbolValidationSignals As SymbolValidationSignal()
+  overload: Meridian.Application.Backfill.BackfillResult.SymbolValidationSignals*
+- uid: Meridian.Application.Backfill.BackfillResult.Failed(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.DateTimeOffset,System.Exception)
+  commentId: M:Meridian.Application.Backfill.BackfillResult.Failed(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.DateTimeOffset,System.Exception)
+  id: Failed(System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.DateTimeOffset,System.Exception)
+  parent: Meridian.Application.Backfill.BackfillResult
+  langs:
+  - csharp
+  - vb
+  name: Failed(string, IReadOnlyList<string>, DateOnly?, DateOnly?, DateTimeOffset, Exception)
+  nameWithType: BackfillResult.Failed(string, IReadOnlyList<string>, DateOnly?, DateOnly?, DateTimeOffset, Exception)
+  fullName: Meridian.Application.Backfill.BackfillResult.Failed(string, System.Collections.Generic.IReadOnlyList<string>, System.DateOnly?, System.DateOnly?, System.DateTimeOffset, System.Exception)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Backfill/BackfillResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Application/Backfill/BackfillResult.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Backfill
+  syntax:
+    content: public static BackfillResult Failed(string provider, IReadOnlyList<string> symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: symbols
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: started
+      type: System.DateTimeOffset
+    - id: ex
+      type: System.Exception
+    return:
+      type: Meridian.Application.Backfill.BackfillResult
+    content.vb: Public Shared Function Failed(provider As String, symbols As IReadOnlyList(Of String), from As DateOnly?, [to] As DateOnly?, started As DateTimeOffset, ex As Exception) As BackfillResult
+  overload: Meridian.Application.Backfill.BackfillResult.Failed*
+  nameWithType.vb: BackfillResult.Failed(String, IReadOnlyList(Of String), DateOnly?, DateOnly?, DateTimeOffset, Exception)
+  fullName.vb: Meridian.Application.Backfill.BackfillResult.Failed(String, System.Collections.Generic.IReadOnlyList(Of String), System.DateOnly?, System.DateOnly?, System.DateTimeOffset, System.Exception)
+  name.vb: Failed(String, IReadOnlyList(Of String), DateOnly?, DateOnly?, DateTimeOffset, Exception)
+references:
+- uid: Meridian.Application.Backfill
+  commentId: N:Meridian.Application.Backfill
+  href: Meridian.html
+  name: Meridian.Application.Backfill
+  nameWithType: Meridian.Application.Backfill
+  fullName: Meridian.Application.Backfill
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Backfill
+    name: Backfill
+    href: Meridian.Application.Backfill.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Backfill.BackfillResult}
+  commentId: T:System.IEquatable{Meridian.Application.Backfill.BackfillResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BackfillResult>
+  nameWithType: IEquatable<BackfillResult>
+  fullName: System.IEquatable<Meridian.Application.Backfill.BackfillResult>
+  nameWithType.vb: IEquatable(Of BackfillResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Backfill.BackfillResult)
+  name.vb: IEquatable(Of BackfillResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Backfill.BackfillResult
+    name: BackfillResult
+    href: Meridian.Application.Backfill.BackfillResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Backfill.BackfillResult
+    name: BackfillResult
+    href: Meridian.Application.Backfill.BackfillResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Backfill.BackfillResult.#ctor*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.#ctor
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult__ctor_System_Boolean_System_String_System_String___System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Int64_System_DateTimeOffset_System_DateTimeOffset_System_String_System_String___Meridian_Application_Backfill_SymbolValidationSignal___
+  name: BackfillResult
+  nameWithType: BackfillResult.BackfillResult
+  fullName: Meridian.Application.Backfill.BackfillResult.BackfillResult
+  nameWithType.vb: BackfillResult.New
+  fullName.vb: Meridian.Application.Backfill.BackfillResult.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Backfill.SymbolValidationSignal[]
+  isExternal: true
+  href: Meridian.Application.Backfill.SymbolValidationSignal.html
+  name: SymbolValidationSignal[]
+  nameWithType: SymbolValidationSignal[]
+  fullName: Meridian.Application.Backfill.SymbolValidationSignal[]
+  nameWithType.vb: SymbolValidationSignal()
+  fullName.vb: Meridian.Application.Backfill.SymbolValidationSignal()
+  name.vb: SymbolValidationSignal()
+  spec.csharp:
+  - uid: Meridian.Application.Backfill.SymbolValidationSignal
+    name: SymbolValidationSignal
+    href: Meridian.Application.Backfill.SymbolValidationSignal.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Application.Backfill.SymbolValidationSignal
+    name: SymbolValidationSignal
+    href: Meridian.Application.Backfill.SymbolValidationSignal.html
+  - name: (
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Backfill.BackfillResult.Success*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.Success
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_Success
+  name: Success
+  nameWithType: BackfillResult.Success
+  fullName: Meridian.Application.Backfill.BackfillResult.Success
+- uid: Meridian.Application.Backfill.BackfillResult.Provider*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.Provider
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_Provider
+  name: Provider
+  nameWithType: BackfillResult.Provider
+  fullName: Meridian.Application.Backfill.BackfillResult.Provider
+- uid: Meridian.Application.Backfill.BackfillResult.Symbols*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.Symbols
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_Symbols
+  name: Symbols
+  nameWithType: BackfillResult.Symbols
+  fullName: Meridian.Application.Backfill.BackfillResult.Symbols
+- uid: Meridian.Application.Backfill.BackfillResult.From*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.From
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_From
+  name: From
+  nameWithType: BackfillResult.From
+  fullName: Meridian.Application.Backfill.BackfillResult.From
+- uid: Meridian.Application.Backfill.BackfillResult.To*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.To
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_To
+  name: To
+  nameWithType: BackfillResult.To
+  fullName: Meridian.Application.Backfill.BackfillResult.To
+- uid: Meridian.Application.Backfill.BackfillResult.BarsWritten*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.BarsWritten
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_BarsWritten
+  name: BarsWritten
+  nameWithType: BackfillResult.BarsWritten
+  fullName: Meridian.Application.Backfill.BackfillResult.BarsWritten
+- uid: Meridian.Application.Backfill.BackfillResult.StartedUtc*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.StartedUtc
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_StartedUtc
+  name: StartedUtc
+  nameWithType: BackfillResult.StartedUtc
+  fullName: Meridian.Application.Backfill.BackfillResult.StartedUtc
+- uid: Meridian.Application.Backfill.BackfillResult.CompletedUtc*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.CompletedUtc
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_CompletedUtc
+  name: CompletedUtc
+  nameWithType: BackfillResult.CompletedUtc
+  fullName: Meridian.Application.Backfill.BackfillResult.CompletedUtc
+- uid: Meridian.Application.Backfill.BackfillResult.Error*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.Error
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_Error
+  name: Error
+  nameWithType: BackfillResult.Error
+  fullName: Meridian.Application.Backfill.BackfillResult.Error
+- uid: Meridian.Application.Backfill.BackfillRequest.ResumeFromCheckpoint
+  commentId: P:Meridian.Application.Backfill.BackfillRequest.ResumeFromCheckpoint
+  href: Meridian.Application.Backfill.BackfillRequest.html#Meridian_Application_Backfill_BackfillRequest_ResumeFromCheckpoint
+  name: ResumeFromCheckpoint
+  nameWithType: BackfillRequest.ResumeFromCheckpoint
+  fullName: Meridian.Application.Backfill.BackfillRequest.ResumeFromCheckpoint
+- uid: Meridian.Application.Backfill.BackfillResult.SkippedSymbols*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.SkippedSymbols
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_SkippedSymbols
+  name: SkippedSymbols
+  nameWithType: BackfillResult.SkippedSymbols
+  fullName: Meridian.Application.Backfill.BackfillResult.SkippedSymbols
+- uid: Meridian.Application.Backfill.BackfillResult.Symbols
+  commentId: P:Meridian.Application.Backfill.BackfillResult.Symbols
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_Symbols
+  name: Symbols
+  nameWithType: BackfillResult.Symbols
+  fullName: Meridian.Application.Backfill.BackfillResult.Symbols
+- uid: Meridian.Application.Backfill.BackfillResult.SymbolValidationSignals*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.SymbolValidationSignals
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_SymbolValidationSignals
+  name: SymbolValidationSignals
+  nameWithType: BackfillResult.SymbolValidationSignals
+  fullName: Meridian.Application.Backfill.BackfillResult.SymbolValidationSignals
+- uid: Meridian.Application.Backfill.BackfillResult.Failed*
+  commentId: Overload:Meridian.Application.Backfill.BackfillResult.Failed
+  href: Meridian.Application.Backfill.BackfillResult.html#Meridian_Application_Backfill_BackfillResult_Failed_System_String_System_Collections_Generic_IReadOnlyList_System_String__System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_DateTimeOffset_System_Exception_
+  name: Failed
+  nameWithType: BackfillResult.Failed
+  fullName: Meridian.Application.Backfill.BackfillResult.Failed
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: Meridian.Application.Backfill.BackfillResult
+  commentId: T:Meridian.Application.Backfill.BackfillResult
+  parent: Meridian.Application.Backfill
+  href: Meridian.Application.Backfill.BackfillResult.html
+  name: BackfillResult
+  nameWithType: BackfillResult
+  fullName: Meridian.Application.Backfill.BackfillResult
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

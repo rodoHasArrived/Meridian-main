@@ -1,0 +1,698 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.StorageProfilePresets
+  commentId: T:Meridian.Storage.StorageProfilePresets
+  id: StorageProfilePresets
+  parent: Meridian.Storage
+  children:
+  - Meridian.Storage.StorageProfilePresets.ApplyProfile(System.String,Meridian.Storage.StorageOptions,System.Boolean)
+  - Meridian.Storage.StorageProfilePresets.CreateFromProfile(System.String,System.String,System.Nullable{System.Boolean})
+  - Meridian.Storage.StorageProfilePresets.DefaultProfile
+  - Meridian.Storage.StorageProfilePresets.GetPresets
+  - Meridian.Storage.StorageProfilePresets.GetProfile(System.String)
+  langs:
+  - csharp
+  - vb
+  name: StorageProfilePresets
+  nameWithType: StorageProfilePresets
+  fullName: Meridian.Storage.StorageProfilePresets
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageProfilePresets
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  syntax:
+    content: public static class StorageProfilePresets
+    content.vb: Public Module StorageProfilePresets
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.StorageProfilePresets.DefaultProfile
+  commentId: F:Meridian.Storage.StorageProfilePresets.DefaultProfile
+  id: DefaultProfile
+  parent: Meridian.Storage.StorageProfilePresets
+  langs:
+  - csharp
+  - vb
+  name: DefaultProfile
+  nameWithType: StorageProfilePresets.DefaultProfile
+  fullName: Meridian.Storage.StorageProfilePresets.DefaultProfile
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultProfile
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Default storage profile when none is specified.
+
+    Research profile provides balanced defaults suitable for most use cases.
+  example: []
+  syntax:
+    content: public const string DefaultProfile = "Research"
+    return:
+      type: System.String
+    content.vb: Public Const DefaultProfile As String = "Research"
+- uid: Meridian.Storage.StorageProfilePresets.ApplyProfile(System.String,Meridian.Storage.StorageOptions,System.Boolean)
+  commentId: M:Meridian.Storage.StorageProfilePresets.ApplyProfile(System.String,Meridian.Storage.StorageOptions,System.Boolean)
+  id: ApplyProfile(System.String,Meridian.Storage.StorageOptions,System.Boolean)
+  parent: Meridian.Storage.StorageProfilePresets
+  langs:
+  - csharp
+  - vb
+  name: ApplyProfile(string?, StorageOptions, bool)
+  nameWithType: StorageProfilePresets.ApplyProfile(string?, StorageOptions, bool)
+  fullName: Meridian.Storage.StorageProfilePresets.ApplyProfile(string?, Meridian.Storage.StorageOptions, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyProfile
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Applies a storage profile to the given options.
+
+    If no profile is specified, applies the default profile (Research).
+  example: []
+  syntax:
+    content: public static StorageOptions ApplyProfile(string? profile, StorageOptions options, bool useDefaultIfEmpty = true)
+    parameters:
+    - id: profile
+      type: System.String
+      description: Profile ID, or null/empty to use default.
+    - id: options
+      type: Meridian.Storage.StorageOptions
+      description: Base storage options to apply profile to.
+    - id: useDefaultIfEmpty
+      type: System.Boolean
+      description: If true, applies default profile when profile is null/empty. Default is true.
+    return:
+      type: Meridian.Storage.StorageOptions
+      description: Storage options with profile settings applied.
+    content.vb: Public Shared Function ApplyProfile(profile As String, options As StorageOptions, useDefaultIfEmpty As Boolean = True) As StorageOptions
+  overload: Meridian.Storage.StorageProfilePresets.ApplyProfile*
+  nameWithType.vb: StorageProfilePresets.ApplyProfile(String, StorageOptions, Boolean)
+  fullName.vb: Meridian.Storage.StorageProfilePresets.ApplyProfile(String, Meridian.Storage.StorageOptions, Boolean)
+  name.vb: ApplyProfile(String, StorageOptions, Boolean)
+- uid: Meridian.Storage.StorageProfilePresets.GetProfile(System.String)
+  commentId: M:Meridian.Storage.StorageProfilePresets.GetProfile(System.String)
+  id: GetProfile(System.String)
+  parent: Meridian.Storage.StorageProfilePresets
+  langs:
+  - csharp
+  - vb
+  name: GetProfile(string)
+  nameWithType: StorageProfilePresets.GetProfile(string)
+  fullName: Meridian.Storage.StorageProfilePresets.GetProfile(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProfile
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: Gets a profile preset by ID.
+  example: []
+  syntax:
+    content: public static StorageProfilePreset? GetProfile(string id)
+    parameters:
+    - id: id
+      type: System.String
+    return:
+      type: Meridian.Storage.StorageProfilePreset
+    content.vb: Public Shared Function GetProfile(id As String) As StorageProfilePreset
+  overload: Meridian.Storage.StorageProfilePresets.GetProfile*
+  nameWithType.vb: StorageProfilePresets.GetProfile(String)
+  fullName.vb: Meridian.Storage.StorageProfilePresets.GetProfile(String)
+  name.vb: GetProfile(String)
+- uid: Meridian.Storage.StorageProfilePresets.CreateFromProfile(System.String,System.String,System.Nullable{System.Boolean})
+  commentId: M:Meridian.Storage.StorageProfilePresets.CreateFromProfile(System.String,System.String,System.Nullable{System.Boolean})
+  id: CreateFromProfile(System.String,System.String,System.Nullable{System.Boolean})
+  parent: Meridian.Storage.StorageProfilePresets
+  langs:
+  - csharp
+  - vb
+  name: CreateFromProfile(string?, string, bool?)
+  nameWithType: StorageProfilePresets.CreateFromProfile(string?, string, bool?)
+  fullName: Meridian.Storage.StorageProfilePresets.CreateFromProfile(string?, string, bool?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateFromProfile
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  summary: >-
+    Creates storage options from a profile without requiring a base options object.
+
+    Uses default profile if none specified.
+  example: []
+  syntax:
+    content: public static StorageOptions CreateFromProfile(string? profile, string rootPath, bool? compress = null)
+    parameters:
+    - id: profile
+      type: System.String
+    - id: rootPath
+      type: System.String
+    - id: compress
+      type: System.Nullable{System.Boolean}
+    return:
+      type: Meridian.Storage.StorageOptions
+    content.vb: Public Shared Function CreateFromProfile(profile As String, rootPath As String, compress As Boolean? = Nothing) As StorageOptions
+  overload: Meridian.Storage.StorageProfilePresets.CreateFromProfile*
+  nameWithType.vb: StorageProfilePresets.CreateFromProfile(String, String, Boolean?)
+  fullName.vb: Meridian.Storage.StorageProfilePresets.CreateFromProfile(String, String, Boolean?)
+  name.vb: CreateFromProfile(String, String, Boolean?)
+- uid: Meridian.Storage.StorageProfilePresets.GetPresets
+  commentId: M:Meridian.Storage.StorageProfilePresets.GetPresets
+  id: GetPresets
+  parent: Meridian.Storage.StorageProfilePresets
+  langs:
+  - csharp
+  - vb
+  name: GetPresets()
+  nameWithType: StorageProfilePresets.GetPresets()
+  fullName: Meridian.Storage.StorageProfilePresets.GetPresets()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/StorageProfiles.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPresets
+    path: ../../src/Meridian.Storage/StorageProfiles.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage
+  syntax:
+    content: public static IReadOnlyList<StorageProfilePreset> GetPresets()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.StorageProfilePreset}
+    content.vb: Public Shared Function GetPresets() As IReadOnlyList(Of StorageProfilePreset)
+  overload: Meridian.Storage.StorageProfilePresets.GetPresets*
+references:
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.StorageProfilePresets.ApplyProfile*
+  commentId: Overload:Meridian.Storage.StorageProfilePresets.ApplyProfile
+  href: Meridian.Storage.StorageProfilePresets.html#Meridian_Storage_StorageProfilePresets_ApplyProfile_System_String_Meridian_Storage_StorageOptions_System_Boolean_
+  name: ApplyProfile
+  nameWithType: StorageProfilePresets.ApplyProfile
+  fullName: Meridian.Storage.StorageProfilePresets.ApplyProfile
+- uid: Meridian.Storage.StorageOptions
+  commentId: T:Meridian.Storage.StorageOptions
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageOptions.html
+  name: StorageOptions
+  nameWithType: StorageOptions
+  fullName: Meridian.Storage.StorageOptions
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Storage.StorageProfilePresets.GetProfile*
+  commentId: Overload:Meridian.Storage.StorageProfilePresets.GetProfile
+  href: Meridian.Storage.StorageProfilePresets.html#Meridian_Storage_StorageProfilePresets_GetProfile_System_String_
+  name: GetProfile
+  nameWithType: StorageProfilePresets.GetProfile
+  fullName: Meridian.Storage.StorageProfilePresets.GetProfile
+- uid: Meridian.Storage.StorageProfilePreset
+  commentId: T:Meridian.Storage.StorageProfilePreset
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageProfilePreset.html
+  name: StorageProfilePreset
+  nameWithType: StorageProfilePreset
+  fullName: Meridian.Storage.StorageProfilePreset
+- uid: Meridian.Storage.StorageProfilePresets.CreateFromProfile*
+  commentId: Overload:Meridian.Storage.StorageProfilePresets.CreateFromProfile
+  href: Meridian.Storage.StorageProfilePresets.html#Meridian_Storage_StorageProfilePresets_CreateFromProfile_System_String_System_String_System_Nullable_System_Boolean__
+  name: CreateFromProfile
+  nameWithType: StorageProfilePresets.CreateFromProfile
+  fullName: Meridian.Storage.StorageProfilePresets.CreateFromProfile
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.StorageProfilePresets.GetPresets*
+  commentId: Overload:Meridian.Storage.StorageProfilePresets.GetPresets
+  href: Meridian.Storage.StorageProfilePresets.html#Meridian_Storage_StorageProfilePresets_GetPresets
+  name: GetPresets
+  nameWithType: StorageProfilePresets.GetPresets
+  fullName: Meridian.Storage.StorageProfilePresets.GetPresets
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.StorageProfilePreset}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.StorageProfilePreset}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<StorageProfilePreset>
+  nameWithType: IReadOnlyList<StorageProfilePreset>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.StorageProfilePreset>
+  nameWithType.vb: IReadOnlyList(Of StorageProfilePreset)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.StorageProfilePreset)
+  name.vb: IReadOnlyList(Of StorageProfilePreset)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.StorageProfilePreset
+    name: StorageProfilePreset
+    href: Meridian.Storage.StorageProfilePreset.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.StorageProfilePreset
+    name: StorageProfilePreset
+    href: Meridian.Storage.StorageProfilePreset.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

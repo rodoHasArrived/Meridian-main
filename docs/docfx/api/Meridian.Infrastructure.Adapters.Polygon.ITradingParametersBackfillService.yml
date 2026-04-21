@@ -1,0 +1,268 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  id: ITradingParametersBackfillService
+  parent: Meridian.Infrastructure.Adapters.Polygon
+  children:
+  - Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ITradingParametersBackfillService
+  nameWithType: ITradingParametersBackfillService
+  fullName: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ITradingParametersBackfillService
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: >-
+    Service for backfilling trading parameters (tick size, lot size, currency, etc.) 
+
+    from external data providers into the Security Master.
+  example: []
+  syntax:
+    content: public interface ITradingParametersBackfillService
+    content.vb: Public Interface ITradingParametersBackfillService
+  derivedClasses:
+  - Meridian.Application.SecurityMaster.NullTradingParametersBackfillService
+  - Meridian.Infrastructure.Adapters.Polygon.TradingParametersBackfillService
+- uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  id: BackfillAllAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  langs:
+  - csharp
+  - vb
+  name: BackfillAllAsync(CancellationToken)
+  nameWithType: ITradingParametersBackfillService.BackfillAllAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillAllAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Backfill trading parameters for all active securities.
+  example: []
+  syntax:
+    content: Task BackfillAllAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function BackfillAllAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync*
+- uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  id: BackfillTickerAsync(System.String,System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService
+  langs:
+  - csharp
+  - vb
+  name: BackfillTickerAsync(string, Guid, CancellationToken)
+  nameWithType: ITradingParametersBackfillService.BackfillTickerAsync(string, Guid, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(string, System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillTickerAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/ITradingParametersBackfillService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Backfill trading parameters for a specific security.
+  example: []
+  syntax:
+    content: Task BackfillTickerAsync(string ticker, Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: ticker
+      type: System.String
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function BackfillTickerAsync(ticker As String, securityId As Guid, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync*
+  nameWithType.vb: ITradingParametersBackfillService.BackfillTickerAsync(String, Guid, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync(String, System.Guid, System.Threading.CancellationToken)
+  name.vb: BackfillTickerAsync(String, Guid, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.Adapters.Polygon
+  commentId: N:Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Polygon
+  nameWithType: Meridian.Infrastructure.Adapters.Polygon
+  fullName: Meridian.Infrastructure.Adapters.Polygon
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+- uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html#Meridian_Infrastructure_Adapters_Polygon_ITradingParametersBackfillService_BackfillAllAsync_System_Threading_CancellationToken_
+  name: BackfillAllAsync
+  nameWithType: ITradingParametersBackfillService.BackfillAllAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillAllAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.html#Meridian_Infrastructure_Adapters_Polygon_ITradingParametersBackfillService_BackfillTickerAsync_System_String_System_Guid_System_Threading_CancellationToken_
+  name: BackfillTickerAsync
+  nameWithType: ITradingParametersBackfillService.BackfillTickerAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.ITradingParametersBackfillService.BackfillTickerAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

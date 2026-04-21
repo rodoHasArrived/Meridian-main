@@ -1,0 +1,693 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Etl.EtlAuditStore
+  commentId: T:Meridian.Storage.Etl.EtlAuditStore
+  id: EtlAuditStore
+  parent: Meridian.Storage.Etl
+  children:
+  - Meridian.Storage.Etl.EtlAuditStore.#ctor(System.String)
+  - Meridian.Storage.Etl.EtlAuditStore.GetAuditPath(System.String,System.String)
+  - Meridian.Storage.Etl.EtlAuditStore.LoadCheckpointAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Storage.Etl.EtlAuditStore.SaveCheckpointAsync(System.String,Meridian.Contracts.Etl.EtlCheckpointToken,System.Threading.CancellationToken)
+  - Meridian.Storage.Etl.EtlAuditStore.WriteEventAsync(System.String,Meridian.Contracts.Etl.EtlAuditEvent,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: EtlAuditStore
+  nameWithType: EtlAuditStore
+  fullName: Meridian.Storage.Etl.EtlAuditStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Etl/EtlStores.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EtlAuditStore
+    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Etl
+  syntax:
+    content: public sealed class EtlAuditStore
+    content.vb: Public NotInheritable Class EtlAuditStore
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Etl.EtlAuditStore.#ctor(System.String)
+  commentId: M:Meridian.Storage.Etl.EtlAuditStore.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Storage.Etl.EtlAuditStore
+  langs:
+  - csharp
+  - vb
+  name: EtlAuditStore(string)
+  nameWithType: EtlAuditStore.EtlAuditStore(string)
+  fullName: Meridian.Storage.Etl.EtlAuditStore.EtlAuditStore(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Etl/EtlStores.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Etl
+  syntax:
+    content: public EtlAuditStore(string dataRoot)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    content.vb: Public Sub New(dataRoot As String)
+  overload: Meridian.Storage.Etl.EtlAuditStore.#ctor*
+  nameWithType.vb: EtlAuditStore.New(String)
+  fullName.vb: Meridian.Storage.Etl.EtlAuditStore.New(String)
+  name.vb: New(String)
+- uid: Meridian.Storage.Etl.EtlAuditStore.WriteEventAsync(System.String,Meridian.Contracts.Etl.EtlAuditEvent,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Etl.EtlAuditStore.WriteEventAsync(System.String,Meridian.Contracts.Etl.EtlAuditEvent,System.Threading.CancellationToken)
+  id: WriteEventAsync(System.String,Meridian.Contracts.Etl.EtlAuditEvent,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Etl.EtlAuditStore
+  langs:
+  - csharp
+  - vb
+  name: WriteEventAsync(string, EtlAuditEvent, CancellationToken)
+  nameWithType: EtlAuditStore.WriteEventAsync(string, EtlAuditEvent, CancellationToken)
+  fullName: Meridian.Storage.Etl.EtlAuditStore.WriteEventAsync(string, Meridian.Contracts.Etl.EtlAuditEvent, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Etl/EtlStores.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteEventAsync
+    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Etl
+  syntax:
+    content: public Task WriteEventAsync(string jobId, EtlAuditEvent auditEvent, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: auditEvent
+      type: Meridian.Contracts.Etl.EtlAuditEvent
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function WriteEventAsync(jobId As String, auditEvent As EtlAuditEvent, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Etl.EtlAuditStore.WriteEventAsync*
+  nameWithType.vb: EtlAuditStore.WriteEventAsync(String, EtlAuditEvent, CancellationToken)
+  fullName.vb: Meridian.Storage.Etl.EtlAuditStore.WriteEventAsync(String, Meridian.Contracts.Etl.EtlAuditEvent, System.Threading.CancellationToken)
+  name.vb: WriteEventAsync(String, EtlAuditEvent, CancellationToken)
+- uid: Meridian.Storage.Etl.EtlAuditStore.SaveCheckpointAsync(System.String,Meridian.Contracts.Etl.EtlCheckpointToken,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Etl.EtlAuditStore.SaveCheckpointAsync(System.String,Meridian.Contracts.Etl.EtlCheckpointToken,System.Threading.CancellationToken)
+  id: SaveCheckpointAsync(System.String,Meridian.Contracts.Etl.EtlCheckpointToken,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Etl.EtlAuditStore
+  langs:
+  - csharp
+  - vb
+  name: SaveCheckpointAsync(string, EtlCheckpointToken, CancellationToken)
+  nameWithType: EtlAuditStore.SaveCheckpointAsync(string, EtlCheckpointToken, CancellationToken)
+  fullName: Meridian.Storage.Etl.EtlAuditStore.SaveCheckpointAsync(string, Meridian.Contracts.Etl.EtlCheckpointToken, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Etl/EtlStores.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveCheckpointAsync
+    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Etl
+  syntax:
+    content: public Task SaveCheckpointAsync(string jobId, EtlCheckpointToken checkpoint, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: checkpoint
+      type: Meridian.Contracts.Etl.EtlCheckpointToken
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SaveCheckpointAsync(jobId As String, checkpoint As EtlCheckpointToken, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Etl.EtlAuditStore.SaveCheckpointAsync*
+  nameWithType.vb: EtlAuditStore.SaveCheckpointAsync(String, EtlCheckpointToken, CancellationToken)
+  fullName.vb: Meridian.Storage.Etl.EtlAuditStore.SaveCheckpointAsync(String, Meridian.Contracts.Etl.EtlCheckpointToken, System.Threading.CancellationToken)
+  name.vb: SaveCheckpointAsync(String, EtlCheckpointToken, CancellationToken)
+- uid: Meridian.Storage.Etl.EtlAuditStore.LoadCheckpointAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Etl.EtlAuditStore.LoadCheckpointAsync(System.String,System.Threading.CancellationToken)
+  id: LoadCheckpointAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Etl.EtlAuditStore
+  langs:
+  - csharp
+  - vb
+  name: LoadCheckpointAsync(string, CancellationToken)
+  nameWithType: EtlAuditStore.LoadCheckpointAsync(string, CancellationToken)
+  fullName: Meridian.Storage.Etl.EtlAuditStore.LoadCheckpointAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Etl/EtlStores.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadCheckpointAsync
+    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Etl
+  syntax:
+    content: public Task<EtlCheckpointToken?> LoadCheckpointAsync(string jobId, CancellationToken ct = default)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlCheckpointToken}
+    content.vb: Public Function LoadCheckpointAsync(jobId As String, ct As CancellationToken = Nothing) As Task(Of EtlCheckpointToken)
+  overload: Meridian.Storage.Etl.EtlAuditStore.LoadCheckpointAsync*
+  nameWithType.vb: EtlAuditStore.LoadCheckpointAsync(String, CancellationToken)
+  fullName.vb: Meridian.Storage.Etl.EtlAuditStore.LoadCheckpointAsync(String, System.Threading.CancellationToken)
+  name.vb: LoadCheckpointAsync(String, CancellationToken)
+- uid: Meridian.Storage.Etl.EtlAuditStore.GetAuditPath(System.String,System.String)
+  commentId: M:Meridian.Storage.Etl.EtlAuditStore.GetAuditPath(System.String,System.String)
+  id: GetAuditPath(System.String,System.String)
+  parent: Meridian.Storage.Etl.EtlAuditStore
+  langs:
+  - csharp
+  - vb
+  name: GetAuditPath(string, string)
+  nameWithType: EtlAuditStore.GetAuditPath(string, string)
+  fullName: Meridian.Storage.Etl.EtlAuditStore.GetAuditPath(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Etl/EtlStores.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAuditPath
+    path: ../../src/Meridian.Storage/Etl/EtlStores.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Etl
+  syntax:
+    content: public string GetAuditPath(string jobId, string fileName)
+    parameters:
+    - id: jobId
+      type: System.String
+    - id: fileName
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Function GetAuditPath(jobId As String, fileName As String) As String
+  overload: Meridian.Storage.Etl.EtlAuditStore.GetAuditPath*
+  nameWithType.vb: EtlAuditStore.GetAuditPath(String, String)
+  fullName.vb: Meridian.Storage.Etl.EtlAuditStore.GetAuditPath(String, String)
+  name.vb: GetAuditPath(String, String)
+references:
+- uid: Meridian.Storage.Etl
+  commentId: N:Meridian.Storage.Etl
+  href: Meridian.html
+  name: Meridian.Storage.Etl
+  nameWithType: Meridian.Storage.Etl
+  fullName: Meridian.Storage.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Etl
+    name: Etl
+    href: Meridian.Storage.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Etl
+    name: Etl
+    href: Meridian.Storage.Etl.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Etl.EtlAuditStore.#ctor*
+  commentId: Overload:Meridian.Storage.Etl.EtlAuditStore.#ctor
+  href: Meridian.Storage.Etl.EtlAuditStore.html#Meridian_Storage_Etl_EtlAuditStore__ctor_System_String_
+  name: EtlAuditStore
+  nameWithType: EtlAuditStore.EtlAuditStore
+  fullName: Meridian.Storage.Etl.EtlAuditStore.EtlAuditStore
+  nameWithType.vb: EtlAuditStore.New
+  fullName.vb: Meridian.Storage.Etl.EtlAuditStore.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Etl.EtlAuditStore.WriteEventAsync*
+  commentId: Overload:Meridian.Storage.Etl.EtlAuditStore.WriteEventAsync
+  href: Meridian.Storage.Etl.EtlAuditStore.html#Meridian_Storage_Etl_EtlAuditStore_WriteEventAsync_System_String_Meridian_Contracts_Etl_EtlAuditEvent_System_Threading_CancellationToken_
+  name: WriteEventAsync
+  nameWithType: EtlAuditStore.WriteEventAsync
+  fullName: Meridian.Storage.Etl.EtlAuditStore.WriteEventAsync
+- uid: Meridian.Contracts.Etl.EtlAuditEvent
+  commentId: T:Meridian.Contracts.Etl.EtlAuditEvent
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlAuditEvent.html
+  name: EtlAuditEvent
+  nameWithType: EtlAuditEvent
+  fullName: Meridian.Contracts.Etl.EtlAuditEvent
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Etl.EtlAuditStore.SaveCheckpointAsync*
+  commentId: Overload:Meridian.Storage.Etl.EtlAuditStore.SaveCheckpointAsync
+  href: Meridian.Storage.Etl.EtlAuditStore.html#Meridian_Storage_Etl_EtlAuditStore_SaveCheckpointAsync_System_String_Meridian_Contracts_Etl_EtlCheckpointToken_System_Threading_CancellationToken_
+  name: SaveCheckpointAsync
+  nameWithType: EtlAuditStore.SaveCheckpointAsync
+  fullName: Meridian.Storage.Etl.EtlAuditStore.SaveCheckpointAsync
+- uid: Meridian.Contracts.Etl.EtlCheckpointToken
+  commentId: T:Meridian.Contracts.Etl.EtlCheckpointToken
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlCheckpointToken.html
+  name: EtlCheckpointToken
+  nameWithType: EtlCheckpointToken
+  fullName: Meridian.Contracts.Etl.EtlCheckpointToken
+- uid: Meridian.Storage.Etl.EtlAuditStore.LoadCheckpointAsync*
+  commentId: Overload:Meridian.Storage.Etl.EtlAuditStore.LoadCheckpointAsync
+  href: Meridian.Storage.Etl.EtlAuditStore.html#Meridian_Storage_Etl_EtlAuditStore_LoadCheckpointAsync_System_String_System_Threading_CancellationToken_
+  name: LoadCheckpointAsync
+  nameWithType: EtlAuditStore.LoadCheckpointAsync
+  fullName: Meridian.Storage.Etl.EtlAuditStore.LoadCheckpointAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlCheckpointToken}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Etl.EtlCheckpointToken}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<EtlCheckpointToken>
+  nameWithType: Task<EtlCheckpointToken>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Etl.EtlCheckpointToken>
+  nameWithType.vb: Task(Of EtlCheckpointToken)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Etl.EtlCheckpointToken)
+  name.vb: Task(Of EtlCheckpointToken)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Etl.EtlCheckpointToken
+    name: EtlCheckpointToken
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Etl.EtlCheckpointToken
+    name: EtlCheckpointToken
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Storage.Etl.EtlAuditStore.GetAuditPath*
+  commentId: Overload:Meridian.Storage.Etl.EtlAuditStore.GetAuditPath
+  href: Meridian.Storage.Etl.EtlAuditStore.html#Meridian_Storage_Etl_EtlAuditStore_GetAuditPath_System_String_System_String_
+  name: GetAuditPath
+  nameWithType: EtlAuditStore.GetAuditPath
+  fullName: Meridian.Storage.Etl.EtlAuditStore.GetAuditPath

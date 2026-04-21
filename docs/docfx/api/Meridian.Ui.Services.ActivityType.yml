@@ -1,0 +1,932 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ActivityType
+  commentId: T:Meridian.Ui.Services.ActivityType
+  id: ActivityType
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ActivityType.ArchiveCreated
+  - Meridian.Ui.Services.ActivityType.ArchiveVerified
+  - Meridian.Ui.Services.ActivityType.BackfillCompleted
+  - Meridian.Ui.Services.ActivityType.BackfillFailed
+  - Meridian.Ui.Services.ActivityType.BackfillProgress
+  - Meridian.Ui.Services.ActivityType.BackfillStarted
+  - Meridian.Ui.Services.ActivityType.CollectorPaused
+  - Meridian.Ui.Services.ActivityType.CollectorResumed
+  - Meridian.Ui.Services.ActivityType.CollectorStarted
+  - Meridian.Ui.Services.ActivityType.CollectorStopped
+  - Meridian.Ui.Services.ActivityType.CompressionCompleted
+  - Meridian.Ui.Services.ActivityType.ConfigurationChanged
+  - Meridian.Ui.Services.ActivityType.DataQualityIssue
+  - Meridian.Ui.Services.ActivityType.Error
+  - Meridian.Ui.Services.ActivityType.ExportCompleted
+  - Meridian.Ui.Services.ActivityType.ExportFailed
+  - Meridian.Ui.Services.ActivityType.ExportStarted
+  - Meridian.Ui.Services.ActivityType.GapDetected
+  - Meridian.Ui.Services.ActivityType.GapRepaired
+  - Meridian.Ui.Services.ActivityType.Info
+  - Meridian.Ui.Services.ActivityType.IntegrityError
+  - Meridian.Ui.Services.ActivityType.ProviderConnected
+  - Meridian.Ui.Services.ActivityType.ProviderDisconnected
+  - Meridian.Ui.Services.ActivityType.ProviderError
+  - Meridian.Ui.Services.ActivityType.StorageEvent
+  - Meridian.Ui.Services.ActivityType.SymbolAdded
+  - Meridian.Ui.Services.ActivityType.SymbolRemoved
+  - Meridian.Ui.Services.ActivityType.SymbolSubscribed
+  - Meridian.Ui.Services.ActivityType.SymbolUnsubscribed
+  - Meridian.Ui.Services.ActivityType.SystemStarted
+  - Meridian.Ui.Services.ActivityType.SystemStopped
+  - Meridian.Ui.Services.ActivityType.Warning
+  langs:
+  - csharp
+  - vb
+  name: ActivityType
+  nameWithType: ActivityType
+  fullName: Meridian.Ui.Services.ActivityType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActivityType
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 477
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Types of activity events.
+  example: []
+  syntax:
+    content: 'public enum ActivityType : byte'
+    content.vb: Public Enum ActivityType As Byte
+- uid: Meridian.Ui.Services.ActivityType.CollectorStarted
+  commentId: F:Meridian.Ui.Services.ActivityType.CollectorStarted
+  id: CollectorStarted
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: CollectorStarted
+  nameWithType: ActivityType.CollectorStarted
+  fullName: Meridian.Ui.Services.ActivityType.CollectorStarted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollectorStarted
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 480
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: CollectorStarted = 0
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.CollectorStopped
+  commentId: F:Meridian.Ui.Services.ActivityType.CollectorStopped
+  id: CollectorStopped
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: CollectorStopped
+  nameWithType: ActivityType.CollectorStopped
+  fullName: Meridian.Ui.Services.ActivityType.CollectorStopped
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollectorStopped
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 481
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: CollectorStopped = 1
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.CollectorPaused
+  commentId: F:Meridian.Ui.Services.ActivityType.CollectorPaused
+  id: CollectorPaused
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: CollectorPaused
+  nameWithType: ActivityType.CollectorPaused
+  fullName: Meridian.Ui.Services.ActivityType.CollectorPaused
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollectorPaused
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 482
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: CollectorPaused = 2
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.CollectorResumed
+  commentId: F:Meridian.Ui.Services.ActivityType.CollectorResumed
+  id: CollectorResumed
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: CollectorResumed
+  nameWithType: ActivityType.CollectorResumed
+  fullName: Meridian.Ui.Services.ActivityType.CollectorResumed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollectorResumed
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 483
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: CollectorResumed = 3
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.ProviderConnected
+  commentId: F:Meridian.Ui.Services.ActivityType.ProviderConnected
+  id: ProviderConnected
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: ProviderConnected
+  nameWithType: ActivityType.ProviderConnected
+  fullName: Meridian.Ui.Services.ActivityType.ProviderConnected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderConnected
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 486
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ProviderConnected = 4
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.ProviderDisconnected
+  commentId: F:Meridian.Ui.Services.ActivityType.ProviderDisconnected
+  id: ProviderDisconnected
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: ProviderDisconnected
+  nameWithType: ActivityType.ProviderDisconnected
+  fullName: Meridian.Ui.Services.ActivityType.ProviderDisconnected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDisconnected
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 487
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ProviderDisconnected = 5
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.ProviderError
+  commentId: F:Meridian.Ui.Services.ActivityType.ProviderError
+  id: ProviderError
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: ProviderError
+  nameWithType: ActivityType.ProviderError
+  fullName: Meridian.Ui.Services.ActivityType.ProviderError
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderError
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 488
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ProviderError = 6
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.SymbolAdded
+  commentId: F:Meridian.Ui.Services.ActivityType.SymbolAdded
+  id: SymbolAdded
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: SymbolAdded
+  nameWithType: ActivityType.SymbolAdded
+  fullName: Meridian.Ui.Services.ActivityType.SymbolAdded
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolAdded
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 491
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: SymbolAdded = 7
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.SymbolRemoved
+  commentId: F:Meridian.Ui.Services.ActivityType.SymbolRemoved
+  id: SymbolRemoved
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: SymbolRemoved
+  nameWithType: ActivityType.SymbolRemoved
+  fullName: Meridian.Ui.Services.ActivityType.SymbolRemoved
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolRemoved
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 492
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: SymbolRemoved = 8
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.SymbolSubscribed
+  commentId: F:Meridian.Ui.Services.ActivityType.SymbolSubscribed
+  id: SymbolSubscribed
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: SymbolSubscribed
+  nameWithType: ActivityType.SymbolSubscribed
+  fullName: Meridian.Ui.Services.ActivityType.SymbolSubscribed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSubscribed
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 493
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: SymbolSubscribed = 9
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.SymbolUnsubscribed
+  commentId: F:Meridian.Ui.Services.ActivityType.SymbolUnsubscribed
+  id: SymbolUnsubscribed
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: SymbolUnsubscribed
+  nameWithType: ActivityType.SymbolUnsubscribed
+  fullName: Meridian.Ui.Services.ActivityType.SymbolUnsubscribed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolUnsubscribed
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 494
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: SymbolUnsubscribed = 10
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.BackfillStarted
+  commentId: F:Meridian.Ui.Services.ActivityType.BackfillStarted
+  id: BackfillStarted
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: BackfillStarted
+  nameWithType: ActivityType.BackfillStarted
+  fullName: Meridian.Ui.Services.ActivityType.BackfillStarted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillStarted
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 497
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: BackfillStarted = 11
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.BackfillCompleted
+  commentId: F:Meridian.Ui.Services.ActivityType.BackfillCompleted
+  id: BackfillCompleted
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: BackfillCompleted
+  nameWithType: ActivityType.BackfillCompleted
+  fullName: Meridian.Ui.Services.ActivityType.BackfillCompleted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillCompleted
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 498
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: BackfillCompleted = 12
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.BackfillFailed
+  commentId: F:Meridian.Ui.Services.ActivityType.BackfillFailed
+  id: BackfillFailed
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: BackfillFailed
+  nameWithType: ActivityType.BackfillFailed
+  fullName: Meridian.Ui.Services.ActivityType.BackfillFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillFailed
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 499
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: BackfillFailed = 13
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.BackfillProgress
+  commentId: F:Meridian.Ui.Services.ActivityType.BackfillProgress
+  id: BackfillProgress
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: BackfillProgress
+  nameWithType: ActivityType.BackfillProgress
+  fullName: Meridian.Ui.Services.ActivityType.BackfillProgress
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillProgress
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 500
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: BackfillProgress = 14
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.DataQualityIssue
+  commentId: F:Meridian.Ui.Services.ActivityType.DataQualityIssue
+  id: DataQualityIssue
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: DataQualityIssue
+  nameWithType: ActivityType.DataQualityIssue
+  fullName: Meridian.Ui.Services.ActivityType.DataQualityIssue
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityIssue
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 503
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: DataQualityIssue = 15
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.GapDetected
+  commentId: F:Meridian.Ui.Services.ActivityType.GapDetected
+  id: GapDetected
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: GapDetected
+  nameWithType: ActivityType.GapDetected
+  fullName: Meridian.Ui.Services.ActivityType.GapDetected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapDetected
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 504
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: GapDetected = 16
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.GapRepaired
+  commentId: F:Meridian.Ui.Services.ActivityType.GapRepaired
+  id: GapRepaired
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: GapRepaired
+  nameWithType: ActivityType.GapRepaired
+  fullName: Meridian.Ui.Services.ActivityType.GapRepaired
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapRepaired
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 505
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: GapRepaired = 17
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.IntegrityError
+  commentId: F:Meridian.Ui.Services.ActivityType.IntegrityError
+  id: IntegrityError
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: IntegrityError
+  nameWithType: ActivityType.IntegrityError
+  fullName: Meridian.Ui.Services.ActivityType.IntegrityError
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntegrityError
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 506
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: IntegrityError = 18
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.StorageEvent
+  commentId: F:Meridian.Ui.Services.ActivityType.StorageEvent
+  id: StorageEvent
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: StorageEvent
+  nameWithType: ActivityType.StorageEvent
+  fullName: Meridian.Ui.Services.ActivityType.StorageEvent
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageEvent
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 509
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: StorageEvent = 19
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.ArchiveCreated
+  commentId: F:Meridian.Ui.Services.ActivityType.ArchiveCreated
+  id: ArchiveCreated
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: ArchiveCreated
+  nameWithType: ActivityType.ArchiveCreated
+  fullName: Meridian.Ui.Services.ActivityType.ArchiveCreated
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchiveCreated
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 510
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ArchiveCreated = 20
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.ArchiveVerified
+  commentId: F:Meridian.Ui.Services.ActivityType.ArchiveVerified
+  id: ArchiveVerified
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: ArchiveVerified
+  nameWithType: ActivityType.ArchiveVerified
+  fullName: Meridian.Ui.Services.ActivityType.ArchiveVerified
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArchiveVerified
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ArchiveVerified = 21
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.CompressionCompleted
+  commentId: F:Meridian.Ui.Services.ActivityType.CompressionCompleted
+  id: CompressionCompleted
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: CompressionCompleted
+  nameWithType: ActivityType.CompressionCompleted
+  fullName: Meridian.Ui.Services.ActivityType.CompressionCompleted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionCompleted
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 512
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: CompressionCompleted = 22
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.ExportStarted
+  commentId: F:Meridian.Ui.Services.ActivityType.ExportStarted
+  id: ExportStarted
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: ExportStarted
+  nameWithType: ActivityType.ExportStarted
+  fullName: Meridian.Ui.Services.ActivityType.ExportStarted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportStarted
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ExportStarted = 23
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.ExportCompleted
+  commentId: F:Meridian.Ui.Services.ActivityType.ExportCompleted
+  id: ExportCompleted
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: ExportCompleted
+  nameWithType: ActivityType.ExportCompleted
+  fullName: Meridian.Ui.Services.ActivityType.ExportCompleted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportCompleted
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 516
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ExportCompleted = 24
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.ExportFailed
+  commentId: F:Meridian.Ui.Services.ActivityType.ExportFailed
+  id: ExportFailed
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: ExportFailed
+  nameWithType: ActivityType.ExportFailed
+  fullName: Meridian.Ui.Services.ActivityType.ExportFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportFailed
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ExportFailed = 25
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.SystemStarted
+  commentId: F:Meridian.Ui.Services.ActivityType.SystemStarted
+  id: SystemStarted
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: SystemStarted
+  nameWithType: ActivityType.SystemStarted
+  fullName: Meridian.Ui.Services.ActivityType.SystemStarted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SystemStarted
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: SystemStarted = 26
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.SystemStopped
+  commentId: F:Meridian.Ui.Services.ActivityType.SystemStopped
+  id: SystemStopped
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: SystemStopped
+  nameWithType: ActivityType.SystemStopped
+  fullName: Meridian.Ui.Services.ActivityType.SystemStopped
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SystemStopped
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 521
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: SystemStopped = 27
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.ConfigurationChanged
+  commentId: F:Meridian.Ui.Services.ActivityType.ConfigurationChanged
+  id: ConfigurationChanged
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationChanged
+  nameWithType: ActivityType.ConfigurationChanged
+  fullName: Meridian.Ui.Services.ActivityType.ConfigurationChanged
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationChanged
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 522
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: ConfigurationChanged = 28
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.Error
+  commentId: F:Meridian.Ui.Services.ActivityType.Error
+  id: Error
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: ActivityType.Error
+  fullName: Meridian.Ui.Services.ActivityType.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 523
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Error = 29
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.Warning
+  commentId: F:Meridian.Ui.Services.ActivityType.Warning
+  id: Warning
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: ActivityType.Warning
+  fullName: Meridian.Ui.Services.ActivityType.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 524
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Warning = 30
+    return:
+      type: Meridian.Ui.Services.ActivityType
+- uid: Meridian.Ui.Services.ActivityType.Info
+  commentId: F:Meridian.Ui.Services.ActivityType.Info
+  id: Info
+  parent: Meridian.Ui.Services.ActivityType
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: ActivityType.Info
+  fullName: Meridian.Ui.Services.ActivityType.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Ui.Services/Services/ActivityFeedService.cs
+    startLine: 525
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Info = 31
+    return:
+      type: Meridian.Ui.Services.ActivityType
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.ActivityType
+  commentId: T:Meridian.Ui.Services.ActivityType
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ActivityType.html
+  name: ActivityType
+  nameWithType: ActivityType
+  fullName: Meridian.Ui.Services.ActivityType

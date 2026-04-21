@@ -3,7 +3,7 @@
 // =============================================================================
 // Imports shared library namespaces so collections and contracts
 // from Meridian.Ui.Services are available throughout this project.
-// 
+//
 // NOTE: Type aliases and Contracts namespaces are NOT re-defined here because
 // they are already provided by the referenced Meridian.Ui.Services
 // project (via its GlobalUsings.cs). Re-defining them would cause CS0101
@@ -30,6 +30,7 @@ global using System.Windows;
 global using System.Windows.Controls;
 global using System.Windows.Input;
 global using System.Windows.Media;
+global using System.Windows.Threading;
 
 // Shared desktop collections and contracts
 global using Meridian.Ui.Services.Collections;

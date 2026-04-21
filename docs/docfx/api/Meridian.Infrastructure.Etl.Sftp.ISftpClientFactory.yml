@@ -1,0 +1,159 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+  commentId: T:Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+  id: ISftpClientFactory
+  parent: Meridian.Infrastructure.Etl.Sftp
+  children:
+  - Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.Create(System.String,System.Int32,System.String,System.String)
+  langs:
+  - csharp
+  - vb
+  name: ISftpClientFactory
+  nameWithType: ISftpClientFactory
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISftpClientFactory
+    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl.Sftp
+  summary: >-
+    Creates <xref href="Meridian.Infrastructure.Etl.Sftp.ISftpClient" data-throw-if-not-resolved="false"></xref> sessions.
+
+    Build with <code>EnableSftp=true</code> and reference <code>Renci.SshNet &gt;= 2024.2.0</code>
+
+    to activate real SFTP connectivity.
+  example: []
+  syntax:
+    content: public interface ISftpClientFactory
+    content.vb: Public Interface ISftpClientFactory
+  derivedClasses:
+  - Meridian.Infrastructure.Etl.Sftp.SftpClientFactory
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.Create(System.String,System.Int32,System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.Create(System.String,System.Int32,System.String,System.String)
+  id: Create(System.String,System.Int32,System.String,System.String)
+  parent: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory
+  langs:
+  - csharp
+  - vb
+  name: Create(string, int, string, string)
+  nameWithType: ISftpClientFactory.Create(string, int, string, string)
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.Create(string, int, string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Create
+    path: ../../src/Meridian.Infrastructure/Etl/Sftp/ISftpClientFactory.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Etl.Sftp
+  syntax:
+    content: ISftpClient Create(string host, int port, string username, string password)
+    parameters:
+    - id: host
+      type: System.String
+    - id: port
+      type: System.Int32
+    - id: username
+      type: System.String
+    - id: password
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.Etl.Sftp.ISftpClient
+    content.vb: Function Create(host As String, port As Integer, username As String, password As String) As ISftpClient
+  overload: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.Create*
+  nameWithType.vb: ISftpClientFactory.Create(String, Integer, String, String)
+  fullName.vb: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.Create(String, Integer, String, String)
+  name.vb: Create(String, Integer, String, String)
+references:
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpClient
+  commentId: T:Meridian.Infrastructure.Etl.Sftp.ISftpClient
+  parent: Meridian.Infrastructure.Etl.Sftp
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpClient.html
+  name: ISftpClient
+  nameWithType: ISftpClient
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpClient
+- uid: Meridian.Infrastructure.Etl.Sftp
+  commentId: N:Meridian.Infrastructure.Etl.Sftp
+  href: Meridian.html
+  name: Meridian.Infrastructure.Etl.Sftp
+  nameWithType: Meridian.Infrastructure.Etl.Sftp
+  fullName: Meridian.Infrastructure.Etl.Sftp
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl.Sftp
+    name: Sftp
+    href: Meridian.Infrastructure.Etl.Sftp.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl
+    name: Etl
+    href: Meridian.Infrastructure.Etl.html
+  - name: .
+  - uid: Meridian.Infrastructure.Etl.Sftp
+    name: Sftp
+    href: Meridian.Infrastructure.Etl.Sftp.html
+- uid: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.Create*
+  commentId: Overload:Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.Create
+  href: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.html#Meridian_Infrastructure_Etl_Sftp_ISftpClientFactory_Create_System_String_System_Int32_System_String_System_String_
+  name: Create
+  nameWithType: ISftpClientFactory.Create
+  fullName: Meridian.Infrastructure.Etl.Sftp.ISftpClientFactory.Create
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

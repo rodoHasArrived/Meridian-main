@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -28,6 +29,9 @@ public sealed class BlotterEntry : INotifyPropertyChanged
     /// <summary>Unique trade/order identifier.</summary>
     public string TradeId { get; set; } = string.Empty;
 
+    /// <summary>Stable key used for broker-aware position actions.</summary>
+    public string PositionKey { get; set; } = string.Empty;
+
     /// <summary>Executed unit price of the position.</summary>
     public decimal UnitPrice { get; set; }
 
@@ -35,10 +39,10 @@ public sealed class BlotterEntry : INotifyPropertyChanged
     public string UnitPriceText => UnitPrice > 0 ? UnitPrice.ToString("N4") : "—";
 
     /// <summary>Signed quantity (positive = long, negative = short).</summary>
-    public long Quantity { get; set; }
+    public decimal Quantity { get; set; }
 
     /// <summary>Formatted quantity for display.</summary>
-    public string QuantityText => Quantity.ToString("+#;-#;0");
+    public string QuantityText => Quantity.ToString("+#,0.####;-#,0.####;0");
 
     /// <summary>Side of the trade ("Buy" or "Sell").</summary>
     public string Side { get; set; } = string.Empty;
@@ -48,6 +52,18 @@ public sealed class BlotterEntry : INotifyPropertyChanged
 
     /// <summary>Expiry date for options positions.</summary>
     public DateOnly? Expiry { get; set; }
+
+    /// <summary>Asset class reported by the execution source.</summary>
+    public string AssetClass { get; set; } = "equity";
+
+    /// <summary>Provider-specific metadata required for broker-side actions.</summary>
+    public IReadOnlyDictionary<string, string>? Metadata { get; set; }
+
+    /// <summary>Whether the entry supports close / flatten actions.</summary>
+    public bool SupportsClose { get; set; } = true;
+
+    /// <summary>Whether the entry supports add / upsize actions.</summary>
+    public bool SupportsUpsize { get; set; } = true;
 
     /// <summary>Formatted expiry for display (e.g., "17Sep25").</summary>
     public string ExpiryText => Expiry.HasValue ? Expiry.Value.ToString("dMMMyyy") : string.Empty;
@@ -99,7 +115,7 @@ public sealed class BlotterGroup : INotifyPropertyChanged
     public int Count => Entries.Count;
 
     /// <summary>Net quantity across all positions in the group.</summary>
-    public long NetQuantity => Entries.Sum(e => e.Quantity);
+    public decimal NetQuantity => Entries.Sum(e => e.Quantity);
 
     /// <summary>Total unrealised P&amp;L across all positions in the group.</summary>
     public decimal TotalPnl => Entries.Sum(e => e.UnrealisedPnl);
@@ -144,6 +160,22 @@ public sealed class BlotterGroup : INotifyPropertyChanged
 
     /// <summary>Child entries belonging to this group.</summary>
     public ObservableCollection<BlotterEntry> Entries { get; } = [];
+
+    /// <summary>
+    /// Syncs the group checkbox to the current child-row selection state without
+    /// reapplying the selection to every child entry.
+    /// </summary>
+    public void RefreshSelectionFromEntries()
+    {
+        var shouldBeSelected = Entries.Count > 0 && Entries.All(entry => entry.IsSelected);
+        if (_isSelected == shouldBeSelected)
+        {
+            return;
+        }
+
+        _isSelected = shouldBeSelected;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+    }
 }
 
 /// <summary>

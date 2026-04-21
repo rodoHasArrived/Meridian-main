@@ -1,0 +1,597 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  id: IBWhatToShow
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.AdjustedLast
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Ask
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Bid
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.BidAsk
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.HistoricalVolatility
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Midpoint
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.OptionImpliedVolatility
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Schedule
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Trades
+  langs:
+  - csharp
+  - vb
+  name: IBWhatToShow
+  nameWithType: IBWhatToShow
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBWhatToShow
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 345
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Valid whatToShow values for reqHistoricalData on stocks.
+  example: []
+  syntax:
+    content: public static class IBWhatToShow
+    content.vb: Public Module IBWhatToShow
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Trades
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Trades
+  id: Trades
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  langs:
+  - csharp
+  - vb
+  name: Trades
+  nameWithType: IBWhatToShow.Trades
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Trades
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trades
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Trade prices (split-adjusted). Includes volume.
+  example: []
+  syntax:
+    content: public const string Trades = "TRADES"
+    return:
+      type: System.String
+    content.vb: Public Const Trades As String = "TRADES"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Midpoint
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Midpoint
+  id: Midpoint
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  langs:
+  - csharp
+  - vb
+  name: Midpoint
+  nameWithType: IBWhatToShow.Midpoint
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Midpoint
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Midpoint
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Midpoint of bid/ask. No volume.
+  example: []
+  syntax:
+    content: public const string Midpoint = "MIDPOINT"
+    return:
+      type: System.String
+    content.vb: Public Const Midpoint As String = "MIDPOINT"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Bid
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Bid
+  id: Bid
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  langs:
+  - csharp
+  - vb
+  name: Bid
+  nameWithType: IBWhatToShow.Bid
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Bid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bid
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 354
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Bid prices. No volume.
+  example: []
+  syntax:
+    content: public const string Bid = "BID"
+    return:
+      type: System.String
+    content.vb: Public Const Bid As String = "BID"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Ask
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Ask
+  id: Ask
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  langs:
+  - csharp
+  - vb
+  name: Ask
+  nameWithType: IBWhatToShow.Ask
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Ask
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ask
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 357
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Ask prices. No volume.
+  example: []
+  syntax:
+    content: public const string Ask = "ASK"
+    return:
+      type: System.String
+    content.vb: Public Const Ask As String = "ASK"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.BidAsk
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.BidAsk
+  id: BidAsk
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  langs:
+  - csharp
+  - vb
+  name: BidAsk
+  nameWithType: IBWhatToShow.BidAsk
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.BidAsk
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BidAsk
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 360
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Time-averaged bid/ask. No volume. Counts as 2 requests.
+  example: []
+  syntax:
+    content: public const string BidAsk = "BID_ASK"
+    return:
+      type: System.String
+    content.vb: Public Const BidAsk As String = "BID_ASK"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.AdjustedLast
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.AdjustedLast
+  id: AdjustedLast
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  langs:
+  - csharp
+  - vb
+  name: AdjustedLast
+  nameWithType: IBWhatToShow.AdjustedLast
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.AdjustedLast
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdjustedLast
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 363
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Dividend + split adjusted prices. Includes volume.
+  example: []
+  syntax:
+    content: public const string AdjustedLast = "ADJUSTED_LAST"
+    return:
+      type: System.String
+    content.vb: Public Const AdjustedLast As String = "ADJUSTED_LAST"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.HistoricalVolatility
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.HistoricalVolatility
+  id: HistoricalVolatility
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  langs:
+  - csharp
+  - vb
+  name: HistoricalVolatility
+  nameWithType: IBWhatToShow.HistoricalVolatility
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.HistoricalVolatility
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalVolatility
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 366
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: 30-day historical volatility. No volume.
+  example: []
+  syntax:
+    content: public const string HistoricalVolatility = "HISTORICAL_VOLATILITY"
+    return:
+      type: System.String
+    content.vb: Public Const HistoricalVolatility As String = "HISTORICAL_VOLATILITY"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.OptionImpliedVolatility
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.OptionImpliedVolatility
+  id: OptionImpliedVolatility
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  langs:
+  - csharp
+  - vb
+  name: OptionImpliedVolatility
+  nameWithType: IBWhatToShow.OptionImpliedVolatility
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.OptionImpliedVolatility
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionImpliedVolatility
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 369
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: 30-day implied volatility. No volume.
+  example: []
+  syntax:
+    content: public const string OptionImpliedVolatility = "OPTION_IMPLIED_VOLATILITY"
+    return:
+      type: System.String
+    content.vb: Public Const OptionImpliedVolatility As String = "OPTION_IMPLIED_VOLATILITY"
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Schedule
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Schedule
+  id: Schedule
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow
+  langs:
+  - csharp
+  - vb
+  name: Schedule
+  nameWithType: IBWhatToShow.Schedule
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBWhatToShow.Schedule
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Schedule
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Trading schedule only.
+  example: []
+  syntax:
+    content: public const string Schedule = "SCHEDULE"
+    return:
+      type: System.String
+    content.vb: Public Const Schedule As String = "SCHEDULE"
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

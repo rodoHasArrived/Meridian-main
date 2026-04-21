@@ -1,0 +1,157 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  id: Meridian.Application.Coordination
+  children:
+  - Meridian.Application.Coordination.ClusterCoordinatorService
+  - Meridian.Application.Coordination.CoordinationSnapshot
+  - Meridian.Application.Coordination.IClusterCoordinator
+  - Meridian.Application.Coordination.ICoordinationStore
+  - Meridian.Application.Coordination.ILeaseManager
+  - Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  - Meridian.Application.Coordination.ISubscriptionOwnershipService
+  - Meridian.Application.Coordination.LeadershipChangedEventArgs
+  - Meridian.Application.Coordination.LeaseAcquireResult
+  - Meridian.Application.Coordination.LeaseManager
+  - Meridian.Application.Coordination.LeaseRecord
+  - Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  - Meridian.Application.Coordination.SharedStorageCoordinationStore
+  - Meridian.Application.Coordination.SplitBrainDetector
+  - Meridian.Application.Coordination.SubscriptionOwnershipService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Coordination.ClusterCoordinatorService
+  commentId: T:Meridian.Application.Coordination.ClusterCoordinatorService
+  href: Meridian.Application.Coordination.ClusterCoordinatorService.html
+  name: ClusterCoordinatorService
+  nameWithType: ClusterCoordinatorService
+  fullName: Meridian.Application.Coordination.ClusterCoordinatorService
+- uid: Meridian.Application.Coordination.CoordinationSnapshot
+  commentId: T:Meridian.Application.Coordination.CoordinationSnapshot
+  href: Meridian.Application.Coordination.CoordinationSnapshot.html
+  name: CoordinationSnapshot
+  nameWithType: CoordinationSnapshot
+  fullName: Meridian.Application.Coordination.CoordinationSnapshot
+- uid: Meridian.Application.Coordination.LeadershipChangedEventArgs
+  commentId: T:Meridian.Application.Coordination.LeadershipChangedEventArgs
+  href: Meridian.Application.Coordination.LeadershipChangedEventArgs.html
+  name: LeadershipChangedEventArgs
+  nameWithType: LeadershipChangedEventArgs
+  fullName: Meridian.Application.Coordination.LeadershipChangedEventArgs
+- uid: Meridian.Application.Coordination.IClusterCoordinator
+  commentId: T:Meridian.Application.Coordination.IClusterCoordinator
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.IClusterCoordinator.html
+  name: IClusterCoordinator
+  nameWithType: IClusterCoordinator
+  fullName: Meridian.Application.Coordination.IClusterCoordinator
+- uid: Meridian.Application.Coordination.ICoordinationStore
+  commentId: T:Meridian.Application.Coordination.ICoordinationStore
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.ICoordinationStore.html
+  name: ICoordinationStore
+  nameWithType: ICoordinationStore
+  fullName: Meridian.Application.Coordination.ICoordinationStore
+- uid: Meridian.Application.Coordination.ILeaseManager
+  commentId: T:Meridian.Application.Coordination.ILeaseManager
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.ILeaseManager.html
+  name: ILeaseManager
+  nameWithType: ILeaseManager
+  fullName: Meridian.Application.Coordination.ILeaseManager
+- uid: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  commentId: T:Meridian.Application.Coordination.IScheduledWorkOwnershipService
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.IScheduledWorkOwnershipService.html
+  name: IScheduledWorkOwnershipService
+  nameWithType: IScheduledWorkOwnershipService
+  fullName: Meridian.Application.Coordination.IScheduledWorkOwnershipService
+- uid: Meridian.Application.Coordination.ISubscriptionOwnershipService
+  commentId: T:Meridian.Application.Coordination.ISubscriptionOwnershipService
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.ISubscriptionOwnershipService.html
+  name: ISubscriptionOwnershipService
+  nameWithType: ISubscriptionOwnershipService
+  fullName: Meridian.Application.Coordination.ISubscriptionOwnershipService
+- uid: Meridian.Application.Coordination.LeaseAcquireResult
+  commentId: T:Meridian.Application.Coordination.LeaseAcquireResult
+  href: Meridian.Application.Coordination.LeaseAcquireResult.html
+  name: LeaseAcquireResult
+  nameWithType: LeaseAcquireResult
+  fullName: Meridian.Application.Coordination.LeaseAcquireResult
+- uid: Meridian.Application.Coordination.LeaseManager
+  commentId: T:Meridian.Application.Coordination.LeaseManager
+  href: Meridian.Application.Coordination.LeaseManager.html
+  name: LeaseManager
+  nameWithType: LeaseManager
+  fullName: Meridian.Application.Coordination.LeaseManager
+- uid: Meridian.Application.Coordination.LeaseRecord
+  commentId: T:Meridian.Application.Coordination.LeaseRecord
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.LeaseRecord.html
+  name: LeaseRecord
+  nameWithType: LeaseRecord
+  fullName: Meridian.Application.Coordination.LeaseRecord
+- uid: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  commentId: T:Meridian.Application.Coordination.ScheduledWorkOwnershipService
+  href: Meridian.Application.Coordination.ScheduledWorkOwnershipService.html
+  name: ScheduledWorkOwnershipService
+  nameWithType: ScheduledWorkOwnershipService
+  fullName: Meridian.Application.Coordination.ScheduledWorkOwnershipService
+- uid: Meridian.Application.Coordination.SharedStorageCoordinationStore
+  commentId: T:Meridian.Application.Coordination.SharedStorageCoordinationStore
+  href: Meridian.Application.Coordination.SharedStorageCoordinationStore.html
+  name: SharedStorageCoordinationStore
+  nameWithType: SharedStorageCoordinationStore
+  fullName: Meridian.Application.Coordination.SharedStorageCoordinationStore
+- uid: Meridian.Application.Coordination.SplitBrainDetector
+  commentId: T:Meridian.Application.Coordination.SplitBrainDetector
+  href: Meridian.Application.Coordination.SplitBrainDetector.html
+  name: SplitBrainDetector
+  nameWithType: SplitBrainDetector
+  fullName: Meridian.Application.Coordination.SplitBrainDetector
+- uid: Meridian.Application.Coordination.SubscriptionOwnershipService
+  commentId: T:Meridian.Application.Coordination.SubscriptionOwnershipService
+  href: Meridian.Application.Coordination.SubscriptionOwnershipService.html
+  name: SubscriptionOwnershipService
+  nameWithType: SubscriptionOwnershipService
+  fullName: Meridian.Application.Coordination.SubscriptionOwnershipService
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  href: Meridian.html
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html

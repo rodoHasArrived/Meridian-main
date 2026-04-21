@@ -11,9 +11,9 @@ import {
   DialogTitle
 } from "@/components/ui/dialog";
 import { MetricCard } from "@/components/meridian/metric-card";
-import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionSessions, getPaperSessionDetail, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
+import { approvePromotion, cancelAllOrders, cancelOrder, closePosition, closePaperSession, createPaperSession, evaluatePromotion, getExecutionAudit, getExecutionSessions, getPaperSessionDetail, getPaperSessionReplayVerification, getPromotionHistory, getReplayFiles, getReplayStatus, pauseReplay, pauseStrategy, resumeReplay, seekReplay, setReplaySpeed as apiSetReplaySpeed, startReplay, stopReplay, stopStrategy, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { OrderSubmitRequest, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, OrderSubmitRequest, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, ReplayFileRecord, ReplayStatus, TradingActionResult, TradingWorkspaceResponse } from "@/types";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -156,7 +156,9 @@ export function TradingScreen({ data }: TradingScreenProps) {
   // --- Strategy lifecycle ---
   const [strategyId, setStrategyId] = useState("");
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-  const [sessionDetail, setSessionDetail] = useState<string | null>(null);
+  const [selectedSessionDetail, setSelectedSessionDetail] = useState<PaperSessionDetail | null>(null);
+  const [sessionReplayVerification, setSessionReplayVerification] = useState<PaperSessionReplayVerification | null>(null);
+  const [executionAudit, setExecutionAudit] = useState<ExecutionAuditEntry[]>([]);
 
   const [replayFiles, setReplayFiles] = useState<ReplayFileRecord[]>([]);
   const [selectedReplayFile, setSelectedReplayFile] = useState("");
@@ -171,6 +173,15 @@ export function TradingScreen({ data }: TradingScreenProps) {
   const [promotionError, setPromotionError] = useState<string | null>(null);
   const [promotionBusy, setPromotionBusy] = useState(false);
   const [promotionResult, setPromotionResult] = useState<string | null>(null);
+
+  async function refreshExecutionAudit() {
+    try {
+      const entries = await getExecutionAudit(8);
+      setExecutionAudit(entries);
+    } catch {
+      setExecutionAudit([]);
+    }
+  }
 
   useEffect(() => {
     getExecutionSessions()
@@ -187,6 +198,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
     getPromotionHistory()
       .then(setPromotionHistory)
       .catch(() => { /* history unavailable */ });
+    void refreshExecutionAudit();
   }, []);
 
   async function handleSubmitOrder(e: React.FormEvent) {
@@ -232,8 +244,27 @@ export function TradingScreen({ data }: TradingScreenProps) {
   async function handleCloseSession(sessionId: string) {
     setSessionError(null);
     try {
-      await closePaperSession(sessionId);
-      setSessions((prev) => prev.map((s) => s.sessionId === sessionId ? { ...s, status: "Closed" } : s));
+      const result = await closePaperSession(sessionId);
+      setSessions((prev) => prev.map((session) => (
+        session.sessionId === sessionId
+          ? { ...session, closedAt: result.occurredAt, isActive: false }
+          : session
+      )));
+      setSelectedSessionDetail((prev) => {
+        if (!prev || prev.summary.sessionId !== sessionId) {
+          return prev;
+        }
+
+        return {
+          ...prev,
+          summary: {
+            ...prev.summary,
+            closedAt: result.occurredAt,
+            isActive: false
+          }
+        };
+      });
+      await refreshExecutionAudit();
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to close session.");
     }
@@ -244,9 +275,26 @@ export function TradingScreen({ data }: TradingScreenProps) {
     try {
       const detail = await getPaperSessionDetail(sessionId);
       setSelectedSessionId(sessionId);
-      setSessionDetail(`Restored ${detail.sessionId} · ${detail.strategyId} · ${detail.status}`);
+      setSelectedSessionDetail(detail);
+      setSessionReplayVerification(null);
     } catch (err) {
       setSessionError(err instanceof Error ? err.message : "Failed to restore session.");
+    }
+  }
+
+  async function handleVerifySessionReplay(sessionId: string) {
+    setSessionError(null);
+    try {
+      const [detail, verification] = await Promise.all([
+        getPaperSessionDetail(sessionId),
+        getPaperSessionReplayVerification(sessionId)
+      ]);
+      setSelectedSessionId(sessionId);
+      setSelectedSessionDetail(detail);
+      setSessionReplayVerification(verification);
+      await refreshExecutionAudit();
+    } catch (err) {
+      setSessionError(err instanceof Error ? err.message : "Failed to verify session replay.");
     }
   }
 
@@ -270,7 +318,7 @@ export function TradingScreen({ data }: TradingScreenProps) {
       if (action === "resume") await resumeReplay(replayStatus.sessionId);
       if (action === "stop") await stopReplay(replayStatus.sessionId);
       if (action === "seek") await seekReplay(replayStatus.sessionId, Number(seekMs) || 0);
-      if (action === "speed") await setReplaySpeed(replayStatus.sessionId, Number(replaySpeed) || 1);
+      if (action === "speed") await apiSetReplaySpeed(replayStatus.sessionId, Number(replaySpeed) || 1);
       if (action === "stop") {
         setReplayStatus(null);
       } else {
@@ -765,14 +813,17 @@ export function TradingScreen({ data }: TradingScreenProps) {
                     <div className="min-w-0 flex-1">
                       <div className="font-mono text-sm text-foreground truncate">{session.sessionId}</div>
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        {session.strategyId} · ${session.initialCash.toLocaleString()} · {session.status}
+                        {session.strategyId} · {formatUsd(session.initialCash)} · {getSessionStatus(session)}
                       </div>
                     </div>
                     <div className="ml-4 flex shrink-0 gap-2">
                       <Button size="sm" variant="outline" onClick={() => handleRestoreSession(session.sessionId)}>
                         Restore
                       </Button>
-                      {session.status !== "Closed" && (
+                      <Button size="sm" variant="outline" onClick={() => handleVerifySessionReplay(session.sessionId)}>
+                        Verify replay
+                      </Button>
+                      {session.isActive && (
                         <Button
                           size="sm"
                           variant="outline"
@@ -787,11 +838,101 @@ export function TradingScreen({ data }: TradingScreenProps) {
               </div>
             )}
             {selectedSessionId && (
-              <p className="mt-3 text-xs text-muted-foreground">Active session: {selectedSessionId}</p>
+              <p className="mt-3 text-xs text-muted-foreground">Selected session: {selectedSessionId}</p>
             )}
-            {sessionDetail && (
-              <p className="mt-1 text-xs text-success">{sessionDetail}</p>
+            {selectedSessionDetail && (
+              <div className="mt-4 space-y-3 rounded-lg border border-border/70 bg-background/70 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Session detail</p>
+                    <p className="mt-1 font-mono text-sm text-foreground">{selectedSessionDetail.summary.sessionId}</p>
+                  </div>
+                  <span
+                    className={cn(
+                      "rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em]",
+                      selectedSessionDetail.summary.isActive
+                        ? "bg-success/10 text-success"
+                        : "bg-secondary text-muted-foreground"
+                    )}
+                  >
+                    {getSessionStatus(selectedSessionDetail.summary)}
+                  </span>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <SessionInfoRow label="Strategy" value={selectedSessionDetail.summary.strategyId} />
+                  <SessionInfoRow label="Initial cash" value={formatUsd(selectedSessionDetail.summary.initialCash)} />
+                  <SessionInfoRow
+                    label="Tracked symbols"
+                    value={selectedSessionDetail.symbols.length > 0 ? selectedSessionDetail.symbols.join(", ") : "None"}
+                  />
+                  <SessionInfoRow
+                    label="Orders retained"
+                    value={String(selectedSessionDetail.orderHistory?.length ?? 0)}
+                  />
+                </div>
+
+                {selectedSessionDetail.portfolio && (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <SessionMetric label="Cash" value={formatUsd(selectedSessionDetail.portfolio.cash)} />
+                    <SessionMetric label="Portfolio value" value={formatUsd(selectedSessionDetail.portfolio.portfolioValue)} />
+                    <SessionMetric label="Open positions" value={String(selectedSessionDetail.portfolio.positions.length)} />
+                  </div>
+                )}
+
+                {sessionReplayVerification && sessionReplayVerification.summary.sessionId === selectedSessionDetail.summary.sessionId && (
+                  <div
+                    className={cn(
+                      "rounded-lg border px-3 py-3 text-sm",
+                      sessionReplayVerification.isConsistent
+                        ? "border-success/30 bg-success/10"
+                        : "border-warning/30 bg-warning/10"
+                    )}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="font-semibold text-foreground">Replay verification</span>
+                      <span className={sessionReplayVerification.isConsistent ? "text-success" : "text-warning"}>
+                        {sessionReplayVerification.isConsistent ? "Matched current state" : "Mismatch detected"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Source: {sessionReplayVerification.replaySource} · Verified at {sessionReplayVerification.verifiedAt}
+                    </p>
+                    {sessionReplayVerification.mismatchReasons.length > 0 && (
+                      <ul className="mt-2 space-y-1 text-xs text-foreground">
+                        {sessionReplayVerification.mismatchReasons.slice(0, 3).map((reason) => (
+                          <li key={reason}>• {reason}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )}
+              </div>
             )}
+            <div className="mt-4 rounded-lg border border-border/70 bg-secondary/20 p-4">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Recent execution audit</p>
+              {executionAudit.length === 0 ? (
+                <p className="text-xs text-muted-foreground">No execution audit entries available.</p>
+              ) : (
+                <div className="space-y-2">
+                  {executionAudit.map((entry) => (
+                    <div key={entry.auditId} className="rounded-lg border border-border/60 bg-background/70 px-3 py-2">
+                      <div className="flex items-center justify-between gap-3 text-xs">
+                        <span className="font-semibold text-foreground">{entry.action}</span>
+                        <span className="font-mono text-muted-foreground">{entry.outcome}</span>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {entry.message ?? "No operator message recorded."}
+                      </p>
+                      <p className="mt-1 font-mono text-[11px] text-muted-foreground">
+                        {entry.occurredAt}
+                        {entry.metadata?.sessionId ? ` · session ${entry.metadata.sessionId}` : ""}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -950,6 +1091,36 @@ function actionCopy(action: ConfirmActionType): string {
     case "stop-strategy":
       return "The strategy will be stopped and its session will be closed. Open positions remain until manually flattened.";
   }
+}
+
+function getSessionStatus(session: PaperSessionSummary): string {
+  return session.isActive ? "Active" : "Closed";
+}
+
+function formatUsd(value: number): string {
+  return value.toLocaleString(undefined, {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2
+  });
+}
+
+function SessionInfoRow({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+      <div className="mt-1 font-mono text-sm text-foreground">{value ?? "Unavailable"}</div>
+    </div>
+  );
+}
+
+function SessionMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-border/60 bg-secondary/20 px-3 py-2">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
+      <div className="mt-1 font-mono text-sm text-foreground">{value}</div>
+    </div>
+  );
 }
 
 function ConfirmActionDialog({

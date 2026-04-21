@@ -1,0 +1,1186 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  commentId: T:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  id: MetadataEnrichmentService
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.#ctor(System.String,Serilog.ILogger)
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.CategorizeMarketCap(System.Decimal)
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.FilterSymbolsAsync(Meridian.Application.Subscriptions.Models.SymbolMetadataFilter,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableIndustriesAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableSectorsAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataBatchAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataAsync(Meridian.Application.Subscriptions.Models.SymbolMetadata,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataBatchAsync(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolMetadata},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: MetadataEnrichmentService
+  nameWithType: MetadataEnrichmentService
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MetadataEnrichmentService
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Service for enriching symbols with metadata (industry, sector, market cap).
+
+    Provides filtering capabilities based on symbol metadata.
+  example: []
+  syntax:
+    content: public sealed class MetadataEnrichmentService
+    content.vb: Public NotInheritable Class MetadataEnrichmentService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.#ctor(System.String,Serilog.ILogger)
+  commentId: M:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.#ctor(System.String,Serilog.ILogger)
+  id: '#ctor(System.String,Serilog.ILogger)'
+  parent: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  langs:
+  - csharp
+  - vb
+  name: MetadataEnrichmentService(string?, ILogger?)
+  nameWithType: MetadataEnrichmentService.MetadataEnrichmentService(string?, ILogger?)
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.MetadataEnrichmentService(string?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public MetadataEnrichmentService(string? cachePath = null, ILogger? log = null)
+    parameters:
+    - id: cachePath
+      type: System.String
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(cachePath As String = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.#ctor*
+  nameWithType.vb: MetadataEnrichmentService.New(String, ILogger)
+  fullName.vb: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.New(String, Serilog.ILogger)
+  name.vb: New(String, ILogger)
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataAsync(System.String,System.Threading.CancellationToken)
+  id: GetMetadataAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  langs:
+  - csharp
+  - vb
+  name: GetMetadataAsync(string, CancellationToken)
+  nameWithType: MetadataEnrichmentService.GetMetadataAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMetadataAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get metadata for a specific symbol.
+  example: []
+  syntax:
+    content: public Task<SymbolMetadata?> GetMetadataAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolMetadata}
+    content.vb: Public Function GetMetadataAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of SymbolMetadata)
+  overload: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataAsync*
+  nameWithType.vb: MetadataEnrichmentService.GetMetadataAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataAsync(String, System.Threading.CancellationToken)
+  name.vb: GetMetadataAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataBatchAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataBatchAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  id: GetMetadataBatchAsync(System.Collections.Generic.IEnumerable{System.String},System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  langs:
+  - csharp
+  - vb
+  name: GetMetadataBatchAsync(IEnumerable<string>, CancellationToken)
+  nameWithType: MetadataEnrichmentService.GetMetadataBatchAsync(IEnumerable<string>, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataBatchAsync(System.Collections.Generic.IEnumerable<string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMetadataBatchAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get metadata for multiple symbols.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyDictionary<string, SymbolMetadata>> GetMetadataBatchAsync(IEnumerable<string> symbols, CancellationToken ct = default)
+    parameters:
+    - id: symbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Application.Subscriptions.Models.SymbolMetadata}}
+    content.vb: Public Function GetMetadataBatchAsync(symbols As IEnumerable(Of String), ct As CancellationToken = Nothing) As Task(Of IReadOnlyDictionary(Of String, SymbolMetadata))
+  overload: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataBatchAsync*
+  nameWithType.vb: MetadataEnrichmentService.GetMetadataBatchAsync(IEnumerable(Of String), CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataBatchAsync(System.Collections.Generic.IEnumerable(Of String), System.Threading.CancellationToken)
+  name.vb: GetMetadataBatchAsync(IEnumerable(Of String), CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.FilterSymbolsAsync(Meridian.Application.Subscriptions.Models.SymbolMetadataFilter,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.FilterSymbolsAsync(Meridian.Application.Subscriptions.Models.SymbolMetadataFilter,System.Threading.CancellationToken)
+  id: FilterSymbolsAsync(Meridian.Application.Subscriptions.Models.SymbolMetadataFilter,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  langs:
+  - csharp
+  - vb
+  name: FilterSymbolsAsync(SymbolMetadataFilter, CancellationToken)
+  nameWithType: MetadataEnrichmentService.FilterSymbolsAsync(SymbolMetadataFilter, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.FilterSymbolsAsync(Meridian.Application.Subscriptions.Models.SymbolMetadataFilter, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilterSymbolsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Filter symbols based on metadata criteria.
+  example: []
+  syntax:
+    content: public Task<MetadataFilterResult> FilterSymbolsAsync(SymbolMetadataFilter filter, CancellationToken ct = default)
+    parameters:
+    - id: filter
+      type: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.MetadataFilterResult}
+    content.vb: Public Function FilterSymbolsAsync(filter As SymbolMetadataFilter, ct As CancellationToken = Nothing) As Task(Of MetadataFilterResult)
+  overload: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.FilterSymbolsAsync*
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableSectorsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableSectorsAsync(System.Threading.CancellationToken)
+  id: GetAvailableSectorsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  langs:
+  - csharp
+  - vb
+  name: GetAvailableSectorsAsync(CancellationToken)
+  nameWithType: MetadataEnrichmentService.GetAvailableSectorsAsync(CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableSectorsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAvailableSectorsAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get available sectors from cached metadata.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<string>> GetAvailableSectorsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+    content.vb: Public Function GetAvailableSectorsAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of String))
+  overload: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableSectorsAsync*
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableIndustriesAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableIndustriesAsync(System.String,System.Threading.CancellationToken)
+  id: GetAvailableIndustriesAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  langs:
+  - csharp
+  - vb
+  name: GetAvailableIndustriesAsync(string?, CancellationToken)
+  nameWithType: MetadataEnrichmentService.GetAvailableIndustriesAsync(string?, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableIndustriesAsync(string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAvailableIndustriesAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get available industries from cached metadata.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<string>> GetAvailableIndustriesAsync(string? sector = null, CancellationToken ct = default)
+    parameters:
+    - id: sector
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+    content.vb: Public Function GetAvailableIndustriesAsync(sector As String = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of String))
+  overload: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableIndustriesAsync*
+  nameWithType.vb: MetadataEnrichmentService.GetAvailableIndustriesAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableIndustriesAsync(String, System.Threading.CancellationToken)
+  name.vb: GetAvailableIndustriesAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataAsync(Meridian.Application.Subscriptions.Models.SymbolMetadata,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataAsync(Meridian.Application.Subscriptions.Models.SymbolMetadata,System.Threading.CancellationToken)
+  id: UpdateMetadataAsync(Meridian.Application.Subscriptions.Models.SymbolMetadata,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  langs:
+  - csharp
+  - vb
+  name: UpdateMetadataAsync(SymbolMetadata, CancellationToken)
+  nameWithType: MetadataEnrichmentService.UpdateMetadataAsync(SymbolMetadata, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataAsync(Meridian.Application.Subscriptions.Models.SymbolMetadata, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateMetadataAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Update metadata for a symbol.
+  example: []
+  syntax:
+    content: public Task UpdateMetadataAsync(SymbolMetadata metadata, CancellationToken ct = default)
+    parameters:
+    - id: metadata
+      type: Meridian.Application.Subscriptions.Models.SymbolMetadata
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateMetadataAsync(metadata As SymbolMetadata, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataAsync*
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataBatchAsync(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolMetadata},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataBatchAsync(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolMetadata},System.Threading.CancellationToken)
+  id: UpdateMetadataBatchAsync(System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolMetadata},System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  langs:
+  - csharp
+  - vb
+  name: UpdateMetadataBatchAsync(IEnumerable<SymbolMetadata>, CancellationToken)
+  nameWithType: MetadataEnrichmentService.UpdateMetadataBatchAsync(IEnumerable<SymbolMetadata>, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataBatchAsync(System.Collections.Generic.IEnumerable<Meridian.Application.Subscriptions.Models.SymbolMetadata>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateMetadataBatchAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Update metadata for multiple symbols.
+  example: []
+  syntax:
+    content: public Task UpdateMetadataBatchAsync(IEnumerable<SymbolMetadata> metadataList, CancellationToken ct = default)
+    parameters:
+    - id: metadataList
+      type: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolMetadata}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function UpdateMetadataBatchAsync(metadataList As IEnumerable(Of SymbolMetadata), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataBatchAsync*
+  nameWithType.vb: MetadataEnrichmentService.UpdateMetadataBatchAsync(IEnumerable(Of SymbolMetadata), CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataBatchAsync(System.Collections.Generic.IEnumerable(Of Meridian.Application.Subscriptions.Models.SymbolMetadata), System.Threading.CancellationToken)
+  name.vb: UpdateMetadataBatchAsync(IEnumerable(Of SymbolMetadata), CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.CategorizeMarketCap(System.Decimal)
+  commentId: M:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.CategorizeMarketCap(System.Decimal)
+  id: CategorizeMarketCap(System.Decimal)
+  parent: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService
+  langs:
+  - csharp
+  - vb
+  name: CategorizeMarketCap(decimal)
+  nameWithType: MetadataEnrichmentService.CategorizeMarketCap(decimal)
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.CategorizeMarketCap(decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CategorizeMarketCap
+    path: ../../src/Meridian.Application/Subscriptions/Services/MetadataEnrichmentService.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Categorize market cap value.
+  example: []
+  syntax:
+    content: public static MarketCapCategory CategorizeMarketCap(decimal marketCap)
+    parameters:
+    - id: marketCap
+      type: System.Decimal
+    return:
+      type: Meridian.Application.Subscriptions.Models.MarketCapCategory
+    content.vb: Public Shared Function CategorizeMarketCap(marketCap As Decimal) As MarketCapCategory
+  overload: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.CategorizeMarketCap*
+  nameWithType.vb: MetadataEnrichmentService.CategorizeMarketCap(Decimal)
+  fullName.vb: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.CategorizeMarketCap(Decimal)
+  name.vb: CategorizeMarketCap(Decimal)
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.#ctor
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html#Meridian_Application_Subscriptions_Services_MetadataEnrichmentService__ctor_System_String_Serilog_ILogger_
+  name: MetadataEnrichmentService
+  nameWithType: MetadataEnrichmentService.MetadataEnrichmentService
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.MetadataEnrichmentService
+  nameWithType.vb: MetadataEnrichmentService.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataAsync
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html#Meridian_Application_Subscriptions_Services_MetadataEnrichmentService_GetMetadataAsync_System_String_System_Threading_CancellationToken_
+  name: GetMetadataAsync
+  nameWithType: MetadataEnrichmentService.GetMetadataAsync
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolMetadata}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolMetadata}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolMetadata>
+  nameWithType: Task<SymbolMetadata>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.SymbolMetadata>
+  nameWithType.vb: Task(Of SymbolMetadata)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.SymbolMetadata)
+  name.vb: Task(Of SymbolMetadata)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolMetadata
+    name: SymbolMetadata
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolMetadata
+    name: SymbolMetadata
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataBatchAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataBatchAsync
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html#Meridian_Application_Subscriptions_Services_MetadataEnrichmentService_GetMetadataBatchAsync_System_Collections_Generic_IEnumerable_System_String__System_Threading_CancellationToken_
+  name: GetMetadataBatchAsync
+  nameWithType: MetadataEnrichmentService.GetMetadataBatchAsync
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetMetadataBatchAsync
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Application.Subscriptions.Models.SymbolMetadata}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Application.Subscriptions.Models.SymbolMetadata}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyDictionary<string, SymbolMetadata>>
+  nameWithType: Task<IReadOnlyDictionary<string, SymbolMetadata>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Application.Subscriptions.Models.SymbolMetadata>>
+  nameWithType.vb: Task(Of IReadOnlyDictionary(Of String, SymbolMetadata))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Application.Subscriptions.Models.SymbolMetadata))
+  name.vb: Task(Of IReadOnlyDictionary(Of String, SymbolMetadata))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolMetadata
+    name: SymbolMetadata
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolMetadata
+    name: SymbolMetadata
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.FilterSymbolsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.FilterSymbolsAsync
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html#Meridian_Application_Subscriptions_Services_MetadataEnrichmentService_FilterSymbolsAsync_Meridian_Application_Subscriptions_Models_SymbolMetadataFilter_System_Threading_CancellationToken_
+  name: FilterSymbolsAsync
+  nameWithType: MetadataEnrichmentService.FilterSymbolsAsync
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.FilterSymbolsAsync
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  commentId: T:Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter.html
+  name: SymbolMetadataFilter
+  nameWithType: SymbolMetadataFilter
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadataFilter
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.MetadataFilterResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.MetadataFilterResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MetadataFilterResult>
+  nameWithType: Task<MetadataFilterResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.MetadataFilterResult>
+  nameWithType.vb: Task(Of MetadataFilterResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.MetadataFilterResult)
+  name.vb: Task(Of MetadataFilterResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.MetadataFilterResult
+    name: MetadataFilterResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.MetadataFilterResult
+    name: MetadataFilterResult
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableSectorsAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableSectorsAsync
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html#Meridian_Application_Subscriptions_Services_MetadataEnrichmentService_GetAvailableSectorsAsync_System_Threading_CancellationToken_
+  name: GetAvailableSectorsAsync
+  nameWithType: MetadataEnrichmentService.GetAvailableSectorsAsync
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableSectorsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<string>>
+  nameWithType: Task<IReadOnlyList<string>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<string>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of String))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of String))
+  name.vb: Task(Of IReadOnlyList(Of String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableIndustriesAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableIndustriesAsync
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html#Meridian_Application_Subscriptions_Services_MetadataEnrichmentService_GetAvailableIndustriesAsync_System_String_System_Threading_CancellationToken_
+  name: GetAvailableIndustriesAsync
+  nameWithType: MetadataEnrichmentService.GetAvailableIndustriesAsync
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.GetAvailableIndustriesAsync
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataAsync
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html#Meridian_Application_Subscriptions_Services_MetadataEnrichmentService_UpdateMetadataAsync_Meridian_Application_Subscriptions_Models_SymbolMetadata_System_Threading_CancellationToken_
+  name: UpdateMetadataAsync
+  nameWithType: MetadataEnrichmentService.UpdateMetadataAsync
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataAsync
+- uid: Meridian.Application.Subscriptions.Models.SymbolMetadata
+  commentId: T:Meridian.Application.Subscriptions.Models.SymbolMetadata
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.SymbolMetadata.html
+  name: SymbolMetadata
+  nameWithType: SymbolMetadata
+  fullName: Meridian.Application.Subscriptions.Models.SymbolMetadata
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataBatchAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataBatchAsync
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html#Meridian_Application_Subscriptions_Services_MetadataEnrichmentService_UpdateMetadataBatchAsync_System_Collections_Generic_IEnumerable_Meridian_Application_Subscriptions_Models_SymbolMetadata__System_Threading_CancellationToken_
+  name: UpdateMetadataBatchAsync
+  nameWithType: MetadataEnrichmentService.UpdateMetadataBatchAsync
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.UpdateMetadataBatchAsync
+- uid: System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolMetadata}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Application.Subscriptions.Models.SymbolMetadata}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<SymbolMetadata>
+  nameWithType: IEnumerable<SymbolMetadata>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Application.Subscriptions.Models.SymbolMetadata>
+  nameWithType.vb: IEnumerable(Of SymbolMetadata)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Application.Subscriptions.Models.SymbolMetadata)
+  name.vb: IEnumerable(Of SymbolMetadata)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolMetadata
+    name: SymbolMetadata
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolMetadata
+    name: SymbolMetadata
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.CategorizeMarketCap*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.CategorizeMarketCap
+  href: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.html#Meridian_Application_Subscriptions_Services_MetadataEnrichmentService_CategorizeMarketCap_System_Decimal_
+  name: CategorizeMarketCap
+  nameWithType: MetadataEnrichmentService.CategorizeMarketCap
+  fullName: Meridian.Application.Subscriptions.Services.MetadataEnrichmentService.CategorizeMarketCap
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Application.Subscriptions.Models.MarketCapCategory
+  commentId: T:Meridian.Application.Subscriptions.Models.MarketCapCategory
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.MarketCapCategory.html
+  name: MarketCapCategory
+  nameWithType: MarketCapCategory
+  fullName: Meridian.Application.Subscriptions.Models.MarketCapCategory

@@ -1,11 +1,12 @@
-import { BarChart3, DatabaseZap, Landmark, RadioTower, Search } from "lucide-react";
+import { BarChart3, DatabaseZap, FlaskConical, Landmark, LayoutDashboard, RadioTower } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { WORKSPACES, workspacePath } from "@/lib/workspace";
 import type { WorkspaceKey } from "@/types";
 
-const icons: Record<WorkspaceKey, typeof Search> = {
-  research: Search,
+const icons: Record<WorkspaceKey, typeof LayoutDashboard> = {
+  overview: LayoutDashboard,
+  research: FlaskConical,
   trading: RadioTower,
   "data-operations": DatabaseZap,
   governance: Landmark
@@ -13,6 +14,13 @@ const icons: Record<WorkspaceKey, typeof Search> = {
 
 export function WorkspaceNav() {
   const location = useLocation();
+
+  function isActive(key: WorkspaceKey) {
+    const path = workspacePath(key);
+    if (key === "overview") return location.pathname === "/overview";
+    if (key === "research") return location.pathname === "/";
+    return location.pathname.startsWith(path);
+  }
 
   return (
     <aside className="panel-surface-strong flex min-h-[calc(100vh-3rem)] w-full flex-col gap-8 p-5 lg:w-[320px]">
@@ -37,7 +45,7 @@ export function WorkspaceNav() {
       <nav className="space-y-2" aria-label="Workspaces">
         {WORKSPACES.map((workspace) => {
           const Icon = icons[workspace.key];
-          const active = location.pathname === workspacePath(workspace.key);
+          const active = isActive(workspace.key);
           return (
             <Link
               key={workspace.key}
@@ -60,13 +68,11 @@ export function WorkspaceNav() {
       </nav>
 
       <div className="mt-auto rounded-2xl border border-border bg-secondary/45 px-4 py-5 text-sm text-slate-50">
-        <div className="eyebrow-label">Wave 2 Delivery</div>
-        <div className="mt-3 font-semibold text-foreground">Paper cockpit, promotion workflow, all four lanes live</div>
+        <div className="eyebrow-label">Wave 3 Delivery</div>
+        <div className="mt-3 font-semibold text-foreground">Overview dashboard, symbol management, quality monitoring</div>
         <p className="mt-2 leading-6 text-muted-foreground">
-          All four workspaces are active. Promotion evaluation and order entry are wired to{" "}
-          <code className="rounded bg-black/20 px-1 py-0.5 text-xs text-foreground">/api/promotion/*</code>
-          {" "}and{" "}
-          <code className="rounded bg-black/20 px-1 py-0.5 text-xs text-foreground">/api/execution/*</code>.
+          System overview with live health status, symbol subscription management, and per-symbol data quality monitoring
+          now available across all five workspaces.
         </p>
       </div>
     </aside>

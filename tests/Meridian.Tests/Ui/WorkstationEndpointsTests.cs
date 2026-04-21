@@ -4,10 +4,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
-using Meridian.Application.UI;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
+using Meridian.Execution.Sdk;
 using Meridian.Ledger;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
@@ -32,6 +32,7 @@ public sealed class WorkstationEndpointsTests
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         Converters = { new JsonStringEnumConverter() }
     };
+
     [Fact]
     public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnServiceBackedBootstrapPayloads()
     {
@@ -130,6 +131,102 @@ public sealed class WorkstationEndpointsTests
         runs.GetArrayLength().Should().Be(1);
         runs[0].GetProperty("id").GetString().Should().Be("run-research-001");
         runs[0].GetProperty("strategyName").GetString().Should().Be("Mean Reversion FX");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithStrategyReadService_ShouldReturnTypedResearchBriefing()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-latest",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/fx/spot",
+            feedReference: "synthetic:fx"));
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-prior",
+            strategyId: "meanrev-1",
+            strategyName: "Mean Reversion",
+            runType: RunType.Backtest,
+            startedAt: new DateTimeOffset(2026, 3, 21, 14, 0, 0, TimeSpan.Zero),
+            datasetReference: "dataset/us/equities",
+            feedReference: "synthetic:equities"));
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/research/briefing");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+
+        briefing.Should().NotBeNull();
+        briefing!.Workspace.TotalRuns.Should().Be(2);
+        briefing.Workspace.LatestRunId.Should().Be("run-latest");
+        briefing.Workspace.HasLedgerCoverage.Should().BeTrue();
+        briefing.InsightFeed.Widgets.Should().HaveCount(2);
+        briefing.RecentRuns.Should().HaveCount(2);
+        briefing.RecentRuns[0].RunId.Should().Be("run-latest");
+        briefing.RecentRuns[0].DrillIn.Continuity.Should().Be("/api/workstation/runs/run-latest/continuity");
+        briefing.SavedComparisons.Should().NotBeEmpty();
+        briefing.Alerts.Should().NotBeEmpty();
+        briefing.Watchlists.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_WithoutStrategyReadService_ShouldReturnFallbackResearchBriefing()
+    {
+        await using var app = await CreateAppAsync();
+        var client = app.GetTestClient();
+
+        var response = await client.GetAsync("/api/workstation/research/briefing");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var briefing = await response.Content.ReadFromJsonAsync<ResearchBriefingDto>(ServerJsonOptions);
+
+        briefing.Should().NotBeNull();
+        briefing!.Workspace.TotalRuns.Should().Be(24);
+        briefing.Workspace.LatestRunId.Should().Be("run-research-001");
+        briefing.InsightFeed.Widgets.Should().HaveCount(3);
+        briefing.Watchlists.Should().HaveCount(2);
+        briefing.RecentRuns.Should().ContainSingle(run => run.RunId == "run-research-001");
+        briefing.Alerts.Should().NotBeEmpty();
+        briefing.WhatChanged.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_TradingPayload_ShouldSurfacePaperGatewayBrokerGap()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton(new BrokerageConfiguration
+            {
+                Gateway = "paper",
+                LiveExecutionEnabled = true
+            });
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-paper-live-review",
+            strategyId: "carry-1",
+            strategyName: "Carry Pair",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero)));
+
+        var client = app.GetTestClient();
+        using var trading = await ReadJsonAsync(client, "/api/workstation/trading");
+
+        var brokerage = trading.RootElement.GetProperty("brokerage");
+        brokerage.GetProperty("provider").GetString().Should().Be("Paper trading");
+        brokerage.GetProperty("notes").GetString().Should().Contain("blocked");
+        brokerage.GetProperty("notes").GetString().Should().Contain("paper trading");
     }
 
     [Fact]
@@ -433,6 +530,140 @@ public sealed class WorkstationEndpointsTests
         created.Breaks.Should().Contain(breakRow =>
             breakRow.Category == ReconciliationBreakCategory.AmountMismatch ||
             breakRow.Category == ReconciliationBreakCategory.MissingLedgerCoverage);
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueRoute_ShouldHydrateQueueWithoutGovernanceBootstrap()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-break-queue-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/reconciliation/break-queue");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var queue = await response.Content.ReadFromJsonAsync<List<ReconciliationBreakQueueItem>>(ServerJsonOptions);
+        queue.Should().NotBeNull();
+        queue!.Should().Contain(item =>
+            item.RunId == runId &&
+            reconciliation!.Breaks.Any(reconciliationBreak => item.BreakId == $"{runId}:{reconciliationBreak.CheckId}"));
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_BreakQueueReviewRoute_ShouldHydrateQueueWithoutListBootstrap()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var runId = $"run-break-review-{Guid.NewGuid():N}";
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildReconciliationMismatchRun(runId));
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        var reconciliation = await reconciliationService.RunAsync(new ReconciliationRunRequest(runId));
+        reconciliation.Should().NotBeNull();
+
+        var breakId = $"{runId}:{reconciliation!.Breaks[0].CheckId}";
+        var client = app.GetTestClient();
+        var response = await client.PostAsJsonAsync(
+            $"/api/workstation/reconciliation/break-queue/{breakId}/review",
+            new ReviewReconciliationBreakRequest(
+                BreakId: breakId,
+                AssignedTo: "ops-review",
+                ReviewedBy: "qa-review",
+                ReviewNote: "Investigating the mismatch."));
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var updated = await response.Content.ReadFromJsonAsync<ReconciliationBreakQueueItem>(ServerJsonOptions);
+        updated.Should().NotBeNull();
+        updated!.RunId.Should().Be(runId);
+        updated.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+        updated.AssignedTo.Should().Be("ops-review");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_RunContinuityRoute_ShouldReturnSharedContinuityPayload()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var store = app.Services.GetRequiredService<IStrategyRepository>();
+        await store.RecordRunAsync(BuildContinuityRun("run-continuity"));
+        await store.RecordRunAsync(BuildRun(
+            runId: "run-continuity-paper",
+            strategyId: "recon-strategy",
+            strategyName: "Reconciliation Strategy",
+            runType: RunType.Paper,
+            startedAt: new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero)) with
+        {
+            ParentRunId = "run-continuity",
+            FundProfileId = "alpha-credit",
+            FundDisplayName = "Alpha Credit"
+        });
+
+        var reconciliationService = app.Services.GetRequiredService<IReconciliationRunService>();
+        await reconciliationService.RunAsync(new ReconciliationRunRequest("run-continuity"));
+
+        var client = app.GetTestClient();
+        using var continuity = await ReadJsonAsync(client, "/api/workstation/runs/run-continuity/continuity");
+
+        continuity.RootElement.GetProperty("run").GetProperty("summary").GetProperty("runId").GetString().Should().Be("run-continuity");
+        continuity.RootElement.GetProperty("run").GetProperty("summary").GetProperty("fundProfileId").GetString().Should().Be("alpha-credit");
+        continuity.RootElement.GetProperty("lineage").GetProperty("childRuns").GetArrayLength().Should().Be(1);
+        continuity.RootElement.GetProperty("lineage").GetProperty("childRuns")[0].GetProperty("runId").GetString().Should().Be("run-continuity-paper");
+        continuity.RootElement.GetProperty("cashFlow").GetProperty("totalEntries").GetInt32().Should().Be(3);
+        continuity.RootElement.GetProperty("cashFlow").GetProperty("projectedNetPosition").GetDecimal().Should().Be(-376m);
+        continuity.RootElement.GetProperty("reconciliation").GetProperty("runId").GetString().Should().Be("run-continuity");
+        continuity.RootElement.GetProperty("continuityStatus").GetProperty("hasCashFlow").GetBoolean().Should().BeTrue();
+        continuity.RootElement.GetProperty("continuityStatus").GetProperty("hasReconciliation").GetBoolean().Should().BeTrue();
+        continuity.RootElement
+            .GetProperty("continuityStatus")
+            .GetProperty("warnings")
+            .EnumerateArray()
+            .Select(static warning => warning.GetProperty("code").GetString())
+            .Should()
+            .Contain("security-coverage");
+    }
+
+    [Fact]
+    public async Task MapWorkstationEndpoints_RunContinuityRoute_ShouldReturnNotFoundForMissingRun()
+    {
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterRunReadServices(services);
+            services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+            services.AddSingleton<ReconciliationProjectionService>();
+            services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        });
+
+        var client = app.GetTestClient();
+        var response = await client.GetAsync("/api/workstation/runs/no-such-run/continuity");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     [Fact]
@@ -765,6 +996,11 @@ public sealed class WorkstationEndpointsTests
         services.AddSingleton<PortfolioReadService>();
         services.AddSingleton<LedgerReadService>();
         services.AddSingleton<StrategyRunReadService>();
+        services.AddSingleton<IReconciliationRunRepository, InMemoryReconciliationRunRepository>();
+        services.AddSingleton<ReconciliationProjectionService>();
+        services.AddSingleton<IReconciliationRunService, ReconciliationRunService>();
+        services.AddSingleton<CashFlowProjectionService>();
+        services.AddSingleton<StrategyRunContinuityService>();
     }
 
     private static string CamelCase(string propertyName) => JsonNamingPolicy.CamelCase.ConvertName(propertyName);
@@ -980,6 +1216,27 @@ public sealed class WorkstationEndpointsTests
             PortfolioId = "recon-break-portfolio",
             LedgerReference = "recon-break-ledger",
             AuditReference = $"audit-{runId}"
+        };
+    }
+
+    private static StrategyRunEntry BuildContinuityRun(string runId)
+    {
+        var run = BuildReconciliationReadyRun(runId);
+        var cashFlows = new CashFlowEntry[]
+        {
+            new TradeCashFlow(run.StartedAt.AddMinutes(10), -400m, "AAPL", 10L, 40m),
+            new CommissionCashFlow(run.StartedAt.AddMinutes(10), -1m, "AAPL", Guid.NewGuid()),
+            new DividendCashFlow(run.StartedAt.AddDays(3), 25m, "AAPL", 10L, 2.5m)
+        };
+
+        return run with
+        {
+            Metrics = run.Metrics! with
+            {
+                CashFlows = cashFlows
+            },
+            FundProfileId = "alpha-credit",
+            FundDisplayName = "Alpha Credit"
         };
     }
 
@@ -1371,74 +1628,6 @@ public sealed class WorkstationEndpointsTests
         ids.Should().NotContain("typed-run-2");
     }
 
-    // --- Data-operations workspace ---
-
-    [Fact]
-    public async Task MapWorkstationEndpoints_DataOperations_WithoutServices_ShouldReturnFallbackPayload()
-    {
-        await using var app = await CreateAppAsync();
-        var client = app.GetTestClient();
-
-        using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
-
-        // Fallback payload contains hard-coded fixture rows
-        doc.RootElement.GetProperty("metrics").GetArrayLength().Should().Be(4);
-        doc.RootElement.GetProperty("providers").GetArrayLength().Should().BeGreaterThan(0);
-        doc.RootElement.GetProperty("backfills").GetArrayLength().Should().BeGreaterThan(0);
-        doc.RootElement.GetProperty("exports").GetArrayLength().Should().BeGreaterThan(0);
-
-        var providersHealthyMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
-            .Single(m => m.GetProperty("id").GetString() == "providers-healthy");
-        providersHealthyMetric.GetProperty("label").GetString().Should().Be("Providers Healthy");
-    }
-
-    [Fact]
-    public async Task MapWorkstationEndpoints_DataOperations_WithReadServiceOnly_ShouldReturnEmptyProvidersAndBackfills()
-    {
-        await using var app = await CreateAppAsync(services => RegisterRunReadServices(services));
-        var client = app.GetTestClient();
-
-        using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
-
-        // No ConfigStore → providers and backfills are empty; exports always empty in MVP
-        doc.RootElement.GetProperty("metrics").GetArrayLength().Should().Be(4);
-        doc.RootElement.GetProperty("providers").GetArrayLength().Should().Be(0);
-        doc.RootElement.GetProperty("backfills").GetArrayLength().Should().Be(0);
-        doc.RootElement.GetProperty("exports").GetArrayLength().Should().Be(0);
-
-        var providersHealthyMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
-            .Single(m => m.GetProperty("id").GetString() == "providers-healthy");
-        providersHealthyMetric.GetProperty("value").GetString().Should().Be("0");
-        providersHealthyMetric.GetProperty("tone").GetString().Should().Be("default");
-
-        var backfillsMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
-            .Single(m => m.GetProperty("id").GetString() == "backfills-running");
-        backfillsMetric.GetProperty("value").GetString().Should().Be("0");
-    }
-
-    [Fact]
-    public async Task MapWorkstationEndpoints_DataOperations_WithConfigStoreNoMetricsFile_ShouldReturnEmptyProvidersAndBackfills()
-    {
-        // Register a ConfigStore pointing to a nonexistent directory so TryLoad* returns null
-        var noDataPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "appsettings.json");
-        await using var app = await CreateAppAsync(services =>
-        {
-            RegisterRunReadServices(services);
-            services.AddSingleton(new Meridian.Application.UI.ConfigStore(noDataPath));
-        });
-        var client = app.GetTestClient();
-
-        using var doc = await ReadJsonAsync(client, "/api/workstation/data-operations");
-
-        doc.RootElement.GetProperty("providers").GetArrayLength().Should().Be(0);
-        doc.RootElement.GetProperty("backfills").GetArrayLength().Should().Be(0);
-        doc.RootElement.GetProperty("exports").GetArrayLength().Should().Be(0);
-
-        var providersHealthyMetric = doc.RootElement.GetProperty("metrics").EnumerateArray()
-            .Single(m => m.GetProperty("id").GetString() == "providers-healthy");
-        providersHealthyMetric.GetProperty("value").GetString().Should().Be("0");
-    }
-
     // Helper shims to reuse StrategyRunDrillInTests factory logic directly
 
     private static StrategyRunEntry StrategyRunDrillInTests_BuildRunWithMultipleSnapshots(string runId, decimal initialEquity)
@@ -1646,5 +1835,10 @@ public sealed class WorkstationEndpointsTests
 
         public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<CorporateActionDto>>(Array.Empty<CorporateActionDto>());
+
+        public Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<PreferredEquityTermsDto?>(null);
+        public Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<ConvertibleEquityTermsDto?>(null);
     }
 }

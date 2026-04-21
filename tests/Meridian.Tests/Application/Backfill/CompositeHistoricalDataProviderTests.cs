@@ -1,9 +1,11 @@
 using FluentAssertions;
 using Meridian.Application.Exceptions;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Moq;
 using Xunit;
+using DomainAggregateTimeframe = Meridian.Domain.Models.AggregateTimeframe;
 
 namespace Meridian.Tests.Application.Backfill;
 
@@ -317,6 +319,59 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
             "p3 should be tried exactly once after p2 fails");
     }
 
+    [Fact]
+    public void SupportedGranularities_AggregatesDistinctIntradayCapabilities()
+    {
+        var p1 = CreateMockProvider("p1", priority: 1);
+        var p1Aggregate = p1.As<IHistoricalAggregateBarProvider>();
+        p1Aggregate.SetupGet(p => p.SupportedGranularities).Returns([DataGranularity.Minute1, DataGranularity.Hour1]);
+
+        var p2 = CreateMockProvider("p2", priority: 2);
+        var p2Aggregate = p2.As<IHistoricalAggregateBarProvider>();
+        p2Aggregate.SetupGet(p => p.SupportedGranularities).Returns([DataGranularity.Minute5, DataGranularity.Hour1]);
+
+        using var composite = CreateComposite(p1, p2);
+
+        composite.SupportedGranularities.Should().Contain(DataGranularity.Minute1);
+        composite.SupportedGranularities.Should().Contain(DataGranularity.Minute5);
+        composite.SupportedGranularities.Should().Contain(DataGranularity.Hour1);
+        composite.SupportedGranularities.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task GetAggregateBarsAsync_FailsOverToNextSupportingProvider()
+    {
+        var bars = CreateAggregateBars("SPY", 2, TimeSpan.FromMinutes(1), DomainAggregateTimeframe.Minute);
+
+        var dailyOnly = CreateMockProvider("daily", priority: 1);
+
+        var intradayFailing = CreateMockProvider("intraday1", priority: 2);
+        var intradayFailingAggregate = intradayFailing.As<IHistoricalAggregateBarProvider>();
+        intradayFailingAggregate.SetupGet(p => p.SupportedGranularities).Returns([DataGranularity.Minute1]);
+        intradayFailingAggregate
+            .Setup(p => p.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("intraday1 failed"));
+
+        var intradayWorking = CreateMockProvider("intraday2", priority: 3);
+        var intradayWorkingAggregate = intradayWorking.As<IHistoricalAggregateBarProvider>();
+        intradayWorkingAggregate.SetupGet(p => p.SupportedGranularities).Returns([DataGranularity.Minute1]);
+        intradayWorkingAggregate
+            .Setup(p => p.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(bars);
+
+        using var composite = CreateComposite(dailyOnly, intradayFailing, intradayWorking);
+
+        var result = await composite.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, null, null);
+
+        result.Should().HaveCount(2);
+        intradayFailingAggregate.Verify(
+            p => p.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+        intradayWorkingAggregate.Verify(
+            p => p.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
     #region Helpers
 
     private Mock<IHistoricalDataProvider> CreateMockProvider(string name, int priority)
@@ -352,6 +407,35 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
                 1000L * (i + 1),
                 "test",
                 i))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<AggregateBar> CreateAggregateBars(
+        string symbol,
+        int count,
+        TimeSpan interval,
+        DomainAggregateTimeframe timeframe)
+    {
+        var start = new DateTimeOffset(2024, 1, 2, 14, 30, 0, TimeSpan.Zero);
+        return Enumerable.Range(0, count)
+            .Select(i =>
+            {
+                var barStart = start + TimeSpan.FromTicks(interval.Ticks * i);
+                return new AggregateBar(
+                    Symbol: symbol,
+                    StartTime: barStart,
+                    EndTime: barStart + interval,
+                    Open: 100m + i,
+                    High: 101m + i,
+                    Low: 99m + i,
+                    Close: 100.5m + i,
+                    Volume: 1000 + i,
+                    Vwap: 100.25m + i,
+                    TradeCount: 10 + i,
+                    Timeframe: timeframe,
+                    Source: "test",
+                    SequenceNumber: i);
+            })
             .ToArray();
     }
 

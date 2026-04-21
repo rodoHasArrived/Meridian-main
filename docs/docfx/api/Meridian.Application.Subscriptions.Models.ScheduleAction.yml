@@ -1,0 +1,130 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.ScheduleAction
+  commentId: T:Meridian.Application.Subscriptions.Models.ScheduleAction
+  id: ScheduleAction
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.ScheduleAction.Disable
+  - Meridian.Application.Subscriptions.Models.ScheduleAction.Enable
+  langs:
+  - csharp
+  - vb
+  name: ScheduleAction
+  nameWithType: ScheduleAction
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleAction
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleAction
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Action to perform when schedule triggers.
+  example: []
+  syntax:
+    content: 'public enum ScheduleAction : byte'
+    content.vb: Public Enum ScheduleAction As Byte
+- uid: Meridian.Application.Subscriptions.Models.ScheduleAction.Enable
+  commentId: F:Meridian.Application.Subscriptions.Models.ScheduleAction.Enable
+  id: Enable
+  parent: Meridian.Application.Subscriptions.Models.ScheduleAction
+  langs:
+  - csharp
+  - vb
+  name: Enable
+  nameWithType: ScheduleAction.Enable
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleAction.Enable
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enable
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Enable = 0
+    return:
+      type: Meridian.Application.Subscriptions.Models.ScheduleAction
+- uid: Meridian.Application.Subscriptions.Models.ScheduleAction.Disable
+  commentId: F:Meridian.Application.Subscriptions.Models.ScheduleAction.Disable
+  id: Disable
+  parent: Meridian.Application.Subscriptions.Models.ScheduleAction
+  langs:
+  - csharp
+  - vb
+  name: Disable
+  nameWithType: ScheduleAction.Disable
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleAction.Disable
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Disable
+    path: ../../src/Meridian.Core/Subscriptions/Models/SubscriptionSchedule.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: Disable = 1
+    return:
+      type: Meridian.Application.Subscriptions.Models.ScheduleAction
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Models.ScheduleAction
+  commentId: T:Meridian.Application.Subscriptions.Models.ScheduleAction
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.ScheduleAction.html
+  name: ScheduleAction
+  nameWithType: ScheduleAction
+  fullName: Meridian.Application.Subscriptions.Models.ScheduleAction

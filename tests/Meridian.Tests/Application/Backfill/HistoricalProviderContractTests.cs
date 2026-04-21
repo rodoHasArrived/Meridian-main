@@ -462,8 +462,19 @@ public class HistoricalProviderContractTests
         provider.SupportsAdjustedPrices.Should().BeTrue();
         provider.SupportsDividends.Should().BeTrue();
         provider.SupportsSplits.Should().BeTrue();
-        provider.SupportsIntraday.Should().BeFalse();
+        provider.SupportsIntraday.Should().BeTrue();
         provider.SupportedMarkets.Should().Contain("US");
+
+        provider.Should().BeAssignableTo<IHistoricalAggregateBarProvider>();
+        var aggregateProvider = (IHistoricalAggregateBarProvider)provider;
+        aggregateProvider.SupportedGranularities.Should().Contain([
+            DataGranularity.Minute1,
+            DataGranularity.Minute5,
+            DataGranularity.Minute15,
+            DataGranularity.Minute30,
+            DataGranularity.Hour1,
+            DataGranularity.Hour4
+        ]);
     }
 
     [Fact]

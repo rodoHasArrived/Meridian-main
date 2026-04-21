@@ -1,0 +1,515 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig
+  commentId: T:Meridian.Infrastructure.DataSources.HealthCheckConfig
+  id: HealthCheckConfig
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.HealthCheckConfig.IntervalSeconds
+  - Meridian.Infrastructure.DataSources.HealthCheckConfig.TimeoutSeconds
+  - Meridian.Infrastructure.DataSources.HealthCheckConfig.ToOptions
+  - Meridian.Infrastructure.DataSources.HealthCheckConfig.UnhealthyThreshold
+  langs:
+  - csharp
+  - vb
+  name: HealthCheckConfig
+  nameWithType: HealthCheckConfig
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheckConfig
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Health check configuration.
+  example: []
+  syntax:
+    content: 'public sealed record HealthCheckConfig : IEquatable<HealthCheckConfig>'
+    content.vb: Public NotInheritable Class HealthCheckConfig Implements IEquatable(Of HealthCheckConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.DataSources.HealthCheckConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig.IntervalSeconds
+  commentId: P:Meridian.Infrastructure.DataSources.HealthCheckConfig.IntervalSeconds
+  id: IntervalSeconds
+  parent: Meridian.Infrastructure.DataSources.HealthCheckConfig
+  langs:
+  - csharp
+  - vb
+  name: IntervalSeconds
+  nameWithType: HealthCheckConfig.IntervalSeconds
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig.IntervalSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntervalSeconds
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Interval between health checks in seconds.
+  example: []
+  syntax:
+    content: public int IntervalSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property IntervalSeconds As Integer
+  overload: Meridian.Infrastructure.DataSources.HealthCheckConfig.IntervalSeconds*
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig.TimeoutSeconds
+  commentId: P:Meridian.Infrastructure.DataSources.HealthCheckConfig.TimeoutSeconds
+  id: TimeoutSeconds
+  parent: Meridian.Infrastructure.DataSources.HealthCheckConfig
+  langs:
+  - csharp
+  - vb
+  name: TimeoutSeconds
+  nameWithType: HealthCheckConfig.TimeoutSeconds
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig.TimeoutSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeoutSeconds
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Timeout for health check requests in seconds.
+  example: []
+  syntax:
+    content: public int TimeoutSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TimeoutSeconds As Integer
+  overload: Meridian.Infrastructure.DataSources.HealthCheckConfig.TimeoutSeconds*
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig.UnhealthyThreshold
+  commentId: P:Meridian.Infrastructure.DataSources.HealthCheckConfig.UnhealthyThreshold
+  id: UnhealthyThreshold
+  parent: Meridian.Infrastructure.DataSources.HealthCheckConfig
+  langs:
+  - csharp
+  - vb
+  name: UnhealthyThreshold
+  nameWithType: HealthCheckConfig.UnhealthyThreshold
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig.UnhealthyThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnhealthyThreshold
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Number of consecutive failures before marking unhealthy.
+  example: []
+  syntax:
+    content: public int UnhealthyThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property UnhealthyThreshold As Integer
+  overload: Meridian.Infrastructure.DataSources.HealthCheckConfig.UnhealthyThreshold*
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig.ToOptions
+  commentId: M:Meridian.Infrastructure.DataSources.HealthCheckConfig.ToOptions
+  id: ToOptions
+  parent: Meridian.Infrastructure.DataSources.HealthCheckConfig
+  langs:
+  - csharp
+  - vb
+  name: ToOptions()
+  nameWithType: HealthCheckConfig.ToOptions()
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig.ToOptions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToOptions
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Converts to internal options format.
+  example: []
+  syntax:
+    content: public HealthCheckOptions ToOptions()
+    return:
+      type: Meridian.Infrastructure.DataSources.HealthCheckOptions
+    content.vb: Public Function ToOptions() As HealthCheckOptions
+  overload: Meridian.Infrastructure.DataSources.HealthCheckConfig.ToOptions*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.DataSources.HealthCheckConfig}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.DataSources.HealthCheckConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<HealthCheckConfig>
+  nameWithType: IEquatable<HealthCheckConfig>
+  fullName: System.IEquatable<Meridian.Infrastructure.DataSources.HealthCheckConfig>
+  nameWithType.vb: IEquatable(Of HealthCheckConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.DataSources.HealthCheckConfig)
+  name.vb: IEquatable(Of HealthCheckConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.HealthCheckConfig
+    name: HealthCheckConfig
+    href: Meridian.Infrastructure.DataSources.HealthCheckConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.HealthCheckConfig
+    name: HealthCheckConfig
+    href: Meridian.Infrastructure.DataSources.HealthCheckConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig.IntervalSeconds*
+  commentId: Overload:Meridian.Infrastructure.DataSources.HealthCheckConfig.IntervalSeconds
+  href: Meridian.Infrastructure.DataSources.HealthCheckConfig.html#Meridian_Infrastructure_DataSources_HealthCheckConfig_IntervalSeconds
+  name: IntervalSeconds
+  nameWithType: HealthCheckConfig.IntervalSeconds
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig.IntervalSeconds
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig.TimeoutSeconds*
+  commentId: Overload:Meridian.Infrastructure.DataSources.HealthCheckConfig.TimeoutSeconds
+  href: Meridian.Infrastructure.DataSources.HealthCheckConfig.html#Meridian_Infrastructure_DataSources_HealthCheckConfig_TimeoutSeconds
+  name: TimeoutSeconds
+  nameWithType: HealthCheckConfig.TimeoutSeconds
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig.TimeoutSeconds
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig.UnhealthyThreshold*
+  commentId: Overload:Meridian.Infrastructure.DataSources.HealthCheckConfig.UnhealthyThreshold
+  href: Meridian.Infrastructure.DataSources.HealthCheckConfig.html#Meridian_Infrastructure_DataSources_HealthCheckConfig_UnhealthyThreshold
+  name: UnhealthyThreshold
+  nameWithType: HealthCheckConfig.UnhealthyThreshold
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig.UnhealthyThreshold
+- uid: Meridian.Infrastructure.DataSources.HealthCheckConfig.ToOptions*
+  commentId: Overload:Meridian.Infrastructure.DataSources.HealthCheckConfig.ToOptions
+  href: Meridian.Infrastructure.DataSources.HealthCheckConfig.html#Meridian_Infrastructure_DataSources_HealthCheckConfig_ToOptions
+  name: ToOptions
+  nameWithType: HealthCheckConfig.ToOptions
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckConfig.ToOptions
+- uid: Meridian.Infrastructure.DataSources.HealthCheckOptions
+  commentId: T:Meridian.Infrastructure.DataSources.HealthCheckOptions
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.HealthCheckOptions.html
+  name: HealthCheckOptions
+  nameWithType: HealthCheckOptions
+  fullName: Meridian.Infrastructure.DataSources.HealthCheckOptions

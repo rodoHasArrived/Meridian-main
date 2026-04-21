@@ -1,0 +1,1394 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Contracts.IConfigService
+  commentId: T:Meridian.Ui.Services.Contracts.IConfigService
+  id: IConfigService
+  parent: Meridian.Ui.Services.Contracts
+  children:
+  - Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.ConfigPath
+  - Meridian.Ui.Services.Contracts.IConfigService.DeleteDataSourceAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.DeleteSymbolAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.GetAppSettingsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesConfigAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.LoadConfigAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.SaveAlpacaOptionsAsync(Meridian.Contracts.Configuration.AlpacaOptionsDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.SaveAppSettingsAsync(Meridian.Ui.Services.AppSettings,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.SaveConfigAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.SaveDataSourceAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.SaveStorageConfigAsync(System.String,System.Boolean,Meridian.Contracts.Configuration.StorageConfigDto,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.SetDefaultDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.ToggleDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.UpdateFailoverSettingsAsync(System.Boolean,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.UpdateServiceUrlAsync(System.String,System.Int32,System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Contracts.IConfigService.ValidateConfigAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IConfigService
+  nameWithType: IConfigService
+  fullName: Meridian.Ui.Services.Contracts.IConfigService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IConfigService
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Interface for managing application configuration.
+
+    Enables testability and dependency injection.
+  example: []
+  syntax:
+    content: public interface IConfigService
+    content.vb: Public Interface IConfigService
+  derivedClasses:
+  - Meridian.Ui.Services.ConfigService
+- uid: Meridian.Ui.Services.Contracts.IConfigService.ConfigPath
+  commentId: P:Meridian.Ui.Services.Contracts.IConfigService.ConfigPath
+  id: ConfigPath
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: ConfigPath
+  nameWithType: IConfigService.ConfigPath
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.ConfigPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigPath
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Gets the configuration file path.
+  example: []
+  syntax:
+    content: string ConfigPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property ConfigPath As String
+  overload: Meridian.Ui.Services.Contracts.IConfigService.ConfigPath*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.LoadConfigAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.LoadConfigAsync(System.Threading.CancellationToken)
+  id: LoadConfigAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: LoadConfigAsync(CancellationToken)
+  nameWithType: IConfigService.LoadConfigAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.LoadConfigAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadConfigAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Loads the application configuration.
+  example: []
+  syntax:
+    content: Task<AppConfigDto?> LoadConfigAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.AppConfigDto}
+    content.vb: Function LoadConfigAsync(ct As CancellationToken = Nothing) As Task(Of AppConfigDto)
+  overload: Meridian.Ui.Services.Contracts.IConfigService.LoadConfigAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveConfigAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.SaveConfigAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
+  id: SaveConfigAsync(Meridian.Contracts.Configuration.AppConfigDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: SaveConfigAsync(AppConfigDto, CancellationToken)
+  nameWithType: IConfigService.SaveConfigAsync(AppConfigDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveConfigAsync(Meridian.Contracts.Configuration.AppConfigDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveConfigAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Saves the application configuration.
+  example: []
+  syntax:
+    content: Task SaveConfigAsync(AppConfigDto config, CancellationToken ct = default)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.AppConfigDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveConfigAsync(config As AppConfigDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.SaveConfigAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveDataSourceAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.SaveDataSourceAsync(System.String,System.Threading.CancellationToken)
+  id: SaveDataSourceAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: SaveDataSourceAsync(string, CancellationToken)
+  nameWithType: IConfigService.SaveDataSourceAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveDataSourceAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveDataSourceAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Saves the data source setting.
+  example: []
+  syntax:
+    content: Task SaveDataSourceAsync(string dataSource, CancellationToken ct = default)
+    parameters:
+    - id: dataSource
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveDataSourceAsync(dataSource As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.SaveDataSourceAsync*
+  nameWithType.vb: IConfigService.SaveDataSourceAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IConfigService.SaveDataSourceAsync(String, System.Threading.CancellationToken)
+  name.vb: SaveDataSourceAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveAlpacaOptionsAsync(Meridian.Contracts.Configuration.AlpacaOptionsDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.SaveAlpacaOptionsAsync(Meridian.Contracts.Configuration.AlpacaOptionsDto,System.Threading.CancellationToken)
+  id: SaveAlpacaOptionsAsync(Meridian.Contracts.Configuration.AlpacaOptionsDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: SaveAlpacaOptionsAsync(AlpacaOptionsDto, CancellationToken)
+  nameWithType: IConfigService.SaveAlpacaOptionsAsync(AlpacaOptionsDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveAlpacaOptionsAsync(Meridian.Contracts.Configuration.AlpacaOptionsDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveAlpacaOptionsAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Saves Alpaca provider options.
+  example: []
+  syntax:
+    content: Task SaveAlpacaOptionsAsync(AlpacaOptionsDto options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Contracts.Configuration.AlpacaOptionsDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveAlpacaOptionsAsync(options As AlpacaOptionsDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.SaveAlpacaOptionsAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveStorageConfigAsync(System.String,System.Boolean,Meridian.Contracts.Configuration.StorageConfigDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.SaveStorageConfigAsync(System.String,System.Boolean,Meridian.Contracts.Configuration.StorageConfigDto,System.Threading.CancellationToken)
+  id: SaveStorageConfigAsync(System.String,System.Boolean,Meridian.Contracts.Configuration.StorageConfigDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: SaveStorageConfigAsync(string, bool, StorageConfigDto, CancellationToken)
+  nameWithType: IConfigService.SaveStorageConfigAsync(string, bool, StorageConfigDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveStorageConfigAsync(string, bool, Meridian.Contracts.Configuration.StorageConfigDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveStorageConfigAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Saves storage configuration.
+  example: []
+  syntax:
+    content: Task SaveStorageConfigAsync(string dataRoot, bool compress, StorageConfigDto storage, CancellationToken ct = default)
+    parameters:
+    - id: dataRoot
+      type: System.String
+    - id: compress
+      type: System.Boolean
+    - id: storage
+      type: Meridian.Contracts.Configuration.StorageConfigDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveStorageConfigAsync(dataRoot As String, compress As Boolean, storage As StorageConfigDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.SaveStorageConfigAsync*
+  nameWithType.vb: IConfigService.SaveStorageConfigAsync(String, Boolean, StorageConfigDto, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IConfigService.SaveStorageConfigAsync(String, Boolean, Meridian.Contracts.Configuration.StorageConfigDto, System.Threading.CancellationToken)
+  name.vb: SaveStorageConfigAsync(String, Boolean, StorageConfigDto, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  id: AddOrUpdateSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: AddOrUpdateSymbolAsync(SymbolConfigDto, CancellationToken)
+  nameWithType: IConfigService.AddOrUpdateSymbolAsync(SymbolConfigDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddOrUpdateSymbolAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Adds or updates a symbol in the configuration.
+  example: []
+  syntax:
+    content: Task AddOrUpdateSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: Meridian.Contracts.Configuration.SymbolConfigDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AddOrUpdateSymbolAsync(symbol As SymbolConfigDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateSymbolAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  id: AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: AddSymbolAsync(SymbolConfigDto, CancellationToken)
+  nameWithType: IConfigService.AddSymbolAsync(SymbolConfigDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.AddSymbolAsync(Meridian.Contracts.Configuration.SymbolConfigDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddSymbolAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Adds a symbol to the configuration (alias for AddOrUpdateSymbolAsync).
+  example: []
+  syntax:
+    content: Task AddSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: Meridian.Contracts.Configuration.SymbolConfigDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AddSymbolAsync(symbol As SymbolConfigDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.AddSymbolAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.DeleteSymbolAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.DeleteSymbolAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteSymbolAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: DeleteSymbolAsync(string, CancellationToken)
+  nameWithType: IConfigService.DeleteSymbolAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.DeleteSymbolAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteSymbolAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Deletes a symbol from the configuration.
+  example: []
+  syntax:
+    content: Task DeleteSymbolAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function DeleteSymbolAsync(symbol As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.DeleteSymbolAsync*
+  nameWithType.vb: IConfigService.DeleteSymbolAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IConfigService.DeleteSymbolAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteSymbolAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesAsync(System.Threading.CancellationToken)
+  id: GetDataSourcesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: GetDataSourcesAsync(CancellationToken)
+  nameWithType: IConfigService.GetDataSourcesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDataSourcesAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Gets all configured data sources.
+  example: []
+  syntax:
+    content: Task<DataSourceConfigDto[]> GetDataSourcesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.DataSourceConfigDto[]}
+    content.vb: Function GetDataSourcesAsync(ct As CancellationToken = Nothing) As Task(Of DataSourceConfigDto())
+  overload: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesConfigAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesConfigAsync(System.Threading.CancellationToken)
+  id: GetDataSourcesConfigAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: GetDataSourcesConfigAsync(CancellationToken)
+  nameWithType: IConfigService.GetDataSourcesConfigAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesConfigAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDataSourcesConfigAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Gets the data sources configuration.
+  example: []
+  syntax:
+    content: Task<DataSourcesConfigDto> GetDataSourcesConfigAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.DataSourcesConfigDto}
+    content.vb: Function GetDataSourcesConfigAsync(ct As CancellationToken = Nothing) As Task(Of DataSourcesConfigDto)
+  overload: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesConfigAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto,System.Threading.CancellationToken)
+  id: AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: AddOrUpdateDataSourceAsync(DataSourceConfigDto, CancellationToken)
+  nameWithType: IConfigService.AddOrUpdateDataSourceAsync(DataSourceConfigDto, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateDataSourceAsync(Meridian.Contracts.Configuration.DataSourceConfigDto, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddOrUpdateDataSourceAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Adds or updates a data source configuration.
+  example: []
+  syntax:
+    content: Task AddOrUpdateDataSourceAsync(DataSourceConfigDto dataSource, CancellationToken ct = default)
+    parameters:
+    - id: dataSource
+      type: Meridian.Contracts.Configuration.DataSourceConfigDto
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function AddOrUpdateDataSourceAsync(dataSource As DataSourceConfigDto, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateDataSourceAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.DeleteDataSourceAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.DeleteDataSourceAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteDataSourceAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: DeleteDataSourceAsync(string, CancellationToken)
+  nameWithType: IConfigService.DeleteDataSourceAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.DeleteDataSourceAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteDataSourceAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Deletes a data source by ID.
+  example: []
+  syntax:
+    content: Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
+    parameters:
+    - id: id
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function DeleteDataSourceAsync(id As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.DeleteDataSourceAsync*
+  nameWithType.vb: IConfigService.DeleteDataSourceAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IConfigService.DeleteDataSourceAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteDataSourceAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SetDefaultDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.SetDefaultDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: SetDefaultDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: SetDefaultDataSourceAsync(string, bool, CancellationToken)
+  nameWithType: IConfigService.SetDefaultDataSourceAsync(string, bool, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SetDefaultDataSourceAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetDefaultDataSourceAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Sets the default data source for real-time or historical data.
+  example: []
+  syntax:
+    content: Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
+    parameters:
+    - id: id
+      type: System.String
+    - id: isHistorical
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SetDefaultDataSourceAsync(id As String, isHistorical As Boolean, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.SetDefaultDataSourceAsync*
+  nameWithType.vb: IConfigService.SetDefaultDataSourceAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IConfigService.SetDefaultDataSourceAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: SetDefaultDataSourceAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IConfigService.ToggleDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.ToggleDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: ToggleDataSourceAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: ToggleDataSourceAsync(string, bool, CancellationToken)
+  nameWithType: IConfigService.ToggleDataSourceAsync(string, bool, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.ToggleDataSourceAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToggleDataSourceAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Toggles a data source's enabled state.
+  example: []
+  syntax:
+    content: Task ToggleDataSourceAsync(string id, bool enabled, CancellationToken ct = default)
+    parameters:
+    - id: id
+      type: System.String
+    - id: enabled
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function ToggleDataSourceAsync(id As String, enabled As Boolean, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.ToggleDataSourceAsync*
+  nameWithType.vb: IConfigService.ToggleDataSourceAsync(String, Boolean, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IConfigService.ToggleDataSourceAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: ToggleDataSourceAsync(String, Boolean, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IConfigService.UpdateFailoverSettingsAsync(System.Boolean,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.UpdateFailoverSettingsAsync(System.Boolean,System.Int32,System.Threading.CancellationToken)
+  id: UpdateFailoverSettingsAsync(System.Boolean,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: UpdateFailoverSettingsAsync(bool, int, CancellationToken)
+  nameWithType: IConfigService.UpdateFailoverSettingsAsync(bool, int, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.UpdateFailoverSettingsAsync(bool, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateFailoverSettingsAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Updates failover settings for data sources.
+  example: []
+  syntax:
+    content: Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default)
+    parameters:
+    - id: enableFailover
+      type: System.Boolean
+    - id: failoverTimeoutSeconds
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function UpdateFailoverSettingsAsync(enableFailover As Boolean, failoverTimeoutSeconds As Integer, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.UpdateFailoverSettingsAsync*
+  nameWithType.vb: IConfigService.UpdateFailoverSettingsAsync(Boolean, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IConfigService.UpdateFailoverSettingsAsync(Boolean, Integer, System.Threading.CancellationToken)
+  name.vb: UpdateFailoverSettingsAsync(Boolean, Integer, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IConfigService.GetAppSettingsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.GetAppSettingsAsync(System.Threading.CancellationToken)
+  id: GetAppSettingsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: GetAppSettingsAsync(CancellationToken)
+  nameWithType: IConfigService.GetAppSettingsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.GetAppSettingsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAppSettingsAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Gets the app settings including service URL configuration.
+  example: []
+  syntax:
+    content: Task<AppSettings> GetAppSettingsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.AppSettings}
+    content.vb: Function GetAppSettingsAsync(ct As CancellationToken = Nothing) As Task(Of AppSettings)
+  overload: Meridian.Ui.Services.Contracts.IConfigService.GetAppSettingsAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveAppSettingsAsync(Meridian.Ui.Services.AppSettings,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.SaveAppSettingsAsync(Meridian.Ui.Services.AppSettings,System.Threading.CancellationToken)
+  id: SaveAppSettingsAsync(Meridian.Ui.Services.AppSettings,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: SaveAppSettingsAsync(AppSettings, CancellationToken)
+  nameWithType: IConfigService.SaveAppSettingsAsync(AppSettings, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveAppSettingsAsync(Meridian.Ui.Services.AppSettings, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveAppSettingsAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Saves app settings including service URL configuration.
+  example: []
+  syntax:
+    content: Task SaveAppSettingsAsync(AppSettings settings, CancellationToken ct = default)
+    parameters:
+    - id: settings
+      type: Meridian.Ui.Services.AppSettings
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveAppSettingsAsync(settings As AppSettings, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.SaveAppSettingsAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.UpdateServiceUrlAsync(System.String,System.Int32,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.UpdateServiceUrlAsync(System.String,System.Int32,System.Int32,System.Threading.CancellationToken)
+  id: UpdateServiceUrlAsync(System.String,System.Int32,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: UpdateServiceUrlAsync(string, int, int, CancellationToken)
+  nameWithType: IConfigService.UpdateServiceUrlAsync(string, int, int, CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.UpdateServiceUrlAsync(string, int, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateServiceUrlAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Updates the service URL configuration.
+  example: []
+  syntax:
+    content: Task UpdateServiceUrlAsync(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60, CancellationToken ct = default)
+    parameters:
+    - id: serviceUrl
+      type: System.String
+    - id: timeoutSeconds
+      type: System.Int32
+    - id: backfillTimeoutMinutes
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function UpdateServiceUrlAsync(serviceUrl As String, timeoutSeconds As Integer = 30, backfillTimeoutMinutes As Integer = 60, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.UpdateServiceUrlAsync*
+  nameWithType.vb: IConfigService.UpdateServiceUrlAsync(String, Integer, Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Contracts.IConfigService.UpdateServiceUrlAsync(String, Integer, Integer, System.Threading.CancellationToken)
+  name.vb: UpdateServiceUrlAsync(String, Integer, Integer, CancellationToken)
+- uid: Meridian.Ui.Services.Contracts.IConfigService.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: IConfigService.InitializeAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: >-
+    Loads configuration and initializes services with configured URLs.
+
+    Should be called during app startup.
+  example: []
+  syntax:
+    content: Task InitializeAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function InitializeAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Contracts.IConfigService.InitializeAsync*
+- uid: Meridian.Ui.Services.Contracts.IConfigService.ValidateConfigAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Contracts.IConfigService.ValidateConfigAsync(System.Threading.CancellationToken)
+  id: ValidateConfigAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Contracts.IConfigService
+  langs:
+  - csharp
+  - vb
+  name: ValidateConfigAsync(CancellationToken)
+  nameWithType: IConfigService.ValidateConfigAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.ValidateConfigAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IConfigService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateConfigAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IConfigService.cs
+    startLine: 115
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Contracts
+  summary: Validates the current configuration.
+  example: []
+  syntax:
+    content: Task<DiagnosticValidationResult> ValidateConfigAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.Contracts.DiagnosticValidationResult}
+    content.vb: Function ValidateConfigAsync(ct As CancellationToken = Nothing) As Task(Of DiagnosticValidationResult)
+  overload: Meridian.Ui.Services.Contracts.IConfigService.ValidateConfigAsync*
+references:
+- uid: Meridian.Ui.Services.Contracts
+  commentId: N:Meridian.Ui.Services.Contracts
+  href: Meridian.html
+  name: Meridian.Ui.Services.Contracts
+  nameWithType: Meridian.Ui.Services.Contracts
+  fullName: Meridian.Ui.Services.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Contracts
+    name: Contracts
+    href: Meridian.Ui.Services.Contracts.html
+- uid: Meridian.Ui.Services.Contracts.IConfigService.ConfigPath*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.ConfigPath
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_ConfigPath
+  name: ConfigPath
+  nameWithType: IConfigService.ConfigPath
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.ConfigPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.Contracts.IConfigService.LoadConfigAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.LoadConfigAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_LoadConfigAsync_System_Threading_CancellationToken_
+  name: LoadConfigAsync
+  nameWithType: IConfigService.LoadConfigAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.LoadConfigAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.AppConfigDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.AppConfigDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AppConfigDto>
+  nameWithType: Task<AppConfigDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.AppConfigDto>
+  nameWithType.vb: Task(Of AppConfigDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.AppConfigDto)
+  name.vb: Task(Of AppConfigDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.AppConfigDto
+    name: AppConfigDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.AppConfigDto
+    name: AppConfigDto
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveConfigAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.SaveConfigAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_SaveConfigAsync_Meridian_Contracts_Configuration_AppConfigDto_System_Threading_CancellationToken_
+  name: SaveConfigAsync
+  nameWithType: IConfigService.SaveConfigAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveConfigAsync
+- uid: Meridian.Contracts.Configuration.AppConfigDto
+  commentId: T:Meridian.Contracts.Configuration.AppConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.AppConfigDto.html
+  name: AppConfigDto
+  nameWithType: AppConfigDto
+  fullName: Meridian.Contracts.Configuration.AppConfigDto
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveDataSourceAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.SaveDataSourceAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_SaveDataSourceAsync_System_String_System_Threading_CancellationToken_
+  name: SaveDataSourceAsync
+  nameWithType: IConfigService.SaveDataSourceAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveDataSourceAsync
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveAlpacaOptionsAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.SaveAlpacaOptionsAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_SaveAlpacaOptionsAsync_Meridian_Contracts_Configuration_AlpacaOptionsDto_System_Threading_CancellationToken_
+  name: SaveAlpacaOptionsAsync
+  nameWithType: IConfigService.SaveAlpacaOptionsAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveAlpacaOptionsAsync
+- uid: Meridian.Contracts.Configuration.AlpacaOptionsDto
+  commentId: T:Meridian.Contracts.Configuration.AlpacaOptionsDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.AlpacaOptionsDto.html
+  name: AlpacaOptionsDto
+  nameWithType: AlpacaOptionsDto
+  fullName: Meridian.Contracts.Configuration.AlpacaOptionsDto
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveStorageConfigAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.SaveStorageConfigAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_SaveStorageConfigAsync_System_String_System_Boolean_Meridian_Contracts_Configuration_StorageConfigDto_System_Threading_CancellationToken_
+  name: SaveStorageConfigAsync
+  nameWithType: IConfigService.SaveStorageConfigAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveStorageConfigAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Configuration.StorageConfigDto
+  commentId: T:Meridian.Contracts.Configuration.StorageConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.StorageConfigDto.html
+  name: StorageConfigDto
+  nameWithType: StorageConfigDto
+  fullName: Meridian.Contracts.Configuration.StorageConfigDto
+- uid: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateSymbolAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateSymbolAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_AddOrUpdateSymbolAsync_Meridian_Contracts_Configuration_SymbolConfigDto_System_Threading_CancellationToken_
+  name: AddOrUpdateSymbolAsync
+  nameWithType: IConfigService.AddOrUpdateSymbolAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateSymbolAsync
+- uid: Meridian.Contracts.Configuration.SymbolConfigDto
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfigDto.html
+  name: SymbolConfigDto
+  nameWithType: SymbolConfigDto
+  fullName: Meridian.Contracts.Configuration.SymbolConfigDto
+- uid: Meridian.Ui.Services.Contracts.IConfigService.AddSymbolAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.AddSymbolAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_AddSymbolAsync_Meridian_Contracts_Configuration_SymbolConfigDto_System_Threading_CancellationToken_
+  name: AddSymbolAsync
+  nameWithType: IConfigService.AddSymbolAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.AddSymbolAsync
+- uid: Meridian.Ui.Services.Contracts.IConfigService.DeleteSymbolAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.DeleteSymbolAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_DeleteSymbolAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteSymbolAsync
+  nameWithType: IConfigService.DeleteSymbolAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.DeleteSymbolAsync
+- uid: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_GetDataSourcesAsync_System_Threading_CancellationToken_
+  name: GetDataSourcesAsync
+  nameWithType: IConfigService.GetDataSourcesAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.DataSourceConfigDto[]}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.DataSourceConfigDto[]}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataSourceConfigDto[]>
+  nameWithType: Task<DataSourceConfigDto[]>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.DataSourceConfigDto[]>
+  nameWithType.vb: Task(Of DataSourceConfigDto())
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.DataSourceConfigDto())
+  name.vb: Task(Of DataSourceConfigDto())
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.DataSourceConfigDto
+    name: DataSourceConfigDto
+  - name: '['
+  - name: ']'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.DataSourceConfigDto
+    name: DataSourceConfigDto
+  - name: (
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesConfigAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesConfigAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_GetDataSourcesConfigAsync_System_Threading_CancellationToken_
+  name: GetDataSourcesConfigAsync
+  nameWithType: IConfigService.GetDataSourcesConfigAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.GetDataSourcesConfigAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Configuration.DataSourcesConfigDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Configuration.DataSourcesConfigDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DataSourcesConfigDto>
+  nameWithType: Task<DataSourcesConfigDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Configuration.DataSourcesConfigDto>
+  nameWithType.vb: Task(Of DataSourcesConfigDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Configuration.DataSourcesConfigDto)
+  name.vb: Task(Of DataSourcesConfigDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Configuration.DataSourcesConfigDto
+    name: DataSourcesConfigDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Configuration.DataSourcesConfigDto
+    name: DataSourcesConfigDto
+  - name: )
+- uid: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateDataSourceAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateDataSourceAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_AddOrUpdateDataSourceAsync_Meridian_Contracts_Configuration_DataSourceConfigDto_System_Threading_CancellationToken_
+  name: AddOrUpdateDataSourceAsync
+  nameWithType: IConfigService.AddOrUpdateDataSourceAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.AddOrUpdateDataSourceAsync
+- uid: Meridian.Contracts.Configuration.DataSourceConfigDto
+  commentId: T:Meridian.Contracts.Configuration.DataSourceConfigDto
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.DataSourceConfigDto.html
+  name: DataSourceConfigDto
+  nameWithType: DataSourceConfigDto
+  fullName: Meridian.Contracts.Configuration.DataSourceConfigDto
+- uid: Meridian.Ui.Services.Contracts.IConfigService.DeleteDataSourceAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.DeleteDataSourceAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_DeleteDataSourceAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteDataSourceAsync
+  nameWithType: IConfigService.DeleteDataSourceAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.DeleteDataSourceAsync
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SetDefaultDataSourceAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.SetDefaultDataSourceAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_SetDefaultDataSourceAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: SetDefaultDataSourceAsync
+  nameWithType: IConfigService.SetDefaultDataSourceAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SetDefaultDataSourceAsync
+- uid: Meridian.Ui.Services.Contracts.IConfigService.ToggleDataSourceAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.ToggleDataSourceAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_ToggleDataSourceAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: ToggleDataSourceAsync
+  nameWithType: IConfigService.ToggleDataSourceAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.ToggleDataSourceAsync
+- uid: Meridian.Ui.Services.Contracts.IConfigService.UpdateFailoverSettingsAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.UpdateFailoverSettingsAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_UpdateFailoverSettingsAsync_System_Boolean_System_Int32_System_Threading_CancellationToken_
+  name: UpdateFailoverSettingsAsync
+  nameWithType: IConfigService.UpdateFailoverSettingsAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.UpdateFailoverSettingsAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.Contracts.IConfigService.GetAppSettingsAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.GetAppSettingsAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_GetAppSettingsAsync_System_Threading_CancellationToken_
+  name: GetAppSettingsAsync
+  nameWithType: IConfigService.GetAppSettingsAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.GetAppSettingsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.AppSettings}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.AppSettings}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<AppSettings>
+  nameWithType: Task<AppSettings>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.AppSettings>
+  nameWithType.vb: Task(Of AppSettings)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.AppSettings)
+  name.vb: Task(Of AppSettings)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.AppSettings
+    name: AppSettings
+    href: Meridian.Ui.Services.AppSettings.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.AppSettings
+    name: AppSettings
+    href: Meridian.Ui.Services.AppSettings.html
+  - name: )
+- uid: Meridian.Ui.Services.Contracts.IConfigService.SaveAppSettingsAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.SaveAppSettingsAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_SaveAppSettingsAsync_Meridian_Ui_Services_AppSettings_System_Threading_CancellationToken_
+  name: SaveAppSettingsAsync
+  nameWithType: IConfigService.SaveAppSettingsAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.SaveAppSettingsAsync
+- uid: Meridian.Ui.Services.AppSettings
+  commentId: T:Meridian.Ui.Services.AppSettings
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.AppSettings.html
+  name: AppSettings
+  nameWithType: AppSettings
+  fullName: Meridian.Ui.Services.AppSettings
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.Contracts.IConfigService.UpdateServiceUrlAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.UpdateServiceUrlAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_UpdateServiceUrlAsync_System_String_System_Int32_System_Int32_System_Threading_CancellationToken_
+  name: UpdateServiceUrlAsync
+  nameWithType: IConfigService.UpdateServiceUrlAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.UpdateServiceUrlAsync
+- uid: Meridian.Ui.Services.Contracts.IConfigService.InitializeAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.InitializeAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: IConfigService.InitializeAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.InitializeAsync
+- uid: Meridian.Ui.Services.Contracts.IConfigService.ValidateConfigAsync*
+  commentId: Overload:Meridian.Ui.Services.Contracts.IConfigService.ValidateConfigAsync
+  href: Meridian.Ui.Services.Contracts.IConfigService.html#Meridian_Ui_Services_Contracts_IConfigService_ValidateConfigAsync_System_Threading_CancellationToken_
+  name: ValidateConfigAsync
+  nameWithType: IConfigService.ValidateConfigAsync
+  fullName: Meridian.Ui.Services.Contracts.IConfigService.ValidateConfigAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.Contracts.DiagnosticValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.Contracts.DiagnosticValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<DiagnosticValidationResult>
+  nameWithType: Task<DiagnosticValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.Contracts.DiagnosticValidationResult>
+  nameWithType.vb: Task(Of DiagnosticValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.Contracts.DiagnosticValidationResult)
+  name.vb: Task(Of DiagnosticValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.Contracts.DiagnosticValidationResult
+    name: DiagnosticValidationResult
+    href: Meridian.Ui.Services.Contracts.DiagnosticValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Contracts.DiagnosticValidationResult
+    name: DiagnosticValidationResult
+    href: Meridian.Ui.Services.Contracts.DiagnosticValidationResult.html
+  - name: )

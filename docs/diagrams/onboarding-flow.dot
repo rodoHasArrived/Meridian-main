@@ -1,6 +1,6 @@
 // Onboarding & Diagnostics Flow Diagram
 // Meridian v1.7.x
-// Last Updated: 2026-03-24
+// Last Updated: 2026-04-09
 //
 // This diagram shows the user journey from first-run through setup to operational,
 // including all diagnostic and configuration options.
@@ -131,7 +131,7 @@ digraph OnboardingFlow {
                  label="StartupSummary\n\nConfiguration review\nProvider status\nHealth checks"];
 
     RUN_NORMAL [fillcolor="#38a169", fontcolor="white",
-                label="Normal Operation\n\n--ui (with dashboard)\n--backfill (historical)\ndefault (streaming)"];
+                label="Normal Operation\n\n--mode desktop (local API + collector)\n--backfill (historical)\ndefault/headless (streaming)"];
   }
 
   // Error Handling

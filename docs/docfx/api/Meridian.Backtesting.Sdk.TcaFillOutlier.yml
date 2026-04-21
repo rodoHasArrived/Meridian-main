@@ -1,0 +1,689 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier
+  commentId: T:Meridian.Backtesting.Sdk.TcaFillOutlier
+  id: TcaFillOutlier
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.TcaFillOutlier.#ctor(System.Guid,System.String,System.Decimal,System.Decimal,System.Double,System.DateTimeOffset)
+  - Meridian.Backtesting.Sdk.TcaFillOutlier.Commission
+  - Meridian.Backtesting.Sdk.TcaFillOutlier.CommissionRateBps
+  - Meridian.Backtesting.Sdk.TcaFillOutlier.FillId
+  - Meridian.Backtesting.Sdk.TcaFillOutlier.FilledAt
+  - Meridian.Backtesting.Sdk.TcaFillOutlier.Notional
+  - Meridian.Backtesting.Sdk.TcaFillOutlier.Symbol
+  langs:
+  - csharp
+  - vb
+  name: TcaFillOutlier
+  nameWithType: TcaFillOutlier
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TcaFillOutlier
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    A fill whose commission rate significantly exceeded the run's average —
+
+    a candidate for execution quality review.
+  example: []
+  syntax:
+    content: 'public sealed record TcaFillOutlier : IEquatable<TcaFillOutlier>'
+    content.vb: Public NotInheritable Class TcaFillOutlier Implements IEquatable(Of TcaFillOutlier)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.TcaFillOutlier}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.#ctor(System.Guid,System.String,System.Decimal,System.Decimal,System.Double,System.DateTimeOffset)
+  commentId: M:Meridian.Backtesting.Sdk.TcaFillOutlier.#ctor(System.Guid,System.String,System.Decimal,System.Decimal,System.Double,System.DateTimeOffset)
+  id: '#ctor(System.Guid,System.String,System.Decimal,System.Decimal,System.Double,System.DateTimeOffset)'
+  parent: Meridian.Backtesting.Sdk.TcaFillOutlier
+  langs:
+  - csharp
+  - vb
+  name: TcaFillOutlier(Guid, string, decimal, decimal, double, DateTimeOffset)
+  nameWithType: TcaFillOutlier.TcaFillOutlier(Guid, string, decimal, decimal, double, DateTimeOffset)
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.TcaFillOutlier(System.Guid, string, decimal, decimal, double, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    A fill whose commission rate significantly exceeded the run's average —
+
+    a candidate for execution quality review.
+  example: []
+  syntax:
+    content: public TcaFillOutlier(Guid FillId, string Symbol, decimal Notional, decimal Commission, double CommissionRateBps, DateTimeOffset FilledAt)
+    parameters:
+    - id: FillId
+      type: System.Guid
+      description: Unique fill identifier.
+    - id: Symbol
+      type: System.String
+      description: Traded symbol.
+    - id: Notional
+      type: System.Decimal
+      description: Absolute notional value of this fill (|quantity| × fillPrice).
+    - id: Commission
+      type: System.Decimal
+      description: Commission charged for this fill.
+    - id: CommissionRateBps
+      type: System.Double
+      description: Commission as a fraction of notional, in basis points.
+    - id: FilledAt
+      type: System.DateTimeOffset
+      description: UTC timestamp of the fill.
+    content.vb: Public Sub New(FillId As Guid, Symbol As String, Notional As Decimal, Commission As Decimal, CommissionRateBps As Double, FilledAt As DateTimeOffset)
+  overload: Meridian.Backtesting.Sdk.TcaFillOutlier.#ctor*
+  nameWithType.vb: TcaFillOutlier.New(Guid, String, Decimal, Decimal, Double, DateTimeOffset)
+  fullName.vb: Meridian.Backtesting.Sdk.TcaFillOutlier.New(System.Guid, String, Decimal, Decimal, Double, System.DateTimeOffset)
+  name.vb: New(Guid, String, Decimal, Decimal, Double, DateTimeOffset)
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.FillId
+  commentId: P:Meridian.Backtesting.Sdk.TcaFillOutlier.FillId
+  id: FillId
+  parent: Meridian.Backtesting.Sdk.TcaFillOutlier
+  langs:
+  - csharp
+  - vb
+  name: FillId
+  nameWithType: TcaFillOutlier.FillId
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.FillId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillId
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Unique fill identifier.
+  example: []
+  syntax:
+    content: public Guid FillId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property FillId As Guid
+  overload: Meridian.Backtesting.Sdk.TcaFillOutlier.FillId*
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.TcaFillOutlier.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.TcaFillOutlier
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: TcaFillOutlier.Symbol
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Traded symbol.
+  example: []
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.TcaFillOutlier.Symbol*
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.Notional
+  commentId: P:Meridian.Backtesting.Sdk.TcaFillOutlier.Notional
+  id: Notional
+  parent: Meridian.Backtesting.Sdk.TcaFillOutlier
+  langs:
+  - csharp
+  - vb
+  name: Notional
+  nameWithType: TcaFillOutlier.Notional
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.Notional
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notional
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Absolute notional value of this fill (|quantity| × fillPrice).
+  example: []
+  syntax:
+    content: public decimal Notional { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Notional As Decimal
+  overload: Meridian.Backtesting.Sdk.TcaFillOutlier.Notional*
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.Commission
+  commentId: P:Meridian.Backtesting.Sdk.TcaFillOutlier.Commission
+  id: Commission
+  parent: Meridian.Backtesting.Sdk.TcaFillOutlier
+  langs:
+  - csharp
+  - vb
+  name: Commission
+  nameWithType: TcaFillOutlier.Commission
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.Commission
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Commission
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Commission charged for this fill.
+  example: []
+  syntax:
+    content: public decimal Commission { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Commission As Decimal
+  overload: Meridian.Backtesting.Sdk.TcaFillOutlier.Commission*
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.CommissionRateBps
+  commentId: P:Meridian.Backtesting.Sdk.TcaFillOutlier.CommissionRateBps
+  id: CommissionRateBps
+  parent: Meridian.Backtesting.Sdk.TcaFillOutlier
+  langs:
+  - csharp
+  - vb
+  name: CommissionRateBps
+  nameWithType: TcaFillOutlier.CommissionRateBps
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.CommissionRateBps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommissionRateBps
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Commission as a fraction of notional, in basis points.
+  example: []
+  syntax:
+    content: public double CommissionRateBps { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CommissionRateBps As Double
+  overload: Meridian.Backtesting.Sdk.TcaFillOutlier.CommissionRateBps*
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.FilledAt
+  commentId: P:Meridian.Backtesting.Sdk.TcaFillOutlier.FilledAt
+  id: FilledAt
+  parent: Meridian.Backtesting.Sdk.TcaFillOutlier
+  langs:
+  - csharp
+  - vb
+  name: FilledAt
+  nameWithType: TcaFillOutlier.FilledAt
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.FilledAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilledAt
+    path: ../../src/Meridian.Backtesting.Sdk/TcaReportModels.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: UTC timestamp of the fill.
+  example: []
+  syntax:
+    content: public DateTimeOffset FilledAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property FilledAt As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.TcaFillOutlier.FilledAt*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.TcaFillOutlier}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.TcaFillOutlier}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TcaFillOutlier>
+  nameWithType: IEquatable<TcaFillOutlier>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.TcaFillOutlier>
+  nameWithType.vb: IEquatable(Of TcaFillOutlier)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.TcaFillOutlier)
+  name.vb: IEquatable(Of TcaFillOutlier)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.TcaFillOutlier
+    name: TcaFillOutlier
+    href: Meridian.Backtesting.Sdk.TcaFillOutlier.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.TcaFillOutlier
+    name: TcaFillOutlier
+    href: Meridian.Backtesting.Sdk.TcaFillOutlier.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaFillOutlier.#ctor
+  href: Meridian.Backtesting.Sdk.TcaFillOutlier.html#Meridian_Backtesting_Sdk_TcaFillOutlier__ctor_System_Guid_System_String_System_Decimal_System_Decimal_System_Double_System_DateTimeOffset_
+  name: TcaFillOutlier
+  nameWithType: TcaFillOutlier.TcaFillOutlier
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.TcaFillOutlier
+  nameWithType.vb: TcaFillOutlier.New
+  fullName.vb: Meridian.Backtesting.Sdk.TcaFillOutlier.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.FillId*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaFillOutlier.FillId
+  href: Meridian.Backtesting.Sdk.TcaFillOutlier.html#Meridian_Backtesting_Sdk_TcaFillOutlier_FillId
+  name: FillId
+  nameWithType: TcaFillOutlier.FillId
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.FillId
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaFillOutlier.Symbol
+  href: Meridian.Backtesting.Sdk.TcaFillOutlier.html#Meridian_Backtesting_Sdk_TcaFillOutlier_Symbol
+  name: Symbol
+  nameWithType: TcaFillOutlier.Symbol
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.Symbol
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.Notional*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaFillOutlier.Notional
+  href: Meridian.Backtesting.Sdk.TcaFillOutlier.html#Meridian_Backtesting_Sdk_TcaFillOutlier_Notional
+  name: Notional
+  nameWithType: TcaFillOutlier.Notional
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.Notional
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.Commission*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaFillOutlier.Commission
+  href: Meridian.Backtesting.Sdk.TcaFillOutlier.html#Meridian_Backtesting_Sdk_TcaFillOutlier_Commission
+  name: Commission
+  nameWithType: TcaFillOutlier.Commission
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.Commission
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.CommissionRateBps*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaFillOutlier.CommissionRateBps
+  href: Meridian.Backtesting.Sdk.TcaFillOutlier.html#Meridian_Backtesting_Sdk_TcaFillOutlier_CommissionRateBps
+  name: CommissionRateBps
+  nameWithType: TcaFillOutlier.CommissionRateBps
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.CommissionRateBps
+- uid: Meridian.Backtesting.Sdk.TcaFillOutlier.FilledAt*
+  commentId: Overload:Meridian.Backtesting.Sdk.TcaFillOutlier.FilledAt
+  href: Meridian.Backtesting.Sdk.TcaFillOutlier.html#Meridian_Backtesting_Sdk_TcaFillOutlier_FilledAt
+  name: FilledAt
+  nameWithType: TcaFillOutlier.FilledAt
+  fullName: Meridian.Backtesting.Sdk.TcaFillOutlier.FilledAt

@@ -1,0 +1,282 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.IssueType
+  commentId: T:Meridian.Storage.Services.IssueType
+  id: IssueType
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.IssueType.ChecksumMismatch
+  - Meridian.Storage.Services.IssueType.EmptyFile
+  - Meridian.Storage.Services.IssueType.OrphanedFile
+  - Meridian.Storage.Services.IssueType.PermissionDenied
+  - Meridian.Storage.Services.IssueType.SchemaViolation
+  - Meridian.Storage.Services.IssueType.SequenceGap
+  - Meridian.Storage.Services.IssueType.TruncatedFile
+  - Meridian.Storage.Services.IssueType.UnreadableFile
+  langs:
+  - csharp
+  - vb
+  name: IssueType
+  nameWithType: IssueType
+  fullName: Meridian.Storage.Services.IssueType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IssueType
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 613
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum IssueType : byte'
+    content.vb: Public Enum IssueType As Byte
+- uid: Meridian.Storage.Services.IssueType.ChecksumMismatch
+  commentId: F:Meridian.Storage.Services.IssueType.ChecksumMismatch
+  id: ChecksumMismatch
+  parent: Meridian.Storage.Services.IssueType
+  langs:
+  - csharp
+  - vb
+  name: ChecksumMismatch
+  nameWithType: IssueType.ChecksumMismatch
+  fullName: Meridian.Storage.Services.IssueType.ChecksumMismatch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChecksumMismatch
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 615
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: ChecksumMismatch = 0
+    return:
+      type: Meridian.Storage.Services.IssueType
+- uid: Meridian.Storage.Services.IssueType.SequenceGap
+  commentId: F:Meridian.Storage.Services.IssueType.SequenceGap
+  id: SequenceGap
+  parent: Meridian.Storage.Services.IssueType
+  langs:
+  - csharp
+  - vb
+  name: SequenceGap
+  nameWithType: IssueType.SequenceGap
+  fullName: Meridian.Storage.Services.IssueType.SequenceGap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceGap
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 616
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: SequenceGap = 1
+    return:
+      type: Meridian.Storage.Services.IssueType
+- uid: Meridian.Storage.Services.IssueType.EmptyFile
+  commentId: F:Meridian.Storage.Services.IssueType.EmptyFile
+  id: EmptyFile
+  parent: Meridian.Storage.Services.IssueType
+  langs:
+  - csharp
+  - vb
+  name: EmptyFile
+  nameWithType: IssueType.EmptyFile
+  fullName: Meridian.Storage.Services.IssueType.EmptyFile
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EmptyFile
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 617
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: EmptyFile = 2
+    return:
+      type: Meridian.Storage.Services.IssueType
+- uid: Meridian.Storage.Services.IssueType.TruncatedFile
+  commentId: F:Meridian.Storage.Services.IssueType.TruncatedFile
+  id: TruncatedFile
+  parent: Meridian.Storage.Services.IssueType
+  langs:
+  - csharp
+  - vb
+  name: TruncatedFile
+  nameWithType: IssueType.TruncatedFile
+  fullName: Meridian.Storage.Services.IssueType.TruncatedFile
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TruncatedFile
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 618
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: TruncatedFile = 3
+    return:
+      type: Meridian.Storage.Services.IssueType
+- uid: Meridian.Storage.Services.IssueType.UnreadableFile
+  commentId: F:Meridian.Storage.Services.IssueType.UnreadableFile
+  id: UnreadableFile
+  parent: Meridian.Storage.Services.IssueType
+  langs:
+  - csharp
+  - vb
+  name: UnreadableFile
+  nameWithType: IssueType.UnreadableFile
+  fullName: Meridian.Storage.Services.IssueType.UnreadableFile
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnreadableFile
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 619
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: UnreadableFile = 4
+    return:
+      type: Meridian.Storage.Services.IssueType
+- uid: Meridian.Storage.Services.IssueType.PermissionDenied
+  commentId: F:Meridian.Storage.Services.IssueType.PermissionDenied
+  id: PermissionDenied
+  parent: Meridian.Storage.Services.IssueType
+  langs:
+  - csharp
+  - vb
+  name: PermissionDenied
+  nameWithType: IssueType.PermissionDenied
+  fullName: Meridian.Storage.Services.IssueType.PermissionDenied
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PermissionDenied
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 620
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: PermissionDenied = 5
+    return:
+      type: Meridian.Storage.Services.IssueType
+- uid: Meridian.Storage.Services.IssueType.OrphanedFile
+  commentId: F:Meridian.Storage.Services.IssueType.OrphanedFile
+  id: OrphanedFile
+  parent: Meridian.Storage.Services.IssueType
+  langs:
+  - csharp
+  - vb
+  name: OrphanedFile
+  nameWithType: IssueType.OrphanedFile
+  fullName: Meridian.Storage.Services.IssueType.OrphanedFile
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrphanedFile
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 621
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: OrphanedFile = 6
+    return:
+      type: Meridian.Storage.Services.IssueType
+- uid: Meridian.Storage.Services.IssueType.SchemaViolation
+  commentId: F:Meridian.Storage.Services.IssueType.SchemaViolation
+  id: SchemaViolation
+  parent: Meridian.Storage.Services.IssueType
+  langs:
+  - csharp
+  - vb
+  name: SchemaViolation
+  nameWithType: IssueType.SchemaViolation
+  fullName: Meridian.Storage.Services.IssueType.SchemaViolation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaViolation
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 622
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: SchemaViolation = 7
+    return:
+      type: Meridian.Storage.Services.IssueType
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.IssueType
+  commentId: T:Meridian.Storage.Services.IssueType
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.IssueType.html
+  name: IssueType
+  nameWithType: IssueType
+  fullName: Meridian.Storage.Services.IssueType

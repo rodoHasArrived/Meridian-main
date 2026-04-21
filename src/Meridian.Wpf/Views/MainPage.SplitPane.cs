@@ -1,4 +1,6 @@
 using System.Windows;
+using System.Windows.Controls;
+using Meridian.Wpf.Models;
 
 namespace Meridian.Wpf.Views;
 
@@ -6,36 +8,84 @@ namespace Meridian.Wpf.Views;
 // Fields _navigationService and _viewModel are declared in MainPage.xaml.cs.
 public partial class MainPage
 {
+    private SplitPaneHostControl? _splitPaneHost;
+    private bool _splitPaneEventsHooked;
+
     private void OnSplitPaneHostLoaded(object sender, RoutedEventArgs e)
     {
         if (sender is not SplitPaneHostControl host) return;
 
-        var firstFrame = host.GetPaneFrame(0);
-        if (firstFrame is null) return;
+        _splitPaneHost = host;
+        host.PaneDropRequested -= OnSplitPanePaneDropRequested;
+        host.PaneDropRequested += OnSplitPanePaneDropRequested;
 
-        // Redirect NavigationService from the collapsed ContentFrame to the live pane
-        _navigationService.Initialize(firstFrame);
-
-        // Re-navigate to the page that was loaded before we took over
-        _navigationService.NavigateTo(_viewModel.CurrentPageTag);
-
-        if (_viewModel is not null)
+        if (string.IsNullOrWhiteSpace(_viewModel.SplitPane.GetAssignedPageTag(0)))
         {
-            // When user changes layout, redirect active-pane navigation
-            _viewModel.SplitPane.LayoutChanged += (_, _) =>
-            {
-                var pane = host.GetPaneFrame(_viewModel.SplitPane.ActivePaneIndex);
-                if (pane is not null)
-                    _navigationService.Initialize(pane);
-            };
+            _viewModel.SplitPane.AssignPageToPane(_viewModel.CurrentPageTag, 0);
+        }
 
-            // When active pane index changes, redirect navigation to that pane
-            _viewModel.SplitPane.ActivePaneChanged += (_, idx) =>
+        if (!_splitPaneEventsHooked)
+        {
+            _viewModel.SplitPane.LayoutChanged += OnSplitPaneLayoutChanged;
+            _viewModel.SplitPane.ActivePaneChanged += OnSplitPaneActivePaneChanged;
+            _splitPaneEventsHooked = true;
+        }
+
+        SyncSplitPaneContent();
+    }
+
+    private void OnSplitPanePaneDropRequested(object? sender, PaneDropEventArgs e)
+    {
+        var activePaneIndex = _viewModel.SplitPane.ApplyPaneDrop(e.PageTag, e.TargetPaneIndex, e.Action);
+        SyncSplitPaneContent();
+
+        var activePane = _splitPaneHost?.GetPaneFrame(activePaneIndex);
+        if (activePane is not null)
+        {
+            _navigationService.Initialize(activePane);
+        }
+
+        _viewModel.NavigateToPageCommand.Execute(e.PageTag);
+    }
+
+    private void OnSplitPaneLayoutChanged(object? sender, PaneLayout layout)
+    {
+        SyncSplitPaneContent();
+    }
+
+    private void OnSplitPaneActivePaneChanged(object? sender, int paneIndex)
+    {
+        SyncSplitPaneContent();
+    }
+
+    private void SyncSplitPaneContent()
+    {
+        if (_splitPaneHost is null)
+        {
+            return;
+        }
+
+        for (var paneIndex = 0; paneIndex < _viewModel.SplitPane.SelectedLayout.PaneCount; paneIndex++)
+        {
+            var frame = _splitPaneHost.GetPaneFrame(paneIndex);
+            if (frame is null)
             {
-                var pane = host.GetPaneFrame(idx);
-                if (pane is not null)
-                    _navigationService.Initialize(pane);
-            };
+                continue;
+            }
+
+            var pageTag = _viewModel.SplitPane.GetAssignedPageTag(paneIndex);
+            if (string.IsNullOrWhiteSpace(pageTag))
+            {
+                continue;
+            }
+
+            frame.Content = _navigationService.CreatePageContent(pageTag);
+        }
+
+        var activePane = _splitPaneHost.GetPaneFrame(_viewModel.SplitPane.ActivePaneIndex);
+        if (activePane is not null)
+        {
+            _navigationService.Initialize(activePane);
         }
     }
 }

@@ -1,0 +1,3593 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  id: ProviderRegistry
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.#ctor(Meridian.Application.Monitoring.Core.IAlertDispatcher,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(Meridian.Application.Config.DataSourceKind)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Disable(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Dispose
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Enable(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviderMetadata
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviders
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProvider(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProviders
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync``1(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestBackfillProviderAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestSymbolSearchProviderAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderAvailabilityAsync``1(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalog
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogByType(Meridian.Infrastructure.Adapters.Core.ProviderType)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogEntry(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider``1(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvidersByCapability(System.Func{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities,System.Boolean})
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders``1
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProvider(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProviders
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSummary
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProvider(System.String)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProviders
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.IsAnyProviderAvailableAsync``1(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterBackfill(System.String,Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider,System.Int32)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreaming(System.String,Meridian.Infrastructure.IMarketDataClient,System.Int32)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(Meridian.Application.Config.DataSourceKind,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(System.String,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterSymbolSearch(System.String,Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider,System.Int32)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register``1(``0,System.Nullable{System.Int32})
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.SupportedStreamingSources
+  langs:
+  - csharp
+  - vb
+  name: ProviderRegistry
+  nameWithType: ProviderRegistry
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderRegistry
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Centralized registry for all market data providers enabling plugin-style
+
+    provider management with discovery, routing, and health monitoring.
+  remarks: >-
+    The provider registry provides:
+
+    - Centralized provider registration and discovery
+
+    - Priority-based provider routing
+
+    - Provider health monitoring and automatic failover
+
+    - Capability-based provider selection
+
+    - Unified metadata access via <xref href="Meridian.Infrastructure.Adapters.Core.IProviderMetadata" data-throw-if-not-resolved="false"></xref>
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Centralized provider registry for plugin-style management")]
+
+      public sealed class ProviderRegistry : IDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Centralized provider registry for plugin-style management")>
+
+      Public NotInheritable Class ProviderRegistry Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  extensionMethods:
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Centralized provider registry for plugin-style management
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.#ctor(Meridian.Application.Monitoring.Core.IAlertDispatcher,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.#ctor(Meridian.Application.Monitoring.Core.IAlertDispatcher,Serilog.ILogger)
+  id: '#ctor(Meridian.Application.Monitoring.Core.IAlertDispatcher,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: ProviderRegistry(IAlertDispatcher?, ILogger?)
+  nameWithType: ProviderRegistry.ProviderRegistry(IAlertDispatcher?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.ProviderRegistry(Meridian.Application.Monitoring.Core.IAlertDispatcher?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public ProviderRegistry(IAlertDispatcher? alertDispatcher = null, ILogger? log = null)
+    parameters:
+    - id: alertDispatcher
+      type: Meridian.Application.Monitoring.Core.IAlertDispatcher
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(alertDispatcher As IAlertDispatcher = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.#ctor*
+  nameWithType.vb: ProviderRegistry.New(IAlertDispatcher, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.New(Meridian.Application.Monitoring.Core.IAlertDispatcher, Serilog.ILogger)
+  name.vb: New(IAlertDispatcher, ILogger)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register``1(``0,System.Nullable{System.Int32})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register``1(``0,System.Nullable{System.Int32})
+  id: Register``1(``0,System.Nullable{System.Int32})
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: Register<T>(T, int?)
+  nameWithType: ProviderRegistry.Register<T>(T, int?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register<T>(T, int?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Register
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Registers any provider implementing <xref href="Meridian.Infrastructure.Adapters.Core.IProviderMetadata" data-throw-if-not-resolved="false"></xref>.
+
+    All providers are stored in a single unified registry.
+  example: []
+  syntax:
+    content: 'public void Register<T>(T provider, int? priorityOverride = null) where T : IProviderMetadata'
+    parameters:
+    - id: provider
+      type: '{T}'
+      description: The provider instance.
+    - id: priorityOverride
+      type: System.Nullable{System.Int32}
+      description: Optional priority override.
+    typeParameters:
+    - id: T
+      description: The provider type.
+    content.vb: Public Sub Register(Of T As IProviderMetadata)(provider As T, priorityOverride As Integer? = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register*
+  nameWithType.vb: ProviderRegistry.Register(Of T)(T, Integer?)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register(Of T)(T, Integer?)
+  name.vb: Register(Of T)(T, Integer?)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(System.String,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(System.String,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  id: RegisterStreamingFactory(System.String,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterStreamingFactory(string, Func<IMarketDataClient>)
+  nameWithType: ProviderRegistry.RegisterStreamingFactory(string, Func<IMarketDataClient>)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(string, System.Func<Meridian.Infrastructure.IMarketDataClient>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterStreamingFactory
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Registers a factory function for creating a streaming client for the specified provider ID.
+
+    Provider IDs are case-insensitive strings (e.g. "alpaca", "ib", "polygon").
+
+    This is the primary registration path; it does not require extending <xref href="Meridian.Application.Config.DataSourceKind" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public void RegisterStreamingFactory(string providerId, Func<IMarketDataClient> factory)
+    parameters:
+    - id: providerId
+      type: System.String
+      description: The provider ID to register (case-insensitive).
+    - id: factory
+      type: System.Func{Meridian.Infrastructure.IMarketDataClient}
+      description: Factory function that creates the streaming client.
+    content.vb: Public Sub RegisterStreamingFactory(providerId As String, factory As Func(Of IMarketDataClient))
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory*
+  nameWithType.vb: ProviderRegistry.RegisterStreamingFactory(String, Func(Of IMarketDataClient))
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(String, System.Func(Of Meridian.Infrastructure.IMarketDataClient))
+  name.vb: RegisterStreamingFactory(String, Func(Of IMarketDataClient))
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(Meridian.Application.Config.DataSourceKind,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(Meridian.Application.Config.DataSourceKind,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  id: RegisterStreamingFactory(Meridian.Application.Config.DataSourceKind,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterStreamingFactory(DataSourceKind, Func<IMarketDataClient>)
+  nameWithType: ProviderRegistry.RegisterStreamingFactory(DataSourceKind, Func<IMarketDataClient>)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(Meridian.Application.Config.DataSourceKind, System.Func<Meridian.Infrastructure.IMarketDataClient>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterStreamingFactory
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Backward-compatible shim. Converts <code class="paramref">kind</code> to its lower-case name
+
+    (e.g. <xref href="Meridian.Application.Config.DataSourceKind.Alpaca" data-throw-if-not-resolved="false"></xref> → <code>"alpaca"</code>) and delegates to
+
+    <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(System.String%2cSystem.Func%7bMeridian.Infrastructure.IMarketDataClient%7d)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public void RegisterStreamingFactory(DataSourceKind kind, Func<IMarketDataClient> factory)
+    parameters:
+    - id: kind
+      type: Meridian.Application.Config.DataSourceKind
+      description: The data source kind to register.
+    - id: factory
+      type: System.Func{Meridian.Infrastructure.IMarketDataClient}
+      description: Factory function that creates the streaming client.
+    content.vb: Public Sub RegisterStreamingFactory(kind As DataSourceKind, factory As Func(Of IMarketDataClient))
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory*
+  nameWithType.vb: ProviderRegistry.RegisterStreamingFactory(DataSourceKind, Func(Of IMarketDataClient))
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(Meridian.Application.Config.DataSourceKind, System.Func(Of Meridian.Infrastructure.IMarketDataClient))
+  name.vb: RegisterStreamingFactory(DataSourceKind, Func(Of IMarketDataClient))
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+  id: CreateStreamingClient(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: CreateStreamingClient(string)
+  nameWithType: ProviderRegistry.CreateStreamingClient(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateStreamingClient
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Creates a streaming client for the specified provider ID using the registered factory.
+
+    Falls back to the <code>"ib"</code> factory if the requested ID has no registered factory.
+  example: []
+  syntax:
+    content: public IMarketDataClient CreateStreamingClient(string providerId)
+    parameters:
+    - id: providerId
+      type: System.String
+      description: The provider ID to create a client for (case-insensitive).
+    return:
+      type: Meridian.Infrastructure.IMarketDataClient
+      description: A new streaming client instance.
+    content.vb: Public Function CreateStreamingClient(providerId As String) As IMarketDataClient
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: Thrown when no factory is registered for the ID and no IB fallback is available.
+  nameWithType.vb: ProviderRegistry.CreateStreamingClient(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(String)
+  name.vb: CreateStreamingClient(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(Meridian.Application.Config.DataSourceKind)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(Meridian.Application.Config.DataSourceKind)
+  id: CreateStreamingClient(Meridian.Application.Config.DataSourceKind)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: CreateStreamingClient(DataSourceKind)
+  nameWithType: ProviderRegistry.CreateStreamingClient(DataSourceKind)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(Meridian.Application.Config.DataSourceKind)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateStreamingClient
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Backward-compatible shim. Converts <code class="paramref">kind</code> to its lower-case name and
+
+    delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public IMarketDataClient CreateStreamingClient(DataSourceKind kind)
+    parameters:
+    - id: kind
+      type: Meridian.Application.Config.DataSourceKind
+      description: The data source kind to create a client for.
+    return:
+      type: Meridian.Infrastructure.IMarketDataClient
+      description: A new streaming client instance.
+    content.vb: Public Function CreateStreamingClient(kind As DataSourceKind) As IMarketDataClient
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.SupportedStreamingSources
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.SupportedStreamingSources
+  id: SupportedStreamingSources
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: SupportedStreamingSources
+  nameWithType: ProviderRegistry.SupportedStreamingSources
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.SupportedStreamingSources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedStreamingSources
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets all provider IDs that have a registered streaming factory (lower-case, sorted).
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SupportedStreamingSources { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public ReadOnly Property SupportedStreamingSources As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.SupportedStreamingSources*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviderMetadata
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviderMetadata
+  id: GetAllProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetAllProviderMetadata()
+  nameWithType: ProviderRegistry.GetAllProviderMetadata()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviderMetadata()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllProviderMetadata
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets all registered providers as unified metadata.
+  example: []
+  syntax:
+    content: public IReadOnlyList<IProviderMetadata> GetAllProviderMetadata()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IProviderMetadata}
+    content.vb: Public Function GetAllProviderMetadata() As IReadOnlyList(Of IProviderMetadata)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviderMetadata*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider(System.String)
+  id: GetProvider(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetProvider(string)
+  nameWithType: ProviderRegistry.GetProvider(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets a provider by ID from the unified registry.
+  example: []
+  syntax:
+    content: public IProviderMetadata? GetProvider(string id)
+    parameters:
+    - id: id
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+    content.vb: Public Function GetProvider(id As String) As IProviderMetadata
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider*
+  nameWithType.vb: ProviderRegistry.GetProvider(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider(String)
+  name.vb: GetProvider(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvidersByCapability(System.Func{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities,System.Boolean})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvidersByCapability(System.Func{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities,System.Boolean})
+  id: GetProvidersByCapability(System.Func{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities,System.Boolean})
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetProvidersByCapability(Func<ProviderCapabilities, bool>)
+  nameWithType: ProviderRegistry.GetProvidersByCapability(Func<ProviderCapabilities, bool>)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvidersByCapability(System.Func<Meridian.Infrastructure.Adapters.Core.ProviderCapabilities, bool>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProvidersByCapability
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets providers filtered by capability.
+  example: []
+  syntax:
+    content: public IReadOnlyList<IProviderMetadata> GetProvidersByCapability(Func<ProviderCapabilities, bool> predicate)
+    parameters:
+    - id: predicate
+      type: System.Func{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities,System.Boolean}
+      description: Capability filter predicate.
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IProviderMetadata}
+    content.vb: Public Function GetProvidersByCapability(predicate As Func(Of ProviderCapabilities, Boolean)) As IReadOnlyList(Of IProviderMetadata)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvidersByCapability*
+  nameWithType.vb: ProviderRegistry.GetProvidersByCapability(Func(Of ProviderCapabilities, Boolean))
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvidersByCapability(System.Func(Of Meridian.Infrastructure.Adapters.Core.ProviderCapabilities, Boolean))
+  name.vb: GetProvidersByCapability(Func(Of ProviderCapabilities, Boolean))
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders``1
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders``1
+  id: GetProviders``1
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetProviders<T>()
+  nameWithType: ProviderRegistry.GetProviders<T>()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders<T>()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviders
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 222
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Gets all providers of a specific type, ordered by priority.
+
+    This is the unified generic approach that replaces type-specific methods.
+  example: []
+  syntax:
+    content: 'public IReadOnlyList<T> GetProviders<T>() where T : class, IProviderMetadata'
+    typeParameters:
+    - id: T
+      description: The provider interface type (e.g., IMarketDataClient, IHistoricalDataProvider).
+    return:
+      type: System.Collections.Generic.IReadOnlyList{{T}}
+      description: All enabled providers of the specified type, ordered by priority.
+    content.vb: Public Function GetProviders(Of T As {Class, IProviderMetadata})() As IReadOnlyList(Of T)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders*
+  nameWithType.vb: ProviderRegistry.GetProviders(Of T)()
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders(Of T)()
+  name.vb: GetProviders(Of T)()
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider``1(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider``1(System.String)
+  id: GetProvider``1(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetProvider<T>(string)
+  nameWithType: ProviderRegistry.GetProvider<T>(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider<T>(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets a provider of a specific type by ID.
+  example: []
+  syntax:
+    content: 'public T? GetProvider<T>(string id) where T : class, IProviderMetadata'
+    parameters:
+    - id: id
+      type: System.String
+      description: The provider ID.
+    typeParameters:
+    - id: T
+      description: The provider interface type.
+    return:
+      type: '{T}'
+      description: The provider if found and of the correct type, null otherwise.
+    content.vb: Public Function GetProvider(Of T As {Class, IProviderMetadata})(id As String) As T
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider*
+  nameWithType.vb: ProviderRegistry.GetProvider(Of T)(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider(Of T)(String)
+  name.vb: GetProvider(Of T)(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync``1(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync``1(System.Threading.CancellationToken)
+  id: GetBestAvailableProviderAsync``1(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetBestAvailableProviderAsync<T>(CancellationToken)
+  nameWithType: ProviderRegistry.GetBestAvailableProviderAsync<T>(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync<T>(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBestAvailableProviderAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 253
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Gets the best available provider of a specific type based on priority and availability.
+
+    This is the unified availability check that works for all provider types.
+  example: []
+  syntax:
+    content: 'public Task<T?> GetBestAvailableProviderAsync<T>(CancellationToken ct = default) where T : class, IProviderMetadata'
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    typeParameters:
+    - id: T
+      description: The provider interface type.
+    return:
+      type: System.Threading.Tasks.Task{{T}}
+      description: The best available provider, or null if none available.
+    content.vb: Public Function GetBestAvailableProviderAsync(Of T As {Class, IProviderMetadata})(ct As CancellationToken = Nothing) As Task(Of T)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync*
+  nameWithType.vb: ProviderRegistry.GetBestAvailableProviderAsync(Of T)(CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync(Of T)(System.Threading.CancellationToken)
+  name.vb: GetBestAvailableProviderAsync(Of T)(CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.IsAnyProviderAvailableAsync``1(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.IsAnyProviderAvailableAsync``1(System.Threading.CancellationToken)
+  id: IsAnyProviderAvailableAsync``1(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: IsAnyProviderAvailableAsync<T>(CancellationToken)
+  nameWithType: ProviderRegistry.IsAnyProviderAvailableAsync<T>(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.IsAnyProviderAvailableAsync<T>(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAnyProviderAvailableAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 299
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Checks if any provider of the specified type is available.
+  example: []
+  syntax:
+    content: 'public Task<bool> IsAnyProviderAvailableAsync<T>(CancellationToken ct = default) where T : class, IProviderMetadata'
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    typeParameters:
+    - id: T
+      description: The provider interface type.
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: True if at least one provider is available.
+    content.vb: Public Function IsAnyProviderAvailableAsync(Of T As {Class, IProviderMetadata})(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.IsAnyProviderAvailableAsync*
+  nameWithType.vb: ProviderRegistry.IsAnyProviderAvailableAsync(Of T)(CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.IsAnyProviderAvailableAsync(Of T)(System.Threading.CancellationToken)
+  name.vb: IsAnyProviderAvailableAsync(Of T)(CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderAvailabilityAsync``1(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderAvailabilityAsync``1(System.Threading.CancellationToken)
+  id: GetProviderAvailabilityAsync``1(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetProviderAvailabilityAsync<T>(CancellationToken)
+  nameWithType: ProviderRegistry.GetProviderAvailabilityAsync<T>(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderAvailabilityAsync<T>(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderAvailabilityAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 311
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets availability status for all providers of a specific type.
+  example: []
+  syntax:
+    content: 'public Task<IReadOnlyDictionary<string, bool>> GetProviderAvailabilityAsync<T>(CancellationToken ct = default) where T : class, IProviderMetadata'
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    typeParameters:
+    - id: T
+      description: The provider interface type.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,System.Boolean}}
+      description: Dictionary mapping provider IDs to availability status.
+    content.vb: Public Function GetProviderAvailabilityAsync(Of T As {Class, IProviderMetadata})(ct As CancellationToken = Nothing) As Task(Of IReadOnlyDictionary(Of String, Boolean))
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderAvailabilityAsync*
+  nameWithType.vb: ProviderRegistry.GetProviderAvailabilityAsync(Of T)(CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderAvailabilityAsync(Of T)(System.Threading.CancellationToken)
+  name.vb: GetProviderAvailabilityAsync(Of T)(CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreaming(System.String,Meridian.Infrastructure.IMarketDataClient,System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreaming(System.String,Meridian.Infrastructure.IMarketDataClient,System.Int32)
+  id: RegisterStreaming(System.String,Meridian.Infrastructure.IMarketDataClient,System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterStreaming(string, IMarketDataClient, int)
+  nameWithType: ProviderRegistry.RegisterStreaming(string, IMarketDataClient, int)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreaming(string, Meridian.Infrastructure.IMarketDataClient, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterStreaming
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 340
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Registers a streaming market data provider.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register%60%601(%60%600%2cSystem.Nullable%7bSystem.Int32%7d)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public void RegisterStreaming(string name, IMarketDataClient provider, int priority = 100)
+    parameters:
+    - id: name
+      type: System.String
+    - id: provider
+      type: Meridian.Infrastructure.IMarketDataClient
+    - id: priority
+      type: System.Int32
+    content.vb: Public Sub RegisterStreaming(name As String, provider As IMarketDataClient, priority As Integer = 100)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreaming*
+  nameWithType.vb: ProviderRegistry.RegisterStreaming(String, IMarketDataClient, Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreaming(String, Meridian.Infrastructure.IMarketDataClient, Integer)
+  name.vb: RegisterStreaming(String, IMarketDataClient, Integer)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProvider(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProvider(System.String)
+  id: GetStreamingProvider(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetStreamingProvider(string)
+  nameWithType: ProviderRegistry.GetStreamingProvider(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProvider(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStreamingProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets a streaming provider by name.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider%60%601(System.String)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public IMarketDataClient? GetStreamingProvider(string name)
+    parameters:
+    - id: name
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.IMarketDataClient
+    content.vb: Public Function GetStreamingProvider(name As String) As IMarketDataClient
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProvider*
+  nameWithType.vb: ProviderRegistry.GetStreamingProvider(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProvider(String)
+  name.vb: GetStreamingProvider(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProviders
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProviders
+  id: GetStreamingProviders
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetStreamingProviders()
+  nameWithType: ProviderRegistry.GetStreamingProviders()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProviders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStreamingProviders
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets all registered streaming providers ordered by priority.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders%60%601" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public IReadOnlyList<IMarketDataClient> GetStreamingProviders()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.IMarketDataClient}
+    content.vb: Public Function GetStreamingProviders() As IReadOnlyList(Of IMarketDataClient)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProviders*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterBackfill(System.String,Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider,System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterBackfill(System.String,Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider,System.Int32)
+  id: RegisterBackfill(System.String,Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider,System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterBackfill(string, IHistoricalDataProvider, int)
+  nameWithType: ProviderRegistry.RegisterBackfill(string, IHistoricalDataProvider, int)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterBackfill(string, Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterBackfill
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 362
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Registers a historical data provider.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register%60%601(%60%600%2cSystem.Nullable%7bSystem.Int32%7d)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public void RegisterBackfill(string name, IHistoricalDataProvider provider, int priority = 100)
+    parameters:
+    - id: name
+      type: System.String
+    - id: provider
+      type: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    - id: priority
+      type: System.Int32
+    content.vb: Public Sub RegisterBackfill(name As String, provider As IHistoricalDataProvider, priority As Integer = 100)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterBackfill*
+  nameWithType.vb: ProviderRegistry.RegisterBackfill(String, IHistoricalDataProvider, Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterBackfill(String, Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider, Integer)
+  name.vb: RegisterBackfill(String, IHistoricalDataProvider, Integer)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProvider(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProvider(System.String)
+  id: GetBackfillProvider(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillProvider(string)
+  nameWithType: ProviderRegistry.GetBackfillProvider(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProvider(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 372
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets a backfill provider by name.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider%60%601(System.String)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public IHistoricalDataProvider? GetBackfillProvider(string name)
+    parameters:
+    - id: name
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    content.vb: Public Function GetBackfillProvider(name As String) As IHistoricalDataProvider
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProvider*
+  nameWithType.vb: ProviderRegistry.GetBackfillProvider(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProvider(String)
+  name.vb: GetBackfillProvider(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProviders
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProviders
+  id: GetBackfillProviders
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillProviders()
+  nameWithType: ProviderRegistry.GetBackfillProviders()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProviders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillProviders
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 378
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets all registered backfill providers ordered by priority.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders%60%601" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public IReadOnlyList<IHistoricalDataProvider> GetBackfillProviders()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+    content.vb: Public Function GetBackfillProviders() As IReadOnlyList(Of IHistoricalDataProvider)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProviders*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestBackfillProviderAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestBackfillProviderAsync(System.Threading.CancellationToken)
+  id: GetBestBackfillProviderAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetBestBackfillProviderAsync(CancellationToken)
+  nameWithType: ProviderRegistry.GetBestBackfillProviderAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestBackfillProviderAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBestBackfillProviderAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 384
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets the best available backfill provider based on priority and health.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync%60%601(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public Task<IHistoricalDataProvider?> GetBestBackfillProviderAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+    content.vb: Public Function GetBestBackfillProviderAsync(ct As CancellationToken = Nothing) As Task(Of IHistoricalDataProvider)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestBackfillProviderAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterSymbolSearch(System.String,Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider,System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterSymbolSearch(System.String,Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider,System.Int32)
+  id: RegisterSymbolSearch(System.String,Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider,System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterSymbolSearch(string, ISymbolSearchProvider, int)
+  nameWithType: ProviderRegistry.RegisterSymbolSearch(string, ISymbolSearchProvider, int)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterSymbolSearch(string, Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterSymbolSearch
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 391
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Registers a symbol search provider.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register%60%601(%60%600%2cSystem.Nullable%7bSystem.Int32%7d)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public void RegisterSymbolSearch(string name, ISymbolSearchProvider provider, int priority = 100)
+    parameters:
+    - id: name
+      type: System.String
+    - id: provider
+      type: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+    - id: priority
+      type: System.Int32
+    content.vb: Public Sub RegisterSymbolSearch(name As String, provider As ISymbolSearchProvider, priority As Integer = 100)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterSymbolSearch*
+  nameWithType.vb: ProviderRegistry.RegisterSymbolSearch(String, ISymbolSearchProvider, Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterSymbolSearch(String, Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider, Integer)
+  name.vb: RegisterSymbolSearch(String, ISymbolSearchProvider, Integer)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProvider(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProvider(System.String)
+  id: GetSymbolSearchProvider(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolSearchProvider(string)
+  nameWithType: ProviderRegistry.GetSymbolSearchProvider(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProvider(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolSearchProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets a symbol search provider by name.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider%60%601(System.String)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public ISymbolSearchProvider? GetSymbolSearchProvider(string name)
+    parameters:
+    - id: name
+      type: System.String
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+    content.vb: Public Function GetSymbolSearchProvider(name As String) As ISymbolSearchProvider
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProvider*
+  nameWithType.vb: ProviderRegistry.GetSymbolSearchProvider(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProvider(String)
+  name.vb: GetSymbolSearchProvider(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProviders
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProviders
+  id: GetSymbolSearchProviders
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetSymbolSearchProviders()
+  nameWithType: ProviderRegistry.GetSymbolSearchProviders()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProviders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSymbolSearchProviders
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 407
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets all registered symbol search providers ordered by priority.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders%60%601" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ISymbolSearchProvider> GetSymbolSearchProviders()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider}
+    content.vb: Public Function GetSymbolSearchProviders() As IReadOnlyList(Of ISymbolSearchProvider)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProviders*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestSymbolSearchProviderAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestSymbolSearchProviderAsync(System.Threading.CancellationToken)
+  id: GetBestSymbolSearchProviderAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetBestSymbolSearchProviderAsync(CancellationToken)
+  nameWithType: ProviderRegistry.GetBestSymbolSearchProviderAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestSymbolSearchProviderAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBestSymbolSearchProviderAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 413
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets the best available symbol search provider based on priority and health.
+  remarks: Convenience wrapper that delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync%60%601(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public Task<ISymbolSearchProvider?> GetBestSymbolSearchProviderAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider}
+    content.vb: Public Function GetBestSymbolSearchProviderAsync(ct As CancellationToken = Nothing) As Task(Of ISymbolSearchProvider)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestSymbolSearchProviderAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Enable(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Enable(System.String)
+  id: Enable(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: Enable(string)
+  nameWithType: ProviderRegistry.Enable(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Enable(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enable
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 421
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Enables a provider.
+  example: []
+  syntax:
+    content: public void Enable(string name)
+    parameters:
+    - id: name
+      type: System.String
+    content.vb: Public Sub Enable(name As String)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Enable*
+  nameWithType.vb: ProviderRegistry.Enable(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Enable(String)
+  name.vb: Enable(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Disable(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Disable(System.String)
+  id: Disable(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: Disable(string)
+  nameWithType: ProviderRegistry.Disable(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Disable(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Disable
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 438
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Disables a provider.
+  example: []
+  syntax:
+    content: public void Disable(string name)
+    parameters:
+    - id: name
+      type: System.String
+    content.vb: Public Sub Disable(name As String)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Disable*
+  nameWithType.vb: ProviderRegistry.Disable(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Disable(String)
+  name.vb: Disable(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviders
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviders
+  id: GetAllProviders
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetAllProviders()
+  nameWithType: ProviderRegistry.GetAllProviders()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllProviders
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 469
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets information about all registered providers using standardized metadata.
+  remarks: >-
+    Uses <xref href="Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.FromMetadata(Meridian.Infrastructure.Adapters.Core.IProviderMetadata%2cSystem.Boolean%2cSystem.Nullable%7bSystem.Int32%7d)" data-throw-if-not-resolved="false"></xref> via the unified
+
+    <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry._allProviders" data-throw-if-not-resolved="false"></xref> dictionary to ensure consistent template output
+
+    across all provider types without type-specific branching.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ProviderInfo> GetAllProviders()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.ProviderInfo}
+    content.vb: Public Function GetAllProviders() As IReadOnlyList(Of ProviderInfo)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviders*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalog
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalog
+  id: GetProviderCatalog
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetProviderCatalog()
+  nameWithType: ProviderRegistry.GetProviderCatalog()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalog()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderCatalog
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 481
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Generates catalog entries from all registered providers using <xref href="Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.ToCatalogEntry(Meridian.Infrastructure.Adapters.Core.IProviderMetadata)" data-throw-if-not-resolved="false"></xref>.
+
+    This replaces static hardcoded catalog data with runtime-derived metadata.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ProviderCatalogEntry> GetProviderCatalog()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderCatalogEntry}
+      description: A list of <xref href="Meridian.Contracts.Api.ProviderCatalogEntry" data-throw-if-not-resolved="false"></xref> objects for UI consumption.
+    content.vb: Public Function GetProviderCatalog() As IReadOnlyList(Of ProviderCatalogEntry)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalog*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogByType(Meridian.Infrastructure.Adapters.Core.ProviderType)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogByType(Meridian.Infrastructure.Adapters.Core.ProviderType)
+  id: GetProviderCatalogByType(Meridian.Infrastructure.Adapters.Core.ProviderType)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetProviderCatalogByType(ProviderType)
+  nameWithType: ProviderRegistry.GetProviderCatalogByType(ProviderType)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogByType(Meridian.Infrastructure.Adapters.Core.ProviderType)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderCatalogByType
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 493
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Generates catalog entries for providers of a specific type.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ProviderCatalogEntry> GetProviderCatalogByType(ProviderType type)
+    parameters:
+    - id: type
+      type: Meridian.Infrastructure.Adapters.Core.ProviderType
+      description: The provider type to filter by.
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderCatalogEntry}
+      description: A list of <xref href="Meridian.Contracts.Api.ProviderCatalogEntry" data-throw-if-not-resolved="false"></xref> objects for UI consumption.
+    content.vb: Public Function GetProviderCatalogByType(type As ProviderType) As IReadOnlyList(Of ProviderCatalogEntry)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogByType*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogEntry(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogEntry(System.String)
+  id: GetProviderCatalogEntry(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetProviderCatalogEntry(string)
+  nameWithType: ProviderRegistry.GetProviderCatalogEntry(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogEntry(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderCatalogEntry
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 508
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets a catalog entry for a specific provider by ID.
+  example: []
+  syntax:
+    content: public ProviderCatalogEntry? GetProviderCatalogEntry(string providerId)
+    parameters:
+    - id: providerId
+      type: System.String
+      description: The provider ID to look up.
+    return:
+      type: Meridian.Contracts.Api.ProviderCatalogEntry
+      description: The catalog entry, or null if not found.
+    content.vb: Public Function GetProviderCatalogEntry(providerId As String) As ProviderCatalogEntry
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogEntry*
+  nameWithType.vb: ProviderRegistry.GetProviderCatalogEntry(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogEntry(String)
+  name.vb: GetProviderCatalogEntry(String)
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSummary
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSummary
+  id: GetSummary
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: GetSummary()
+  nameWithType: ProviderRegistry.GetSummary()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSummary()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSummary
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Gets a summary of registered provider counts.
+  example: []
+  syntax:
+    content: public ProviderRegistrySummary GetSummary()
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderRegistrySummary
+    content.vb: Public Function GetSummary() As ProviderRegistrySummary
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSummary*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ProviderRegistry.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderRegistry.cs
+    startLine: 535
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions
+  definition: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,System.Threading.CancellationToken)
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilityExtensions_GetAvailabilitySummaryAsync_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_System_Threading_CancellationToken_
+  name: GetAvailabilitySummaryAsync(ProviderRegistry, CancellationToken)
+  nameWithType: ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(ProviderRegistry, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,System.Threading.CancellationToken)
+    name: GetAvailabilitySummaryAsync
+    href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilityExtensions_GetAvailabilitySummaryAsync_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,System.Threading.CancellationToken)
+    name: GetAvailabilitySummaryAsync
+    href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilityExtensions_GetAvailabilitySummaryAsync_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions
+  definition: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_GetOrCreateCompositeBackfillProvider_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  name: GetOrCreateCompositeBackfillProvider(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  nameWithType: ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry, Meridian.Application.Config.AppConfig, Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver, Serilog.ILogger)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: GetOrCreateCompositeBackfillProvider
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_GetOrCreateCompositeBackfillProvider_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: GetOrCreateCompositeBackfillProvider
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_GetOrCreateCompositeBackfillProvider_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions
+  definition: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterBackfillProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  name: RegisterBackfillProviders(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  nameWithType: ProviderServiceExtensions.RegisterBackfillProviders(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry, Meridian.Application.Config.AppConfig, Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver, Serilog.ILogger)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: RegisterBackfillProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterBackfillProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: RegisterBackfillProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterBackfillProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions
+  definition: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterSymbolSearchProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  name: RegisterSymbolSearchProviders(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  nameWithType: ProviderServiceExtensions.RegisterSymbolSearchProviders(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry, Meridian.Application.Config.AppConfig, Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver, Serilog.ILogger)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: RegisterSymbolSearchProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterSymbolSearchProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: RegisterSymbolSearchProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterSymbolSearchProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilityExtensions_GetAvailabilitySummaryAsync_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_System_Threading_CancellationToken_
+  name: GetAvailabilitySummaryAsync(ProviderRegistry, CancellationToken)
+  nameWithType: ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(ProviderRegistry, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,System.Threading.CancellationToken)
+    name: GetAvailabilitySummaryAsync
+    href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilityExtensions_GetAvailabilitySummaryAsync_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.GetAvailabilitySummaryAsync(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,System.Threading.CancellationToken)
+    name: GetAvailabilitySummaryAsync
+    href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilityExtensions_GetAvailabilitySummaryAsync_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions.html
+  name: ProviderAvailabilityExtensions
+  nameWithType: ProviderAvailabilityExtensions
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilityExtensions
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_GetOrCreateCompositeBackfillProvider_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  name: GetOrCreateCompositeBackfillProvider(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  nameWithType: ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry, Meridian.Application.Config.AppConfig, Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver, Serilog.ILogger)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: GetOrCreateCompositeBackfillProvider
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_GetOrCreateCompositeBackfillProvider_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.GetOrCreateCompositeBackfillProvider(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: GetOrCreateCompositeBackfillProvider
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_GetOrCreateCompositeBackfillProvider_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html
+  name: ProviderServiceExtensions
+  nameWithType: ProviderServiceExtensions
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterBackfillProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  name: RegisterBackfillProviders(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  nameWithType: ProviderServiceExtensions.RegisterBackfillProviders(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry, Meridian.Application.Config.AppConfig, Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver, Serilog.ILogger)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: RegisterBackfillProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterBackfillProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterBackfillProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: RegisterBackfillProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterBackfillProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterSymbolSearchProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  name: RegisterSymbolSearchProviders(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  nameWithType: ProviderServiceExtensions.RegisterSymbolSearchProviders(ProviderRegistry, AppConfig, IProviderCredentialResolver, ILogger)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry, Meridian.Application.Config.AppConfig, Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver, Serilog.ILogger)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: RegisterSymbolSearchProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterSymbolSearchProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.RegisterSymbolSearchProviders(Meridian.Infrastructure.Adapters.Core.ProviderRegistry,Meridian.Application.Config.AppConfig,Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver,Serilog.ILogger)
+    name: RegisterSymbolSearchProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderServiceExtensions.html#Meridian_Infrastructure_Adapters_Core_ProviderServiceExtensions_RegisterSymbolSearchProviders_Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Meridian_Application_Config_AppConfig_Meridian_Infrastructure_Adapters_Core_IProviderCredentialResolver_Serilog_ILogger_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry
+    name: ProviderRegistry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: ','
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver
+    name: IProviderCredentialResolver
+    href: Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver.html
+  - name: ','
+  - name: " "
+  - uid: Serilog.ILogger
+    name: ILogger
+    isExternal: true
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry__ctor_Meridian_Application_Monitoring_Core_IAlertDispatcher_Serilog_ILogger_
+  name: ProviderRegistry
+  nameWithType: ProviderRegistry.ProviderRegistry
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.ProviderRegistry
+  nameWithType.vb: ProviderRegistry.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.Core.IAlertDispatcher
+  commentId: T:Meridian.Application.Monitoring.Core.IAlertDispatcher
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.IAlertDispatcher.html
+  name: IAlertDispatcher
+  nameWithType: IAlertDispatcher
+  fullName: Meridian.Application.Monitoring.Core.IAlertDispatcher
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Register__1___0_System_Nullable_System_Int32__
+  name: Register
+  nameWithType: ProviderRegistry.Register
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.DataSourceKind
+  commentId: T:Meridian.Application.Config.DataSourceKind
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DataSourceKind.html
+  name: DataSourceKind
+  nameWithType: DataSourceKind
+  fullName: Meridian.Application.Config.DataSourceKind
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_RegisterStreamingFactory_System_String_System_Func_Meridian_Infrastructure_IMarketDataClient__
+  name: RegisterStreamingFactory
+  nameWithType: ProviderRegistry.RegisterStreamingFactory
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Func{Meridian.Infrastructure.IMarketDataClient}
+  commentId: T:System.Func{Meridian.Infrastructure.IMarketDataClient}
+  parent: System
+  definition: System.Func`1
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<IMarketDataClient>
+  nameWithType: Func<IMarketDataClient>
+  fullName: System.Func<Meridian.Infrastructure.IMarketDataClient>
+  nameWithType.vb: Func(Of IMarketDataClient)
+  fullName.vb: System.Func(Of Meridian.Infrastructure.IMarketDataClient)
+  name.vb: Func(Of IMarketDataClient)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Infrastructure.IMarketDataClient
+    name: IMarketDataClient
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.IMarketDataClient
+    name: IMarketDataClient
+  - name: )
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Func`1
+  commentId: T:System.Func`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-1
+  name: Func<TResult>
+  nameWithType: Func<TResult>
+  fullName: System.Func<TResult>
+  nameWithType.vb: Func(Of TResult)
+  fullName.vb: System.Func(Of TResult)
+  name.vb: Func(Of TResult)
+  spec.csharp:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Config.DataSourceKind.Alpaca
+  commentId: F:Meridian.Application.Config.DataSourceKind.Alpaca
+  href: Meridian.Application.Config.DataSourceKind.html#Meridian_Application_Config_DataSourceKind_Alpaca
+  name: Alpaca
+  nameWithType: DataSourceKind.Alpaca
+  fullName: Meridian.Application.Config.DataSourceKind.Alpaca
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(System.String,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(System.String,System.Func{Meridian.Infrastructure.IMarketDataClient})
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_RegisterStreamingFactory_System_String_System_Func_Meridian_Infrastructure_IMarketDataClient__
+  name: RegisterStreamingFactory(string, Func<IMarketDataClient>)
+  nameWithType: ProviderRegistry.RegisterStreamingFactory(string, Func<IMarketDataClient>)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(string, System.Func<Meridian.Infrastructure.IMarketDataClient>)
+  nameWithType.vb: ProviderRegistry.RegisterStreamingFactory(String, Func(Of IMarketDataClient))
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(String, System.Func(Of Meridian.Infrastructure.IMarketDataClient))
+  name.vb: RegisterStreamingFactory(String, Func(Of IMarketDataClient))
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(System.String,System.Func{Meridian.Infrastructure.IMarketDataClient})
+    name: RegisterStreamingFactory
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_RegisterStreamingFactory_System_String_System_Func_Meridian_Infrastructure_IMarketDataClient__
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: <
+  - uid: Meridian.Infrastructure.IMarketDataClient
+    name: IMarketDataClient
+  - name: '>'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreamingFactory(System.String,System.Func{Meridian.Infrastructure.IMarketDataClient})
+    name: RegisterStreamingFactory
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_RegisterStreamingFactory_System_String_System_Func_Meridian_Infrastructure_IMarketDataClient__
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Func`1
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.IMarketDataClient
+    name: IMarketDataClient
+  - name: )
+  - name: )
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_CreateStreamingClient_System_String_
+  name: CreateStreamingClient
+  nameWithType: ProviderRegistry.CreateStreamingClient
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_CreateStreamingClient_System_String_
+  name: CreateStreamingClient(string)
+  nameWithType: ProviderRegistry.CreateStreamingClient(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(string)
+  nameWithType.vb: ProviderRegistry.CreateStreamingClient(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(String)
+  name.vb: CreateStreamingClient(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+    name: CreateStreamingClient
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_CreateStreamingClient_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+    name: CreateStreamingClient
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_CreateStreamingClient_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.SupportedStreamingSources*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.SupportedStreamingSources
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_SupportedStreamingSources
+  name: SupportedStreamingSources
+  nameWithType: ProviderRegistry.SupportedStreamingSources
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.SupportedStreamingSources
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviderMetadata*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetAllProviderMetadata
+  name: GetAllProviderMetadata
+  nameWithType: ProviderRegistry.GetAllProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviderMetadata
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IProviderMetadata}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IProviderMetadata}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IProviderMetadata>
+  nameWithType: IReadOnlyList<IProviderMetadata>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.IProviderMetadata>
+  nameWithType.vb: IReadOnlyList(Of IProviderMetadata)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.IProviderMetadata)
+  name.vb: IReadOnlyList(Of IProviderMetadata)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+    name: IProviderMetadata
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+    name: IProviderMetadata
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProvider_System_String_
+  name: GetProvider
+  nameWithType: ProviderRegistry.GetProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvidersByCapability*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvidersByCapability
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProvidersByCapability_System_Func_Meridian_Infrastructure_Adapters_Core_ProviderCapabilities_System_Boolean__
+  name: GetProvidersByCapability
+  nameWithType: ProviderRegistry.GetProvidersByCapability
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvidersByCapability
+- uid: System.Func{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities,System.Boolean}
+  commentId: T:System.Func{Meridian.Infrastructure.Adapters.Core.ProviderCapabilities,System.Boolean}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<ProviderCapabilities, bool>
+  nameWithType: Func<ProviderCapabilities, bool>
+  fullName: System.Func<Meridian.Infrastructure.Adapters.Core.ProviderCapabilities, bool>
+  nameWithType.vb: Func(Of ProviderCapabilities, Boolean)
+  fullName.vb: System.Func(Of Meridian.Infrastructure.Adapters.Core.ProviderCapabilities, Boolean)
+  name.vb: Func(Of ProviderCapabilities, Boolean)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    name: ProviderCapabilities
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    name: ProviderCapabilities
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProviders__1
+  name: GetProviders
+  nameWithType: ProviderRegistry.GetProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders
+- uid: System.Collections.Generic.IReadOnlyList{{T}}
+  commentId: T:System.Collections.Generic.IReadOnlyList{``0}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetBestAvailableProviderAsync__1_System_Threading_CancellationToken_
+  name: GetBestAvailableProviderAsync
+  nameWithType: ProviderRegistry.GetBestAvailableProviderAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{{T}}
+  commentId: T:System.Threading.Tasks.Task{``0}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<T>
+  nameWithType: Task<T>
+  fullName: System.Threading.Tasks.Task<T>
+  nameWithType.vb: Task(Of T)
+  fullName.vb: System.Threading.Tasks.Task(Of T)
+  name.vb: Task(Of T)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.IsAnyProviderAvailableAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.IsAnyProviderAvailableAsync
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_IsAnyProviderAvailableAsync__1_System_Threading_CancellationToken_
+  name: IsAnyProviderAvailableAsync
+  nameWithType: ProviderRegistry.IsAnyProviderAvailableAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.IsAnyProviderAvailableAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderAvailabilityAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderAvailabilityAsync
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProviderAvailabilityAsync__1_System_Threading_CancellationToken_
+  name: GetProviderAvailabilityAsync
+  nameWithType: ProviderRegistry.GetProviderAvailabilityAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderAvailabilityAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,System.Boolean}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyDictionary{System.String,System.Boolean}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyDictionary<string, bool>>
+  nameWithType: Task<IReadOnlyDictionary<string, bool>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyDictionary<string, bool>>
+  nameWithType.vb: Task(Of IReadOnlyDictionary(Of String, Boolean))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyDictionary(Of String, Boolean))
+  name.vb: Task(Of IReadOnlyDictionary(Of String, Boolean))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register``1(``0,System.Nullable{System.Int32})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register``1(``0,System.Nullable{System.Int32})
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Register__1___0_System_Nullable_System_Int32__
+  name: Register<T>(T, int?)
+  nameWithType: ProviderRegistry.Register<T>(T, int?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register<T>(T, int?)
+  nameWithType.vb: ProviderRegistry.Register(Of T)(T, Integer?)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register(Of T)(T, Integer?)
+  name.vb: Register(Of T)(T, Integer?)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register``1(``0,System.Nullable{System.Int32})
+    name: Register
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Register__1___0_System_Nullable_System_Int32__
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Register``1(``0,System.Nullable{System.Int32})
+    name: Register
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Register__1___0_System_Nullable_System_Int32__
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - name: T
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreaming*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreaming
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_RegisterStreaming_System_String_Meridian_Infrastructure_IMarketDataClient_System_Int32_
+  name: RegisterStreaming
+  nameWithType: ProviderRegistry.RegisterStreaming
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterStreaming
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider``1(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider``1(System.String)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProvider__1_System_String_
+  name: GetProvider<T>(string)
+  nameWithType: ProviderRegistry.GetProvider<T>(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider<T>(string)
+  nameWithType.vb: ProviderRegistry.GetProvider(Of T)(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider(Of T)(String)
+  name.vb: GetProvider(Of T)(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider``1(System.String)
+    name: GetProvider
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProvider__1_System_String_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProvider``1(System.String)
+    name: GetProvider
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProvider__1_System_String_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProvider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProvider
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetStreamingProvider_System_String_
+  name: GetStreamingProvider
+  nameWithType: ProviderRegistry.GetStreamingProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders``1
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders``1
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProviders__1
+  name: GetProviders<T>()
+  nameWithType: ProviderRegistry.GetProviders<T>()
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders<T>()
+  nameWithType.vb: ProviderRegistry.GetProviders(Of T)()
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders(Of T)()
+  name.vb: GetProviders(Of T)()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders``1
+    name: GetProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProviders__1
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviders``1
+    name: GetProviders
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProviders__1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProviders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProviders
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetStreamingProviders
+  name: GetStreamingProviders
+  nameWithType: ProviderRegistry.GetStreamingProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetStreamingProviders
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.IMarketDataClient}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.IMarketDataClient}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IMarketDataClient>
+  nameWithType: IReadOnlyList<IMarketDataClient>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.IMarketDataClient>
+  nameWithType.vb: IReadOnlyList(Of IMarketDataClient)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.IMarketDataClient)
+  name.vb: IReadOnlyList(Of IMarketDataClient)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.IMarketDataClient
+    name: IMarketDataClient
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.IMarketDataClient
+    name: IMarketDataClient
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterBackfill*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterBackfill
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_RegisterBackfill_System_String_Meridian_Infrastructure_Adapters_Core_IHistoricalDataProvider_System_Int32_
+  name: RegisterBackfill
+  nameWithType: ProviderRegistry.RegisterBackfill
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterBackfill
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  name: IHistoricalDataProvider
+  nameWithType: IHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProvider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProvider
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetBackfillProvider_System_String_
+  name: GetBackfillProvider
+  nameWithType: ProviderRegistry.GetBackfillProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProviders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProviders
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetBackfillProviders
+  name: GetBackfillProviders
+  nameWithType: ProviderRegistry.GetBackfillProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBackfillProviders
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IHistoricalDataProvider>
+  nameWithType: IReadOnlyList<IHistoricalDataProvider>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider>
+  nameWithType.vb: IReadOnlyList(Of IHistoricalDataProvider)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider)
+  name.vb: IReadOnlyList(Of IHistoricalDataProvider)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    name: IHistoricalDataProvider
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    name: IHistoricalDataProvider
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync``1(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync``1(System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetBestAvailableProviderAsync__1_System_Threading_CancellationToken_
+  name: GetBestAvailableProviderAsync<T>(CancellationToken)
+  nameWithType: ProviderRegistry.GetBestAvailableProviderAsync<T>(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync<T>(System.Threading.CancellationToken)
+  nameWithType.vb: ProviderRegistry.GetBestAvailableProviderAsync(Of T)(CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync(Of T)(System.Threading.CancellationToken)
+  name.vb: GetBestAvailableProviderAsync(Of T)(CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync``1(System.Threading.CancellationToken)
+    name: GetBestAvailableProviderAsync
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetBestAvailableProviderAsync__1_System_Threading_CancellationToken_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestAvailableProviderAsync``1(System.Threading.CancellationToken)
+    name: GetBestAvailableProviderAsync
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetBestAvailableProviderAsync__1_System_Threading_CancellationToken_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestBackfillProviderAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestBackfillProviderAsync
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetBestBackfillProviderAsync_System_Threading_CancellationToken_
+  name: GetBestBackfillProviderAsync
+  nameWithType: ProviderRegistry.GetBestBackfillProviderAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestBackfillProviderAsync
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IHistoricalDataProvider>
+  nameWithType: Task<IHistoricalDataProvider>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider>
+  nameWithType.vb: Task(Of IHistoricalDataProvider)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider)
+  name.vb: Task(Of IHistoricalDataProvider)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    name: IHistoricalDataProvider
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    name: IHistoricalDataProvider
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterSymbolSearch*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterSymbolSearch
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_RegisterSymbolSearch_System_String_Meridian_Infrastructure_Adapters_Core_ISymbolSearchProvider_System_Int32_
+  name: RegisterSymbolSearch
+  nameWithType: ProviderRegistry.RegisterSymbolSearch
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.RegisterSymbolSearch
+- uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html
+  name: ISymbolSearchProvider
+  nameWithType: ISymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProvider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProvider
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetSymbolSearchProvider_System_String_
+  name: GetSymbolSearchProvider
+  nameWithType: ProviderRegistry.GetSymbolSearchProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProvider
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProviders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProviders
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetSymbolSearchProviders
+  name: GetSymbolSearchProviders
+  nameWithType: ProviderRegistry.GetSymbolSearchProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSymbolSearchProviders
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ISymbolSearchProvider>
+  nameWithType: IReadOnlyList<ISymbolSearchProvider>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider>
+  nameWithType.vb: IReadOnlyList(Of ISymbolSearchProvider)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider)
+  name.vb: IReadOnlyList(Of ISymbolSearchProvider)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+    name: ISymbolSearchProvider
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+    name: ISymbolSearchProvider
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestSymbolSearchProviderAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestSymbolSearchProviderAsync
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetBestSymbolSearchProviderAsync_System_Threading_CancellationToken_
+  name: GetBestSymbolSearchProviderAsync
+  nameWithType: ProviderRegistry.GetBestSymbolSearchProviderAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetBestSymbolSearchProviderAsync
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ISymbolSearchProvider>
+  nameWithType: Task<ISymbolSearchProvider>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider>
+  nameWithType.vb: Task(Of ISymbolSearchProvider)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider)
+  name.vb: Task(Of ISymbolSearchProvider)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+    name: ISymbolSearchProvider
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider
+    name: ISymbolSearchProvider
+    href: Meridian.Infrastructure.Adapters.Core.ISymbolSearchProvider.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Enable*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Enable
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Enable_System_String_
+  name: Enable
+  nameWithType: ProviderRegistry.Enable
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Enable
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Disable*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Disable
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Disable_System_String_
+  name: Disable
+  nameWithType: ProviderRegistry.Disable
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Disable
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.FromMetadata(Meridian.Infrastructure.Adapters.Core.IProviderMetadata,System.Boolean,System.Nullable{System.Int32})
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.FromMetadata(Meridian.Infrastructure.Adapters.Core.IProviderMetadata,System.Boolean,System.Nullable{System.Int32})
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplateFactory_FromMetadata_Meridian_Infrastructure_Adapters_Core_IProviderMetadata_System_Boolean_System_Nullable_System_Int32__
+  name: FromMetadata(IProviderMetadata, bool, int?)
+  nameWithType: ProviderTemplateFactory.FromMetadata(IProviderMetadata, bool, int?)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.FromMetadata(Meridian.Infrastructure.Adapters.Core.IProviderMetadata, bool, int?)
+  nameWithType.vb: ProviderTemplateFactory.FromMetadata(IProviderMetadata, Boolean, Integer?)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.FromMetadata(Meridian.Infrastructure.Adapters.Core.IProviderMetadata, Boolean, Integer?)
+  name.vb: FromMetadata(IProviderMetadata, Boolean, Integer?)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.FromMetadata(Meridian.Infrastructure.Adapters.Core.IProviderMetadata,System.Boolean,System.Nullable{System.Int32})
+    name: FromMetadata
+    href: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplateFactory_FromMetadata_Meridian_Infrastructure_Adapters_Core_IProviderMetadata_System_Boolean_System_Nullable_System_Int32__
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+    name: IProviderMetadata
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.FromMetadata(Meridian.Infrastructure.Adapters.Core.IProviderMetadata,System.Boolean,System.Nullable{System.Int32})
+    name: FromMetadata
+    href: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplateFactory_FromMetadata_Meridian_Infrastructure_Adapters_Core_IProviderMetadata_System_Boolean_System_Nullable_System_Int32__
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+    name: IProviderMetadata
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry._allProviders
+  commentId: F:Meridian.Infrastructure.Adapters.Core.ProviderRegistry._allProviders
+  name: _allProviders
+  nameWithType: ProviderRegistry._allProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry._allProviders
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviders
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetAllProviders
+  name: GetAllProviders
+  nameWithType: ProviderRegistry.GetAllProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetAllProviders
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.ProviderInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.ProviderInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderInfo>
+  nameWithType: IReadOnlyList<ProviderInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.ProviderInfo>
+  nameWithType.vb: IReadOnlyList(Of ProviderInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.ProviderInfo)
+  name.vb: IReadOnlyList(Of ProviderInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderInfo
+    name: ProviderInfo
+    href: Meridian.Infrastructure.Adapters.Core.ProviderInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderInfo
+    name: ProviderInfo
+    href: Meridian.Infrastructure.Adapters.Core.ProviderInfo.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.ToCatalogEntry(Meridian.Infrastructure.Adapters.Core.IProviderMetadata)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.ToCatalogEntry(Meridian.Infrastructure.Adapters.Core.IProviderMetadata)
+  href: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplateFactory_ToCatalogEntry_Meridian_Infrastructure_Adapters_Core_IProviderMetadata_
+  name: ToCatalogEntry(IProviderMetadata)
+  nameWithType: ProviderTemplateFactory.ToCatalogEntry(IProviderMetadata)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.ToCatalogEntry(Meridian.Infrastructure.Adapters.Core.IProviderMetadata)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.ToCatalogEntry(Meridian.Infrastructure.Adapters.Core.IProviderMetadata)
+    name: ToCatalogEntry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplateFactory_ToCatalogEntry_Meridian_Infrastructure_Adapters_Core_IProviderMetadata_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+    name: IProviderMetadata
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.ToCatalogEntry(Meridian.Infrastructure.Adapters.Core.IProviderMetadata)
+    name: ToCatalogEntry
+    href: Meridian.Infrastructure.Adapters.Core.ProviderTemplateFactory.html#Meridian_Infrastructure_Adapters_Core_ProviderTemplateFactory_ToCatalogEntry_Meridian_Infrastructure_Adapters_Core_IProviderMetadata_
+  - name: (
+  - uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+    name: IProviderMetadata
+  - name: )
+- uid: Meridian.Contracts.Api.ProviderCatalogEntry
+  commentId: T:Meridian.Contracts.Api.ProviderCatalogEntry
+  parent: Meridian.Contracts.Api
+  href: Meridian.Contracts.Api.ProviderCatalogEntry.html
+  name: ProviderCatalogEntry
+  nameWithType: ProviderCatalogEntry
+  fullName: Meridian.Contracts.Api.ProviderCatalogEntry
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalog*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalog
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProviderCatalog
+  name: GetProviderCatalog
+  nameWithType: ProviderRegistry.GetProviderCatalog
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalog
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderCatalogEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Api.ProviderCatalogEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderCatalogEntry>
+  nameWithType: IReadOnlyList<ProviderCatalogEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Api.ProviderCatalogEntry>
+  nameWithType.vb: IReadOnlyList(Of ProviderCatalogEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Api.ProviderCatalogEntry)
+  name.vb: IReadOnlyList(Of ProviderCatalogEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Api.ProviderCatalogEntry
+    name: ProviderCatalogEntry
+    href: Meridian.Contracts.Api.ProviderCatalogEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.ProviderCatalogEntry
+    name: ProviderCatalogEntry
+    href: Meridian.Contracts.Api.ProviderCatalogEntry.html
+  - name: )
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogByType*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogByType
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProviderCatalogByType_Meridian_Infrastructure_Adapters_Core_ProviderType_
+  name: GetProviderCatalogByType
+  nameWithType: ProviderRegistry.GetProviderCatalogByType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogByType
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderType
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderType
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderType.html
+  name: ProviderType
+  nameWithType: ProviderType
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderType
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogEntry*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogEntry
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetProviderCatalogEntry_System_String_
+  name: GetProviderCatalogEntry
+  nameWithType: ProviderRegistry.GetProviderCatalogEntry
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetProviderCatalogEntry
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSummary*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSummary
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_GetSummary
+  name: GetSummary
+  nameWithType: ProviderRegistry.GetSummary
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.GetSummary
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistrySummary
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderRegistrySummary
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistrySummary.html
+  name: ProviderRegistrySummary
+  nameWithType: ProviderRegistrySummary
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistrySummary
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Dispose
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_Dispose
+  name: Dispose
+  nameWithType: ProviderRegistry.Dispose
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

@@ -1,0 +1,640 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  commentId: T:Meridian.Execution.Services.ExecutionAuditTrailOptions
+  id: ExecutionAuditTrailOptions
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.ExecutionAuditTrailOptions.#ctor(System.String,System.Int32,Meridian.Storage.Archival.WalSyncMode)
+  - Meridian.Execution.Services.ExecutionAuditTrailOptions.Default
+  - Meridian.Execution.Services.ExecutionAuditTrailOptions.InMemoryRetention
+  - Meridian.Execution.Services.ExecutionAuditTrailOptions.RootDirectory
+  - Meridian.Execution.Services.ExecutionAuditTrailOptions.SyncMode
+  - Meridian.Execution.Services.ExecutionAuditTrailOptions.WalDirectory
+  langs:
+  - csharp
+  - vb
+  name: ExecutionAuditTrailOptions
+  nameWithType: ExecutionAuditTrailOptions
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionAuditTrailOptions
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Configuration for the durable execution audit trail.
+  example: []
+  syntax:
+    content: 'public sealed record ExecutionAuditTrailOptions : IEquatable<ExecutionAuditTrailOptions>'
+    content.vb: Public NotInheritable Class ExecutionAuditTrailOptions Implements IEquatable(Of ExecutionAuditTrailOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Services.ExecutionAuditTrailOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.#ctor(System.String,System.Int32,Meridian.Storage.Archival.WalSyncMode)
+  commentId: M:Meridian.Execution.Services.ExecutionAuditTrailOptions.#ctor(System.String,System.Int32,Meridian.Storage.Archival.WalSyncMode)
+  id: '#ctor(System.String,System.Int32,Meridian.Storage.Archival.WalSyncMode)'
+  parent: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  langs:
+  - csharp
+  - vb
+  name: ExecutionAuditTrailOptions(string, int, WalSyncMode)
+  nameWithType: ExecutionAuditTrailOptions.ExecutionAuditTrailOptions(string, int, WalSyncMode)
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.ExecutionAuditTrailOptions(string, int, Meridian.Storage.Archival.WalSyncMode)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Configuration for the durable execution audit trail.
+  example: []
+  syntax:
+    content: public ExecutionAuditTrailOptions(string RootDirectory, int InMemoryRetention = 1000, WalSyncMode SyncMode = WalSyncMode.EveryWrite)
+    parameters:
+    - id: RootDirectory
+      type: System.String
+    - id: InMemoryRetention
+      type: System.Int32
+    - id: SyncMode
+      type: Meridian.Storage.Archival.WalSyncMode
+    content.vb: Public Sub New(RootDirectory As String, InMemoryRetention As Integer = 1000, SyncMode As WalSyncMode = WalSyncMode.EveryWrite)
+  overload: Meridian.Execution.Services.ExecutionAuditTrailOptions.#ctor*
+  nameWithType.vb: ExecutionAuditTrailOptions.New(String, Integer, WalSyncMode)
+  fullName.vb: Meridian.Execution.Services.ExecutionAuditTrailOptions.New(String, Integer, Meridian.Storage.Archival.WalSyncMode)
+  name.vb: New(String, Integer, WalSyncMode)
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.RootDirectory
+  commentId: P:Meridian.Execution.Services.ExecutionAuditTrailOptions.RootDirectory
+  id: RootDirectory
+  parent: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  langs:
+  - csharp
+  - vb
+  name: RootDirectory
+  nameWithType: ExecutionAuditTrailOptions.RootDirectory
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.RootDirectory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RootDirectory
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string RootDirectory { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RootDirectory As String
+  overload: Meridian.Execution.Services.ExecutionAuditTrailOptions.RootDirectory*
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.InMemoryRetention
+  commentId: P:Meridian.Execution.Services.ExecutionAuditTrailOptions.InMemoryRetention
+  id: InMemoryRetention
+  parent: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  langs:
+  - csharp
+  - vb
+  name: InMemoryRetention
+  nameWithType: ExecutionAuditTrailOptions.InMemoryRetention
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.InMemoryRetention
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InMemoryRetention
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public int InMemoryRetention { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property InMemoryRetention As Integer
+  overload: Meridian.Execution.Services.ExecutionAuditTrailOptions.InMemoryRetention*
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.SyncMode
+  commentId: P:Meridian.Execution.Services.ExecutionAuditTrailOptions.SyncMode
+  id: SyncMode
+  parent: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  langs:
+  - csharp
+  - vb
+  name: SyncMode
+  nameWithType: ExecutionAuditTrailOptions.SyncMode
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.SyncMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SyncMode
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public WalSyncMode SyncMode { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Archival.WalSyncMode
+    content.vb: Public Property SyncMode As WalSyncMode
+  overload: Meridian.Execution.Services.ExecutionAuditTrailOptions.SyncMode*
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.Default
+  commentId: P:Meridian.Execution.Services.ExecutionAuditTrailOptions.Default
+  id: Default
+  parent: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: ExecutionAuditTrailOptions.Default
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public static ExecutionAuditTrailOptions Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.Services.ExecutionAuditTrailOptions
+    content.vb: Public Shared ReadOnly Property [Default] As ExecutionAuditTrailOptions
+  overload: Meridian.Execution.Services.ExecutionAuditTrailOptions.Default*
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.WalDirectory
+  commentId: P:Meridian.Execution.Services.ExecutionAuditTrailOptions.WalDirectory
+  id: WalDirectory
+  parent: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  langs:
+  - csharp
+  - vb
+  name: WalDirectory
+  nameWithType: ExecutionAuditTrailOptions.WalDirectory
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.WalDirectory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WalDirectory
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public string WalDirectory { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property WalDirectory As String
+  overload: Meridian.Execution.Services.ExecutionAuditTrailOptions.WalDirectory*
+references:
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Services.ExecutionAuditTrailOptions}
+  commentId: T:System.IEquatable{Meridian.Execution.Services.ExecutionAuditTrailOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ExecutionAuditTrailOptions>
+  nameWithType: IEquatable<ExecutionAuditTrailOptions>
+  fullName: System.IEquatable<Meridian.Execution.Services.ExecutionAuditTrailOptions>
+  nameWithType.vb: IEquatable(Of ExecutionAuditTrailOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Services.ExecutionAuditTrailOptions)
+  name.vb: IEquatable(Of ExecutionAuditTrailOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionAuditTrailOptions
+    name: ExecutionAuditTrailOptions
+    href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionAuditTrailOptions
+    name: ExecutionAuditTrailOptions
+    href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.#ctor*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailOptions.#ctor
+  href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html#Meridian_Execution_Services_ExecutionAuditTrailOptions__ctor_System_String_System_Int32_Meridian_Storage_Archival_WalSyncMode_
+  name: ExecutionAuditTrailOptions
+  nameWithType: ExecutionAuditTrailOptions.ExecutionAuditTrailOptions
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.ExecutionAuditTrailOptions
+  nameWithType.vb: ExecutionAuditTrailOptions.New
+  fullName.vb: Meridian.Execution.Services.ExecutionAuditTrailOptions.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.Archival.WalSyncMode
+  commentId: T:Meridian.Storage.Archival.WalSyncMode
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.WalSyncMode.html
+  name: WalSyncMode
+  nameWithType: WalSyncMode
+  fullName: Meridian.Storage.Archival.WalSyncMode
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.RootDirectory*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailOptions.RootDirectory
+  href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html#Meridian_Execution_Services_ExecutionAuditTrailOptions_RootDirectory
+  name: RootDirectory
+  nameWithType: ExecutionAuditTrailOptions.RootDirectory
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.RootDirectory
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.InMemoryRetention*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailOptions.InMemoryRetention
+  href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html#Meridian_Execution_Services_ExecutionAuditTrailOptions_InMemoryRetention
+  name: InMemoryRetention
+  nameWithType: ExecutionAuditTrailOptions.InMemoryRetention
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.InMemoryRetention
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.SyncMode*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailOptions.SyncMode
+  href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html#Meridian_Execution_Services_ExecutionAuditTrailOptions_SyncMode
+  name: SyncMode
+  nameWithType: ExecutionAuditTrailOptions.SyncMode
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.SyncMode
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.Default*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailOptions.Default
+  href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html#Meridian_Execution_Services_ExecutionAuditTrailOptions_Default
+  name: Default
+  nameWithType: ExecutionAuditTrailOptions.Default
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.Default
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  commentId: T:Meridian.Execution.Services.ExecutionAuditTrailOptions
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html
+  name: ExecutionAuditTrailOptions
+  nameWithType: ExecutionAuditTrailOptions
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions.WalDirectory*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailOptions.WalDirectory
+  href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html#Meridian_Execution_Services_ExecutionAuditTrailOptions_WalDirectory
+  name: WalDirectory
+  nameWithType: ExecutionAuditTrailOptions.WalDirectory
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions.WalDirectory

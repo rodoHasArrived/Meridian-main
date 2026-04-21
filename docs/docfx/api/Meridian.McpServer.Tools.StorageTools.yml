@@ -1,0 +1,849 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.McpServer.Tools.StorageTools
+  commentId: T:Meridian.McpServer.Tools.StorageTools
+  id: StorageTools
+  parent: Meridian.McpServer.Tools
+  children:
+  - Meridian.McpServer.Tools.StorageTools.#ctor(Meridian.Storage.Interfaces.IStorageCatalogService,Meridian.Application.Services.HistoricalDataQueryService,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.StorageTools})
+  - Meridian.McpServer.Tools.StorageTools.GetStorageStats
+  - Meridian.McpServer.Tools.StorageTools.ListStoredSymbols
+  - Meridian.McpServer.Tools.StorageTools.QueryStoredData(System.String,System.String,System.String,System.String,System.Int32,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: StorageTools
+  nameWithType: StorageTools
+  fullName: Meridian.McpServer.Tools.StorageTools
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/StorageTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageTools
+    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    startLine: 9
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  summary: MCP tools for inspecting the storage catalog and querying stored market data.
+  example: []
+  syntax:
+    content: >-
+      [McpServerToolType]
+
+      [ImplementsAdr("ADR-002", "Exposes tiered storage catalog via MCP")]
+
+      [ImplementsAdr("ADR-004", "All async methods accept CancellationToken")]
+
+      public sealed class StorageTools
+    content.vb: >-
+      <McpServerToolType>
+
+      <ImplementsAdr("ADR-002", "Exposes tiered storage catalog via MCP")>
+
+      <ImplementsAdr("ADR-004", "All async methods accept CancellationToken")>
+
+      Public NotInheritable Class StorageTools
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolTypeAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolTypeAttribute.#ctor
+    arguments: []
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-002
+    - type: System.String
+      value: Exposes tiered storage catalog via MCP
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods accept CancellationToken
+- uid: Meridian.McpServer.Tools.StorageTools.#ctor(Meridian.Storage.Interfaces.IStorageCatalogService,Meridian.Application.Services.HistoricalDataQueryService,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.StorageTools})
+  commentId: M:Meridian.McpServer.Tools.StorageTools.#ctor(Meridian.Storage.Interfaces.IStorageCatalogService,Meridian.Application.Services.HistoricalDataQueryService,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.StorageTools})
+  id: '#ctor(Meridian.Storage.Interfaces.IStorageCatalogService,Meridian.Application.Services.HistoricalDataQueryService,Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.StorageTools})'
+  parent: Meridian.McpServer.Tools.StorageTools
+  langs:
+  - csharp
+  - vb
+  name: StorageTools(IStorageCatalogService, HistoricalDataQueryService, ILogger<StorageTools>)
+  nameWithType: StorageTools.StorageTools(IStorageCatalogService, HistoricalDataQueryService, ILogger<StorageTools>)
+  fullName: Meridian.McpServer.Tools.StorageTools.StorageTools(Meridian.Storage.Interfaces.IStorageCatalogService, Meridian.Application.Services.HistoricalDataQueryService, Microsoft.Extensions.Logging.ILogger<Meridian.McpServer.Tools.StorageTools>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/StorageTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    startLine: 28
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  summary: Initialises with DI-supplied storage services.
+  example: []
+  syntax:
+    content: public StorageTools(IStorageCatalogService catalog, HistoricalDataQueryService query, ILogger<StorageTools> log)
+    parameters:
+    - id: catalog
+      type: Meridian.Storage.Interfaces.IStorageCatalogService
+    - id: query
+      type: Meridian.Application.Services.HistoricalDataQueryService
+    - id: log
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.StorageTools}
+    content.vb: Public Sub New(catalog As IStorageCatalogService, query As HistoricalDataQueryService, log As ILogger(Of StorageTools))
+  overload: Meridian.McpServer.Tools.StorageTools.#ctor*
+  nameWithType.vb: StorageTools.New(IStorageCatalogService, HistoricalDataQueryService, ILogger(Of StorageTools))
+  fullName.vb: Meridian.McpServer.Tools.StorageTools.New(Meridian.Storage.Interfaces.IStorageCatalogService, Meridian.Application.Services.HistoricalDataQueryService, Microsoft.Extensions.Logging.ILogger(Of Meridian.McpServer.Tools.StorageTools))
+  name.vb: New(IStorageCatalogService, HistoricalDataQueryService, ILogger(Of StorageTools))
+- uid: Meridian.McpServer.Tools.StorageTools.GetStorageStats
+  commentId: M:Meridian.McpServer.Tools.StorageTools.GetStorageStats
+  id: GetStorageStats
+  parent: Meridian.McpServer.Tools.StorageTools
+  langs:
+  - csharp
+  - vb
+  name: GetStorageStats()
+  nameWithType: StorageTools.GetStorageStats()
+  fullName: Meridian.McpServer.Tools.StorageTools.GetStorageStats()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/StorageTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStorageStats
+    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    startLine: 41
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  summary: Returns high-level statistics about the local storage catalog.
+  example: []
+  syntax:
+    content: >-
+      [McpServerTool]
+
+      public string GetStorageStats()
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerTool>
+
+      Public Function GetStorageStats() As String
+  overload: Meridian.McpServer.Tools.StorageTools.GetStorageStats*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+- uid: Meridian.McpServer.Tools.StorageTools.ListStoredSymbols
+  commentId: M:Meridian.McpServer.Tools.StorageTools.ListStoredSymbols
+  id: ListStoredSymbols
+  parent: Meridian.McpServer.Tools.StorageTools
+  langs:
+  - csharp
+  - vb
+  name: ListStoredSymbols()
+  nameWithType: StorageTools.ListStoredSymbols()
+  fullName: Meridian.McpServer.Tools.StorageTools.ListStoredSymbols()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/StorageTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ListStoredSymbols
+    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    startLine: 54
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  summary: Returns the list of symbols that have data stored locally.
+  example: []
+  syntax:
+    content: >-
+      [McpServerTool]
+
+      public string ListStoredSymbols()
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerTool>
+
+      Public Function ListStoredSymbols() As String
+  overload: Meridian.McpServer.Tools.StorageTools.ListStoredSymbols*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+- uid: Meridian.McpServer.Tools.StorageTools.QueryStoredData(System.String,System.String,System.String,System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.McpServer.Tools.StorageTools.QueryStoredData(System.String,System.String,System.String,System.String,System.Int32,System.Threading.CancellationToken)
+  id: QueryStoredData(System.String,System.String,System.String,System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.McpServer.Tools.StorageTools
+  langs:
+  - csharp
+  - vb
+  name: QueryStoredData(string, string?, string?, string?, int, CancellationToken)
+  nameWithType: StorageTools.QueryStoredData(string, string?, string?, string?, int, CancellationToken)
+  fullName: Meridian.McpServer.Tools.StorageTools.QueryStoredData(string, string?, string?, string?, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Tools/StorageTools.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueryStoredData
+    path: ../../src/Meridian.McpServer/Tools/StorageTools.cs
+    startLine: 83
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Tools
+  summary: Queries stored data records for a symbol.
+  example: []
+  syntax:
+    content: >-
+      [McpServerTool]
+
+      public Task<string> QueryStoredData(string symbol, string? from = null, string? to = null, string? dataType = null, int limit = 50, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.String
+    - id: to
+      type: System.String
+    - id: dataType
+      type: System.String
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: >-
+      <McpServerTool>
+
+      Public Function QueryStoredData(symbol As String, from As String = Nothing, [to] As String = Nothing, dataType As String = Nothing, limit As Integer = 50, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.McpServer.Tools.StorageTools.QueryStoredData*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerToolAttribute
+    ctor: ModelContextProtocol.Server.McpServerToolAttribute.#ctor
+    arguments: []
+  nameWithType.vb: StorageTools.QueryStoredData(String, String, String, String, Integer, CancellationToken)
+  fullName.vb: Meridian.McpServer.Tools.StorageTools.QueryStoredData(String, String, String, String, Integer, System.Threading.CancellationToken)
+  name.vb: QueryStoredData(String, String, String, String, Integer, CancellationToken)
+references:
+- uid: Meridian.McpServer.Tools
+  commentId: N:Meridian.McpServer.Tools
+  href: Meridian.html
+  name: Meridian.McpServer.Tools
+  nameWithType: Meridian.McpServer.Tools
+  fullName: Meridian.McpServer.Tools
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Tools
+    name: Tools
+    href: Meridian.McpServer.Tools.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Tools
+    name: Tools
+    href: Meridian.McpServer.Tools.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.McpServer.Tools.StorageTools.#ctor*
+  commentId: Overload:Meridian.McpServer.Tools.StorageTools.#ctor
+  href: Meridian.McpServer.Tools.StorageTools.html#Meridian_McpServer_Tools_StorageTools__ctor_Meridian_Storage_Interfaces_IStorageCatalogService_Meridian_Application_Services_HistoricalDataQueryService_Microsoft_Extensions_Logging_ILogger_Meridian_McpServer_Tools_StorageTools__
+  name: StorageTools
+  nameWithType: StorageTools.StorageTools
+  fullName: Meridian.McpServer.Tools.StorageTools.StorageTools
+  nameWithType.vb: StorageTools.New
+  fullName.vb: Meridian.McpServer.Tools.StorageTools.New
+  name.vb: New
+- uid: Meridian.Storage.Interfaces.IStorageCatalogService
+  commentId: T:Meridian.Storage.Interfaces.IStorageCatalogService
+  parent: Meridian.Storage.Interfaces
+  href: Meridian.Storage.Interfaces.IStorageCatalogService.html
+  name: IStorageCatalogService
+  nameWithType: IStorageCatalogService
+  fullName: Meridian.Storage.Interfaces.IStorageCatalogService
+- uid: Meridian.Application.Services.HistoricalDataQueryService
+  commentId: T:Meridian.Application.Services.HistoricalDataQueryService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.HistoricalDataQueryService.html
+  name: HistoricalDataQueryService
+  nameWithType: HistoricalDataQueryService
+  fullName: Meridian.Application.Services.HistoricalDataQueryService
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.StorageTools}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.McpServer.Tools.StorageTools}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<StorageTools>
+  nameWithType: ILogger<StorageTools>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.McpServer.Tools.StorageTools>
+  nameWithType.vb: ILogger(Of StorageTools)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.McpServer.Tools.StorageTools)
+  name.vb: ILogger(Of StorageTools)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.McpServer.Tools.StorageTools
+    name: StorageTools
+    href: Meridian.McpServer.Tools.StorageTools.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.McpServer.Tools.StorageTools
+    name: StorageTools
+    href: Meridian.McpServer.Tools.StorageTools.html
+  - name: )
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.McpServer.Tools.StorageTools.GetStorageStats*
+  commentId: Overload:Meridian.McpServer.Tools.StorageTools.GetStorageStats
+  href: Meridian.McpServer.Tools.StorageTools.html#Meridian_McpServer_Tools_StorageTools_GetStorageStats
+  name: GetStorageStats
+  nameWithType: StorageTools.GetStorageStats
+  fullName: Meridian.McpServer.Tools.StorageTools.GetStorageStats
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.McpServer.Tools.StorageTools.ListStoredSymbols*
+  commentId: Overload:Meridian.McpServer.Tools.StorageTools.ListStoredSymbols
+  href: Meridian.McpServer.Tools.StorageTools.html#Meridian_McpServer_Tools_StorageTools_ListStoredSymbols
+  name: ListStoredSymbols
+  nameWithType: StorageTools.ListStoredSymbols
+  fullName: Meridian.McpServer.Tools.StorageTools.ListStoredSymbols
+- uid: Meridian.McpServer.Tools.StorageTools.QueryStoredData*
+  commentId: Overload:Meridian.McpServer.Tools.StorageTools.QueryStoredData
+  href: Meridian.McpServer.Tools.StorageTools.html#Meridian_McpServer_Tools_StorageTools_QueryStoredData_System_String_System_String_System_String_System_String_System_Int32_System_Threading_CancellationToken_
+  name: QueryStoredData
+  nameWithType: StorageTools.QueryStoredData
+  fullName: Meridian.McpServer.Tools.StorageTools.QueryStoredData
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

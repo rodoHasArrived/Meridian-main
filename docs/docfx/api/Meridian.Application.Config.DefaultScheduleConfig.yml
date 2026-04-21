@@ -1,0 +1,690 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.DefaultScheduleConfig
+  commentId: T:Meridian.Application.Config.DefaultScheduleConfig
+  id: DefaultScheduleConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.DefaultScheduleConfig.#ctor(System.String,System.String,System.String,System.String[],System.Int32,System.Boolean)
+  - Meridian.Application.Config.DefaultScheduleConfig.CronExpression
+  - Meridian.Application.Config.DefaultScheduleConfig.Enabled
+  - Meridian.Application.Config.DefaultScheduleConfig.LookbackDays
+  - Meridian.Application.Config.DefaultScheduleConfig.Name
+  - Meridian.Application.Config.DefaultScheduleConfig.Preset
+  - Meridian.Application.Config.DefaultScheduleConfig.Symbols
+  langs:
+  - csharp
+  - vb
+  name: DefaultScheduleConfig
+  nameWithType: DefaultScheduleConfig
+  fullName: Meridian.Application.Config.DefaultScheduleConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultScheduleConfig
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration for a default schedule to create on startup.
+  example: []
+  syntax:
+    content: 'public sealed record DefaultScheduleConfig : IEquatable<DefaultScheduleConfig>'
+    content.vb: Public NotInheritable Class DefaultScheduleConfig Implements IEquatable(Of DefaultScheduleConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.DefaultScheduleConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.DefaultScheduleConfig.#ctor(System.String,System.String,System.String,System.String[],System.Int32,System.Boolean)
+  commentId: M:Meridian.Application.Config.DefaultScheduleConfig.#ctor(System.String,System.String,System.String,System.String[],System.Int32,System.Boolean)
+  id: '#ctor(System.String,System.String,System.String,System.String[],System.Int32,System.Boolean)'
+  parent: Meridian.Application.Config.DefaultScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: DefaultScheduleConfig(string, string?, string?, string[]?, int, bool)
+  nameWithType: DefaultScheduleConfig.DefaultScheduleConfig(string, string?, string?, string[]?, int, bool)
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.DefaultScheduleConfig(string, string?, string?, string[]?, int, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Configuration for a default schedule to create on startup.
+  example: []
+  syntax:
+    content: public DefaultScheduleConfig(string Name, string? Preset = null, string? CronExpression = null, string[]? Symbols = null, int LookbackDays = 30, bool Enabled = true)
+    parameters:
+    - id: Name
+      type: System.String
+      description: Schedule name.
+    - id: Preset
+      type: System.String
+      description: 'Preset to use: "daily", "weekly", "eod", "monthly".'
+    - id: CronExpression
+      type: System.String
+      description: Custom cron expression (overrides preset).
+    - id: Symbols
+      type: System.String[]
+      description: Symbols to backfill (empty = use default symbols).
+    - id: LookbackDays
+      type: System.Int32
+      description: Number of days to look back for gaps.
+    - id: Enabled
+      type: System.Boolean
+      description: Whether the schedule is enabled.
+    content.vb: Public Sub New(Name As String, Preset As String = Nothing, CronExpression As String = Nothing, Symbols As String() = Nothing, LookbackDays As Integer = 30, Enabled As Boolean = True)
+  overload: Meridian.Application.Config.DefaultScheduleConfig.#ctor*
+  nameWithType.vb: DefaultScheduleConfig.New(String, String, String, String(), Integer, Boolean)
+  fullName.vb: Meridian.Application.Config.DefaultScheduleConfig.New(String, String, String, String(), Integer, Boolean)
+  name.vb: New(String, String, String, String(), Integer, Boolean)
+- uid: Meridian.Application.Config.DefaultScheduleConfig.Name
+  commentId: P:Meridian.Application.Config.DefaultScheduleConfig.Name
+  id: Name
+  parent: Meridian.Application.Config.DefaultScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: DefaultScheduleConfig.Name
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Schedule name.
+  example: []
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Config.DefaultScheduleConfig.Name*
+- uid: Meridian.Application.Config.DefaultScheduleConfig.Preset
+  commentId: P:Meridian.Application.Config.DefaultScheduleConfig.Preset
+  id: Preset
+  parent: Meridian.Application.Config.DefaultScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: Preset
+  nameWithType: DefaultScheduleConfig.Preset
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.Preset
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Preset
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: 'Preset to use: "daily", "weekly", "eod", "monthly".'
+  example: []
+  syntax:
+    content: public string? Preset { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Preset As String
+  overload: Meridian.Application.Config.DefaultScheduleConfig.Preset*
+- uid: Meridian.Application.Config.DefaultScheduleConfig.CronExpression
+  commentId: P:Meridian.Application.Config.DefaultScheduleConfig.CronExpression
+  id: CronExpression
+  parent: Meridian.Application.Config.DefaultScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: CronExpression
+  nameWithType: DefaultScheduleConfig.CronExpression
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.CronExpression
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CronExpression
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Custom cron expression (overrides preset).
+  example: []
+  syntax:
+    content: public string? CronExpression { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CronExpression As String
+  overload: Meridian.Application.Config.DefaultScheduleConfig.CronExpression*
+- uid: Meridian.Application.Config.DefaultScheduleConfig.Symbols
+  commentId: P:Meridian.Application.Config.DefaultScheduleConfig.Symbols
+  id: Symbols
+  parent: Meridian.Application.Config.DefaultScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: DefaultScheduleConfig.Symbols
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Symbols to backfill (empty = use default symbols).
+  example: []
+  syntax:
+    content: public string[]? Symbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Application.Config.DefaultScheduleConfig.Symbols*
+- uid: Meridian.Application.Config.DefaultScheduleConfig.LookbackDays
+  commentId: P:Meridian.Application.Config.DefaultScheduleConfig.LookbackDays
+  id: LookbackDays
+  parent: Meridian.Application.Config.DefaultScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: LookbackDays
+  nameWithType: DefaultScheduleConfig.LookbackDays
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.LookbackDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LookbackDays
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Number of days to look back for gaps.
+  example: []
+  syntax:
+    content: public int LookbackDays { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property LookbackDays As Integer
+  overload: Meridian.Application.Config.DefaultScheduleConfig.LookbackDays*
+- uid: Meridian.Application.Config.DefaultScheduleConfig.Enabled
+  commentId: P:Meridian.Application.Config.DefaultScheduleConfig.Enabled
+  id: Enabled
+  parent: Meridian.Application.Config.DefaultScheduleConfig
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: DefaultScheduleConfig.Enabled
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/BackfillConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Core/Config/BackfillConfig.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: Whether the schedule is enabled.
+  example: []
+  syntax:
+    content: public bool Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Application.Config.DefaultScheduleConfig.Enabled*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.DefaultScheduleConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.DefaultScheduleConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DefaultScheduleConfig>
+  nameWithType: IEquatable<DefaultScheduleConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.DefaultScheduleConfig>
+  nameWithType.vb: IEquatable(Of DefaultScheduleConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.DefaultScheduleConfig)
+  name.vb: IEquatable(Of DefaultScheduleConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.DefaultScheduleConfig
+    name: DefaultScheduleConfig
+    href: Meridian.Application.Config.DefaultScheduleConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.DefaultScheduleConfig
+    name: DefaultScheduleConfig
+    href: Meridian.Application.Config.DefaultScheduleConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.DefaultScheduleConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.DefaultScheduleConfig.#ctor
+  href: Meridian.Application.Config.DefaultScheduleConfig.html#Meridian_Application_Config_DefaultScheduleConfig__ctor_System_String_System_String_System_String_System_String___System_Int32_System_Boolean_
+  name: DefaultScheduleConfig
+  nameWithType: DefaultScheduleConfig.DefaultScheduleConfig
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.DefaultScheduleConfig
+  nameWithType.vb: DefaultScheduleConfig.New
+  fullName.vb: Meridian.Application.Config.DefaultScheduleConfig.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Config.DefaultScheduleConfig.Name*
+  commentId: Overload:Meridian.Application.Config.DefaultScheduleConfig.Name
+  href: Meridian.Application.Config.DefaultScheduleConfig.html#Meridian_Application_Config_DefaultScheduleConfig_Name
+  name: Name
+  nameWithType: DefaultScheduleConfig.Name
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.Name
+- uid: Meridian.Application.Config.DefaultScheduleConfig.Preset*
+  commentId: Overload:Meridian.Application.Config.DefaultScheduleConfig.Preset
+  href: Meridian.Application.Config.DefaultScheduleConfig.html#Meridian_Application_Config_DefaultScheduleConfig_Preset
+  name: Preset
+  nameWithType: DefaultScheduleConfig.Preset
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.Preset
+- uid: Meridian.Application.Config.DefaultScheduleConfig.CronExpression*
+  commentId: Overload:Meridian.Application.Config.DefaultScheduleConfig.CronExpression
+  href: Meridian.Application.Config.DefaultScheduleConfig.html#Meridian_Application_Config_DefaultScheduleConfig_CronExpression
+  name: CronExpression
+  nameWithType: DefaultScheduleConfig.CronExpression
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.CronExpression
+- uid: Meridian.Application.Config.DefaultScheduleConfig.Symbols*
+  commentId: Overload:Meridian.Application.Config.DefaultScheduleConfig.Symbols
+  href: Meridian.Application.Config.DefaultScheduleConfig.html#Meridian_Application_Config_DefaultScheduleConfig_Symbols
+  name: Symbols
+  nameWithType: DefaultScheduleConfig.Symbols
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.Symbols
+- uid: Meridian.Application.Config.DefaultScheduleConfig.LookbackDays*
+  commentId: Overload:Meridian.Application.Config.DefaultScheduleConfig.LookbackDays
+  href: Meridian.Application.Config.DefaultScheduleConfig.html#Meridian_Application_Config_DefaultScheduleConfig_LookbackDays
+  name: LookbackDays
+  nameWithType: DefaultScheduleConfig.LookbackDays
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.LookbackDays
+- uid: Meridian.Application.Config.DefaultScheduleConfig.Enabled*
+  commentId: Overload:Meridian.Application.Config.DefaultScheduleConfig.Enabled
+  href: Meridian.Application.Config.DefaultScheduleConfig.html#Meridian_Application_Config_DefaultScheduleConfig_Enabled
+  name: Enabled
+  nameWithType: DefaultScheduleConfig.Enabled
+  fullName: Meridian.Application.Config.DefaultScheduleConfig.Enabled

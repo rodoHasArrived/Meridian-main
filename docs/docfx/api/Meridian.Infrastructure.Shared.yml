@@ -1,0 +1,170 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Shared
+  commentId: N:Meridian.Infrastructure.Shared
+  id: Meridian.Infrastructure.Shared
+  children:
+  - Meridian.Infrastructure.Shared.ExpiringSymbolStateStore`1
+  - Meridian.Infrastructure.Shared.ISymbolStateStore`1
+  - Meridian.Infrastructure.Shared.ReconnectionEvent
+  - Meridian.Infrastructure.Shared.Subscription
+  - Meridian.Infrastructure.Shared.SubscriptionManager
+  - Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  - Meridian.Infrastructure.Shared.SymbolStateStore`1
+  - Meridian.Infrastructure.Shared.TaskSafetyExtensions
+  - Meridian.Infrastructure.Shared.WebSocketReconnectionHelper
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Shared
+  nameWithType: Meridian.Infrastructure.Shared
+  fullName: Meridian.Infrastructure.Shared
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1
+  commentId: T:Meridian.Infrastructure.Shared.ISymbolStateStore`1
+  href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html
+  name: ISymbolStateStore<T>
+  nameWithType: ISymbolStateStore<T>
+  fullName: Meridian.Infrastructure.Shared.ISymbolStateStore<T>
+  nameWithType.vb: ISymbolStateStore(Of T)
+  fullName.vb: Meridian.Infrastructure.Shared.ISymbolStateStore(Of T)
+  name.vb: ISymbolStateStore(Of T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1
+    name: ISymbolStateStore
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ISymbolStateStore`1
+    name: ISymbolStateStore
+    href: Meridian.Infrastructure.Shared.ISymbolStateStore-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.SymbolStateStore`1
+  commentId: T:Meridian.Infrastructure.Shared.SymbolStateStore`1
+  href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html
+  name: SymbolStateStore<T>
+  nameWithType: SymbolStateStore<T>
+  fullName: Meridian.Infrastructure.Shared.SymbolStateStore<T>
+  nameWithType.vb: SymbolStateStore(Of T)
+  fullName.vb: Meridian.Infrastructure.Shared.SymbolStateStore(Of T)
+  name.vb: SymbolStateStore(Of T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.SymbolStateStore`1
+    name: SymbolStateStore
+    href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.SymbolStateStore`1
+    name: SymbolStateStore
+    href: Meridian.Infrastructure.Shared.SymbolStateStore-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.ExpiringSymbolStateStore`1
+  commentId: T:Meridian.Infrastructure.Shared.ExpiringSymbolStateStore`1
+  href: Meridian.Infrastructure.Shared.ExpiringSymbolStateStore-1.html
+  name: ExpiringSymbolStateStore<T>
+  nameWithType: ExpiringSymbolStateStore<T>
+  fullName: Meridian.Infrastructure.Shared.ExpiringSymbolStateStore<T>
+  nameWithType.vb: ExpiringSymbolStateStore(Of T)
+  fullName.vb: Meridian.Infrastructure.Shared.ExpiringSymbolStateStore(Of T)
+  name.vb: ExpiringSymbolStateStore(Of T)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Shared.ExpiringSymbolStateStore`1
+    name: ExpiringSymbolStateStore
+    href: Meridian.Infrastructure.Shared.ExpiringSymbolStateStore-1.html
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Shared.ExpiringSymbolStateStore`1
+    name: ExpiringSymbolStateStore
+    href: Meridian.Infrastructure.Shared.ExpiringSymbolStateStore-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Shared.Subscription
+  commentId: T:Meridian.Infrastructure.Shared.Subscription
+  parent: Meridian.Infrastructure.Shared
+  href: Meridian.Infrastructure.Shared.Subscription.html
+  name: Subscription
+  nameWithType: Subscription
+  fullName: Meridian.Infrastructure.Shared.Subscription
+- uid: Meridian.Infrastructure.Shared.SubscriptionManager
+  commentId: T:Meridian.Infrastructure.Shared.SubscriptionManager
+  parent: Meridian.Infrastructure.Shared
+  href: Meridian.Infrastructure.Shared.SubscriptionManager.html
+  name: SubscriptionManager
+  nameWithType: SubscriptionManager
+  fullName: Meridian.Infrastructure.Shared.SubscriptionManager
+- uid: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  commentId: T:Meridian.Infrastructure.Shared.SubscriptionSnapshot
+  parent: Meridian.Infrastructure.Shared
+  href: Meridian.Infrastructure.Shared.SubscriptionSnapshot.html
+  name: SubscriptionSnapshot
+  nameWithType: SubscriptionSnapshot
+  fullName: Meridian.Infrastructure.Shared.SubscriptionSnapshot
+- uid: Meridian.Infrastructure.Shared.TaskSafetyExtensions
+  commentId: T:Meridian.Infrastructure.Shared.TaskSafetyExtensions
+  href: Meridian.Infrastructure.Shared.TaskSafetyExtensions.html
+  name: TaskSafetyExtensions
+  nameWithType: TaskSafetyExtensions
+  fullName: Meridian.Infrastructure.Shared.TaskSafetyExtensions
+- uid: Meridian.Infrastructure.Shared.WebSocketReconnectionHelper
+  commentId: T:Meridian.Infrastructure.Shared.WebSocketReconnectionHelper
+  parent: Meridian.Infrastructure.Shared
+  href: Meridian.Infrastructure.Shared.WebSocketReconnectionHelper.html
+  name: WebSocketReconnectionHelper
+  nameWithType: WebSocketReconnectionHelper
+  fullName: Meridian.Infrastructure.Shared.WebSocketReconnectionHelper
+- uid: Meridian.Infrastructure.Shared.ReconnectionEvent
+  commentId: T:Meridian.Infrastructure.Shared.ReconnectionEvent
+  href: Meridian.Infrastructure.Shared.ReconnectionEvent.html
+  name: ReconnectionEvent
+  nameWithType: ReconnectionEvent
+  fullName: Meridian.Infrastructure.Shared.ReconnectionEvent
+- uid: Meridian.Infrastructure.Shared
+  commentId: N:Meridian.Infrastructure.Shared
+  href: Meridian.html
+  name: Meridian.Infrastructure.Shared
+  nameWithType: Meridian.Infrastructure.Shared
+  fullName: Meridian.Infrastructure.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html

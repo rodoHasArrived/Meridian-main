@@ -1,0 +1,907 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Banking.PendingPaymentDto
+  commentId: T:Meridian.Contracts.Banking.PendingPaymentDto
+  id: PendingPaymentDto
+  parent: Meridian.Contracts.Banking
+  children:
+  - Meridian.Contracts.Banking.PendingPaymentDto.#ctor(System.Guid,System.Guid,System.Decimal,System.DateOnly,System.String,System.String,Meridian.Contracts.Banking.PaymentApprovalStatus,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})
+  - Meridian.Contracts.Banking.PendingPaymentDto.Amount
+  - Meridian.Contracts.Banking.PendingPaymentDto.EffectiveDate
+  - Meridian.Contracts.Banking.PendingPaymentDto.EntityId
+  - Meridian.Contracts.Banking.PendingPaymentDto.ExternalRef
+  - Meridian.Contracts.Banking.PendingPaymentDto.InitiatedAt
+  - Meridian.Contracts.Banking.PendingPaymentDto.Notes
+  - Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentId
+  - Meridian.Contracts.Banking.PendingPaymentDto.ReviewNotes
+  - Meridian.Contracts.Banking.PendingPaymentDto.ReviewedAt
+  - Meridian.Contracts.Banking.PendingPaymentDto.ReviewedBy
+  - Meridian.Contracts.Banking.PendingPaymentDto.Status
+  langs:
+  - csharp
+  - vb
+  name: PendingPaymentDto
+  nameWithType: PendingPaymentDto
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingPaymentDto
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  summary: A payment that is awaiting an approval decision.
+  example: []
+  syntax:
+    content: 'public sealed record PendingPaymentDto : IEquatable<PendingPaymentDto>'
+    content.vb: Public NotInheritable Class PendingPaymentDto Implements IEquatable(Of PendingPaymentDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Banking.PendingPaymentDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.#ctor(System.Guid,System.Guid,System.Decimal,System.DateOnly,System.String,System.String,Meridian.Contracts.Banking.PaymentApprovalStatus,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Contracts.Banking.PendingPaymentDto.#ctor(System.Guid,System.Guid,System.Decimal,System.DateOnly,System.String,System.String,Meridian.Contracts.Banking.PaymentApprovalStatus,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})
+  id: '#ctor(System.Guid,System.Guid,System.Decimal,System.DateOnly,System.String,System.String,Meridian.Contracts.Banking.PaymentApprovalStatus,System.String,System.String,System.DateTimeOffset,System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: PendingPaymentDto(Guid, Guid, decimal, DateOnly, string?, string?, PaymentApprovalStatus, string?, string?, DateTimeOffset, DateTimeOffset?)
+  nameWithType: PendingPaymentDto.PendingPaymentDto(Guid, Guid, decimal, DateOnly, string?, string?, PaymentApprovalStatus, string?, string?, DateTimeOffset, DateTimeOffset?)
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentDto(System.Guid, System.Guid, decimal, System.DateOnly, string?, string?, Meridian.Contracts.Banking.PaymentApprovalStatus, string?, string?, System.DateTimeOffset, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  summary: A payment that is awaiting an approval decision.
+  example: []
+  syntax:
+    content: public PendingPaymentDto(Guid PendingPaymentId, Guid EntityId, decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, PaymentApprovalStatus Status, string? ReviewedBy, string? ReviewNotes, DateTimeOffset InitiatedAt, DateTimeOffset? ReviewedAt)
+    parameters:
+    - id: PendingPaymentId
+      type: System.Guid
+    - id: EntityId
+      type: System.Guid
+    - id: Amount
+      type: System.Decimal
+    - id: EffectiveDate
+      type: System.DateOnly
+    - id: ExternalRef
+      type: System.String
+    - id: Notes
+      type: System.String
+    - id: Status
+      type: Meridian.Contracts.Banking.PaymentApprovalStatus
+    - id: ReviewedBy
+      type: System.String
+    - id: ReviewNotes
+      type: System.String
+    - id: InitiatedAt
+      type: System.DateTimeOffset
+    - id: ReviewedAt
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(PendingPaymentId As Guid, EntityId As Guid, Amount As Decimal, EffectiveDate As DateOnly, ExternalRef As String, Notes As String, Status As PaymentApprovalStatus, ReviewedBy As String, ReviewNotes As String, InitiatedAt As DateTimeOffset, ReviewedAt As DateTimeOffset?)
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.#ctor*
+  nameWithType.vb: PendingPaymentDto.New(Guid, Guid, Decimal, DateOnly, String, String, PaymentApprovalStatus, String, String, DateTimeOffset, DateTimeOffset?)
+  fullName.vb: Meridian.Contracts.Banking.PendingPaymentDto.New(System.Guid, System.Guid, Decimal, System.DateOnly, String, String, Meridian.Contracts.Banking.PaymentApprovalStatus, String, String, System.DateTimeOffset, System.DateTimeOffset?)
+  name.vb: New(Guid, Guid, Decimal, DateOnly, String, String, PaymentApprovalStatus, String, String, DateTimeOffset, DateTimeOffset?)
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentId
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentId
+  id: PendingPaymentId
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: PendingPaymentId
+  nameWithType: PendingPaymentDto.PendingPaymentId
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PendingPaymentId
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public Guid PendingPaymentId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property PendingPaymentId As Guid
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentId*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.EntityId
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.EntityId
+  id: EntityId
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: EntityId
+  nameWithType: PendingPaymentDto.EntityId
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.EntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityId
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public Guid EntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property EntityId As Guid
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.EntityId*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.Amount
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.Amount
+  id: Amount
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: Amount
+  nameWithType: PendingPaymentDto.Amount
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.Amount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Amount
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public decimal Amount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Amount As Decimal
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.Amount*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.EffectiveDate
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.EffectiveDate
+  id: EffectiveDate
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveDate
+  nameWithType: PendingPaymentDto.EffectiveDate
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.EffectiveDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveDate
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public DateOnly EffectiveDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property EffectiveDate As DateOnly
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.EffectiveDate*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.ExternalRef
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.ExternalRef
+  id: ExternalRef
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: ExternalRef
+  nameWithType: PendingPaymentDto.ExternalRef
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.ExternalRef
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExternalRef
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public string? ExternalRef { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExternalRef As String
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.ExternalRef*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.Notes
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.Notes
+  id: Notes
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: PendingPaymentDto.Notes
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public string? Notes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Notes As String
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.Notes*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.Status
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.Status
+  id: Status
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: PendingPaymentDto.Status
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public PaymentApprovalStatus Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Banking.PaymentApprovalStatus
+    content.vb: Public Property Status As PaymentApprovalStatus
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.Status*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedBy
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.ReviewedBy
+  id: ReviewedBy
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: ReviewedBy
+  nameWithType: PendingPaymentDto.ReviewedBy
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReviewedBy
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public string? ReviewedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReviewedBy As String
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedBy*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.ReviewNotes
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.ReviewNotes
+  id: ReviewNotes
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: ReviewNotes
+  nameWithType: PendingPaymentDto.ReviewNotes
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.ReviewNotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReviewNotes
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public string? ReviewNotes { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReviewNotes As String
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.ReviewNotes*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.InitiatedAt
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.InitiatedAt
+  id: InitiatedAt
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: InitiatedAt
+  nameWithType: PendingPaymentDto.InitiatedAt
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.InitiatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitiatedAt
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public DateTimeOffset InitiatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property InitiatedAt As DateTimeOffset
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.InitiatedAt*
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedAt
+  commentId: P:Meridian.Contracts.Banking.PendingPaymentDto.ReviewedAt
+  id: ReviewedAt
+  parent: Meridian.Contracts.Banking.PendingPaymentDto
+  langs:
+  - csharp
+  - vb
+  name: ReviewedAt
+  nameWithType: PendingPaymentDto.ReviewedAt
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Banking/BankingModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReviewedAt
+    path: ../../src/Meridian.Contracts/Banking/BankingModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Banking
+  syntax:
+    content: public DateTimeOffset? ReviewedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ReviewedAt As DateTimeOffset?
+  overload: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedAt*
+references:
+- uid: Meridian.Contracts.Banking
+  commentId: N:Meridian.Contracts.Banking
+  href: Meridian.html
+  name: Meridian.Contracts.Banking
+  nameWithType: Meridian.Contracts.Banking
+  fullName: Meridian.Contracts.Banking
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Banking.PendingPaymentDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Banking.PendingPaymentDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PendingPaymentDto>
+  nameWithType: IEquatable<PendingPaymentDto>
+  fullName: System.IEquatable<Meridian.Contracts.Banking.PendingPaymentDto>
+  nameWithType.vb: IEquatable(Of PendingPaymentDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Banking.PendingPaymentDto)
+  name.vb: IEquatable(Of PendingPaymentDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Banking.PendingPaymentDto
+    name: PendingPaymentDto
+    href: Meridian.Contracts.Banking.PendingPaymentDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Banking.PendingPaymentDto
+    name: PendingPaymentDto
+    href: Meridian.Contracts.Banking.PendingPaymentDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.#ctor*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.#ctor
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto__ctor_System_Guid_System_Guid_System_Decimal_System_DateOnly_System_String_System_String_Meridian_Contracts_Banking_PaymentApprovalStatus_System_String_System_String_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__
+  name: PendingPaymentDto
+  nameWithType: PendingPaymentDto.PendingPaymentDto
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentDto
+  nameWithType.vb: PendingPaymentDto.New
+  fullName.vb: Meridian.Contracts.Banking.PendingPaymentDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Banking.PaymentApprovalStatus
+  commentId: T:Meridian.Contracts.Banking.PaymentApprovalStatus
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.PaymentApprovalStatus.html
+  name: PaymentApprovalStatus
+  nameWithType: PaymentApprovalStatus
+  fullName: Meridian.Contracts.Banking.PaymentApprovalStatus
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentId*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentId
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_PendingPaymentId
+  name: PendingPaymentId
+  nameWithType: PendingPaymentDto.PendingPaymentId
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.PendingPaymentId
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.EntityId*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.EntityId
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_EntityId
+  name: EntityId
+  nameWithType: PendingPaymentDto.EntityId
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.EntityId
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.Amount*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.Amount
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_Amount
+  name: Amount
+  nameWithType: PendingPaymentDto.Amount
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.Amount
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.EffectiveDate*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.EffectiveDate
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_EffectiveDate
+  name: EffectiveDate
+  nameWithType: PendingPaymentDto.EffectiveDate
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.EffectiveDate
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.ExternalRef*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.ExternalRef
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_ExternalRef
+  name: ExternalRef
+  nameWithType: PendingPaymentDto.ExternalRef
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.ExternalRef
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.Notes*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.Notes
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_Notes
+  name: Notes
+  nameWithType: PendingPaymentDto.Notes
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.Notes
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.Status*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.Status
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_Status
+  name: Status
+  nameWithType: PendingPaymentDto.Status
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.Status
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedBy*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.ReviewedBy
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_ReviewedBy
+  name: ReviewedBy
+  nameWithType: PendingPaymentDto.ReviewedBy
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedBy
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.ReviewNotes*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.ReviewNotes
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_ReviewNotes
+  name: ReviewNotes
+  nameWithType: PendingPaymentDto.ReviewNotes
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.ReviewNotes
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.InitiatedAt*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.InitiatedAt
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_InitiatedAt
+  name: InitiatedAt
+  nameWithType: PendingPaymentDto.InitiatedAt
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.InitiatedAt
+- uid: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedAt*
+  commentId: Overload:Meridian.Contracts.Banking.PendingPaymentDto.ReviewedAt
+  href: Meridian.Contracts.Banking.PendingPaymentDto.html#Meridian_Contracts_Banking_PendingPaymentDto_ReviewedAt
+  name: ReviewedAt
+  nameWithType: PendingPaymentDto.ReviewedAt
+  fullName: Meridian.Contracts.Banking.PendingPaymentDto.ReviewedAt

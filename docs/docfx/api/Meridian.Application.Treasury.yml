@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Treasury
+  commentId: N:Meridian.Application.Treasury
+  id: Meridian.Application.Treasury
+  children:
+  - Meridian.Application.Treasury.IMmfLiquidityService
+  - Meridian.Application.Treasury.IMoneyMarketFundService
+  - Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Treasury
+  nameWithType: Meridian.Application.Treasury
+  fullName: Meridian.Application.Treasury
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Treasury.IMmfLiquidityService
+  commentId: T:Meridian.Application.Treasury.IMmfLiquidityService
+  parent: Meridian.Application.Treasury
+  href: Meridian.Application.Treasury.IMmfLiquidityService.html
+  name: IMmfLiquidityService
+  nameWithType: IMmfLiquidityService
+  fullName: Meridian.Application.Treasury.IMmfLiquidityService
+- uid: Meridian.Application.Treasury.IMoneyMarketFundService
+  commentId: T:Meridian.Application.Treasury.IMoneyMarketFundService
+  parent: Meridian.Application.Treasury
+  href: Meridian.Application.Treasury.IMoneyMarketFundService.html
+  name: IMoneyMarketFundService
+  nameWithType: IMoneyMarketFundService
+  fullName: Meridian.Application.Treasury.IMoneyMarketFundService
+- uid: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  commentId: T:Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+  href: Meridian.Application.Treasury.InMemoryMoneyMarketFundService.html
+  name: InMemoryMoneyMarketFundService
+  nameWithType: InMemoryMoneyMarketFundService
+  fullName: Meridian.Application.Treasury.InMemoryMoneyMarketFundService
+- uid: Meridian.Application.Treasury
+  commentId: N:Meridian.Application.Treasury
+  href: Meridian.html
+  name: Meridian.Application.Treasury
+  nameWithType: Meridian.Application.Treasury
+  fullName: Meridian.Application.Treasury
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Treasury
+    name: Treasury
+    href: Meridian.Application.Treasury.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Treasury
+    name: Treasury
+    href: Meridian.Application.Treasury.html

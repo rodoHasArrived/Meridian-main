@@ -1,0 +1,1119 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  commentId: T:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  id: ServicerTransactionReportLineDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Meridian.Contracts.DirectLending.CurrencyCode},System.String,System.String)
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.Currency
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.EffectiveDate
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ExternalRef
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.FeeAmount
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.GrossAmount
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.InterestAmount
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.LoanId
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PenaltyAmount
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PrincipalAmount
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.RawPayloadJson
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerReportBatchId
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionId
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionLineId
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.SettlementDate
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionDate
+  - Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionType
+  langs:
+  - csharp
+  - vb
+  name: ServicerTransactionReportLineDto
+  nameWithType: ServicerTransactionReportLineDto
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServicerTransactionReportLineDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 269
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record ServicerTransactionReportLineDto : IEquatable<ServicerTransactionReportLineDto>'
+    content.vb: Public NotInheritable Class ServicerTransactionReportLineDto Implements IEquatable(Of ServicerTransactionReportLineDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Meridian.Contracts.DirectLending.CurrencyCode},System.String,System.String)
+  commentId: M:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Meridian.Contracts.DirectLending.CurrencyCode},System.String,System.String)
+  id: '#ctor(System.Guid,System.Guid,System.Guid,System.String,System.String,System.DateOnly,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Decimal,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{Meridian.Contracts.DirectLending.CurrencyCode},System.String,System.String)'
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: ServicerTransactionReportLineDto(Guid, Guid, Guid, string?, string, DateOnly, DateOnly?, DateOnly?, decimal, decimal?, decimal?, decimal?, decimal?, CurrencyCode?, string?, string)
+  nameWithType: ServicerTransactionReportLineDto.ServicerTransactionReportLineDto(Guid, Guid, Guid, string?, string, DateOnly, DateOnly?, DateOnly?, decimal, decimal?, decimal?, decimal?, decimal?, CurrencyCode?, string?, string)
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionReportLineDto(System.Guid, System.Guid, System.Guid, string?, string, System.DateOnly, System.DateOnly?, System.DateOnly?, decimal, decimal?, decimal?, decimal?, decimal?, Meridian.Contracts.DirectLending.CurrencyCode?, string?, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 269
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public ServicerTransactionReportLineDto(Guid ServicerTransactionLineId, Guid ServicerReportBatchId, Guid LoanId, string? ServicerTransactionId, string TransactionType, DateOnly EffectiveDate, DateOnly? TransactionDate, DateOnly? SettlementDate, decimal GrossAmount, decimal? PrincipalAmount, decimal? InterestAmount, decimal? FeeAmount, decimal? PenaltyAmount, CurrencyCode? Currency, string? ExternalRef, string RawPayloadJson)
+    parameters:
+    - id: ServicerTransactionLineId
+      type: System.Guid
+    - id: ServicerReportBatchId
+      type: System.Guid
+    - id: LoanId
+      type: System.Guid
+    - id: ServicerTransactionId
+      type: System.String
+    - id: TransactionType
+      type: System.String
+    - id: EffectiveDate
+      type: System.DateOnly
+    - id: TransactionDate
+      type: System.Nullable{System.DateOnly}
+    - id: SettlementDate
+      type: System.Nullable{System.DateOnly}
+    - id: GrossAmount
+      type: System.Decimal
+    - id: PrincipalAmount
+      type: System.Nullable{System.Decimal}
+    - id: InterestAmount
+      type: System.Nullable{System.Decimal}
+    - id: FeeAmount
+      type: System.Nullable{System.Decimal}
+    - id: PenaltyAmount
+      type: System.Nullable{System.Decimal}
+    - id: Currency
+      type: System.Nullable{Meridian.Contracts.DirectLending.CurrencyCode}
+    - id: ExternalRef
+      type: System.String
+    - id: RawPayloadJson
+      type: System.String
+    content.vb: Public Sub New(ServicerTransactionLineId As Guid, ServicerReportBatchId As Guid, LoanId As Guid, ServicerTransactionId As String, TransactionType As String, EffectiveDate As DateOnly, TransactionDate As DateOnly?, SettlementDate As DateOnly?, GrossAmount As Decimal, PrincipalAmount As Decimal?, InterestAmount As Decimal?, FeeAmount As Decimal?, PenaltyAmount As Decimal?, Currency As CurrencyCode?, ExternalRef As String, RawPayloadJson As String)
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.#ctor*
+  nameWithType.vb: ServicerTransactionReportLineDto.New(Guid, Guid, Guid, String, String, DateOnly, DateOnly?, DateOnly?, Decimal, Decimal?, Decimal?, Decimal?, Decimal?, CurrencyCode?, String, String)
+  fullName.vb: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.New(System.Guid, System.Guid, System.Guid, String, String, System.DateOnly, System.DateOnly?, System.DateOnly?, Decimal, Decimal?, Decimal?, Decimal?, Decimal?, Meridian.Contracts.DirectLending.CurrencyCode?, String, String)
+  name.vb: New(Guid, Guid, Guid, String, String, DateOnly, DateOnly?, DateOnly?, Decimal, Decimal?, Decimal?, Decimal?, Decimal?, CurrencyCode?, String, String)
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionLineId
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionLineId
+  id: ServicerTransactionLineId
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: ServicerTransactionLineId
+  nameWithType: ServicerTransactionReportLineDto.ServicerTransactionLineId
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionLineId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServicerTransactionLineId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 270
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid ServicerTransactionLineId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ServicerTransactionLineId As Guid
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionLineId*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerReportBatchId
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerReportBatchId
+  id: ServicerReportBatchId
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: ServicerReportBatchId
+  nameWithType: ServicerTransactionReportLineDto.ServicerReportBatchId
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerReportBatchId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServicerReportBatchId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 271
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid ServicerReportBatchId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ServicerReportBatchId As Guid
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerReportBatchId*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.LoanId
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.LoanId
+  id: LoanId
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: LoanId
+  nameWithType: ServicerTransactionReportLineDto.LoanId
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.LoanId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoanId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 272
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid LoanId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property LoanId As Guid
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.LoanId*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionId
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionId
+  id: ServicerTransactionId
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: ServicerTransactionId
+  nameWithType: ServicerTransactionReportLineDto.ServicerTransactionId
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServicerTransactionId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? ServicerTransactionId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ServicerTransactionId As String
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionId*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionType
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionType
+  id: TransactionType
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: TransactionType
+  nameWithType: ServicerTransactionReportLineDto.TransactionType
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TransactionType
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 274
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string TransactionType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TransactionType As String
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionType*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.EffectiveDate
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.EffectiveDate
+  id: EffectiveDate
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: EffectiveDate
+  nameWithType: ServicerTransactionReportLineDto.EffectiveDate
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.EffectiveDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 275
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly EffectiveDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property EffectiveDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.EffectiveDate*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionDate
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionDate
+  id: TransactionDate
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: TransactionDate
+  nameWithType: ServicerTransactionReportLineDto.TransactionDate
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TransactionDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 276
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly? TransactionDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property TransactionDate As DateOnly?
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionDate*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.SettlementDate
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.SettlementDate
+  id: SettlementDate
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: SettlementDate
+  nameWithType: ServicerTransactionReportLineDto.SettlementDate
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.SettlementDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SettlementDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 277
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly? SettlementDate { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property SettlementDate As DateOnly?
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.SettlementDate*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.GrossAmount
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.GrossAmount
+  id: GrossAmount
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: GrossAmount
+  nameWithType: ServicerTransactionReportLineDto.GrossAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.GrossAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GrossAmount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 278
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal GrossAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property GrossAmount As Decimal
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.GrossAmount*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PrincipalAmount
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PrincipalAmount
+  id: PrincipalAmount
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: PrincipalAmount
+  nameWithType: ServicerTransactionReportLineDto.PrincipalAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PrincipalAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrincipalAmount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal? PrincipalAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property PrincipalAmount As Decimal?
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PrincipalAmount*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.InterestAmount
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.InterestAmount
+  id: InterestAmount
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: InterestAmount
+  nameWithType: ServicerTransactionReportLineDto.InterestAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.InterestAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InterestAmount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 280
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal? InterestAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property InterestAmount As Decimal?
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.InterestAmount*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.FeeAmount
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.FeeAmount
+  id: FeeAmount
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: FeeAmount
+  nameWithType: ServicerTransactionReportLineDto.FeeAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.FeeAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FeeAmount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 281
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal? FeeAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property FeeAmount As Decimal?
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.FeeAmount*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PenaltyAmount
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PenaltyAmount
+  id: PenaltyAmount
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: PenaltyAmount
+  nameWithType: ServicerTransactionReportLineDto.PenaltyAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PenaltyAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PenaltyAmount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal? PenaltyAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property PenaltyAmount As Decimal?
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PenaltyAmount*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.Currency
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.Currency
+  id: Currency
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: ServicerTransactionReportLineDto.Currency
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public CurrencyCode? Currency { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Contracts.DirectLending.CurrencyCode}
+    content.vb: Public Property Currency As CurrencyCode?
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.Currency*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ExternalRef
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ExternalRef
+  id: ExternalRef
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: ExternalRef
+  nameWithType: ServicerTransactionReportLineDto.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ExternalRef
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExternalRef
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 284
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string? ExternalRef { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExternalRef As String
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ExternalRef*
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.RawPayloadJson
+  commentId: P:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.RawPayloadJson
+  id: RawPayloadJson
+  parent: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+  langs:
+  - csharp
+  - vb
+  name: RawPayloadJson
+  nameWithType: ServicerTransactionReportLineDto.RawPayloadJson
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.RawPayloadJson
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RawPayloadJson
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 285
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string RawPayloadJson { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RawPayloadJson As String
+  overload: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.RawPayloadJson*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ServicerTransactionReportLineDto>
+  nameWithType: IEquatable<ServicerTransactionReportLineDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto>
+  nameWithType.vb: IEquatable(Of ServicerTransactionReportLineDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto)
+  name.vb: IEquatable(Of ServicerTransactionReportLineDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+    name: ServicerTransactionReportLineDto
+    href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto
+    name: ServicerTransactionReportLineDto
+    href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.#ctor
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto__ctor_System_Guid_System_Guid_System_Guid_System_String_System_String_System_DateOnly_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Decimal_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_Meridian_Contracts_DirectLending_CurrencyCode__System_String_System_String_
+  name: ServicerTransactionReportLineDto
+  nameWithType: ServicerTransactionReportLineDto.ServicerTransactionReportLineDto
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionReportLineDto
+  nameWithType.vb: ServicerTransactionReportLineDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable{Meridian.Contracts.DirectLending.CurrencyCode}
+  commentId: T:System.Nullable{Meridian.Contracts.DirectLending.CurrencyCode}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Contracts.DirectLending.CurrencyCode.html
+  name: CurrencyCode?
+  nameWithType: CurrencyCode?
+  fullName: Meridian.Contracts.DirectLending.CurrencyCode?
+  spec.csharp:
+  - uid: Meridian.Contracts.DirectLending.CurrencyCode
+    name: CurrencyCode
+    href: Meridian.Contracts.DirectLending.CurrencyCode.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Contracts.DirectLending.CurrencyCode
+    name: CurrencyCode
+    href: Meridian.Contracts.DirectLending.CurrencyCode.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionLineId*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionLineId
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_ServicerTransactionLineId
+  name: ServicerTransactionLineId
+  nameWithType: ServicerTransactionReportLineDto.ServicerTransactionLineId
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionLineId
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerReportBatchId*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerReportBatchId
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_ServicerReportBatchId
+  name: ServicerReportBatchId
+  nameWithType: ServicerTransactionReportLineDto.ServicerReportBatchId
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerReportBatchId
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.LoanId*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.LoanId
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_LoanId
+  name: LoanId
+  nameWithType: ServicerTransactionReportLineDto.LoanId
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.LoanId
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionId*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionId
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_ServicerTransactionId
+  name: ServicerTransactionId
+  nameWithType: ServicerTransactionReportLineDto.ServicerTransactionId
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ServicerTransactionId
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionType*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionType
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_TransactionType
+  name: TransactionType
+  nameWithType: ServicerTransactionReportLineDto.TransactionType
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionType
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.EffectiveDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.EffectiveDate
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_EffectiveDate
+  name: EffectiveDate
+  nameWithType: ServicerTransactionReportLineDto.EffectiveDate
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.EffectiveDate
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionDate
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_TransactionDate
+  name: TransactionDate
+  nameWithType: ServicerTransactionReportLineDto.TransactionDate
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.TransactionDate
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.SettlementDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.SettlementDate
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_SettlementDate
+  name: SettlementDate
+  nameWithType: ServicerTransactionReportLineDto.SettlementDate
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.SettlementDate
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.GrossAmount*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.GrossAmount
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_GrossAmount
+  name: GrossAmount
+  nameWithType: ServicerTransactionReportLineDto.GrossAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.GrossAmount
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PrincipalAmount*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PrincipalAmount
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_PrincipalAmount
+  name: PrincipalAmount
+  nameWithType: ServicerTransactionReportLineDto.PrincipalAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PrincipalAmount
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.InterestAmount*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.InterestAmount
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_InterestAmount
+  name: InterestAmount
+  nameWithType: ServicerTransactionReportLineDto.InterestAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.InterestAmount
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.FeeAmount*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.FeeAmount
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_FeeAmount
+  name: FeeAmount
+  nameWithType: ServicerTransactionReportLineDto.FeeAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.FeeAmount
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PenaltyAmount*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PenaltyAmount
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_PenaltyAmount
+  name: PenaltyAmount
+  nameWithType: ServicerTransactionReportLineDto.PenaltyAmount
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.PenaltyAmount
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.Currency*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.Currency
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_Currency
+  name: Currency
+  nameWithType: ServicerTransactionReportLineDto.Currency
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.Currency
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ExternalRef*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ExternalRef
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_ExternalRef
+  name: ExternalRef
+  nameWithType: ServicerTransactionReportLineDto.ExternalRef
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.ExternalRef
+- uid: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.RawPayloadJson*
+  commentId: Overload:Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.RawPayloadJson
+  href: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.html#Meridian_Contracts_DirectLending_ServicerTransactionReportLineDto_RawPayloadJson
+  name: RawPayloadJson
+  nameWithType: ServicerTransactionReportLineDto.RawPayloadJson
+  fullName: Meridian.Contracts.DirectLending.ServicerTransactionReportLineDto.RawPayloadJson

@@ -1,0 +1,197 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  commentId: T:Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  id: ICppTraderSnapshotTranslator
+  parent: Meridian.Infrastructure.CppTrader.Translation
+  children:
+  - Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  langs:
+  - csharp
+  - vb
+  name: ICppTraderSnapshotTranslator
+  nameWithType: ICppTraderSnapshotTranslator
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderSnapshotTranslator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICppTraderSnapshotTranslator
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderSnapshotTranslator.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  syntax:
+    content: public interface ICppTraderSnapshotTranslator
+    content.vb: Public Interface ICppTraderSnapshotTranslator
+  derivedClasses:
+  - Meridian.Infrastructure.CppTrader.Translation.CppTraderSnapshotTranslator
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  commentId: M:Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  id: Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  parent: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator
+  langs:
+  - csharp
+  - vb
+  name: Translate(BookSnapshotEvent)
+  nameWithType: ICppTraderSnapshotTranslator.Translate(BookSnapshotEvent)
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate(Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderSnapshotTranslator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Translate
+    path: ../../src/Meridian.Infrastructure.CppTrader/Translation/ICppTraderSnapshotTranslator.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Translation
+  syntax:
+    content: LOBSnapshot Translate(BookSnapshotEvent snapshotEvent)
+    parameters:
+    - id: snapshotEvent
+      type: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+    return:
+      type: Meridian.Contracts.Domain.Models.LOBSnapshot
+    content.vb: Function Translate(snapshotEvent As BookSnapshotEvent) As LOBSnapshot
+  overload: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate*
+references:
+- uid: Meridian.Infrastructure.CppTrader.Translation
+  commentId: N:Meridian.Infrastructure.CppTrader.Translation
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Translation
+  nameWithType: Meridian.Infrastructure.CppTrader.Translation
+  fullName: Meridian.Infrastructure.CppTrader.Translation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Translation
+    name: Translation
+    href: Meridian.Infrastructure.CppTrader.Translation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Translation
+    name: Translation
+    href: Meridian.Infrastructure.CppTrader.Translation.html
+- uid: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate
+  href: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.html#Meridian_Infrastructure_CppTrader_Translation_ICppTraderSnapshotTranslator_Translate_Meridian_Infrastructure_CppTrader_Protocol_BookSnapshotEvent_
+  name: Translate
+  nameWithType: ICppTraderSnapshotTranslator.Translate
+  fullName: Meridian.Infrastructure.CppTrader.Translation.ICppTraderSnapshotTranslator.Translate
+- uid: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent.html
+  name: BookSnapshotEvent
+  nameWithType: BookSnapshotEvent
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.BookSnapshotEvent
+- uid: Meridian.Contracts.Domain.Models.LOBSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.LOBSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.LOBSnapshot.html
+  name: LOBSnapshot
+  nameWithType: LOBSnapshot
+  fullName: Meridian.Contracts.Domain.Models.LOBSnapshot
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html

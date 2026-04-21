@@ -1,0 +1,865 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  commentId: T:Meridian.Execution.Sdk.Derivatives.FutureDetails
+  id: FutureDetails
+  parent: Meridian.Execution.Sdk.Derivatives
+  children:
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.String,System.String)
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMonth
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMultiplier
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.Currency
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.DaysToExpiry(System.DateOnly)
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.Exchange
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.PnlForPriceMove(System.Decimal,System.Decimal,System.Int32)
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.TickSize
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.TickValue
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.TicksBetween(System.Decimal,System.Decimal)
+  - Meridian.Execution.Sdk.Derivatives.FutureDetails.UnderlyingSymbol
+  langs:
+  - csharp
+  - vb
+  name: FutureDetails
+  nameWithType: FutureDetails
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FutureDetails
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Immutable specification for an exchange-traded futures contract.
+  example: []
+  syntax:
+    content: 'public sealed record FutureDetails : IEquatable<FutureDetails>'
+    content.vb: Public NotInheritable Class FutureDetails Implements IEquatable(Of FutureDetails)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.Derivatives.FutureDetails}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.String,System.String)
+  commentId: M:Meridian.Execution.Sdk.Derivatives.FutureDetails.#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.String,System.String)
+  id: '#ctor(System.String,System.DateOnly,System.Decimal,System.Decimal,System.Decimal,System.String,System.String)'
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: FutureDetails(string, DateOnly, decimal, decimal, decimal, string, string)
+  nameWithType: FutureDetails.FutureDetails(string, DateOnly, decimal, decimal, decimal, string, string)
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.FutureDetails(string, System.DateOnly, decimal, decimal, decimal, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Immutable specification for an exchange-traded futures contract.
+  example: []
+  syntax:
+    content: public FutureDetails(string UnderlyingSymbol, DateOnly ContractMonth, decimal TickSize, decimal TickValue, decimal ContractMultiplier, string Exchange, string Currency = "USD")
+    parameters:
+    - id: UnderlyingSymbol
+      type: System.String
+      description: The root underlying (e.g., "ES" for E-mini S&amp;P 500).
+    - id: ContractMonth
+      type: System.DateOnly
+      description: Delivery/expiry month (first day of delivery month convention).
+    - id: TickSize
+      type: System.Decimal
+      description: Minimum price increment (e.g., 0.25 for ES).
+    - id: TickValue
+      type: System.Decimal
+      description: Dollar value of one tick move (e.g., $12.50 for ES).
+    - id: ContractMultiplier
+      type: System.Decimal
+      description: >-
+        Dollar multiplier per point of underlying (e.g., $50 for ES).
+
+        Relationship: TickValue = TickSize × ContractMultiplier.
+    - id: Exchange
+      type: System.String
+      description: Exchange on which the contract is listed (e.g., "CME").
+    - id: Currency
+      type: System.String
+      description: Settlement currency (e.g., "USD").
+    content.vb: Public Sub New(UnderlyingSymbol As String, ContractMonth As DateOnly, TickSize As Decimal, TickValue As Decimal, ContractMultiplier As Decimal, Exchange As String, Currency As String = "USD")
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.#ctor*
+  nameWithType.vb: FutureDetails.New(String, DateOnly, Decimal, Decimal, Decimal, String, String)
+  fullName.vb: Meridian.Execution.Sdk.Derivatives.FutureDetails.New(String, System.DateOnly, Decimal, Decimal, Decimal, String, String)
+  name.vb: New(String, DateOnly, Decimal, Decimal, Decimal, String, String)
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.UnderlyingSymbol
+  commentId: P:Meridian.Execution.Sdk.Derivatives.FutureDetails.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: FutureDetails.UnderlyingSymbol
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: The root underlying (e.g., "ES" for E-mini S&amp;P 500).
+  example: []
+  syntax:
+    content: public string UnderlyingSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property UnderlyingSymbol As String
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.UnderlyingSymbol*
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMonth
+  commentId: P:Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMonth
+  id: ContractMonth
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: ContractMonth
+  nameWithType: FutureDetails.ContractMonth
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMonth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ContractMonth
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Delivery/expiry month (first day of delivery month convention).
+  example: []
+  syntax:
+    content: public DateOnly ContractMonth { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property ContractMonth As DateOnly
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMonth*
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickSize
+  commentId: P:Meridian.Execution.Sdk.Derivatives.FutureDetails.TickSize
+  id: TickSize
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: TickSize
+  nameWithType: FutureDetails.TickSize
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickSize
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TickSize
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Minimum price increment (e.g., 0.25 for ES).
+  example: []
+  syntax:
+    content: public decimal TickSize { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TickSize As Decimal
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickSize*
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickValue
+  commentId: P:Meridian.Execution.Sdk.Derivatives.FutureDetails.TickValue
+  id: TickValue
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: TickValue
+  nameWithType: FutureDetails.TickValue
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TickValue
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Dollar value of one tick move (e.g., $12.50 for ES).
+  example: []
+  syntax:
+    content: public decimal TickValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property TickValue As Decimal
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickValue*
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMultiplier
+  commentId: P:Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMultiplier
+  id: ContractMultiplier
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: ContractMultiplier
+  nameWithType: FutureDetails.ContractMultiplier
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMultiplier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ContractMultiplier
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: >-
+    Dollar multiplier per point of underlying (e.g., $50 for ES).
+
+    Relationship: TickValue = TickSize × ContractMultiplier.
+  example: []
+  syntax:
+    content: public decimal ContractMultiplier { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ContractMultiplier As Decimal
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMultiplier*
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.Exchange
+  commentId: P:Meridian.Execution.Sdk.Derivatives.FutureDetails.Exchange
+  id: Exchange
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: FutureDetails.Exchange
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Exchange on which the contract is listed (e.g., "CME").
+  example: []
+  syntax:
+    content: public string Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.Exchange*
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.Currency
+  commentId: P:Meridian.Execution.Sdk.Derivatives.FutureDetails.Currency
+  id: Currency
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: FutureDetails.Currency
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Settlement currency (e.g., "USD").
+  example: []
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.Currency*
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.PnlForPriceMove(System.Decimal,System.Decimal,System.Int32)
+  commentId: M:Meridian.Execution.Sdk.Derivatives.FutureDetails.PnlForPriceMove(System.Decimal,System.Decimal,System.Int32)
+  id: PnlForPriceMove(System.Decimal,System.Decimal,System.Int32)
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: PnlForPriceMove(decimal, decimal, int)
+  nameWithType: FutureDetails.PnlForPriceMove(decimal, decimal, int)
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.PnlForPriceMove(decimal, decimal, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PnlForPriceMove
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: >-
+    Calculates the dollar P&amp;L of a price move from <code class="paramref">entryPrice</code>
+
+    to <code class="paramref">currentPrice</code> for <code class="paramref">contracts</code> long contracts.
+  example: []
+  syntax:
+    content: public decimal PnlForPriceMove(decimal entryPrice, decimal currentPrice, int contracts)
+    parameters:
+    - id: entryPrice
+      type: System.Decimal
+    - id: currentPrice
+      type: System.Decimal
+    - id: contracts
+      type: System.Int32
+    return:
+      type: System.Decimal
+    content.vb: Public Function PnlForPriceMove(entryPrice As Decimal, currentPrice As Decimal, contracts As Integer) As Decimal
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.PnlForPriceMove*
+  nameWithType.vb: FutureDetails.PnlForPriceMove(Decimal, Decimal, Integer)
+  fullName.vb: Meridian.Execution.Sdk.Derivatives.FutureDetails.PnlForPriceMove(Decimal, Decimal, Integer)
+  name.vb: PnlForPriceMove(Decimal, Decimal, Integer)
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.TicksBetween(System.Decimal,System.Decimal)
+  commentId: M:Meridian.Execution.Sdk.Derivatives.FutureDetails.TicksBetween(System.Decimal,System.Decimal)
+  id: TicksBetween(System.Decimal,System.Decimal)
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: TicksBetween(decimal, decimal)
+  nameWithType: FutureDetails.TicksBetween(decimal, decimal)
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.TicksBetween(decimal, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TicksBetween
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Number of ticks between <code class="paramref">fromPrice</code> and <code class="paramref">toPrice</code>.
+  example: []
+  syntax:
+    content: public decimal TicksBetween(decimal fromPrice, decimal toPrice)
+    parameters:
+    - id: fromPrice
+      type: System.Decimal
+    - id: toPrice
+      type: System.Decimal
+    return:
+      type: System.Decimal
+    content.vb: Public Function TicksBetween(fromPrice As Decimal, toPrice As Decimal) As Decimal
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.TicksBetween*
+  nameWithType.vb: FutureDetails.TicksBetween(Decimal, Decimal)
+  fullName.vb: Meridian.Execution.Sdk.Derivatives.FutureDetails.TicksBetween(Decimal, Decimal)
+  name.vb: TicksBetween(Decimal, Decimal)
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.DaysToExpiry(System.DateOnly)
+  commentId: M:Meridian.Execution.Sdk.Derivatives.FutureDetails.DaysToExpiry(System.DateOnly)
+  id: DaysToExpiry(System.DateOnly)
+  parent: Meridian.Execution.Sdk.Derivatives.FutureDetails
+  langs:
+  - csharp
+  - vb
+  name: DaysToExpiry(DateOnly)
+  nameWithType: FutureDetails.DaysToExpiry(DateOnly)
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.DaysToExpiry(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DaysToExpiry
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/FutureDetails.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Approximate number of calendar days remaining until contract month from <code class="paramref">asOf</code>.
+  example: []
+  syntax:
+    content: public int DaysToExpiry(DateOnly asOf)
+    parameters:
+    - id: asOf
+      type: System.DateOnly
+    return:
+      type: System.Int32
+    content.vb: Public Function DaysToExpiry(asOf As DateOnly) As Integer
+  overload: Meridian.Execution.Sdk.Derivatives.FutureDetails.DaysToExpiry*
+references:
+- uid: Meridian.Execution.Sdk.Derivatives
+  commentId: N:Meridian.Execution.Sdk.Derivatives
+  href: Meridian.html
+  name: Meridian.Execution.Sdk.Derivatives
+  nameWithType: Meridian.Execution.Sdk.Derivatives
+  fullName: Meridian.Execution.Sdk.Derivatives
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.Derivatives.FutureDetails}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.Derivatives.FutureDetails}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FutureDetails>
+  nameWithType: IEquatable<FutureDetails>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.Derivatives.FutureDetails>
+  nameWithType.vb: IEquatable(Of FutureDetails)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.Derivatives.FutureDetails)
+  name.vb: IEquatable(Of FutureDetails)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.Derivatives.FutureDetails
+    name: FutureDetails
+    href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.Derivatives.FutureDetails
+    name: FutureDetails
+    href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.#ctor*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.#ctor
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails__ctor_System_String_System_DateOnly_System_Decimal_System_Decimal_System_Decimal_System_String_System_String_
+  name: FutureDetails
+  nameWithType: FutureDetails.FutureDetails
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.FutureDetails
+  nameWithType.vb: FutureDetails.New
+  fullName.vb: Meridian.Execution.Sdk.Derivatives.FutureDetails.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.UnderlyingSymbol*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.UnderlyingSymbol
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: FutureDetails.UnderlyingSymbol
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.UnderlyingSymbol
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMonth*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMonth
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_ContractMonth
+  name: ContractMonth
+  nameWithType: FutureDetails.ContractMonth
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMonth
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickSize*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.TickSize
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_TickSize
+  name: TickSize
+  nameWithType: FutureDetails.TickSize
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickSize
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickValue*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.TickValue
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_TickValue
+  name: TickValue
+  nameWithType: FutureDetails.TickValue
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.TickValue
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMultiplier*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMultiplier
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_ContractMultiplier
+  name: ContractMultiplier
+  nameWithType: FutureDetails.ContractMultiplier
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.ContractMultiplier
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.Exchange*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.Exchange
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_Exchange
+  name: Exchange
+  nameWithType: FutureDetails.Exchange
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.Exchange
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.Currency*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.Currency
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_Currency
+  name: Currency
+  nameWithType: FutureDetails.Currency
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.Currency
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.PnlForPriceMove*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.PnlForPriceMove
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_PnlForPriceMove_System_Decimal_System_Decimal_System_Int32_
+  name: PnlForPriceMove
+  nameWithType: FutureDetails.PnlForPriceMove
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.PnlForPriceMove
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.TicksBetween*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.TicksBetween
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_TicksBetween_System_Decimal_System_Decimal_
+  name: TicksBetween
+  nameWithType: FutureDetails.TicksBetween
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.TicksBetween
+- uid: Meridian.Execution.Sdk.Derivatives.FutureDetails.DaysToExpiry*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.FutureDetails.DaysToExpiry
+  href: Meridian.Execution.Sdk.Derivatives.FutureDetails.html#Meridian_Execution_Sdk_Derivatives_FutureDetails_DaysToExpiry_System_DateOnly_
+  name: DaysToExpiry
+  nameWithType: FutureDetails.DaysToExpiry
+  fullName: Meridian.Execution.Sdk.Derivatives.FutureDetails.DaysToExpiry

@@ -1,0 +1,272 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.ISecurityMasterGate
+  commentId: T:Meridian.Execution.ISecurityMasterGate
+  id: ISecurityMasterGate
+  parent: Meridian.Execution
+  children:
+  - Meridian.Execution.ISecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISecurityMasterGate
+  nameWithType: ISecurityMasterGate
+  fullName: Meridian.Execution.ISecurityMasterGate
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/ISecurityMasterGate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISecurityMasterGate
+    path: ../../src/Meridian.Execution/ISecurityMasterGate.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: >-
+    Pre-trade governance gate: verifies that a symbol is registered and active in the
+
+    Security Master before an order is accepted by the OMS.
+  example: []
+  syntax:
+    content: public interface ISecurityMasterGate
+    content.vb: Public Interface ISecurityMasterGate
+  derivedClasses:
+  - Meridian.Execution.SecurityMasterGate
+- uid: Meridian.Execution.ISecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.ISecurityMasterGate.CheckAsync(System.String,System.Threading.CancellationToken)
+  id: CheckAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Execution.ISecurityMasterGate
+  langs:
+  - csharp
+  - vb
+  name: CheckAsync(string, CancellationToken)
+  nameWithType: ISecurityMasterGate.CheckAsync(string, CancellationToken)
+  fullName: Meridian.Execution.ISecurityMasterGate.CheckAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/ISecurityMasterGate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckAsync
+    path: ../../src/Meridian.Execution/ISecurityMasterGate.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution
+  summary: Checks whether <code class="paramref">symbol</code> resolves to an active security in the Security Master.
+  example: []
+  syntax:
+    content: Task<SecurityMasterGateResult> CheckAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Ticker or identifier to check.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.SecurityMasterGateResult}
+      description: >-
+        <xref href="Meridian.Execution.SecurityMasterGateResult.IsApproved" data-throw-if-not-resolved="false"></xref> is <code>true</code> when the symbol resolves;
+
+        <code>false</code> with a rejection <xref href="Meridian.Execution.SecurityMasterGateResult.Reason" data-throw-if-not-resolved="false"></xref> otherwise.
+    content.vb: Function CheckAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of SecurityMasterGateResult)
+  overload: Meridian.Execution.ISecurityMasterGate.CheckAsync*
+  nameWithType.vb: ISecurityMasterGate.CheckAsync(String, CancellationToken)
+  fullName.vb: Meridian.Execution.ISecurityMasterGate.CheckAsync(String, System.Threading.CancellationToken)
+  name.vb: CheckAsync(String, CancellationToken)
+references:
+- uid: Meridian.Execution
+  commentId: N:Meridian.Execution
+  href: Meridian.html
+  name: Meridian.Execution
+  nameWithType: Meridian.Execution
+  fullName: Meridian.Execution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+- uid: Meridian.Execution.SecurityMasterGateResult.IsApproved
+  commentId: P:Meridian.Execution.SecurityMasterGateResult.IsApproved
+  href: Meridian.Execution.SecurityMasterGateResult.html#Meridian_Execution_SecurityMasterGateResult_IsApproved
+  name: IsApproved
+  nameWithType: SecurityMasterGateResult.IsApproved
+  fullName: Meridian.Execution.SecurityMasterGateResult.IsApproved
+- uid: Meridian.Execution.SecurityMasterGateResult.Reason
+  commentId: P:Meridian.Execution.SecurityMasterGateResult.Reason
+  href: Meridian.Execution.SecurityMasterGateResult.html#Meridian_Execution_SecurityMasterGateResult_Reason
+  name: Reason
+  nameWithType: SecurityMasterGateResult.Reason
+  fullName: Meridian.Execution.SecurityMasterGateResult.Reason
+- uid: Meridian.Execution.ISecurityMasterGate.CheckAsync*
+  commentId: Overload:Meridian.Execution.ISecurityMasterGate.CheckAsync
+  href: Meridian.Execution.ISecurityMasterGate.html#Meridian_Execution_ISecurityMasterGate_CheckAsync_System_String_System_Threading_CancellationToken_
+  name: CheckAsync
+  nameWithType: ISecurityMasterGate.CheckAsync
+  fullName: Meridian.Execution.ISecurityMasterGate.CheckAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Execution.SecurityMasterGateResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.SecurityMasterGateResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityMasterGateResult>
+  nameWithType: Task<SecurityMasterGateResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.SecurityMasterGateResult>
+  nameWithType.vb: Task(Of SecurityMasterGateResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.SecurityMasterGateResult)
+  name.vb: Task(Of SecurityMasterGateResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.SecurityMasterGateResult
+    name: SecurityMasterGateResult
+    href: Meridian.Execution.SecurityMasterGateResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.SecurityMasterGateResult
+    name: SecurityMasterGateResult
+    href: Meridian.Execution.SecurityMasterGateResult.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

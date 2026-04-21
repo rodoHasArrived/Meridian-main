@@ -1,0 +1,770 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.FriendlyErrorFormatter
+  commentId: T:Meridian.Application.Services.FriendlyErrorFormatter
+  id: FriendlyErrorFormatter
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.FriendlyErrorFormatter.DisplayError(Meridian.Application.Services.FormattedError,System.IO.TextWriter)
+  - Meridian.Application.Services.FriendlyErrorFormatter.DisplayErrorCodeReference(System.IO.TextWriter)
+  - Meridian.Application.Services.FriendlyErrorFormatter.Format(System.Exception)
+  - Meridian.Application.Services.FriendlyErrorFormatter.Format(System.String,System.String)
+  - Meridian.Application.Services.FriendlyErrorFormatter.GetAllErrorCodes
+  - Meridian.Application.Services.FriendlyErrorFormatter.GetShortMessage(System.Exception)
+  langs:
+  - csharp
+  - vb
+  name: FriendlyErrorFormatter
+  nameWithType: FriendlyErrorFormatter
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FriendlyErrorFormatter
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Formats errors with error codes, actionable suggestions, and user-friendly messages.
+
+    Provides consistent error presentation across the application.
+  example: []
+  syntax:
+    content: public static class FriendlyErrorFormatter
+    content.vb: Public Module FriendlyErrorFormatter
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.Format(System.Exception)
+  commentId: M:Meridian.Application.Services.FriendlyErrorFormatter.Format(System.Exception)
+  id: Format(System.Exception)
+  parent: Meridian.Application.Services.FriendlyErrorFormatter
+  langs:
+  - csharp
+  - vb
+  name: Format(Exception)
+  nameWithType: FriendlyErrorFormatter.Format(Exception)
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.Format(System.Exception)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Formats an exception into a user-friendly error message.
+  example: []
+  syntax:
+    content: public static FormattedError Format(Exception exception)
+    parameters:
+    - id: exception
+      type: System.Exception
+    return:
+      type: Meridian.Application.Services.FormattedError
+    content.vb: Public Shared Function Format(exception As Exception) As FormattedError
+  overload: Meridian.Application.Services.FriendlyErrorFormatter.Format*
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.Format(System.String,System.String)
+  commentId: M:Meridian.Application.Services.FriendlyErrorFormatter.Format(System.String,System.String)
+  id: Format(System.String,System.String)
+  parent: Meridian.Application.Services.FriendlyErrorFormatter
+  langs:
+  - csharp
+  - vb
+  name: Format(string, string?)
+  nameWithType: FriendlyErrorFormatter.Format(string, string?)
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.Format(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Formats an error with a known key.
+  example: []
+  syntax:
+    content: public static FormattedError Format(string errorKey, string? additionalMessage = null)
+    parameters:
+    - id: errorKey
+      type: System.String
+    - id: additionalMessage
+      type: System.String
+    return:
+      type: Meridian.Application.Services.FormattedError
+    content.vb: Public Shared Function Format(errorKey As String, additionalMessage As String = Nothing) As FormattedError
+  overload: Meridian.Application.Services.FriendlyErrorFormatter.Format*
+  nameWithType.vb: FriendlyErrorFormatter.Format(String, String)
+  fullName.vb: Meridian.Application.Services.FriendlyErrorFormatter.Format(String, String)
+  name.vb: Format(String, String)
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.DisplayError(Meridian.Application.Services.FormattedError,System.IO.TextWriter)
+  commentId: M:Meridian.Application.Services.FriendlyErrorFormatter.DisplayError(Meridian.Application.Services.FormattedError,System.IO.TextWriter)
+  id: DisplayError(Meridian.Application.Services.FormattedError,System.IO.TextWriter)
+  parent: Meridian.Application.Services.FriendlyErrorFormatter
+  langs:
+  - csharp
+  - vb
+  name: DisplayError(FormattedError, TextWriter?)
+  nameWithType: FriendlyErrorFormatter.DisplayError(FormattedError, TextWriter?)
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.DisplayError(Meridian.Application.Services.FormattedError, System.IO.TextWriter?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayError
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays an error to the console with formatting.
+  example: []
+  syntax:
+    content: public static void DisplayError(FormattedError error, TextWriter? output = null)
+    parameters:
+    - id: error
+      type: Meridian.Application.Services.FormattedError
+    - id: output
+      type: System.IO.TextWriter
+    content.vb: Public Shared Sub DisplayError([error] As FormattedError, output As TextWriter = Nothing)
+  overload: Meridian.Application.Services.FriendlyErrorFormatter.DisplayError*
+  nameWithType.vb: FriendlyErrorFormatter.DisplayError(FormattedError, TextWriter)
+  fullName.vb: Meridian.Application.Services.FriendlyErrorFormatter.DisplayError(Meridian.Application.Services.FormattedError, System.IO.TextWriter)
+  name.vb: DisplayError(FormattedError, TextWriter)
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.GetShortMessage(System.Exception)
+  commentId: M:Meridian.Application.Services.FriendlyErrorFormatter.GetShortMessage(System.Exception)
+  id: GetShortMessage(System.Exception)
+  parent: Meridian.Application.Services.FriendlyErrorFormatter
+  langs:
+  - csharp
+  - vb
+  name: GetShortMessage(Exception)
+  nameWithType: FriendlyErrorFormatter.GetShortMessage(Exception)
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.GetShortMessage(System.Exception)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetShortMessage
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 233
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets a short one-line error message.
+  example: []
+  syntax:
+    content: public static string GetShortMessage(Exception exception)
+    parameters:
+    - id: exception
+      type: System.Exception
+    return:
+      type: System.String
+    content.vb: Public Shared Function GetShortMessage(exception As Exception) As String
+  overload: Meridian.Application.Services.FriendlyErrorFormatter.GetShortMessage*
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.GetAllErrorCodes
+  commentId: M:Meridian.Application.Services.FriendlyErrorFormatter.GetAllErrorCodes
+  id: GetAllErrorCodes
+  parent: Meridian.Application.Services.FriendlyErrorFormatter
+  langs:
+  - csharp
+  - vb
+  name: GetAllErrorCodes()
+  nameWithType: FriendlyErrorFormatter.GetAllErrorCodes()
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.GetAllErrorCodes()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllErrorCodes
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets all registered error codes with descriptions.
+  example: []
+  syntax:
+    content: public static IEnumerable<(string Code, string Title, string? Suggestion)> GetAllErrorCodes()
+    return:
+      type: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String,System.String}}
+    content.vb: Public Shared Function GetAllErrorCodes() As IEnumerable(Of (Code As String, Title As String, Suggestion As String))
+  overload: Meridian.Application.Services.FriendlyErrorFormatter.GetAllErrorCodes*
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.DisplayErrorCodeReference(System.IO.TextWriter)
+  commentId: M:Meridian.Application.Services.FriendlyErrorFormatter.DisplayErrorCodeReference(System.IO.TextWriter)
+  id: DisplayErrorCodeReference(System.IO.TextWriter)
+  parent: Meridian.Application.Services.FriendlyErrorFormatter
+  langs:
+  - csharp
+  - vb
+  name: DisplayErrorCodeReference(TextWriter?)
+  nameWithType: FriendlyErrorFormatter.DisplayErrorCodeReference(TextWriter?)
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.DisplayErrorCodeReference(System.IO.TextWriter?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayErrorCodeReference
+    path: ../../src/Meridian.Application/Services/FriendlyErrorFormatter.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Displays the error code reference.
+  example: []
+  syntax:
+    content: public static void DisplayErrorCodeReference(TextWriter? output = null)
+    parameters:
+    - id: output
+      type: System.IO.TextWriter
+    content.vb: Public Shared Sub DisplayErrorCodeReference(output As TextWriter = Nothing)
+  overload: Meridian.Application.Services.FriendlyErrorFormatter.DisplayErrorCodeReference*
+  nameWithType.vb: FriendlyErrorFormatter.DisplayErrorCodeReference(TextWriter)
+  fullName.vb: Meridian.Application.Services.FriendlyErrorFormatter.DisplayErrorCodeReference(System.IO.TextWriter)
+  name.vb: DisplayErrorCodeReference(TextWriter)
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.Format*
+  commentId: Overload:Meridian.Application.Services.FriendlyErrorFormatter.Format
+  href: Meridian.Application.Services.FriendlyErrorFormatter.html#Meridian_Application_Services_FriendlyErrorFormatter_Format_System_Exception_
+  name: Format
+  nameWithType: FriendlyErrorFormatter.Format
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.Format
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: Meridian.Application.Services.FormattedError
+  commentId: T:Meridian.Application.Services.FormattedError
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.FormattedError.html
+  name: FormattedError
+  nameWithType: FormattedError
+  fullName: Meridian.Application.Services.FormattedError
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.DisplayError*
+  commentId: Overload:Meridian.Application.Services.FriendlyErrorFormatter.DisplayError
+  href: Meridian.Application.Services.FriendlyErrorFormatter.html#Meridian_Application_Services_FriendlyErrorFormatter_DisplayError_Meridian_Application_Services_FormattedError_System_IO_TextWriter_
+  name: DisplayError
+  nameWithType: FriendlyErrorFormatter.DisplayError
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.DisplayError
+- uid: System.IO.TextWriter
+  commentId: T:System.IO.TextWriter
+  parent: System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.textwriter
+  name: TextWriter
+  nameWithType: TextWriter
+  fullName: System.IO.TextWriter
+- uid: System.IO
+  commentId: N:System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.IO
+  nameWithType: System.IO
+  fullName: System.IO
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.GetShortMessage*
+  commentId: Overload:Meridian.Application.Services.FriendlyErrorFormatter.GetShortMessage
+  href: Meridian.Application.Services.FriendlyErrorFormatter.html#Meridian_Application_Services_FriendlyErrorFormatter_GetShortMessage_System_Exception_
+  name: GetShortMessage
+  nameWithType: FriendlyErrorFormatter.GetShortMessage
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.GetShortMessage
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.GetAllErrorCodes*
+  commentId: Overload:Meridian.Application.Services.FriendlyErrorFormatter.GetAllErrorCodes
+  href: Meridian.Application.Services.FriendlyErrorFormatter.html#Meridian_Application_Services_FriendlyErrorFormatter_GetAllErrorCodes
+  name: GetAllErrorCodes
+  nameWithType: FriendlyErrorFormatter.GetAllErrorCodes
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.GetAllErrorCodes
+- uid: System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String,System.String}}
+  commentId: T:System.Collections.Generic.IEnumerable{System.ValueTuple{System.String,System.String,System.String}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<(string Code, string Title, string Suggestion)>
+  nameWithType: IEnumerable<(string Code, string Title, string Suggestion)>
+  fullName: System.Collections.Generic.IEnumerable<(string Code, string Title, string Suggestion)>
+  nameWithType.vb: IEnumerable(Of (Code As String, Title As String, Suggestion As String))
+  fullName.vb: System.Collections.Generic.IEnumerable(Of (Code As String, Title As String, Suggestion As String))
+  name.vb: IEnumerable(Of (Code As String, Title As String, Suggestion As String))
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.Code
+    name: Code
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.code
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.Title
+    name: Title
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.title
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.Suggestion
+    name: Suggestion
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.suggestion
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String,System.String}.Code
+    name: Code
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.code
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.Title
+    name: Title
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.title
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.Suggestion
+    name: Suggestion
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.suggestion
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Services.FriendlyErrorFormatter.DisplayErrorCodeReference*
+  commentId: Overload:Meridian.Application.Services.FriendlyErrorFormatter.DisplayErrorCodeReference
+  href: Meridian.Application.Services.FriendlyErrorFormatter.html#Meridian_Application_Services_FriendlyErrorFormatter_DisplayErrorCodeReference_System_IO_TextWriter_
+  name: DisplayErrorCodeReference
+  nameWithType: FriendlyErrorFormatter.DisplayErrorCodeReference
+  fullName: Meridian.Application.Services.FriendlyErrorFormatter.DisplayErrorCodeReference

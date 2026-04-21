@@ -182,6 +182,7 @@ public sealed class ProviderCredentialResolver
             "__SET_ME__" or
             "SET_ME" or
             "YOUR_KEY_HERE" or
+            "YOUR-KEY-HERE" or
             "YOUR_API_KEY" or
             "YOUR_SECRET" or
             "CHANGE_ME" or

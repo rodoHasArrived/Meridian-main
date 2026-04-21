@@ -1,0 +1,436 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.StorageIssue
+  commentId: T:Meridian.Ui.Services.StorageIssue
+  id: StorageIssue
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.StorageIssue.AffectedPath
+  - Meridian.Ui.Services.StorageIssue.Description
+  - Meridian.Ui.Services.StorageIssue.Severity
+  - Meridian.Ui.Services.StorageIssue.Type
+  langs:
+  - csharp
+  - vb
+  name: StorageIssue
+  nameWithType: StorageIssue
+  fullName: Meridian.Ui.Services.StorageIssue
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageIssue
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public sealed class StorageIssue
+    content.vb: Public NotInheritable Class StorageIssue
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.StorageIssue.Type
+  commentId: P:Meridian.Ui.Services.StorageIssue.Type
+  id: Type
+  parent: Meridian.Ui.Services.StorageIssue
+  langs:
+  - csharp
+  - vb
+  name: Type
+  nameWithType: StorageIssue.Type
+  fullName: Meridian.Ui.Services.StorageIssue.Type
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Type
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Type { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Type As String
+  overload: Meridian.Ui.Services.StorageIssue.Type*
+- uid: Meridian.Ui.Services.StorageIssue.Severity
+  commentId: P:Meridian.Ui.Services.StorageIssue.Severity
+  id: Severity
+  parent: Meridian.Ui.Services.StorageIssue
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: StorageIssue.Severity
+  fullName: Meridian.Ui.Services.StorageIssue.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Severity { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Severity As String
+  overload: Meridian.Ui.Services.StorageIssue.Severity*
+- uid: Meridian.Ui.Services.StorageIssue.Description
+  commentId: P:Meridian.Ui.Services.StorageIssue.Description
+  id: Description
+  parent: Meridian.Ui.Services.StorageIssue
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: StorageIssue.Description
+  fullName: Meridian.Ui.Services.StorageIssue.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Ui.Services.StorageIssue.Description*
+- uid: Meridian.Ui.Services.StorageIssue.AffectedPath
+  commentId: P:Meridian.Ui.Services.StorageIssue.AffectedPath
+  id: AffectedPath
+  parent: Meridian.Ui.Services.StorageIssue
+  langs:
+  - csharp
+  - vb
+  name: AffectedPath
+  nameWithType: StorageIssue.AffectedPath
+  fullName: Meridian.Ui.Services.StorageIssue.AffectedPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AffectedPath
+    path: ../../src/Meridian.Ui.Services/Services/StorageModels.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? AffectedPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AffectedPath As String
+  overload: Meridian.Ui.Services.StorageIssue.AffectedPath*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.StorageIssue.Type*
+  commentId: Overload:Meridian.Ui.Services.StorageIssue.Type
+  href: Meridian.Ui.Services.StorageIssue.html#Meridian_Ui_Services_StorageIssue_Type
+  name: Type
+  nameWithType: StorageIssue.Type
+  fullName: Meridian.Ui.Services.StorageIssue.Type
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.StorageIssue.Severity*
+  commentId: Overload:Meridian.Ui.Services.StorageIssue.Severity
+  href: Meridian.Ui.Services.StorageIssue.html#Meridian_Ui_Services_StorageIssue_Severity
+  name: Severity
+  nameWithType: StorageIssue.Severity
+  fullName: Meridian.Ui.Services.StorageIssue.Severity
+- uid: Meridian.Ui.Services.StorageIssue.Description*
+  commentId: Overload:Meridian.Ui.Services.StorageIssue.Description
+  href: Meridian.Ui.Services.StorageIssue.html#Meridian_Ui_Services_StorageIssue_Description
+  name: Description
+  nameWithType: StorageIssue.Description
+  fullName: Meridian.Ui.Services.StorageIssue.Description
+- uid: Meridian.Ui.Services.StorageIssue.AffectedPath*
+  commentId: Overload:Meridian.Ui.Services.StorageIssue.AffectedPath
+  href: Meridian.Ui.Services.StorageIssue.html#Meridian_Ui_Services_StorageIssue_AffectedPath
+  name: AffectedPath
+  nameWithType: StorageIssue.AffectedPath
+  fullName: Meridian.Ui.Services.StorageIssue.AffectedPath

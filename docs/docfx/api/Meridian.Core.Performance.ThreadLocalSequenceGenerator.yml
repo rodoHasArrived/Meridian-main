@@ -1,0 +1,393 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Performance.ThreadLocalSequenceGenerator
+  commentId: T:Meridian.Core.Performance.ThreadLocalSequenceGenerator
+  id: ThreadLocalSequenceGenerator
+  parent: Meridian.Core.Performance
+  children:
+  - Meridian.Core.Performance.ThreadLocalSequenceGenerator.#ctor(System.Int32)
+  - Meridian.Core.Performance.ThreadLocalSequenceGenerator.Next
+  langs:
+  - csharp
+  - vb
+  name: ThreadLocalSequenceGenerator
+  nameWithType: ThreadLocalSequenceGenerator
+  fullName: Meridian.Core.Performance.ThreadLocalSequenceGenerator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ThreadLocalSequenceGenerator
+    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: >-
+    Thread-local sequence generator for high-performance sequence number allocation.
+
+    Avoids contention by using per-thread counters with unique prefixes.
+  example: []
+  syntax:
+    content: public sealed class ThreadLocalSequenceGenerator
+    content.vb: Public NotInheritable Class ThreadLocalSequenceGenerator
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Core.Performance.ThreadLocalSequenceGenerator.#ctor(System.Int32)
+  commentId: M:Meridian.Core.Performance.ThreadLocalSequenceGenerator.#ctor(System.Int32)
+  id: '#ctor(System.Int32)'
+  parent: Meridian.Core.Performance.ThreadLocalSequenceGenerator
+  langs:
+  - csharp
+  - vb
+  name: ThreadLocalSequenceGenerator(int)
+  nameWithType: ThreadLocalSequenceGenerator.ThreadLocalSequenceGenerator(int)
+  fullName: Meridian.Core.Performance.ThreadLocalSequenceGenerator.ThreadLocalSequenceGenerator(int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    startLine: 213
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Creates a new thread-local sequence generator.
+  example: []
+  syntax:
+    content: public ThreadLocalSequenceGenerator(int nodeId = 0)
+    parameters:
+    - id: nodeId
+      type: System.Int32
+      description: Unique node identifier (0-1023)
+    content.vb: Public Sub New(nodeId As Integer = 0)
+  overload: Meridian.Core.Performance.ThreadLocalSequenceGenerator.#ctor*
+  nameWithType.vb: ThreadLocalSequenceGenerator.New(Integer)
+  fullName.vb: Meridian.Core.Performance.ThreadLocalSequenceGenerator.New(Integer)
+  name.vb: New(Integer)
+- uid: Meridian.Core.Performance.ThreadLocalSequenceGenerator.Next
+  commentId: M:Meridian.Core.Performance.ThreadLocalSequenceGenerator.Next
+  id: Next
+  parent: Meridian.Core.Performance.ThreadLocalSequenceGenerator
+  langs:
+  - csharp
+  - vb
+  name: Next()
+  nameWithType: ThreadLocalSequenceGenerator.Next()
+  fullName: Meridian.Core.Performance.ThreadLocalSequenceGenerator.Next()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Next
+    path: ../../src/Meridian.Core/Performance/Performance/ThreadingUtilities.cs
+    startLine: 224
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: >-
+    Generates the next unique sequence number.
+
+    Format: [nodeId (10 bits)][sequence (54 bits)]
+  example: []
+  syntax:
+    content: public long Next()
+    return:
+      type: System.Int64
+    content.vb: Public Function [Next]() As Long
+  overload: Meridian.Core.Performance.ThreadLocalSequenceGenerator.Next*
+references:
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  href: Meridian.html
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Core.Performance.ThreadLocalSequenceGenerator.#ctor*
+  commentId: Overload:Meridian.Core.Performance.ThreadLocalSequenceGenerator.#ctor
+  href: Meridian.Core.Performance.ThreadLocalSequenceGenerator.html#Meridian_Core_Performance_ThreadLocalSequenceGenerator__ctor_System_Int32_
+  name: ThreadLocalSequenceGenerator
+  nameWithType: ThreadLocalSequenceGenerator.ThreadLocalSequenceGenerator
+  fullName: Meridian.Core.Performance.ThreadLocalSequenceGenerator.ThreadLocalSequenceGenerator
+  nameWithType.vb: ThreadLocalSequenceGenerator.New
+  fullName.vb: Meridian.Core.Performance.ThreadLocalSequenceGenerator.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Core.Performance.ThreadLocalSequenceGenerator.Next*
+  commentId: Overload:Meridian.Core.Performance.ThreadLocalSequenceGenerator.Next
+  href: Meridian.Core.Performance.ThreadLocalSequenceGenerator.html#Meridian_Core_Performance_ThreadLocalSequenceGenerator_Next
+  name: Next
+  nameWithType: ThreadLocalSequenceGenerator.Next
+  fullName: Meridian.Core.Performance.ThreadLocalSequenceGenerator.Next
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long

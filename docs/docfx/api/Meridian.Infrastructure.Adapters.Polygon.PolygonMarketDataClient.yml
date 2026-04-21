@@ -1,0 +1,2559 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  commentId: T:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  id: PolygonMarketDataClient
+  parent: Meridian.Infrastructure.Adapters.Polygon
+  children:
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Application.Config.PolygonOptions,Meridian.Application.Monitoring.IReconnectionMetrics)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.AuthenticateAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.BuildWebSocketUri
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.Feed
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HandleMessageAsync(System.String)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HasValidCredentials
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsConnected
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsEnabled
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCapabilities
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCredentialFields
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDescription
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDisplayName
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderId
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderNotes
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderPriority
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderWarnings
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ResubscribeAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeAggregates(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedAggregateSymbols
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedQuoteSymbols
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedTradeSymbols
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscriptionCount
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeAggregates(System.Int32)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeTrades(System.Int32)
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UseDelayed
+  langs:
+  - csharp
+  - vb
+  name: PolygonMarketDataClient
+  nameWithType: PolygonMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PolygonMarketDataClient
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: >-
+    Polygon.io market data adapter implementing the IMarketDataClient abstraction.
+
+    Supports full WebSocket streaming for trades, quotes, and aggregates.
+
+
+    Extends <xref href="Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase" data-throw-if-not-resolved="false"></xref>, which centralises connection lifecycle,
+
+    resilience (retry + circuit breaker), heartbeat monitoring, and automatic reconnection.
+
+    ~280 LOC of WebSocket boilerplate removed compared to the previous direct implementation.
+
+
+    Current support:
+
+    - Trades: YES (streams "T" messages and forwards to TradeDataCollector)
+
+    - Quotes: YES (streams "Q" messages and forwards to QuoteCollector)
+
+    - Aggregates: YES (streams "A" and "AM" messages for second/minute bars)
+
+
+    Polygon WebSocket Protocol:
+
+    - Endpoint: wss://socket.polygon.io/{feed} (stocks, options, forex, crypto)
+
+    - Auth: Send {"action":"auth","params":"{apiKey}"} after connect
+
+    - Subscribe: {"action":"subscribe","params":"T.AAPL,Q.AAPL"}
+
+    - Message types: T=trade, Q=quote, A=aggregate, AM=minute aggregate
+  example: []
+  syntax:
+    content: >-
+      [DataSource("polygon", "Polygon.io", DataSourceType.Realtime, DataSourceCategory.Aggregator, Priority = 15, Description = "WebSocket streaming from Polygon.io for trades, quotes, and aggregates")]
+
+      [ImplementsAdr("ADR-001", "Polygon.io streaming data provider implementation")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+
+      public sealed class PolygonMarketDataClient : WebSocketProviderBase, IMarketDataClient, IProviderMetadata, IAsyncDisposable
+    content.vb: >-
+      <DataSource("polygon", "Polygon.io", DataSourceType.Realtime, DataSourceCategory.Aggregator, Priority:=15, Description:="WebSocket streaming from Polygon.io for trades, quotes, and aggregates")>
+
+      <ImplementsAdr("ADR-001", "Polygon.io streaming data provider implementation")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      <ImplementsAdr("ADR-005", "Attribute-based provider discovery")>
+
+      Public NotInheritable Class PolygonMarketDataClient Inherits WebSocketProviderBase Implements IMarketDataClient, IProviderMetadata, IAsyncDisposable
+  inheritance:
+  - System.Object
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.DataSources.DataSourceAttribute
+    ctor: Meridian.Infrastructure.DataSources.DataSourceAttribute.#ctor(System.String,System.String,Meridian.Infrastructure.DataSources.DataSourceType,Meridian.Infrastructure.DataSources.DataSourceCategory)
+    arguments:
+    - type: System.String
+      value: polygon
+    - type: System.String
+      value: Polygon.io
+    - type: Meridian.Infrastructure.DataSources.DataSourceType
+      value: 0
+    - type: Meridian.Infrastructure.DataSources.DataSourceCategory
+      value: 2
+    namedArguments:
+    - name: Priority
+      type: System.Int32
+      value: 15
+    - name: Description
+      type: System.String
+      value: WebSocket streaming from Polygon.io for trades, quotes, and aggregates
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Polygon.io streaming data provider implementation
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-005
+    - type: System.String
+      value: Attribute-based provider discovery
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Application.Config.PolygonOptions,Meridian.Application.Monitoring.IReconnectionMetrics)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Application.Config.PolygonOptions,Meridian.Application.Monitoring.IReconnectionMetrics)
+  id: '#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Domain.Collectors.TradeDataCollector,Meridian.Domain.Collectors.QuoteCollector,Meridian.Application.Config.PolygonOptions,Meridian.Application.Monitoring.IReconnectionMetrics)'
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: PolygonMarketDataClient(IMarketEventPublisher, TradeDataCollector, QuoteCollector, PolygonOptions?, IReconnectionMetrics?)
+  nameWithType: PolygonMarketDataClient.PolygonMarketDataClient(IMarketEventPublisher, TradeDataCollector, QuoteCollector, PolygonOptions?, IReconnectionMetrics?)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.PolygonMarketDataClient(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.QuoteCollector, Meridian.Application.Config.PolygonOptions?, Meridian.Application.Monitoring.IReconnectionMetrics?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Creates a new Polygon market data client.
+  example: []
+  syntax:
+    content: public PolygonMarketDataClient(IMarketEventPublisher publisher, TradeDataCollector tradeCollector, QuoteCollector quoteCollector, PolygonOptions? options = null, IReconnectionMetrics? reconnectionMetrics = null)
+    parameters:
+    - id: publisher
+      type: Meridian.Domain.Events.IMarketEventPublisher
+      description: Event publisher for heartbeats and status.
+    - id: tradeCollector
+      type: Meridian.Domain.Collectors.TradeDataCollector
+      description: Collector for trade data.
+    - id: quoteCollector
+      type: Meridian.Domain.Collectors.QuoteCollector
+      description: Collector for quote data.
+    - id: options
+      type: Meridian.Application.Config.PolygonOptions
+      description: Polygon configuration options. A valid API key is required to connect.
+    - id: reconnectionMetrics
+      type: Meridian.Application.Monitoring.IReconnectionMetrics
+      description: Unused; kept for backward-compatible constructor signature.
+    content.vb: Public Sub New(publisher As IMarketEventPublisher, tradeCollector As TradeDataCollector, quoteCollector As QuoteCollector, options As PolygonOptions = Nothing, reconnectionMetrics As IReconnectionMetrics = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.#ctor*
+  exceptions:
+  - type: System.ArgumentNullException
+    commentId: T:System.ArgumentNullException
+    description: If publisher, tradeCollector, or quoteCollector is null.
+  nameWithType.vb: PolygonMarketDataClient.New(IMarketEventPublisher, TradeDataCollector, QuoteCollector, PolygonOptions, IReconnectionMetrics)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.New(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Domain.Collectors.TradeDataCollector, Meridian.Domain.Collectors.QuoteCollector, Meridian.Application.Config.PolygonOptions, Meridian.Application.Monitoring.IReconnectionMetrics)
+  name.vb: New(IMarketEventPublisher, TradeDataCollector, QuoteCollector, PolygonOptions, IReconnectionMetrics)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HasValidCredentials
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HasValidCredentials
+  id: HasValidCredentials
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: HasValidCredentials
+  nameWithType: PolygonMarketDataClient.HasValidCredentials
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HasValidCredentials
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasValidCredentials
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Gets whether the client has a valid API key configured.
+  example: []
+  syntax:
+    content: public bool HasValidCredentials { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property HasValidCredentials As Boolean
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HasValidCredentials*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsEnabled
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsEnabled
+  id: IsEnabled
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: IsEnabled
+  nameWithType: PolygonMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEnabled
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  example: []
+  syntax:
+    content: public override bool IsEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Overrides ReadOnly Property IsEnabled As Boolean
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsEnabled*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsConnected
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsConnected
+  id: IsConnected
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: IsConnected
+  nameWithType: PolygonMarketDataClient.IsConnected
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsConnected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsConnected
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Gets the current connection state.
+  example: []
+  syntax:
+    content: public bool IsConnected { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsConnected As Boolean
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsConnected*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.Feed
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.Feed
+  id: Feed
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: Feed
+  nameWithType: PolygonMarketDataClient.Feed
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.Feed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Feed
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Gets the configured feed type (stocks, options, forex, crypto).
+  example: []
+  syntax:
+    content: public string Feed { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Feed As String
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.Feed*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UseDelayed
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UseDelayed
+  id: UseDelayed
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UseDelayed
+  nameWithType: PolygonMarketDataClient.UseDelayed
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UseDelayed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseDelayed
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Gets whether using delayed (15-minute) data.
+  example: []
+  syntax:
+    content: public bool UseDelayed { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property UseDelayed As Boolean
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UseDelayed*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: PolygonMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Unique identifier for the provider (e.g., "alpaca", "polygon", "yahoo").
+  example: []
+  syntax:
+    content: public override string ProviderId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property ProviderId As String
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderId*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDisplayName
+  id: ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDisplayName
+  nameWithType: PolygonMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: public override string ProviderDisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property ProviderDisplayName As String
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDisplayName*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDescription
+  id: ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderDescription
+  nameWithType: PolygonMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDescription
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Description of the provider and its capabilities.
+  example: []
+  syntax:
+    content: public override string ProviderDescription { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property ProviderDescription As String
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDescription*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderPriority
+  id: ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderPriority
+  nameWithType: PolygonMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderPriority
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Priority for routing and failover (lower = higher priority, tried first).
+  example: []
+  syntax:
+    content: public override int ProviderPriority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Overrides ReadOnly Property ProviderPriority As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderPriority*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCapabilities
+  id: ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderCapabilities
+  nameWithType: PolygonMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCapabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCapabilities
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Unified capability flags and metadata for this provider.
+  example: []
+  syntax:
+    content: public override ProviderCapabilities ProviderCapabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public Overrides ReadOnly Property ProviderCapabilities As ProviderCapabilities
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCapabilities*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCredentialFields
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCredentialFields
+  id: ProviderCredentialFields
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderCredentialFields
+  nameWithType: PolygonMarketDataClient.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCredentialFields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCredentialFields
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  example: []
+  syntax:
+    content: public ProviderCredentialField[] ProviderCredentialFields { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+    content.vb: Public ReadOnly Property ProviderCredentialFields As ProviderCredentialField()
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCredentialFields*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderNotes
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderNotes
+  id: ProviderNotes
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderNotes
+  nameWithType: PolygonMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderNotes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderNotes
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  example: []
+  syntax:
+    content: public string[] ProviderNotes { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property ProviderNotes As String()
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderNotes*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderWarnings
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderWarnings
+  id: ProviderWarnings
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ProviderWarnings
+  nameWithType: PolygonMarketDataClient.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderWarnings
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderWarnings
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  example: []
+  syntax:
+    content: public string[] ProviderWarnings { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property ProviderWarnings As String()
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderWarnings*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.BuildWebSocketUri
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.BuildWebSocketUri
+  id: BuildWebSocketUri
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: BuildWebSocketUri()
+  nameWithType: PolygonMarketDataClient.BuildWebSocketUri()
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.BuildWebSocketUri()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildWebSocketUri
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Builds the WebSocket endpoint URI for this provider.
+  example: []
+  syntax:
+    content: protected override Uri BuildWebSocketUri()
+    return:
+      type: System.Uri
+    content.vb: Protected Overrides Function BuildWebSocketUri() As Uri
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.BuildWebSocketUri*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.AuthenticateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.AuthenticateAsync(System.Threading.CancellationToken)
+  id: AuthenticateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: AuthenticateAsync(CancellationToken)
+  nameWithType: PolygonMarketDataClient.AuthenticateAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.AuthenticateAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuthenticateAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Sends provider-specific authentication messages after WebSocket connection.
+  remarks: >-
+    Polygon requires a two-step handshake before the receive loop starts:
+
+    1. Read the initial "connected" status message from the server.
+
+    2. Send the API key and read the "auth_success" response.
+
+    Both reads use <xref href="Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> which reads
+
+    directly from the socket before <xref href="Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func%7bSystem.String%2cSystem.Threading.Tasks.Task%7d%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref>
+
+    takes ownership.
+  example: []
+  syntax:
+    content: protected override Task AuthenticateAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Overrides Function AuthenticateAsync(ct As CancellationToken) As Task
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.AuthenticateAsync*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HandleMessageAsync(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HandleMessageAsync(System.String)
+  id: HandleMessageAsync(System.String)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: HandleMessageAsync(string)
+  nameWithType: PolygonMarketDataClient.HandleMessageAsync(string)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HandleMessageAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HandleMessageAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 269
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: >-
+    Handles an incoming WebSocket text message.
+
+    Implementations should parse JSON and route to appropriate collectors.
+  example: []
+  syntax:
+    content: protected override Task HandleMessageAsync(string message)
+    parameters:
+    - id: message
+      type: System.String
+      description: The raw text message from the WebSocket.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Overrides Function HandleMessageAsync(message As String) As Task
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HandleMessageAsync*
+  nameWithType.vb: PolygonMarketDataClient.HandleMessageAsync(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HandleMessageAsync(String)
+  name.vb: HandleMessageAsync(String)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ResubscribeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ResubscribeAsync(System.Threading.CancellationToken)
+  id: ResubscribeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ResubscribeAsync(CancellationToken)
+  nameWithType: PolygonMarketDataClient.ResubscribeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ResubscribeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscribeAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: >-
+    Re-subscribes to all active symbols after a reconnection.
+
+    Called automatically when the connection manager reconnects successfully.
+  example: []
+  syntax:
+    content: protected override Task ResubscribeAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Overrides Function ResubscribeAsync(ct As CancellationToken) As Task
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ResubscribeAsync*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  id: ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(CancellationToken)
+  nameWithType: PolygonMarketDataClient.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 321
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  remarks: >-
+    Fails fast when Polygon credentials are missing so production code never falls back
+
+    to synthetic data generation. Test-only stub behavior lives in the test project.
+  example: []
+  syntax:
+    content: public override Task ConnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Overrides Function ConnectAsync(ct As CancellationToken = Nothing) As Task
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ConnectAsync*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: PolygonMarketDataClient.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 332
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Subscribe to market depth for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public override int SubscribeMarketDepth(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Overrides Function SubscribeMarketDepth(cfg As SymbolConfig) As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeMarketDepth*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: PolygonMarketDataClient.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 363
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Unsubscribe a previously returned depth subscription id.
+  example: []
+  syntax:
+    content: public override void UnsubscribeMarketDepth(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Overrides Sub UnsubscribeMarketDepth(subscriptionId As Integer)
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeMarketDepth*
+  nameWithType.vb: PolygonMarketDataClient.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: PolygonMarketDataClient.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Subscribe to tick-by-tick trade prints for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public override int SubscribeTrades(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public Overrides Function SubscribeTrades(cfg As SymbolConfig) As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeTrades*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: PolygonMarketDataClient.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 411
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Unsubscribe a previously returned trade subscription id.
+  example: []
+  syntax:
+    content: public override void UnsubscribeTrades(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Overrides Sub UnsubscribeTrades(subscriptionId As Integer)
+  overridden: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeTrades*
+  nameWithType.vb: PolygonMarketDataClient.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeAggregates(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeAggregates(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeAggregates(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribeAggregates(SymbolConfig)
+  nameWithType: PolygonMarketDataClient.SubscribeAggregates(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeAggregates(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeAggregates
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 433
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Subscribes to aggregate bars (second and minute) for the specified symbol.
+  example: []
+  syntax:
+    content: public int SubscribeAggregates(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+      description: Symbol configuration.
+    return:
+      type: System.Int32
+      description: Subscription ID, or -1 if not supported/not subscribed.
+    content.vb: Public Function SubscribeAggregates(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeAggregates*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeAggregates(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeAggregates(System.Int32)
+  id: UnsubscribeAggregates(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeAggregates(int)
+  nameWithType: PolygonMarketDataClient.UnsubscribeAggregates(int)
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeAggregates(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeAggregates
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 465
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Unsubscribes from aggregate bars for the specified subscription.
+  example: []
+  syntax:
+    content: public void UnsubscribeAggregates(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public Sub UnsubscribeAggregates(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeAggregates*
+  nameWithType.vb: PolygonMarketDataClient.UnsubscribeAggregates(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeAggregates(Integer)
+  name.vb: UnsubscribeAggregates(Integer)
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscriptionCount
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscriptionCount
+  id: SubscriptionCount
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionCount
+  nameWithType: PolygonMarketDataClient.SubscriptionCount
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscriptionCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscriptionCount
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 483
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Gets the current subscription count.
+  example: []
+  syntax:
+    content: public int SubscriptionCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property SubscriptionCount As Integer
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscriptionCount*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedTradeSymbols
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedTradeSymbols
+  id: SubscribedTradeSymbols
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribedTradeSymbols
+  nameWithType: PolygonMarketDataClient.SubscribedTradeSymbols
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedTradeSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedTradeSymbols
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 486
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Gets the list of currently subscribed trade symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SubscribedTradeSymbols { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public ReadOnly Property SubscribedTradeSymbols As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedTradeSymbols*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedQuoteSymbols
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedQuoteSymbols
+  id: SubscribedQuoteSymbols
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribedQuoteSymbols
+  nameWithType: PolygonMarketDataClient.SubscribedQuoteSymbols
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedQuoteSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedQuoteSymbols
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 489
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Gets the list of currently subscribed quote symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SubscribedQuoteSymbols { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public ReadOnly Property SubscribedQuoteSymbols As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedQuoteSymbols*
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedAggregateSymbols
+  commentId: P:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedAggregateSymbols
+  id: SubscribedAggregateSymbols
+  parent: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  langs:
+  - csharp
+  - vb
+  name: SubscribedAggregateSymbols
+  nameWithType: PolygonMarketDataClient.SubscribedAggregateSymbols
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedAggregateSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribedAggregateSymbols
+    path: ../../src/Meridian.Infrastructure/Adapters/Polygon/PolygonMarketDataClient.cs
+    startLine: 492
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Polygon
+  summary: Gets the list of currently subscribed aggregate symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> SubscribedAggregateSymbols { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public ReadOnly Property SubscribedAggregateSymbols As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedAggregateSymbols*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  commentId: T:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html
+  name: WebSocketProviderBase
+  nameWithType: WebSocketProviderBase
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+- uid: Meridian.Infrastructure.Adapters.Polygon
+  commentId: N:Meridian.Infrastructure.Adapters.Polygon
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Polygon
+  nameWithType: Meridian.Infrastructure.Adapters.Polygon
+  fullName: Meridian.Infrastructure.Adapters.Polygon
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Polygon
+    name: Polygon
+    href: Meridian.Infrastructure.Adapters.Polygon.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisconnectAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisconnectAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisposeAsync
+  name: DisposeAsync()
+  nameWithType: WebSocketProviderBase.DisposeAsync()
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+    name: DisposeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisposeAsync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+    name: DisposeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisposeAsync
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+- uid: System.ArgumentNullException
+  commentId: T:System.ArgumentNullException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentnullexception
+  name: ArgumentNullException
+  nameWithType: ArgumentNullException
+  fullName: System.ArgumentNullException
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.#ctor
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient__ctor_Meridian_Domain_Events_IMarketEventPublisher_Meridian_Domain_Collectors_TradeDataCollector_Meridian_Domain_Collectors_QuoteCollector_Meridian_Application_Config_PolygonOptions_Meridian_Application_Monitoring_IReconnectionMetrics_
+  name: PolygonMarketDataClient
+  nameWithType: PolygonMarketDataClient.PolygonMarketDataClient
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.PolygonMarketDataClient
+  nameWithType.vb: PolygonMarketDataClient.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.New
+  name.vb: New
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IMarketEventPublisher.html
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+- uid: Meridian.Domain.Collectors.TradeDataCollector
+  commentId: T:Meridian.Domain.Collectors.TradeDataCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.TradeDataCollector.html
+  name: TradeDataCollector
+  nameWithType: TradeDataCollector
+  fullName: Meridian.Domain.Collectors.TradeDataCollector
+- uid: Meridian.Domain.Collectors.QuoteCollector
+  commentId: T:Meridian.Domain.Collectors.QuoteCollector
+  parent: Meridian.Domain.Collectors
+  href: Meridian.Domain.Collectors.QuoteCollector.html
+  name: QuoteCollector
+  nameWithType: QuoteCollector
+  fullName: Meridian.Domain.Collectors.QuoteCollector
+- uid: Meridian.Application.Config.PolygonOptions
+  commentId: T:Meridian.Application.Config.PolygonOptions
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.PolygonOptions.html
+  name: PolygonOptions
+  nameWithType: PolygonOptions
+  fullName: Meridian.Application.Config.PolygonOptions
+- uid: Meridian.Application.Monitoring.IReconnectionMetrics
+  commentId: T:Meridian.Application.Monitoring.IReconnectionMetrics
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.IReconnectionMetrics.html
+  name: IReconnectionMetrics
+  nameWithType: IReconnectionMetrics
+  fullName: Meridian.Application.Monitoring.IReconnectionMetrics
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Domain.Collectors
+  commentId: N:Meridian.Domain.Collectors
+  href: Meridian.html
+  name: Meridian.Domain.Collectors
+  nameWithType: Meridian.Domain.Collectors
+  fullName: Meridian.Domain.Collectors
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Collectors
+    name: Collectors
+    href: Meridian.Domain.Collectors.html
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HasValidCredentials*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HasValidCredentials
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_HasValidCredentials
+  name: HasValidCredentials
+  nameWithType: PolygonMarketDataClient.HasValidCredentials
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HasValidCredentials
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_IsEnabled
+  name: IsEnabled
+  nameWithType: WebSocketProviderBase.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsEnabled*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsEnabled
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_IsEnabled
+  name: IsEnabled
+  nameWithType: PolygonMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsConnected*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsConnected
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_IsConnected
+  name: IsConnected
+  nameWithType: PolygonMarketDataClient.IsConnected
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.IsConnected
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.Feed*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.Feed
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_Feed
+  name: Feed
+  nameWithType: PolygonMarketDataClient.Feed
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.Feed
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UseDelayed*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UseDelayed
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_UseDelayed
+  name: UseDelayed
+  nameWithType: PolygonMarketDataClient.UseDelayed
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UseDelayed
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderId
+  name: ProviderId
+  nameWithType: WebSocketProviderBase.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderId
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ProviderId
+  name: ProviderId
+  nameWithType: PolygonMarketDataClient.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: WebSocketProviderBase.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDisplayName
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: PolygonMarketDataClient.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderDescription
+  name: ProviderDescription
+  nameWithType: WebSocketProviderBase.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDescription*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDescription
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ProviderDescription
+  name: ProviderDescription
+  nameWithType: PolygonMarketDataClient.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderPriority
+  name: ProviderPriority
+  nameWithType: WebSocketProviderBase.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderPriority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderPriority
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ProviderPriority
+  name: ProviderPriority
+  nameWithType: PolygonMarketDataClient.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderPriority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: WebSocketProviderBase.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCapabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCapabilities
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: PolygonMarketDataClient.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities
+  nameWithType: ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCredentialFields*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCredentialFields
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ProviderCredentialFields
+  name: ProviderCredentialFields
+  nameWithType: PolygonMarketDataClient.ProviderCredentialFields
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderCredentialFields
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  name: ProviderCredentialField[]
+  nameWithType: ProviderCredentialField[]
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField[]
+  nameWithType.vb: ProviderCredentialField()
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField()
+  name.vb: ProviderCredentialField()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField
+    name: ProviderCredentialField
+    href: Meridian.Infrastructure.Adapters.Core.ProviderCredentialField.html
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderNotes*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderNotes
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ProviderNotes
+  name: ProviderNotes
+  nameWithType: PolygonMarketDataClient.ProviderNotes
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderNotes
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderWarnings*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderWarnings
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ProviderWarnings
+  name: ProviderWarnings
+  nameWithType: PolygonMarketDataClient.ProviderWarnings
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ProviderWarnings
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  name: BuildWebSocketUri()
+  nameWithType: WebSocketProviderBase.BuildWebSocketUri()
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+    name: BuildWebSocketUri
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+    name: BuildWebSocketUri
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.BuildWebSocketUri*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.BuildWebSocketUri
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_BuildWebSocketUri
+  name: BuildWebSocketUri
+  nameWithType: PolygonMarketDataClient.BuildWebSocketUri
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.BuildWebSocketUri
+- uid: System.Uri
+  commentId: T:System.Uri
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uri
+  name: Uri
+  nameWithType: Uri
+  fullName: System.Uri
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ReadOneMessageAsync_System_Threading_CancellationToken_
+  name: ReadOneMessageAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.ReadOneMessageAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)
+    name: ReadOneMessageAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ReadOneMessageAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)
+    name: ReadOneMessageAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ReadOneMessageAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+  isExternal: true
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_StartReceiveLoop_System_Func_System_String_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  name: StartReceiveLoop(Func<string, Task>, CancellationToken)
+  nameWithType: WebSocketConnectionManager.StartReceiveLoop(Func<string, Task>, CancellationToken)
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func<string, System.Threading.Tasks.Task>, System.Threading.CancellationToken)
+  nameWithType.vb: WebSocketConnectionManager.StartReceiveLoop(Func(Of String, Task), CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func(Of String, System.Threading.Tasks.Task), System.Threading.CancellationToken)
+  name.vb: StartReceiveLoop(Func(Of String, Task), CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+    name: StartReceiveLoop
+    href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_StartReceiveLoop_System_Func_System_String_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.StartReceiveLoop(System.Func{System.String,System.Threading.Tasks.Task},System.Threading.CancellationToken)
+    name: StartReceiveLoop
+    href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html#Meridian_Infrastructure_Resilience_WebSocketConnectionManager_StartReceiveLoop_System_Func_System_String_System_Threading_Tasks_Task__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  name: AuthenticateAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.AuthenticateAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+    name: AuthenticateAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+    name: AuthenticateAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.AuthenticateAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.AuthenticateAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_AuthenticateAsync_System_Threading_CancellationToken_
+  name: AuthenticateAsync
+  nameWithType: PolygonMarketDataClient.AuthenticateAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.AuthenticateAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  name: HandleMessageAsync(string)
+  nameWithType: WebSocketProviderBase.HandleMessageAsync(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(string)
+  nameWithType.vb: WebSocketProviderBase.HandleMessageAsync(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(String)
+  name.vb: HandleMessageAsync(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+    name: HandleMessageAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+    name: HandleMessageAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HandleMessageAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HandleMessageAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_HandleMessageAsync_System_String_
+  name: HandleMessageAsync
+  nameWithType: PolygonMarketDataClient.HandleMessageAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.HandleMessageAsync
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  name: ResubscribeAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.ResubscribeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+    name: ResubscribeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+    name: ResubscribeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ResubscribeAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ResubscribeAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ResubscribeAsync_System_Threading_CancellationToken_
+  name: ResubscribeAsync
+  nameWithType: PolygonMarketDataClient.ResubscribeAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ResubscribeAsync
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConnectAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConnectAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ConnectAsync
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: PolygonMarketDataClient.ConnectAsync
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.ConnectAsync
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: WebSocketProviderBase.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth
+  nameWithType: PolygonMarketDataClient.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeMarketDepth
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: WebSocketProviderBase.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(int)
+  nameWithType.vb: WebSocketProviderBase.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeMarketDepth_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeMarketDepth_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: PolygonMarketDataClient.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeMarketDepth
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: WebSocketProviderBase.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeTrades
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: PolygonMarketDataClient.SubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeTrades
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades(int)
+  nameWithType: WebSocketProviderBase.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(int)
+  nameWithType.vb: WebSocketProviderBase.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeTrades_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeTrades_System_Int32_
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeTrades
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: PolygonMarketDataClient.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeTrades
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeAggregates*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeAggregates
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_SubscribeAggregates_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeAggregates
+  nameWithType: PolygonMarketDataClient.SubscribeAggregates
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribeAggregates
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeAggregates*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeAggregates
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_UnsubscribeAggregates_System_Int32_
+  name: UnsubscribeAggregates
+  nameWithType: PolygonMarketDataClient.UnsubscribeAggregates
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.UnsubscribeAggregates
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscriptionCount*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscriptionCount
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_SubscriptionCount
+  name: SubscriptionCount
+  nameWithType: PolygonMarketDataClient.SubscriptionCount
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscriptionCount
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedTradeSymbols*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedTradeSymbols
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_SubscribedTradeSymbols
+  name: SubscribedTradeSymbols
+  nameWithType: PolygonMarketDataClient.SubscribedTradeSymbols
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedTradeSymbols
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedQuoteSymbols*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedQuoteSymbols
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_SubscribedQuoteSymbols
+  name: SubscribedQuoteSymbols
+  nameWithType: PolygonMarketDataClient.SubscribedQuoteSymbols
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedQuoteSymbols
+- uid: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedAggregateSymbols*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedAggregateSymbols
+  href: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.html#Meridian_Infrastructure_Adapters_Polygon_PolygonMarketDataClient_SubscribedAggregateSymbols
+  name: SubscribedAggregateSymbols
+  nameWithType: PolygonMarketDataClient.SubscribedAggregateSymbols
+  fullName: Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient.SubscribedAggregateSymbols

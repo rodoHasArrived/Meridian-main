@@ -14,7 +14,7 @@
         <StackPanel MaxWidth="1200">
 
             <!-- Header -->
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -180,7 +180,7 @@
                                        Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
                         </StackPanel>
                     </Grid>
-                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding DiskUsageValue}"
+                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding DiskUsageValue, Mode=OneWay}"
                                  Height="8" Margin="0,12,0,0" Foreground="{Binding DiskUsageForeground}" />
                 </StackPanel>
             </Border>

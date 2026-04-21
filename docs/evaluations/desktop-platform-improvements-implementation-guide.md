@@ -2,7 +2,12 @@
 
 **Version**: 2.0
 **Date**: 2026-02-20
-**Status**: Complete — All 6 priorities implemented
+**Last Updated**: 2026-03-19
+**Status**: Reference guide — original 6 priorities complete; extended follow-up continues in this file and the roadmap
+
+> This document remains the detailed implementation reference for the desktop improvement program. For current sequencing and ownership, defer to `../status/ROADMAP.md`.
+>
+> It now subsumes the old `desktop-improvements-executive-summary.md` snapshot; use this guide when you need both the executive-level summary and the implementation detail in one place.
 
 ## Executive Summary
 
@@ -486,7 +491,7 @@ public abstract class NavigationServiceBase
 | Desktop Support Policy | `docs/development/policies/desktop-support-policy.md` | ✅ Complete |
 | Desktop PR Checklist | `.github/pull_request_template_desktop.md` | ✅ Complete |
 | WPF Implementation Notes | `docs/development/wpf-implementation-notes.md` | ✅ Complete |
-| Desktop Improvements Summary | `docs/evaluations/desktop-improvements-executive-summary.md` | ✅ Complete |
+| Desktop Improvements Summary | Folded into this guide; archived in `archive/docs/summaries/desktop-improvements-executive-summary.md` | ✅ Consolidated |
 
 ### Quick Start Reference
 
@@ -598,7 +603,7 @@ While all original priorities are complete, potential enhancements include:
 | Desktop Testing Guide | `docs/development/desktop-testing-guide.md` |
 | UI Fixture Mode Guide | `docs/development/ui-fixture-mode-guide.md` |
 | Desktop Architecture Layers | `docs/architecture/desktop-layers.md` |
-| Desktop Improvements Summary | `docs/evaluations/desktop-improvements-executive-summary.md` |
+| Archived Desktop Improvements Summary | `archive/docs/summaries/desktop-improvements-executive-summary.md` |
 | Ui.Tests README | `tests/Meridian.Ui.Tests/README.md` |
 
 ---

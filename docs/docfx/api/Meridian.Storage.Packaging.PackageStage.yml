@@ -1,0 +1,358 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.PackageStage
+  commentId: T:Meridian.Storage.Packaging.PackageStage
+  id: PackageStage
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.PackageStage.Complete
+  - Meridian.Storage.Packaging.PackageStage.ComputingChecksums
+  - Meridian.Storage.Packaging.PackageStage.Failed
+  - Meridian.Storage.Packaging.PackageStage.Finalizing
+  - Meridian.Storage.Packaging.PackageStage.GeneratingManifest
+  - Meridian.Storage.Packaging.PackageStage.Initializing
+  - Meridian.Storage.Packaging.PackageStage.Processing
+  - Meridian.Storage.Packaging.PackageStage.Scanning
+  - Meridian.Storage.Packaging.PackageStage.Validating
+  - Meridian.Storage.Packaging.PackageStage.Writing
+  langs:
+  - csharp
+  - vb
+  name: PackageStage
+  nameWithType: PackageStage
+  fullName: Meridian.Storage.Packaging.PackageStage
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageStage
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 371
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Stages of packaging/import operations.
+  example: []
+  syntax:
+    content: 'public enum PackageStage : byte'
+    content.vb: Public Enum PackageStage As Byte
+- uid: Meridian.Storage.Packaging.PackageStage.Initializing
+  commentId: F:Meridian.Storage.Packaging.PackageStage.Initializing
+  id: Initializing
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: Initializing
+  nameWithType: PackageStage.Initializing
+  fullName: Meridian.Storage.Packaging.PackageStage.Initializing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Initializing
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 374
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Initializing operation.
+  example: []
+  syntax:
+    content: Initializing = 0
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageStage.Scanning
+  commentId: F:Meridian.Storage.Packaging.PackageStage.Scanning
+  id: Scanning
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: Scanning
+  nameWithType: PackageStage.Scanning
+  fullName: Meridian.Storage.Packaging.PackageStage.Scanning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Scanning
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 377
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Scanning source files.
+  example: []
+  syntax:
+    content: Scanning = 1
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageStage.Validating
+  commentId: F:Meridian.Storage.Packaging.PackageStage.Validating
+  id: Validating
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: Validating
+  nameWithType: PackageStage.Validating
+  fullName: Meridian.Storage.Packaging.PackageStage.Validating
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validating
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 380
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Validating source data.
+  example: []
+  syntax:
+    content: Validating = 2
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageStage.Processing
+  commentId: F:Meridian.Storage.Packaging.PackageStage.Processing
+  id: Processing
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: Processing
+  nameWithType: PackageStage.Processing
+  fullName: Meridian.Storage.Packaging.PackageStage.Processing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Processing
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 383
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Compressing/decompressing data.
+  example: []
+  syntax:
+    content: Processing = 3
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageStage.Writing
+  commentId: F:Meridian.Storage.Packaging.PackageStage.Writing
+  id: Writing
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: Writing
+  nameWithType: PackageStage.Writing
+  fullName: Meridian.Storage.Packaging.PackageStage.Writing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Writing
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Writing package file.
+  example: []
+  syntax:
+    content: Writing = 4
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageStage.GeneratingManifest
+  commentId: F:Meridian.Storage.Packaging.PackageStage.GeneratingManifest
+  id: GeneratingManifest
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: GeneratingManifest
+  nameWithType: PackageStage.GeneratingManifest
+  fullName: Meridian.Storage.Packaging.PackageStage.GeneratingManifest
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GeneratingManifest
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 389
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Generating manifest.
+  example: []
+  syntax:
+    content: GeneratingManifest = 5
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageStage.ComputingChecksums
+  commentId: F:Meridian.Storage.Packaging.PackageStage.ComputingChecksums
+  id: ComputingChecksums
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: ComputingChecksums
+  nameWithType: PackageStage.ComputingChecksums
+  fullName: Meridian.Storage.Packaging.PackageStage.ComputingChecksums
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComputingChecksums
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 392
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Computing checksums.
+  example: []
+  syntax:
+    content: ComputingChecksums = 6
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageStage.Finalizing
+  commentId: F:Meridian.Storage.Packaging.PackageStage.Finalizing
+  id: Finalizing
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: Finalizing
+  nameWithType: PackageStage.Finalizing
+  fullName: Meridian.Storage.Packaging.PackageStage.Finalizing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Finalizing
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Finalizing package.
+  example: []
+  syntax:
+    content: Finalizing = 7
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageStage.Complete
+  commentId: F:Meridian.Storage.Packaging.PackageStage.Complete
+  id: Complete
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: Complete
+  nameWithType: PackageStage.Complete
+  fullName: Meridian.Storage.Packaging.PackageStage.Complete
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Complete
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 398
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Operation complete.
+  example: []
+  syntax:
+    content: Complete = 8
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+- uid: Meridian.Storage.Packaging.PackageStage.Failed
+  commentId: F:Meridian.Storage.Packaging.PackageStage.Failed
+  id: Failed
+  parent: Meridian.Storage.Packaging.PackageStage
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: PackageStage.Failed
+  fullName: Meridian.Storage.Packaging.PackageStage.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Operation failed.
+  example: []
+  syntax:
+    content: Failed = 9
+    return:
+      type: Meridian.Storage.Packaging.PackageStage
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: Meridian.Storage.Packaging.PackageStage
+  commentId: T:Meridian.Storage.Packaging.PackageStage
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageStage.html
+  name: PackageStage
+  nameWithType: PackageStage
+  fullName: Meridian.Storage.Packaging.PackageStage

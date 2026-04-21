@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.RecommendationPriority
+  commentId: T:Meridian.Ui.Services.RecommendationPriority
+  id: RecommendationPriority
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.RecommendationPriority.Critical
+  - Meridian.Ui.Services.RecommendationPriority.High
+  - Meridian.Ui.Services.RecommendationPriority.Low
+  - Meridian.Ui.Services.RecommendationPriority.Medium
+  langs:
+  - csharp
+  - vb
+  name: RecommendationPriority
+  nameWithType: RecommendationPriority
+  fullName: Meridian.Ui.Services.RecommendationPriority
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecommendationPriority
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1416
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Priority level for recommendations.
+  example: []
+  syntax:
+    content: 'public enum RecommendationPriority : byte'
+    content.vb: Public Enum RecommendationPriority As Byte
+- uid: Meridian.Ui.Services.RecommendationPriority.Low
+  commentId: F:Meridian.Ui.Services.RecommendationPriority.Low
+  id: Low
+  parent: Meridian.Ui.Services.RecommendationPriority
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: RecommendationPriority.Low
+  fullName: Meridian.Ui.Services.RecommendationPriority.Low
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1418
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Low = 0
+    return:
+      type: Meridian.Ui.Services.RecommendationPriority
+- uid: Meridian.Ui.Services.RecommendationPriority.Medium
+  commentId: F:Meridian.Ui.Services.RecommendationPriority.Medium
+  id: Medium
+  parent: Meridian.Ui.Services.RecommendationPriority
+  langs:
+  - csharp
+  - vb
+  name: Medium
+  nameWithType: RecommendationPriority.Medium
+  fullName: Meridian.Ui.Services.RecommendationPriority.Medium
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Medium
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1419
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Medium = 1
+    return:
+      type: Meridian.Ui.Services.RecommendationPriority
+- uid: Meridian.Ui.Services.RecommendationPriority.High
+  commentId: F:Meridian.Ui.Services.RecommendationPriority.High
+  id: High
+  parent: Meridian.Ui.Services.RecommendationPriority
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: RecommendationPriority.High
+  fullName: Meridian.Ui.Services.RecommendationPriority.High
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1420
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: High = 2
+    return:
+      type: Meridian.Ui.Services.RecommendationPriority
+- uid: Meridian.Ui.Services.RecommendationPriority.Critical
+  commentId: F:Meridian.Ui.Services.RecommendationPriority.Critical
+  id: Critical
+  parent: Meridian.Ui.Services.RecommendationPriority
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: RecommendationPriority.Critical
+  fullName: Meridian.Ui.Services.RecommendationPriority.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs
+    startLine: 1421
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Critical = 3
+    return:
+      type: Meridian.Ui.Services.RecommendationPriority
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.RecommendationPriority
+  commentId: T:Meridian.Ui.Services.RecommendationPriority
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.RecommendationPriority.html
+  name: RecommendationPriority
+  nameWithType: RecommendationPriority
+  fullName: Meridian.Ui.Services.RecommendationPriority

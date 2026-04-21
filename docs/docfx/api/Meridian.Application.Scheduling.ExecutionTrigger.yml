@@ -1,0 +1,213 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.ExecutionTrigger
+  commentId: T:Meridian.Application.Scheduling.ExecutionTrigger
+  id: ExecutionTrigger
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.ExecutionTrigger.Api
+  - Meridian.Application.Scheduling.ExecutionTrigger.CatchUp
+  - Meridian.Application.Scheduling.ExecutionTrigger.Manual
+  - Meridian.Application.Scheduling.ExecutionTrigger.Retry
+  - Meridian.Application.Scheduling.ExecutionTrigger.Scheduled
+  langs:
+  - csharp
+  - vb
+  name: ExecutionTrigger
+  nameWithType: ExecutionTrigger
+  fullName: Meridian.Application.Scheduling.ExecutionTrigger
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionTrigger
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: How a scheduled execution was triggered.
+  example: []
+  syntax:
+    content: 'public enum ExecutionTrigger : byte'
+    content.vb: Public Enum ExecutionTrigger As Byte
+- uid: Meridian.Application.Scheduling.ExecutionTrigger.Scheduled
+  commentId: F:Meridian.Application.Scheduling.ExecutionTrigger.Scheduled
+  id: Scheduled
+  parent: Meridian.Application.Scheduling.ExecutionTrigger
+  langs:
+  - csharp
+  - vb
+  name: Scheduled
+  nameWithType: ExecutionTrigger.Scheduled
+  fullName: Meridian.Application.Scheduling.ExecutionTrigger.Scheduled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Scheduled
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Triggered by cron schedule.
+  example: []
+  syntax:
+    content: Scheduled = 0
+    return:
+      type: Meridian.Application.Scheduling.ExecutionTrigger
+- uid: Meridian.Application.Scheduling.ExecutionTrigger.Manual
+  commentId: F:Meridian.Application.Scheduling.ExecutionTrigger.Manual
+  id: Manual
+  parent: Meridian.Application.Scheduling.ExecutionTrigger
+  langs:
+  - csharp
+  - vb
+  name: Manual
+  nameWithType: ExecutionTrigger.Manual
+  fullName: Meridian.Application.Scheduling.ExecutionTrigger.Manual
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Manual
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Manually triggered by user.
+  example: []
+  syntax:
+    content: Manual = 1
+    return:
+      type: Meridian.Application.Scheduling.ExecutionTrigger
+- uid: Meridian.Application.Scheduling.ExecutionTrigger.Api
+  commentId: F:Meridian.Application.Scheduling.ExecutionTrigger.Api
+  id: Api
+  parent: Meridian.Application.Scheduling.ExecutionTrigger
+  langs:
+  - csharp
+  - vb
+  name: Api
+  nameWithType: ExecutionTrigger.Api
+  fullName: Meridian.Application.Scheduling.ExecutionTrigger.Api
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Api
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Triggered by API call.
+  example: []
+  syntax:
+    content: Api = 2
+    return:
+      type: Meridian.Application.Scheduling.ExecutionTrigger
+- uid: Meridian.Application.Scheduling.ExecutionTrigger.Retry
+  commentId: F:Meridian.Application.Scheduling.ExecutionTrigger.Retry
+  id: Retry
+  parent: Meridian.Application.Scheduling.ExecutionTrigger
+  langs:
+  - csharp
+  - vb
+  name: Retry
+  nameWithType: ExecutionTrigger.Retry
+  fullName: Meridian.Application.Scheduling.ExecutionTrigger.Retry
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Retry
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Retry of a failed execution.
+  example: []
+  syntax:
+    content: Retry = 3
+    return:
+      type: Meridian.Application.Scheduling.ExecutionTrigger
+- uid: Meridian.Application.Scheduling.ExecutionTrigger.CatchUp
+  commentId: F:Meridian.Application.Scheduling.ExecutionTrigger.CatchUp
+  id: CatchUp
+  parent: Meridian.Application.Scheduling.ExecutionTrigger
+  langs:
+  - csharp
+  - vb
+  name: CatchUp
+  nameWithType: ExecutionTrigger.CatchUp
+  fullName: Meridian.Application.Scheduling.ExecutionTrigger.CatchUp
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CatchUp
+    path: ../../src/Meridian.Application/Scheduling/BackfillExecutionLog.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: System startup catch-up.
+  example: []
+  syntax:
+    content: CatchUp = 4
+    return:
+      type: Meridian.Application.Scheduling.ExecutionTrigger
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: Meridian.Application.Scheduling.ExecutionTrigger
+  commentId: T:Meridian.Application.Scheduling.ExecutionTrigger
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ExecutionTrigger.html
+  name: ExecutionTrigger
+  nameWithType: ExecutionTrigger
+  fullName: Meridian.Application.Scheduling.ExecutionTrigger

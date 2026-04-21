@@ -1,0 +1,1027 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer
+  commentId: T:Meridian.Application.Monitoring.ErrorRingBuffer
+  id: ErrorRingBuffer
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.ErrorRingBuffer.#ctor(System.Int32)
+  - Meridian.Application.Monitoring.ErrorRingBuffer.Capacity
+  - Meridian.Application.Monitoring.ErrorRingBuffer.Clear
+  - Meridian.Application.Monitoring.ErrorRingBuffer.Count
+  - Meridian.Application.Monitoring.ErrorRingBuffer.DefaultCapacity
+  - Meridian.Application.Monitoring.ErrorRingBuffer.GetByLevel(Meridian.Application.Monitoring.ErrorLevel,System.Int32)
+  - Meridian.Application.Monitoring.ErrorRingBuffer.GetBySymbol(System.String,System.Int32)
+  - Meridian.Application.Monitoring.ErrorRingBuffer.GetRecent(System.Int32)
+  - Meridian.Application.Monitoring.ErrorRingBuffer.GetSince(System.DateTimeOffset)
+  - Meridian.Application.Monitoring.ErrorRingBuffer.GetStats
+  - Meridian.Application.Monitoring.ErrorRingBuffer.Record(Meridian.Application.Monitoring.ErrorEntry)
+  - Meridian.Application.Monitoring.ErrorRingBuffer.Record(System.Exception,System.String,System.String,System.String)
+  - Meridian.Application.Monitoring.ErrorRingBuffer.RecordCritical(System.String,System.String,System.Exception,System.String,System.String,System.String)
+  - Meridian.Application.Monitoring.ErrorRingBuffer.RecordWarning(System.String,System.String,System.String,System.String,System.String)
+  langs:
+  - csharp
+  - vb
+  name: ErrorRingBuffer
+  nameWithType: ErrorRingBuffer
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorRingBuffer
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Thread-safe ring buffer for storing recent errors.
+
+    Part of the data quality framework (QW-58) to provide
+
+    the Last N Errors endpoint for diagnostics and monitoring.
+  remarks: >-
+    Uses a lock-free circular buffer implementation to minimize
+
+    overhead on hot paths while providing recent error visibility.
+  example: []
+  syntax:
+    content: public sealed class ErrorRingBuffer
+    content.vb: Public NotInheritable Class ErrorRingBuffer
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.DefaultCapacity
+  commentId: F:Meridian.Application.Monitoring.ErrorRingBuffer.DefaultCapacity
+  id: DefaultCapacity
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: DefaultCapacity
+  nameWithType: ErrorRingBuffer.DefaultCapacity
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.DefaultCapacity
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultCapacity
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Default buffer capacity.
+  example: []
+  syntax:
+    content: public const int DefaultCapacity = 100
+    return:
+      type: System.Int32
+    content.vb: Public Const DefaultCapacity As Integer = 100
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.#ctor(System.Int32)
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.#ctor(System.Int32)
+  id: '#ctor(System.Int32)'
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: ErrorRingBuffer(int)
+  nameWithType: ErrorRingBuffer.ErrorRingBuffer(int)
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.ErrorRingBuffer(int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Creates a new error ring buffer with the specified capacity.
+  example: []
+  syntax:
+    content: public ErrorRingBuffer(int capacity = 100)
+    parameters:
+    - id: capacity
+      type: System.Int32
+      description: Maximum number of errors to retain.
+    content.vb: Public Sub New(capacity As Integer = 100)
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.#ctor*
+  nameWithType.vb: ErrorRingBuffer.New(Integer)
+  fullName.vb: Meridian.Application.Monitoring.ErrorRingBuffer.New(Integer)
+  name.vb: New(Integer)
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.Record(Meridian.Application.Monitoring.ErrorEntry)
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.Record(Meridian.Application.Monitoring.ErrorEntry)
+  id: Record(Meridian.Application.Monitoring.ErrorEntry)
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: Record(ErrorEntry)
+  nameWithType: ErrorRingBuffer.Record(ErrorEntry)
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.Record(Meridian.Application.Monitoring.ErrorEntry)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Record
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records an error in the ring buffer.
+  example: []
+  syntax:
+    content: public void Record(ErrorEntry error)
+    parameters:
+    - id: error
+      type: Meridian.Application.Monitoring.ErrorEntry
+      description: The error entry to record.
+    content.vb: Public Sub Record([error] As ErrorEntry)
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.Record*
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.Record(System.Exception,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.Record(System.Exception,System.String,System.String,System.String)
+  id: Record(System.Exception,System.String,System.String,System.String)
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: Record(Exception, string?, string?, string?)
+  nameWithType: ErrorRingBuffer.Record(Exception, string?, string?, string?)
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.Record(System.Exception, string?, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Record
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records an error from an exception.
+  example: []
+  syntax:
+    content: public void Record(Exception ex, string? context = null, string? symbol = null, string? provider = null)
+    parameters:
+    - id: ex
+      type: System.Exception
+    - id: context
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    content.vb: Public Sub Record(ex As Exception, context As String = Nothing, symbol As String = Nothing, provider As String = Nothing)
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.Record*
+  nameWithType.vb: ErrorRingBuffer.Record(Exception, String, String, String)
+  fullName.vb: Meridian.Application.Monitoring.ErrorRingBuffer.Record(System.Exception, String, String, String)
+  name.vb: Record(Exception, String, String, String)
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.RecordWarning(System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.RecordWarning(System.String,System.String,System.String,System.String,System.String)
+  id: RecordWarning(System.String,System.String,System.String,System.String,System.String)
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: RecordWarning(string, string, string?, string?, string?)
+  nameWithType: ErrorRingBuffer.RecordWarning(string, string, string?, string?, string?)
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.RecordWarning(string, string, string?, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordWarning
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records a warning-level error.
+  example: []
+  syntax:
+    content: public void RecordWarning(string source, string message, string? context = null, string? symbol = null, string? provider = null)
+    parameters:
+    - id: source
+      type: System.String
+    - id: message
+      type: System.String
+    - id: context
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    content.vb: Public Sub RecordWarning(source As String, message As String, context As String = Nothing, symbol As String = Nothing, provider As String = Nothing)
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.RecordWarning*
+  nameWithType.vb: ErrorRingBuffer.RecordWarning(String, String, String, String, String)
+  fullName.vb: Meridian.Application.Monitoring.ErrorRingBuffer.RecordWarning(String, String, String, String, String)
+  name.vb: RecordWarning(String, String, String, String, String)
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.RecordCritical(System.String,System.String,System.Exception,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.RecordCritical(System.String,System.String,System.Exception,System.String,System.String,System.String)
+  id: RecordCritical(System.String,System.String,System.Exception,System.String,System.String,System.String)
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: RecordCritical(string, string, Exception?, string?, string?, string?)
+  nameWithType: ErrorRingBuffer.RecordCritical(string, string, Exception?, string?, string?, string?)
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.RecordCritical(string, string, System.Exception?, string?, string?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordCritical
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Records a critical-level error.
+  example: []
+  syntax:
+    content: public void RecordCritical(string source, string message, Exception? ex = null, string? context = null, string? symbol = null, string? provider = null)
+    parameters:
+    - id: source
+      type: System.String
+    - id: message
+      type: System.String
+    - id: ex
+      type: System.Exception
+    - id: context
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    content.vb: Public Sub RecordCritical(source As String, message As String, ex As Exception = Nothing, context As String = Nothing, symbol As String = Nothing, provider As String = Nothing)
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.RecordCritical*
+  nameWithType.vb: ErrorRingBuffer.RecordCritical(String, String, Exception, String, String, String)
+  fullName.vb: Meridian.Application.Monitoring.ErrorRingBuffer.RecordCritical(String, String, System.Exception, String, String, String)
+  name.vb: RecordCritical(String, String, Exception, String, String, String)
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetRecent(System.Int32)
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.GetRecent(System.Int32)
+  id: GetRecent(System.Int32)
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: GetRecent(int)
+  nameWithType: ErrorRingBuffer.GetRecent(int)
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetRecent(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecent
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the most recent N errors.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ErrorEntry> GetRecent(int count = 10)
+    parameters:
+    - id: count
+      type: System.Int32
+      description: Maximum number of errors to return.
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ErrorEntry}
+      description: List of recent errors, most recent first.
+    content.vb: Public Function GetRecent(count As Integer = 10) As IReadOnlyList(Of ErrorEntry)
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.GetRecent*
+  nameWithType.vb: ErrorRingBuffer.GetRecent(Integer)
+  fullName.vb: Meridian.Application.Monitoring.ErrorRingBuffer.GetRecent(Integer)
+  name.vb: GetRecent(Integer)
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetByLevel(Meridian.Application.Monitoring.ErrorLevel,System.Int32)
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.GetByLevel(Meridian.Application.Monitoring.ErrorLevel,System.Int32)
+  id: GetByLevel(Meridian.Application.Monitoring.ErrorLevel,System.Int32)
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: GetByLevel(ErrorLevel, int)
+  nameWithType: ErrorRingBuffer.GetByLevel(ErrorLevel, int)
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetByLevel(Meridian.Application.Monitoring.ErrorLevel, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetByLevel
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets errors filtered by level.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ErrorEntry> GetByLevel(ErrorLevel level, int count = 10)
+    parameters:
+    - id: level
+      type: Meridian.Application.Monitoring.ErrorLevel
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ErrorEntry}
+    content.vb: Public Function GetByLevel(level As ErrorLevel, count As Integer = 10) As IReadOnlyList(Of ErrorEntry)
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.GetByLevel*
+  nameWithType.vb: ErrorRingBuffer.GetByLevel(ErrorLevel, Integer)
+  fullName.vb: Meridian.Application.Monitoring.ErrorRingBuffer.GetByLevel(Meridian.Application.Monitoring.ErrorLevel, Integer)
+  name.vb: GetByLevel(ErrorLevel, Integer)
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetBySymbol(System.String,System.Int32)
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.GetBySymbol(System.String,System.Int32)
+  id: GetBySymbol(System.String,System.Int32)
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: GetBySymbol(string, int)
+  nameWithType: ErrorRingBuffer.GetBySymbol(string, int)
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetBySymbol(string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBySymbol
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets errors filtered by symbol.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ErrorEntry> GetBySymbol(string symbol, int count = 10)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: count
+      type: System.Int32
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ErrorEntry}
+    content.vb: Public Function GetBySymbol(symbol As String, count As Integer = 10) As IReadOnlyList(Of ErrorEntry)
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.GetBySymbol*
+  nameWithType.vb: ErrorRingBuffer.GetBySymbol(String, Integer)
+  fullName.vb: Meridian.Application.Monitoring.ErrorRingBuffer.GetBySymbol(String, Integer)
+  name.vb: GetBySymbol(String, Integer)
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetSince(System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.GetSince(System.DateTimeOffset)
+  id: GetSince(System.DateTimeOffset)
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: GetSince(DateTimeOffset)
+  nameWithType: ErrorRingBuffer.GetSince(DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetSince(System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSince
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets errors that occurred within the specified time window.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ErrorEntry> GetSince(DateTimeOffset since)
+    parameters:
+    - id: since
+      type: System.DateTimeOffset
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ErrorEntry}
+    content.vb: Public Function GetSince(since As DateTimeOffset) As IReadOnlyList(Of ErrorEntry)
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.GetSince*
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetStats
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.GetStats
+  id: GetStats
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: GetStats()
+  nameWithType: ErrorRingBuffer.GetStats()
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetStats()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStats
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets error statistics.
+  example: []
+  syntax:
+    content: public ErrorStats GetStats()
+    return:
+      type: Meridian.Application.Monitoring.ErrorStats
+    content.vb: Public Function GetStats() As ErrorStats
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.GetStats*
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.Clear
+  commentId: M:Meridian.Application.Monitoring.ErrorRingBuffer.Clear
+  id: Clear
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: Clear()
+  nameWithType: ErrorRingBuffer.Clear()
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.Clear()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Clear
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Clears all errors from the buffer.
+  example: []
+  syntax:
+    content: public void Clear()
+    content.vb: Public Sub Clear()
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.Clear*
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.Count
+  commentId: P:Meridian.Application.Monitoring.ErrorRingBuffer.Count
+  id: Count
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: ErrorRingBuffer.Count
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the current number of errors stored.
+  example: []
+  syntax:
+    content: public int Count { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Count As Integer
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.Count*
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.Capacity
+  commentId: P:Meridian.Application.Monitoring.ErrorRingBuffer.Capacity
+  id: Capacity
+  parent: Meridian.Application.Monitoring.ErrorRingBuffer
+  langs:
+  - csharp
+  - vb
+  name: Capacity
+  nameWithType: ErrorRingBuffer.Capacity
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.Capacity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capacity
+    path: ../../src/Meridian.Application/Monitoring/ErrorRingBuffer.cs
+    startLine: 226
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the buffer capacity.
+  example: []
+  syntax:
+    content: public int Capacity { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Capacity As Integer
+  overload: Meridian.Application.Monitoring.ErrorRingBuffer.Capacity*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.#ctor
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer__ctor_System_Int32_
+  name: ErrorRingBuffer
+  nameWithType: ErrorRingBuffer.ErrorRingBuffer
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.ErrorRingBuffer
+  nameWithType.vb: ErrorRingBuffer.New
+  fullName.vb: Meridian.Application.Monitoring.ErrorRingBuffer.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.Record*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.Record
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_Record_Meridian_Application_Monitoring_ErrorEntry_
+  name: Record
+  nameWithType: ErrorRingBuffer.Record
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.Record
+- uid: Meridian.Application.Monitoring.ErrorEntry
+  commentId: T:Meridian.Application.Monitoring.ErrorEntry
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ErrorEntry.html
+  name: ErrorEntry
+  nameWithType: ErrorEntry
+  fullName: Meridian.Application.Monitoring.ErrorEntry
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.RecordWarning*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.RecordWarning
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_RecordWarning_System_String_System_String_System_String_System_String_System_String_
+  name: RecordWarning
+  nameWithType: ErrorRingBuffer.RecordWarning
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.RecordWarning
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.RecordCritical*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.RecordCritical
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_RecordCritical_System_String_System_String_System_Exception_System_String_System_String_System_String_
+  name: RecordCritical
+  nameWithType: ErrorRingBuffer.RecordCritical
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.RecordCritical
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetRecent*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.GetRecent
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_GetRecent_System_Int32_
+  name: GetRecent
+  nameWithType: ErrorRingBuffer.GetRecent
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetRecent
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ErrorEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.ErrorEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ErrorEntry>
+  nameWithType: IReadOnlyList<ErrorEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.ErrorEntry>
+  nameWithType.vb: IReadOnlyList(Of ErrorEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.ErrorEntry)
+  name.vb: IReadOnlyList(Of ErrorEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.ErrorEntry
+    name: ErrorEntry
+    href: Meridian.Application.Monitoring.ErrorEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.ErrorEntry
+    name: ErrorEntry
+    href: Meridian.Application.Monitoring.ErrorEntry.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetByLevel*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.GetByLevel
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_GetByLevel_Meridian_Application_Monitoring_ErrorLevel_System_Int32_
+  name: GetByLevel
+  nameWithType: ErrorRingBuffer.GetByLevel
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetByLevel
+- uid: Meridian.Application.Monitoring.ErrorLevel
+  commentId: T:Meridian.Application.Monitoring.ErrorLevel
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ErrorLevel.html
+  name: ErrorLevel
+  nameWithType: ErrorLevel
+  fullName: Meridian.Application.Monitoring.ErrorLevel
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetBySymbol*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.GetBySymbol
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_GetBySymbol_System_String_System_Int32_
+  name: GetBySymbol
+  nameWithType: ErrorRingBuffer.GetBySymbol
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetBySymbol
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetSince*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.GetSince
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_GetSince_System_DateTimeOffset_
+  name: GetSince
+  nameWithType: ErrorRingBuffer.GetSince
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetSince
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.GetStats*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.GetStats
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_GetStats
+  name: GetStats
+  nameWithType: ErrorRingBuffer.GetStats
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.GetStats
+- uid: Meridian.Application.Monitoring.ErrorStats
+  commentId: T:Meridian.Application.Monitoring.ErrorStats
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ErrorStats.html
+  name: ErrorStats
+  nameWithType: ErrorStats
+  fullName: Meridian.Application.Monitoring.ErrorStats
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.Clear*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.Clear
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_Clear
+  name: Clear
+  nameWithType: ErrorRingBuffer.Clear
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.Clear
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.Count*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.Count
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_Count
+  name: Count
+  nameWithType: ErrorRingBuffer.Count
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.Count
+- uid: Meridian.Application.Monitoring.ErrorRingBuffer.Capacity*
+  commentId: Overload:Meridian.Application.Monitoring.ErrorRingBuffer.Capacity
+  href: Meridian.Application.Monitoring.ErrorRingBuffer.html#Meridian_Application_Monitoring_ErrorRingBuffer_Capacity
+  name: Capacity
+  nameWithType: ErrorRingBuffer.Capacity
+  fullName: Meridian.Application.Monitoring.ErrorRingBuffer.Capacity

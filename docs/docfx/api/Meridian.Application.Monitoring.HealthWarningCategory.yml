@@ -1,0 +1,230 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.HealthWarningCategory
+  commentId: T:Meridian.Application.Monitoring.HealthWarningCategory
+  id: HealthWarningCategory
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.HealthWarningCategory.Connection
+  - Meridian.Application.Monitoring.HealthWarningCategory.Cpu
+  - Meridian.Application.Monitoring.HealthWarningCategory.DataQuality
+  - Meridian.Application.Monitoring.HealthWarningCategory.DiskSpace
+  - Meridian.Application.Monitoring.HealthWarningCategory.Memory
+  - Meridian.Application.Monitoring.HealthWarningCategory.Network
+  langs:
+  - csharp
+  - vb
+  name: HealthWarningCategory
+  nameWithType: HealthWarningCategory
+  fullName: Meridian.Application.Monitoring.HealthWarningCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthWarningCategory
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 379
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Category of health warning.
+  example: []
+  syntax:
+    content: 'public enum HealthWarningCategory : byte'
+    content.vb: Public Enum HealthWarningCategory As Byte
+- uid: Meridian.Application.Monitoring.HealthWarningCategory.DiskSpace
+  commentId: F:Meridian.Application.Monitoring.HealthWarningCategory.DiskSpace
+  id: DiskSpace
+  parent: Meridian.Application.Monitoring.HealthWarningCategory
+  langs:
+  - csharp
+  - vb
+  name: DiskSpace
+  nameWithType: HealthWarningCategory.DiskSpace
+  fullName: Meridian.Application.Monitoring.HealthWarningCategory.DiskSpace
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiskSpace
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 381
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: DiskSpace = 0
+    return:
+      type: Meridian.Application.Monitoring.HealthWarningCategory
+- uid: Meridian.Application.Monitoring.HealthWarningCategory.Memory
+  commentId: F:Meridian.Application.Monitoring.HealthWarningCategory.Memory
+  id: Memory
+  parent: Meridian.Application.Monitoring.HealthWarningCategory
+  langs:
+  - csharp
+  - vb
+  name: Memory
+  nameWithType: HealthWarningCategory.Memory
+  fullName: Meridian.Application.Monitoring.HealthWarningCategory.Memory
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Memory
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Memory = 1
+    return:
+      type: Meridian.Application.Monitoring.HealthWarningCategory
+- uid: Meridian.Application.Monitoring.HealthWarningCategory.Cpu
+  commentId: F:Meridian.Application.Monitoring.HealthWarningCategory.Cpu
+  id: Cpu
+  parent: Meridian.Application.Monitoring.HealthWarningCategory
+  langs:
+  - csharp
+  - vb
+  name: Cpu
+  nameWithType: HealthWarningCategory.Cpu
+  fullName: Meridian.Application.Monitoring.HealthWarningCategory.Cpu
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cpu
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 383
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Cpu = 2
+    return:
+      type: Meridian.Application.Monitoring.HealthWarningCategory
+- uid: Meridian.Application.Monitoring.HealthWarningCategory.Network
+  commentId: F:Meridian.Application.Monitoring.HealthWarningCategory.Network
+  id: Network
+  parent: Meridian.Application.Monitoring.HealthWarningCategory
+  langs:
+  - csharp
+  - vb
+  name: Network
+  nameWithType: HealthWarningCategory.Network
+  fullName: Meridian.Application.Monitoring.HealthWarningCategory.Network
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Network
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 384
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Network = 3
+    return:
+      type: Meridian.Application.Monitoring.HealthWarningCategory
+- uid: Meridian.Application.Monitoring.HealthWarningCategory.DataQuality
+  commentId: F:Meridian.Application.Monitoring.HealthWarningCategory.DataQuality
+  id: DataQuality
+  parent: Meridian.Application.Monitoring.HealthWarningCategory
+  langs:
+  - csharp
+  - vb
+  name: DataQuality
+  nameWithType: HealthWarningCategory.DataQuality
+  fullName: Meridian.Application.Monitoring.HealthWarningCategory.DataQuality
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQuality
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 385
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: DataQuality = 4
+    return:
+      type: Meridian.Application.Monitoring.HealthWarningCategory
+- uid: Meridian.Application.Monitoring.HealthWarningCategory.Connection
+  commentId: F:Meridian.Application.Monitoring.HealthWarningCategory.Connection
+  id: Connection
+  parent: Meridian.Application.Monitoring.HealthWarningCategory
+  langs:
+  - csharp
+  - vb
+  name: Connection
+  nameWithType: HealthWarningCategory.Connection
+  fullName: Meridian.Application.Monitoring.HealthWarningCategory.Connection
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connection
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Connection = 5
+    return:
+      type: Meridian.Application.Monitoring.HealthWarningCategory
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.HealthWarningCategory
+  commentId: T:Meridian.Application.Monitoring.HealthWarningCategory
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.HealthWarningCategory.html
+  name: HealthWarningCategory
+  nameWithType: HealthWarningCategory
+  fullName: Meridian.Application.Monitoring.HealthWarningCategory

@@ -38,7 +38,7 @@
 </g>
 <g id="clust6" class="cluster">
 <title>cluster_ready</title>
-<path fill="#c6f6d5" stroke="#38a169" d="M426,-8C426,-8 538,-8 538,-8 544,-8 550,-14 550,-20 550,-20 550,-198 550,-198 550,-204 544,-210 538,-210 538,-210 426,-210 426,-210 420,-210 414,-204 414,-198 414,-198 414,-20 414,-20 414,-14 420,-8 426,-8"/>
+<path fill="#c6f6d5" stroke="#38a169" d="M385,-8C385,-8 579,-8 579,-8 585,-8 591,-14 591,-20 591,-20 591,-198 591,-198 591,-204 585,-210 579,-210 579,-210 385,-210 385,-210 379,-210 373,-204 373,-198 373,-198 373,-20 373,-20 373,-14 379,-8 385,-8"/>
 <text text-anchor="middle" x="482" y="-196.4" font-family="Helvetica,sans-Serif" font-size="12.00">Ready to Operate</text>
 </g>
 <g id="clust7" class="cluster">
@@ -488,11 +488,11 @@
 <!-- RUN_NORMAL -->
 <g id="node27" class="node">
 <title>RUN_NORMAL</title>
-<path fill="#38a169" stroke="black" d="M529.5,-80C529.5,-80 434.5,-80 434.5,-80 428.5,-80 422.5,-74 422.5,-68 422.5,-68 422.5,-28 422.5,-28 422.5,-22 428.5,-16 434.5,-16 434.5,-16 529.5,-16 529.5,-16 535.5,-16 541.5,-22 541.5,-28 541.5,-28 541.5,-68 541.5,-68 541.5,-74 535.5,-80 529.5,-80"/>
+<path fill="#38a169" stroke="black" d="M571.5,-80C571.5,-80 392.5,-80 392.5,-80 386.5,-80 380.5,-74 380.5,-68 380.5,-68 380.5,-28 380.5,-28 380.5,-22 386.5,-16 392.5,-16 392.5,-16 571.5,-16 571.5,-16 577.5,-16 583.5,-22 583.5,-28 583.5,-28 583.5,-68 583.5,-68 583.5,-74 577.5,-80 571.5,-80"/>
 <text text-anchor="middle" x="482" y="-68" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">Normal Operation</text>
-<text text-anchor="middle" x="482" y="-45" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">&#45;&#45;ui (with dashboard)</text>
+<text text-anchor="middle" x="482" y="-45" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">&#45;&#45;mode desktop (local API + collector)</text>
 <text text-anchor="middle" x="482" y="-34" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">&#45;&#45;backfill (historical)</text>
-<text text-anchor="middle" x="482" y="-23" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">default (streaming)</text>
+<text text-anchor="middle" x="482" y="-23" font-family="Helvetica,sans-Serif" font-size="10.00" fill="white">default/headless (streaming)</text>
 </g>
 <!-- STARTUP_SUM&#45;&gt;RUN_NORMAL -->
 <g id="edge31" class="edge">

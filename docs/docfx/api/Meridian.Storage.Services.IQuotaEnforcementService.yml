@@ -1,0 +1,400 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.IQuotaEnforcementService
+  commentId: T:Meridian.Storage.Services.IQuotaEnforcementService
+  id: IQuotaEnforcementService
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.IQuotaEnforcementService.CheckQuota(System.String,System.String,System.String,System.Int64)
+  - Meridian.Storage.Services.IQuotaEnforcementService.GetStatus
+  - Meridian.Storage.Services.IQuotaEnforcementService.RecordUsage(System.String,System.Int64)
+  - Meridian.Storage.Services.IQuotaEnforcementService.ScanAndUpdateAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IQuotaEnforcementService
+  nameWithType: IQuotaEnforcementService
+  fullName: Meridian.Storage.Services.IQuotaEnforcementService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IQuotaEnforcementService
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 346
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  summary: Interface for quota enforcement service.
+  example: []
+  syntax:
+    content: public interface IQuotaEnforcementService
+    content.vb: Public Interface IQuotaEnforcementService
+  derivedClasses:
+  - Meridian.Storage.Services.QuotaEnforcementService
+- uid: Meridian.Storage.Services.IQuotaEnforcementService.CheckQuota(System.String,System.String,System.String,System.Int64)
+  commentId: M:Meridian.Storage.Services.IQuotaEnforcementService.CheckQuota(System.String,System.String,System.String,System.Int64)
+  id: CheckQuota(System.String,System.String,System.String,System.Int64)
+  parent: Meridian.Storage.Services.IQuotaEnforcementService
+  langs:
+  - csharp
+  - vb
+  name: CheckQuota(string, string, string, long)
+  nameWithType: IQuotaEnforcementService.CheckQuota(string, string, string, long)
+  fullName: Meridian.Storage.Services.IQuotaEnforcementService.CheckQuota(string, string, string, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckQuota
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 348
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: QuotaCheckResult CheckQuota(string symbol, string source, string eventType, long additionalBytes)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: source
+      type: System.String
+    - id: eventType
+      type: System.String
+    - id: additionalBytes
+      type: System.Int64
+    return:
+      type: Meridian.Storage.Services.QuotaCheckResult
+    content.vb: Function CheckQuota(symbol As String, source As String, eventType As String, additionalBytes As Long) As QuotaCheckResult
+  overload: Meridian.Storage.Services.IQuotaEnforcementService.CheckQuota*
+  nameWithType.vb: IQuotaEnforcementService.CheckQuota(String, String, String, Long)
+  fullName.vb: Meridian.Storage.Services.IQuotaEnforcementService.CheckQuota(String, String, String, Long)
+  name.vb: CheckQuota(String, String, String, Long)
+- uid: Meridian.Storage.Services.IQuotaEnforcementService.RecordUsage(System.String,System.Int64)
+  commentId: M:Meridian.Storage.Services.IQuotaEnforcementService.RecordUsage(System.String,System.Int64)
+  id: RecordUsage(System.String,System.Int64)
+  parent: Meridian.Storage.Services.IQuotaEnforcementService
+  langs:
+  - csharp
+  - vb
+  name: RecordUsage(string, long)
+  nameWithType: IQuotaEnforcementService.RecordUsage(string, long)
+  fullName: Meridian.Storage.Services.IQuotaEnforcementService.RecordUsage(string, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordUsage
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 349
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: void RecordUsage(string filePath, long bytes)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: bytes
+      type: System.Int64
+    content.vb: Sub RecordUsage(filePath As String, bytes As Long)
+  overload: Meridian.Storage.Services.IQuotaEnforcementService.RecordUsage*
+  nameWithType.vb: IQuotaEnforcementService.RecordUsage(String, Long)
+  fullName.vb: Meridian.Storage.Services.IQuotaEnforcementService.RecordUsage(String, Long)
+  name.vb: RecordUsage(String, Long)
+- uid: Meridian.Storage.Services.IQuotaEnforcementService.ScanAndUpdateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Services.IQuotaEnforcementService.ScanAndUpdateAsync(System.Threading.CancellationToken)
+  id: ScanAndUpdateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Storage.Services.IQuotaEnforcementService
+  langs:
+  - csharp
+  - vb
+  name: ScanAndUpdateAsync(CancellationToken)
+  nameWithType: IQuotaEnforcementService.ScanAndUpdateAsync(CancellationToken)
+  fullName: Meridian.Storage.Services.IQuotaEnforcementService.ScanAndUpdateAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScanAndUpdateAsync
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 350
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Task<QuotaScanResult> ScanAndUpdateAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Services.QuotaScanResult}
+    content.vb: Function ScanAndUpdateAsync(ct As CancellationToken = Nothing) As Task(Of QuotaScanResult)
+  overload: Meridian.Storage.Services.IQuotaEnforcementService.ScanAndUpdateAsync*
+- uid: Meridian.Storage.Services.IQuotaEnforcementService.GetStatus
+  commentId: M:Meridian.Storage.Services.IQuotaEnforcementService.GetStatus
+  id: GetStatus
+  parent: Meridian.Storage.Services.IQuotaEnforcementService
+  langs:
+  - csharp
+  - vb
+  name: GetStatus()
+  nameWithType: IQuotaEnforcementService.GetStatus()
+  fullName: Meridian.Storage.Services.IQuotaEnforcementService.GetStatus()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/QuotaEnforcementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatus
+    path: ../../src/Meridian.Storage/Services/QuotaEnforcementService.cs
+    startLine: 351
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: QuotaStatusReport GetStatus()
+    return:
+      type: Meridian.Storage.Services.QuotaStatusReport
+    content.vb: Function GetStatus() As QuotaStatusReport
+  overload: Meridian.Storage.Services.IQuotaEnforcementService.GetStatus*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.IQuotaEnforcementService.CheckQuota*
+  commentId: Overload:Meridian.Storage.Services.IQuotaEnforcementService.CheckQuota
+  href: Meridian.Storage.Services.IQuotaEnforcementService.html#Meridian_Storage_Services_IQuotaEnforcementService_CheckQuota_System_String_System_String_System_String_System_Int64_
+  name: CheckQuota
+  nameWithType: IQuotaEnforcementService.CheckQuota
+  fullName: Meridian.Storage.Services.IQuotaEnforcementService.CheckQuota
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Services.QuotaCheckResult
+  commentId: T:Meridian.Storage.Services.QuotaCheckResult
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.QuotaCheckResult.html
+  name: QuotaCheckResult
+  nameWithType: QuotaCheckResult
+  fullName: Meridian.Storage.Services.QuotaCheckResult
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Services.IQuotaEnforcementService.RecordUsage*
+  commentId: Overload:Meridian.Storage.Services.IQuotaEnforcementService.RecordUsage
+  href: Meridian.Storage.Services.IQuotaEnforcementService.html#Meridian_Storage_Services_IQuotaEnforcementService_RecordUsage_System_String_System_Int64_
+  name: RecordUsage
+  nameWithType: IQuotaEnforcementService.RecordUsage
+  fullName: Meridian.Storage.Services.IQuotaEnforcementService.RecordUsage
+- uid: Meridian.Storage.Services.IQuotaEnforcementService.ScanAndUpdateAsync*
+  commentId: Overload:Meridian.Storage.Services.IQuotaEnforcementService.ScanAndUpdateAsync
+  href: Meridian.Storage.Services.IQuotaEnforcementService.html#Meridian_Storage_Services_IQuotaEnforcementService_ScanAndUpdateAsync_System_Threading_CancellationToken_
+  name: ScanAndUpdateAsync
+  nameWithType: IQuotaEnforcementService.ScanAndUpdateAsync
+  fullName: Meridian.Storage.Services.IQuotaEnforcementService.ScanAndUpdateAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Services.QuotaScanResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Services.QuotaScanResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QuotaScanResult>
+  nameWithType: Task<QuotaScanResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Services.QuotaScanResult>
+  nameWithType.vb: Task(Of QuotaScanResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Services.QuotaScanResult)
+  name.vb: Task(Of QuotaScanResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Services.QuotaScanResult
+    name: QuotaScanResult
+    href: Meridian.Storage.Services.QuotaScanResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.QuotaScanResult
+    name: QuotaScanResult
+    href: Meridian.Storage.Services.QuotaScanResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Services.IQuotaEnforcementService.GetStatus*
+  commentId: Overload:Meridian.Storage.Services.IQuotaEnforcementService.GetStatus
+  href: Meridian.Storage.Services.IQuotaEnforcementService.html#Meridian_Storage_Services_IQuotaEnforcementService_GetStatus
+  name: GetStatus
+  nameWithType: IQuotaEnforcementService.GetStatus
+  fullName: Meridian.Storage.Services.IQuotaEnforcementService.GetStatus
+- uid: Meridian.Storage.Services.QuotaStatusReport
+  commentId: T:Meridian.Storage.Services.QuotaStatusReport
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.QuotaStatusReport.html
+  name: QuotaStatusReport
+  nameWithType: QuotaStatusReport
+  fullName: Meridian.Storage.Services.QuotaStatusReport

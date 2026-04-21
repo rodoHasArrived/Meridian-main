@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.PackageFormat
+  commentId: T:Meridian.Storage.Packaging.PackageFormat
+  id: PackageFormat
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.PackageFormat.SevenZip
+  - Meridian.Storage.Packaging.PackageFormat.TarGz
+  - Meridian.Storage.Packaging.PackageFormat.Zip
+  langs:
+  - csharp
+  - vb
+  name: PackageFormat
+  nameWithType: PackageFormat
+  fullName: Meridian.Storage.Packaging.PackageFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PackageFormat
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Package archive format.
+  example: []
+  syntax:
+    content: 'public enum PackageFormat : byte'
+    content.vb: Public Enum PackageFormat As Byte
+- uid: Meridian.Storage.Packaging.PackageFormat.Zip
+  commentId: F:Meridian.Storage.Packaging.PackageFormat.Zip
+  id: Zip
+  parent: Meridian.Storage.Packaging.PackageFormat
+  langs:
+  - csharp
+  - vb
+  name: Zip
+  nameWithType: PackageFormat.Zip
+  fullName: Meridian.Storage.Packaging.PackageFormat.Zip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Zip
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: ZIP archive - widely compatible.
+  example: []
+  syntax:
+    content: Zip = 0
+    return:
+      type: Meridian.Storage.Packaging.PackageFormat
+- uid: Meridian.Storage.Packaging.PackageFormat.TarGz
+  commentId: F:Meridian.Storage.Packaging.PackageFormat.TarGz
+  id: TarGz
+  parent: Meridian.Storage.Packaging.PackageFormat
+  langs:
+  - csharp
+  - vb
+  name: TarGz
+  nameWithType: PackageFormat.TarGz
+  fullName: Meridian.Storage.Packaging.PackageFormat.TarGz
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TarGz
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Gzipped TAR archive - better for Unix/Linux.
+  example: []
+  syntax:
+    content: TarGz = 1
+    return:
+      type: Meridian.Storage.Packaging.PackageFormat
+- uid: Meridian.Storage.Packaging.PackageFormat.SevenZip
+  commentId: F:Meridian.Storage.Packaging.PackageFormat.SevenZip
+  id: SevenZip
+  parent: Meridian.Storage.Packaging.PackageFormat
+  langs:
+  - csharp
+  - vb
+  name: SevenZip
+  nameWithType: PackageFormat.SevenZip
+  fullName: Meridian.Storage.Packaging.PackageFormat.SevenZip
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageOptions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SevenZip
+    path: ../../src/Meridian.Storage/Packaging/PackageOptions.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: 7-Zip archive - higher compression ratio.
+  example: []
+  syntax:
+    content: SevenZip = 2
+    return:
+      type: Meridian.Storage.Packaging.PackageFormat
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: Meridian.Storage.Packaging.PackageFormat
+  commentId: T:Meridian.Storage.Packaging.PackageFormat
+  parent: Meridian.Storage.Packaging
+  href: Meridian.Storage.Packaging.PackageFormat.html
+  name: PackageFormat
+  nameWithType: PackageFormat
+  fullName: Meridian.Storage.Packaging.PackageFormat

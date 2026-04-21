@@ -1,0 +1,534 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Performance.HeartbeatResult
+  commentId: T:Meridian.Core.Performance.HeartbeatResult
+  id: HeartbeatResult
+  parent: Meridian.Core.Performance
+  children:
+  - Meridian.Core.Performance.HeartbeatResult.#ctor(System.Boolean,System.Double,System.DateTimeOffset)
+  - Meridian.Core.Performance.HeartbeatResult.LatencyUs
+  - Meridian.Core.Performance.HeartbeatResult.Success
+  - Meridian.Core.Performance.HeartbeatResult.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: HeartbeatResult
+  nameWithType: HeartbeatResult
+  fullName: Meridian.Core.Performance.HeartbeatResult
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeartbeatResult
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 411
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Result of a heartbeat check.
+  example: []
+  syntax:
+    content: 'public readonly record struct HeartbeatResult : IEquatable<HeartbeatResult>'
+    content.vb: Public Structure HeartbeatResult Implements IEquatable(Of HeartbeatResult)
+  implements:
+  - System.IEquatable{Meridian.Core.Performance.HeartbeatResult}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Core.Performance.HeartbeatResult.#ctor(System.Boolean,System.Double,System.DateTimeOffset)
+  commentId: M:Meridian.Core.Performance.HeartbeatResult.#ctor(System.Boolean,System.Double,System.DateTimeOffset)
+  id: '#ctor(System.Boolean,System.Double,System.DateTimeOffset)'
+  parent: Meridian.Core.Performance.HeartbeatResult
+  langs:
+  - csharp
+  - vb
+  name: HeartbeatResult(bool, double, DateTimeOffset)
+  nameWithType: HeartbeatResult.HeartbeatResult(bool, double, DateTimeOffset)
+  fullName: Meridian.Core.Performance.HeartbeatResult.HeartbeatResult(bool, double, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 411
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Result of a heartbeat check.
+  example: []
+  syntax:
+    content: public HeartbeatResult(bool Success, double LatencyUs, DateTimeOffset Timestamp)
+    parameters:
+    - id: Success
+      type: System.Boolean
+    - id: LatencyUs
+      type: System.Double
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Success As Boolean, LatencyUs As Double, Timestamp As DateTimeOffset)
+  overload: Meridian.Core.Performance.HeartbeatResult.#ctor*
+  nameWithType.vb: HeartbeatResult.New(Boolean, Double, DateTimeOffset)
+  fullName.vb: Meridian.Core.Performance.HeartbeatResult.New(Boolean, Double, System.DateTimeOffset)
+  name.vb: New(Boolean, Double, DateTimeOffset)
+- uid: Meridian.Core.Performance.HeartbeatResult.Success
+  commentId: P:Meridian.Core.Performance.HeartbeatResult.Success
+  id: Success
+  parent: Meridian.Core.Performance.HeartbeatResult
+  langs:
+  - csharp
+  - vb
+  name: Success
+  nameWithType: HeartbeatResult.Success
+  fullName: Meridian.Core.Performance.HeartbeatResult.Success
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Success
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 411
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public bool Success { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Success As Boolean
+  overload: Meridian.Core.Performance.HeartbeatResult.Success*
+- uid: Meridian.Core.Performance.HeartbeatResult.LatencyUs
+  commentId: P:Meridian.Core.Performance.HeartbeatResult.LatencyUs
+  id: LatencyUs
+  parent: Meridian.Core.Performance.HeartbeatResult
+  langs:
+  - csharp
+  - vb
+  name: LatencyUs
+  nameWithType: HeartbeatResult.LatencyUs
+  fullName: Meridian.Core.Performance.HeartbeatResult.LatencyUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyUs
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 411
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public double LatencyUs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property LatencyUs As Double
+  overload: Meridian.Core.Performance.HeartbeatResult.LatencyUs*
+- uid: Meridian.Core.Performance.HeartbeatResult.Timestamp
+  commentId: P:Meridian.Core.Performance.HeartbeatResult.Timestamp
+  id: Timestamp
+  parent: Meridian.Core.Performance.HeartbeatResult
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: HeartbeatResult.Timestamp
+  fullName: Meridian.Core.Performance.HeartbeatResult.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 411
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Core.Performance.HeartbeatResult.Timestamp*
+references:
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  href: Meridian.html
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+- uid: System.IEquatable{Meridian.Core.Performance.HeartbeatResult}
+  commentId: T:System.IEquatable{Meridian.Core.Performance.HeartbeatResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<HeartbeatResult>
+  nameWithType: IEquatable<HeartbeatResult>
+  fullName: System.IEquatable<Meridian.Core.Performance.HeartbeatResult>
+  nameWithType.vb: IEquatable(Of HeartbeatResult)
+  fullName.vb: System.IEquatable(Of Meridian.Core.Performance.HeartbeatResult)
+  name.vb: IEquatable(Of HeartbeatResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Core.Performance.HeartbeatResult
+    name: HeartbeatResult
+    href: Meridian.Core.Performance.HeartbeatResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Core.Performance.HeartbeatResult
+    name: HeartbeatResult
+    href: Meridian.Core.Performance.HeartbeatResult.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Core.Performance.HeartbeatResult.#ctor*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatResult.#ctor
+  href: Meridian.Core.Performance.HeartbeatResult.html#Meridian_Core_Performance_HeartbeatResult__ctor_System_Boolean_System_Double_System_DateTimeOffset_
+  name: HeartbeatResult
+  nameWithType: HeartbeatResult.HeartbeatResult
+  fullName: Meridian.Core.Performance.HeartbeatResult.HeartbeatResult
+  nameWithType.vb: HeartbeatResult.New
+  fullName.vb: Meridian.Core.Performance.HeartbeatResult.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Core.Performance.HeartbeatResult.Success*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatResult.Success
+  href: Meridian.Core.Performance.HeartbeatResult.html#Meridian_Core_Performance_HeartbeatResult_Success
+  name: Success
+  nameWithType: HeartbeatResult.Success
+  fullName: Meridian.Core.Performance.HeartbeatResult.Success
+- uid: Meridian.Core.Performance.HeartbeatResult.LatencyUs*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatResult.LatencyUs
+  href: Meridian.Core.Performance.HeartbeatResult.html#Meridian_Core_Performance_HeartbeatResult_LatencyUs
+  name: LatencyUs
+  nameWithType: HeartbeatResult.LatencyUs
+  fullName: Meridian.Core.Performance.HeartbeatResult.LatencyUs
+- uid: Meridian.Core.Performance.HeartbeatResult.Timestamp*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatResult.Timestamp
+  href: Meridian.Core.Performance.HeartbeatResult.html#Meridian_Core_Performance_HeartbeatResult_Timestamp
+  name: Timestamp
+  nameWithType: HeartbeatResult.Timestamp
+  fullName: Meridian.Core.Performance.HeartbeatResult.Timestamp

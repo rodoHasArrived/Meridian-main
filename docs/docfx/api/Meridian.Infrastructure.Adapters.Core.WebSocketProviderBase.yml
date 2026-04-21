@@ -1,0 +1,2163 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  commentId: T:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  id: WebSocketProviderBase
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.#ctor(System.String,Meridian.Infrastructure.Resilience.WebSocketConnectionConfig,System.Int32,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Connected
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Log
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.RecordActivity
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SendAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Subscriptions
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+  - Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: WebSocketProviderBase
+  nameWithType: WebSocketProviderBase
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WebSocketProviderBase
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Abstract base class for WebSocket-based streaming market data providers.
+
+    Consolidates connection lifecycle, heartbeat monitoring, and automatic reconnection
+
+    logic that was previously duplicated across Alpaca, Polygon, and NYSE.
+
+
+    Derived classes implement protocol-specific hooks:
+
+
+    <ul><li><xref href="Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> — send provider-specific auth messages</li><li><xref href="Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)" data-throw-if-not-resolved="false"></xref> — parse and route incoming messages</li><li><xref href="Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> — re-subscribe symbols after reconnection</li><li><xref href="Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri" data-throw-if-not-resolved="false"></xref> — construct the provider-specific endpoint URI</li><li><xref href="Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)" data-throw-if-not-resolved="false"></xref> — set provider-specific headers/options</li></ul>
+  remarks: >-
+    Connection management is delegated to <xref href="Meridian.Infrastructure.Resilience.WebSocketConnectionManager" data-throw-if-not-resolved="false"></xref>
+
+    which provides resilience (retry + circuit breaker), heartbeat monitoring,
+
+    and gated reconnection to prevent reconnection storms.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Unified WebSocket provider base class for streaming data providers")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      public abstract class WebSocketProviderBase : IMarketDataClient, IProviderMetadata, IAsyncDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Unified WebSocket provider base class for streaming data providers")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      Public MustInherit Class WebSocketProviderBase Implements IMarketDataClient, IProviderMetadata, IAsyncDisposable
+  inheritance:
+  - System.Object
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.Alpaca.AlpacaMarketDataClient
+  - Meridian.Infrastructure.Adapters.Polygon.PolygonMarketDataClient
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Unified WebSocket provider base class for streaming data providers
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Log
+  commentId: F:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Log
+  id: Log
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: Log
+  nameWithType: WebSocketProviderBase.Log
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Log
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Log
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Logger instance for the derived provider.
+  example: []
+  syntax:
+    content: protected readonly ILogger Log
+    return:
+      type: Serilog.ILogger
+    content.vb: Protected ReadOnly Log As ILogger
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Subscriptions
+  commentId: F:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Subscriptions
+  id: Subscriptions
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: Subscriptions
+  nameWithType: WebSocketProviderBase.Subscriptions
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Subscriptions
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subscriptions
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Centralized subscription manager with provider-specific ID range.
+  example: []
+  syntax:
+    content: protected readonly SubscriptionManager Subscriptions
+    return:
+      type: Meridian.Infrastructure.Shared.SubscriptionManager
+    content.vb: Protected ReadOnly Subscriptions As SubscriptionManager
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Connected
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Connected
+  id: Connected
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: Connected
+  nameWithType: WebSocketProviderBase.Connected
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Connected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Connected
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Whether the connection is currently established.
+  example: []
+  syntax:
+    content: protected bool Connected { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Protected ReadOnly Property Connected As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Connected*
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.#ctor(System.String,Meridian.Infrastructure.Resilience.WebSocketConnectionConfig,System.Int32,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.#ctor(System.String,Meridian.Infrastructure.Resilience.WebSocketConnectionConfig,System.Int32,Serilog.ILogger)
+  id: '#ctor(System.String,Meridian.Infrastructure.Resilience.WebSocketConnectionConfig,System.Int32,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: WebSocketProviderBase(string, WebSocketConnectionConfig?, int, ILogger?)
+  nameWithType: WebSocketProviderBase.WebSocketProviderBase(string, WebSocketConnectionConfig?, int, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.WebSocketProviderBase(string, Meridian.Infrastructure.Resilience.WebSocketConnectionConfig?, int, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Creates a new WebSocket provider base.
+  example: []
+  syntax:
+    content: protected WebSocketProviderBase(string providerName, WebSocketConnectionConfig? config = null, int subscriptionStartId = 1, ILogger? logger = null)
+    parameters:
+    - id: providerName
+      type: System.String
+      description: Display name for logging.
+    - id: config
+      type: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+      description: WebSocket connection configuration profile.
+    - id: subscriptionStartId
+      type: System.Int32
+      description: Starting subscription ID for this provider's range.
+    - id: logger
+      type: Serilog.ILogger
+      description: Optional logger instance.
+    content.vb: Protected Sub New(providerName As String, config As WebSocketConnectionConfig = Nothing, subscriptionStartId As Integer = 1, logger As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.#ctor*
+  nameWithType.vb: WebSocketProviderBase.New(String, WebSocketConnectionConfig, Integer, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.New(String, Meridian.Infrastructure.Resilience.WebSocketConnectionConfig, Integer, Serilog.ILogger)
+  name.vb: New(String, WebSocketConnectionConfig, Integer, ILogger)
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  id: IsEnabled
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: IsEnabled
+  nameWithType: WebSocketProviderBase.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsEnabled
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  example: []
+  syntax:
+    content: public abstract bool IsEnabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public MustOverride ReadOnly Property IsEnabled As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  id: ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: ConnectAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  example: []
+  syntax:
+    content: public virtual Task ConnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Overridable Function ConnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  id: DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisconnectAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  example: []
+  syntax:
+    content: public Task DisconnectAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DisconnectAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: WebSocketProviderBase.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Subscribe to market depth for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public abstract int SubscribeMarketDepth(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public MustOverride Function SubscribeMarketDepth(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: WebSocketProviderBase.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Unsubscribe a previously returned depth subscription id.
+  example: []
+  syntax:
+    content: public abstract void UnsubscribeMarketDepth(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public MustOverride Sub UnsubscribeMarketDepth(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  nameWithType.vb: WebSocketProviderBase.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: WebSocketProviderBase.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Subscribe to tick-by-tick trade prints for the symbol described by cfg.
+  example: []
+  syntax:
+    content: public abstract int SubscribeTrades(SymbolConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Public MustOverride Function SubscribeTrades(cfg As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(System.Int32)
+  id: UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeTrades(int)
+  nameWithType: WebSocketProviderBase.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Unsubscribe a previously returned trade subscription id.
+  example: []
+  syntax:
+    content: public abstract void UnsubscribeTrades(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Public MustOverride Sub UnsubscribeTrades(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades*
+  implements:
+  - Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  nameWithType.vb: WebSocketProviderBase.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  id: ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: ProviderId
+  nameWithType: WebSocketProviderBase.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Unique identifier for the provider (e.g., "alpaca", "polygon", "yahoo").
+  example: []
+  syntax:
+    content: public abstract string ProviderId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public MustOverride ReadOnly Property ProviderId As String
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  id: ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: ProviderDisplayName
+  nameWithType: WebSocketProviderBase.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: public abstract string ProviderDisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public MustOverride ReadOnly Property ProviderDisplayName As String
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  id: ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: ProviderDescription
+  nameWithType: WebSocketProviderBase.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderDescription
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Description of the provider and its capabilities.
+  example: []
+  syntax:
+    content: public abstract string ProviderDescription { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public MustOverride ReadOnly Property ProviderDescription As String
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  id: ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: ProviderPriority
+  nameWithType: WebSocketProviderBase.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderPriority
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Priority for routing and failover (lower = higher priority, tried first).
+  example: []
+  syntax:
+    content: public abstract int ProviderPriority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public MustOverride ReadOnly Property ProviderPriority As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  id: ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: ProviderCapabilities
+  nameWithType: WebSocketProviderBase.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCapabilities
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Unified capability flags and metadata for this provider.
+  example: []
+  syntax:
+    content: public abstract ProviderCapabilities ProviderCapabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+    content.vb: Public MustOverride ReadOnly Property ProviderCapabilities As ProviderCapabilities
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities*
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  id: BuildWebSocketUri
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: BuildWebSocketUri()
+  nameWithType: WebSocketProviderBase.BuildWebSocketUri()
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BuildWebSocketUri
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Builds the WebSocket endpoint URI for this provider.
+  example: []
+  syntax:
+    content: protected abstract Uri BuildWebSocketUri()
+    return:
+      type: System.Uri
+    content.vb: Protected MustOverride Function BuildWebSocketUri() As Uri
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri*
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  id: AuthenticateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: AuthenticateAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.AuthenticateAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuthenticateAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Sends provider-specific authentication messages after WebSocket connection.
+  example: []
+  syntax:
+    content: protected abstract Task AuthenticateAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected MustOverride Function AuthenticateAsync(ct As CancellationToken) As Task
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  id: HandleMessageAsync(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: HandleMessageAsync(string)
+  nameWithType: WebSocketProviderBase.HandleMessageAsync(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HandleMessageAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Handles an incoming WebSocket text message.
+
+    Implementations should parse JSON and route to appropriate collectors.
+  example: []
+  syntax:
+    content: protected abstract Task HandleMessageAsync(string message)
+    parameters:
+    - id: message
+      type: System.String
+      description: The raw text message from the WebSocket.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected MustOverride Function HandleMessageAsync(message As String) As Task
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync*
+  nameWithType.vb: WebSocketProviderBase.HandleMessageAsync(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(String)
+  name.vb: HandleMessageAsync(String)
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  id: ResubscribeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: ResubscribeAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.ResubscribeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscribeAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Re-subscribes to all active symbols after a reconnection.
+
+    Called automatically when the connection manager reconnects successfully.
+  example: []
+  syntax:
+    content: protected abstract Task ResubscribeAsync(CancellationToken ct)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected MustOverride Function ResubscribeAsync(ct As CancellationToken) As Task
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+  id: ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: ConfigureWebSocket(ClientWebSocket)
+  nameWithType: WebSocketProviderBase.ConfigureWebSocket(ClientWebSocket)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigureWebSocket
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Optionally configures the <xref href="System.Net.WebSockets.ClientWebSocket" data-throw-if-not-resolved="false"></xref> before connecting
+
+    (e.g., setting authorization headers, sub-protocols).
+
+    Default implementation does nothing.
+  example: []
+  syntax:
+    content: protected virtual void ConfigureWebSocket(ClientWebSocket webSocket)
+    parameters:
+    - id: webSocket
+      type: System.Net.WebSockets.ClientWebSocket
+      description: The WebSocket to configure.
+    content.vb: Protected Overridable Sub ConfigureWebSocket(webSocket As ClientWebSocket)
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket*
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SendAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SendAsync(System.String,System.Threading.CancellationToken)
+  id: SendAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: SendAsync(string, CancellationToken)
+  nameWithType: WebSocketProviderBase.SendAsync(string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SendAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SendAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Sends a text message through the WebSocket connection.
+  example: []
+  syntax:
+    content: protected Task SendAsync(string message, CancellationToken ct = default)
+    parameters:
+    - id: message
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Protected Function SendAsync(message As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SendAsync*
+  nameWithType.vb: WebSocketProviderBase.SendAsync(String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SendAsync(String, System.Threading.CancellationToken)
+  name.vb: SendAsync(String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)
+  id: ReadOneMessageAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: ReadOneMessageAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.ReadOneMessageAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReadOneMessageAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 187
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Reads a single text message directly from the WebSocket.
+
+    Call only during <xref href="Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> — before the receive loop starts —
+
+    to handle initial handshake messages (e.g., connection confirmation, auth response).
+  example: []
+  syntax:
+    content: protected Task<string?> ReadOneMessageAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Protected Function ReadOneMessageAsync(ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.RecordActivity
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.RecordActivity
+  id: RecordActivity
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: RecordActivity()
+  nameWithType: WebSocketProviderBase.RecordActivity()
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.RecordActivity()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordActivity
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Records heartbeat activity. Call this when data is received to prevent
+
+    stale connection detection.
+  example: []
+  syntax:
+    content: protected void RecordActivity()
+    content.vb: Protected Sub RecordActivity()
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.RecordActivity*
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: WebSocketProviderBase.DisposeAsync()
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/WebSocketProviderBase.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  name: AuthenticateAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.AuthenticateAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+    name: AuthenticateAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync(System.Threading.CancellationToken)
+    name: AuthenticateAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  name: HandleMessageAsync(string)
+  nameWithType: WebSocketProviderBase.HandleMessageAsync(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(string)
+  nameWithType.vb: WebSocketProviderBase.HandleMessageAsync(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(String)
+  name.vb: HandleMessageAsync(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+    name: HandleMessageAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync(System.String)
+    name: HandleMessageAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  name: ResubscribeAsync(CancellationToken)
+  nameWithType: WebSocketProviderBase.ResubscribeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+    name: ResubscribeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync(System.Threading.CancellationToken)
+    name: ResubscribeAsync
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  parent: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  name: BuildWebSocketUri()
+  nameWithType: WebSocketProviderBase.BuildWebSocketUri()
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+    name: BuildWebSocketUri
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+    name: BuildWebSocketUri
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConfigureWebSocket_System_Net_WebSockets_ClientWebSocket_
+  name: ConfigureWebSocket(ClientWebSocket)
+  nameWithType: WebSocketProviderBase.ConfigureWebSocket(ClientWebSocket)
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+    name: ConfigureWebSocket
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConfigureWebSocket_System_Net_WebSockets_ClientWebSocket_
+  - name: (
+  - uid: System.Net.WebSockets.ClientWebSocket
+    name: ClientWebSocket
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocket
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket(System.Net.WebSockets.ClientWebSocket)
+    name: ConfigureWebSocket
+    href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConfigureWebSocket_System_Net_WebSockets_ClientWebSocket_
+  - name: (
+  - uid: System.Net.WebSockets.ClientWebSocket
+    name: ClientWebSocket
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocket
+  - name: )
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html
+  name: WebSocketConnectionManager
+  nameWithType: WebSocketConnectionManager
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  commentId: T:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html
+  name: WebSocketProviderBase
+  nameWithType: WebSocketProviderBase
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Shared.SubscriptionManager
+  commentId: T:Meridian.Infrastructure.Shared.SubscriptionManager
+  parent: Meridian.Infrastructure.Shared
+  href: Meridian.Infrastructure.Shared.SubscriptionManager.html
+  name: SubscriptionManager
+  nameWithType: SubscriptionManager
+  fullName: Meridian.Infrastructure.Shared.SubscriptionManager
+- uid: Meridian.Infrastructure.Shared
+  commentId: N:Meridian.Infrastructure.Shared
+  href: Meridian.html
+  name: Meridian.Infrastructure.Shared
+  nameWithType: Meridian.Infrastructure.Shared
+  fullName: Meridian.Infrastructure.Shared
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Shared
+    name: Shared
+    href: Meridian.Infrastructure.Shared.html
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Connected*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Connected
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_Connected
+  name: Connected
+  nameWithType: WebSocketProviderBase.Connected
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.Connected
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase__ctor_System_String_Meridian_Infrastructure_Resilience_WebSocketConnectionConfig_System_Int32_Serilog_ILogger_
+  name: WebSocketProviderBase
+  nameWithType: WebSocketProviderBase.WebSocketProviderBase
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.WebSocketProviderBase
+  nameWithType.vb: WebSocketProviderBase.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  parent: Meridian.Infrastructure.Resilience
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html
+  name: WebSocketConnectionConfig
+  nameWithType: WebSocketConnectionConfig
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Resilience
+  commentId: N:Meridian.Infrastructure.Resilience
+  href: Meridian.html
+  name: Meridian.Infrastructure.Resilience
+  nameWithType: Meridian.Infrastructure.Resilience
+  fullName: Meridian.Infrastructure.Resilience
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_IsEnabled
+  name: IsEnabled
+  nameWithType: WebSocketProviderBase.IsEnabled
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.IsEnabled
+- uid: Meridian.Infrastructure.IMarketDataClient.IsEnabled
+  commentId: P:Meridian.Infrastructure.IMarketDataClient.IsEnabled
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: IsEnabled
+  nameWithType: IMarketDataClient.IsEnabled
+  fullName: Meridian.Infrastructure.IMarketDataClient.IsEnabled
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConnectAsync_System_Threading_CancellationToken_
+  name: ConnectAsync
+  nameWithType: WebSocketProviderBase.ConnectAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConnectAsync
+- uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: ConnectAsync(CancellationToken)
+  nameWithType: IMarketDataClient.ConnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.ConnectAsync(System.Threading.CancellationToken)
+    name: ConnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisconnectAsync_System_Threading_CancellationToken_
+  name: DisconnectAsync
+  nameWithType: WebSocketProviderBase.DisconnectAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisconnectAsync
+- uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: DisconnectAsync(CancellationToken)
+  nameWithType: IMarketDataClient.DisconnectAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.DisconnectAsync(System.Threading.CancellationToken)
+    name: DisconnectAsync
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth
+  nameWithType: WebSocketProviderBase.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeMarketDepth
+- uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: IMarketDataClient.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeMarketDepth
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: WebSocketProviderBase.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeMarketDepth
+- uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: IMarketDataClient.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(int)
+  nameWithType.vb: IMarketDataClient.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeMarketDepth(System.Int32)
+    name: UnsubscribeMarketDepth
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SubscribeTrades_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeTrades
+  nameWithType: WebSocketProviderBase.SubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SubscribeTrades
+- uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  name: SubscribeTrades(SymbolConfig)
+  nameWithType: IMarketDataClient.SubscribeTrades(SymbolConfig)
+  fullName: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.SubscribeTrades(Meridian.Contracts.Configuration.SymbolConfig)
+    name: SubscribeTrades
+  - name: (
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_UnsubscribeTrades_System_Int32_
+  name: UnsubscribeTrades
+  nameWithType: WebSocketProviderBase.UnsubscribeTrades
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.UnsubscribeTrades
+- uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  commentId: M:Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+  parent: Meridian.Infrastructure.IMarketDataClient
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: UnsubscribeTrades(int)
+  nameWithType: IMarketDataClient.UnsubscribeTrades(int)
+  fullName: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(int)
+  nameWithType.vb: IMarketDataClient.UnsubscribeTrades(Integer)
+  fullName.vb: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(Integer)
+  name.vb: UnsubscribeTrades(Integer)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.IMarketDataClient.UnsubscribeTrades(System.Int32)
+    name: UnsubscribeTrades
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderId
+  name: ProviderId
+  nameWithType: WebSocketProviderBase.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderId
+  name: ProviderId
+  nameWithType: IProviderMetadata.ProviderId
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderId
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: WebSocketProviderBase.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDisplayName
+  name: ProviderDisplayName
+  nameWithType: IProviderMetadata.ProviderDisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderDescription
+  name: ProviderDescription
+  nameWithType: WebSocketProviderBase.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderDescription
+  name: ProviderDescription
+  nameWithType: IProviderMetadata.ProviderDescription
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderDescription
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderPriority
+  name: ProviderPriority
+  nameWithType: WebSocketProviderBase.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderPriority
+  name: ProviderPriority
+  nameWithType: IProviderMetadata.ProviderPriority
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderPriority
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: WebSocketProviderBase.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html#Meridian_Infrastructure_Adapters_Core_IProviderMetadata_ProviderCapabilities
+  name: ProviderCapabilities
+  nameWithType: IProviderMetadata.ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities.html
+  name: ProviderCapabilities
+  nameWithType: ProviderCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderCapabilities
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_BuildWebSocketUri
+  name: BuildWebSocketUri
+  nameWithType: WebSocketProviderBase.BuildWebSocketUri
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.BuildWebSocketUri
+- uid: System.Uri
+  commentId: T:System.Uri
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uri
+  name: Uri
+  nameWithType: Uri
+  fullName: System.Uri
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_AuthenticateAsync_System_Threading_CancellationToken_
+  name: AuthenticateAsync
+  nameWithType: WebSocketProviderBase.AuthenticateAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.AuthenticateAsync
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_HandleMessageAsync_System_String_
+  name: HandleMessageAsync
+  nameWithType: WebSocketProviderBase.HandleMessageAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.HandleMessageAsync
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ResubscribeAsync_System_Threading_CancellationToken_
+  name: ResubscribeAsync
+  nameWithType: WebSocketProviderBase.ResubscribeAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ResubscribeAsync
+- uid: System.Net.WebSockets.ClientWebSocket
+  commentId: T:System.Net.WebSockets.ClientWebSocket
+  parent: System.Net.WebSockets
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.websockets.clientwebsocket
+  name: ClientWebSocket
+  nameWithType: ClientWebSocket
+  fullName: System.Net.WebSockets.ClientWebSocket
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ConfigureWebSocket_System_Net_WebSockets_ClientWebSocket_
+  name: ConfigureWebSocket
+  nameWithType: WebSocketProviderBase.ConfigureWebSocket
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ConfigureWebSocket
+- uid: System.Net.WebSockets
+  commentId: N:System.Net.WebSockets
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.WebSockets
+  nameWithType: System.Net.WebSockets
+  fullName: System.Net.WebSockets
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.WebSockets
+    name: WebSockets
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.WebSockets
+    name: WebSockets
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.websockets
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SendAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SendAsync
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_SendAsync_System_String_System_Threading_CancellationToken_
+  name: SendAsync
+  nameWithType: WebSocketProviderBase.SendAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.SendAsync
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_ReadOneMessageAsync_System_Threading_CancellationToken_
+  name: ReadOneMessageAsync
+  nameWithType: WebSocketProviderBase.ReadOneMessageAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.ReadOneMessageAsync
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.RecordActivity*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.RecordActivity
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_RecordActivity
+  name: RecordActivity
+  nameWithType: WebSocketProviderBase.RecordActivity
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.RecordActivity
+- uid: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+  href: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.html#Meridian_Infrastructure_Adapters_Core_WebSocketProviderBase_DisposeAsync
+  name: DisposeAsync
+  nameWithType: WebSocketProviderBase.DisposeAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.WebSocketProviderBase.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

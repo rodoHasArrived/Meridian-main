@@ -1,0 +1,155 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.StorageTier
+  commentId: T:Meridian.Storage.Archival.StorageTier
+  id: StorageTier
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.StorageTier.Cold
+  - Meridian.Storage.Archival.StorageTier.Hot
+  - Meridian.Storage.Archival.StorageTier.Warm
+  langs:
+  - csharp
+  - vb
+  name: StorageTier
+  nameWithType: StorageTier
+  fullName: Meridian.Storage.Archival.StorageTier
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageTier
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Storage tier classification.
+  example: []
+  syntax:
+    content: 'public enum StorageTier : byte'
+    content.vb: Public Enum StorageTier As Byte
+- uid: Meridian.Storage.Archival.StorageTier.Hot
+  commentId: F:Meridian.Storage.Archival.StorageTier.Hot
+  id: Hot
+  parent: Meridian.Storage.Archival.StorageTier
+  langs:
+  - csharp
+  - vb
+  name: Hot
+  nameWithType: StorageTier.Hot
+  fullName: Meridian.Storage.Archival.StorageTier.Hot
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hot
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 389
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Hot storage - frequently accessed, fast retrieval.
+  example: []
+  syntax:
+    content: Hot = 0
+    return:
+      type: Meridian.Storage.Archival.StorageTier
+- uid: Meridian.Storage.Archival.StorageTier.Warm
+  commentId: F:Meridian.Storage.Archival.StorageTier.Warm
+  id: Warm
+  parent: Meridian.Storage.Archival.StorageTier
+  langs:
+  - csharp
+  - vb
+  name: Warm
+  nameWithType: StorageTier.Warm
+  fullName: Meridian.Storage.Archival.StorageTier.Warm
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warm
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 391
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Warm storage - occasional access, moderate retrieval speed.
+  example: []
+  syntax:
+    content: Warm = 1
+    return:
+      type: Meridian.Storage.Archival.StorageTier
+- uid: Meridian.Storage.Archival.StorageTier.Cold
+  commentId: F:Meridian.Storage.Archival.StorageTier.Cold
+  id: Cold
+  parent: Meridian.Storage.Archival.StorageTier
+  langs:
+  - csharp
+  - vb
+  name: Cold
+  nameWithType: StorageTier.Cold
+  fullName: Meridian.Storage.Archival.StorageTier.Cold
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cold
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 393
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Cold storage - rare access, slow retrieval acceptable.
+  example: []
+  syntax:
+    content: Cold = 2
+    return:
+      type: Meridian.Storage.Archival.StorageTier
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: Meridian.Storage.Archival.StorageTier
+  commentId: T:Meridian.Storage.Archival.StorageTier
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.StorageTier.html
+  name: StorageTier
+  nameWithType: StorageTier
+  fullName: Meridian.Storage.Archival.StorageTier

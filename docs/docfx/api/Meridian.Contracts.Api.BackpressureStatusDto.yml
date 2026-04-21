@@ -1,0 +1,790 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.BackpressureStatusDto
+  commentId: T:Meridian.Contracts.Api.BackpressureStatusDto
+  id: BackpressureStatusDto
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.BackpressureStatusDto.DropRate
+  - Meridian.Contracts.Api.BackpressureStatusDto.DroppedEvents
+  - Meridian.Contracts.Api.BackpressureStatusDto.DurationSeconds
+  - Meridian.Contracts.Api.BackpressureStatusDto.IsActive
+  - Meridian.Contracts.Api.BackpressureStatusDto.Level
+  - Meridian.Contracts.Api.BackpressureStatusDto.Message
+  - Meridian.Contracts.Api.BackpressureStatusDto.QueueDepthWarning
+  - Meridian.Contracts.Api.BackpressureStatusDto.QueueUtilization
+  langs:
+  - csharp
+  - vb
+  name: BackpressureStatusDto
+  nameWithType: BackpressureStatusDto
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackpressureStatusDto
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Backpressure status response.
+  example: []
+  syntax:
+    content: 'public sealed record BackpressureStatusDto : IEquatable<BackpressureStatusDto>'
+    content.vb: Public NotInheritable Class BackpressureStatusDto Implements IEquatable(Of BackpressureStatusDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.BackpressureStatusDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.IsActive
+  commentId: P:Meridian.Contracts.Api.BackpressureStatusDto.IsActive
+  id: IsActive
+  parent: Meridian.Contracts.Api.BackpressureStatusDto
+  langs:
+  - csharp
+  - vb
+  name: IsActive
+  nameWithType: BackpressureStatusDto.IsActive
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.IsActive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsActive
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets a value indicating whether backpressure is currently active.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("isActive")]
+
+      public bool IsActive { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isActive")>
+
+      Public Property IsActive As Boolean
+  overload: Meridian.Contracts.Api.BackpressureStatusDto.IsActive*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isActive
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.Level
+  commentId: P:Meridian.Contracts.Api.BackpressureStatusDto.Level
+  id: Level
+  parent: Meridian.Contracts.Api.BackpressureStatusDto
+  langs:
+  - csharp
+  - vb
+  name: Level
+  nameWithType: BackpressureStatusDto.Level
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.Level
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Level
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the current backpressure level (none, low, medium, high, critical).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("level")]
+
+      public string Level { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("level")>
+
+      Public Property Level As String
+  overload: Meridian.Contracts.Api.BackpressureStatusDto.Level*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: level
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.QueueUtilization
+  commentId: P:Meridian.Contracts.Api.BackpressureStatusDto.QueueUtilization
+  id: QueueUtilization
+  parent: Meridian.Contracts.Api.BackpressureStatusDto
+  langs:
+  - csharp
+  - vb
+  name: QueueUtilization
+  nameWithType: BackpressureStatusDto.QueueUtilization
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.QueueUtilization
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueUtilization
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the queue utilization percentage (0.0 to 1.0).
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("queueUtilization")]
+
+      public float QueueUtilization { get; init; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("queueUtilization")>
+
+      Public Property QueueUtilization As Single
+  overload: Meridian.Contracts.Api.BackpressureStatusDto.QueueUtilization*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: queueUtilization
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.DroppedEvents
+  commentId: P:Meridian.Contracts.Api.BackpressureStatusDto.DroppedEvents
+  id: DroppedEvents
+  parent: Meridian.Contracts.Api.BackpressureStatusDto
+  langs:
+  - csharp
+  - vb
+  name: DroppedEvents
+  nameWithType: BackpressureStatusDto.DroppedEvents
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.DroppedEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DroppedEvents
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the total number of dropped events due to backpressure.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("droppedEvents")]
+
+      public long DroppedEvents { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("droppedEvents")>
+
+      Public Property DroppedEvents As Long
+  overload: Meridian.Contracts.Api.BackpressureStatusDto.DroppedEvents*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: droppedEvents
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.DropRate
+  commentId: P:Meridian.Contracts.Api.BackpressureStatusDto.DropRate
+  id: DropRate
+  parent: Meridian.Contracts.Api.BackpressureStatusDto
+  langs:
+  - csharp
+  - vb
+  name: DropRate
+  nameWithType: BackpressureStatusDto.DropRate
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.DropRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DropRate
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the rate of dropped events per second.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("dropRate")]
+
+      public float DropRate { get; init; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("dropRate")>
+
+      Public Property DropRate As Single
+  overload: Meridian.Contracts.Api.BackpressureStatusDto.DropRate*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: dropRate
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.DurationSeconds
+  commentId: P:Meridian.Contracts.Api.BackpressureStatusDto.DurationSeconds
+  id: DurationSeconds
+  parent: Meridian.Contracts.Api.BackpressureStatusDto
+  langs:
+  - csharp
+  - vb
+  name: DurationSeconds
+  nameWithType: BackpressureStatusDto.DurationSeconds
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.DurationSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DurationSeconds
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets the duration in seconds that backpressure has been active.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("durationSeconds")]
+
+      public float DurationSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Single
+    content.vb: >-
+      <JsonPropertyName("durationSeconds")>
+
+      Public Property DurationSeconds As Single
+  overload: Meridian.Contracts.Api.BackpressureStatusDto.DurationSeconds*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: durationSeconds
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.Message
+  commentId: P:Meridian.Contracts.Api.BackpressureStatusDto.Message
+  id: Message
+  parent: Meridian.Contracts.Api.BackpressureStatusDto
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: BackpressureStatusDto.Message
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets an optional human-readable message about the backpressure condition.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("message")]
+
+      public string? Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("message")>
+
+      Public Property Message As String
+  overload: Meridian.Contracts.Api.BackpressureStatusDto.Message*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: message
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.QueueDepthWarning
+  commentId: P:Meridian.Contracts.Api.BackpressureStatusDto.QueueDepthWarning
+  id: QueueDepthWarning
+  parent: Meridian.Contracts.Api.BackpressureStatusDto
+  langs:
+  - csharp
+  - vb
+  name: QueueDepthWarning
+  nameWithType: BackpressureStatusDto.QueueDepthWarning
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.QueueDepthWarning
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/StatusEndpointModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QueueDepthWarning
+    path: ../../src/Meridian.Contracts/Api/StatusEndpointModels.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Gets a value indicating whether the queue depth has reached a warning threshold.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("queueDepthWarning")]
+
+      public bool QueueDepthWarning { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("queueDepthWarning")>
+
+      Public Property QueueDepthWarning As Boolean
+  overload: Meridian.Contracts.Api.BackpressureStatusDto.QueueDepthWarning*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: queueDepthWarning
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.BackpressureStatusDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.BackpressureStatusDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<BackpressureStatusDto>
+  nameWithType: IEquatable<BackpressureStatusDto>
+  fullName: System.IEquatable<Meridian.Contracts.Api.BackpressureStatusDto>
+  nameWithType.vb: IEquatable(Of BackpressureStatusDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.BackpressureStatusDto)
+  name.vb: IEquatable(Of BackpressureStatusDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.BackpressureStatusDto
+    name: BackpressureStatusDto
+    href: Meridian.Contracts.Api.BackpressureStatusDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.BackpressureStatusDto
+    name: BackpressureStatusDto
+    href: Meridian.Contracts.Api.BackpressureStatusDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.IsActive*
+  commentId: Overload:Meridian.Contracts.Api.BackpressureStatusDto.IsActive
+  href: Meridian.Contracts.Api.BackpressureStatusDto.html#Meridian_Contracts_Api_BackpressureStatusDto_IsActive
+  name: IsActive
+  nameWithType: BackpressureStatusDto.IsActive
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.IsActive
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.Level*
+  commentId: Overload:Meridian.Contracts.Api.BackpressureStatusDto.Level
+  href: Meridian.Contracts.Api.BackpressureStatusDto.html#Meridian_Contracts_Api_BackpressureStatusDto_Level
+  name: Level
+  nameWithType: BackpressureStatusDto.Level
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.Level
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.QueueUtilization*
+  commentId: Overload:Meridian.Contracts.Api.BackpressureStatusDto.QueueUtilization
+  href: Meridian.Contracts.Api.BackpressureStatusDto.html#Meridian_Contracts_Api_BackpressureStatusDto_QueueUtilization
+  name: QueueUtilization
+  nameWithType: BackpressureStatusDto.QueueUtilization
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.QueueUtilization
+- uid: System.Single
+  commentId: T:System.Single
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.single
+  name: float
+  nameWithType: float
+  fullName: float
+  nameWithType.vb: Single
+  fullName.vb: Single
+  name.vb: Single
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.DroppedEvents*
+  commentId: Overload:Meridian.Contracts.Api.BackpressureStatusDto.DroppedEvents
+  href: Meridian.Contracts.Api.BackpressureStatusDto.html#Meridian_Contracts_Api_BackpressureStatusDto_DroppedEvents
+  name: DroppedEvents
+  nameWithType: BackpressureStatusDto.DroppedEvents
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.DroppedEvents
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.DropRate*
+  commentId: Overload:Meridian.Contracts.Api.BackpressureStatusDto.DropRate
+  href: Meridian.Contracts.Api.BackpressureStatusDto.html#Meridian_Contracts_Api_BackpressureStatusDto_DropRate
+  name: DropRate
+  nameWithType: BackpressureStatusDto.DropRate
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.DropRate
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.DurationSeconds*
+  commentId: Overload:Meridian.Contracts.Api.BackpressureStatusDto.DurationSeconds
+  href: Meridian.Contracts.Api.BackpressureStatusDto.html#Meridian_Contracts_Api_BackpressureStatusDto_DurationSeconds
+  name: DurationSeconds
+  nameWithType: BackpressureStatusDto.DurationSeconds
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.DurationSeconds
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.Message*
+  commentId: Overload:Meridian.Contracts.Api.BackpressureStatusDto.Message
+  href: Meridian.Contracts.Api.BackpressureStatusDto.html#Meridian_Contracts_Api_BackpressureStatusDto_Message
+  name: Message
+  nameWithType: BackpressureStatusDto.Message
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.Message
+- uid: Meridian.Contracts.Api.BackpressureStatusDto.QueueDepthWarning*
+  commentId: Overload:Meridian.Contracts.Api.BackpressureStatusDto.QueueDepthWarning
+  href: Meridian.Contracts.Api.BackpressureStatusDto.html#Meridian_Contracts_Api_BackpressureStatusDto_QueueDepthWarning
+  name: QueueDepthWarning
+  nameWithType: BackpressureStatusDto.QueueDepthWarning
+  fullName: Meridian.Contracts.Api.BackpressureStatusDto.QueueDepthWarning

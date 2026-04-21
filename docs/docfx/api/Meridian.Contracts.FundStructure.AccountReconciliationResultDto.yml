@@ -1,0 +1,847 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  commentId: T:Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  id: AccountReconciliationResultDto
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.#ctor(System.Guid,System.Guid,System.String,System.Boolean,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String)
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ActualAmount
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Category
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.CheckLabel
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ExpectedAmount
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.IsMatch
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Reason
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ReconciliationRunId
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ResultId
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Status
+  - Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Variance
+  langs:
+  - csharp
+  - vb
+  name: AccountReconciliationResultDto
+  nameWithType: AccountReconciliationResultDto
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountReconciliationResultDto
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  example: []
+  syntax:
+    content: 'public sealed record AccountReconciliationResultDto : IEquatable<AccountReconciliationResultDto>'
+    content.vb: Public NotInheritable Class AccountReconciliationResultDto Implements IEquatable(Of AccountReconciliationResultDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.AccountReconciliationResultDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.#ctor(System.Guid,System.Guid,System.String,System.Boolean,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String)
+  commentId: M:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.#ctor(System.Guid,System.Guid,System.String,System.Boolean,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String)
+  id: '#ctor(System.Guid,System.Guid,System.String,System.Boolean,System.String,System.String,System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String)'
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: AccountReconciliationResultDto(Guid, Guid, string, bool, string, string, decimal?, decimal?, decimal?, string)
+  nameWithType: AccountReconciliationResultDto.AccountReconciliationResultDto(Guid, Guid, string, bool, string, string, decimal?, decimal?, decimal?, string)
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.AccountReconciliationResultDto(System.Guid, System.Guid, string, bool, string, string, decimal?, decimal?, decimal?, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  example: []
+  syntax:
+    content: public AccountReconciliationResultDto(Guid ResultId, Guid ReconciliationRunId, string CheckLabel, bool IsMatch, string Category, string Status, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, string Reason)
+    parameters:
+    - id: ResultId
+      type: System.Guid
+    - id: ReconciliationRunId
+      type: System.Guid
+    - id: CheckLabel
+      type: System.String
+    - id: IsMatch
+      type: System.Boolean
+    - id: Category
+      type: System.String
+    - id: Status
+      type: System.String
+    - id: ExpectedAmount
+      type: System.Nullable{System.Decimal}
+    - id: ActualAmount
+      type: System.Nullable{System.Decimal}
+    - id: Variance
+      type: System.Nullable{System.Decimal}
+    - id: Reason
+      type: System.String
+    content.vb: Public Sub New(ResultId As Guid, ReconciliationRunId As Guid, CheckLabel As String, IsMatch As Boolean, Category As String, Status As String, ExpectedAmount As Decimal?, ActualAmount As Decimal?, Variance As Decimal?, Reason As String)
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.#ctor*
+  nameWithType.vb: AccountReconciliationResultDto.New(Guid, Guid, String, Boolean, String, String, Decimal?, Decimal?, Decimal?, String)
+  fullName.vb: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.New(System.Guid, System.Guid, String, Boolean, String, String, Decimal?, Decimal?, Decimal?, String)
+  name.vb: New(Guid, Guid, String, Boolean, String, String, Decimal?, Decimal?, Decimal?, String)
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ResultId
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ResultId
+  id: ResultId
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: ResultId
+  nameWithType: AccountReconciliationResultDto.ResultId
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ResultId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResultId
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid ResultId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ResultId As Guid
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ResultId*
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ReconciliationRunId
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ReconciliationRunId
+  id: ReconciliationRunId
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationRunId
+  nameWithType: AccountReconciliationResultDto.ReconciliationRunId
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ReconciliationRunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationRunId
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid ReconciliationRunId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property ReconciliationRunId As Guid
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ReconciliationRunId*
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.CheckLabel
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.CheckLabel
+  id: CheckLabel
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: CheckLabel
+  nameWithType: AccountReconciliationResultDto.CheckLabel
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.CheckLabel
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckLabel
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string CheckLabel { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CheckLabel As String
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.CheckLabel*
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.IsMatch
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.IsMatch
+  id: IsMatch
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: IsMatch
+  nameWithType: AccountReconciliationResultDto.IsMatch
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.IsMatch
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsMatch
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public bool IsMatch { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsMatch As Boolean
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.IsMatch*
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Category
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Category
+  id: Category
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: Category
+  nameWithType: AccountReconciliationResultDto.Category
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Category
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Category
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Category { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Category As String
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Category*
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Status
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Status
+  id: Status
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: AccountReconciliationResultDto.Status
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Status { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Status As String
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Status*
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ExpectedAmount
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ExpectedAmount
+  id: ExpectedAmount
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: ExpectedAmount
+  nameWithType: AccountReconciliationResultDto.ExpectedAmount
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ExpectedAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedAmount
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 128
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal? ExpectedAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property ExpectedAmount As Decimal?
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ExpectedAmount*
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ActualAmount
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ActualAmount
+  id: ActualAmount
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: ActualAmount
+  nameWithType: AccountReconciliationResultDto.ActualAmount
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ActualAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActualAmount
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal? ActualAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property ActualAmount As Decimal?
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ActualAmount*
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Variance
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Variance
+  id: Variance
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: Variance
+  nameWithType: AccountReconciliationResultDto.Variance
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Variance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Variance
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public decimal? Variance { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property Variance As Decimal?
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Variance*
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Reason
+  commentId: P:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Reason
+  id: Reason
+  parent: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: AccountReconciliationResultDto.Reason
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Reason*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.AccountReconciliationResultDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.AccountReconciliationResultDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<AccountReconciliationResultDto>
+  nameWithType: IEquatable<AccountReconciliationResultDto>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.AccountReconciliationResultDto>
+  nameWithType.vb: IEquatable(Of AccountReconciliationResultDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.AccountReconciliationResultDto)
+  name.vb: IEquatable(Of AccountReconciliationResultDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+    name: AccountReconciliationResultDto
+    href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto
+    name: AccountReconciliationResultDto
+    href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.#ctor
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto__ctor_System_Guid_System_Guid_System_String_System_Boolean_System_String_System_String_System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_Nullable_System_Decimal__System_String_
+  name: AccountReconciliationResultDto
+  nameWithType: AccountReconciliationResultDto.AccountReconciliationResultDto
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.AccountReconciliationResultDto
+  nameWithType.vb: AccountReconciliationResultDto.New
+  fullName.vb: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ResultId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ResultId
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_ResultId
+  name: ResultId
+  nameWithType: AccountReconciliationResultDto.ResultId
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ResultId
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ReconciliationRunId*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ReconciliationRunId
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_ReconciliationRunId
+  name: ReconciliationRunId
+  nameWithType: AccountReconciliationResultDto.ReconciliationRunId
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ReconciliationRunId
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.CheckLabel*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.CheckLabel
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_CheckLabel
+  name: CheckLabel
+  nameWithType: AccountReconciliationResultDto.CheckLabel
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.CheckLabel
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.IsMatch*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.IsMatch
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_IsMatch
+  name: IsMatch
+  nameWithType: AccountReconciliationResultDto.IsMatch
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.IsMatch
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Category*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Category
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_Category
+  name: Category
+  nameWithType: AccountReconciliationResultDto.Category
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Category
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Status*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Status
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_Status
+  name: Status
+  nameWithType: AccountReconciliationResultDto.Status
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Status
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ExpectedAmount*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ExpectedAmount
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_ExpectedAmount
+  name: ExpectedAmount
+  nameWithType: AccountReconciliationResultDto.ExpectedAmount
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ExpectedAmount
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ActualAmount*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ActualAmount
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_ActualAmount
+  name: ActualAmount
+  nameWithType: AccountReconciliationResultDto.ActualAmount
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.ActualAmount
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Variance*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Variance
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_Variance
+  name: Variance
+  nameWithType: AccountReconciliationResultDto.Variance
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Variance
+- uid: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Reason*
+  commentId: Overload:Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Reason
+  href: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.html#Meridian_Contracts_FundStructure_AccountReconciliationResultDto_Reason
+  name: Reason
+  nameWithType: AccountReconciliationResultDto.Reason
+  fullName: Meridian.Contracts.FundStructure.AccountReconciliationResultDto.Reason

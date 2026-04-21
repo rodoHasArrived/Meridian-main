@@ -1,0 +1,1033 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.CompressionProfileManager
+  commentId: T:Meridian.Storage.Archival.CompressionProfileManager
+  id: CompressionProfileManager
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.CompressionProfileManager.#ctor
+  - Meridian.Storage.Archival.CompressionProfileManager.BenchmarkAsync(System.Byte[],System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.CompressionProfileManager.CompressAsync(System.IO.Stream,System.IO.Stream,Meridian.Storage.Archival.CompressionProfile,System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.CompressionProfileManager.DecompressAsync(System.IO.Stream,System.IO.Stream,Meridian.Storage.Archival.CompressionCodec,System.Threading.CancellationToken)
+  - Meridian.Storage.Archival.CompressionProfileManager.GetAllProfiles
+  - Meridian.Storage.Archival.CompressionProfileManager.GetBuiltInProfiles
+  - Meridian.Storage.Archival.CompressionProfileManager.GetProfileForContext(Meridian.Storage.Archival.CompressionContext)
+  - Meridian.Storage.Archival.CompressionProfileManager.RegisterProfile(Meridian.Storage.Archival.CompressionProfile)
+  - Meridian.Storage.Archival.CompressionProfileManager.SetSymbolOverride(System.String,Meridian.Storage.Archival.CompressionProfile)
+  langs:
+  - csharp
+  - vb
+  name: CompressionProfileManager
+  nameWithType: CompressionProfileManager
+  fullName: Meridian.Storage.Archival.CompressionProfileManager
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionProfileManager
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: >-
+    Manages compression profiles for different archival use cases.
+
+    Supports LZ4, ZSTD, and GZIP codecs with configurable levels.
+  example: []
+  syntax:
+    content: public sealed class CompressionProfileManager
+    content.vb: Public NotInheritable Class CompressionProfileManager
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Archival.CompressionProfileManager.#ctor
+  commentId: M:Meridian.Storage.Archival.CompressionProfileManager.#ctor
+  id: '#ctor'
+  parent: Meridian.Storage.Archival.CompressionProfileManager
+  langs:
+  - csharp
+  - vb
+  name: CompressionProfileManager()
+  nameWithType: CompressionProfileManager.CompressionProfileManager()
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.CompressionProfileManager()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: public CompressionProfileManager()
+    content.vb: Public Sub New()
+  overload: Meridian.Storage.Archival.CompressionProfileManager.#ctor*
+  nameWithType.vb: CompressionProfileManager.New()
+  fullName.vb: Meridian.Storage.Archival.CompressionProfileManager.New()
+  name.vb: New()
+- uid: Meridian.Storage.Archival.CompressionProfileManager.GetProfileForContext(Meridian.Storage.Archival.CompressionContext)
+  commentId: M:Meridian.Storage.Archival.CompressionProfileManager.GetProfileForContext(Meridian.Storage.Archival.CompressionContext)
+  id: GetProfileForContext(Meridian.Storage.Archival.CompressionContext)
+  parent: Meridian.Storage.Archival.CompressionProfileManager
+  langs:
+  - csharp
+  - vb
+  name: GetProfileForContext(CompressionContext)
+  nameWithType: CompressionProfileManager.GetProfileForContext(CompressionContext)
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.GetProfileForContext(Meridian.Storage.Archival.CompressionContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProfileForContext
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Get the appropriate compression profile for a given context.
+  example: []
+  syntax:
+    content: public CompressionProfile GetProfileForContext(CompressionContext context)
+    parameters:
+    - id: context
+      type: Meridian.Storage.Archival.CompressionContext
+    return:
+      type: Meridian.Storage.Archival.CompressionProfile
+    content.vb: Public Function GetProfileForContext(context As CompressionContext) As CompressionProfile
+  overload: Meridian.Storage.Archival.CompressionProfileManager.GetProfileForContext*
+- uid: Meridian.Storage.Archival.CompressionProfileManager.SetSymbolOverride(System.String,Meridian.Storage.Archival.CompressionProfile)
+  commentId: M:Meridian.Storage.Archival.CompressionProfileManager.SetSymbolOverride(System.String,Meridian.Storage.Archival.CompressionProfile)
+  id: SetSymbolOverride(System.String,Meridian.Storage.Archival.CompressionProfile)
+  parent: Meridian.Storage.Archival.CompressionProfileManager
+  langs:
+  - csharp
+  - vb
+  name: SetSymbolOverride(string, CompressionProfile)
+  nameWithType: CompressionProfileManager.SetSymbolOverride(string, CompressionProfile)
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.SetSymbolOverride(string, Meridian.Storage.Archival.CompressionProfile)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetSymbolOverride
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Register a symbol-specific compression override.
+  example: []
+  syntax:
+    content: public void SetSymbolOverride(string symbol, CompressionProfile profile)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: profile
+      type: Meridian.Storage.Archival.CompressionProfile
+    content.vb: Public Sub SetSymbolOverride(symbol As String, profile As CompressionProfile)
+  overload: Meridian.Storage.Archival.CompressionProfileManager.SetSymbolOverride*
+  nameWithType.vb: CompressionProfileManager.SetSymbolOverride(String, CompressionProfile)
+  fullName.vb: Meridian.Storage.Archival.CompressionProfileManager.SetSymbolOverride(String, Meridian.Storage.Archival.CompressionProfile)
+  name.vb: SetSymbolOverride(String, CompressionProfile)
+- uid: Meridian.Storage.Archival.CompressionProfileManager.RegisterProfile(Meridian.Storage.Archival.CompressionProfile)
+  commentId: M:Meridian.Storage.Archival.CompressionProfileManager.RegisterProfile(Meridian.Storage.Archival.CompressionProfile)
+  id: RegisterProfile(Meridian.Storage.Archival.CompressionProfile)
+  parent: Meridian.Storage.Archival.CompressionProfileManager
+  langs:
+  - csharp
+  - vb
+  name: RegisterProfile(CompressionProfile)
+  nameWithType: CompressionProfileManager.RegisterProfile(CompressionProfile)
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.RegisterProfile(Meridian.Storage.Archival.CompressionProfile)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterProfile
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Register a custom compression profile.
+  example: []
+  syntax:
+    content: public void RegisterProfile(CompressionProfile profile)
+    parameters:
+    - id: profile
+      type: Meridian.Storage.Archival.CompressionProfile
+    content.vb: Public Sub RegisterProfile(profile As CompressionProfile)
+  overload: Meridian.Storage.Archival.CompressionProfileManager.RegisterProfile*
+- uid: Meridian.Storage.Archival.CompressionProfileManager.GetAllProfiles
+  commentId: M:Meridian.Storage.Archival.CompressionProfileManager.GetAllProfiles
+  id: GetAllProfiles
+  parent: Meridian.Storage.Archival.CompressionProfileManager
+  langs:
+  - csharp
+  - vb
+  name: GetAllProfiles()
+  nameWithType: CompressionProfileManager.GetAllProfiles()
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.GetAllProfiles()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllProfiles
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Get all available profiles.
+  example: []
+  syntax:
+    content: public IReadOnlyList<CompressionProfile> GetAllProfiles()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.CompressionProfile}
+    content.vb: Public Function GetAllProfiles() As IReadOnlyList(Of CompressionProfile)
+  overload: Meridian.Storage.Archival.CompressionProfileManager.GetAllProfiles*
+- uid: Meridian.Storage.Archival.CompressionProfileManager.CompressAsync(System.IO.Stream,System.IO.Stream,Meridian.Storage.Archival.CompressionProfile,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.CompressionProfileManager.CompressAsync(System.IO.Stream,System.IO.Stream,Meridian.Storage.Archival.CompressionProfile,System.Threading.CancellationToken)
+  id: CompressAsync(System.IO.Stream,System.IO.Stream,Meridian.Storage.Archival.CompressionProfile,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.CompressionProfileManager
+  langs:
+  - csharp
+  - vb
+  name: CompressAsync(Stream, Stream, CompressionProfile, CancellationToken)
+  nameWithType: CompressionProfileManager.CompressAsync(Stream, Stream, CompressionProfile, CancellationToken)
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.CompressAsync(System.IO.Stream, System.IO.Stream, Meridian.Storage.Archival.CompressionProfile, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressAsync
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Compress data using the specified profile.
+  example: []
+  syntax:
+    content: public Task<CompressionResult> CompressAsync(Stream input, Stream output, CompressionProfile profile, CancellationToken ct = default)
+    parameters:
+    - id: input
+      type: System.IO.Stream
+    - id: output
+      type: System.IO.Stream
+    - id: profile
+      type: Meridian.Storage.Archival.CompressionProfile
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Storage.Archival.CompressionResult}
+    content.vb: Public Function CompressAsync(input As Stream, output As Stream, profile As CompressionProfile, ct As CancellationToken = Nothing) As Task(Of CompressionResult)
+  overload: Meridian.Storage.Archival.CompressionProfileManager.CompressAsync*
+- uid: Meridian.Storage.Archival.CompressionProfileManager.DecompressAsync(System.IO.Stream,System.IO.Stream,Meridian.Storage.Archival.CompressionCodec,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.CompressionProfileManager.DecompressAsync(System.IO.Stream,System.IO.Stream,Meridian.Storage.Archival.CompressionCodec,System.Threading.CancellationToken)
+  id: DecompressAsync(System.IO.Stream,System.IO.Stream,Meridian.Storage.Archival.CompressionCodec,System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.CompressionProfileManager
+  langs:
+  - csharp
+  - vb
+  name: DecompressAsync(Stream, Stream, CompressionCodec, CancellationToken)
+  nameWithType: CompressionProfileManager.DecompressAsync(Stream, Stream, CompressionCodec, CancellationToken)
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.DecompressAsync(System.IO.Stream, System.IO.Stream, Meridian.Storage.Archival.CompressionCodec, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DecompressAsync
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Decompress data.
+  example: []
+  syntax:
+    content: public Task DecompressAsync(Stream input, Stream output, CompressionCodec codec, CancellationToken ct = default)
+    parameters:
+    - id: input
+      type: System.IO.Stream
+    - id: output
+      type: System.IO.Stream
+    - id: codec
+      type: Meridian.Storage.Archival.CompressionCodec
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function DecompressAsync(input As Stream, output As Stream, codec As CompressionCodec, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.Archival.CompressionProfileManager.DecompressAsync*
+- uid: Meridian.Storage.Archival.CompressionProfileManager.BenchmarkAsync(System.Byte[],System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.Archival.CompressionProfileManager.BenchmarkAsync(System.Byte[],System.Threading.CancellationToken)
+  id: BenchmarkAsync(System.Byte[],System.Threading.CancellationToken)
+  parent: Meridian.Storage.Archival.CompressionProfileManager
+  langs:
+  - csharp
+  - vb
+  name: BenchmarkAsync(byte[], CancellationToken)
+  nameWithType: CompressionProfileManager.BenchmarkAsync(byte[], CancellationToken)
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.BenchmarkAsync(byte[], System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BenchmarkAsync
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Benchmark compression profiles on sample data.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<CompressionBenchmarkResult>> BenchmarkAsync(byte[] sampleData, CancellationToken ct = default)
+    parameters:
+    - id: sampleData
+      type: System.Byte[]
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.CompressionBenchmarkResult}}
+    content.vb: Public Function BenchmarkAsync(sampleData As Byte(), ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CompressionBenchmarkResult))
+  overload: Meridian.Storage.Archival.CompressionProfileManager.BenchmarkAsync*
+  nameWithType.vb: CompressionProfileManager.BenchmarkAsync(Byte(), CancellationToken)
+  fullName.vb: Meridian.Storage.Archival.CompressionProfileManager.BenchmarkAsync(Byte(), System.Threading.CancellationToken)
+  name.vb: BenchmarkAsync(Byte(), CancellationToken)
+- uid: Meridian.Storage.Archival.CompressionProfileManager.GetBuiltInProfiles
+  commentId: M:Meridian.Storage.Archival.CompressionProfileManager.GetBuiltInProfiles
+  id: GetBuiltInProfiles
+  parent: Meridian.Storage.Archival.CompressionProfileManager
+  langs:
+  - csharp
+  - vb
+  name: GetBuiltInProfiles()
+  nameWithType: CompressionProfileManager.GetBuiltInProfiles()
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.GetBuiltInProfiles()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/CompressionProfileManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBuiltInProfiles
+    path: ../../src/Meridian.Storage/Archival/CompressionProfileManager.cs
+    startLine: 223
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Get built-in compression profiles.
+  example: []
+  syntax:
+    content: public static IReadOnlyList<CompressionProfile> GetBuiltInProfiles()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.CompressionProfile}
+    content.vb: Public Shared Function GetBuiltInProfiles() As IReadOnlyList(Of CompressionProfile)
+  overload: Meridian.Storage.Archival.CompressionProfileManager.GetBuiltInProfiles*
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Archival.CompressionProfileManager.#ctor*
+  commentId: Overload:Meridian.Storage.Archival.CompressionProfileManager.#ctor
+  href: Meridian.Storage.Archival.CompressionProfileManager.html#Meridian_Storage_Archival_CompressionProfileManager__ctor
+  name: CompressionProfileManager
+  nameWithType: CompressionProfileManager.CompressionProfileManager
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.CompressionProfileManager
+  nameWithType.vb: CompressionProfileManager.New
+  fullName.vb: Meridian.Storage.Archival.CompressionProfileManager.New
+  name.vb: New
+- uid: Meridian.Storage.Archival.CompressionProfileManager.GetProfileForContext*
+  commentId: Overload:Meridian.Storage.Archival.CompressionProfileManager.GetProfileForContext
+  href: Meridian.Storage.Archival.CompressionProfileManager.html#Meridian_Storage_Archival_CompressionProfileManager_GetProfileForContext_Meridian_Storage_Archival_CompressionContext_
+  name: GetProfileForContext
+  nameWithType: CompressionProfileManager.GetProfileForContext
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.GetProfileForContext
+- uid: Meridian.Storage.Archival.CompressionContext
+  commentId: T:Meridian.Storage.Archival.CompressionContext
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.CompressionContext.html
+  name: CompressionContext
+  nameWithType: CompressionContext
+  fullName: Meridian.Storage.Archival.CompressionContext
+- uid: Meridian.Storage.Archival.CompressionProfile
+  commentId: T:Meridian.Storage.Archival.CompressionProfile
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.CompressionProfile.html
+  name: CompressionProfile
+  nameWithType: CompressionProfile
+  fullName: Meridian.Storage.Archival.CompressionProfile
+- uid: Meridian.Storage.Archival.CompressionProfileManager.SetSymbolOverride*
+  commentId: Overload:Meridian.Storage.Archival.CompressionProfileManager.SetSymbolOverride
+  href: Meridian.Storage.Archival.CompressionProfileManager.html#Meridian_Storage_Archival_CompressionProfileManager_SetSymbolOverride_System_String_Meridian_Storage_Archival_CompressionProfile_
+  name: SetSymbolOverride
+  nameWithType: CompressionProfileManager.SetSymbolOverride
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.SetSymbolOverride
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Archival.CompressionProfileManager.RegisterProfile*
+  commentId: Overload:Meridian.Storage.Archival.CompressionProfileManager.RegisterProfile
+  href: Meridian.Storage.Archival.CompressionProfileManager.html#Meridian_Storage_Archival_CompressionProfileManager_RegisterProfile_Meridian_Storage_Archival_CompressionProfile_
+  name: RegisterProfile
+  nameWithType: CompressionProfileManager.RegisterProfile
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.RegisterProfile
+- uid: Meridian.Storage.Archival.CompressionProfileManager.GetAllProfiles*
+  commentId: Overload:Meridian.Storage.Archival.CompressionProfileManager.GetAllProfiles
+  href: Meridian.Storage.Archival.CompressionProfileManager.html#Meridian_Storage_Archival_CompressionProfileManager_GetAllProfiles
+  name: GetAllProfiles
+  nameWithType: CompressionProfileManager.GetAllProfiles
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.GetAllProfiles
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.CompressionProfile}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.CompressionProfile}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<CompressionProfile>
+  nameWithType: IReadOnlyList<CompressionProfile>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Archival.CompressionProfile>
+  nameWithType.vb: IReadOnlyList(Of CompressionProfile)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Archival.CompressionProfile)
+  name.vb: IReadOnlyList(Of CompressionProfile)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Archival.CompressionProfile
+    name: CompressionProfile
+    href: Meridian.Storage.Archival.CompressionProfile.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Archival.CompressionProfile
+    name: CompressionProfile
+    href: Meridian.Storage.Archival.CompressionProfile.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Archival.CompressionProfileManager.CompressAsync*
+  commentId: Overload:Meridian.Storage.Archival.CompressionProfileManager.CompressAsync
+  href: Meridian.Storage.Archival.CompressionProfileManager.html#Meridian_Storage_Archival_CompressionProfileManager_CompressAsync_System_IO_Stream_System_IO_Stream_Meridian_Storage_Archival_CompressionProfile_System_Threading_CancellationToken_
+  name: CompressAsync
+  nameWithType: CompressionProfileManager.CompressAsync
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.CompressAsync
+- uid: System.IO.Stream
+  commentId: T:System.IO.Stream
+  parent: System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.stream
+  name: Stream
+  nameWithType: Stream
+  fullName: System.IO.Stream
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Storage.Archival.CompressionResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Storage.Archival.CompressionResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CompressionResult>
+  nameWithType: Task<CompressionResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Storage.Archival.CompressionResult>
+  nameWithType.vb: Task(Of CompressionResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Storage.Archival.CompressionResult)
+  name.vb: Task(Of CompressionResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Storage.Archival.CompressionResult
+    name: CompressionResult
+    href: Meridian.Storage.Archival.CompressionResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Archival.CompressionResult
+    name: CompressionResult
+    href: Meridian.Storage.Archival.CompressionResult.html
+  - name: )
+- uid: System.IO
+  commentId: N:System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.IO
+  nameWithType: System.IO
+  fullName: System.IO
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.Archival.CompressionProfileManager.DecompressAsync*
+  commentId: Overload:Meridian.Storage.Archival.CompressionProfileManager.DecompressAsync
+  href: Meridian.Storage.Archival.CompressionProfileManager.html#Meridian_Storage_Archival_CompressionProfileManager_DecompressAsync_System_IO_Stream_System_IO_Stream_Meridian_Storage_Archival_CompressionCodec_System_Threading_CancellationToken_
+  name: DecompressAsync
+  nameWithType: CompressionProfileManager.DecompressAsync
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.DecompressAsync
+- uid: Meridian.Storage.Archival.CompressionCodec
+  commentId: T:Meridian.Storage.Archival.CompressionCodec
+  parent: Meridian.Storage.Archival
+  href: Meridian.Storage.Archival.CompressionCodec.html
+  name: CompressionCodec
+  nameWithType: CompressionCodec
+  fullName: Meridian.Storage.Archival.CompressionCodec
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Storage.Archival.CompressionProfileManager.BenchmarkAsync*
+  commentId: Overload:Meridian.Storage.Archival.CompressionProfileManager.BenchmarkAsync
+  href: Meridian.Storage.Archival.CompressionProfileManager.html#Meridian_Storage_Archival_CompressionProfileManager_BenchmarkAsync_System_Byte___System_Threading_CancellationToken_
+  name: BenchmarkAsync
+  nameWithType: CompressionProfileManager.BenchmarkAsync
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.BenchmarkAsync
+- uid: System.Byte[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte[]
+  nameWithType: byte[]
+  fullName: byte[]
+  nameWithType.vb: Byte()
+  fullName.vb: Byte()
+  name.vb: Byte()
+  spec.csharp:
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.CompressionBenchmarkResult}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Storage.Archival.CompressionBenchmarkResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CompressionBenchmarkResult>>
+  nameWithType: Task<IReadOnlyList<CompressionBenchmarkResult>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Storage.Archival.CompressionBenchmarkResult>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CompressionBenchmarkResult))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Archival.CompressionBenchmarkResult))
+  name.vb: Task(Of IReadOnlyList(Of CompressionBenchmarkResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Archival.CompressionBenchmarkResult
+    name: CompressionBenchmarkResult
+    href: Meridian.Storage.Archival.CompressionBenchmarkResult.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Archival.CompressionBenchmarkResult
+    name: CompressionBenchmarkResult
+    href: Meridian.Storage.Archival.CompressionBenchmarkResult.html
+  - name: )
+  - name: )
+- uid: Meridian.Storage.Archival.CompressionProfileManager.GetBuiltInProfiles*
+  commentId: Overload:Meridian.Storage.Archival.CompressionProfileManager.GetBuiltInProfiles
+  href: Meridian.Storage.Archival.CompressionProfileManager.html#Meridian_Storage_Archival_CompressionProfileManager_GetBuiltInProfiles
+  name: GetBuiltInProfiles
+  nameWithType: CompressionProfileManager.GetBuiltInProfiles
+  fullName: Meridian.Storage.Archival.CompressionProfileManager.GetBuiltInProfiles

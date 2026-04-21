@@ -1,0 +1,145 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Contracts
+  commentId: N:Meridian.Infrastructure.Contracts
+  id: Meridian.Infrastructure.Contracts
+  children:
+  - Meridian.Infrastructure.Contracts.AdrImplementation
+  - Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+  - Meridian.Infrastructure.Contracts.AttributeCredentialResolver
+  - Meridian.Infrastructure.Contracts.ContractVerificationExtensions
+  - Meridian.Infrastructure.Contracts.ContractVerificationHostedService
+  - Meridian.Infrastructure.Contracts.ContractVerificationService
+  - Meridian.Infrastructure.Contracts.ContractViolation
+  - Meridian.Infrastructure.Contracts.CredentialSchema
+  - Meridian.Infrastructure.Contracts.CredentialSchemaRegistry
+  - Meridian.Infrastructure.Contracts.DocumentedContractAttribute
+  - Meridian.Infrastructure.Contracts.ICredentialContext
+  - Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+  - Meridian.Infrastructure.Contracts.RequiresCredentialAttribute
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Contracts
+  nameWithType: Meridian.Infrastructure.Contracts
+  fullName: Meridian.Infrastructure.Contracts
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Contracts.ContractVerificationExtensions
+  commentId: T:Meridian.Infrastructure.Contracts.ContractVerificationExtensions
+  href: Meridian.Infrastructure.Contracts.ContractVerificationExtensions.html
+  name: ContractVerificationExtensions
+  nameWithType: ContractVerificationExtensions
+  fullName: Meridian.Infrastructure.Contracts.ContractVerificationExtensions
+- uid: Meridian.Infrastructure.Contracts.ContractVerificationHostedService
+  commentId: T:Meridian.Infrastructure.Contracts.ContractVerificationHostedService
+  href: Meridian.Infrastructure.Contracts.ContractVerificationHostedService.html
+  name: ContractVerificationHostedService
+  nameWithType: ContractVerificationHostedService
+  fullName: Meridian.Infrastructure.Contracts.ContractVerificationHostedService
+- uid: Meridian.Infrastructure.Contracts.ContractVerificationService
+  commentId: T:Meridian.Infrastructure.Contracts.ContractVerificationService
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.ContractVerificationService.html
+  name: ContractVerificationService
+  nameWithType: ContractVerificationService
+  fullName: Meridian.Infrastructure.Contracts.ContractVerificationService
+- uid: Meridian.Infrastructure.Contracts.ContractViolation
+  commentId: T:Meridian.Infrastructure.Contracts.ContractViolation
+  href: Meridian.Infrastructure.Contracts.ContractViolation.html
+  name: ContractViolation
+  nameWithType: ContractViolation
+  fullName: Meridian.Infrastructure.Contracts.ContractViolation
+- uid: Meridian.Infrastructure.Contracts.AttributeCredentialResolver
+  commentId: T:Meridian.Infrastructure.Contracts.AttributeCredentialResolver
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.AttributeCredentialResolver.html
+  name: AttributeCredentialResolver
+  nameWithType: AttributeCredentialResolver
+  fullName: Meridian.Infrastructure.Contracts.AttributeCredentialResolver
+- uid: Meridian.Infrastructure.Contracts.CredentialSchemaRegistry
+  commentId: T:Meridian.Infrastructure.Contracts.CredentialSchemaRegistry
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.CredentialSchemaRegistry.html
+  name: CredentialSchemaRegistry
+  nameWithType: CredentialSchemaRegistry
+  fullName: Meridian.Infrastructure.Contracts.CredentialSchemaRegistry
+- uid: Meridian.Infrastructure.Contracts.CredentialSchema
+  commentId: T:Meridian.Infrastructure.Contracts.CredentialSchema
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.CredentialSchema.html
+  name: CredentialSchema
+  nameWithType: CredentialSchema
+  fullName: Meridian.Infrastructure.Contracts.CredentialSchema
+- uid: Meridian.Infrastructure.Contracts.ICredentialContext
+  commentId: T:Meridian.Infrastructure.Contracts.ICredentialContext
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.ICredentialContext.html
+  name: ICredentialContext
+  nameWithType: ICredentialContext
+  fullName: Meridian.Infrastructure.Contracts.ICredentialContext
+- uid: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+  commentId: T:Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.html
+  name: ImplementsAdrAttribute
+  nameWithType: ImplementsAdrAttribute
+  fullName: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+- uid: Meridian.Infrastructure.Contracts.DocumentedContractAttribute
+  commentId: T:Meridian.Infrastructure.Contracts.DocumentedContractAttribute
+  href: Meridian.Infrastructure.Contracts.DocumentedContractAttribute.html
+  name: DocumentedContractAttribute
+  nameWithType: DocumentedContractAttribute
+  fullName: Meridian.Infrastructure.Contracts.DocumentedContractAttribute
+- uid: Meridian.Infrastructure.Contracts.AdrImplementation
+  commentId: T:Meridian.Infrastructure.Contracts.AdrImplementation
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.AdrImplementation.html
+  name: AdrImplementation
+  nameWithType: AdrImplementation
+  fullName: Meridian.Infrastructure.Contracts.AdrImplementation
+- uid: Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+  commentId: T:Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+  href: Meridian.Infrastructure.Contracts.AdrVerificationExtensions.html
+  name: AdrVerificationExtensions
+  nameWithType: AdrVerificationExtensions
+  fullName: Meridian.Infrastructure.Contracts.AdrVerificationExtensions
+- uid: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute
+  commentId: T:Meridian.Infrastructure.Contracts.RequiresCredentialAttribute
+  parent: Meridian.Infrastructure.Contracts
+  href: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute.html
+  name: RequiresCredentialAttribute
+  nameWithType: RequiresCredentialAttribute
+  fullName: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute
+- uid: Meridian.Infrastructure.Contracts
+  commentId: N:Meridian.Infrastructure.Contracts
+  href: Meridian.html
+  name: Meridian.Infrastructure.Contracts
+  nameWithType: Meridian.Infrastructure.Contracts
+  fullName: Meridian.Infrastructure.Contracts
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Contracts
+    name: Contracts
+    href: Meridian.Infrastructure.Contracts.html

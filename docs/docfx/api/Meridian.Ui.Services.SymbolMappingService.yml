@@ -1,0 +1,1360 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SymbolMappingService
+  commentId: T:Meridian.Ui.Services.SymbolMappingService
+  id: SymbolMappingService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SymbolMappingService.AddOrUpdateMappingAsync(Meridian.Ui.Services.SymbolMapping,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolMappingService.ApplyDefaultTransform(System.String,System.String)
+  - Meridian.Ui.Services.SymbolMappingService.ApplyReverseTransform(System.String,System.String)
+  - Meridian.Ui.Services.SymbolMappingService.EnsureProviderEntries(Meridian.Ui.Services.SymbolMapping)
+  - Meridian.Ui.Services.SymbolMappingService.ExportToCsv
+  - Meridian.Ui.Services.SymbolMappingService.GetMapping(System.String)
+  - Meridian.Ui.Services.SymbolMappingService.GetMappings
+  - Meridian.Ui.Services.SymbolMappingService.ImportFromCsvAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolMappingService.Instance
+  - Meridian.Ui.Services.SymbolMappingService.KnownProviders
+  - Meridian.Ui.Services.SymbolMappingService.LoadAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolMappingService.MapToCanonical(System.String,System.String)
+  - Meridian.Ui.Services.SymbolMappingService.MapToProvider(System.String,System.String)
+  - Meridian.Ui.Services.SymbolMappingService.MappingsChanged
+  - Meridian.Ui.Services.SymbolMappingService.RemoveMappingAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolMappingService.SaveAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SymbolMappingService.TestMapping(System.String)
+  langs:
+  - csharp
+  - vb
+  name: SymbolMappingService
+  nameWithType: SymbolMappingService
+  fullName: Meridian.Ui.Services.SymbolMappingService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolMappingService
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for managing provider-specific symbol mappings.
+
+    Handles symbol translation between canonical format and provider-specific formats.
+  example: []
+  syntax:
+    content: public sealed class SymbolMappingService
+    content.vb: Public NotInheritable Class SymbolMappingService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SymbolMappingService.Instance
+  commentId: P:Meridian.Ui.Services.SymbolMappingService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: SymbolMappingService.Instance
+  fullName: Meridian.Ui.Services.SymbolMappingService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static SymbolMappingService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.SymbolMappingService
+    content.vb: Public Shared ReadOnly Property Instance As SymbolMappingService
+  overload: Meridian.Ui.Services.SymbolMappingService.Instance*
+- uid: Meridian.Ui.Services.SymbolMappingService.KnownProviders
+  commentId: F:Meridian.Ui.Services.SymbolMappingService.KnownProviders
+  id: KnownProviders
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: KnownProviders
+  nameWithType: SymbolMappingService.KnownProviders
+  fullName: Meridian.Ui.Services.SymbolMappingService.KnownProviders
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: KnownProviders
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Known data providers with their display names and default transformations.
+  example: []
+  syntax:
+    content: public static readonly IReadOnlyList<MappingProviderInfo> KnownProviders
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.MappingProviderInfo}
+    content.vb: Public Shared ReadOnly KnownProviders As IReadOnlyList(Of MappingProviderInfo)
+- uid: Meridian.Ui.Services.SymbolMappingService.MappingsChanged
+  commentId: E:Meridian.Ui.Services.SymbolMappingService.MappingsChanged
+  id: MappingsChanged
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: MappingsChanged
+  nameWithType: SymbolMappingService.MappingsChanged
+  fullName: Meridian.Ui.Services.SymbolMappingService.MappingsChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MappingsChanged
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public event EventHandler? MappingsChanged
+    return:
+      type: System.EventHandler
+    content.vb: Public Event MappingsChanged As EventHandler
+- uid: Meridian.Ui.Services.SymbolMappingService.LoadAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.LoadAsync(System.Threading.CancellationToken)
+  id: LoadAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: LoadAsync(CancellationToken)
+  nameWithType: SymbolMappingService.LoadAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolMappingService.LoadAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Loads symbol mappings from disk.
+  example: []
+  syntax:
+    content: public Task LoadAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LoadAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.SymbolMappingService.LoadAsync*
+- uid: Meridian.Ui.Services.SymbolMappingService.SaveAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.SaveAsync(System.Threading.CancellationToken)
+  id: SaveAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: SaveAsync(CancellationToken)
+  nameWithType: SymbolMappingService.SaveAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolMappingService.SaveAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Saves symbol mappings to disk.
+  example: []
+  syntax:
+    content: public Task SaveAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SaveAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.SymbolMappingService.SaveAsync*
+- uid: Meridian.Ui.Services.SymbolMappingService.GetMappings
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.GetMappings
+  id: GetMappings
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: GetMappings()
+  nameWithType: SymbolMappingService.GetMappings()
+  fullName: Meridian.Ui.Services.SymbolMappingService.GetMappings()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMappings
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets all symbol mappings.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SymbolMapping> GetMappings()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.SymbolMapping}
+    content.vb: Public Function GetMappings() As IReadOnlyList(Of SymbolMapping)
+  overload: Meridian.Ui.Services.SymbolMappingService.GetMappings*
+- uid: Meridian.Ui.Services.SymbolMappingService.GetMapping(System.String)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.GetMapping(System.String)
+  id: GetMapping(System.String)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: GetMapping(string)
+  nameWithType: SymbolMappingService.GetMapping(string)
+  fullName: Meridian.Ui.Services.SymbolMappingService.GetMapping(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMapping
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets a specific symbol mapping by canonical symbol.
+  example: []
+  syntax:
+    content: public SymbolMapping? GetMapping(string canonicalSymbol)
+    parameters:
+    - id: canonicalSymbol
+      type: System.String
+    return:
+      type: Meridian.Ui.Services.SymbolMapping
+    content.vb: Public Function GetMapping(canonicalSymbol As String) As SymbolMapping
+  overload: Meridian.Ui.Services.SymbolMappingService.GetMapping*
+  nameWithType.vb: SymbolMappingService.GetMapping(String)
+  fullName.vb: Meridian.Ui.Services.SymbolMappingService.GetMapping(String)
+  name.vb: GetMapping(String)
+- uid: Meridian.Ui.Services.SymbolMappingService.AddOrUpdateMappingAsync(Meridian.Ui.Services.SymbolMapping,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.AddOrUpdateMappingAsync(Meridian.Ui.Services.SymbolMapping,System.Threading.CancellationToken)
+  id: AddOrUpdateMappingAsync(Meridian.Ui.Services.SymbolMapping,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: AddOrUpdateMappingAsync(SymbolMapping, CancellationToken)
+  nameWithType: SymbolMappingService.AddOrUpdateMappingAsync(SymbolMapping, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolMappingService.AddOrUpdateMappingAsync(Meridian.Ui.Services.SymbolMapping, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AddOrUpdateMappingAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Adds or updates a symbol mapping.
+  example: []
+  syntax:
+    content: public Task AddOrUpdateMappingAsync(SymbolMapping mapping, CancellationToken ct = default)
+    parameters:
+    - id: mapping
+      type: Meridian.Ui.Services.SymbolMapping
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function AddOrUpdateMappingAsync(mapping As SymbolMapping, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.SymbolMappingService.AddOrUpdateMappingAsync*
+- uid: Meridian.Ui.Services.SymbolMappingService.RemoveMappingAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.RemoveMappingAsync(System.String,System.Threading.CancellationToken)
+  id: RemoveMappingAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: RemoveMappingAsync(string, CancellationToken)
+  nameWithType: SymbolMappingService.RemoveMappingAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolMappingService.RemoveMappingAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RemoveMappingAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Removes a symbol mapping.
+  example: []
+  syntax:
+    content: public Task RemoveMappingAsync(string canonicalSymbol, CancellationToken ct = default)
+    parameters:
+    - id: canonicalSymbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RemoveMappingAsync(canonicalSymbol As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.SymbolMappingService.RemoveMappingAsync*
+  nameWithType.vb: SymbolMappingService.RemoveMappingAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolMappingService.RemoveMappingAsync(String, System.Threading.CancellationToken)
+  name.vb: RemoveMappingAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolMappingService.MapToProvider(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.MapToProvider(System.String,System.String)
+  id: MapToProvider(System.String,System.String)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: MapToProvider(string, string)
+  nameWithType: SymbolMappingService.MapToProvider(string, string)
+  fullName: Meridian.Ui.Services.SymbolMappingService.MapToProvider(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MapToProvider
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Maps a canonical symbol to a provider-specific format.
+  example: []
+  syntax:
+    content: public string MapToProvider(string canonicalSymbol, string providerId)
+    parameters:
+    - id: canonicalSymbol
+      type: System.String
+    - id: providerId
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Function MapToProvider(canonicalSymbol As String, providerId As String) As String
+  overload: Meridian.Ui.Services.SymbolMappingService.MapToProvider*
+  nameWithType.vb: SymbolMappingService.MapToProvider(String, String)
+  fullName.vb: Meridian.Ui.Services.SymbolMappingService.MapToProvider(String, String)
+  name.vb: MapToProvider(String, String)
+- uid: Meridian.Ui.Services.SymbolMappingService.MapToCanonical(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.MapToCanonical(System.String,System.String)
+  id: MapToCanonical(System.String,System.String)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: MapToCanonical(string, string)
+  nameWithType: SymbolMappingService.MapToCanonical(string, string)
+  fullName: Meridian.Ui.Services.SymbolMappingService.MapToCanonical(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MapToCanonical
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Maps a provider-specific symbol back to canonical format.
+  example: []
+  syntax:
+    content: public string MapToCanonical(string providerSymbol, string providerId)
+    parameters:
+    - id: providerSymbol
+      type: System.String
+    - id: providerId
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Function MapToCanonical(providerSymbol As String, providerId As String) As String
+  overload: Meridian.Ui.Services.SymbolMappingService.MapToCanonical*
+  nameWithType.vb: SymbolMappingService.MapToCanonical(String, String)
+  fullName.vb: Meridian.Ui.Services.SymbolMappingService.MapToCanonical(String, String)
+  name.vb: MapToCanonical(String, String)
+- uid: Meridian.Ui.Services.SymbolMappingService.ApplyDefaultTransform(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.ApplyDefaultTransform(System.String,System.String)
+  id: ApplyDefaultTransform(System.String,System.String)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: ApplyDefaultTransform(string, string)
+  nameWithType: SymbolMappingService.ApplyDefaultTransform(string, string)
+  fullName: Meridian.Ui.Services.SymbolMappingService.ApplyDefaultTransform(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyDefaultTransform
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 218
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Applies the default transformation for a provider.
+  example: []
+  syntax:
+    content: public static string ApplyDefaultTransform(string symbol, string providerId)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: providerId
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function ApplyDefaultTransform(symbol As String, providerId As String) As String
+  overload: Meridian.Ui.Services.SymbolMappingService.ApplyDefaultTransform*
+  nameWithType.vb: SymbolMappingService.ApplyDefaultTransform(String, String)
+  fullName.vb: Meridian.Ui.Services.SymbolMappingService.ApplyDefaultTransform(String, String)
+  name.vb: ApplyDefaultTransform(String, String)
+- uid: Meridian.Ui.Services.SymbolMappingService.ApplyReverseTransform(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.ApplyReverseTransform(System.String,System.String)
+  id: ApplyReverseTransform(System.String,System.String)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: ApplyReverseTransform(string, string)
+  nameWithType: SymbolMappingService.ApplyReverseTransform(string, string)
+  fullName: Meridian.Ui.Services.SymbolMappingService.ApplyReverseTransform(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyReverseTransform
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 242
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Applies the reverse transformation to get canonical symbol.
+  example: []
+  syntax:
+    content: public static string ApplyReverseTransform(string providerSymbol, string providerId)
+    parameters:
+    - id: providerSymbol
+      type: System.String
+    - id: providerId
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Shared Function ApplyReverseTransform(providerSymbol As String, providerId As String) As String
+  overload: Meridian.Ui.Services.SymbolMappingService.ApplyReverseTransform*
+  nameWithType.vb: SymbolMappingService.ApplyReverseTransform(String, String)
+  fullName.vb: Meridian.Ui.Services.SymbolMappingService.ApplyReverseTransform(String, String)
+  name.vb: ApplyReverseTransform(String, String)
+- uid: Meridian.Ui.Services.SymbolMappingService.TestMapping(System.String)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.TestMapping(System.String)
+  id: TestMapping(System.String)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: TestMapping(string)
+  nameWithType: SymbolMappingService.TestMapping(string)
+  fullName: Meridian.Ui.Services.SymbolMappingService.TestMapping(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestMapping
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Tests symbol mapping across all providers.
+  example: []
+  syntax:
+    content: public Dictionary<string, string> TestMapping(string canonicalSymbol)
+    parameters:
+    - id: canonicalSymbol
+      type: System.String
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Public Function TestMapping(canonicalSymbol As String) As Dictionary(Of String, String)
+  overload: Meridian.Ui.Services.SymbolMappingService.TestMapping*
+  nameWithType.vb: SymbolMappingService.TestMapping(String)
+  fullName.vb: Meridian.Ui.Services.SymbolMappingService.TestMapping(String)
+  name.vb: TestMapping(String)
+- uid: Meridian.Ui.Services.SymbolMappingService.ImportFromCsvAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.ImportFromCsvAsync(System.String,System.Threading.CancellationToken)
+  id: ImportFromCsvAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: ImportFromCsvAsync(string, CancellationToken)
+  nameWithType: SymbolMappingService.ImportFromCsvAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.SymbolMappingService.ImportFromCsvAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportFromCsvAsync
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Imports mappings from CSV.
+  example: []
+  syntax:
+    content: public Task<int> ImportFromCsvAsync(string csvContent, CancellationToken ct = default)
+    parameters:
+    - id: csvContent
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Int32}
+    content.vb: Public Function ImportFromCsvAsync(csvContent As String, ct As CancellationToken = Nothing) As Task(Of Integer)
+  overload: Meridian.Ui.Services.SymbolMappingService.ImportFromCsvAsync*
+  nameWithType.vb: SymbolMappingService.ImportFromCsvAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SymbolMappingService.ImportFromCsvAsync(String, System.Threading.CancellationToken)
+  name.vb: ImportFromCsvAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.SymbolMappingService.ExportToCsv
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.ExportToCsv
+  id: ExportToCsv
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: ExportToCsv()
+  nameWithType: SymbolMappingService.ExportToCsv()
+  fullName: Meridian.Ui.Services.SymbolMappingService.ExportToCsv()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportToCsv
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Exports mappings to CSV format.
+  example: []
+  syntax:
+    content: public string ExportToCsv()
+    return:
+      type: System.String
+    content.vb: Public Function ExportToCsv() As String
+  overload: Meridian.Ui.Services.SymbolMappingService.ExportToCsv*
+- uid: Meridian.Ui.Services.SymbolMappingService.EnsureProviderEntries(Meridian.Ui.Services.SymbolMapping)
+  commentId: M:Meridian.Ui.Services.SymbolMappingService.EnsureProviderEntries(Meridian.Ui.Services.SymbolMapping)
+  id: EnsureProviderEntries(Meridian.Ui.Services.SymbolMapping)
+  parent: Meridian.Ui.Services.SymbolMappingService
+  langs:
+  - csharp
+  - vb
+  name: EnsureProviderEntries(SymbolMapping)
+  nameWithType: SymbolMappingService.EnsureProviderEntries(SymbolMapping)
+  fullName: Meridian.Ui.Services.SymbolMappingService.EnsureProviderEntries(Meridian.Ui.Services.SymbolMapping)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnsureProviderEntries
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 398
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets or creates provider symbol entries for a mapping.
+  example: []
+  syntax:
+    content: public SymbolMapping EnsureProviderEntries(SymbolMapping mapping)
+    parameters:
+    - id: mapping
+      type: Meridian.Ui.Services.SymbolMapping
+    return:
+      type: Meridian.Ui.Services.SymbolMapping
+    content.vb: Public Function EnsureProviderEntries(mapping As SymbolMapping) As SymbolMapping
+  overload: Meridian.Ui.Services.SymbolMappingService.EnsureProviderEntries*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SymbolMappingService.Instance*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.Instance
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_Instance
+  name: Instance
+  nameWithType: SymbolMappingService.Instance
+  fullName: Meridian.Ui.Services.SymbolMappingService.Instance
+- uid: Meridian.Ui.Services.SymbolMappingService
+  commentId: T:Meridian.Ui.Services.SymbolMappingService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SymbolMappingService.html
+  name: SymbolMappingService
+  nameWithType: SymbolMappingService
+  fullName: Meridian.Ui.Services.SymbolMappingService
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.MappingProviderInfo}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.MappingProviderInfo}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<MappingProviderInfo>
+  nameWithType: IReadOnlyList<MappingProviderInfo>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.MappingProviderInfo>
+  nameWithType.vb: IReadOnlyList(Of MappingProviderInfo)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.MappingProviderInfo)
+  name.vb: IReadOnlyList(Of MappingProviderInfo)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.MappingProviderInfo
+    name: MappingProviderInfo
+    href: Meridian.Ui.Services.MappingProviderInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.MappingProviderInfo
+    name: MappingProviderInfo
+    href: Meridian.Ui.Services.MappingProviderInfo.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler
+- uid: Meridian.Ui.Services.SymbolMappingService.LoadAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.LoadAsync
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_LoadAsync_System_Threading_CancellationToken_
+  name: LoadAsync
+  nameWithType: SymbolMappingService.LoadAsync
+  fullName: Meridian.Ui.Services.SymbolMappingService.LoadAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.SymbolMappingService.SaveAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.SaveAsync
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_SaveAsync_System_Threading_CancellationToken_
+  name: SaveAsync
+  nameWithType: SymbolMappingService.SaveAsync
+  fullName: Meridian.Ui.Services.SymbolMappingService.SaveAsync
+- uid: Meridian.Ui.Services.SymbolMappingService.GetMappings*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.GetMappings
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_GetMappings
+  name: GetMappings
+  nameWithType: SymbolMappingService.GetMappings
+  fullName: Meridian.Ui.Services.SymbolMappingService.GetMappings
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.SymbolMapping}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.SymbolMapping}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SymbolMapping>
+  nameWithType: IReadOnlyList<SymbolMapping>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.SymbolMapping>
+  nameWithType.vb: IReadOnlyList(Of SymbolMapping)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.SymbolMapping)
+  name.vb: IReadOnlyList(Of SymbolMapping)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.SymbolMapping
+    name: SymbolMapping
+    href: Meridian.Ui.Services.SymbolMapping.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SymbolMapping
+    name: SymbolMapping
+    href: Meridian.Ui.Services.SymbolMapping.html
+  - name: )
+- uid: Meridian.Ui.Services.SymbolMappingService.GetMapping*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.GetMapping
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_GetMapping_System_String_
+  name: GetMapping
+  nameWithType: SymbolMappingService.GetMapping
+  fullName: Meridian.Ui.Services.SymbolMappingService.GetMapping
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SymbolMapping
+  commentId: T:Meridian.Ui.Services.SymbolMapping
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SymbolMapping.html
+  name: SymbolMapping
+  nameWithType: SymbolMapping
+  fullName: Meridian.Ui.Services.SymbolMapping
+- uid: Meridian.Ui.Services.SymbolMappingService.AddOrUpdateMappingAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.AddOrUpdateMappingAsync
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_AddOrUpdateMappingAsync_Meridian_Ui_Services_SymbolMapping_System_Threading_CancellationToken_
+  name: AddOrUpdateMappingAsync
+  nameWithType: SymbolMappingService.AddOrUpdateMappingAsync
+  fullName: Meridian.Ui.Services.SymbolMappingService.AddOrUpdateMappingAsync
+- uid: Meridian.Ui.Services.SymbolMappingService.RemoveMappingAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.RemoveMappingAsync
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_RemoveMappingAsync_System_String_System_Threading_CancellationToken_
+  name: RemoveMappingAsync
+  nameWithType: SymbolMappingService.RemoveMappingAsync
+  fullName: Meridian.Ui.Services.SymbolMappingService.RemoveMappingAsync
+- uid: Meridian.Ui.Services.SymbolMappingService.MapToProvider*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.MapToProvider
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_MapToProvider_System_String_System_String_
+  name: MapToProvider
+  nameWithType: SymbolMappingService.MapToProvider
+  fullName: Meridian.Ui.Services.SymbolMappingService.MapToProvider
+- uid: Meridian.Ui.Services.SymbolMappingService.MapToCanonical*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.MapToCanonical
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_MapToCanonical_System_String_System_String_
+  name: MapToCanonical
+  nameWithType: SymbolMappingService.MapToCanonical
+  fullName: Meridian.Ui.Services.SymbolMappingService.MapToCanonical
+- uid: Meridian.Ui.Services.SymbolMappingService.ApplyDefaultTransform*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.ApplyDefaultTransform
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_ApplyDefaultTransform_System_String_System_String_
+  name: ApplyDefaultTransform
+  nameWithType: SymbolMappingService.ApplyDefaultTransform
+  fullName: Meridian.Ui.Services.SymbolMappingService.ApplyDefaultTransform
+- uid: Meridian.Ui.Services.SymbolMappingService.ApplyReverseTransform*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.ApplyReverseTransform
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_ApplyReverseTransform_System_String_System_String_
+  name: ApplyReverseTransform
+  nameWithType: SymbolMappingService.ApplyReverseTransform
+  fullName: Meridian.Ui.Services.SymbolMappingService.ApplyReverseTransform
+- uid: Meridian.Ui.Services.SymbolMappingService.TestMapping*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.TestMapping
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_TestMapping_System_String_
+  name: TestMapping
+  nameWithType: SymbolMappingService.TestMapping
+  fullName: Meridian.Ui.Services.SymbolMappingService.TestMapping
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Ui.Services.SymbolMappingService.ImportFromCsvAsync*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.ImportFromCsvAsync
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_ImportFromCsvAsync_System_String_System_Threading_CancellationToken_
+  name: ImportFromCsvAsync
+  nameWithType: SymbolMappingService.ImportFromCsvAsync
+  fullName: Meridian.Ui.Services.SymbolMappingService.ImportFromCsvAsync
+- uid: System.Threading.Tasks.Task{System.Int32}
+  commentId: T:System.Threading.Tasks.Task{System.Int32}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<int>
+  nameWithType: Task<int>
+  fullName: System.Threading.Tasks.Task<int>
+  nameWithType.vb: Task(Of Integer)
+  fullName.vb: System.Threading.Tasks.Task(Of Integer)
+  name.vb: Task(Of Integer)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Ui.Services.SymbolMappingService.ExportToCsv*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.ExportToCsv
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_ExportToCsv
+  name: ExportToCsv
+  nameWithType: SymbolMappingService.ExportToCsv
+  fullName: Meridian.Ui.Services.SymbolMappingService.ExportToCsv
+- uid: Meridian.Ui.Services.SymbolMappingService.EnsureProviderEntries*
+  commentId: Overload:Meridian.Ui.Services.SymbolMappingService.EnsureProviderEntries
+  href: Meridian.Ui.Services.SymbolMappingService.html#Meridian_Ui_Services_SymbolMappingService_EnsureProviderEntries_Meridian_Ui_Services_SymbolMapping_
+  name: EnsureProviderEntries
+  nameWithType: SymbolMappingService.EnsureProviderEntries
+  fullName: Meridian.Ui.Services.SymbolMappingService.EnsureProviderEntries

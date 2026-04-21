@@ -1,0 +1,761 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.MultiCurrency.FxRate
+  commentId: T:Meridian.Execution.MultiCurrency.FxRate
+  id: FxRate
+  parent: Meridian.Execution.MultiCurrency
+  children:
+  - Meridian.Execution.MultiCurrency.FxRate.#ctor(System.String,System.String,System.Decimal,System.DateTimeOffset)
+  - Meridian.Execution.MultiCurrency.FxRate.AsOf
+  - Meridian.Execution.MultiCurrency.FxRate.BaseCurrency
+  - Meridian.Execution.MultiCurrency.FxRate.Convert(System.Decimal)
+  - Meridian.Execution.MultiCurrency.FxRate.ConvertInverse(System.Decimal)
+  - Meridian.Execution.MultiCurrency.FxRate.Inverse
+  - Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency
+  - Meridian.Execution.MultiCurrency.FxRate.Rate
+  - Meridian.Execution.MultiCurrency.FxRate.ToString
+  langs:
+  - csharp
+  - vb
+  name: FxRate
+  nameWithType: FxRate
+  fullName: Meridian.Execution.MultiCurrency.FxRate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FxRate
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: An exchange rate between two currencies at a specific point in time.
+  example: []
+  syntax:
+    content: 'public sealed record FxRate : IEquatable<FxRate>'
+    content.vb: Public NotInheritable Class FxRate Implements IEquatable(Of FxRate)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.MultiCurrency.FxRate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Execution.MultiCurrency.FxRate.#ctor(System.String,System.String,System.Decimal,System.DateTimeOffset)
+  commentId: M:Meridian.Execution.MultiCurrency.FxRate.#ctor(System.String,System.String,System.Decimal,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.Decimal,System.DateTimeOffset)'
+  parent: Meridian.Execution.MultiCurrency.FxRate
+  langs:
+  - csharp
+  - vb
+  name: FxRate(string, string, decimal, DateTimeOffset)
+  nameWithType: FxRate.FxRate(string, string, decimal, DateTimeOffset)
+  fullName: Meridian.Execution.MultiCurrency.FxRate.FxRate(string, string, decimal, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: An exchange rate between two currencies at a specific point in time.
+  example: []
+  syntax:
+    content: public FxRate(string BaseCurrency, string QuoteCurrency, decimal Rate, DateTimeOffset AsOf)
+    parameters:
+    - id: BaseCurrency
+      type: System.String
+      description: The currency being priced (e.g., "EUR").
+    - id: QuoteCurrency
+      type: System.String
+      description: The pricing currency (e.g., "USD").
+    - id: Rate
+      type: System.Decimal
+      description: Units of <xref href="Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency" data-throw-if-not-resolved="false"></xref> per one unit of <xref href="Meridian.Execution.MultiCurrency.FxRate.BaseCurrency" data-throw-if-not-resolved="false"></xref>.
+    - id: AsOf
+      type: System.DateTimeOffset
+      description: Timestamp at which this rate is valid.
+    content.vb: Public Sub New(BaseCurrency As String, QuoteCurrency As String, Rate As Decimal, AsOf As DateTimeOffset)
+  overload: Meridian.Execution.MultiCurrency.FxRate.#ctor*
+  nameWithType.vb: FxRate.New(String, String, Decimal, DateTimeOffset)
+  fullName.vb: Meridian.Execution.MultiCurrency.FxRate.New(String, String, Decimal, System.DateTimeOffset)
+  name.vb: New(String, String, Decimal, DateTimeOffset)
+- uid: Meridian.Execution.MultiCurrency.FxRate.BaseCurrency
+  commentId: P:Meridian.Execution.MultiCurrency.FxRate.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Execution.MultiCurrency.FxRate
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: FxRate.BaseCurrency
+  fullName: Meridian.Execution.MultiCurrency.FxRate.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: The currency being priced (e.g., "EUR").
+  example: []
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Execution.MultiCurrency.FxRate.BaseCurrency*
+- uid: Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency
+  commentId: P:Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency
+  id: QuoteCurrency
+  parent: Meridian.Execution.MultiCurrency.FxRate
+  langs:
+  - csharp
+  - vb
+  name: QuoteCurrency
+  nameWithType: FxRate.QuoteCurrency
+  fullName: Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuoteCurrency
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: The pricing currency (e.g., "USD").
+  example: []
+  syntax:
+    content: public string QuoteCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property QuoteCurrency As String
+  overload: Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency*
+- uid: Meridian.Execution.MultiCurrency.FxRate.Rate
+  commentId: P:Meridian.Execution.MultiCurrency.FxRate.Rate
+  id: Rate
+  parent: Meridian.Execution.MultiCurrency.FxRate
+  langs:
+  - csharp
+  - vb
+  name: Rate
+  nameWithType: FxRate.Rate
+  fullName: Meridian.Execution.MultiCurrency.FxRate.Rate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rate
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Units of <xref href="Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency" data-throw-if-not-resolved="false"></xref> per one unit of <xref href="Meridian.Execution.MultiCurrency.FxRate.BaseCurrency" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public decimal Rate { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Rate As Decimal
+  overload: Meridian.Execution.MultiCurrency.FxRate.Rate*
+- uid: Meridian.Execution.MultiCurrency.FxRate.AsOf
+  commentId: P:Meridian.Execution.MultiCurrency.FxRate.AsOf
+  id: AsOf
+  parent: Meridian.Execution.MultiCurrency.FxRate
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: FxRate.AsOf
+  fullName: Meridian.Execution.MultiCurrency.FxRate.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Timestamp at which this rate is valid.
+  example: []
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Execution.MultiCurrency.FxRate.AsOf*
+- uid: Meridian.Execution.MultiCurrency.FxRate.Convert(System.Decimal)
+  commentId: M:Meridian.Execution.MultiCurrency.FxRate.Convert(System.Decimal)
+  id: Convert(System.Decimal)
+  parent: Meridian.Execution.MultiCurrency.FxRate
+  langs:
+  - csharp
+  - vb
+  name: Convert(decimal)
+  nameWithType: FxRate.Convert(decimal)
+  fullName: Meridian.Execution.MultiCurrency.FxRate.Convert(decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Convert
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Converts an amount expressed in <xref href="Meridian.Execution.MultiCurrency.FxRate.BaseCurrency" data-throw-if-not-resolved="false"></xref> to <xref href="Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public decimal Convert(decimal amount)
+    parameters:
+    - id: amount
+      type: System.Decimal
+    return:
+      type: System.Decimal
+    content.vb: Public Function Convert(amount As Decimal) As Decimal
+  overload: Meridian.Execution.MultiCurrency.FxRate.Convert*
+  nameWithType.vb: FxRate.Convert(Decimal)
+  fullName.vb: Meridian.Execution.MultiCurrency.FxRate.Convert(Decimal)
+  name.vb: Convert(Decimal)
+- uid: Meridian.Execution.MultiCurrency.FxRate.ConvertInverse(System.Decimal)
+  commentId: M:Meridian.Execution.MultiCurrency.FxRate.ConvertInverse(System.Decimal)
+  id: ConvertInverse(System.Decimal)
+  parent: Meridian.Execution.MultiCurrency.FxRate
+  langs:
+  - csharp
+  - vb
+  name: ConvertInverse(decimal)
+  nameWithType: FxRate.ConvertInverse(decimal)
+  fullName: Meridian.Execution.MultiCurrency.FxRate.ConvertInverse(decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConvertInverse
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Converts an amount expressed in <xref href="Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency" data-throw-if-not-resolved="false"></xref> back to <xref href="Meridian.Execution.MultiCurrency.FxRate.BaseCurrency" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public decimal ConvertInverse(decimal amount)
+    parameters:
+    - id: amount
+      type: System.Decimal
+    return:
+      type: System.Decimal
+    content.vb: Public Function ConvertInverse(amount As Decimal) As Decimal
+  overload: Meridian.Execution.MultiCurrency.FxRate.ConvertInverse*
+  nameWithType.vb: FxRate.ConvertInverse(Decimal)
+  fullName.vb: Meridian.Execution.MultiCurrency.FxRate.ConvertInverse(Decimal)
+  name.vb: ConvertInverse(Decimal)
+- uid: Meridian.Execution.MultiCurrency.FxRate.Inverse
+  commentId: M:Meridian.Execution.MultiCurrency.FxRate.Inverse
+  id: Inverse
+  parent: Meridian.Execution.MultiCurrency.FxRate
+  langs:
+  - csharp
+  - vb
+  name: Inverse()
+  nameWithType: FxRate.Inverse()
+  fullName: Meridian.Execution.MultiCurrency.FxRate.Inverse()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Inverse
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Returns the inverse rate (QuoteCurrency → BaseCurrency).
+  example: []
+  syntax:
+    content: public FxRate Inverse()
+    return:
+      type: Meridian.Execution.MultiCurrency.FxRate
+    content.vb: Public Function Inverse() As FxRate
+  overload: Meridian.Execution.MultiCurrency.FxRate.Inverse*
+- uid: Meridian.Execution.MultiCurrency.FxRate.ToString
+  commentId: M:Meridian.Execution.MultiCurrency.FxRate.ToString
+  id: ToString
+  parent: Meridian.Execution.MultiCurrency.FxRate
+  langs:
+  - csharp
+  - vb
+  name: ToString()
+  nameWithType: FxRate.ToString()
+  fullName: Meridian.Execution.MultiCurrency.FxRate.ToString()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/MultiCurrency/FxRate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToString
+    path: ../../src/Meridian.Execution/MultiCurrency/FxRate.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.MultiCurrency
+  summary: Returns a string of the form <code>EUR/USD 1.0850 @ 2024-01-15</code>.
+  example: []
+  syntax:
+    content: public override string ToString()
+    return:
+      type: System.String
+    content.vb: Public Overrides Function ToString() As String
+  overridden: System.Object.ToString
+  overload: Meridian.Execution.MultiCurrency.FxRate.ToString*
+references:
+- uid: Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency
+  commentId: P:Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_QuoteCurrency
+  name: QuoteCurrency
+  nameWithType: FxRate.QuoteCurrency
+  fullName: Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency
+- uid: Meridian.Execution.MultiCurrency.FxRate.BaseCurrency
+  commentId: P:Meridian.Execution.MultiCurrency.FxRate.BaseCurrency
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_BaseCurrency
+  name: BaseCurrency
+  nameWithType: FxRate.BaseCurrency
+  fullName: Meridian.Execution.MultiCurrency.FxRate.BaseCurrency
+- uid: Meridian.Execution.MultiCurrency
+  commentId: N:Meridian.Execution.MultiCurrency
+  href: Meridian.html
+  name: Meridian.Execution.MultiCurrency
+  nameWithType: Meridian.Execution.MultiCurrency
+  fullName: Meridian.Execution.MultiCurrency
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.MultiCurrency
+    name: MultiCurrency
+    href: Meridian.Execution.MultiCurrency.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.MultiCurrency
+    name: MultiCurrency
+    href: Meridian.Execution.MultiCurrency.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.MultiCurrency.FxRate}
+  commentId: T:System.IEquatable{Meridian.Execution.MultiCurrency.FxRate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FxRate>
+  nameWithType: IEquatable<FxRate>
+  fullName: System.IEquatable<Meridian.Execution.MultiCurrency.FxRate>
+  nameWithType.vb: IEquatable(Of FxRate)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.MultiCurrency.FxRate)
+  name.vb: IEquatable(Of FxRate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.MultiCurrency.FxRate
+    name: FxRate
+    href: Meridian.Execution.MultiCurrency.FxRate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.MultiCurrency.FxRate
+    name: FxRate
+    href: Meridian.Execution.MultiCurrency.FxRate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.MultiCurrency.FxRate.#ctor*
+  commentId: Overload:Meridian.Execution.MultiCurrency.FxRate.#ctor
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate__ctor_System_String_System_String_System_Decimal_System_DateTimeOffset_
+  name: FxRate
+  nameWithType: FxRate.FxRate
+  fullName: Meridian.Execution.MultiCurrency.FxRate.FxRate
+  nameWithType.vb: FxRate.New
+  fullName.vb: Meridian.Execution.MultiCurrency.FxRate.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Execution.MultiCurrency.FxRate.BaseCurrency*
+  commentId: Overload:Meridian.Execution.MultiCurrency.FxRate.BaseCurrency
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_BaseCurrency
+  name: BaseCurrency
+  nameWithType: FxRate.BaseCurrency
+  fullName: Meridian.Execution.MultiCurrency.FxRate.BaseCurrency
+- uid: Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency*
+  commentId: Overload:Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_QuoteCurrency
+  name: QuoteCurrency
+  nameWithType: FxRate.QuoteCurrency
+  fullName: Meridian.Execution.MultiCurrency.FxRate.QuoteCurrency
+- uid: Meridian.Execution.MultiCurrency.FxRate.Rate*
+  commentId: Overload:Meridian.Execution.MultiCurrency.FxRate.Rate
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_Rate
+  name: Rate
+  nameWithType: FxRate.Rate
+  fullName: Meridian.Execution.MultiCurrency.FxRate.Rate
+- uid: Meridian.Execution.MultiCurrency.FxRate.AsOf*
+  commentId: Overload:Meridian.Execution.MultiCurrency.FxRate.AsOf
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_AsOf
+  name: AsOf
+  nameWithType: FxRate.AsOf
+  fullName: Meridian.Execution.MultiCurrency.FxRate.AsOf
+- uid: Meridian.Execution.MultiCurrency.FxRate.Convert*
+  commentId: Overload:Meridian.Execution.MultiCurrency.FxRate.Convert
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_Convert_System_Decimal_
+  name: Convert
+  nameWithType: FxRate.Convert
+  fullName: Meridian.Execution.MultiCurrency.FxRate.Convert
+- uid: Meridian.Execution.MultiCurrency.FxRate.ConvertInverse*
+  commentId: Overload:Meridian.Execution.MultiCurrency.FxRate.ConvertInverse
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_ConvertInverse_System_Decimal_
+  name: ConvertInverse
+  nameWithType: FxRate.ConvertInverse
+  fullName: Meridian.Execution.MultiCurrency.FxRate.ConvertInverse
+- uid: Meridian.Execution.MultiCurrency.FxRate.Inverse*
+  commentId: Overload:Meridian.Execution.MultiCurrency.FxRate.Inverse
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_Inverse
+  name: Inverse
+  nameWithType: FxRate.Inverse
+  fullName: Meridian.Execution.MultiCurrency.FxRate.Inverse
+- uid: Meridian.Execution.MultiCurrency.FxRate
+  commentId: T:Meridian.Execution.MultiCurrency.FxRate
+  parent: Meridian.Execution.MultiCurrency
+  href: Meridian.Execution.MultiCurrency.FxRate.html
+  name: FxRate
+  nameWithType: FxRate
+  fullName: Meridian.Execution.MultiCurrency.FxRate
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Execution.MultiCurrency.FxRate.ToString*
+  commentId: Overload:Meridian.Execution.MultiCurrency.FxRate.ToString
+  href: Meridian.Execution.MultiCurrency.FxRate.html#Meridian_Execution_MultiCurrency_FxRate_ToString
+  name: ToString
+  nameWithType: FxRate.ToString
+  fullName: Meridian.Execution.MultiCurrency.FxRate.ToString

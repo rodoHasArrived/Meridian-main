@@ -1,0 +1,1820 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ResultTypes.ErrorCode
+  commentId: T:Meridian.Application.ResultTypes.ErrorCode
+  id: ErrorCode
+  parent: Meridian.Application.ResultTypes
+  children:
+  - Meridian.Application.ResultTypes.ErrorCode.AuthenticationFailed
+  - Meridian.Application.ResultTypes.ErrorCode.BrokerConnectionFailed
+  - Meridian.Application.ResultTypes.ErrorCode.Cancelled
+  - Meridian.Application.ResultTypes.ErrorCode.ChecksumMismatch
+  - Meridian.Application.ResultTypes.ErrorCode.CircuitBreakerOpen
+  - Meridian.Application.ResultTypes.ErrorCode.CompressionFailed
+  - Meridian.Application.ResultTypes.ErrorCode.ConfigurationInvalid
+  - Meridian.Application.ResultTypes.ErrorCode.ConfigurationMissing
+  - Meridian.Application.ResultTypes.ErrorCode.ConfigurationOutOfRange
+  - Meridian.Application.ResultTypes.ErrorCode.ConnectionFailed
+  - Meridian.Application.ResultTypes.ErrorCode.ConnectionLost
+  - Meridian.Application.ResultTypes.ErrorCode.ConnectionRefused
+  - Meridian.Application.ResultTypes.ErrorCode.ConnectionTimeout
+  - Meridian.Application.ResultTypes.ErrorCode.ConstraintViolation
+  - Meridian.Application.ResultTypes.ErrorCode.ConsumeFailed
+  - Meridian.Application.ResultTypes.ErrorCode.CredentialsInvalid
+  - Meridian.Application.ResultTypes.ErrorCode.CredentialsMissing
+  - Meridian.Application.ResultTypes.ErrorCode.DataCorruption
+  - Meridian.Application.ResultTypes.ErrorCode.DeadLetterFailed
+  - Meridian.Application.ResultTypes.ErrorCode.DnsResolutionFailed
+  - Meridian.Application.ResultTypes.ErrorCode.DuplicateData
+  - Meridian.Application.ResultTypes.ErrorCode.DuplicateValue
+  - Meridian.Application.ResultTypes.ErrorCode.FileAccessDenied
+  - Meridian.Application.ResultTypes.ErrorCode.FileNotFound
+  - Meridian.Application.ResultTypes.ErrorCode.InsufficientDiskSpace
+  - Meridian.Application.ResultTypes.ErrorCode.InternalError
+  - Meridian.Application.ResultTypes.ErrorCode.InvalidFormat
+  - Meridian.Application.ResultTypes.ErrorCode.InvalidOperation
+  - Meridian.Application.ResultTypes.ErrorCode.InvalidProviderData
+  - Meridian.Application.ResultTypes.ErrorCode.MessageDeserializationFailed
+  - Meridian.Application.ResultTypes.ErrorCode.MessageValidationFailed
+  - Meridian.Application.ResultTypes.ErrorCode.NoDataAvailable
+  - Meridian.Application.ResultTypes.ErrorCode.NotFound
+  - Meridian.Application.ResultTypes.ErrorCode.NotSupported
+  - Meridian.Application.ResultTypes.ErrorCode.OutOfOrderData
+  - Meridian.Application.ResultTypes.ErrorCode.OutOfRange
+  - Meridian.Application.ResultTypes.ErrorCode.ProviderError
+  - Meridian.Application.ResultTypes.ErrorCode.ProviderUnavailable
+  - Meridian.Application.ResultTypes.ErrorCode.PublishFailed
+  - Meridian.Application.ResultTypes.ErrorCode.RateLimitExceeded
+  - Meridian.Application.ResultTypes.ErrorCode.ReadFailed
+  - Meridian.Application.ResultTypes.ErrorCode.RequiredFieldMissing
+  - Meridian.Application.ResultTypes.ErrorCode.SchemaMismatch
+  - Meridian.Application.ResultTypes.ErrorCode.SequenceGap
+  - Meridian.Application.ResultTypes.ErrorCode.SerializationFailed
+  - Meridian.Application.ResultTypes.ErrorCode.SslError
+  - Meridian.Application.ResultTypes.ErrorCode.StorageError
+  - Meridian.Application.ResultTypes.ErrorCode.SubscriptionLimitExceeded
+  - Meridian.Application.ResultTypes.ErrorCode.SymbolNotFound
+  - Meridian.Application.ResultTypes.ErrorCode.Timeout
+  - Meridian.Application.ResultTypes.ErrorCode.Unknown
+  - Meridian.Application.ResultTypes.ErrorCode.ValidationFailed
+  - Meridian.Application.ResultTypes.ErrorCode.WriteFailed
+  langs:
+  - csharp
+  - vb
+  name: ErrorCode
+  nameWithType: ErrorCode
+  fullName: Meridian.Application.ResultTypes.ErrorCode
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorCode
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: >-
+    Standardized error codes for the Meridian system.
+
+    Error codes are grouped by category using numeric ranges for easy filtering and categorization.
+  example: []
+  syntax:
+    content: public enum ErrorCode
+    content.vb: Public Enum ErrorCode
+  extensionMethods:
+  - Meridian.Application.ResultTypes.ErrorCode.Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory
+  - Meridian.Application.ResultTypes.ErrorCode.Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient
+  - Meridian.Application.ResultTypes.ErrorCode.Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode
+  - Meridian.Application.ResultTypes.ErrorCode.Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.Unknown
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.Unknown
+  id: Unknown
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: Unknown
+  nameWithType: ErrorCode.Unknown
+  fullName: Meridian.Application.ResultTypes.ErrorCode.Unknown
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Unknown or unclassified error
+  example: []
+  syntax:
+    content: Unknown = 1000
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.InternalError
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.InternalError
+  id: InternalError
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: InternalError
+  nameWithType: ErrorCode.InternalError
+  fullName: Meridian.Application.ResultTypes.ErrorCode.InternalError
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InternalError
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Internal system error
+  example: []
+  syntax:
+    content: InternalError = 1001
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.Cancelled
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.Cancelled
+  id: Cancelled
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: ErrorCode.Cancelled
+  fullName: Meridian.Application.ResultTypes.ErrorCode.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Operation was cancelled
+  example: []
+  syntax:
+    content: Cancelled = 1002
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.Timeout
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.Timeout
+  id: Timeout
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: Timeout
+  nameWithType: ErrorCode.Timeout
+  fullName: Meridian.Application.ResultTypes.ErrorCode.Timeout
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timeout
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Operation timed out
+  example: []
+  syntax:
+    content: Timeout = 1003
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.NotFound
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.NotFound
+  id: NotFound
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: NotFound
+  nameWithType: ErrorCode.NotFound
+  fullName: Meridian.Application.ResultTypes.ErrorCode.NotFound
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotFound
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Resource not found
+  example: []
+  syntax:
+    content: NotFound = 1004
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.NotSupported
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.NotSupported
+  id: NotSupported
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: NotSupported
+  nameWithType: ErrorCode.NotSupported
+  fullName: Meridian.Application.ResultTypes.ErrorCode.NotSupported
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotSupported
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Operation not supported
+  example: []
+  syntax:
+    content: NotSupported = 1005
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.InvalidOperation
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.InvalidOperation
+  id: InvalidOperation
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: InvalidOperation
+  nameWithType: ErrorCode.InvalidOperation
+  fullName: Meridian.Application.ResultTypes.ErrorCode.InvalidOperation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidOperation
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Invalid operation for current state
+  example: []
+  syntax:
+    content: InvalidOperation = 1006
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ValidationFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ValidationFailed
+  id: ValidationFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ValidationFailed
+  nameWithType: ErrorCode.ValidationFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ValidationFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidationFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: General validation failure
+  example: []
+  syntax:
+    content: ValidationFailed = 2000
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.RequiredFieldMissing
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.RequiredFieldMissing
+  id: RequiredFieldMissing
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: RequiredFieldMissing
+  nameWithType: ErrorCode.RequiredFieldMissing
+  fullName: Meridian.Application.ResultTypes.ErrorCode.RequiredFieldMissing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequiredFieldMissing
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Required field is missing
+  example: []
+  syntax:
+    content: RequiredFieldMissing = 2001
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.OutOfRange
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.OutOfRange
+  id: OutOfRange
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: OutOfRange
+  nameWithType: ErrorCode.OutOfRange
+  fullName: Meridian.Application.ResultTypes.ErrorCode.OutOfRange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutOfRange
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Field value is out of valid range
+  example: []
+  syntax:
+    content: OutOfRange = 2002
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.InvalidFormat
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.InvalidFormat
+  id: InvalidFormat
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: InvalidFormat
+  nameWithType: ErrorCode.InvalidFormat
+  fullName: Meridian.Application.ResultTypes.ErrorCode.InvalidFormat
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidFormat
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Invalid format for field value
+  example: []
+  syntax:
+    content: InvalidFormat = 2003
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.DuplicateValue
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.DuplicateValue
+  id: DuplicateValue
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: DuplicateValue
+  nameWithType: ErrorCode.DuplicateValue
+  fullName: Meridian.Application.ResultTypes.ErrorCode.DuplicateValue
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DuplicateValue
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Duplicate value where uniqueness is required
+  example: []
+  syntax:
+    content: DuplicateValue = 2004
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ConstraintViolation
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ConstraintViolation
+  id: ConstraintViolation
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConstraintViolation
+  nameWithType: ErrorCode.ConstraintViolation
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ConstraintViolation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConstraintViolation
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Constraint violation
+  example: []
+  syntax:
+    content: ConstraintViolation = 2005
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ConfigurationInvalid
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ConfigurationInvalid
+  id: ConfigurationInvalid
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationInvalid
+  nameWithType: ErrorCode.ConfigurationInvalid
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ConfigurationInvalid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationInvalid
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Configuration is invalid
+  example: []
+  syntax:
+    content: ConfigurationInvalid = 3000
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ConfigurationMissing
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ConfigurationMissing
+  id: ConfigurationMissing
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationMissing
+  nameWithType: ErrorCode.ConfigurationMissing
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ConfigurationMissing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationMissing
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Required configuration is missing
+  example: []
+  syntax:
+    content: ConfigurationMissing = 3001
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ConfigurationOutOfRange
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ConfigurationOutOfRange
+  id: ConfigurationOutOfRange
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationOutOfRange
+  nameWithType: ErrorCode.ConfigurationOutOfRange
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ConfigurationOutOfRange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationOutOfRange
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Configuration value is out of valid range
+  example: []
+  syntax:
+    content: ConfigurationOutOfRange = 3002
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.CredentialsMissing
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.CredentialsMissing
+  id: CredentialsMissing
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: CredentialsMissing
+  nameWithType: ErrorCode.CredentialsMissing
+  fullName: Meridian.Application.ResultTypes.ErrorCode.CredentialsMissing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialsMissing
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: API key or credential is missing
+  example: []
+  syntax:
+    content: CredentialsMissing = 3003
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.CredentialsInvalid
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.CredentialsInvalid
+  id: CredentialsInvalid
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: CredentialsInvalid
+  nameWithType: ErrorCode.CredentialsInvalid
+  fullName: Meridian.Application.ResultTypes.ErrorCode.CredentialsInvalid
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CredentialsInvalid
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: API key or credential is invalid
+  example: []
+  syntax:
+    content: CredentialsInvalid = 3004
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ConnectionFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ConnectionFailed
+  id: ConnectionFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConnectionFailed
+  nameWithType: ErrorCode.ConnectionFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ConnectionFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Failed to establish connection
+  example: []
+  syntax:
+    content: ConnectionFailed = 4000
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ConnectionLost
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ConnectionLost
+  id: ConnectionLost
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConnectionLost
+  nameWithType: ErrorCode.ConnectionLost
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ConnectionLost
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionLost
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Connection was lost
+  example: []
+  syntax:
+    content: ConnectionLost = 4001
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ConnectionRefused
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ConnectionRefused
+  id: ConnectionRefused
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConnectionRefused
+  nameWithType: ErrorCode.ConnectionRefused
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ConnectionRefused
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionRefused
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Connection was refused
+  example: []
+  syntax:
+    content: ConnectionRefused = 4002
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ConnectionTimeout
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ConnectionTimeout
+  id: ConnectionTimeout
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConnectionTimeout
+  nameWithType: ErrorCode.ConnectionTimeout
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ConnectionTimeout
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionTimeout
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Connection timed out
+  example: []
+  syntax:
+    content: ConnectionTimeout = 4003
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.AuthenticationFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.AuthenticationFailed
+  id: AuthenticationFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: AuthenticationFailed
+  nameWithType: ErrorCode.AuthenticationFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.AuthenticationFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuthenticationFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Authentication failed
+  example: []
+  syntax:
+    content: AuthenticationFailed = 4004
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.SslError
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.SslError
+  id: SslError
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: SslError
+  nameWithType: ErrorCode.SslError
+  fullName: Meridian.Application.ResultTypes.ErrorCode.SslError
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SslError
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: SSL/TLS error
+  example: []
+  syntax:
+    content: SslError = 4005
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.DnsResolutionFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.DnsResolutionFailed
+  id: DnsResolutionFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: DnsResolutionFailed
+  nameWithType: ErrorCode.DnsResolutionFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.DnsResolutionFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DnsResolutionFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: DNS resolution failed
+  example: []
+  syntax:
+    content: DnsResolutionFailed = 4006
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ProviderError
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ProviderError
+  id: ProviderError
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ProviderError
+  nameWithType: ErrorCode.ProviderError
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ProviderError
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderError
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Provider operation failed
+  example: []
+  syntax:
+    content: ProviderError = 5000
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ProviderUnavailable
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ProviderUnavailable
+  id: ProviderUnavailable
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ProviderUnavailable
+  nameWithType: ErrorCode.ProviderUnavailable
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ProviderUnavailable
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderUnavailable
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Provider is not available
+  example: []
+  syntax:
+    content: ProviderUnavailable = 5001
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.RateLimitExceeded
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.RateLimitExceeded
+  id: RateLimitExceeded
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: RateLimitExceeded
+  nameWithType: ErrorCode.RateLimitExceeded
+  fullName: Meridian.Application.ResultTypes.ErrorCode.RateLimitExceeded
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitExceeded
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Rate limit exceeded
+  example: []
+  syntax:
+    content: RateLimitExceeded = 5002
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.SubscriptionLimitExceeded
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.SubscriptionLimitExceeded
+  id: SubscriptionLimitExceeded
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionLimitExceeded
+  nameWithType: ErrorCode.SubscriptionLimitExceeded
+  fullName: Meridian.Application.ResultTypes.ErrorCode.SubscriptionLimitExceeded
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscriptionLimitExceeded
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Subscription limit exceeded
+  example: []
+  syntax:
+    content: SubscriptionLimitExceeded = 5003
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.SymbolNotFound
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.SymbolNotFound
+  id: SymbolNotFound
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: SymbolNotFound
+  nameWithType: ErrorCode.SymbolNotFound
+  fullName: Meridian.Application.ResultTypes.ErrorCode.SymbolNotFound
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolNotFound
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Symbol not found or not supported
+  example: []
+  syntax:
+    content: SymbolNotFound = 5004
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.InvalidProviderData
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.InvalidProviderData
+  id: InvalidProviderData
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: InvalidProviderData
+  nameWithType: ErrorCode.InvalidProviderData
+  fullName: Meridian.Application.ResultTypes.ErrorCode.InvalidProviderData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidProviderData
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Provider returned invalid data
+  example: []
+  syntax:
+    content: InvalidProviderData = 5005
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.NoDataAvailable
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.NoDataAvailable
+  id: NoDataAvailable
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: NoDataAvailable
+  nameWithType: ErrorCode.NoDataAvailable
+  fullName: Meridian.Application.ResultTypes.ErrorCode.NoDataAvailable
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NoDataAvailable
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Provider returned no data
+  example: []
+  syntax:
+    content: NoDataAvailable = 5006
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.CircuitBreakerOpen
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.CircuitBreakerOpen
+  id: CircuitBreakerOpen
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerOpen
+  nameWithType: ErrorCode.CircuitBreakerOpen
+  fullName: Meridian.Application.ResultTypes.ErrorCode.CircuitBreakerOpen
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerOpen
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Circuit breaker is open
+  example: []
+  syntax:
+    content: CircuitBreakerOpen = 5007
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.SequenceGap
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.SequenceGap
+  id: SequenceGap
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: SequenceGap
+  nameWithType: ErrorCode.SequenceGap
+  fullName: Meridian.Application.ResultTypes.ErrorCode.SequenceGap
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceGap
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Sequence gap detected
+  example: []
+  syntax:
+    content: SequenceGap = 6000
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.OutOfOrderData
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.OutOfOrderData
+  id: OutOfOrderData
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: OutOfOrderData
+  nameWithType: ErrorCode.OutOfOrderData
+  fullName: Meridian.Application.ResultTypes.ErrorCode.OutOfOrderData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutOfOrderData
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Out of order data detected
+  example: []
+  syntax:
+    content: OutOfOrderData = 6001
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.DuplicateData
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.DuplicateData
+  id: DuplicateData
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: DuplicateData
+  nameWithType: ErrorCode.DuplicateData
+  fullName: Meridian.Application.ResultTypes.ErrorCode.DuplicateData
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DuplicateData
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Duplicate data detected
+  example: []
+  syntax:
+    content: DuplicateData = 6002
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.DataCorruption
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.DataCorruption
+  id: DataCorruption
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: DataCorruption
+  nameWithType: ErrorCode.DataCorruption
+  fullName: Meridian.Application.ResultTypes.ErrorCode.DataCorruption
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataCorruption
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Data corruption detected
+  example: []
+  syntax:
+    content: DataCorruption = 6003
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ChecksumMismatch
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ChecksumMismatch
+  id: ChecksumMismatch
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ChecksumMismatch
+  nameWithType: ErrorCode.ChecksumMismatch
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ChecksumMismatch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChecksumMismatch
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Checksum validation failed
+  example: []
+  syntax:
+    content: ChecksumMismatch = 6004
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.SchemaMismatch
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.SchemaMismatch
+  id: SchemaMismatch
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: SchemaMismatch
+  nameWithType: ErrorCode.SchemaMismatch
+  fullName: Meridian.Application.ResultTypes.ErrorCode.SchemaMismatch
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaMismatch
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Schema version mismatch
+  example: []
+  syntax:
+    content: SchemaMismatch = 6005
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.StorageError
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.StorageError
+  id: StorageError
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: StorageError
+  nameWithType: ErrorCode.StorageError
+  fullName: Meridian.Application.ResultTypes.ErrorCode.StorageError
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageError
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 154
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Storage operation failed
+  example: []
+  syntax:
+    content: StorageError = 7000
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.FileNotFound
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.FileNotFound
+  id: FileNotFound
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: FileNotFound
+  nameWithType: ErrorCode.FileNotFound
+  fullName: Meridian.Application.ResultTypes.ErrorCode.FileNotFound
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileNotFound
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: File not found
+  example: []
+  syntax:
+    content: FileNotFound = 7001
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.FileAccessDenied
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.FileAccessDenied
+  id: FileAccessDenied
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: FileAccessDenied
+  nameWithType: ErrorCode.FileAccessDenied
+  fullName: Meridian.Application.ResultTypes.ErrorCode.FileAccessDenied
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileAccessDenied
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: File access denied
+  example: []
+  syntax:
+    content: FileAccessDenied = 7002
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.InsufficientDiskSpace
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.InsufficientDiskSpace
+  id: InsufficientDiskSpace
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: InsufficientDiskSpace
+  nameWithType: ErrorCode.InsufficientDiskSpace
+  fullName: Meridian.Application.ResultTypes.ErrorCode.InsufficientDiskSpace
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InsufficientDiskSpace
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Disk space insufficient
+  example: []
+  syntax:
+    content: InsufficientDiskSpace = 7003
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.WriteFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.WriteFailed
+  id: WriteFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: WriteFailed
+  nameWithType: ErrorCode.WriteFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.WriteFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WriteFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Write operation failed
+  example: []
+  syntax:
+    content: WriteFailed = 7004
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ReadFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ReadFailed
+  id: ReadFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ReadFailed
+  nameWithType: ErrorCode.ReadFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ReadFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReadFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Read operation failed
+  example: []
+  syntax:
+    content: ReadFailed = 7005
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.CompressionFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.CompressionFailed
+  id: CompressionFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: CompressionFailed
+  nameWithType: ErrorCode.CompressionFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.CompressionFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompressionFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Compression/decompression failed
+  example: []
+  syntax:
+    content: CompressionFailed = 7006
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.SerializationFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.SerializationFailed
+  id: SerializationFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: SerializationFailed
+  nameWithType: ErrorCode.SerializationFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.SerializationFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SerializationFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Serialization/deserialization failed
+  example: []
+  syntax:
+    content: SerializationFailed = 7007
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.PublishFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.PublishFailed
+  id: PublishFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: PublishFailed
+  nameWithType: ErrorCode.PublishFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.PublishFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Message publish failed
+  example: []
+  syntax:
+    content: PublishFailed = 8000
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.ConsumeFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.ConsumeFailed
+  id: ConsumeFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: ConsumeFailed
+  nameWithType: ErrorCode.ConsumeFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.ConsumeFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsumeFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Message consume failed
+  example: []
+  syntax:
+    content: ConsumeFailed = 8001
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.MessageDeserializationFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.MessageDeserializationFailed
+  id: MessageDeserializationFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: MessageDeserializationFailed
+  nameWithType: ErrorCode.MessageDeserializationFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.MessageDeserializationFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MessageDeserializationFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Message deserialization failed
+  example: []
+  syntax:
+    content: MessageDeserializationFailed = 8002
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.MessageValidationFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.MessageValidationFailed
+  id: MessageValidationFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: MessageValidationFailed
+  nameWithType: ErrorCode.MessageValidationFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.MessageValidationFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MessageValidationFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Message validation failed
+  example: []
+  syntax:
+    content: MessageValidationFailed = 8003
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.DeadLetterFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.DeadLetterFailed
+  id: DeadLetterFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: DeadLetterFailed
+  nameWithType: ErrorCode.DeadLetterFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.DeadLetterFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeadLetterFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Dead letter queue write failed
+  example: []
+  syntax:
+    content: DeadLetterFailed = 8004
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+- uid: Meridian.Application.ResultTypes.ErrorCode.BrokerConnectionFailed
+  commentId: F:Meridian.Application.ResultTypes.ErrorCode.BrokerConnectionFailed
+  id: BrokerConnectionFailed
+  parent: Meridian.Application.ResultTypes.ErrorCode
+  langs:
+  - csharp
+  - vb
+  name: BrokerConnectionFailed
+  nameWithType: ErrorCode.BrokerConnectionFailed
+  fullName: Meridian.Application.ResultTypes.ErrorCode.BrokerConnectionFailed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Results/ErrorCode.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BrokerConnectionFailed
+    path: ../../src/Meridian.Application/Results/ErrorCode.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ResultTypes
+  summary: Message broker connection failed
+  example: []
+  syntax:
+    content: BrokerConnectionFailed = 8005
+    return:
+      type: Meridian.Application.ResultTypes.ErrorCode
+references:
+- uid: Meridian.Application.ResultTypes
+  commentId: N:Meridian.Application.ResultTypes
+  href: Meridian.html
+  name: Meridian.Application.ResultTypes
+  nameWithType: Meridian.Application.ResultTypes
+  fullName: Meridian.Application.ResultTypes
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ResultTypes
+    name: ResultTypes
+    href: Meridian.Application.ResultTypes.html
+- uid: Meridian.Application.ResultTypes.ErrorCode.Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory
+  commentId: M:Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+  parent: Meridian.Application.ResultTypes.ErrorCodeExtensions
+  definition: Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_GetCategory_Meridian_Application_ResultTypes_ErrorCode_
+  name: GetCategory(ErrorCode)
+  nameWithType: ErrorCodeExtensions.GetCategory(ErrorCode)
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+    name: GetCategory
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_GetCategory_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+    name: GetCategory
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_GetCategory_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+- uid: Meridian.Application.ResultTypes.ErrorCode.Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient
+  commentId: M:Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+  parent: Meridian.Application.ResultTypes.ErrorCodeExtensions
+  definition: Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_IsTransient_Meridian_Application_ResultTypes_ErrorCode_
+  name: IsTransient(ErrorCode)
+  nameWithType: ErrorCodeExtensions.IsTransient(ErrorCode)
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+    name: IsTransient
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_IsTransient_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+    name: IsTransient
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_IsTransient_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+- uid: Meridian.Application.ResultTypes.ErrorCode.Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode
+  commentId: M:Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+  parent: Meridian.Application.ResultTypes.ErrorCodeExtensions
+  definition: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToExitCode_Meridian_Application_ResultTypes_ErrorCode_
+  name: ToExitCode(ErrorCode)
+  nameWithType: ErrorCodeExtensions.ToExitCode(ErrorCode)
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+    name: ToExitCode
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToExitCode_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+    name: ToExitCode
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToExitCode_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+- uid: Meridian.Application.ResultTypes.ErrorCode.Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode
+  commentId: M:Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+  parent: Meridian.Application.ResultTypes.ErrorCodeExtensions
+  definition: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToHttpStatusCode_Meridian_Application_ResultTypes_ErrorCode_
+  name: ToHttpStatusCode(ErrorCode)
+  nameWithType: ErrorCodeExtensions.ToHttpStatusCode(ErrorCode)
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+    name: ToHttpStatusCode
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToHttpStatusCode_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+    name: ToHttpStatusCode
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToHttpStatusCode_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+- uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+  commentId: M:Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_GetCategory_Meridian_Application_ResultTypes_ErrorCode_
+  name: GetCategory(ErrorCode)
+  nameWithType: ErrorCodeExtensions.GetCategory(ErrorCode)
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+    name: GetCategory
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_GetCategory_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.GetCategory(Meridian.Application.ResultTypes.ErrorCode)
+    name: GetCategory
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_GetCategory_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+- uid: Meridian.Application.ResultTypes.ErrorCodeExtensions
+  commentId: T:Meridian.Application.ResultTypes.ErrorCodeExtensions
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html
+  name: ErrorCodeExtensions
+  nameWithType: ErrorCodeExtensions
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions
+- uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+  commentId: M:Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_IsTransient_Meridian_Application_ResultTypes_ErrorCode_
+  name: IsTransient(ErrorCode)
+  nameWithType: ErrorCodeExtensions.IsTransient(ErrorCode)
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+    name: IsTransient
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_IsTransient_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.IsTransient(Meridian.Application.ResultTypes.ErrorCode)
+    name: IsTransient
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_IsTransient_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+- uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+  commentId: M:Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToExitCode_Meridian_Application_ResultTypes_ErrorCode_
+  name: ToExitCode(ErrorCode)
+  nameWithType: ErrorCodeExtensions.ToExitCode(ErrorCode)
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+    name: ToExitCode
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToExitCode_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToExitCode(Meridian.Application.ResultTypes.ErrorCode)
+    name: ToExitCode
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToExitCode_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+- uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+  commentId: M:Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+  href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToHttpStatusCode_Meridian_Application_ResultTypes_ErrorCode_
+  name: ToHttpStatusCode(ErrorCode)
+  nameWithType: ErrorCodeExtensions.ToHttpStatusCode(ErrorCode)
+  fullName: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+  spec.csharp:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+    name: ToHttpStatusCode
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToHttpStatusCode_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.ResultTypes.ErrorCodeExtensions.ToHttpStatusCode(Meridian.Application.ResultTypes.ErrorCode)
+    name: ToHttpStatusCode
+    href: Meridian.Application.ResultTypes.ErrorCodeExtensions.html#Meridian_Application_ResultTypes_ErrorCodeExtensions_ToHttpStatusCode_Meridian_Application_ResultTypes_ErrorCode_
+  - name: (
+  - uid: Meridian.Application.ResultTypes.ErrorCode
+    name: ErrorCode
+    href: Meridian.Application.ResultTypes.ErrorCode.html
+  - name: )
+- uid: Meridian.Application.ResultTypes.ErrorCode
+  commentId: T:Meridian.Application.ResultTypes.ErrorCode
+  parent: Meridian.Application.ResultTypes
+  href: Meridian.Application.ResultTypes.ErrorCode.html
+  name: ErrorCode
+  nameWithType: ErrorCode
+  fullName: Meridian.Application.ResultTypes.ErrorCode

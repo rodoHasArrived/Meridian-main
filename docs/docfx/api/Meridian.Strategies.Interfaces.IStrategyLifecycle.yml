@@ -1,0 +1,553 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyLifecycle
+  id: IStrategyLifecycle
+  parent: Meridian.Strategies.Interfaces
+  children:
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+  - Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+  langs:
+  - csharp
+  - vb
+  name: IStrategyLifecycle
+  nameWithType: IStrategyLifecycle
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IStrategyLifecycle
+    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: >-
+    Manages the lifecycle of a strategy that can run in live or paper execution mode.
+
+    Extends <xref href="Meridian.Backtesting.Sdk.IBacktestStrategy" data-throw-if-not-resolved="false"></xref> so a single class can serve both backtest
+
+    and live contexts. Enforced by ADR-016.
+  example: []
+  syntax:
+    content: public interface IStrategyLifecycle
+    content.vb: Public Interface IStrategyLifecycle
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+  commentId: P:Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+  id: StrategyId
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: IStrategyLifecycle.StrategyId
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: Stable identifier for this strategy (e.g., a slug or assembly-qualified name).
+  example: []
+  syntax:
+    content: string StrategyId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property StrategyId As String
+  overload: Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId*
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+  commentId: P:Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+  id: Status
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: IStrategyLifecycle.Status
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: Current lifecycle state.
+  example: []
+  syntax:
+    content: StrategyStatus Status { get; }
+    parameters: []
+    return:
+      type: Meridian.Strategies.Models.StrategyStatus
+    content.vb: ReadOnly Property Status As StrategyStatus
+  overload: Meridian.Strategies.Interfaces.IStrategyLifecycle.Status*
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+  id: StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  langs:
+  - csharp
+  - vb
+  name: StartAsync(IExecutionContext, CancellationToken)
+  nameWithType: IStrategyLifecycle.StartAsync(IExecutionContext, CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartAsync
+    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: >-
+    Starts the strategy against the provided execution context. Transitions the strategy
+
+    from <xref href="Meridian.Strategies.Models.StrategyStatus.Registered" data-throw-if-not-resolved="false"></xref> (or <xref href="Meridian.Strategies.Models.StrategyStatus.Stopped" data-throw-if-not-resolved="false"></xref>)
+
+    to <xref href="Meridian.Strategies.Models.StrategyStatus.WarmingUp" data-throw-if-not-resolved="false"></xref> and then <xref href="Meridian.Strategies.Models.StrategyStatus.Running" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: Task StartAsync(IExecutionContext ctx, CancellationToken ct = default)
+    parameters:
+    - id: ctx
+      type: Meridian.Execution.Interfaces.IExecutionContext
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function StartAsync(ctx As IExecutionContext, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync*
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+  id: PauseAsync(System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  langs:
+  - csharp
+  - vb
+  name: PauseAsync(CancellationToken)
+  nameWithType: IStrategyLifecycle.PauseAsync(CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PauseAsync
+    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: >-
+    Pauses event processing. The strategy retains its state and can be resumed
+
+    by calling <xref href="Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext%2cSystem.Threading.CancellationToken)" data-throw-if-not-resolved="false"></xref> again.
+  example: []
+  syntax:
+    content: Task PauseAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function PauseAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync*
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+  id: StopAsync(System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  langs:
+  - csharp
+  - vb
+  name: StopAsync(CancellationToken)
+  nameWithType: IStrategyLifecycle.StopAsync(CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopAsync
+    path: ../../src/Meridian.Strategies/Interfaces/IStrategyLifecycle.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Interfaces
+  summary: >-
+    Stops the strategy, finalises its state, and records the completed run.
+
+    Transitions to <xref href="Meridian.Strategies.Models.StrategyStatus.Stopped" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: Task StopAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function StopAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync*
+references:
+- uid: Meridian.Backtesting.Sdk.IBacktestStrategy
+  commentId: T:Meridian.Backtesting.Sdk.IBacktestStrategy
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.IBacktestStrategy.html
+  name: IBacktestStrategy
+  nameWithType: IBacktestStrategy
+  fullName: Meridian.Backtesting.Sdk.IBacktestStrategy
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId*
+  commentId: Overload:Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StrategyId
+  name: StrategyId
+  nameWithType: IStrategyLifecycle.StrategyId
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StrategyId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.Status*
+  commentId: Overload:Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_Status
+  name: Status
+  nameWithType: IStrategyLifecycle.Status
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.Status
+- uid: Meridian.Strategies.Models.StrategyStatus
+  commentId: T:Meridian.Strategies.Models.StrategyStatus
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.StrategyStatus.html
+  name: StrategyStatus
+  nameWithType: StrategyStatus
+  fullName: Meridian.Strategies.Models.StrategyStatus
+- uid: Meridian.Strategies.Models
+  commentId: N:Meridian.Strategies.Models
+  href: Meridian.html
+  name: Meridian.Strategies.Models
+  nameWithType: Meridian.Strategies.Models
+  fullName: Meridian.Strategies.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+- uid: Meridian.Strategies.Models.StrategyStatus.Registered
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.Registered
+  href: Meridian.Strategies.Models.StrategyStatus.html#Meridian_Strategies_Models_StrategyStatus_Registered
+  name: Registered
+  nameWithType: StrategyStatus.Registered
+  fullName: Meridian.Strategies.Models.StrategyStatus.Registered
+- uid: Meridian.Strategies.Models.StrategyStatus.Stopped
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.Stopped
+  href: Meridian.Strategies.Models.StrategyStatus.html#Meridian_Strategies_Models_StrategyStatus_Stopped
+  name: Stopped
+  nameWithType: StrategyStatus.Stopped
+  fullName: Meridian.Strategies.Models.StrategyStatus.Stopped
+- uid: Meridian.Strategies.Models.StrategyStatus.WarmingUp
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.WarmingUp
+  href: Meridian.Strategies.Models.StrategyStatus.html#Meridian_Strategies_Models_StrategyStatus_WarmingUp
+  name: WarmingUp
+  nameWithType: StrategyStatus.WarmingUp
+  fullName: Meridian.Strategies.Models.StrategyStatus.WarmingUp
+- uid: Meridian.Strategies.Models.StrategyStatus.Running
+  commentId: F:Meridian.Strategies.Models.StrategyStatus.Running
+  href: Meridian.Strategies.Models.StrategyStatus.html#Meridian_Strategies_Models_StrategyStatus_Running
+  name: Running
+  nameWithType: StrategyStatus.Running
+  fullName: Meridian.Strategies.Models.StrategyStatus.Running
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync*
+  commentId: Overload:Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StartAsync_Meridian_Execution_Interfaces_IExecutionContext_System_Threading_CancellationToken_
+  name: StartAsync
+  nameWithType: IStrategyLifecycle.StartAsync
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync
+- uid: Meridian.Execution.Interfaces.IExecutionContext
+  commentId: T:Meridian.Execution.Interfaces.IExecutionContext
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IExecutionContext.html
+  name: IExecutionContext
+  nameWithType: IExecutionContext
+  fullName: Meridian.Execution.Interfaces.IExecutionContext
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  isExternal: true
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StartAsync_Meridian_Execution_Interfaces_IExecutionContext_System_Threading_CancellationToken_
+  name: StartAsync(IExecutionContext, CancellationToken)
+  nameWithType: IStrategyLifecycle.StartAsync(IExecutionContext, CancellationToken)
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+    name: StartAsync
+    href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StartAsync_Meridian_Execution_Interfaces_IExecutionContext_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Interfaces.IExecutionContext
+    name: IExecutionContext
+    href: Meridian.Execution.Interfaces.IExecutionContext.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StartAsync(Meridian.Execution.Interfaces.IExecutionContext,System.Threading.CancellationToken)
+    name: StartAsync
+    href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StartAsync_Meridian_Execution_Interfaces_IExecutionContext_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Execution.Interfaces.IExecutionContext
+    name: IExecutionContext
+    href: Meridian.Execution.Interfaces.IExecutionContext.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync*
+  commentId: Overload:Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_PauseAsync_System_Threading_CancellationToken_
+  name: PauseAsync
+  nameWithType: IStrategyLifecycle.PauseAsync
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.PauseAsync
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyLifecycle
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html
+  name: IStrategyLifecycle
+  nameWithType: IStrategyLifecycle
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle
+- uid: Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync*
+  commentId: Overload:Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync
+  href: Meridian.Strategies.Interfaces.IStrategyLifecycle.html#Meridian_Strategies_Interfaces_IStrategyLifecycle_StopAsync_System_Threading_CancellationToken_
+  name: StopAsync
+  nameWithType: IStrategyLifecycle.StopAsync
+  fullName: Meridian.Strategies.Interfaces.IStrategyLifecycle.StopAsync

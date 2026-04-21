@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.VolumeAggregation
+  commentId: T:Meridian.Storage.Export.VolumeAggregation
+  id: VolumeAggregation
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.VolumeAggregation.Last
+  - Meridian.Storage.Export.VolumeAggregation.Max
+  - Meridian.Storage.Export.VolumeAggregation.Mean
+  - Meridian.Storage.Export.VolumeAggregation.Sum
+  langs:
+  - csharp
+  - vb
+  name: VolumeAggregation
+  nameWithType: VolumeAggregation
+  fullName: Meridian.Storage.Export.VolumeAggregation
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolumeAggregation
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Volume aggregation methods.
+  example: []
+  syntax:
+    content: 'public enum VolumeAggregation : byte'
+    content.vb: Public Enum VolumeAggregation As Byte
+- uid: Meridian.Storage.Export.VolumeAggregation.Sum
+  commentId: F:Meridian.Storage.Export.VolumeAggregation.Sum
+  id: Sum
+  parent: Meridian.Storage.Export.VolumeAggregation
+  langs:
+  - csharp
+  - vb
+  name: Sum
+  nameWithType: VolumeAggregation.Sum
+  fullName: Meridian.Storage.Export.VolumeAggregation.Sum
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sum
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Sum = 0
+    return:
+      type: Meridian.Storage.Export.VolumeAggregation
+- uid: Meridian.Storage.Export.VolumeAggregation.Mean
+  commentId: F:Meridian.Storage.Export.VolumeAggregation.Mean
+  id: Mean
+  parent: Meridian.Storage.Export.VolumeAggregation
+  langs:
+  - csharp
+  - vb
+  name: Mean
+  nameWithType: VolumeAggregation.Mean
+  fullName: Meridian.Storage.Export.VolumeAggregation.Mean
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mean
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Mean = 1
+    return:
+      type: Meridian.Storage.Export.VolumeAggregation
+- uid: Meridian.Storage.Export.VolumeAggregation.Max
+  commentId: F:Meridian.Storage.Export.VolumeAggregation.Max
+  id: Max
+  parent: Meridian.Storage.Export.VolumeAggregation
+  langs:
+  - csharp
+  - vb
+  name: Max
+  nameWithType: VolumeAggregation.Max
+  fullName: Meridian.Storage.Export.VolumeAggregation.Max
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Max
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Max = 2
+    return:
+      type: Meridian.Storage.Export.VolumeAggregation
+- uid: Meridian.Storage.Export.VolumeAggregation.Last
+  commentId: F:Meridian.Storage.Export.VolumeAggregation.Last
+  id: Last
+  parent: Meridian.Storage.Export.VolumeAggregation
+  langs:
+  - csharp
+  - vb
+  name: Last
+  nameWithType: VolumeAggregation.Last
+  fullName: Meridian.Storage.Export.VolumeAggregation.Last
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/ExportRequest.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Last
+    path: ../../src/Meridian.Storage/Export/ExportRequest.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Last = 3
+    return:
+      type: Meridian.Storage.Export.VolumeAggregation
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.VolumeAggregation
+  commentId: T:Meridian.Storage.Export.VolumeAggregation
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.VolumeAggregation.html
+  name: VolumeAggregation
+  nameWithType: VolumeAggregation
+  fullName: Meridian.Storage.Export.VolumeAggregation

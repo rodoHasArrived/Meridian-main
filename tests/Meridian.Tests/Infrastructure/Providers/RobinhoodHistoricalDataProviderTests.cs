@@ -1,158 +1,263 @@
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using FluentAssertions;
+using Meridian.Application.Exceptions;
 using Meridian.Infrastructure.Adapters.Robinhood;
-using Meridian.Tests.TestHelpers;
 using Xunit;
 
 namespace Meridian.Tests.Infrastructure.Providers;
 
 /// <summary>
-/// Unit tests for RobinhoodHistoricalDataProvider covering success path, error handling,
-/// cancellation, and empty responses.
+/// Unit tests for <see cref="RobinhoodHistoricalDataProvider"/>.
+/// All tests use a stub HTTP handler — no real network calls are made.
 /// </summary>
-[Trait("Category", "Unit")]
 public sealed class RobinhoodHistoricalDataProviderTests
 {
-    private static readonly string OkResponse5Year = """
+    // ---------------------------------------------------------------------------
+    // Helpers
+    // ---------------------------------------------------------------------------
+
+    private static RobinhoodHistoricalDataProvider CreateSut(
+        HttpMessageHandler handler,
+        string accessToken = "test-token")
+    {
+        var client = new HttpClient(handler)
         {
-          "results": [
+            BaseAddress = new Uri("https://api.robinhood.com/")
+        };
+        return new RobinhoodHistoricalDataProvider(
+            accessToken: accessToken,
+            httpClient: client);
+    }
+
+    private static StringContent BuildSuccessResponse(string symbol, int barCount = 5)
+    {
+        var bars = Enumerable.Range(0, barCount).Select(i =>
+        {
+            var date = new DateTime(2024, 1, 2).AddDays(i).ToString("yyyy-MM-ddT05:00:00Z");
+            return new
             {
-              "begins_at": "2023-01-03T14:30:00Z",
-              "open_price": "125.00",
-              "close_price": "130.00",
-              "high_price": "132.50",
-              "low_price": "124.00",
-              "volume": "80000000",
-              "session": "reg",
-              "interpolated": false
-            },
+                begins_at = date,
+                open_price = "185.00",
+                close_price = "186.00",
+                high_price = "187.00",
+                low_price = "184.00",
+                volume = 1_000_000L,
+                session = "reg",
+                interpolated = false
+            };
+        }).ToArray();
+
+        var payload = new
+        {
+            results = new[]
             {
-              "begins_at": "2023-01-04T14:30:00Z",
-              "open_price": "130.00",
-              "close_price": "128.50",
-              "high_price": "131.00",
-              "low_price": "127.00",
-              "volume": "75000000",
-              "session": "reg",
-              "interpolated": false
+                new
+                {
+                    symbol,
+                    historicals = bars,
+                    span = "year",
+                    interval = "day",
+                    bounds = "regular"
+                }
             }
-          ],
-          "symbol": "AAPL",
-          "interval": "day",
-          "span": "5year"
-        }
-        """;
+        };
 
-    private static readonly string EmptyResponse = """
+        return new StringContent(
+            JsonSerializer.Serialize(payload),
+            Encoding.UTF8,
+            "application/json");
+    }
+
+    // ---------------------------------------------------------------------------
+    // Happy path
+    // ---------------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetDailyBarsAsync_ValidSymbol_ReturnsBars()
+    {
+        // Arrange
+        var handler = new StubHttpHandler(
+            HttpStatusCode.OK,
+            BuildSuccessResponse("AAPL", barCount: 5));
+
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        // Act
+        var result = await sut.GetDailyBarsAsync("AAPL", null, null, cts.Token);
+
+        // Assert
+        result.Should().HaveCount(5);
+        result[0].Symbol.Should().Be("AAPL");
+        result[0].Open.Should().Be(185.00m);
+        result[0].Close.Should().Be(186.00m);
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_DateRange_FiltersClientSide()
+    {
+        // Arrange — 5 bars starting 2024-01-02; request only first 3
+        var handler = new StubHttpHandler(
+            HttpStatusCode.OK,
+            BuildSuccessResponse("MSFT", barCount: 5));
+
+        var sut = CreateSut(handler);
+        var from = new DateOnly(2024, 1, 2);
+        var to = new DateOnly(2024, 1, 4);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        // Act
+        var result = await sut.GetDailyBarsAsync("MSFT", from, to, cts.Token);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.All(b => b.SessionDate >= from && b.SessionDate <= to).Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task GetDailyBarsAsync_EmptyHistoricals_ReturnsEmptyList()
+    {
+        // Arrange
+        var payload = new
         {
-          "results": [],
-          "symbol": "UNKNOWN",
-          "interval": "day",
-          "span": "5year"
-        }
-        """;
-
-    [Fact]
-    public async Task GetDailyBarsAsync_WithValidResponse_ParsesAllBars()
-    {
-        using var handler = new StubHttpMessageHandler(_ =>
-            new HttpResponseMessage(HttpStatusCode.OK)
+            results = new[]
             {
-                Content = new StringContent(OkResponse5Year, Encoding.UTF8, "application/json")
-            });
-        using var httpClient = new HttpClient(handler);
-        using var provider = new RobinhoodHistoricalDataProvider(httpClient: httpClient);
+                new { symbol = "AAPL", historicals = Array.Empty<object>(), span = "year", interval = "day", bounds = "regular" }
+            }
+        };
+        var handler = new StubHttpHandler(
+            HttpStatusCode.OK,
+            new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json"));
 
-        var bars = await provider.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-        bars.Should().HaveCount(2);
-        bars.Should().BeInAscendingOrder(b => b.SessionDate);
+        // Act
+        var result = await sut.GetDailyBarsAsync("AAPL", null, null, cts.Token);
 
-        var first = bars[0];
-        first.Symbol.Should().Be("AAPL");
-        first.Open.Should().Be(125.00m);
-        first.High.Should().Be(132.50m);
-        first.Low.Should().Be(124.00m);
-        first.Close.Should().Be(130.00m);
-        first.Volume.Should().Be(80_000_000);
-        first.Source.Should().Be("robinhood");
+        // Assert
+        result.Should().BeEmpty();
+    }
+
+    // ---------------------------------------------------------------------------
+    // Error handling
+    // ---------------------------------------------------------------------------
+
+    [Fact]
+    public async Task GetDailyBarsAsync_Unauthorized_ThrowsConnectionException()
+    {
+        // Arrange
+        var handler = new StubHttpHandler(HttpStatusCode.Unauthorized, new StringContent("{}"));
+        var sut = CreateSut(handler);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        // Act
+        var act = () => sut.GetDailyBarsAsync("AAPL", null, null, cts.Token);
+
+        // Assert
+        await act.Should().ThrowAsync<ConnectionException>();
     }
 
     [Fact]
-    public async Task GetDailyBarsAsync_WithEmptyResults_ReturnsEmptyList()
+    public async Task GetDailyBarsAsync_ServerError_ThrowsDataProviderException()
     {
-        using var handler = new StubHttpMessageHandler(_ =>
-            new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(EmptyResponse, Encoding.UTF8, "application/json")
-            });
-        using var httpClient = new HttpClient(handler);
-        using var provider = new RobinhoodHistoricalDataProvider(httpClient: httpClient);
+        // Arrange
+        var handler = new StubHttpHandler(HttpStatusCode.InternalServerError, new StringContent("{}"));
+        var sut = CreateSut(handler);
 
-        var bars = await provider.GetDailyBarsAsync("UNKNOWN", null, null, CancellationToken.None);
+        // Act
+        var act = () => sut.GetDailyBarsAsync("AAPL", null, null, CancellationToken.None);
 
-        bars.Should().BeEmpty();
+        // Assert
+        await act.Should().ThrowAsync<DataProviderException>();
     }
 
     [Fact]
-    public async Task GetDailyBarsAsync_WithNotFoundResponse_ReturnsEmptyList()
+    public async Task GetDailyBarsAsync_CancellationRequested_ThrowsOperationCanceledException()
     {
-        using var handler = new StubHttpMessageHandler(_ =>
-            new HttpResponseMessage(HttpStatusCode.NotFound));
-        using var httpClient = new HttpClient(handler);
-        using var provider = new RobinhoodHistoricalDataProvider(httpClient: httpClient);
-
-        var bars = await provider.GetDailyBarsAsync("INVALID", null, null, CancellationToken.None);
-
-        bars.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task GetDailyBarsAsync_WithDateFilter_FiltersCorrectly()
-    {
-        using var handler = new StubHttpMessageHandler(_ =>
-            new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(OkResponse5Year, Encoding.UTF8, "application/json")
-            });
-        using var httpClient = new HttpClient(handler);
-        using var provider = new RobinhoodHistoricalDataProvider(httpClient: httpClient);
-
-        var from = new DateOnly(2023, 1, 4);
-        var bars = await provider.GetDailyBarsAsync("AAPL", from, null, CancellationToken.None);
-
-        bars.Should().HaveCount(1);
-        bars[0].SessionDate.Should().Be(new DateOnly(2023, 1, 4));
-    }
-
-    [Fact]
-    public async Task GetDailyBarsAsync_WithCancellation_ThrowsOperationCanceledException()
-    {
+        // Arrange
         using var cts = new CancellationTokenSource();
         await cts.CancelAsync();
 
-        using var handler = new StubHttpMessageHandler(_ =>
-            new HttpResponseMessage(HttpStatusCode.OK));
-        using var httpClient = new HttpClient(handler);
-        using var provider = new RobinhoodHistoricalDataProvider(httpClient: httpClient);
+        var handler = new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}"));
+        var sut = CreateSut(handler);
 
-        var act = async () => await provider.GetDailyBarsAsync("AAPL", null, null, cts.Token);
+        // Act
+        var act = () => sut.GetDailyBarsAsync("AAPL", null, null, cts.Token);
 
+        // Assert
         await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     [Fact]
+    public async Task GetDailyBarsAsync_NoToken_ThrowsConnectionException()
+    {
+        // Arrange — create provider with no token, bypassing env var
+        var handler = new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}"));
+        var client = new HttpClient(handler) { BaseAddress = new Uri("https://api.robinhood.com/") };
+        var sut = new RobinhoodHistoricalDataProvider(accessToken: "", httpClient: client);
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+        // Act
+        var act = () => sut.GetDailyBarsAsync("AAPL", null, null, cts.Token);
+
+        // Assert
+        await act.Should().ThrowAsync<ConnectionException>()
+            .WithMessage("*ROBINHOOD_ACCESS_TOKEN*");
+    }
+
+    // ---------------------------------------------------------------------------
+    // Provider metadata
+    // ---------------------------------------------------------------------------
+
+    [Fact]
     public void Name_ReturnsRobinhood()
     {
-        using var provider = new RobinhoodHistoricalDataProvider();
-        provider.Name.Should().Be("robinhood");
+        var handler = new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}"));
+        var sut = CreateSut(handler);
+        sut.Name.Should().Be("robinhood");
     }
 
     [Fact]
-    public void Priority_Returns25()
+    public void Capabilities_SupportsDailyBarsForUs()
     {
-        using var provider = new RobinhoodHistoricalDataProvider();
-        provider.Priority.Should().Be(25);
+        var handler = new StubHttpHandler(HttpStatusCode.OK, new StringContent("{}"));
+        var sut = CreateSut(handler);
+        sut.Capabilities.SupportedMarkets.Should().Contain("US");
+    }
+
+    // ---------------------------------------------------------------------------
+    // Stub handler
+    // ---------------------------------------------------------------------------
+
+    private sealed class StubHttpHandler : HttpMessageHandler
+    {
+        private readonly HttpStatusCode _statusCode;
+        private readonly Func<HttpContent> _contentFactory;
+
+        public StubHttpHandler(HttpStatusCode statusCode, HttpContent singleContent)
+            : this(statusCode, () =>
+            {
+                var raw = singleContent.ReadAsStringAsync().GetAwaiter().GetResult();
+                return new StringContent(raw, System.Text.Encoding.UTF8, "application/json");
+            })
+        {
+        }
+
+        public StubHttpHandler(HttpStatusCode statusCode, Func<HttpContent> contentFactory)
+        {
+            _statusCode = statusCode;
+            _contentFactory = contentFactory;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(_statusCode) { Content = _contentFactory() });
+        }
     }
 }

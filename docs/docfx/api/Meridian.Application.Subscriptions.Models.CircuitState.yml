@@ -1,0 +1,163 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.CircuitState
+  commentId: T:Meridian.Application.Subscriptions.Models.CircuitState
+  id: CircuitState
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.CircuitState.Closed
+  - Meridian.Application.Subscriptions.Models.CircuitState.HalfOpen
+  - Meridian.Application.Subscriptions.Models.CircuitState.Open
+  langs:
+  - csharp
+  - vb
+  name: CircuitState
+  nameWithType: CircuitState
+  fullName: Meridian.Application.Subscriptions.Models.CircuitState
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitState
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Circuit breaker states.
+  example: []
+  syntax:
+    content: 'public enum CircuitState : byte'
+    content.vb: Public Enum CircuitState As Byte
+- uid: Meridian.Application.Subscriptions.Models.CircuitState.Closed
+  commentId: F:Meridian.Application.Subscriptions.Models.CircuitState.Closed
+  id: Closed
+  parent: Meridian.Application.Subscriptions.Models.CircuitState
+  langs:
+  - csharp
+  - vb
+  name: Closed
+  nameWithType: CircuitState.Closed
+  fullName: Meridian.Application.Subscriptions.Models.CircuitState.Closed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Closed
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Circuit is closed, allowing operations.
+  example: []
+  syntax:
+    content: Closed = 0
+    return:
+      type: Meridian.Application.Subscriptions.Models.CircuitState
+- uid: Meridian.Application.Subscriptions.Models.CircuitState.Open
+  commentId: F:Meridian.Application.Subscriptions.Models.CircuitState.Open
+  id: Open
+  parent: Meridian.Application.Subscriptions.Models.CircuitState
+  langs:
+  - csharp
+  - vb
+  name: Open
+  nameWithType: CircuitState.Open
+  fullName: Meridian.Application.Subscriptions.Models.CircuitState.Open
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Open
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Circuit is open, rejecting operations.
+  example: []
+  syntax:
+    content: Open = 1
+    return:
+      type: Meridian.Application.Subscriptions.Models.CircuitState
+- uid: Meridian.Application.Subscriptions.Models.CircuitState.HalfOpen
+  commentId: F:Meridian.Application.Subscriptions.Models.CircuitState.HalfOpen
+  id: HalfOpen
+  parent: Meridian.Application.Subscriptions.Models.CircuitState
+  langs:
+  - csharp
+  - vb
+  name: HalfOpen
+  nameWithType: CircuitState.HalfOpen
+  fullName: Meridian.Application.Subscriptions.Models.CircuitState.HalfOpen
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HalfOpen
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 184
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Circuit is half-open, testing recovery.
+  example: []
+  syntax:
+    content: HalfOpen = 2
+    return:
+      type: Meridian.Application.Subscriptions.Models.CircuitState
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Models.CircuitState
+  commentId: T:Meridian.Application.Subscriptions.Models.CircuitState
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.CircuitState.html
+  name: CircuitState
+  nameWithType: CircuitState
+  fullName: Meridian.Application.Subscriptions.Models.CircuitState

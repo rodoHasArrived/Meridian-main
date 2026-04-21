@@ -1,0 +1,92 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Indicators
+  commentId: N:Meridian.Application.Indicators
+  id: Meridian.Application.Indicators
+  children:
+  - Meridian.Application.Indicators.HistoricalIndicatorResult
+  - Meridian.Application.Indicators.IndicatorConfiguration
+  - Meridian.Application.Indicators.IndicatorDataPoint
+  - Meridian.Application.Indicators.IndicatorSnapshot
+  - Meridian.Application.Indicators.IndicatorType
+  - Meridian.Application.Indicators.TechnicalIndicatorService
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.Indicators
+  nameWithType: Meridian.Application.Indicators
+  fullName: Meridian.Application.Indicators
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.Indicators.TechnicalIndicatorService
+  commentId: T:Meridian.Application.Indicators.TechnicalIndicatorService
+  href: Meridian.Application.Indicators.TechnicalIndicatorService.html
+  name: TechnicalIndicatorService
+  nameWithType: TechnicalIndicatorService
+  fullName: Meridian.Application.Indicators.TechnicalIndicatorService
+- uid: Meridian.Application.Indicators.IndicatorConfiguration
+  commentId: T:Meridian.Application.Indicators.IndicatorConfiguration
+  parent: Meridian.Application.Indicators
+  href: Meridian.Application.Indicators.IndicatorConfiguration.html
+  name: IndicatorConfiguration
+  nameWithType: IndicatorConfiguration
+  fullName: Meridian.Application.Indicators.IndicatorConfiguration
+- uid: Meridian.Application.Indicators.IndicatorType
+  commentId: T:Meridian.Application.Indicators.IndicatorType
+  parent: Meridian.Application.Indicators
+  href: Meridian.Application.Indicators.IndicatorType.html
+  name: IndicatorType
+  nameWithType: IndicatorType
+  fullName: Meridian.Application.Indicators.IndicatorType
+- uid: Meridian.Application.Indicators.IndicatorSnapshot
+  commentId: T:Meridian.Application.Indicators.IndicatorSnapshot
+  parent: Meridian.Application.Indicators
+  href: Meridian.Application.Indicators.IndicatorSnapshot.html
+  name: IndicatorSnapshot
+  nameWithType: IndicatorSnapshot
+  fullName: Meridian.Application.Indicators.IndicatorSnapshot
+- uid: Meridian.Application.Indicators.IndicatorDataPoint
+  commentId: T:Meridian.Application.Indicators.IndicatorDataPoint
+  href: Meridian.Application.Indicators.IndicatorDataPoint.html
+  name: IndicatorDataPoint
+  nameWithType: IndicatorDataPoint
+  fullName: Meridian.Application.Indicators.IndicatorDataPoint
+- uid: Meridian.Application.Indicators.HistoricalIndicatorResult
+  commentId: T:Meridian.Application.Indicators.HistoricalIndicatorResult
+  parent: Meridian.Application.Indicators
+  href: Meridian.Application.Indicators.HistoricalIndicatorResult.html
+  name: HistoricalIndicatorResult
+  nameWithType: HistoricalIndicatorResult
+  fullName: Meridian.Application.Indicators.HistoricalIndicatorResult
+- uid: Meridian.Application.Indicators
+  commentId: N:Meridian.Application.Indicators
+  href: Meridian.html
+  name: Meridian.Application.Indicators
+  nameWithType: Meridian.Application.Indicators
+  fullName: Meridian.Application.Indicators
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Indicators
+    name: Indicators
+    href: Meridian.Application.Indicators.html

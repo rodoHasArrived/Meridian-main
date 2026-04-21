@@ -1,0 +1,271 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Export.ExportPresetFormat
+  commentId: T:Meridian.Contracts.Export.ExportPresetFormat
+  id: ExportPresetFormat
+  parent: Meridian.Contracts.Export
+  children:
+  - Meridian.Contracts.Export.ExportPresetFormat.Csv
+  - Meridian.Contracts.Export.ExportPresetFormat.Jsonl
+  - Meridian.Contracts.Export.ExportPresetFormat.Lean
+  - Meridian.Contracts.Export.ExportPresetFormat.Parquet
+  - Meridian.Contracts.Export.ExportPresetFormat.Raw
+  - Meridian.Contracts.Export.ExportPresetFormat.Sql
+  - Meridian.Contracts.Export.ExportPresetFormat.Xlsx
+  langs:
+  - csharp
+  - vb
+  name: ExportPresetFormat
+  nameWithType: ExportPresetFormat
+  fullName: Meridian.Contracts.Export.ExportPresetFormat
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportPresetFormat
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Supported export formats for presets.
+  example: []
+  syntax:
+    content: 'public enum ExportPresetFormat : byte'
+    content.vb: Public Enum ExportPresetFormat As Byte
+- uid: Meridian.Contracts.Export.ExportPresetFormat.Parquet
+  commentId: F:Meridian.Contracts.Export.ExportPresetFormat.Parquet
+  id: Parquet
+  parent: Meridian.Contracts.Export.ExportPresetFormat
+  langs:
+  - csharp
+  - vb
+  name: Parquet
+  nameWithType: ExportPresetFormat.Parquet
+  fullName: Meridian.Contracts.Export.ExportPresetFormat.Parquet
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Parquet
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 235
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Apache Parquet columnar format.
+  example: []
+  syntax:
+    content: Parquet = 0
+    return:
+      type: Meridian.Contracts.Export.ExportPresetFormat
+- uid: Meridian.Contracts.Export.ExportPresetFormat.Csv
+  commentId: F:Meridian.Contracts.Export.ExportPresetFormat.Csv
+  id: Csv
+  parent: Meridian.Contracts.Export.ExportPresetFormat
+  langs:
+  - csharp
+  - vb
+  name: Csv
+  nameWithType: ExportPresetFormat.Csv
+  fullName: Meridian.Contracts.Export.ExportPresetFormat.Csv
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Csv
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 237
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Comma-separated values.
+  example: []
+  syntax:
+    content: Csv = 1
+    return:
+      type: Meridian.Contracts.Export.ExportPresetFormat
+- uid: Meridian.Contracts.Export.ExportPresetFormat.Jsonl
+  commentId: F:Meridian.Contracts.Export.ExportPresetFormat.Jsonl
+  id: Jsonl
+  parent: Meridian.Contracts.Export.ExportPresetFormat
+  langs:
+  - csharp
+  - vb
+  name: Jsonl
+  nameWithType: ExportPresetFormat.Jsonl
+  fullName: Meridian.Contracts.Export.ExportPresetFormat.Jsonl
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Jsonl
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 239
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: JSON Lines format.
+  example: []
+  syntax:
+    content: Jsonl = 2
+    return:
+      type: Meridian.Contracts.Export.ExportPresetFormat
+- uid: Meridian.Contracts.Export.ExportPresetFormat.Lean
+  commentId: F:Meridian.Contracts.Export.ExportPresetFormat.Lean
+  id: Lean
+  parent: Meridian.Contracts.Export.ExportPresetFormat
+  langs:
+  - csharp
+  - vb
+  name: Lean
+  nameWithType: ExportPresetFormat.Lean
+  fullName: Meridian.Contracts.Export.ExportPresetFormat.Lean
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lean
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: QuantConnect Lean native format.
+  example: []
+  syntax:
+    content: Lean = 3
+    return:
+      type: Meridian.Contracts.Export.ExportPresetFormat
+- uid: Meridian.Contracts.Export.ExportPresetFormat.Xlsx
+  commentId: F:Meridian.Contracts.Export.ExportPresetFormat.Xlsx
+  id: Xlsx
+  parent: Meridian.Contracts.Export.ExportPresetFormat
+  langs:
+  - csharp
+  - vb
+  name: Xlsx
+  nameWithType: ExportPresetFormat.Xlsx
+  fullName: Meridian.Contracts.Export.ExportPresetFormat.Xlsx
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Xlsx
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 243
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Microsoft Excel XLSX format.
+  example: []
+  syntax:
+    content: Xlsx = 4
+    return:
+      type: Meridian.Contracts.Export.ExportPresetFormat
+- uid: Meridian.Contracts.Export.ExportPresetFormat.Sql
+  commentId: F:Meridian.Contracts.Export.ExportPresetFormat.Sql
+  id: Sql
+  parent: Meridian.Contracts.Export.ExportPresetFormat
+  langs:
+  - csharp
+  - vb
+  name: Sql
+  nameWithType: ExportPresetFormat.Sql
+  fullName: Meridian.Contracts.Export.ExportPresetFormat.Sql
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sql
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 245
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: SQL statements for database import.
+  example: []
+  syntax:
+    content: Sql = 5
+    return:
+      type: Meridian.Contracts.Export.ExportPresetFormat
+- uid: Meridian.Contracts.Export.ExportPresetFormat.Raw
+  commentId: F:Meridian.Contracts.Export.ExportPresetFormat.Raw
+  id: Raw
+  parent: Meridian.Contracts.Export.ExportPresetFormat
+  langs:
+  - csharp
+  - vb
+  name: Raw
+  nameWithType: ExportPresetFormat.Raw
+  fullName: Meridian.Contracts.Export.ExportPresetFormat.Raw
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Export/ExportPreset.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Raw
+    path: ../../src/Meridian.Contracts/Export/ExportPreset.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Export
+  summary: Raw format (copy without conversion).
+  example: []
+  syntax:
+    content: Raw = 6
+    return:
+      type: Meridian.Contracts.Export.ExportPresetFormat
+references:
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: Meridian.Contracts.Export.ExportPresetFormat
+  commentId: T:Meridian.Contracts.Export.ExportPresetFormat
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.ExportPresetFormat.html
+  name: ExportPresetFormat
+  nameWithType: ExportPresetFormat
+  fullName: Meridian.Contracts.Export.ExportPresetFormat

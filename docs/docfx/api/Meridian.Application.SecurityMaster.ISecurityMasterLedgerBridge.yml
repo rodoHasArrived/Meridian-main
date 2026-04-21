@@ -1,0 +1,274 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
+  commentId: T:Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
+  id: ISecurityMasterLedgerBridge
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISecurityMasterLedgerBridge
+  nameWithType: ISecurityMasterLedgerBridge
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISecurityMasterLedgerBridge
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Posts Security Master corporate action events into a <xref href="Meridian.Ledger" data-throw-if-not-resolved="false"></xref>
+
+    using <xref href="Meridian.Ledger.LedgerViewKind.SecurityMaster" data-throw-if-not-resolved="false"></xref>, enabling reconciliation between
+
+    contractual flows (declared in the Security Master) and actual cash movements.
+  example: []
+  syntax:
+    content: public interface ISecurityMasterLedgerBridge
+    content.vb: Public Interface ISecurityMasterLedgerBridge
+  derivedClasses:
+  - Meridian.Application.SecurityMaster.SecurityMasterLedgerBridge
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  id: PostCorporateActionsAsync(System.Guid,System.String,Meridian.Ledger.Ledger,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge
+  langs:
+  - csharp
+  - vb
+  name: PostCorporateActionsAsync(Guid, string, Ledger, CancellationToken)
+  nameWithType: ISecurityMasterLedgerBridge.PostCorporateActionsAsync(Guid, string, Ledger, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid, string, Meridian.Ledger.Ledger, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostCorporateActionsAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterLedgerBridge.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Posts contractual corporate action flows for <code class="paramref">securityId</code> into
+
+    <code class="paramref">ledger</code> using <xref href="Meridian.Ledger.LedgerViewKind.SecurityMaster" data-throw-if-not-resolved="false"></xref>.
+
+    Idempotent: entries whose <xref href="Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId" data-throw-if-not-resolved="false"></xref> already appear
+
+    as a <xref href="Meridian.Ledger.JournalEntry.JournalEntryId" data-throw-if-not-resolved="false"></xref> in the ledger are skipped.
+  example: []
+  syntax:
+    content: Task PostCorporateActionsAsync(Guid securityId, string ticker, Ledger ledger, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ticker
+      type: System.String
+    - id: ledger
+      type: Meridian.Ledger.Ledger
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function PostCorporateActionsAsync(securityId As Guid, ticker As String, ledger As Ledger, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync*
+  nameWithType.vb: ISecurityMasterLedgerBridge.PostCorporateActionsAsync(Guid, String, Ledger, CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync(System.Guid, String, Meridian.Ledger.Ledger, System.Threading.CancellationToken)
+  name.vb: PostCorporateActionsAsync(Guid, String, Ledger, CancellationToken)
+references:
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: Meridian.Ledger.LedgerViewKind.SecurityMaster
+  commentId: F:Meridian.Ledger.LedgerViewKind.SecurityMaster
+  name: SecurityMaster
+  nameWithType: LedgerViewKind.SecurityMaster
+  fullName: Meridian.Ledger.LedgerViewKind.SecurityMaster
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+  commentId: P:Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+  name: CorpActId
+  nameWithType: CorporateActionDto.CorpActId
+  fullName: Meridian.Contracts.SecurityMaster.CorporateActionDto.CorpActId
+- uid: Meridian.Ledger.JournalEntry.JournalEntryId
+  commentId: P:Meridian.Ledger.JournalEntry.JournalEntryId
+  name: JournalEntryId
+  nameWithType: JournalEntry.JournalEntryId
+  fullName: Meridian.Ledger.JournalEntry.JournalEntryId
+- uid: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync
+  href: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.html#Meridian_Application_SecurityMaster_ISecurityMasterLedgerBridge_PostCorporateActionsAsync_System_Guid_System_String_Meridian_Ledger_Ledger_System_Threading_CancellationToken_
+  name: PostCorporateActionsAsync
+  nameWithType: ISecurityMasterLedgerBridge.PostCorporateActionsAsync
+  fullName: Meridian.Application.SecurityMaster.ISecurityMasterLedgerBridge.PostCorporateActionsAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ledger.Ledger
+  commentId: T:Meridian.Ledger.Ledger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.Ledger.html
+  name: Ledger
+  nameWithType: Ledger
+  fullName: Meridian.Ledger.Ledger
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

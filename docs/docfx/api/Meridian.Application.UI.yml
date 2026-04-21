@@ -1,0 +1,148 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  id: Meridian.Application.UI
+  children:
+  - Meridian.Application.UI.ArchiveMaintenanceEndpoints
+  - Meridian.Application.UI.BackfillCoordinator
+  - Meridian.Application.UI.CleanupHistoryRequest
+  - Meridian.Application.UI.ConfigStore
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  - Meridian.Application.UI.ExecuteMaintenanceRequest
+  - Meridian.Application.UI.ImportRequest
+  - Meridian.Application.UI.MaintenanceOptionsDto
+  - Meridian.Application.UI.PackageRequest
+  - Meridian.Application.UI.PackagingEndpoints
+  - Meridian.Application.UI.StatusEndpointHandlers
+  - Meridian.Application.UI.UpdateMaintenanceScheduleRequest
+  - Meridian.Application.UI.ValidateMaintenanceCronRequest
+  - Meridian.Application.UI.ValidateRequest
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  type: Namespace
+  assemblies:
+  - Meridian.Application
+references:
+- uid: Meridian.Application.UI.BackfillCoordinator
+  commentId: T:Meridian.Application.UI.BackfillCoordinator
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.BackfillCoordinator.html
+  name: BackfillCoordinator
+  nameWithType: BackfillCoordinator
+  fullName: Meridian.Application.UI.BackfillCoordinator
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: Meridian.Application.UI.ArchiveMaintenanceEndpoints
+  commentId: T:Meridian.Application.UI.ArchiveMaintenanceEndpoints
+  href: Meridian.Application.UI.ArchiveMaintenanceEndpoints.html
+  name: ArchiveMaintenanceEndpoints
+  nameWithType: ArchiveMaintenanceEndpoints
+  fullName: Meridian.Application.UI.ArchiveMaintenanceEndpoints
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  commentId: T:Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html
+  name: CreateMaintenanceScheduleRequest
+  nameWithType: CreateMaintenanceScheduleRequest
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+- uid: Meridian.Application.UI.UpdateMaintenanceScheduleRequest
+  commentId: T:Meridian.Application.UI.UpdateMaintenanceScheduleRequest
+  href: Meridian.Application.UI.UpdateMaintenanceScheduleRequest.html
+  name: UpdateMaintenanceScheduleRequest
+  nameWithType: UpdateMaintenanceScheduleRequest
+  fullName: Meridian.Application.UI.UpdateMaintenanceScheduleRequest
+- uid: Meridian.Application.UI.ExecuteMaintenanceRequest
+  commentId: T:Meridian.Application.UI.ExecuteMaintenanceRequest
+  href: Meridian.Application.UI.ExecuteMaintenanceRequest.html
+  name: ExecuteMaintenanceRequest
+  nameWithType: ExecuteMaintenanceRequest
+  fullName: Meridian.Application.UI.ExecuteMaintenanceRequest
+- uid: Meridian.Application.UI.ValidateMaintenanceCronRequest
+  commentId: T:Meridian.Application.UI.ValidateMaintenanceCronRequest
+  href: Meridian.Application.UI.ValidateMaintenanceCronRequest.html
+  name: ValidateMaintenanceCronRequest
+  nameWithType: ValidateMaintenanceCronRequest
+  fullName: Meridian.Application.UI.ValidateMaintenanceCronRequest
+- uid: Meridian.Application.UI.CleanupHistoryRequest
+  commentId: T:Meridian.Application.UI.CleanupHistoryRequest
+  href: Meridian.Application.UI.CleanupHistoryRequest.html
+  name: CleanupHistoryRequest
+  nameWithType: CleanupHistoryRequest
+  fullName: Meridian.Application.UI.CleanupHistoryRequest
+- uid: Meridian.Application.UI.MaintenanceOptionsDto
+  commentId: T:Meridian.Application.UI.MaintenanceOptionsDto
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.MaintenanceOptionsDto.html
+  name: MaintenanceOptionsDto
+  nameWithType: MaintenanceOptionsDto
+  fullName: Meridian.Application.UI.MaintenanceOptionsDto
+- uid: Meridian.Application.UI.PackagingEndpoints
+  commentId: T:Meridian.Application.UI.PackagingEndpoints
+  href: Meridian.Application.UI.PackagingEndpoints.html
+  name: PackagingEndpoints
+  nameWithType: PackagingEndpoints
+  fullName: Meridian.Application.UI.PackagingEndpoints
+- uid: Meridian.Application.UI.PackageRequest
+  commentId: T:Meridian.Application.UI.PackageRequest
+  href: Meridian.Application.UI.PackageRequest.html
+  name: PackageRequest
+  nameWithType: PackageRequest
+  fullName: Meridian.Application.UI.PackageRequest
+- uid: Meridian.Application.UI.ImportRequest
+  commentId: T:Meridian.Application.UI.ImportRequest
+  href: Meridian.Application.UI.ImportRequest.html
+  name: ImportRequest
+  nameWithType: ImportRequest
+  fullName: Meridian.Application.UI.ImportRequest
+- uid: Meridian.Application.UI.ValidateRequest
+  commentId: T:Meridian.Application.UI.ValidateRequest
+  href: Meridian.Application.UI.ValidateRequest.html
+  name: ValidateRequest
+  nameWithType: ValidateRequest
+  fullName: Meridian.Application.UI.ValidateRequest
+- uid: Meridian.Application.UI.StatusEndpointHandlers
+  commentId: T:Meridian.Application.UI.StatusEndpointHandlers
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.StatusEndpointHandlers.html
+  name: StatusEndpointHandlers
+  nameWithType: StatusEndpointHandlers
+  fullName: Meridian.Application.UI.StatusEndpointHandlers
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html

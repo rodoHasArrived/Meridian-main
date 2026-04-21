@@ -1,0 +1,1279 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ProviderHealthService
+  commentId: T:Meridian.Ui.Services.ProviderHealthService
+  id: ProviderHealthService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ProviderHealthService.CompareProvidersAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ProviderHealthService.Dispose
+  - Meridian.Ui.Services.ProviderHealthService.GetAllProviderHealthAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ProviderHealthService.GetFailoverThresholdsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ProviderHealthService.GetHealthHistory(System.String,System.TimeSpan)
+  - Meridian.Ui.Services.ProviderHealthService.GetProviderHealthAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.ProviderHealthService.HealthAlert
+  - Meridian.Ui.Services.ProviderHealthService.HealthUpdated
+  - Meridian.Ui.Services.ProviderHealthService.Instance
+  - Meridian.Ui.Services.ProviderHealthService.StartMonitoring
+  - Meridian.Ui.Services.ProviderHealthService.StopMonitoring
+  - Meridian.Ui.Services.ProviderHealthService.UpdateFailoverThresholdsAsync(Meridian.Ui.Services.FailoverThresholds,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ProviderHealthService
+  nameWithType: ProviderHealthService
+  fullName: Meridian.Ui.Services.ProviderHealthService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderHealthService
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for monitoring and calculating provider health scores.
+
+    Provides detailed breakdown of health metrics and historical trends.
+  example: []
+  syntax:
+    content: 'public sealed class ProviderHealthService : IDisposable'
+    content.vb: Public NotInheritable Class ProviderHealthService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ProviderHealthService.Instance
+  commentId: P:Meridian.Ui.Services.ProviderHealthService.Instance
+  id: Instance
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: Instance
+  nameWithType: ProviderHealthService.Instance
+  fullName: Meridian.Ui.Services.ProviderHealthService.Instance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Instance
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public static ProviderHealthService Instance { get; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ProviderHealthService
+    content.vb: Public Shared ReadOnly Property Instance As ProviderHealthService
+  overload: Meridian.Ui.Services.ProviderHealthService.Instance*
+- uid: Meridian.Ui.Services.ProviderHealthService.HealthUpdated
+  commentId: E:Meridian.Ui.Services.ProviderHealthService.HealthUpdated
+  id: HealthUpdated
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: HealthUpdated
+  nameWithType: ProviderHealthService.HealthUpdated
+  fullName: Meridian.Ui.Services.ProviderHealthService.HealthUpdated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthUpdated
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when health data is updated.
+  example: []
+  syntax:
+    content: public event EventHandler<HealthUpdateEventArgs>? HealthUpdated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.HealthUpdateEventArgs}
+    content.vb: Public Event HealthUpdated As EventHandler(Of HealthUpdateEventArgs)
+- uid: Meridian.Ui.Services.ProviderHealthService.HealthAlert
+  commentId: E:Meridian.Ui.Services.ProviderHealthService.HealthAlert
+  id: HealthAlert
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: HealthAlert
+  nameWithType: ProviderHealthService.HealthAlert
+  fullName: Meridian.Ui.Services.ProviderHealthService.HealthAlert
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthAlert
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Event raised when a provider's health falls below threshold.
+  example: []
+  syntax:
+    content: public event EventHandler<HealthAlertEventArgs>? HealthAlert
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.HealthAlertEventArgs}
+    content.vb: Public Event HealthAlert As EventHandler(Of HealthAlertEventArgs)
+- uid: Meridian.Ui.Services.ProviderHealthService.StartMonitoring
+  commentId: M:Meridian.Ui.Services.ProviderHealthService.StartMonitoring
+  id: StartMonitoring
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: StartMonitoring()
+  nameWithType: ProviderHealthService.StartMonitoring()
+  fullName: Meridian.Ui.Services.ProviderHealthService.StartMonitoring()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartMonitoring
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Starts health monitoring.
+  example: []
+  syntax:
+    content: public void StartMonitoring()
+    content.vb: Public Sub StartMonitoring()
+  overload: Meridian.Ui.Services.ProviderHealthService.StartMonitoring*
+- uid: Meridian.Ui.Services.ProviderHealthService.StopMonitoring
+  commentId: M:Meridian.Ui.Services.ProviderHealthService.StopMonitoring
+  id: StopMonitoring
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: StopMonitoring()
+  nameWithType: ProviderHealthService.StopMonitoring()
+  fullName: Meridian.Ui.Services.ProviderHealthService.StopMonitoring()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopMonitoring
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Stops health monitoring.
+  example: []
+  syntax:
+    content: public void StopMonitoring()
+    content.vb: Public Sub StopMonitoring()
+  overload: Meridian.Ui.Services.ProviderHealthService.StopMonitoring*
+- uid: Meridian.Ui.Services.ProviderHealthService.GetAllProviderHealthAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ProviderHealthService.GetAllProviderHealthAsync(System.Threading.CancellationToken)
+  id: GetAllProviderHealthAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: GetAllProviderHealthAsync(CancellationToken)
+  nameWithType: ProviderHealthService.GetAllProviderHealthAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.ProviderHealthService.GetAllProviderHealthAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllProviderHealthAsync
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets health data for all providers.
+  example: []
+  syntax:
+    content: public Task<List<ProviderHealthData>> GetAllProviderHealthAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.ProviderHealthData}}
+    content.vb: Public Function GetAllProviderHealthAsync(ct As CancellationToken = Nothing) As Task(Of List(Of ProviderHealthData))
+  overload: Meridian.Ui.Services.ProviderHealthService.GetAllProviderHealthAsync*
+- uid: Meridian.Ui.Services.ProviderHealthService.GetProviderHealthAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ProviderHealthService.GetProviderHealthAsync(System.String,System.Threading.CancellationToken)
+  id: GetProviderHealthAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: GetProviderHealthAsync(string, CancellationToken)
+  nameWithType: ProviderHealthService.GetProviderHealthAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.ProviderHealthService.GetProviderHealthAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderHealthAsync
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets health data for a specific provider.
+  example: []
+  syntax:
+    content: public Task<ProviderHealthData?> GetProviderHealthAsync(string providerId, CancellationToken ct = default)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderHealthData}
+    content.vb: Public Function GetProviderHealthAsync(providerId As String, ct As CancellationToken = Nothing) As Task(Of ProviderHealthData)
+  overload: Meridian.Ui.Services.ProviderHealthService.GetProviderHealthAsync*
+  nameWithType.vb: ProviderHealthService.GetProviderHealthAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.ProviderHealthService.GetProviderHealthAsync(String, System.Threading.CancellationToken)
+  name.vb: GetProviderHealthAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.ProviderHealthService.GetHealthHistory(System.String,System.TimeSpan)
+  commentId: M:Meridian.Ui.Services.ProviderHealthService.GetHealthHistory(System.String,System.TimeSpan)
+  id: GetHealthHistory(System.String,System.TimeSpan)
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: GetHealthHistory(string, TimeSpan)
+  nameWithType: ProviderHealthService.GetHealthHistory(string, TimeSpan)
+  fullName: Meridian.Ui.Services.ProviderHealthService.GetHealthHistory(string, System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHealthHistory
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets health history for a provider.
+  example: []
+  syntax:
+    content: public List<HealthHistoryPoint> GetHealthHistory(string providerId, TimeSpan duration)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: duration
+      type: System.TimeSpan
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.HealthHistoryPoint}
+    content.vb: Public Function GetHealthHistory(providerId As String, duration As TimeSpan) As List(Of HealthHistoryPoint)
+  overload: Meridian.Ui.Services.ProviderHealthService.GetHealthHistory*
+  nameWithType.vb: ProviderHealthService.GetHealthHistory(String, TimeSpan)
+  fullName.vb: Meridian.Ui.Services.ProviderHealthService.GetHealthHistory(String, System.TimeSpan)
+  name.vb: GetHealthHistory(String, TimeSpan)
+- uid: Meridian.Ui.Services.ProviderHealthService.GetFailoverThresholdsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ProviderHealthService.GetFailoverThresholdsAsync(System.Threading.CancellationToken)
+  id: GetFailoverThresholdsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: GetFailoverThresholdsAsync(CancellationToken)
+  nameWithType: ProviderHealthService.GetFailoverThresholdsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.ProviderHealthService.GetFailoverThresholdsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetFailoverThresholdsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets failover thresholds configuration.
+  example: []
+  syntax:
+    content: public Task<FailoverThresholds> GetFailoverThresholdsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.FailoverThresholds}
+    content.vb: Public Function GetFailoverThresholdsAsync(ct As CancellationToken = Nothing) As Task(Of FailoverThresholds)
+  overload: Meridian.Ui.Services.ProviderHealthService.GetFailoverThresholdsAsync*
+- uid: Meridian.Ui.Services.ProviderHealthService.UpdateFailoverThresholdsAsync(Meridian.Ui.Services.FailoverThresholds,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ProviderHealthService.UpdateFailoverThresholdsAsync(Meridian.Ui.Services.FailoverThresholds,System.Threading.CancellationToken)
+  id: UpdateFailoverThresholdsAsync(Meridian.Ui.Services.FailoverThresholds,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: UpdateFailoverThresholdsAsync(FailoverThresholds, CancellationToken)
+  nameWithType: ProviderHealthService.UpdateFailoverThresholdsAsync(FailoverThresholds, CancellationToken)
+  fullName: Meridian.Ui.Services.ProviderHealthService.UpdateFailoverThresholdsAsync(Meridian.Ui.Services.FailoverThresholds, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateFailoverThresholdsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Updates failover thresholds.
+  example: []
+  syntax:
+    content: public Task<bool> UpdateFailoverThresholdsAsync(FailoverThresholds thresholds, CancellationToken ct = default)
+    parameters:
+    - id: thresholds
+      type: Meridian.Ui.Services.FailoverThresholds
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function UpdateFailoverThresholdsAsync(thresholds As FailoverThresholds, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.ProviderHealthService.UpdateFailoverThresholdsAsync*
+- uid: Meridian.Ui.Services.ProviderHealthService.CompareProvidersAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.ProviderHealthService.CompareProvidersAsync(System.Threading.CancellationToken)
+  id: CompareProvidersAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: CompareProvidersAsync(CancellationToken)
+  nameWithType: ProviderHealthService.CompareProvidersAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.ProviderHealthService.CompareProvidersAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompareProvidersAsync
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Compares health metrics across providers.
+  example: []
+  syntax:
+    content: public Task<ProviderHealthComparison> CompareProvidersAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderHealthComparison}
+    content.vb: Public Function CompareProvidersAsync(ct As CancellationToken = Nothing) As Task(Of ProviderHealthComparison)
+  overload: Meridian.Ui.Services.ProviderHealthService.CompareProvidersAsync*
+- uid: Meridian.Ui.Services.ProviderHealthService.Dispose
+  commentId: M:Meridian.Ui.Services.ProviderHealthService.Dispose
+  id: Dispose
+  parent: Meridian.Ui.Services.ProviderHealthService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: ProviderHealthService.Dispose()
+  fullName: Meridian.Ui.Services.ProviderHealthService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Ui.Services/Services/ProviderHealthService.cs
+    startLine: 418
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Ui.Services.ProviderHealthService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ProviderHealthService.Instance*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.Instance
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_Instance
+  name: Instance
+  nameWithType: ProviderHealthService.Instance
+  fullName: Meridian.Ui.Services.ProviderHealthService.Instance
+- uid: Meridian.Ui.Services.ProviderHealthService
+  commentId: T:Meridian.Ui.Services.ProviderHealthService
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ProviderHealthService.html
+  name: ProviderHealthService
+  nameWithType: ProviderHealthService
+  fullName: Meridian.Ui.Services.ProviderHealthService
+- uid: System.EventHandler{Meridian.Ui.Services.HealthUpdateEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.HealthUpdateEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<HealthUpdateEventArgs>
+  nameWithType: EventHandler<HealthUpdateEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.HealthUpdateEventArgs>
+  nameWithType.vb: EventHandler(Of HealthUpdateEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.HealthUpdateEventArgs)
+  name.vb: EventHandler(Of HealthUpdateEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.HealthUpdateEventArgs
+    name: HealthUpdateEventArgs
+    href: Meridian.Ui.Services.HealthUpdateEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.HealthUpdateEventArgs
+    name: HealthUpdateEventArgs
+    href: Meridian.Ui.Services.HealthUpdateEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{Meridian.Ui.Services.HealthAlertEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.HealthAlertEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<HealthAlertEventArgs>
+  nameWithType: EventHandler<HealthAlertEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.HealthAlertEventArgs>
+  nameWithType.vb: EventHandler(Of HealthAlertEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.HealthAlertEventArgs)
+  name.vb: EventHandler(Of HealthAlertEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.HealthAlertEventArgs
+    name: HealthAlertEventArgs
+    href: Meridian.Ui.Services.HealthAlertEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.HealthAlertEventArgs
+    name: HealthAlertEventArgs
+    href: Meridian.Ui.Services.HealthAlertEventArgs.html
+  - name: )
+- uid: Meridian.Ui.Services.ProviderHealthService.StartMonitoring*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.StartMonitoring
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_StartMonitoring
+  name: StartMonitoring
+  nameWithType: ProviderHealthService.StartMonitoring
+  fullName: Meridian.Ui.Services.ProviderHealthService.StartMonitoring
+- uid: Meridian.Ui.Services.ProviderHealthService.StopMonitoring*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.StopMonitoring
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_StopMonitoring
+  name: StopMonitoring
+  nameWithType: ProviderHealthService.StopMonitoring
+  fullName: Meridian.Ui.Services.ProviderHealthService.StopMonitoring
+- uid: Meridian.Ui.Services.ProviderHealthService.GetAllProviderHealthAsync*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.GetAllProviderHealthAsync
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_GetAllProviderHealthAsync_System_Threading_CancellationToken_
+  name: GetAllProviderHealthAsync
+  nameWithType: ProviderHealthService.GetAllProviderHealthAsync
+  fullName: Meridian.Ui.Services.ProviderHealthService.GetAllProviderHealthAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.ProviderHealthData}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{Meridian.Ui.Services.ProviderHealthData}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<ProviderHealthData>>
+  nameWithType: Task<List<ProviderHealthData>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<Meridian.Ui.Services.ProviderHealthData>>
+  nameWithType.vb: Task(Of List(Of ProviderHealthData))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of Meridian.Ui.Services.ProviderHealthData))
+  name.vb: Task(Of List(Of ProviderHealthData))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.ProviderHealthData
+    name: ProviderHealthData
+    href: Meridian.Ui.Services.ProviderHealthData.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ProviderHealthData
+    name: ProviderHealthData
+    href: Meridian.Ui.Services.ProviderHealthData.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.ProviderHealthService.GetProviderHealthAsync*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.GetProviderHealthAsync
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_GetProviderHealthAsync_System_String_System_Threading_CancellationToken_
+  name: GetProviderHealthAsync
+  nameWithType: ProviderHealthService.GetProviderHealthAsync
+  fullName: Meridian.Ui.Services.ProviderHealthService.GetProviderHealthAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderHealthData}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderHealthData}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProviderHealthData>
+  nameWithType: Task<ProviderHealthData>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderHealthData>
+  nameWithType.vb: Task(Of ProviderHealthData)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderHealthData)
+  name.vb: Task(Of ProviderHealthData)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ProviderHealthData
+    name: ProviderHealthData
+    href: Meridian.Ui.Services.ProviderHealthData.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ProviderHealthData
+    name: ProviderHealthData
+    href: Meridian.Ui.Services.ProviderHealthData.html
+  - name: )
+- uid: Meridian.Ui.Services.ProviderHealthService.GetHealthHistory*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.GetHealthHistory
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_GetHealthHistory_System_String_System_TimeSpan_
+  name: GetHealthHistory
+  nameWithType: ProviderHealthService.GetHealthHistory
+  fullName: Meridian.Ui.Services.ProviderHealthService.GetHealthHistory
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.HealthHistoryPoint}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.HealthHistoryPoint}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<HealthHistoryPoint>
+  nameWithType: List<HealthHistoryPoint>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.HealthHistoryPoint>
+  nameWithType.vb: List(Of HealthHistoryPoint)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.HealthHistoryPoint)
+  name.vb: List(Of HealthHistoryPoint)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.HealthHistoryPoint
+    name: HealthHistoryPoint
+    href: Meridian.Ui.Services.HealthHistoryPoint.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.HealthHistoryPoint
+    name: HealthHistoryPoint
+    href: Meridian.Ui.Services.HealthHistoryPoint.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.ProviderHealthService.GetFailoverThresholdsAsync*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.GetFailoverThresholdsAsync
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_GetFailoverThresholdsAsync_System_Threading_CancellationToken_
+  name: GetFailoverThresholdsAsync
+  nameWithType: ProviderHealthService.GetFailoverThresholdsAsync
+  fullName: Meridian.Ui.Services.ProviderHealthService.GetFailoverThresholdsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.FailoverThresholds}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.FailoverThresholds}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<FailoverThresholds>
+  nameWithType: Task<FailoverThresholds>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.FailoverThresholds>
+  nameWithType.vb: Task(Of FailoverThresholds)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.FailoverThresholds)
+  name.vb: Task(Of FailoverThresholds)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.FailoverThresholds
+    name: FailoverThresholds
+    href: Meridian.Ui.Services.FailoverThresholds.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.FailoverThresholds
+    name: FailoverThresholds
+    href: Meridian.Ui.Services.FailoverThresholds.html
+  - name: )
+- uid: Meridian.Ui.Services.ProviderHealthService.UpdateFailoverThresholdsAsync*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.UpdateFailoverThresholdsAsync
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_UpdateFailoverThresholdsAsync_Meridian_Ui_Services_FailoverThresholds_System_Threading_CancellationToken_
+  name: UpdateFailoverThresholdsAsync
+  nameWithType: ProviderHealthService.UpdateFailoverThresholdsAsync
+  fullName: Meridian.Ui.Services.ProviderHealthService.UpdateFailoverThresholdsAsync
+- uid: Meridian.Ui.Services.FailoverThresholds
+  commentId: T:Meridian.Ui.Services.FailoverThresholds
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.FailoverThresholds.html
+  name: FailoverThresholds
+  nameWithType: FailoverThresholds
+  fullName: Meridian.Ui.Services.FailoverThresholds
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Ui.Services.ProviderHealthService.CompareProvidersAsync*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.CompareProvidersAsync
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_CompareProvidersAsync_System_Threading_CancellationToken_
+  name: CompareProvidersAsync
+  nameWithType: ProviderHealthService.CompareProvidersAsync
+  fullName: Meridian.Ui.Services.ProviderHealthService.CompareProvidersAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderHealthComparison}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderHealthComparison}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProviderHealthComparison>
+  nameWithType: Task<ProviderHealthComparison>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderHealthComparison>
+  nameWithType.vb: Task(Of ProviderHealthComparison)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderHealthComparison)
+  name.vb: Task(Of ProviderHealthComparison)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ProviderHealthComparison
+    name: ProviderHealthComparison
+    href: Meridian.Ui.Services.ProviderHealthComparison.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ProviderHealthComparison
+    name: ProviderHealthComparison
+    href: Meridian.Ui.Services.ProviderHealthComparison.html
+  - name: )
+- uid: Meridian.Ui.Services.ProviderHealthService.Dispose*
+  commentId: Overload:Meridian.Ui.Services.ProviderHealthService.Dispose
+  href: Meridian.Ui.Services.ProviderHealthService.html#Meridian_Ui_Services_ProviderHealthService_Dispose
+  name: Dispose
+  nameWithType: ProviderHealthService.Dispose
+  fullName: Meridian.Ui.Services.ProviderHealthService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

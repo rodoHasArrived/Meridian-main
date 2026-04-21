@@ -1,0 +1,161 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.ICoLocationProfileActivator
+  commentId: T:Meridian.Application.Services.ICoLocationProfileActivator
+  id: ICoLocationProfileActivator
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.ICoLocationProfileActivator.Activate
+  - Meridian.Application.Services.ICoLocationProfileActivator.IsActive
+  langs:
+  - csharp
+  - vb
+  name: ICoLocationProfileActivator
+  nameWithType: ICoLocationProfileActivator
+  fullName: Meridian.Application.Services.ICoLocationProfileActivator
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Application/Services/CoLocationProfileActivator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ICoLocationProfileActivator
+    path: ../../src/Meridian.Application/Services/CoLocationProfileActivator.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: >-
+    Activates exchange colocation profile for ultra-low-latency trading:
+
+    - GC to sustained low-latency mode
+
+    - Nagle algorithm disabled at socket and HTTP layers
+
+    - Optional thread affinity to CPU core 0 (exchange colocation data center pattern)
+  example: []
+  syntax:
+    content: public interface ICoLocationProfileActivator
+    content.vb: Public Interface ICoLocationProfileActivator
+  derivedClasses:
+  - Meridian.Application.Services.CoLocationProfileActivator
+- uid: Meridian.Application.Services.ICoLocationProfileActivator.IsActive
+  commentId: P:Meridian.Application.Services.ICoLocationProfileActivator.IsActive
+  id: IsActive
+  parent: Meridian.Application.Services.ICoLocationProfileActivator
+  langs:
+  - csharp
+  - vb
+  name: IsActive
+  nameWithType: ICoLocationProfileActivator.IsActive
+  fullName: Meridian.Application.Services.ICoLocationProfileActivator.IsActive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/CoLocationProfileActivator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsActive
+    path: ../../src/Meridian.Application/Services/CoLocationProfileActivator.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Gets whether the CoLocation profile is currently active.
+  example: []
+  syntax:
+    content: bool IsActive { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: ReadOnly Property IsActive As Boolean
+  overload: Meridian.Application.Services.ICoLocationProfileActivator.IsActive*
+- uid: Meridian.Application.Services.ICoLocationProfileActivator.Activate
+  commentId: M:Meridian.Application.Services.ICoLocationProfileActivator.Activate
+  id: Activate
+  parent: Meridian.Application.Services.ICoLocationProfileActivator
+  langs:
+  - csharp
+  - vb
+  name: Activate()
+  nameWithType: ICoLocationProfileActivator.Activate()
+  fullName: Meridian.Application.Services.ICoLocationProfileActivator.Activate()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Services/CoLocationProfileActivator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Activate
+    path: ../../src/Meridian.Application/Services/CoLocationProfileActivator.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Activates the colocation profile.
+  example: []
+  syntax:
+    content: void Activate()
+    content.vb: Sub Activate()
+  overload: Meridian.Application.Services.ICoLocationProfileActivator.Activate*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.ICoLocationProfileActivator.IsActive*
+  commentId: Overload:Meridian.Application.Services.ICoLocationProfileActivator.IsActive
+  href: Meridian.Application.Services.ICoLocationProfileActivator.html#Meridian_Application_Services_ICoLocationProfileActivator_IsActive
+  name: IsActive
+  nameWithType: ICoLocationProfileActivator.IsActive
+  fullName: Meridian.Application.Services.ICoLocationProfileActivator.IsActive
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.ICoLocationProfileActivator.Activate*
+  commentId: Overload:Meridian.Application.Services.ICoLocationProfileActivator.Activate
+  href: Meridian.Application.Services.ICoLocationProfileActivator.html#Meridian_Application_Services_ICoLocationProfileActivator_Activate
+  name: Activate
+  nameWithType: ICoLocationProfileActivator.Activate
+  fullName: Meridian.Application.Services.ICoLocationProfileActivator.Activate

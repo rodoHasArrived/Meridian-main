@@ -27,7 +27,7 @@ public sealed class ConfigJsonSchemaGeneratorTests
         dataSourceSchema["type"]?.GetValue<string>().Should().Be("string");
         dataSourceSchema["enum"]!.AsArray().Select(static n => n!.GetValue<string>())
             .Should()
-            .Contain(["IB", "Alpaca", "Polygon", "StockSharp", "NYSE", "Synthetic"]);
+            .Contain(["IB", "Alpaca", "Polygon", "NYSE", "Synthetic"]);
     }
 
     [Fact]

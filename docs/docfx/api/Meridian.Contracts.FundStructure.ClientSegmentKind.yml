@@ -1,0 +1,159 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.ClientSegmentKind
+  commentId: T:Meridian.Contracts.FundStructure.ClientSegmentKind
+  id: ClientSegmentKind
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.ClientSegmentKind.FamilyOffice
+  - Meridian.Contracts.FundStructure.ClientSegmentKind.IndividualInvestor
+  - Meridian.Contracts.FundStructure.ClientSegmentKind.Unspecified
+  langs:
+  - csharp
+  - vb
+  name: ClientSegmentKind
+  nameWithType: ClientSegmentKind
+  fullName: Meridian.Contracts.FundStructure.ClientSegmentKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClientSegmentKind
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter<ClientSegmentKind>))]
+
+      public enum ClientSegmentKind
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter(Of ClientSegmentKind)))>
+
+      Public Enum ClientSegmentKind
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter{Meridian.Contracts.FundStructure.ClientSegmentKind}
+- uid: Meridian.Contracts.FundStructure.ClientSegmentKind.Unspecified
+  commentId: F:Meridian.Contracts.FundStructure.ClientSegmentKind.Unspecified
+  id: Unspecified
+  parent: Meridian.Contracts.FundStructure.ClientSegmentKind
+  langs:
+  - csharp
+  - vb
+  name: Unspecified
+  nameWithType: ClientSegmentKind.Unspecified
+  fullName: Meridian.Contracts.FundStructure.ClientSegmentKind.Unspecified
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unspecified
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: Unspecified = 0
+    return:
+      type: Meridian.Contracts.FundStructure.ClientSegmentKind
+- uid: Meridian.Contracts.FundStructure.ClientSegmentKind.IndividualInvestor
+  commentId: F:Meridian.Contracts.FundStructure.ClientSegmentKind.IndividualInvestor
+  id: IndividualInvestor
+  parent: Meridian.Contracts.FundStructure.ClientSegmentKind
+  langs:
+  - csharp
+  - vb
+  name: IndividualInvestor
+  nameWithType: ClientSegmentKind.IndividualInvestor
+  fullName: Meridian.Contracts.FundStructure.ClientSegmentKind.IndividualInvestor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndividualInvestor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: IndividualInvestor = 1
+    return:
+      type: Meridian.Contracts.FundStructure.ClientSegmentKind
+- uid: Meridian.Contracts.FundStructure.ClientSegmentKind.FamilyOffice
+  commentId: F:Meridian.Contracts.FundStructure.ClientSegmentKind.FamilyOffice
+  id: FamilyOffice
+  parent: Meridian.Contracts.FundStructure.ClientSegmentKind
+  langs:
+  - csharp
+  - vb
+  name: FamilyOffice
+  nameWithType: ClientSegmentKind.FamilyOffice
+  fullName: Meridian.Contracts.FundStructure.ClientSegmentKind.FamilyOffice
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FamilyOffice
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: FamilyOffice = 2
+    return:
+      type: Meridian.Contracts.FundStructure.ClientSegmentKind
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: Meridian.Contracts.FundStructure.ClientSegmentKind
+  commentId: T:Meridian.Contracts.FundStructure.ClientSegmentKind
+  parent: Meridian.Contracts.FundStructure
+  href: Meridian.Contracts.FundStructure.ClientSegmentKind.html
+  name: ClientSegmentKind
+  nameWithType: ClientSegmentKind
+  fullName: Meridian.Contracts.FundStructure.ClientSegmentKind

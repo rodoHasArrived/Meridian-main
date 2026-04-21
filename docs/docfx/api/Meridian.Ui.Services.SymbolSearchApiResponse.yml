@@ -1,0 +1,540 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse
+  commentId: T:Meridian.Ui.Services.SymbolSearchApiResponse
+  id: SymbolSearchApiResponse
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SymbolSearchApiResponse.ElapsedMs
+  - Meridian.Ui.Services.SymbolSearchApiResponse.Query
+  - Meridian.Ui.Services.SymbolSearchApiResponse.Results
+  - Meridian.Ui.Services.SymbolSearchApiResponse.Sources
+  - Meridian.Ui.Services.SymbolSearchApiResponse.TotalCount
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearchApiResponse
+  nameWithType: SymbolSearchApiResponse
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearchApiResponse
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 686
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: API response model for symbol search endpoint.
+  example: []
+  syntax:
+    content: public sealed class SymbolSearchApiResponse
+    content.vb: Public NotInheritable Class SymbolSearchApiResponse
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.Results
+  commentId: P:Meridian.Ui.Services.SymbolSearchApiResponse.Results
+  id: Results
+  parent: Meridian.Ui.Services.SymbolSearchApiResponse
+  langs:
+  - csharp
+  - vb
+  name: Results
+  nameWithType: SymbolSearchApiResponse.Results
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.Results
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Results
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 688
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public SymbolSearchApiResult[]? Results { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.SymbolSearchApiResult[]
+    content.vb: Public Property Results As SymbolSearchApiResult()
+  overload: Meridian.Ui.Services.SymbolSearchApiResponse.Results*
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.TotalCount
+  commentId: P:Meridian.Ui.Services.SymbolSearchApiResponse.TotalCount
+  id: TotalCount
+  parent: Meridian.Ui.Services.SymbolSearchApiResponse
+  langs:
+  - csharp
+  - vb
+  name: TotalCount
+  nameWithType: SymbolSearchApiResponse.TotalCount
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.TotalCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalCount
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 689
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int TotalCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalCount As Integer
+  overload: Meridian.Ui.Services.SymbolSearchApiResponse.TotalCount*
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.Sources
+  commentId: P:Meridian.Ui.Services.SymbolSearchApiResponse.Sources
+  id: Sources
+  parent: Meridian.Ui.Services.SymbolSearchApiResponse
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: SymbolSearchApiResponse.Sources
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 690
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string[]? Sources { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Sources As String()
+  overload: Meridian.Ui.Services.SymbolSearchApiResponse.Sources*
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.ElapsedMs
+  commentId: P:Meridian.Ui.Services.SymbolSearchApiResponse.ElapsedMs
+  id: ElapsedMs
+  parent: Meridian.Ui.Services.SymbolSearchApiResponse
+  langs:
+  - csharp
+  - vb
+  name: ElapsedMs
+  nameWithType: SymbolSearchApiResponse.ElapsedMs
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.ElapsedMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ElapsedMs
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 691
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long ElapsedMs { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ElapsedMs As Long
+  overload: Meridian.Ui.Services.SymbolSearchApiResponse.ElapsedMs*
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.Query
+  commentId: P:Meridian.Ui.Services.SymbolSearchApiResponse.Query
+  id: Query
+  parent: Meridian.Ui.Services.SymbolSearchApiResponse
+  langs:
+  - csharp
+  - vb
+  name: Query
+  nameWithType: SymbolSearchApiResponse.Query
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.Query
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Query
+    path: ../../src/Meridian.Ui.Services/Services/SymbolManagementService.cs
+    startLine: 692
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? Query { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Query As String
+  overload: Meridian.Ui.Services.SymbolSearchApiResponse.Query*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.Results*
+  commentId: Overload:Meridian.Ui.Services.SymbolSearchApiResponse.Results
+  href: Meridian.Ui.Services.SymbolSearchApiResponse.html#Meridian_Ui_Services_SymbolSearchApiResponse_Results
+  name: Results
+  nameWithType: SymbolSearchApiResponse.Results
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.Results
+- uid: Meridian.Ui.Services.SymbolSearchApiResult[]
+  isExternal: true
+  href: Meridian.Ui.Services.SymbolSearchApiResult.html
+  name: SymbolSearchApiResult[]
+  nameWithType: SymbolSearchApiResult[]
+  fullName: Meridian.Ui.Services.SymbolSearchApiResult[]
+  nameWithType.vb: SymbolSearchApiResult()
+  fullName.vb: Meridian.Ui.Services.SymbolSearchApiResult()
+  name.vb: SymbolSearchApiResult()
+  spec.csharp:
+  - uid: Meridian.Ui.Services.SymbolSearchApiResult
+    name: SymbolSearchApiResult
+    href: Meridian.Ui.Services.SymbolSearchApiResult.html
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Ui.Services.SymbolSearchApiResult
+    name: SymbolSearchApiResult
+    href: Meridian.Ui.Services.SymbolSearchApiResult.html
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.TotalCount*
+  commentId: Overload:Meridian.Ui.Services.SymbolSearchApiResponse.TotalCount
+  href: Meridian.Ui.Services.SymbolSearchApiResponse.html#Meridian_Ui_Services_SymbolSearchApiResponse_TotalCount
+  name: TotalCount
+  nameWithType: SymbolSearchApiResponse.TotalCount
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.TotalCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.Sources*
+  commentId: Overload:Meridian.Ui.Services.SymbolSearchApiResponse.Sources
+  href: Meridian.Ui.Services.SymbolSearchApiResponse.html#Meridian_Ui_Services_SymbolSearchApiResponse_Sources
+  name: Sources
+  nameWithType: SymbolSearchApiResponse.Sources
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.Sources
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.ElapsedMs*
+  commentId: Overload:Meridian.Ui.Services.SymbolSearchApiResponse.ElapsedMs
+  href: Meridian.Ui.Services.SymbolSearchApiResponse.html#Meridian_Ui_Services_SymbolSearchApiResponse_ElapsedMs
+  name: ElapsedMs
+  nameWithType: SymbolSearchApiResponse.ElapsedMs
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.ElapsedMs
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.SymbolSearchApiResponse.Query*
+  commentId: Overload:Meridian.Ui.Services.SymbolSearchApiResponse.Query
+  href: Meridian.Ui.Services.SymbolSearchApiResponse.html#Meridian_Ui_Services_SymbolSearchApiResponse_Query
+  name: Query
+  nameWithType: SymbolSearchApiResponse.Query
+  fullName: Meridian.Ui.Services.SymbolSearchApiResponse.Query
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.OrderType
+  commentId: T:Meridian.Execution.Sdk.OrderType
+  id: OrderType
+  parent: Meridian.Execution.Sdk
+  children:
+  - Meridian.Execution.Sdk.OrderType.Limit
+  - Meridian.Execution.Sdk.OrderType.Market
+  - Meridian.Execution.Sdk.OrderType.StopLimit
+  - Meridian.Execution.Sdk.OrderType.StopMarket
+  langs:
+  - csharp
+  - vb
+  name: OrderType
+  nameWithType: OrderType
+  fullName: Meridian.Execution.Sdk.OrderType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderType
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  summary: Order type.
+  example: []
+  syntax:
+    content: public enum OrderType
+    content.vb: Public Enum OrderType
+- uid: Meridian.Execution.Sdk.OrderType.Market
+  commentId: F:Meridian.Execution.Sdk.OrderType.Market
+  id: Market
+  parent: Meridian.Execution.Sdk.OrderType
+  langs:
+  - csharp
+  - vb
+  name: Market
+  nameWithType: OrderType.Market
+  fullName: Meridian.Execution.Sdk.OrderType.Market
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Market
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Market = 0
+    return:
+      type: Meridian.Execution.Sdk.OrderType
+- uid: Meridian.Execution.Sdk.OrderType.Limit
+  commentId: F:Meridian.Execution.Sdk.OrderType.Limit
+  id: Limit
+  parent: Meridian.Execution.Sdk.OrderType
+  langs:
+  - csharp
+  - vb
+  name: Limit
+  nameWithType: OrderType.Limit
+  fullName: Meridian.Execution.Sdk.OrderType.Limit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Limit
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: Limit = 1
+    return:
+      type: Meridian.Execution.Sdk.OrderType
+- uid: Meridian.Execution.Sdk.OrderType.StopMarket
+  commentId: F:Meridian.Execution.Sdk.OrderType.StopMarket
+  id: StopMarket
+  parent: Meridian.Execution.Sdk.OrderType
+  langs:
+  - csharp
+  - vb
+  name: StopMarket
+  nameWithType: OrderType.StopMarket
+  fullName: Meridian.Execution.Sdk.OrderType.StopMarket
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopMarket
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: StopMarket = 2
+    return:
+      type: Meridian.Execution.Sdk.OrderType
+- uid: Meridian.Execution.Sdk.OrderType.StopLimit
+  commentId: F:Meridian.Execution.Sdk.OrderType.StopLimit
+  id: StopLimit
+  parent: Meridian.Execution.Sdk.OrderType
+  langs:
+  - csharp
+  - vb
+  name: StopLimit
+  nameWithType: OrderType.StopLimit
+  fullName: Meridian.Execution.Sdk.OrderType.StopLimit
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Models.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopLimit
+    path: ../../src/Meridian.Execution.Sdk/Models.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk
+  syntax:
+    content: StopLimit = 3
+    return:
+      type: Meridian.Execution.Sdk.OrderType
+references:
+- uid: Meridian.Execution.Sdk
+  commentId: N:Meridian.Execution.Sdk
+  href: Meridian.html
+  name: Meridian.Execution.Sdk
+  nameWithType: Meridian.Execution.Sdk
+  fullName: Meridian.Execution.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+- uid: Meridian.Execution.Sdk.OrderType
+  commentId: T:Meridian.Execution.Sdk.OrderType
+  parent: Meridian.Execution.Sdk
+  href: Meridian.Execution.Sdk.OrderType.html
+  name: OrderType
+  nameWithType: OrderType
+  fullName: Meridian.Execution.Sdk.OrderType

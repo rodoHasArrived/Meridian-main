@@ -1,0 +1,822 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Scheduling.ScheduleDecision
+  commentId: T:Meridian.Application.Scheduling.ScheduleDecision
+  id: ScheduleDecision
+  parent: Meridian.Application.Scheduling
+  children:
+  - Meridian.Application.Scheduling.ScheduleDecision.#ctor(System.Boolean,System.String,System.Nullable{System.TimeSpan},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  - Meridian.Application.Scheduling.ScheduleDecision.Allowed
+  - Meridian.Application.Scheduling.ScheduleDecision.CanExecute
+  - Meridian.Application.Scheduling.ScheduleDecision.Context
+  - Meridian.Application.Scheduling.ScheduleDecision.Denied(System.String,System.Nullable{System.TimeSpan})
+  - Meridian.Application.Scheduling.ScheduleDecision.Reason
+  - Meridian.Application.Scheduling.ScheduleDecision.SuggestedDelay
+  langs:
+  - csharp
+  - vb
+  name: ScheduleDecision
+  nameWithType: ScheduleDecision
+  fullName: Meridian.Application.Scheduling.ScheduleDecision
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScheduleDecision
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Decision about whether an operation can be executed.
+  example: []
+  syntax:
+    content: 'public sealed record ScheduleDecision : IEquatable<ScheduleDecision>'
+    content.vb: Public NotInheritable Class ScheduleDecision Implements IEquatable(Of ScheduleDecision)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Scheduling.ScheduleDecision}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Scheduling.ScheduleDecision.#ctor(System.Boolean,System.String,System.Nullable{System.TimeSpan},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  commentId: M:Meridian.Application.Scheduling.ScheduleDecision.#ctor(System.Boolean,System.String,System.Nullable{System.TimeSpan},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  id: '#ctor(System.Boolean,System.String,System.Nullable{System.TimeSpan},System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})'
+  parent: Meridian.Application.Scheduling.ScheduleDecision
+  langs:
+  - csharp
+  - vb
+  name: ScheduleDecision(bool, string?, TimeSpan?, IReadOnlyDictionary<string, object>?)
+  nameWithType: ScheduleDecision.ScheduleDecision(bool, string?, TimeSpan?, IReadOnlyDictionary<string, object>?)
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.ScheduleDecision(bool, string?, System.TimeSpan?, System.Collections.Generic.IReadOnlyDictionary<string, object>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Decision about whether an operation can be executed.
+  example: []
+  syntax:
+    content: public ScheduleDecision(bool CanExecute, string? Reason = null, TimeSpan? SuggestedDelay = null, IReadOnlyDictionary<string, object>? Context = null)
+    parameters:
+    - id: CanExecute
+      type: System.Boolean
+      description: Whether the operation can execute now.
+    - id: Reason
+      type: System.String
+      description: Reason for the decision.
+    - id: SuggestedDelay
+      type: System.Nullable{System.TimeSpan}
+      description: Suggested delay before retrying if not allowed.
+    - id: Context
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+      description: Additional context.
+    content.vb: Public Sub New(CanExecute As Boolean, Reason As String = Nothing, SuggestedDelay As TimeSpan? = Nothing, Context As IReadOnlyDictionary(Of String, Object) = Nothing)
+  overload: Meridian.Application.Scheduling.ScheduleDecision.#ctor*
+  nameWithType.vb: ScheduleDecision.New(Boolean, String, TimeSpan?, IReadOnlyDictionary(Of String, Object))
+  fullName.vb: Meridian.Application.Scheduling.ScheduleDecision.New(Boolean, String, System.TimeSpan?, System.Collections.Generic.IReadOnlyDictionary(Of String, Object))
+  name.vb: New(Boolean, String, TimeSpan?, IReadOnlyDictionary(Of String, Object))
+- uid: Meridian.Application.Scheduling.ScheduleDecision.CanExecute
+  commentId: P:Meridian.Application.Scheduling.ScheduleDecision.CanExecute
+  id: CanExecute
+  parent: Meridian.Application.Scheduling.ScheduleDecision
+  langs:
+  - csharp
+  - vb
+  name: CanExecute
+  nameWithType: ScheduleDecision.CanExecute
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.CanExecute
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanExecute
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Whether the operation can execute now.
+  example: []
+  syntax:
+    content: public bool CanExecute { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property CanExecute As Boolean
+  overload: Meridian.Application.Scheduling.ScheduleDecision.CanExecute*
+- uid: Meridian.Application.Scheduling.ScheduleDecision.Reason
+  commentId: P:Meridian.Application.Scheduling.ScheduleDecision.Reason
+  id: Reason
+  parent: Meridian.Application.Scheduling.ScheduleDecision
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: ScheduleDecision.Reason
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Reason for the decision.
+  example: []
+  syntax:
+    content: public string? Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Application.Scheduling.ScheduleDecision.Reason*
+- uid: Meridian.Application.Scheduling.ScheduleDecision.SuggestedDelay
+  commentId: P:Meridian.Application.Scheduling.ScheduleDecision.SuggestedDelay
+  id: SuggestedDelay
+  parent: Meridian.Application.Scheduling.ScheduleDecision
+  langs:
+  - csharp
+  - vb
+  name: SuggestedDelay
+  nameWithType: ScheduleDecision.SuggestedDelay
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.SuggestedDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuggestedDelay
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Suggested delay before retrying if not allowed.
+  example: []
+  syntax:
+    content: public TimeSpan? SuggestedDelay { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.TimeSpan}
+    content.vb: Public Property SuggestedDelay As TimeSpan?
+  overload: Meridian.Application.Scheduling.ScheduleDecision.SuggestedDelay*
+- uid: Meridian.Application.Scheduling.ScheduleDecision.Context
+  commentId: P:Meridian.Application.Scheduling.ScheduleDecision.Context
+  id: Context
+  parent: Meridian.Application.Scheduling.ScheduleDecision
+  langs:
+  - csharp
+  - vb
+  name: Context
+  nameWithType: ScheduleDecision.Context
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.Context
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Context
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Additional context.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, object>? Context { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    content.vb: Public Property Context As IReadOnlyDictionary(Of String, Object)
+  overload: Meridian.Application.Scheduling.ScheduleDecision.Context*
+- uid: Meridian.Application.Scheduling.ScheduleDecision.Allowed
+  commentId: F:Meridian.Application.Scheduling.ScheduleDecision.Allowed
+  id: Allowed
+  parent: Meridian.Application.Scheduling.ScheduleDecision
+  langs:
+  - csharp
+  - vb
+  name: Allowed
+  nameWithType: ScheduleDecision.Allowed
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.Allowed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Allowed
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Decision indicating operation can execute.
+  example: []
+  syntax:
+    content: public static readonly ScheduleDecision Allowed
+    return:
+      type: Meridian.Application.Scheduling.ScheduleDecision
+    content.vb: Public Shared ReadOnly Allowed As ScheduleDecision
+- uid: Meridian.Application.Scheduling.ScheduleDecision.Denied(System.String,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Application.Scheduling.ScheduleDecision.Denied(System.String,System.Nullable{System.TimeSpan})
+  id: Denied(System.String,System.Nullable{System.TimeSpan})
+  parent: Meridian.Application.Scheduling.ScheduleDecision
+  langs:
+  - csharp
+  - vb
+  name: Denied(string, TimeSpan?)
+  nameWithType: ScheduleDecision.Denied(string, TimeSpan?)
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.Denied(string, System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Denied
+    path: ../../src/Meridian.Application/Scheduling/IOperationalScheduler.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Scheduling
+  summary: Creates a denied decision with reason.
+  example: []
+  syntax:
+    content: public static ScheduleDecision Denied(string reason, TimeSpan? suggestedDelay = null)
+    parameters:
+    - id: reason
+      type: System.String
+    - id: suggestedDelay
+      type: System.Nullable{System.TimeSpan}
+    return:
+      type: Meridian.Application.Scheduling.ScheduleDecision
+    content.vb: Public Shared Function Denied(reason As String, suggestedDelay As TimeSpan? = Nothing) As ScheduleDecision
+  overload: Meridian.Application.Scheduling.ScheduleDecision.Denied*
+  nameWithType.vb: ScheduleDecision.Denied(String, TimeSpan?)
+  fullName.vb: Meridian.Application.Scheduling.ScheduleDecision.Denied(String, System.TimeSpan?)
+  name.vb: Denied(String, TimeSpan?)
+references:
+- uid: Meridian.Application.Scheduling
+  commentId: N:Meridian.Application.Scheduling
+  href: Meridian.html
+  name: Meridian.Application.Scheduling
+  nameWithType: Meridian.Application.Scheduling
+  fullName: Meridian.Application.Scheduling
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Scheduling
+    name: Scheduling
+    href: Meridian.Application.Scheduling.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Scheduling.ScheduleDecision}
+  commentId: T:System.IEquatable{Meridian.Application.Scheduling.ScheduleDecision}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ScheduleDecision>
+  nameWithType: IEquatable<ScheduleDecision>
+  fullName: System.IEquatable<Meridian.Application.Scheduling.ScheduleDecision>
+  nameWithType.vb: IEquatable(Of ScheduleDecision)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Scheduling.ScheduleDecision)
+  name.vb: IEquatable(Of ScheduleDecision)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Scheduling.ScheduleDecision
+    name: ScheduleDecision
+    href: Meridian.Application.Scheduling.ScheduleDecision.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Scheduling.ScheduleDecision
+    name: ScheduleDecision
+    href: Meridian.Application.Scheduling.ScheduleDecision.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Scheduling.ScheduleDecision.#ctor*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleDecision.#ctor
+  href: Meridian.Application.Scheduling.ScheduleDecision.html#Meridian_Application_Scheduling_ScheduleDecision__ctor_System_Boolean_System_String_System_Nullable_System_TimeSpan__System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__
+  name: ScheduleDecision
+  nameWithType: ScheduleDecision.ScheduleDecision
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.ScheduleDecision
+  nameWithType.vb: ScheduleDecision.New
+  fullName.vb: Meridian.Application.Scheduling.ScheduleDecision.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, object>
+  nameWithType: IReadOnlyDictionary<string, object>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, object>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Object)
+  name.vb: IReadOnlyDictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Scheduling.ScheduleDecision.CanExecute*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleDecision.CanExecute
+  href: Meridian.Application.Scheduling.ScheduleDecision.html#Meridian_Application_Scheduling_ScheduleDecision_CanExecute
+  name: CanExecute
+  nameWithType: ScheduleDecision.CanExecute
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.CanExecute
+- uid: Meridian.Application.Scheduling.ScheduleDecision.Reason*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleDecision.Reason
+  href: Meridian.Application.Scheduling.ScheduleDecision.html#Meridian_Application_Scheduling_ScheduleDecision_Reason
+  name: Reason
+  nameWithType: ScheduleDecision.Reason
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.Reason
+- uid: Meridian.Application.Scheduling.ScheduleDecision.SuggestedDelay*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleDecision.SuggestedDelay
+  href: Meridian.Application.Scheduling.ScheduleDecision.html#Meridian_Application_Scheduling_ScheduleDecision_SuggestedDelay
+  name: SuggestedDelay
+  nameWithType: ScheduleDecision.SuggestedDelay
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.SuggestedDelay
+- uid: Meridian.Application.Scheduling.ScheduleDecision.Context*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleDecision.Context
+  href: Meridian.Application.Scheduling.ScheduleDecision.html#Meridian_Application_Scheduling_ScheduleDecision_Context
+  name: Context
+  nameWithType: ScheduleDecision.Context
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.Context
+- uid: Meridian.Application.Scheduling.ScheduleDecision
+  commentId: T:Meridian.Application.Scheduling.ScheduleDecision
+  parent: Meridian.Application.Scheduling
+  href: Meridian.Application.Scheduling.ScheduleDecision.html
+  name: ScheduleDecision
+  nameWithType: ScheduleDecision
+  fullName: Meridian.Application.Scheduling.ScheduleDecision
+- uid: Meridian.Application.Scheduling.ScheduleDecision.Denied*
+  commentId: Overload:Meridian.Application.Scheduling.ScheduleDecision.Denied
+  href: Meridian.Application.Scheduling.ScheduleDecision.html#Meridian_Application_Scheduling_ScheduleDecision_Denied_System_String_System_Nullable_System_TimeSpan__
+  name: Denied
+  nameWithType: ScheduleDecision.Denied
+  fullName: Meridian.Application.Scheduling.ScheduleDecision.Denied

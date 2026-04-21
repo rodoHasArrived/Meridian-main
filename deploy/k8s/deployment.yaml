@@ -46,7 +46,7 @@ spec:
                 name: meridian-config
             - secretRef:
                 name: meridian-secrets
-          args: ["--ui", "--http-port", "8080", "--watch-config"]
+          args: ["--mode", "desktop", "--http-port", "8080", "--watch-config"]
           livenessProbe:
             httpGet:
               path: /livez

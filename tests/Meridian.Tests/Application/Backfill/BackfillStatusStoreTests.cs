@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.Backfill;
+using Meridian.Infrastructure.Adapters.Core;
 using Xunit;
 
 namespace Meridian.Tests.Application.Backfill;
@@ -56,6 +57,46 @@ public sealed class BackfillStatusStoreTests : IDisposable
         readBack.Provider.Should().Be(result.Provider);
         readBack.BarsWritten.Should().Be(result.BarsWritten);
         readBack.Symbols.Should().BeEquivalentTo(result.Symbols);
+    }
+
+    [Fact]
+    public async Task WriteAsync_RoundTripsSkippedSymbolsAndValidationSignals()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var from = new DateOnly(2024, 1, 1);
+        var to = new DateOnly(2024, 1, 31);
+        var result = new BackfillResult(
+            Success: false,
+            Provider: "polygon",
+            Symbols: ["SPY", "AAPL"],
+            From: from,
+            To: to,
+            BarsWritten: 2,
+            StartedUtc: DateTimeOffset.UtcNow.AddMinutes(-2),
+            CompletedUtc: DateTimeOffset.UtcNow,
+            Error: "rate limited",
+            SkippedSymbols: ["SPY"],
+            SymbolValidationSignals:
+            [
+                SymbolValidationSignal.PassSkipped("SPY", checkpointBarsWritten: 10, coveredThrough: new DateOnly(2024, 1, 15)),
+                SymbolValidationSignal.Fail("AAPL", from, to, "429 Too Many Requests")
+            ]);
+
+        await store.WriteAsync(result);
+
+        var readBack = store.TryRead();
+
+        readBack.Should().NotBeNull();
+        readBack!.SkippedSymbols.Should().Equal("SPY");
+        readBack.SymbolValidationSignals.Should().HaveCount(2);
+        readBack.SymbolValidationSignals.Should().Contain(signal =>
+            signal.Symbol == "SPY"
+            && signal.Status == "Pass"
+            && signal.CheckpointBarsWritten == 10);
+        readBack.SymbolValidationSignals.Should().Contain(signal =>
+            signal.Symbol == "AAPL"
+            && signal.Status == "Fail"
+            && signal.Reason == "429 Too Many Requests");
     }
 
     [Fact]
@@ -226,6 +267,29 @@ public sealed class BackfillStatusStoreTests : IDisposable
     }
 
     [Fact]
+    public async Task WriteSymbolCheckpointAsync_ScopesEntriesByGranularity()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+
+        await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Daily, new DateOnly(2024, 6, 30), barsWritten: 10);
+        await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Minute1, new DateOnly(2024, 7, 15), barsWritten: 390);
+
+        var dailyCheckpoints = store.TryReadSymbolCheckpoints(DataGranularity.Daily);
+        var intradayCheckpoints = store.TryReadSymbolCheckpoints(DataGranularity.Minute1);
+        var dailyBarCounts = store.TryReadSymbolBarCounts(DataGranularity.Daily);
+        var intradayBarCounts = store.TryReadSymbolBarCounts(DataGranularity.Minute1);
+
+        dailyCheckpoints.Should().NotBeNull();
+        intradayCheckpoints.Should().NotBeNull();
+        dailyBarCounts.Should().NotBeNull();
+        intradayBarCounts.Should().NotBeNull();
+        dailyCheckpoints!["SPY"].Should().Be(new DateOnly(2024, 6, 30));
+        intradayCheckpoints!["SPY"].Should().Be(new DateOnly(2024, 7, 15));
+        dailyBarCounts!["SPY"].Should().Be(10);
+        intradayBarCounts!["SPY"].Should().Be(390);
+    }
+
+    [Fact]
     public async Task WriteSymbolCheckpointAsync_UpdatesOnlyIfNewer()
     {
         var store = new BackfillStatusStore(_testRoot);
@@ -239,6 +303,45 @@ public sealed class BackfillStatusStoreTests : IDisposable
         var checkpoints = store.TryReadSymbolCheckpoints();
 
         checkpoints!["SPY"].Should().Be(later);
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_OlderDate_DoesNotOverwriteBarCountSidecar()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var later = new DateOnly(2024, 12, 31);
+        var earlier = new DateOnly(2024, 6, 30);
+
+        await store.WriteSymbolCheckpointAsync("SPY", later, barsWritten: 25);
+        await store.WriteSymbolCheckpointAsync("SPY", earlier, barsWritten: 5);
+
+        var checkpoints = store.TryReadSymbolCheckpoints();
+        var barCounts = store.TryReadSymbolBarCounts();
+
+        checkpoints.Should().NotBeNull();
+        barCounts.Should().NotBeNull();
+        checkpoints!["SPY"].Should().Be(later);
+        barCounts!["SPY"].Should().Be(25,
+            "older overlapping windows must not regress the sidecar count once a later checkpoint is recorded");
+    }
+
+    [Fact]
+    public async Task WriteSymbolCheckpointAsync_SameDate_DoesNotOverwriteBarCountSidecar()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+        var coveredThrough = new DateOnly(2024, 6, 30);
+
+        await store.WriteSymbolCheckpointAsync("SPY", coveredThrough, barsWritten: 25);
+        await store.WriteSymbolCheckpointAsync("SPY", coveredThrough, barsWritten: 5);
+
+        var checkpoints = store.TryReadSymbolCheckpoints();
+        var barCounts = store.TryReadSymbolBarCounts();
+
+        checkpoints.Should().NotBeNull();
+        barCounts.Should().NotBeNull();
+        checkpoints!["SPY"].Should().Be(coveredThrough);
+        barCounts!["SPY"].Should().Be(25,
+            "non-advancing overlapping windows must keep the stronger checkpoint sidecar evidence");
     }
 
     [Fact]
@@ -284,6 +387,28 @@ public sealed class BackfillStatusStoreTests : IDisposable
         // After clearing the file contains "{}" — an empty dict, not null
         checkpoints.Should().NotBeNull();
         checkpoints!.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ClearSymbolCheckpointsAsync_WithGranularity_PreservesOtherLanes()
+    {
+        var store = new BackfillStatusStore(_testRoot);
+
+        await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Daily, new DateOnly(2024, 6, 30), barsWritten: 10);
+        await store.WriteSymbolCheckpointAsync("SPY", DataGranularity.Minute1, new DateOnly(2024, 7, 1), barsWritten: 390);
+
+        await store.ClearSymbolCheckpointsAsync(DataGranularity.Daily);
+
+        var dailyCheckpoints = store.TryReadSymbolCheckpoints(DataGranularity.Daily);
+        var intradayCheckpoints = store.TryReadSymbolCheckpoints(DataGranularity.Minute1);
+        var intradayBarCounts = store.TryReadSymbolBarCounts(DataGranularity.Minute1);
+
+        dailyCheckpoints.Should().NotBeNull();
+        intradayCheckpoints.Should().NotBeNull();
+        intradayBarCounts.Should().NotBeNull();
+        dailyCheckpoints!.Should().BeEmpty();
+        intradayCheckpoints!["SPY"].Should().Be(new DateOnly(2024, 7, 1));
+        intradayBarCounts!["SPY"].Should().Be(390);
     }
 
     [Fact]

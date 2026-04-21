@@ -20,7 +20,11 @@ public partial class OptionsPage : Page
         InitializeComponent();
 
         UiApiClient? apiClient = null;
-        try { apiClient = Ui.Services.ApiClientService.Instance?.UiApi; } catch { }
+        try { apiClient = Ui.Services.ApiClientService.Instance?.UiApi; }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[OptionsPage] Failed to resolve API client: {ex.Message}");
+        }
 
         _viewModel = new OptionsViewModel(WpfServices.LoggingService.Instance, apiClient);
         DataContext = _viewModel;

@@ -1,0 +1,332 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  id: ISecurityMasterSnapshotStore
+  parent: Meridian.Storage.SecurityMaster
+  children:
+  - Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.SaveAsync(Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISecurityMasterSnapshotStore
+  nameWithType: ISecurityMasterSnapshotStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISecurityMasterSnapshotStore
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public interface ISecurityMasterSnapshotStore
+    content.vb: Public Interface ISecurityMasterSnapshotStore
+  derivedClasses:
+  - Meridian.Storage.SecurityMaster.PostgresSecurityMasterSnapshotStore
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.LoadAsync(System.Guid,System.Threading.CancellationToken)
+  id: LoadAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: LoadAsync(Guid, CancellationToken)
+  nameWithType: ISecurityMasterSnapshotStore.LoadAsync(Guid, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.LoadAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task<SecuritySnapshotRecord?> LoadAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord}
+    content.vb: Function LoadAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of SecuritySnapshotRecord)
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.LoadAsync*
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.SaveAsync(Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.SaveAsync(Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord,System.Threading.CancellationToken)
+  id: SaveAsync(Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord,System.Threading.CancellationToken)
+  parent: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  langs:
+  - csharp
+  - vb
+  name: SaveAsync(SecuritySnapshotRecord, CancellationToken)
+  nameWithType: ISecurityMasterSnapshotStore.SaveAsync(SecuritySnapshotRecord, CancellationToken)
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.SaveAsync(Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveAsync
+    path: ../../src/Meridian.Storage/SecurityMaster/ISecurityMasterSnapshotStore.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: Task SaveAsync(SecuritySnapshotRecord snapshot, CancellationToken ct = default)
+    parameters:
+    - id: snapshot
+      type: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Function SaveAsync(snapshot As SecuritySnapshotRecord, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.SaveAsync*
+references:
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.LoadAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.LoadAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterSnapshotStore_LoadAsync_System_Guid_System_Threading_CancellationToken_
+  name: LoadAsync
+  nameWithType: ISecurityMasterSnapshotStore.LoadAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.LoadAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecuritySnapshotRecord>
+  nameWithType: Task<SecuritySnapshotRecord>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord>
+  nameWithType.vb: Task(Of SecuritySnapshotRecord)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord)
+  name.vb: Task(Of SecuritySnapshotRecord)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+    name: SecuritySnapshotRecord
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+    name: SecuritySnapshotRecord
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.SaveAsync*
+  commentId: Overload:Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.SaveAsync
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.html#Meridian_Storage_SecurityMaster_ISecurityMasterSnapshotStore_SaveAsync_Meridian_Contracts_SecurityMaster_SecuritySnapshotRecord_System_Threading_CancellationToken_
+  name: SaveAsync
+  nameWithType: ISecurityMasterSnapshotStore.SaveAsync
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.SaveAsync
+- uid: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  commentId: T:Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord.html
+  name: SecuritySnapshotRecord
+  nameWithType: SecuritySnapshotRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html

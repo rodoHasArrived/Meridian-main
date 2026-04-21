@@ -1,0 +1,1334 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ErrorMessages
+  commentId: T:Meridian.Ui.Services.ErrorMessages
+  id: ErrorMessages
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ErrorMessages.ApiKeyMissing(System.String)
+  - Meridian.Ui.Services.ErrorMessages.AuthenticationFailed(System.String)
+  - Meridian.Ui.Services.ErrorMessages.BackfillFailed(System.String,System.String)
+  - Meridian.Ui.Services.ErrorMessages.BackfillPartial(System.String,System.Int32,System.Int32)
+  - Meridian.Ui.Services.ErrorMessages.ConnectionFailed(System.String)
+  - Meridian.Ui.Services.ErrorMessages.ConnectionTimeout(System.String)
+  - Meridian.Ui.Services.ErrorMessages.DataDirectoryNotFound(System.String)
+  - Meridian.Ui.Services.ErrorMessages.Format(System.ValueTuple{System.String,System.String,System.String})
+  - Meridian.Ui.Services.ErrorMessages.FromException(System.Exception,System.String)
+  - Meridian.Ui.Services.ErrorMessages.InvalidConfiguration(System.String)
+  - Meridian.Ui.Services.ErrorMessages.InvalidSymbolFormat(System.String)
+  - Meridian.Ui.Services.ErrorMessages.LoadFailed(System.String)
+  - Meridian.Ui.Services.ErrorMessages.LowDiskSpace(System.String)
+  - Meridian.Ui.Services.ErrorMessages.ProviderUnavailable(System.String)
+  - Meridian.Ui.Services.ErrorMessages.RateLimitExceeded(System.String,System.Nullable{System.TimeSpan})
+  - Meridian.Ui.Services.ErrorMessages.SaveFailed(System.String)
+  - Meridian.Ui.Services.ErrorMessages.SubscriptionFailed(System.String,System.String)
+  - Meridian.Ui.Services.ErrorMessages.SymbolNotFound(System.String)
+  - Meridian.Ui.Services.ErrorMessages.UnexpectedError(System.String,System.String)
+  langs:
+  - csharp
+  - vb
+  name: ErrorMessages
+  nameWithType: ErrorMessages
+  fullName: Meridian.Ui.Services.ErrorMessages
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorMessages
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Centralized error message templates with actionable remediation suggestions.
+
+
+    All error messages should include:
+
+    1. What happened (the error)
+
+    2. Why it might have happened (context)
+
+    3. What the user can do about it (remedy)
+
+
+    This approach reduces support burden and improves user experience.
+  example: []
+  syntax:
+    content: public static class ErrorMessages
+    content.vb: Public Module ErrorMessages
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ErrorMessages.ConnectionFailed(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.ConnectionFailed(System.String)
+  id: ConnectionFailed(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: ConnectionFailed(string)
+  nameWithType: ErrorMessages.ConnectionFailed(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.ConnectionFailed(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionFailed
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when unable to connect to a data provider.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) ConnectionFailed(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function ConnectionFailed(provider As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.ConnectionFailed*
+  nameWithType.vb: ErrorMessages.ConnectionFailed(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.ConnectionFailed(String)
+  name.vb: ConnectionFailed(String)
+- uid: Meridian.Ui.Services.ErrorMessages.ConnectionTimeout(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.ConnectionTimeout(System.String)
+  id: ConnectionTimeout(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: ConnectionTimeout(string)
+  nameWithType: ErrorMessages.ConnectionTimeout(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.ConnectionTimeout(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionTimeout
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when connection times out.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) ConnectionTimeout(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function ConnectionTimeout(provider As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.ConnectionTimeout*
+  nameWithType.vb: ErrorMessages.ConnectionTimeout(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.ConnectionTimeout(String)
+  name.vb: ConnectionTimeout(String)
+- uid: Meridian.Ui.Services.ErrorMessages.AuthenticationFailed(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.AuthenticationFailed(System.String)
+  id: AuthenticationFailed(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: AuthenticationFailed(string)
+  nameWithType: ErrorMessages.AuthenticationFailed(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.AuthenticationFailed(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuthenticationFailed
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when authentication fails.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) AuthenticationFailed(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function AuthenticationFailed(provider As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.AuthenticationFailed*
+  nameWithType.vb: ErrorMessages.AuthenticationFailed(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.AuthenticationFailed(String)
+  name.vb: AuthenticationFailed(String)
+- uid: Meridian.Ui.Services.ErrorMessages.ProviderUnavailable(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.ProviderUnavailable(System.String)
+  id: ProviderUnavailable(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: ProviderUnavailable(string)
+  nameWithType: ErrorMessages.ProviderUnavailable(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.ProviderUnavailable(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderUnavailable
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when provider is unavailable.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) ProviderUnavailable(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function ProviderUnavailable(provider As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.ProviderUnavailable*
+  nameWithType.vb: ErrorMessages.ProviderUnavailable(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.ProviderUnavailable(String)
+  name.vb: ProviderUnavailable(String)
+- uid: Meridian.Ui.Services.ErrorMessages.RateLimitExceeded(System.String,System.Nullable{System.TimeSpan})
+  commentId: M:Meridian.Ui.Services.ErrorMessages.RateLimitExceeded(System.String,System.Nullable{System.TimeSpan})
+  id: RateLimitExceeded(System.String,System.Nullable{System.TimeSpan})
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: RateLimitExceeded(string, TimeSpan?)
+  nameWithType: ErrorMessages.RateLimitExceeded(string, TimeSpan?)
+  fullName: Meridian.Ui.Services.ErrorMessages.RateLimitExceeded(string, System.TimeSpan?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitExceeded
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when rate limit is exceeded.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) RateLimitExceeded(string provider, TimeSpan? retryAfter)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: retryAfter
+      type: System.Nullable{System.TimeSpan}
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function RateLimitExceeded(provider As String, retryAfter As TimeSpan?) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.RateLimitExceeded*
+  nameWithType.vb: ErrorMessages.RateLimitExceeded(String, TimeSpan?)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.RateLimitExceeded(String, System.TimeSpan?)
+  name.vb: RateLimitExceeded(String, TimeSpan?)
+- uid: Meridian.Ui.Services.ErrorMessages.ApiKeyMissing(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.ApiKeyMissing(System.String)
+  id: ApiKeyMissing(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: ApiKeyMissing(string)
+  nameWithType: ErrorMessages.ApiKeyMissing(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.ApiKeyMissing(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApiKeyMissing
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when API key is missing.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) ApiKeyMissing(string provider)
+    parameters:
+    - id: provider
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function ApiKeyMissing(provider As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.ApiKeyMissing*
+  nameWithType.vb: ErrorMessages.ApiKeyMissing(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.ApiKeyMissing(String)
+  name.vb: ApiKeyMissing(String)
+- uid: Meridian.Ui.Services.ErrorMessages.InvalidConfiguration(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.InvalidConfiguration(System.String)
+  id: InvalidConfiguration(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: InvalidConfiguration(string)
+  nameWithType: ErrorMessages.InvalidConfiguration(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.InvalidConfiguration(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidConfiguration
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when configuration file is invalid.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) InvalidConfiguration(string details)
+    parameters:
+    - id: details
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function InvalidConfiguration(details As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.InvalidConfiguration*
+  nameWithType.vb: ErrorMessages.InvalidConfiguration(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.InvalidConfiguration(String)
+  name.vb: InvalidConfiguration(String)
+- uid: Meridian.Ui.Services.ErrorMessages.DataDirectoryNotFound(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.DataDirectoryNotFound(System.String)
+  id: DataDirectoryNotFound(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: DataDirectoryNotFound(string)
+  nameWithType: ErrorMessages.DataDirectoryNotFound(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.DataDirectoryNotFound(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataDirectoryNotFound
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when data directory doesn't exist.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) DataDirectoryNotFound(string path)
+    parameters:
+    - id: path
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function DataDirectoryNotFound(path As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.DataDirectoryNotFound*
+  nameWithType.vb: ErrorMessages.DataDirectoryNotFound(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.DataDirectoryNotFound(String)
+  name.vb: DataDirectoryNotFound(String)
+- uid: Meridian.Ui.Services.ErrorMessages.SymbolNotFound(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.SymbolNotFound(System.String)
+  id: SymbolNotFound(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: SymbolNotFound(string)
+  nameWithType: ErrorMessages.SymbolNotFound(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.SymbolNotFound(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolNotFound
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 90
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when symbol is not found.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) SymbolNotFound(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function SymbolNotFound(symbol As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.SymbolNotFound*
+  nameWithType.vb: ErrorMessages.SymbolNotFound(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.SymbolNotFound(String)
+  name.vb: SymbolNotFound(String)
+- uid: Meridian.Ui.Services.ErrorMessages.InvalidSymbolFormat(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.InvalidSymbolFormat(System.String)
+  id: InvalidSymbolFormat(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: InvalidSymbolFormat(string)
+  nameWithType: ErrorMessages.InvalidSymbolFormat(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.InvalidSymbolFormat(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvalidSymbolFormat
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when symbol format is invalid.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) InvalidSymbolFormat(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function InvalidSymbolFormat(symbol As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.InvalidSymbolFormat*
+  nameWithType.vb: ErrorMessages.InvalidSymbolFormat(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.InvalidSymbolFormat(String)
+  name.vb: InvalidSymbolFormat(String)
+- uid: Meridian.Ui.Services.ErrorMessages.SubscriptionFailed(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.SubscriptionFailed(System.String,System.String)
+  id: SubscriptionFailed(System.String,System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: SubscriptionFailed(string, string)
+  nameWithType: ErrorMessages.SubscriptionFailed(string, string)
+  fullName: Meridian.Ui.Services.ErrorMessages.SubscriptionFailed(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscriptionFailed
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when symbol subscription fails.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) SubscriptionFailed(string symbol, string reason)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: reason
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function SubscriptionFailed(symbol As String, reason As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.SubscriptionFailed*
+  nameWithType.vb: ErrorMessages.SubscriptionFailed(String, String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.SubscriptionFailed(String, String)
+  name.vb: SubscriptionFailed(String, String)
+- uid: Meridian.Ui.Services.ErrorMessages.SaveFailed(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.SaveFailed(System.String)
+  id: SaveFailed(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: SaveFailed(string)
+  nameWithType: ErrorMessages.SaveFailed(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.SaveFailed(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveFailed
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when unable to save data.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) SaveFailed(string item)
+    parameters:
+    - id: item
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function SaveFailed(item As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.SaveFailed*
+  nameWithType.vb: ErrorMessages.SaveFailed(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.SaveFailed(String)
+  name.vb: SaveFailed(String)
+- uid: Meridian.Ui.Services.ErrorMessages.LoadFailed(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.LoadFailed(System.String)
+  id: LoadFailed(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: LoadFailed(string)
+  nameWithType: ErrorMessages.LoadFailed(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.LoadFailed(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadFailed
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 124
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when unable to load data.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) LoadFailed(string item)
+    parameters:
+    - id: item
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function LoadFailed(item As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.LoadFailed*
+  nameWithType.vb: ErrorMessages.LoadFailed(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.LoadFailed(String)
+  name.vb: LoadFailed(String)
+- uid: Meridian.Ui.Services.ErrorMessages.LowDiskSpace(System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.LowDiskSpace(System.String)
+  id: LowDiskSpace(System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: LowDiskSpace(string)
+  nameWithType: ErrorMessages.LowDiskSpace(string)
+  fullName: Meridian.Ui.Services.ErrorMessages.LowDiskSpace(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LowDiskSpace
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when disk space is low.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) LowDiskSpace(string availableSpace)
+    parameters:
+    - id: availableSpace
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function LowDiskSpace(availableSpace As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.LowDiskSpace*
+  nameWithType.vb: ErrorMessages.LowDiskSpace(String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.LowDiskSpace(String)
+  name.vb: LowDiskSpace(String)
+- uid: Meridian.Ui.Services.ErrorMessages.BackfillFailed(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.BackfillFailed(System.String,System.String)
+  id: BackfillFailed(System.String,System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: BackfillFailed(string, string)
+  nameWithType: ErrorMessages.BackfillFailed(string, string)
+  fullName: Meridian.Ui.Services.ErrorMessages.BackfillFailed(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillFailed
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 142
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when backfill fails.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) BackfillFailed(string symbol, string reason)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: reason
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function BackfillFailed(symbol As String, reason As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.BackfillFailed*
+  nameWithType.vb: ErrorMessages.BackfillFailed(String, String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.BackfillFailed(String, String)
+  name.vb: BackfillFailed(String, String)
+- uid: Meridian.Ui.Services.ErrorMessages.BackfillPartial(System.String,System.Int32,System.Int32)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.BackfillPartial(System.String,System.Int32,System.Int32)
+  id: BackfillPartial(System.String,System.Int32,System.Int32)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: BackfillPartial(string, int, int)
+  nameWithType: ErrorMessages.BackfillPartial(string, int, int)
+  fullName: Meridian.Ui.Services.ErrorMessages.BackfillPartial(string, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillPartial
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error when backfill is partially complete.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) BackfillPartial(string symbol, int downloaded, int expected)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: downloaded
+      type: System.Int32
+    - id: expected
+      type: System.Int32
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function BackfillPartial(symbol As String, downloaded As Integer, expected As Integer) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.BackfillPartial*
+  nameWithType.vb: ErrorMessages.BackfillPartial(String, Integer, Integer)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.BackfillPartial(String, Integer, Integer)
+  name.vb: BackfillPartial(String, Integer, Integer)
+- uid: Meridian.Ui.Services.ErrorMessages.UnexpectedError(System.String,System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.UnexpectedError(System.String,System.String)
+  id: UnexpectedError(System.String,System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: UnexpectedError(string, string)
+  nameWithType: ErrorMessages.UnexpectedError(string, string)
+  fullName: Meridian.Ui.Services.ErrorMessages.UnexpectedError(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnexpectedError
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Generic unexpected error.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) UnexpectedError(string operation, string details)
+    parameters:
+    - id: operation
+      type: System.String
+    - id: details
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function UnexpectedError(operation As String, details As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.UnexpectedError*
+  nameWithType.vb: ErrorMessages.UnexpectedError(String, String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.UnexpectedError(String, String)
+  name.vb: UnexpectedError(String, String)
+- uid: Meridian.Ui.Services.ErrorMessages.FromException(System.Exception,System.String)
+  commentId: M:Meridian.Ui.Services.ErrorMessages.FromException(System.Exception,System.String)
+  id: FromException(System.Exception,System.String)
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: FromException(Exception, string)
+  nameWithType: ErrorMessages.FromException(Exception, string)
+  fullName: Meridian.Ui.Services.ErrorMessages.FromException(System.Exception, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromException
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Error from an exception.
+  example: []
+  syntax:
+    content: public static (string Title, string Message, string Remedy) FromException(Exception ex, string operation)
+    parameters:
+    - id: ex
+      type: System.Exception
+    - id: operation
+      type: System.String
+    return:
+      type: System.ValueTuple{System.String,System.String,System.String}
+    content.vb: Public Shared Function FromException(ex As Exception, operation As String) As (Title As String, Message As String, Remedy As String)
+  overload: Meridian.Ui.Services.ErrorMessages.FromException*
+  nameWithType.vb: ErrorMessages.FromException(Exception, String)
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.FromException(System.Exception, String)
+  name.vb: FromException(Exception, String)
+- uid: Meridian.Ui.Services.ErrorMessages.Format(System.ValueTuple{System.String,System.String,System.String})
+  commentId: M:Meridian.Ui.Services.ErrorMessages.Format(System.ValueTuple{System.String,System.String,System.String})
+  id: Format(System.ValueTuple{System.String,System.String,System.String})
+  parent: Meridian.Ui.Services.ErrorMessages
+  langs:
+  - csharp
+  - vb
+  name: Format((string Title, string Message, string Remedy))
+  nameWithType: ErrorMessages.Format((string Title, string Message, string Remedy))
+  fullName: Meridian.Ui.Services.ErrorMessages.Format((string Title, string Message, string Remedy))
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ErrorMessages.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Format
+    path: ../../src/Meridian.Ui.Services/Services/ErrorMessages.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Creates a formatted error message with title, message, and remedy.
+  example: []
+  syntax:
+    content: public static string Format((string Title, string Message, string Remedy) error)
+    parameters:
+    - id: error
+      type: System.ValueTuple{System.String,System.String,System.String}
+    return:
+      type: System.String
+    content.vb: Public Shared Function Format([error] As (Title As String, Message As String, Remedy As String)) As String
+  overload: Meridian.Ui.Services.ErrorMessages.Format*
+  nameWithType.vb: ErrorMessages.Format((Title As String, Message As String, Remedy As String))
+  fullName.vb: Meridian.Ui.Services.ErrorMessages.Format((Title As String, Message As String, Remedy As String))
+  name.vb: Format((Title As String, Message As String, Remedy As String))
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ErrorMessages.ConnectionFailed*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.ConnectionFailed
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_ConnectionFailed_System_String_
+  name: ConnectionFailed
+  nameWithType: ErrorMessages.ConnectionFailed
+  fullName: Meridian.Ui.Services.ErrorMessages.ConnectionFailed
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.ValueTuple{System.String,System.String,System.String}
+  commentId: T:System.ValueTuple{System.String,System.String,System.String}
+  parent: System
+  definition: System.ValueTuple`3
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: (string ApiKey, string ApiSecret, string ClientId)
+  nameWithType: (string ApiKey, string ApiSecret, string ClientId)
+  fullName: (string ApiKey, string ApiSecret, string ClientId)
+  nameWithType.vb: (ApiKey As String, ApiSecret As String, ClientId As String)
+  fullName.vb: (ApiKey As String, ApiSecret As String, ClientId As String)
+  name.vb: (ApiKey As String, ApiSecret As String, ClientId As String)
+  spec.csharp:
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.ApiKey
+    name: ApiKey
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.apikey
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.ApiSecret
+    name: ApiSecret
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.apisecret
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.ClientId
+    name: ClientId
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.clientid
+  - name: )
+  spec.vb:
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String,System.String}.ApiKey
+    name: ApiKey
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.apikey
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.ApiSecret
+    name: ApiSecret
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.apisecret
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String,System.String}.ClientId
+    name: ClientId
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string,system.string-.clientid
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.ValueTuple`3
+  commentId: T:System.ValueTuple`3
+  name: (T1, T2, T3)
+  nameWithType: (T1, T2, T3)
+  fullName: (T1, T2, T3)
+  spec.csharp:
+  - name: (
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: )
+  spec.vb:
+  - name: (
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: ','
+  - name: " "
+  - name: T3
+  - name: )
+- uid: Meridian.Ui.Services.ErrorMessages.ConnectionTimeout*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.ConnectionTimeout
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_ConnectionTimeout_System_String_
+  name: ConnectionTimeout
+  nameWithType: ErrorMessages.ConnectionTimeout
+  fullName: Meridian.Ui.Services.ErrorMessages.ConnectionTimeout
+- uid: Meridian.Ui.Services.ErrorMessages.AuthenticationFailed*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.AuthenticationFailed
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_AuthenticationFailed_System_String_
+  name: AuthenticationFailed
+  nameWithType: ErrorMessages.AuthenticationFailed
+  fullName: Meridian.Ui.Services.ErrorMessages.AuthenticationFailed
+- uid: Meridian.Ui.Services.ErrorMessages.ProviderUnavailable*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.ProviderUnavailable
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_ProviderUnavailable_System_String_
+  name: ProviderUnavailable
+  nameWithType: ErrorMessages.ProviderUnavailable
+  fullName: Meridian.Ui.Services.ErrorMessages.ProviderUnavailable
+- uid: Meridian.Ui.Services.ErrorMessages.RateLimitExceeded*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.RateLimitExceeded
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_RateLimitExceeded_System_String_System_Nullable_System_TimeSpan__
+  name: RateLimitExceeded
+  nameWithType: ErrorMessages.RateLimitExceeded
+  fullName: Meridian.Ui.Services.ErrorMessages.RateLimitExceeded
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.ErrorMessages.ApiKeyMissing*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.ApiKeyMissing
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_ApiKeyMissing_System_String_
+  name: ApiKeyMissing
+  nameWithType: ErrorMessages.ApiKeyMissing
+  fullName: Meridian.Ui.Services.ErrorMessages.ApiKeyMissing
+- uid: Meridian.Ui.Services.ErrorMessages.InvalidConfiguration*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.InvalidConfiguration
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_InvalidConfiguration_System_String_
+  name: InvalidConfiguration
+  nameWithType: ErrorMessages.InvalidConfiguration
+  fullName: Meridian.Ui.Services.ErrorMessages.InvalidConfiguration
+- uid: Meridian.Ui.Services.ErrorMessages.DataDirectoryNotFound*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.DataDirectoryNotFound
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_DataDirectoryNotFound_System_String_
+  name: DataDirectoryNotFound
+  nameWithType: ErrorMessages.DataDirectoryNotFound
+  fullName: Meridian.Ui.Services.ErrorMessages.DataDirectoryNotFound
+- uid: Meridian.Ui.Services.ErrorMessages.SymbolNotFound*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.SymbolNotFound
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_SymbolNotFound_System_String_
+  name: SymbolNotFound
+  nameWithType: ErrorMessages.SymbolNotFound
+  fullName: Meridian.Ui.Services.ErrorMessages.SymbolNotFound
+- uid: Meridian.Ui.Services.ErrorMessages.InvalidSymbolFormat*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.InvalidSymbolFormat
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_InvalidSymbolFormat_System_String_
+  name: InvalidSymbolFormat
+  nameWithType: ErrorMessages.InvalidSymbolFormat
+  fullName: Meridian.Ui.Services.ErrorMessages.InvalidSymbolFormat
+- uid: Meridian.Ui.Services.ErrorMessages.SubscriptionFailed*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.SubscriptionFailed
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_SubscriptionFailed_System_String_System_String_
+  name: SubscriptionFailed
+  nameWithType: ErrorMessages.SubscriptionFailed
+  fullName: Meridian.Ui.Services.ErrorMessages.SubscriptionFailed
+- uid: Meridian.Ui.Services.ErrorMessages.SaveFailed*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.SaveFailed
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_SaveFailed_System_String_
+  name: SaveFailed
+  nameWithType: ErrorMessages.SaveFailed
+  fullName: Meridian.Ui.Services.ErrorMessages.SaveFailed
+- uid: Meridian.Ui.Services.ErrorMessages.LoadFailed*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.LoadFailed
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_LoadFailed_System_String_
+  name: LoadFailed
+  nameWithType: ErrorMessages.LoadFailed
+  fullName: Meridian.Ui.Services.ErrorMessages.LoadFailed
+- uid: Meridian.Ui.Services.ErrorMessages.LowDiskSpace*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.LowDiskSpace
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_LowDiskSpace_System_String_
+  name: LowDiskSpace
+  nameWithType: ErrorMessages.LowDiskSpace
+  fullName: Meridian.Ui.Services.ErrorMessages.LowDiskSpace
+- uid: Meridian.Ui.Services.ErrorMessages.BackfillFailed*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.BackfillFailed
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_BackfillFailed_System_String_System_String_
+  name: BackfillFailed
+  nameWithType: ErrorMessages.BackfillFailed
+  fullName: Meridian.Ui.Services.ErrorMessages.BackfillFailed
+- uid: Meridian.Ui.Services.ErrorMessages.BackfillPartial*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.BackfillPartial
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_BackfillPartial_System_String_System_Int32_System_Int32_
+  name: BackfillPartial
+  nameWithType: ErrorMessages.BackfillPartial
+  fullName: Meridian.Ui.Services.ErrorMessages.BackfillPartial
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ui.Services.ErrorMessages.UnexpectedError*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.UnexpectedError
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_UnexpectedError_System_String_System_String_
+  name: UnexpectedError
+  nameWithType: ErrorMessages.UnexpectedError
+  fullName: Meridian.Ui.Services.ErrorMessages.UnexpectedError
+- uid: Meridian.Ui.Services.ErrorMessages.FromException*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.FromException
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_FromException_System_Exception_System_String_
+  name: FromException
+  nameWithType: ErrorMessages.FromException
+  fullName: Meridian.Ui.Services.ErrorMessages.FromException
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: Meridian.Ui.Services.ErrorMessages.Format*
+  commentId: Overload:Meridian.Ui.Services.ErrorMessages.Format
+  href: Meridian.Ui.Services.ErrorMessages.html#Meridian_Ui_Services_ErrorMessages_Format_System_ValueTuple_System_String_System_String_System_String__
+  name: Format
+  nameWithType: ErrorMessages.Format
+  fullName: Meridian.Ui.Services.ErrorMessages.Format

@@ -1,0 +1,510 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.McpServer.Resources.RepoNavigationResources
+  commentId: T:Meridian.McpServer.Resources.RepoNavigationResources
+  id: RepoNavigationResources
+  parent: Meridian.McpServer.Resources
+  children:
+  - Meridian.McpServer.Resources.RepoNavigationResources.#ctor(Meridian.McpServer.Navigation.RepoNavigationCatalog)
+  - Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationCatalog
+  - Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationQuickStart
+  langs:
+  - csharp
+  - vb
+  name: RepoNavigationResources
+  nameWithType: RepoNavigationResources
+  fullName: Meridian.McpServer.Resources.RepoNavigationResources
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepoNavigationResources
+    path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+    startLine: 9
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Resources
+  summary: MCP resources that expose generated repository navigation truth for assistants.
+  example: []
+  syntax:
+    content: >-
+      [McpServerResourceType]
+
+      [ImplementsAdr("ADR-005", "Attribute-based MCP resource discovery")]
+
+      public sealed class RepoNavigationResources
+    content.vb: >-
+      <McpServerResourceType>
+
+      <ImplementsAdr("ADR-005", "Attribute-based MCP resource discovery")>
+
+      Public NotInheritable Class RepoNavigationResources
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerResourceTypeAttribute
+    ctor: ModelContextProtocol.Server.McpServerResourceTypeAttribute.#ctor
+    arguments: []
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-005
+    - type: System.String
+      value: Attribute-based MCP resource discovery
+- uid: Meridian.McpServer.Resources.RepoNavigationResources.#ctor(Meridian.McpServer.Navigation.RepoNavigationCatalog)
+  commentId: M:Meridian.McpServer.Resources.RepoNavigationResources.#ctor(Meridian.McpServer.Navigation.RepoNavigationCatalog)
+  id: '#ctor(Meridian.McpServer.Navigation.RepoNavigationCatalog)'
+  parent: Meridian.McpServer.Resources.RepoNavigationResources
+  langs:
+  - csharp
+  - vb
+  name: RepoNavigationResources(RepoNavigationCatalog)
+  nameWithType: RepoNavigationResources.RepoNavigationResources(RepoNavigationCatalog)
+  fullName: Meridian.McpServer.Resources.RepoNavigationResources.RepoNavigationResources(Meridian.McpServer.Navigation.RepoNavigationCatalog)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+    startLine: 22
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Resources
+  syntax:
+    content: public RepoNavigationResources(RepoNavigationCatalog catalog)
+    parameters:
+    - id: catalog
+      type: Meridian.McpServer.Navigation.RepoNavigationCatalog
+    content.vb: Public Sub New(catalog As RepoNavigationCatalog)
+  overload: Meridian.McpServer.Resources.RepoNavigationResources.#ctor*
+  nameWithType.vb: RepoNavigationResources.New(RepoNavigationCatalog)
+  fullName.vb: Meridian.McpServer.Resources.RepoNavigationResources.New(Meridian.McpServer.Navigation.RepoNavigationCatalog)
+  name.vb: New(RepoNavigationCatalog)
+- uid: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationCatalog
+  commentId: M:Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationCatalog
+  id: GetRepoNavigationCatalog
+  parent: Meridian.McpServer.Resources.RepoNavigationResources
+  langs:
+  - csharp
+  - vb
+  name: GetRepoNavigationCatalog()
+  nameWithType: RepoNavigationResources.GetRepoNavigationCatalog()
+  fullName: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationCatalog()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRepoNavigationCatalog
+    path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+    startLine: 27
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Resources
+  syntax:
+    content: >-
+      [McpServerResource(UriTemplate = "mdc://repo-navigation/catalog", Name = "Repo Navigation Catalog", MimeType = "application/json", Title = "Generated high-signal repository navigation dataset with subsystems, routes, docs, symbols, and dependencies.")]
+
+      public string GetRepoNavigationCatalog()
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerResource(UriTemplate:="mdc://repo-navigation/catalog", Name:="Repo Navigation Catalog", MimeType:="application/json", Title:="Generated high-signal repository navigation dataset with subsystems, routes, docs, symbols, and dependencies.")>
+
+      Public Function GetRepoNavigationCatalog() As String
+  overload: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationCatalog*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerResourceAttribute
+    ctor: ModelContextProtocol.Server.McpServerResourceAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: UriTemplate
+      type: System.String
+      value: mdc://repo-navigation/catalog
+    - name: Name
+      type: System.String
+      value: Repo Navigation Catalog
+    - name: MimeType
+      type: System.String
+      value: application/json
+    - name: Title
+      type: System.String
+      value: Generated high-signal repository navigation dataset with subsystems, routes, docs, symbols, and dependencies.
+- uid: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationQuickStart
+  commentId: M:Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationQuickStart
+  id: GetRepoNavigationQuickStart
+  parent: Meridian.McpServer.Resources.RepoNavigationResources
+  langs:
+  - csharp
+  - vb
+  name: GetRepoNavigationQuickStart()
+  nameWithType: RepoNavigationResources.GetRepoNavigationQuickStart()
+  fullName: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationQuickStart()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRepoNavigationQuickStart
+    path: ../../src/Meridian.McpServer/Resources/RepoNavigationResources.cs
+    startLine: 34
+  assemblies:
+  - Meridian.McpServer
+  namespace: Meridian.McpServer.Resources
+  syntax:
+    content: >-
+      [McpServerResource(UriTemplate = "mdc://repo-navigation/quick-start", Name = "Repo Navigation Quick Start", MimeType = "application/json", Title = "Condensed orientation view for routing work into the right Meridian subsystem before detailed exploration.")]
+
+      public string GetRepoNavigationQuickStart()
+    return:
+      type: System.String
+    content.vb: >-
+      <McpServerResource(UriTemplate:="mdc://repo-navigation/quick-start", Name:="Repo Navigation Quick Start", MimeType:="application/json", Title:="Condensed orientation view for routing work into the right Meridian subsystem before detailed exploration.")>
+
+      Public Function GetRepoNavigationQuickStart() As String
+  overload: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationQuickStart*
+  attributes:
+  - type: ModelContextProtocol.Server.McpServerResourceAttribute
+    ctor: ModelContextProtocol.Server.McpServerResourceAttribute.#ctor
+    arguments: []
+    namedArguments:
+    - name: UriTemplate
+      type: System.String
+      value: mdc://repo-navigation/quick-start
+    - name: Name
+      type: System.String
+      value: Repo Navigation Quick Start
+    - name: MimeType
+      type: System.String
+      value: application/json
+    - name: Title
+      type: System.String
+      value: Condensed orientation view for routing work into the right Meridian subsystem before detailed exploration.
+references:
+- uid: Meridian.McpServer.Resources
+  commentId: N:Meridian.McpServer.Resources
+  href: Meridian.html
+  name: Meridian.McpServer.Resources
+  nameWithType: Meridian.McpServer.Resources
+  fullName: Meridian.McpServer.Resources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Resources
+    name: Resources
+    href: Meridian.McpServer.Resources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Resources
+    name: Resources
+    href: Meridian.McpServer.Resources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.McpServer.Resources.RepoNavigationResources.#ctor*
+  commentId: Overload:Meridian.McpServer.Resources.RepoNavigationResources.#ctor
+  href: Meridian.McpServer.Resources.RepoNavigationResources.html#Meridian_McpServer_Resources_RepoNavigationResources__ctor_Meridian_McpServer_Navigation_RepoNavigationCatalog_
+  name: RepoNavigationResources
+  nameWithType: RepoNavigationResources.RepoNavigationResources
+  fullName: Meridian.McpServer.Resources.RepoNavigationResources.RepoNavigationResources
+  nameWithType.vb: RepoNavigationResources.New
+  fullName.vb: Meridian.McpServer.Resources.RepoNavigationResources.New
+  name.vb: New
+- uid: Meridian.McpServer.Navigation.RepoNavigationCatalog
+  commentId: T:Meridian.McpServer.Navigation.RepoNavigationCatalog
+  parent: Meridian.McpServer.Navigation
+  href: Meridian.McpServer.Navigation.RepoNavigationCatalog.html
+  name: RepoNavigationCatalog
+  nameWithType: RepoNavigationCatalog
+  fullName: Meridian.McpServer.Navigation.RepoNavigationCatalog
+- uid: Meridian.McpServer.Navigation
+  commentId: N:Meridian.McpServer.Navigation
+  href: Meridian.html
+  name: Meridian.McpServer.Navigation
+  nameWithType: Meridian.McpServer.Navigation
+  fullName: Meridian.McpServer.Navigation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Navigation
+    name: Navigation
+    href: Meridian.McpServer.Navigation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.McpServer
+    name: McpServer
+    href: Meridian.McpServer.html
+  - name: .
+  - uid: Meridian.McpServer.Navigation
+    name: Navigation
+    href: Meridian.McpServer.Navigation.html
+- uid: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationCatalog*
+  commentId: Overload:Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationCatalog
+  href: Meridian.McpServer.Resources.RepoNavigationResources.html#Meridian_McpServer_Resources_RepoNavigationResources_GetRepoNavigationCatalog
+  name: GetRepoNavigationCatalog
+  nameWithType: RepoNavigationResources.GetRepoNavigationCatalog
+  fullName: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationCatalog
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationQuickStart*
+  commentId: Overload:Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationQuickStart
+  href: Meridian.McpServer.Resources.RepoNavigationResources.html#Meridian_McpServer_Resources_RepoNavigationResources_GetRepoNavigationQuickStart
+  name: GetRepoNavigationQuickStart
+  nameWithType: RepoNavigationResources.GetRepoNavigationQuickStart
+  fullName: Meridian.McpServer.Resources.RepoNavigationResources.GetRepoNavigationQuickStart

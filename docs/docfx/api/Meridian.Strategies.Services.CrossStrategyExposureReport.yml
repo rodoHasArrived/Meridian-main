@@ -1,0 +1,671 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport
+  commentId: T:Meridian.Strategies.Services.CrossStrategyExposureReport
+  id: CrossStrategyExposureReport
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.CrossStrategyExposureReport.#ctor(System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset)
+  - Meridian.Strategies.Services.CrossStrategyExposureReport.AsOf
+  - Meridian.Strategies.Services.CrossStrategyExposureReport.GrossExposure
+  - Meridian.Strategies.Services.CrossStrategyExposureReport.NetExposure
+  - Meridian.Strategies.Services.CrossStrategyExposureReport.Top5Concentrations
+  langs:
+  - csharp
+  - vb
+  name: CrossStrategyExposureReport
+  nameWithType: CrossStrategyExposureReport
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CrossStrategyExposureReport
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Cross-strategy gross/net exposure summary.
+  example: []
+  syntax:
+    content: 'public sealed record CrossStrategyExposureReport : IEquatable<CrossStrategyExposureReport>'
+    content.vb: Public NotInheritable Class CrossStrategyExposureReport Implements IEquatable(Of CrossStrategyExposureReport)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Strategies.Services.CrossStrategyExposureReport}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.#ctor(System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset)
+  commentId: M:Meridian.Strategies.Services.CrossStrategyExposureReport.#ctor(System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset)
+  id: '#ctor(System.Decimal,System.Decimal,System.Collections.Generic.IReadOnlyList{System.String},System.DateTimeOffset)'
+  parent: Meridian.Strategies.Services.CrossStrategyExposureReport
+  langs:
+  - csharp
+  - vb
+  name: CrossStrategyExposureReport(decimal, decimal, IReadOnlyList<string>, DateTimeOffset)
+  nameWithType: CrossStrategyExposureReport.CrossStrategyExposureReport(decimal, decimal, IReadOnlyList<string>, DateTimeOffset)
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.CrossStrategyExposureReport(decimal, decimal, System.Collections.Generic.IReadOnlyList<string>, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Cross-strategy gross/net exposure summary.
+  example: []
+  syntax:
+    content: public CrossStrategyExposureReport(decimal GrossExposure, decimal NetExposure, IReadOnlyList<string> Top5Concentrations, DateTimeOffset AsOf)
+    parameters:
+    - id: GrossExposure
+      type: System.Decimal
+      description: Sum of all absolute market values.
+    - id: NetExposure
+      type: System.Decimal
+      description: Long market value minus short market value.
+    - id: Top5Concentrations
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+      description: Symbols ranked by absolute gross exposure.
+    - id: AsOf
+      type: System.DateTimeOffset
+      description: Timestamp of the calculation.
+    content.vb: Public Sub New(GrossExposure As Decimal, NetExposure As Decimal, Top5Concentrations As IReadOnlyList(Of String), AsOf As DateTimeOffset)
+  overload: Meridian.Strategies.Services.CrossStrategyExposureReport.#ctor*
+  nameWithType.vb: CrossStrategyExposureReport.New(Decimal, Decimal, IReadOnlyList(Of String), DateTimeOffset)
+  fullName.vb: Meridian.Strategies.Services.CrossStrategyExposureReport.New(Decimal, Decimal, System.Collections.Generic.IReadOnlyList(Of String), System.DateTimeOffset)
+  name.vb: New(Decimal, Decimal, IReadOnlyList(Of String), DateTimeOffset)
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.GrossExposure
+  commentId: P:Meridian.Strategies.Services.CrossStrategyExposureReport.GrossExposure
+  id: GrossExposure
+  parent: Meridian.Strategies.Services.CrossStrategyExposureReport
+  langs:
+  - csharp
+  - vb
+  name: GrossExposure
+  nameWithType: CrossStrategyExposureReport.GrossExposure
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.GrossExposure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GrossExposure
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Sum of all absolute market values.
+  example: []
+  syntax:
+    content: public decimal GrossExposure { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property GrossExposure As Decimal
+  overload: Meridian.Strategies.Services.CrossStrategyExposureReport.GrossExposure*
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.NetExposure
+  commentId: P:Meridian.Strategies.Services.CrossStrategyExposureReport.NetExposure
+  id: NetExposure
+  parent: Meridian.Strategies.Services.CrossStrategyExposureReport
+  langs:
+  - csharp
+  - vb
+  name: NetExposure
+  nameWithType: CrossStrategyExposureReport.NetExposure
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.NetExposure
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NetExposure
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Long market value minus short market value.
+  example: []
+  syntax:
+    content: public decimal NetExposure { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property NetExposure As Decimal
+  overload: Meridian.Strategies.Services.CrossStrategyExposureReport.NetExposure*
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.Top5Concentrations
+  commentId: P:Meridian.Strategies.Services.CrossStrategyExposureReport.Top5Concentrations
+  id: Top5Concentrations
+  parent: Meridian.Strategies.Services.CrossStrategyExposureReport
+  langs:
+  - csharp
+  - vb
+  name: Top5Concentrations
+  nameWithType: CrossStrategyExposureReport.Top5Concentrations
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.Top5Concentrations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Top5Concentrations
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Symbols ranked by absolute gross exposure.
+  example: []
+  syntax:
+    content: public IReadOnlyList<string> Top5Concentrations { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Property Top5Concentrations As IReadOnlyList(Of String)
+  overload: Meridian.Strategies.Services.CrossStrategyExposureReport.Top5Concentrations*
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.AsOf
+  commentId: P:Meridian.Strategies.Services.CrossStrategyExposureReport.AsOf
+  id: AsOf
+  parent: Meridian.Strategies.Services.CrossStrategyExposureReport
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: CrossStrategyExposureReport.AsOf
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Strategies/Services/IAggregatePortfolioService.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Timestamp of the calculation.
+  example: []
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Strategies.Services.CrossStrategyExposureReport.AsOf*
+references:
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Strategies.Services.CrossStrategyExposureReport}
+  commentId: T:System.IEquatable{Meridian.Strategies.Services.CrossStrategyExposureReport}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CrossStrategyExposureReport>
+  nameWithType: IEquatable<CrossStrategyExposureReport>
+  fullName: System.IEquatable<Meridian.Strategies.Services.CrossStrategyExposureReport>
+  nameWithType.vb: IEquatable(Of CrossStrategyExposureReport)
+  fullName.vb: System.IEquatable(Of Meridian.Strategies.Services.CrossStrategyExposureReport)
+  name.vb: IEquatable(Of CrossStrategyExposureReport)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Strategies.Services.CrossStrategyExposureReport
+    name: CrossStrategyExposureReport
+    href: Meridian.Strategies.Services.CrossStrategyExposureReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Services.CrossStrategyExposureReport
+    name: CrossStrategyExposureReport
+    href: Meridian.Strategies.Services.CrossStrategyExposureReport.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.#ctor*
+  commentId: Overload:Meridian.Strategies.Services.CrossStrategyExposureReport.#ctor
+  href: Meridian.Strategies.Services.CrossStrategyExposureReport.html#Meridian_Strategies_Services_CrossStrategyExposureReport__ctor_System_Decimal_System_Decimal_System_Collections_Generic_IReadOnlyList_System_String__System_DateTimeOffset_
+  name: CrossStrategyExposureReport
+  nameWithType: CrossStrategyExposureReport.CrossStrategyExposureReport
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.CrossStrategyExposureReport
+  nameWithType.vb: CrossStrategyExposureReport.New
+  fullName.vb: Meridian.Strategies.Services.CrossStrategyExposureReport.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.GrossExposure*
+  commentId: Overload:Meridian.Strategies.Services.CrossStrategyExposureReport.GrossExposure
+  href: Meridian.Strategies.Services.CrossStrategyExposureReport.html#Meridian_Strategies_Services_CrossStrategyExposureReport_GrossExposure
+  name: GrossExposure
+  nameWithType: CrossStrategyExposureReport.GrossExposure
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.GrossExposure
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.NetExposure*
+  commentId: Overload:Meridian.Strategies.Services.CrossStrategyExposureReport.NetExposure
+  href: Meridian.Strategies.Services.CrossStrategyExposureReport.html#Meridian_Strategies_Services_CrossStrategyExposureReport_NetExposure
+  name: NetExposure
+  nameWithType: CrossStrategyExposureReport.NetExposure
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.NetExposure
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.Top5Concentrations*
+  commentId: Overload:Meridian.Strategies.Services.CrossStrategyExposureReport.Top5Concentrations
+  href: Meridian.Strategies.Services.CrossStrategyExposureReport.html#Meridian_Strategies_Services_CrossStrategyExposureReport_Top5Concentrations
+  name: Top5Concentrations
+  nameWithType: CrossStrategyExposureReport.Top5Concentrations
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.Top5Concentrations
+- uid: Meridian.Strategies.Services.CrossStrategyExposureReport.AsOf*
+  commentId: Overload:Meridian.Strategies.Services.CrossStrategyExposureReport.AsOf
+  href: Meridian.Strategies.Services.CrossStrategyExposureReport.html#Meridian_Strategies_Services_CrossStrategyExposureReport_AsOf
+  name: AsOf
+  nameWithType: CrossStrategyExposureReport.AsOf
+  fullName: Meridian.Strategies.Services.CrossStrategyExposureReport.AsOf

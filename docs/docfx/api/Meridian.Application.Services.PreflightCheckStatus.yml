@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.PreflightCheckStatus
+  commentId: T:Meridian.Application.Services.PreflightCheckStatus
+  id: PreflightCheckStatus
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.PreflightCheckStatus.Failed
+  - Meridian.Application.Services.PreflightCheckStatus.Passed
+  - Meridian.Application.Services.PreflightCheckStatus.Warning
+  langs:
+  - csharp
+  - vb
+  name: PreflightCheckStatus
+  nameWithType: PreflightCheckStatus
+  fullName: Meridian.Application.Services.PreflightCheckStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreflightCheckStatus
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 817
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Status of a pre-flight check.
+  example: []
+  syntax:
+    content: 'public enum PreflightCheckStatus : byte'
+    content.vb: Public Enum PreflightCheckStatus As Byte
+- uid: Meridian.Application.Services.PreflightCheckStatus.Passed
+  commentId: F:Meridian.Application.Services.PreflightCheckStatus.Passed
+  id: Passed
+  parent: Meridian.Application.Services.PreflightCheckStatus
+  langs:
+  - csharp
+  - vb
+  name: Passed
+  nameWithType: PreflightCheckStatus.Passed
+  fullName: Meridian.Application.Services.PreflightCheckStatus.Passed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Passed
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 819
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Passed = 0
+    return:
+      type: Meridian.Application.Services.PreflightCheckStatus
+- uid: Meridian.Application.Services.PreflightCheckStatus.Warning
+  commentId: F:Meridian.Application.Services.PreflightCheckStatus.Warning
+  id: Warning
+  parent: Meridian.Application.Services.PreflightCheckStatus
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: PreflightCheckStatus.Warning
+  fullName: Meridian.Application.Services.PreflightCheckStatus.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 820
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Services.PreflightCheckStatus
+- uid: Meridian.Application.Services.PreflightCheckStatus.Failed
+  commentId: F:Meridian.Application.Services.PreflightCheckStatus.Failed
+  id: Failed
+  parent: Meridian.Application.Services.PreflightCheckStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: PreflightCheckStatus.Failed
+  fullName: Meridian.Application.Services.PreflightCheckStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/PreflightChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Failed
+    path: ../../src/Meridian.Application/Services/PreflightChecker.cs
+    startLine: 821
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: Failed = 2
+    return:
+      type: Meridian.Application.Services.PreflightCheckStatus
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.PreflightCheckStatus
+  commentId: T:Meridian.Application.Services.PreflightCheckStatus
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.PreflightCheckStatus.html
+  name: PreflightCheckStatus
+  nameWithType: PreflightCheckStatus
+  fullName: Meridian.Application.Services.PreflightCheckStatus

@@ -1,0 +1,174 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.DayCountBasis
+  commentId: T:Meridian.Contracts.DirectLending.DayCountBasis
+  id: DayCountBasis
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.DayCountBasis.Act360
+  - Meridian.Contracts.DirectLending.DayCountBasis.Act365F
+  - Meridian.Contracts.DirectLending.DayCountBasis.ActualActualISDA
+  - Meridian.Contracts.DirectLending.DayCountBasis.Thirty360
+  langs:
+  - csharp
+  - vb
+  name: DayCountBasis
+  nameWithType: DayCountBasis
+  fullName: Meridian.Contracts.DirectLending.DayCountBasis
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DayCountBasis
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public enum DayCountBasis : byte'
+    content.vb: Public Enum DayCountBasis As Byte
+- uid: Meridian.Contracts.DirectLending.DayCountBasis.Act360
+  commentId: F:Meridian.Contracts.DirectLending.DayCountBasis.Act360
+  id: Act360
+  parent: Meridian.Contracts.DirectLending.DayCountBasis
+  langs:
+  - csharp
+  - vb
+  name: Act360
+  nameWithType: DayCountBasis.Act360
+  fullName: Meridian.Contracts.DirectLending.DayCountBasis.Act360
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Act360
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Act360 = 0
+    return:
+      type: Meridian.Contracts.DirectLending.DayCountBasis
+- uid: Meridian.Contracts.DirectLending.DayCountBasis.Act365F
+  commentId: F:Meridian.Contracts.DirectLending.DayCountBasis.Act365F
+  id: Act365F
+  parent: Meridian.Contracts.DirectLending.DayCountBasis
+  langs:
+  - csharp
+  - vb
+  name: Act365F
+  nameWithType: DayCountBasis.Act365F
+  fullName: Meridian.Contracts.DirectLending.DayCountBasis.Act365F
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Act365F
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Act365F = 1
+    return:
+      type: Meridian.Contracts.DirectLending.DayCountBasis
+- uid: Meridian.Contracts.DirectLending.DayCountBasis.Thirty360
+  commentId: F:Meridian.Contracts.DirectLending.DayCountBasis.Thirty360
+  id: Thirty360
+  parent: Meridian.Contracts.DirectLending.DayCountBasis
+  langs:
+  - csharp
+  - vb
+  name: Thirty360
+  nameWithType: DayCountBasis.Thirty360
+  fullName: Meridian.Contracts.DirectLending.DayCountBasis.Thirty360
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Thirty360
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: Thirty360 = 2
+    return:
+      type: Meridian.Contracts.DirectLending.DayCountBasis
+- uid: Meridian.Contracts.DirectLending.DayCountBasis.ActualActualISDA
+  commentId: F:Meridian.Contracts.DirectLending.DayCountBasis.ActualActualISDA
+  id: ActualActualISDA
+  parent: Meridian.Contracts.DirectLending.DayCountBasis
+  langs:
+  - csharp
+  - vb
+  name: ActualActualISDA
+  nameWithType: DayCountBasis.ActualActualISDA
+  fullName: Meridian.Contracts.DirectLending.DayCountBasis.ActualActualISDA
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActualActualISDA
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: ActualActualISDA = 3
+    return:
+      type: Meridian.Contracts.DirectLending.DayCountBasis
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: Meridian.Contracts.DirectLending.DayCountBasis
+  commentId: T:Meridian.Contracts.DirectLending.DayCountBasis
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.DayCountBasis.html
+  name: DayCountBasis
+  nameWithType: DayCountBasis
+  fullName: Meridian.Contracts.DirectLending.DayCountBasis

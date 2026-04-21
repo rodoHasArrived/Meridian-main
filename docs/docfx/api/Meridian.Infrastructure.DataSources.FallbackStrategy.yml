@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.FallbackStrategy
+  commentId: T:Meridian.Infrastructure.DataSources.FallbackStrategy
+  id: FallbackStrategy
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.FallbackStrategy.HealthScore
+  - Meridian.Infrastructure.DataSources.FallbackStrategy.Priority
+  - Meridian.Infrastructure.DataSources.FallbackStrategy.Random
+  - Meridian.Infrastructure.DataSources.FallbackStrategy.RoundRobin
+  langs:
+  - csharp
+  - vb
+  name: FallbackStrategy
+  nameWithType: FallbackStrategy
+  fullName: Meridian.Infrastructure.DataSources.FallbackStrategy
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FallbackStrategy
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 796
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Fallback strategy for provider selection.
+  example: []
+  syntax:
+    content: 'public enum FallbackStrategy : byte'
+    content.vb: Public Enum FallbackStrategy As Byte
+- uid: Meridian.Infrastructure.DataSources.FallbackStrategy.Priority
+  commentId: F:Meridian.Infrastructure.DataSources.FallbackStrategy.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.DataSources.FallbackStrategy
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: FallbackStrategy.Priority
+  fullName: Meridian.Infrastructure.DataSources.FallbackStrategy.Priority
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 799
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Priority-based selection (use provider priority).
+  example: []
+  syntax:
+    content: Priority = 0
+    return:
+      type: Meridian.Infrastructure.DataSources.FallbackStrategy
+- uid: Meridian.Infrastructure.DataSources.FallbackStrategy.HealthScore
+  commentId: F:Meridian.Infrastructure.DataSources.FallbackStrategy.HealthScore
+  id: HealthScore
+  parent: Meridian.Infrastructure.DataSources.FallbackStrategy
+  langs:
+  - csharp
+  - vb
+  name: HealthScore
+  nameWithType: FallbackStrategy.HealthScore
+  fullName: Meridian.Infrastructure.DataSources.FallbackStrategy.HealthScore
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthScore
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 801
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Health-score-based selection.
+  example: []
+  syntax:
+    content: HealthScore = 1
+    return:
+      type: Meridian.Infrastructure.DataSources.FallbackStrategy
+- uid: Meridian.Infrastructure.DataSources.FallbackStrategy.RoundRobin
+  commentId: F:Meridian.Infrastructure.DataSources.FallbackStrategy.RoundRobin
+  id: RoundRobin
+  parent: Meridian.Infrastructure.DataSources.FallbackStrategy
+  langs:
+  - csharp
+  - vb
+  name: RoundRobin
+  nameWithType: FallbackStrategy.RoundRobin
+  fullName: Meridian.Infrastructure.DataSources.FallbackStrategy.RoundRobin
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RoundRobin
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 803
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Round-robin selection.
+  example: []
+  syntax:
+    content: RoundRobin = 2
+    return:
+      type: Meridian.Infrastructure.DataSources.FallbackStrategy
+- uid: Meridian.Infrastructure.DataSources.FallbackStrategy.Random
+  commentId: F:Meridian.Infrastructure.DataSources.FallbackStrategy.Random
+  id: Random
+  parent: Meridian.Infrastructure.DataSources.FallbackStrategy
+  langs:
+  - csharp
+  - vb
+  name: Random
+  nameWithType: FallbackStrategy.Random
+  fullName: Meridian.Infrastructure.DataSources.FallbackStrategy.Random
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Random
+    path: ../../src/Meridian.Infrastructure/DataSources/DataSourceConfiguration.cs
+    startLine: 805
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Random selection.
+  example: []
+  syntax:
+    content: Random = 3
+    return:
+      type: Meridian.Infrastructure.DataSources.FallbackStrategy
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.FallbackStrategy
+  commentId: T:Meridian.Infrastructure.DataSources.FallbackStrategy
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.FallbackStrategy.html
+  name: FallbackStrategy
+  nameWithType: FallbackStrategy
+  fullName: Meridian.Infrastructure.DataSources.FallbackStrategy

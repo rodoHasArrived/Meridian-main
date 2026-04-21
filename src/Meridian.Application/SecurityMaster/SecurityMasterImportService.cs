@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Core.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Application.SecurityMaster;
@@ -48,12 +49,16 @@ public interface ISecurityMasterImportService
 /// <summary>
 /// Implementation of bulk security import service.
 /// </summary>
-public sealed class SecurityMasterImportService : ISecurityMasterImportService
+public sealed class SecurityMasterImportService : ISecurityMasterImportService, ISecurityMasterIngestStatusService
 {
     private readonly ISecurityMasterService _securityMasterService;
     private readonly SecurityMasterCsvParser _csvParser;
     private readonly ISecurityMasterConflictService? _conflictService;
     private readonly ILogger<SecurityMasterImportService> _logger;
+    private readonly object _statusGate = new();
+    private Guid? _activeImportId;
+    private SecurityMasterActiveImportStatus? _activeImport;
+    private SecurityMasterCompletedImportStatus? _lastCompleted;
 
     private const int ProgressReportInterval = 10;
     private const int DelayBetweenRequestsMs = 50;
@@ -70,6 +75,14 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService
         _logger = logger;
     }
 
+    public SecurityMasterIngestStatusSnapshot GetSnapshot()
+    {
+        lock (_statusGate)
+        {
+            return new SecurityMasterIngestStatusSnapshot(_activeImport, _lastCompleted);
+        }
+    }
+
     public async Task<SecurityMasterImportResult> ImportAsync(
         string fileContent,
         string fileExtension,
@@ -78,34 +91,51 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService
     {
         ct.ThrowIfCancellationRequested();
 
+        var startedAtUtc = DateTimeOffset.UtcNow;
+        var normalizedFileExtension = NormalizeFileExtension(fileExtension);
+
         List<CreateSecurityRequest> requests;
         List<string> errors;
 
         try
         {
-            if (fileExtension.Equals(".csv", StringComparison.OrdinalIgnoreCase))
+            if (normalizedFileExtension.Equals(".csv", StringComparison.OrdinalIgnoreCase))
             {
                 requests = _csvParser.Parse(fileContent, out var parseErrors)
                     .ToList();
                 errors = parseErrors.ToList();
             }
-            else if (fileExtension.Equals(".json", StringComparison.OrdinalIgnoreCase))
+            else if (normalizedFileExtension.Equals(".json", StringComparison.OrdinalIgnoreCase))
             {
-                requests = JsonSerializer.Deserialize<List<CreateSecurityRequest>>(fileContent)
+                requests = JsonSerializer.Deserialize(
+                    fileContent,
+                    SecurityMasterJsonContext.Default.ListCreateSecurityRequest)
                     ?? new List<CreateSecurityRequest>();
                 errors = new List<string>();
             }
             else
             {
                 errors = new List<string> { $"Unsupported file extension: {fileExtension}" };
-                return new SecurityMasterImportResult(0, 0, 0, 0, errors);
+                return RecordCompleted(
+                    importId: null,
+                    normalizedFileExtension,
+                    total: 0,
+                    processed: 0,
+                    startedAtUtc,
+                    new SecurityMasterImportResult(0, 0, 0, 0, errors));
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to parse import file");
             errors = new List<string> { $"Parse error: {ex.Message}" };
-            return new SecurityMasterImportResult(0, 0, 0, 0, errors);
+            return RecordCompleted(
+                importId: null,
+                normalizedFileExtension,
+                total: 0,
+                processed: 0,
+                startedAtUtc,
+                new SecurityMasterImportResult(0, 0, 0, 0, errors));
         }
 
         // Snapshot open conflict count before import so we can report the delta.
@@ -120,61 +150,190 @@ public sealed class SecurityMasterImportService : ISecurityMasterImportService
         int skipped = 0;
         int failed = 0;
         var total = requests.Count;
+        var importId = BeginImport(normalizedFileExtension, total, startedAtUtc);
+        var completed = false;
 
-        foreach (var (index, request) in requests.WithIndex())
+        try
         {
-            ct.ThrowIfCancellationRequested();
+            foreach (var (index, request) in requests.WithIndex())
+            {
+                ct.ThrowIfCancellationRequested();
 
-            try
-            {
-                await _securityMasterService.CreateAsync(request, ct).ConfigureAwait(false);
-                imported++;
-                _logger.LogDebug("Imported security {Ticker}", request.Identifiers.FirstOrDefault()?.Value ?? "?");
-            }
-            catch (Exception ex)
-            {
-                // Check if it's a duplicate (409 or similar)
-                if (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
-                    ex.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    skipped++;
-                    _logger.LogDebug("Skipped duplicate security: {Message}", ex.Message);
+                    await _securityMasterService.CreateAsync(request, ct).ConfigureAwait(false);
+                    imported++;
+                    _logger.LogDebug("Imported security {Ticker}", request.Identifiers.FirstOrDefault()?.Value ?? "?");
                 }
-                else
+                catch (Exception ex)
                 {
-                    failed++;
-                    errors.Add($"Security {request.Identifiers.FirstOrDefault()?.Value ?? "?"}: {ex.Message}");
-                    _logger.LogError(ex, "Failed to import security");
+                    // Check if it's a duplicate (409 or similar)
+                    if (ex.Message.Contains("already exists", StringComparison.OrdinalIgnoreCase) ||
+                        ex.Message.Contains("duplicate", StringComparison.OrdinalIgnoreCase))
+                    {
+                        skipped++;
+                        _logger.LogDebug("Skipped duplicate security: {Message}", ex.Message);
+                    }
+                    else
+                    {
+                        failed++;
+                        errors.Add($"Security {request.Identifiers.FirstOrDefault()?.Value ?? "?"}: {ex.Message}");
+                        _logger.LogError(ex, "Failed to import security");
+                    }
+                }
+
+                UpdateActiveImport(
+                    importId,
+                    normalizedFileExtension,
+                    total,
+                    processed: index + 1,
+                    imported,
+                    skipped,
+                    failed,
+                    DateTimeOffset.UtcNow);
+
+                // Delay between requests to avoid overwhelming the service
+                if (index < total - 1)
+                    await Task.Delay(DelayBetweenRequestsMs, ct).ConfigureAwait(false);
+
+                // Report progress every N rows
+                if ((index + 1) % ProgressReportInterval == 0 || index == total - 1)
+                {
+                    progress?.Report(new SecurityMasterImportProgress(total, index + 1, imported, failed));
                 }
             }
 
-            // Delay between requests to avoid overwhelming the service
-            if (index < total - 1)
-                await Task.Delay(DelayBetweenRequestsMs, ct).ConfigureAwait(false);
-
-            // Report progress every N rows
-            if ((index + 1) % ProgressReportInterval == 0 || index == total - 1)
+            int conflictsDetected = 0;
+            if (_conflictService is not null)
             {
-                progress?.Report(new SecurityMasterImportProgress(total, index + 1, imported, failed));
+                var openAfter = await _conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
+                conflictsDetected = Math.Max(0, openAfter.Count - conflictsBefore);
+            }
+
+            _logger.LogInformation(
+                "Imported {Imported} securities from {Format} ({Failed} failed, {Skipped} skipped, {Conflicts} new conflicts)",
+                imported,
+                normalizedFileExtension,
+                failed,
+                skipped,
+                conflictsDetected);
+
+            var result = new SecurityMasterImportResult(imported, skipped, failed, conflictsDetected, errors);
+            completed = true;
+            return RecordCompleted(importId, normalizedFileExtension, total, total, startedAtUtc, result);
+        }
+        finally
+        {
+            if (!completed)
+            {
+                ClearActiveImport(importId);
             }
         }
+    }
 
-        int conflictsDetected = 0;
-        if (_conflictService is not null)
+    private static string NormalizeFileExtension(string fileExtension)
+        => string.IsNullOrWhiteSpace(fileExtension)
+            ? string.Empty
+            : fileExtension.StartsWith(".", StringComparison.Ordinal) ? fileExtension : $".{fileExtension}";
+
+    private Guid BeginImport(string fileExtension, int total, DateTimeOffset startedAtUtc)
+    {
+        var importId = Guid.NewGuid();
+        var activeImport = new SecurityMasterActiveImportStatus(
+            FileExtension: fileExtension,
+            Total: total,
+            Processed: 0,
+            Imported: 0,
+            Skipped: 0,
+            Failed: 0,
+            StartedAtUtc: startedAtUtc,
+            UpdatedAtUtc: startedAtUtc);
+
+        lock (_statusGate)
         {
-            var openAfter = await _conflictService.GetOpenConflictsAsync(ct).ConfigureAwait(false);
-            conflictsDetected = Math.Max(0, openAfter.Count - conflictsBefore);
+            _activeImportId = importId;
+            _activeImport = activeImport;
         }
 
-        _logger.LogInformation(
-            "Imported {Imported} securities from {Format} ({Failed} failed, {Skipped} skipped, {Conflicts} new conflicts)",
-            imported,
-            fileExtension,
-            failed,
-            skipped,
-            conflictsDetected);
+        return importId;
+    }
 
-        return new SecurityMasterImportResult(imported, skipped, failed, conflictsDetected, errors);
+    private void UpdateActiveImport(
+        Guid importId,
+        string fileExtension,
+        int total,
+        int processed,
+        int imported,
+        int skipped,
+        int failed,
+        DateTimeOffset updatedAtUtc)
+    {
+        lock (_statusGate)
+        {
+            if (_activeImportId != importId)
+            {
+                return;
+            }
+
+            _activeImport = new SecurityMasterActiveImportStatus(
+                FileExtension: fileExtension,
+                Total: total,
+                Processed: processed,
+                Imported: imported,
+                Skipped: skipped,
+                Failed: failed,
+                StartedAtUtc: _activeImport?.StartedAtUtc ?? updatedAtUtc,
+                UpdatedAtUtc: updatedAtUtc);
+        }
+    }
+
+    private void ClearActiveImport(Guid importId)
+    {
+        lock (_statusGate)
+        {
+            if (_activeImportId != importId)
+            {
+                return;
+            }
+
+            _activeImportId = null;
+            _activeImport = null;
+        }
+    }
+
+    private SecurityMasterImportResult RecordCompleted(
+        Guid? importId,
+        string fileExtension,
+        int total,
+        int processed,
+        DateTimeOffset startedAtUtc,
+        SecurityMasterImportResult result)
+    {
+        var completedAtUtc = DateTimeOffset.UtcNow;
+        var completedImport = new SecurityMasterCompletedImportStatus(
+            FileExtension: fileExtension,
+            Total: total,
+            Processed: processed,
+            Imported: result.Imported,
+            Skipped: result.Skipped,
+            Failed: result.Failed,
+            ConflictsDetected: result.ConflictsDetected,
+            ErrorCount: result.Errors.Count,
+            StartedAtUtc: startedAtUtc,
+            CompletedAtUtc: completedAtUtc);
+
+        lock (_statusGate)
+        {
+            if (importId is not null && _activeImportId == importId)
+            {
+                _activeImportId = null;
+                _activeImport = null;
+            }
+
+            _lastCompleted = completedImport;
+        }
+
+        return result;
     }
 }
 

@@ -1,0 +1,137 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Models.AccountKind
+  commentId: T:Meridian.Execution.Models.AccountKind
+  id: AccountKind
+  parent: Meridian.Execution.Models
+  children:
+  - Meridian.Execution.Models.AccountKind.Bank
+  - Meridian.Execution.Models.AccountKind.Brokerage
+  langs:
+  - csharp
+  - vb
+  name: AccountKind
+  nameWithType: AccountKind
+  fullName: Meridian.Execution.Models.AccountKind
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/AccountKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountKind
+    path: ../../src/Meridian.Execution/Models/AccountKind.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    Categorises a tracked account within the execution layer.
+
+    Mirrors <code>Meridian.Backtesting.Sdk.FinancialAccountKind</code> without introducing
+
+    a cross-pillar dependency (ADR-016 pillar isolation).
+  example: []
+  syntax:
+    content: public enum AccountKind
+    content.vb: Public Enum AccountKind
+- uid: Meridian.Execution.Models.AccountKind.Brokerage
+  commentId: F:Meridian.Execution.Models.AccountKind.Brokerage
+  id: Brokerage
+  parent: Meridian.Execution.Models.AccountKind
+  langs:
+  - csharp
+  - vb
+  name: Brokerage
+  nameWithType: AccountKind.Brokerage
+  fullName: Meridian.Execution.Models.AccountKind.Brokerage
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/AccountKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Brokerage
+    path: ../../src/Meridian.Execution/Models/AccountKind.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    An equity or margin brokerage account that supports order placement,
+
+    short selling, and margin financing (e.g. Alpaca, Interactive Brokers).
+  example: []
+  syntax:
+    content: Brokerage = 0
+    return:
+      type: Meridian.Execution.Models.AccountKind
+- uid: Meridian.Execution.Models.AccountKind.Bank
+  commentId: F:Meridian.Execution.Models.AccountKind.Bank
+  id: Bank
+  parent: Meridian.Execution.Models.AccountKind
+  langs:
+  - csharp
+  - vb
+  name: Bank
+  nameWithType: AccountKind.Bank
+  fullName: Meridian.Execution.Models.AccountKind.Bank
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/AccountKind.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bank
+    path: ../../src/Meridian.Execution/Models/AccountKind.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: >-
+    A cash / money-market / bank account that holds liquid reserves.
+
+    Supports interest accrual but not direct order placement.
+  example: []
+  syntax:
+    content: Bank = 1
+    return:
+      type: Meridian.Execution.Models.AccountKind
+references:
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Models.AccountKind
+  commentId: T:Meridian.Execution.Models.AccountKind
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.AccountKind.html
+  name: AccountKind
+  nameWithType: AccountKind
+  fullName: Meridian.Execution.Models.AccountKind

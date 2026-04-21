@@ -1,0 +1,1804 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.HostStartup
+  commentId: T:Meridian.Application.Composition.HostStartup
+  id: HostStartup
+  parent: Meridian.Application.Composition
+  children:
+  - Meridian.Application.Composition.HostStartup.ConfigStore
+  - Meridian.Application.Composition.HostStartup.ConfigurationService
+  - Meridian.Application.Composition.HostStartup.CreateBackfillProviders
+  - Meridian.Application.Composition.HostStartup.CreateCompositeBackfillProvider(System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider})
+  - Meridian.Application.Composition.HostStartup.CreateDefault(System.String)
+  - Meridian.Application.Composition.HostStartup.CreateForBackfill(System.String)
+  - Meridian.Application.Composition.HostStartup.CreateForStreaming(System.String)
+  - Meridian.Application.Composition.HostStartup.CreateForUtility(System.String)
+  - Meridian.Application.Composition.HostStartup.CreateStatusWriter(Meridian.Application.Config.AppConfig,System.String)
+  - Meridian.Application.Composition.HostStartup.CreateStreamingClient(Meridian.Application.Config.AppConfig)
+  - Meridian.Application.Composition.HostStartup.CreateSubscriptionOrchestrator(Meridian.Infrastructure.IMarketDataClient,System.String)
+  - Meridian.Application.Composition.HostStartup.DisposeAsync
+  - Meridian.Application.Composition.HostStartup.GetRequiredService``1
+  - Meridian.Application.Composition.HostStartup.GetService``1
+  - Meridian.Application.Composition.HostStartup.Pipeline
+  - Meridian.Application.Composition.HostStartup.ProviderFactory
+  - Meridian.Application.Composition.HostStartup.ServiceProvider
+  - Meridian.Application.Composition.HostStartup.StartHotReload(System.String,System.Action{Meridian.Application.Config.AppConfig},System.Action{System.Exception})
+  - Meridian.Application.Composition.HostStartup.StorageOptions
+  langs:
+  - csharp
+  - vb
+  name: HostStartup
+  nameWithType: HostStartup
+  fullName: Meridian.Application.Composition.HostStartup
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HostStartup
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: >-
+    Unified host graph surface used by the shared startup/orchestration layer.
+
+    All host modes flow through this class, which delegates to <xref href="Meridian.Application.Composition.ServiceCompositionRoot" data-throw-if-not-resolved="false"></xref>.
+  remarks: >-
+    <p><b>Design Philosophy:</b></p>
+
+    <ul><li>Single host graph construction surface for console, desktop, and utility flows</li><li>Uses <xref href="Meridian.Application.Composition.ServiceCompositionRoot" data-throw-if-not-resolved="false"></xref> for all DI registration</li><li>Shared startup orchestrators choose canonical <xref href="Meridian.Application.Composition.CompositionOptions" data-throw-if-not-resolved="false"></xref> presets</li><li>Eliminates duplicated service wiring across hosts</li></ul>
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Unified host startup for all deployment modes")]
+
+      public sealed class HostStartup : IAsyncDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Unified host startup for all deployment modes")>
+
+      Public NotInheritable Class HostStartup Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Unified host startup for all deployment modes
+- uid: Meridian.Application.Composition.HostStartup.CreateForStreaming(System.String)
+  commentId: M:Meridian.Application.Composition.HostStartup.CreateForStreaming(System.String)
+  id: CreateForStreaming(System.String)
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: CreateForStreaming(string)
+  nameWithType: HostStartup.CreateForStreaming(string)
+  fullName: Meridian.Application.Composition.HostStartup.CreateForStreaming(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateForStreaming
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Creates a host startup for streaming data collection (CLI headless mode).
+  example: []
+  syntax:
+    content: public static HostStartup CreateForStreaming(string configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+      description: Path to configuration file.
+    return:
+      type: Meridian.Application.Composition.HostStartup
+      description: Configured HostStartup instance.
+    content.vb: Public Shared Function CreateForStreaming(configPath As String) As HostStartup
+  overload: Meridian.Application.Composition.HostStartup.CreateForStreaming*
+  nameWithType.vb: HostStartup.CreateForStreaming(String)
+  fullName.vb: Meridian.Application.Composition.HostStartup.CreateForStreaming(String)
+  name.vb: CreateForStreaming(String)
+- uid: Meridian.Application.Composition.HostStartup.CreateDefault(System.String)
+  commentId: M:Meridian.Application.Composition.HostStartup.CreateDefault(System.String)
+  id: CreateDefault(System.String)
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: CreateDefault(string)
+  nameWithType: HostStartup.CreateDefault(string)
+  fullName: Meridian.Application.Composition.HostStartup.CreateDefault(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateDefault
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Creates a host startup for the default/full host profile.
+  example: []
+  syntax:
+    content: public static HostStartup CreateDefault(string configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+    return:
+      type: Meridian.Application.Composition.HostStartup
+    content.vb: Public Shared Function CreateDefault(configPath As String) As HostStartup
+  overload: Meridian.Application.Composition.HostStartup.CreateDefault*
+  nameWithType.vb: HostStartup.CreateDefault(String)
+  fullName.vb: Meridian.Application.Composition.HostStartup.CreateDefault(String)
+  name.vb: CreateDefault(String)
+- uid: Meridian.Application.Composition.HostStartup.CreateForBackfill(System.String)
+  commentId: M:Meridian.Application.Composition.HostStartup.CreateForBackfill(System.String)
+  id: CreateForBackfill(System.String)
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: CreateForBackfill(string)
+  nameWithType: HostStartup.CreateForBackfill(string)
+  fullName: Meridian.Application.Composition.HostStartup.CreateForBackfill(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateForBackfill
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Creates a host startup for backfill-only operation.
+  example: []
+  syntax:
+    content: public static HostStartup CreateForBackfill(string configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+      description: Path to configuration file.
+    return:
+      type: Meridian.Application.Composition.HostStartup
+      description: Configured HostStartup instance.
+    content.vb: Public Shared Function CreateForBackfill(configPath As String) As HostStartup
+  overload: Meridian.Application.Composition.HostStartup.CreateForBackfill*
+  nameWithType.vb: HostStartup.CreateForBackfill(String)
+  fullName.vb: Meridian.Application.Composition.HostStartup.CreateForBackfill(String)
+  name.vb: CreateForBackfill(String)
+- uid: Meridian.Application.Composition.HostStartup.CreateForUtility(System.String)
+  commentId: M:Meridian.Application.Composition.HostStartup.CreateForUtility(System.String)
+  id: CreateForUtility(System.String)
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: CreateForUtility(string)
+  nameWithType: HostStartup.CreateForUtility(string)
+  fullName: Meridian.Application.Composition.HostStartup.CreateForUtility(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateForUtility
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Creates a host startup for minimal utility commands (validation, config checks, etc.).
+  example: []
+  syntax:
+    content: public static HostStartup CreateForUtility(string configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+      description: Path to configuration file.
+    return:
+      type: Meridian.Application.Composition.HostStartup
+      description: Configured HostStartup instance.
+    content.vb: Public Shared Function CreateForUtility(configPath As String) As HostStartup
+  overload: Meridian.Application.Composition.HostStartup.CreateForUtility*
+  nameWithType.vb: HostStartup.CreateForUtility(String)
+  fullName.vb: Meridian.Application.Composition.HostStartup.CreateForUtility(String)
+  name.vb: CreateForUtility(String)
+- uid: Meridian.Application.Composition.HostStartup.GetRequiredService``1
+  commentId: M:Meridian.Application.Composition.HostStartup.GetRequiredService``1
+  id: GetRequiredService``1
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: GetRequiredService<T>()
+  nameWithType: HostStartup.GetRequiredService<T>()
+  fullName: Meridian.Application.Composition.HostStartup.GetRequiredService<T>()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRequiredService
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Gets a required service from the DI container.
+  example: []
+  syntax:
+    content: 'public T GetRequiredService<T>() where T : notnull'
+    typeParameters:
+    - id: T
+    return:
+      type: '{T}'
+    content.vb: Public Function GetRequiredService(Of T)() As T
+  overload: Meridian.Application.Composition.HostStartup.GetRequiredService*
+  nameWithType.vb: HostStartup.GetRequiredService(Of T)()
+  fullName.vb: Meridian.Application.Composition.HostStartup.GetRequiredService(Of T)()
+  name.vb: GetRequiredService(Of T)()
+- uid: Meridian.Application.Composition.HostStartup.GetService``1
+  commentId: M:Meridian.Application.Composition.HostStartup.GetService``1
+  id: GetService``1
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: GetService<T>()
+  nameWithType: HostStartup.GetService<T>()
+  fullName: Meridian.Application.Composition.HostStartup.GetService<T>()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetService
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Gets a service from the DI container, or null if not registered.
+  example: []
+  syntax:
+    content: 'public T? GetService<T>() where T : class'
+    typeParameters:
+    - id: T
+    return:
+      type: '{T}'
+    content.vb: Public Function GetService(Of T As Class)() As T
+  overload: Meridian.Application.Composition.HostStartup.GetService*
+  nameWithType.vb: HostStartup.GetService(Of T)()
+  fullName.vb: Meridian.Application.Composition.HostStartup.GetService(Of T)()
+  name.vb: GetService(Of T)()
+- uid: Meridian.Application.Composition.HostStartup.ServiceProvider
+  commentId: P:Meridian.Application.Composition.HostStartup.ServiceProvider
+  id: ServiceProvider
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: ServiceProvider
+  nameWithType: HostStartup.ServiceProvider
+  fullName: Meridian.Application.Composition.HostStartup.ServiceProvider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ServiceProvider
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Gets the service provider for advanced scenarios.
+  example: []
+  syntax:
+    content: public IServiceProvider ServiceProvider { get; }
+    parameters: []
+    return:
+      type: System.IServiceProvider
+    content.vb: Public ReadOnly Property ServiceProvider As IServiceProvider
+  overload: Meridian.Application.Composition.HostStartup.ServiceProvider*
+- uid: Meridian.Application.Composition.HostStartup.ConfigStore
+  commentId: P:Meridian.Application.Composition.HostStartup.ConfigStore
+  id: ConfigStore
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: ConfigStore
+  nameWithType: HostStartup.ConfigStore
+  fullName: Meridian.Application.Composition.HostStartup.ConfigStore
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigStore
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Gets the ConfigStore from the DI container.
+  example: []
+  syntax:
+    content: public ConfigStore ConfigStore { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.UI.ConfigStore
+    content.vb: Public ReadOnly Property ConfigStore As ConfigStore
+  overload: Meridian.Application.Composition.HostStartup.ConfigStore*
+- uid: Meridian.Application.Composition.HostStartup.ConfigurationService
+  commentId: P:Meridian.Application.Composition.HostStartup.ConfigurationService
+  id: ConfigurationService
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationService
+  nameWithType: HostStartup.ConfigurationService
+  fullName: Meridian.Application.Composition.HostStartup.ConfigurationService
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigurationService
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 122
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Gets the ConfigurationService from the DI container.
+  example: []
+  syntax:
+    content: public ConfigurationService ConfigurationService { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.ConfigurationService
+    content.vb: Public ReadOnly Property ConfigurationService As ConfigurationService
+  overload: Meridian.Application.Composition.HostStartup.ConfigurationService*
+- uid: Meridian.Application.Composition.HostStartup.ProviderFactory
+  commentId: P:Meridian.Application.Composition.HostStartup.ProviderFactory
+  id: ProviderFactory
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: ProviderFactory
+  nameWithType: HostStartup.ProviderFactory
+  fullName: Meridian.Application.Composition.HostStartup.ProviderFactory
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderFactory
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 127
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Gets the ProviderFactory from the DI container.
+  example: []
+  syntax:
+    content: public ProviderFactory ProviderFactory { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderFactory
+    content.vb: Public ReadOnly Property ProviderFactory As ProviderFactory
+  overload: Meridian.Application.Composition.HostStartup.ProviderFactory*
+- uid: Meridian.Application.Composition.HostStartup.Pipeline
+  commentId: P:Meridian.Application.Composition.HostStartup.Pipeline
+  id: Pipeline
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: Pipeline
+  nameWithType: HostStartup.Pipeline
+  fullName: Meridian.Application.Composition.HostStartup.Pipeline
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Pipeline
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Gets the EventPipeline from the DI container.
+  example: []
+  syntax:
+    content: public EventPipeline Pipeline { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Pipeline.EventPipeline
+    content.vb: Public ReadOnly Property Pipeline As EventPipeline
+  overload: Meridian.Application.Composition.HostStartup.Pipeline*
+- uid: Meridian.Application.Composition.HostStartup.StorageOptions
+  commentId: P:Meridian.Application.Composition.HostStartup.StorageOptions
+  id: StorageOptions
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: StorageOptions
+  nameWithType: HostStartup.StorageOptions
+  fullName: Meridian.Application.Composition.HostStartup.StorageOptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StorageOptions
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Gets the StorageOptions from the DI container.
+  example: []
+  syntax:
+    content: public StorageOptions StorageOptions { get; }
+    parameters: []
+    return:
+      type: Meridian.Storage.StorageOptions
+    content.vb: Public ReadOnly Property StorageOptions As StorageOptions
+  overload: Meridian.Application.Composition.HostStartup.StorageOptions*
+- uid: Meridian.Application.Composition.HostStartup.CreateStreamingClient(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Application.Composition.HostStartup.CreateStreamingClient(Meridian.Application.Config.AppConfig)
+  id: CreateStreamingClient(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: CreateStreamingClient(AppConfig)
+  nameWithType: HostStartup.CreateStreamingClient(AppConfig)
+  fullName: Meridian.Application.Composition.HostStartup.CreateStreamingClient(Meridian.Application.Config.AppConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateStreamingClient
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: >-
+    Creates the streaming market data client based on configuration.
+
+    Delegates to <xref href="Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)" data-throw-if-not-resolved="false"></xref> which uses
+
+    dictionary-based factory lookup instead of switch statements.
+  example: []
+  syntax:
+    content: public IMarketDataClient CreateStreamingClient(AppConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+      description: Application configuration.
+    return:
+      type: Meridian.Infrastructure.IMarketDataClient
+      description: Configured market data client.
+    content.vb: Public Function CreateStreamingClient(config As AppConfig) As IMarketDataClient
+  overload: Meridian.Application.Composition.HostStartup.CreateStreamingClient*
+- uid: Meridian.Application.Composition.HostStartup.CreateSubscriptionOrchestrator(Meridian.Infrastructure.IMarketDataClient,System.String)
+  commentId: M:Meridian.Application.Composition.HostStartup.CreateSubscriptionOrchestrator(Meridian.Infrastructure.IMarketDataClient,System.String)
+  id: CreateSubscriptionOrchestrator(Meridian.Infrastructure.IMarketDataClient,System.String)
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: CreateSubscriptionOrchestrator(IMarketDataClient, string)
+  nameWithType: HostStartup.CreateSubscriptionOrchestrator(IMarketDataClient, string)
+  fullName: Meridian.Application.Composition.HostStartup.CreateSubscriptionOrchestrator(Meridian.Infrastructure.IMarketDataClient, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateSubscriptionOrchestrator
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Creates a subscription manager for managing symbol subscriptions.
+  example: []
+  syntax:
+    content: public SubscriptionOrchestrator CreateSubscriptionOrchestrator(IMarketDataClient dataClient, string providerId)
+    parameters:
+    - id: dataClient
+      type: Meridian.Infrastructure.IMarketDataClient
+      description: The market data client.
+    - id: providerId
+      type: System.String
+      description: Provider identifier used for cross-instance coordination ownership.
+    return:
+      type: Meridian.Application.Subscriptions.SubscriptionOrchestrator
+      description: Configured subscription manager.
+    content.vb: Public Function CreateSubscriptionOrchestrator(dataClient As IMarketDataClient, providerId As String) As SubscriptionOrchestrator
+  overload: Meridian.Application.Composition.HostStartup.CreateSubscriptionOrchestrator*
+  nameWithType.vb: HostStartup.CreateSubscriptionOrchestrator(IMarketDataClient, String)
+  fullName.vb: Meridian.Application.Composition.HostStartup.CreateSubscriptionOrchestrator(Meridian.Infrastructure.IMarketDataClient, String)
+  name.vb: CreateSubscriptionOrchestrator(IMarketDataClient, String)
+- uid: Meridian.Application.Composition.HostStartup.CreateBackfillProviders
+  commentId: M:Meridian.Application.Composition.HostStartup.CreateBackfillProviders
+  id: CreateBackfillProviders
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: CreateBackfillProviders()
+  nameWithType: HostStartup.CreateBackfillProviders()
+  fullName: Meridian.Application.Composition.HostStartup.CreateBackfillProviders()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateBackfillProviders
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: >-
+    Creates the backfill providers using the ProviderFactory.
+
+    Uses unified credential resolution through ConfigurationService.
+  example: []
+  syntax:
+    content: public IReadOnlyList<IHistoricalDataProvider> CreateBackfillProviders()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+      description: List of configured backfill providers.
+    content.vb: Public Function CreateBackfillProviders() As IReadOnlyList(Of IHistoricalDataProvider)
+  overload: Meridian.Application.Composition.HostStartup.CreateBackfillProviders*
+- uid: Meridian.Application.Composition.HostStartup.CreateCompositeBackfillProvider(System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider})
+  commentId: M:Meridian.Application.Composition.HostStartup.CreateCompositeBackfillProvider(System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider})
+  id: CreateCompositeBackfillProvider(System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider})
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: CreateCompositeBackfillProvider(IReadOnlyList<IHistoricalDataProvider>)
+  nameWithType: HostStartup.CreateCompositeBackfillProvider(IReadOnlyList<IHistoricalDataProvider>)
+  fullName: Meridian.Application.Composition.HostStartup.CreateCompositeBackfillProvider(System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateCompositeBackfillProvider
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Creates a composite backfill provider with automatic failover.
+  example: []
+  syntax:
+    content: public CompositeHistoricalDataProvider CreateCompositeBackfillProvider(IReadOnlyList<IHistoricalDataProvider> providers)
+    parameters:
+    - id: providers
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+      description: Individual backfill providers.
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+      description: Composite provider with failover support.
+    content.vb: Public Function CreateCompositeBackfillProvider(providers As IReadOnlyList(Of IHistoricalDataProvider)) As CompositeHistoricalDataProvider
+  overload: Meridian.Application.Composition.HostStartup.CreateCompositeBackfillProvider*
+  nameWithType.vb: HostStartup.CreateCompositeBackfillProvider(IReadOnlyList(Of IHistoricalDataProvider))
+  fullName.vb: Meridian.Application.Composition.HostStartup.CreateCompositeBackfillProvider(System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider))
+  name.vb: CreateCompositeBackfillProvider(IReadOnlyList(Of IHistoricalDataProvider))
+- uid: Meridian.Application.Composition.HostStartup.CreateStatusWriter(Meridian.Application.Config.AppConfig,System.String)
+  commentId: M:Meridian.Application.Composition.HostStartup.CreateStatusWriter(Meridian.Application.Config.AppConfig,System.String)
+  id: CreateStatusWriter(Meridian.Application.Config.AppConfig,System.String)
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: CreateStatusWriter(AppConfig, string)
+  nameWithType: HostStartup.CreateStatusWriter(AppConfig, string)
+  fullName: Meridian.Application.Composition.HostStartup.CreateStatusWriter(Meridian.Application.Config.AppConfig, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateStatusWriter
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Creates a StatusWriter for persisting status information.
+  example: []
+  syntax:
+    content: public StatusWriter CreateStatusWriter(AppConfig config, string configPath)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.AppConfig
+      description: Application configuration.
+    - id: configPath
+      type: System.String
+      description: Path to configuration file.
+    return:
+      type: Meridian.Application.Monitoring.StatusWriter
+      description: Configured StatusWriter.
+    content.vb: Public Function CreateStatusWriter(config As AppConfig, configPath As String) As StatusWriter
+  overload: Meridian.Application.Composition.HostStartup.CreateStatusWriter*
+  nameWithType.vb: HostStartup.CreateStatusWriter(AppConfig, String)
+  fullName.vb: Meridian.Application.Composition.HostStartup.CreateStatusWriter(Meridian.Application.Config.AppConfig, String)
+  name.vb: CreateStatusWriter(AppConfig, String)
+- uid: Meridian.Application.Composition.HostStartup.StartHotReload(System.String,System.Action{Meridian.Application.Config.AppConfig},System.Action{System.Exception})
+  commentId: M:Meridian.Application.Composition.HostStartup.StartHotReload(System.String,System.Action{Meridian.Application.Config.AppConfig},System.Action{System.Exception})
+  id: StartHotReload(System.String,System.Action{Meridian.Application.Config.AppConfig},System.Action{System.Exception})
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: StartHotReload(string, Action<AppConfig>, Action<Exception>)
+  nameWithType: HostStartup.StartHotReload(string, Action<AppConfig>, Action<Exception>)
+  fullName: Meridian.Application.Composition.HostStartup.StartHotReload(string, System.Action<Meridian.Application.Config.AppConfig>, System.Action<System.Exception>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartHotReload
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 220
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: Starts hot-reload configuration watching.
+  example: []
+  syntax:
+    content: public ConfigWatcher? StartHotReload(string configPath, Action<AppConfig> onReload, Action<Exception> onError)
+    parameters:
+    - id: configPath
+      type: System.String
+      description: Path to configuration file.
+    - id: onReload
+      type: System.Action{Meridian.Application.Config.AppConfig}
+      description: Callback when configuration changes.
+    - id: onError
+      type: System.Action{System.Exception}
+      description: Callback for errors.
+    return:
+      type: Meridian.Application.Config.ConfigWatcher
+      description: ConfigWatcher instance.
+    content.vb: Public Function StartHotReload(configPath As String, onReload As Action(Of AppConfig), onError As Action(Of Exception)) As ConfigWatcher
+  overload: Meridian.Application.Composition.HostStartup.StartHotReload*
+  nameWithType.vb: HostStartup.StartHotReload(String, Action(Of AppConfig), Action(Of Exception))
+  fullName.vb: Meridian.Application.Composition.HostStartup.StartHotReload(String, System.Action(Of Meridian.Application.Config.AppConfig), System.Action(Of System.Exception))
+  name.vb: StartHotReload(String, Action(Of AppConfig), Action(Of Exception))
+- uid: Meridian.Application.Composition.HostStartup.DisposeAsync
+  commentId: M:Meridian.Application.Composition.HostStartup.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Composition.HostStartup
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: HostStartup.DisposeAsync()
+  fullName: Meridian.Application.Composition.HostStartup.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/HostStartup.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Composition/HostStartup.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Composition.HostStartup.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Composition.ServiceCompositionRoot
+  commentId: T:Meridian.Application.Composition.ServiceCompositionRoot
+  href: Meridian.Application.Composition.ServiceCompositionRoot.html
+  name: ServiceCompositionRoot
+  nameWithType: ServiceCompositionRoot
+  fullName: Meridian.Application.Composition.ServiceCompositionRoot
+- uid: Meridian.Application.Composition.CompositionOptions
+  commentId: T:Meridian.Application.Composition.CompositionOptions
+  parent: Meridian.Application.Composition
+  href: Meridian.Application.Composition.CompositionOptions.html
+  name: CompositionOptions
+  nameWithType: CompositionOptions
+  fullName: Meridian.Application.Composition.CompositionOptions
+- uid: Meridian.Application.Composition
+  commentId: N:Meridian.Application.Composition
+  href: Meridian.html
+  name: Meridian.Application.Composition
+  nameWithType: Meridian.Application.Composition
+  fullName: Meridian.Application.Composition
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Composition.HostStartup.CreateForStreaming*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.CreateForStreaming
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_CreateForStreaming_System_String_
+  name: CreateForStreaming
+  nameWithType: HostStartup.CreateForStreaming
+  fullName: Meridian.Application.Composition.HostStartup.CreateForStreaming
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Composition.HostStartup
+  commentId: T:Meridian.Application.Composition.HostStartup
+  parent: Meridian.Application.Composition
+  href: Meridian.Application.Composition.HostStartup.html
+  name: HostStartup
+  nameWithType: HostStartup
+  fullName: Meridian.Application.Composition.HostStartup
+- uid: Meridian.Application.Composition.HostStartup.CreateDefault*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.CreateDefault
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_CreateDefault_System_String_
+  name: CreateDefault
+  nameWithType: HostStartup.CreateDefault
+  fullName: Meridian.Application.Composition.HostStartup.CreateDefault
+- uid: Meridian.Application.Composition.HostStartup.CreateForBackfill*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.CreateForBackfill
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_CreateForBackfill_System_String_
+  name: CreateForBackfill
+  nameWithType: HostStartup.CreateForBackfill
+  fullName: Meridian.Application.Composition.HostStartup.CreateForBackfill
+- uid: Meridian.Application.Composition.HostStartup.CreateForUtility*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.CreateForUtility
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_CreateForUtility_System_String_
+  name: CreateForUtility
+  nameWithType: HostStartup.CreateForUtility
+  fullName: Meridian.Application.Composition.HostStartup.CreateForUtility
+- uid: Meridian.Application.Composition.HostStartup.GetRequiredService*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.GetRequiredService
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_GetRequiredService__1
+  name: GetRequiredService
+  nameWithType: HostStartup.GetRequiredService
+  fullName: Meridian.Application.Composition.HostStartup.GetRequiredService
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: Meridian.Application.Composition.HostStartup.GetService*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.GetService
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_GetService__1
+  name: GetService
+  nameWithType: HostStartup.GetService
+  fullName: Meridian.Application.Composition.HostStartup.GetService
+- uid: Meridian.Application.Composition.HostStartup.ServiceProvider*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.ServiceProvider
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_ServiceProvider
+  name: ServiceProvider
+  nameWithType: HostStartup.ServiceProvider
+  fullName: Meridian.Application.Composition.HostStartup.ServiceProvider
+- uid: System.IServiceProvider
+  commentId: T:System.IServiceProvider
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iserviceprovider
+  name: IServiceProvider
+  nameWithType: IServiceProvider
+  fullName: System.IServiceProvider
+- uid: Meridian.Application.Composition.HostStartup.ConfigStore*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.ConfigStore
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_ConfigStore
+  name: ConfigStore
+  nameWithType: HostStartup.ConfigStore
+  fullName: Meridian.Application.Composition.HostStartup.ConfigStore
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Application.Composition.HostStartup.ConfigurationService*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.ConfigurationService
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_ConfigurationService
+  name: ConfigurationService
+  nameWithType: HostStartup.ConfigurationService
+  fullName: Meridian.Application.Composition.HostStartup.ConfigurationService
+- uid: Meridian.Application.Services.ConfigurationService
+  commentId: T:Meridian.Application.Services.ConfigurationService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.ConfigurationService.html
+  name: ConfigurationService
+  nameWithType: ConfigurationService
+  fullName: Meridian.Application.Services.ConfigurationService
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Composition.HostStartup.ProviderFactory*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.ProviderFactory
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_ProviderFactory
+  name: ProviderFactory
+  nameWithType: HostStartup.ProviderFactory
+  fullName: Meridian.Application.Composition.HostStartup.ProviderFactory
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderFactory
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderFactory
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderFactory.html
+  name: ProviderFactory
+  nameWithType: ProviderFactory
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderFactory
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Application.Composition.HostStartup.Pipeline*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.Pipeline
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_Pipeline
+  name: Pipeline
+  nameWithType: HostStartup.Pipeline
+  fullName: Meridian.Application.Composition.HostStartup.Pipeline
+- uid: Meridian.Application.Pipeline.EventPipeline
+  commentId: T:Meridian.Application.Pipeline.EventPipeline
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.EventPipeline.html
+  name: EventPipeline
+  nameWithType: EventPipeline
+  fullName: Meridian.Application.Pipeline.EventPipeline
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: Meridian.Application.Composition.HostStartup.StorageOptions*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.StorageOptions
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_StorageOptions
+  name: StorageOptions
+  nameWithType: HostStartup.StorageOptions
+  fullName: Meridian.Application.Composition.HostStartup.StorageOptions
+- uid: Meridian.Storage.StorageOptions
+  commentId: T:Meridian.Storage.StorageOptions
+  parent: Meridian.Storage
+  href: Meridian.Storage.StorageOptions.html
+  name: StorageOptions
+  nameWithType: StorageOptions
+  fullName: Meridian.Storage.StorageOptions
+- uid: Meridian.Storage
+  commentId: N:Meridian.Storage
+  href: Meridian.html
+  name: Meridian.Storage
+  nameWithType: Meridian.Storage
+  fullName: Meridian.Storage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_CreateStreamingClient_System_String_
+  name: CreateStreamingClient(string)
+  nameWithType: ProviderRegistry.CreateStreamingClient(string)
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(string)
+  nameWithType.vb: ProviderRegistry.CreateStreamingClient(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(String)
+  name.vb: CreateStreamingClient(String)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+    name: CreateStreamingClient
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_CreateStreamingClient_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.CreateStreamingClient(System.String)
+    name: CreateStreamingClient
+    href: Meridian.Infrastructure.Adapters.Core.ProviderRegistry.html#Meridian_Infrastructure_Adapters_Core_ProviderRegistry_CreateStreamingClient_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Composition.HostStartup.CreateStreamingClient*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.CreateStreamingClient
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_CreateStreamingClient_Meridian_Application_Config_AppConfig_
+  name: CreateStreamingClient
+  nameWithType: HostStartup.CreateStreamingClient
+  fullName: Meridian.Application.Composition.HostStartup.CreateStreamingClient
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Infrastructure.IMarketDataClient
+  commentId: T:Meridian.Infrastructure.IMarketDataClient
+  parent: Meridian.Infrastructure
+  href: Meridian.Infrastructure.IMarketDataClient.html
+  name: IMarketDataClient
+  nameWithType: IMarketDataClient
+  fullName: Meridian.Infrastructure.IMarketDataClient
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Infrastructure
+  commentId: N:Meridian.Infrastructure
+  href: Meridian.html
+  name: Meridian.Infrastructure
+  nameWithType: Meridian.Infrastructure
+  fullName: Meridian.Infrastructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+- uid: Meridian.Application.Composition.HostStartup.CreateSubscriptionOrchestrator*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.CreateSubscriptionOrchestrator
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_CreateSubscriptionOrchestrator_Meridian_Infrastructure_IMarketDataClient_System_String_
+  name: CreateSubscriptionOrchestrator
+  nameWithType: HostStartup.CreateSubscriptionOrchestrator
+  fullName: Meridian.Application.Composition.HostStartup.CreateSubscriptionOrchestrator
+- uid: Meridian.Application.Subscriptions.SubscriptionOrchestrator
+  commentId: T:Meridian.Application.Subscriptions.SubscriptionOrchestrator
+  parent: Meridian.Application.Subscriptions
+  href: Meridian.Application.Subscriptions.SubscriptionOrchestrator.html
+  name: SubscriptionOrchestrator
+  nameWithType: SubscriptionOrchestrator
+  fullName: Meridian.Application.Subscriptions.SubscriptionOrchestrator
+- uid: Meridian.Application.Subscriptions
+  commentId: N:Meridian.Application.Subscriptions
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions
+  nameWithType: Meridian.Application.Subscriptions
+  fullName: Meridian.Application.Subscriptions
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+- uid: Meridian.Application.Composition.HostStartup.CreateBackfillProviders*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.CreateBackfillProviders
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_CreateBackfillProviders
+  name: CreateBackfillProviders
+  nameWithType: HostStartup.CreateBackfillProviders
+  fullName: Meridian.Application.Composition.HostStartup.CreateBackfillProviders
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<IHistoricalDataProvider>
+  nameWithType: IReadOnlyList<IHistoricalDataProvider>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider>
+  nameWithType.vb: IReadOnlyList(Of IHistoricalDataProvider)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider)
+  name.vb: IReadOnlyList(Of IHistoricalDataProvider)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    name: IHistoricalDataProvider
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+    name: IHistoricalDataProvider
+    href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Composition.HostStartup.CreateCompositeBackfillProvider*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.CreateCompositeBackfillProvider
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_CreateCompositeBackfillProvider_System_Collections_Generic_IReadOnlyList_Meridian_Infrastructure_Adapters_Core_IHistoricalDataProvider__
+  name: CreateCompositeBackfillProvider
+  nameWithType: HostStartup.CreateCompositeBackfillProvider
+  fullName: Meridian.Application.Composition.HostStartup.CreateCompositeBackfillProvider
+- uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.html
+  name: CompositeHistoricalDataProvider
+  nameWithType: CompositeHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+- uid: Meridian.Application.Composition.HostStartup.CreateStatusWriter*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.CreateStatusWriter
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_CreateStatusWriter_Meridian_Application_Config_AppConfig_System_String_
+  name: CreateStatusWriter
+  nameWithType: HostStartup.CreateStatusWriter
+  fullName: Meridian.Application.Composition.HostStartup.CreateStatusWriter
+- uid: Meridian.Application.Monitoring.StatusWriter
+  commentId: T:Meridian.Application.Monitoring.StatusWriter
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.StatusWriter.html
+  name: StatusWriter
+  nameWithType: StatusWriter
+  fullName: Meridian.Application.Monitoring.StatusWriter
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Composition.HostStartup.StartHotReload*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.StartHotReload
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_StartHotReload_System_String_System_Action_Meridian_Application_Config_AppConfig__System_Action_System_Exception__
+  name: StartHotReload
+  nameWithType: HostStartup.StartHotReload
+  fullName: Meridian.Application.Composition.HostStartup.StartHotReload
+- uid: System.Action{Meridian.Application.Config.AppConfig}
+  commentId: T:System.Action{Meridian.Application.Config.AppConfig}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<AppConfig>
+  nameWithType: Action<AppConfig>
+  fullName: System.Action<Meridian.Application.Config.AppConfig>
+  nameWithType.vb: Action(Of AppConfig)
+  fullName.vb: System.Action(Of Meridian.Application.Config.AppConfig)
+  name.vb: Action(Of AppConfig)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.AppConfig
+    name: AppConfig
+  - name: )
+- uid: System.Action{System.Exception}
+  commentId: T:System.Action{System.Exception}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<Exception>
+  nameWithType: Action<Exception>
+  fullName: System.Action<System.Exception>
+  nameWithType.vb: Action(Of Exception)
+  fullName.vb: System.Action(Of System.Exception)
+  name.vb: Action(Of Exception)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Exception
+    name: Exception
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.exception
+  - name: )
+- uid: Meridian.Application.Config.ConfigWatcher
+  commentId: T:Meridian.Application.Config.ConfigWatcher
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.ConfigWatcher.html
+  name: ConfigWatcher
+  nameWithType: ConfigWatcher
+  fullName: Meridian.Application.Config.ConfigWatcher
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Composition.HostStartup.DisposeAsync*
+  commentId: Overload:Meridian.Application.Composition.HostStartup.DisposeAsync
+  href: Meridian.Application.Composition.HostStartup.html#Meridian_Application_Composition_HostStartup_DisposeAsync
+  name: DisposeAsync
+  nameWithType: HostStartup.DisposeAsync
+  fullName: Meridian.Application.Composition.HostStartup.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

@@ -1,0 +1,749 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping
+  commentId: T:Meridian.Application.Subscriptions.Models.FigiMapping
+  id: FigiMapping
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.FigiMapping.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  - Meridian.Application.Subscriptions.Models.FigiMapping.CompositeFigi
+  - Meridian.Application.Subscriptions.Models.FigiMapping.ExchangeCode
+  - Meridian.Application.Subscriptions.Models.FigiMapping.Figi
+  - Meridian.Application.Subscriptions.Models.FigiMapping.MarketSector
+  - Meridian.Application.Subscriptions.Models.FigiMapping.Name
+  - Meridian.Application.Subscriptions.Models.FigiMapping.SecurityDescription
+  - Meridian.Application.Subscriptions.Models.FigiMapping.SecurityType
+  - Meridian.Application.Subscriptions.Models.FigiMapping.ShareClassFigi
+  - Meridian.Application.Subscriptions.Models.FigiMapping.Ticker
+  langs:
+  - csharp
+  - vb
+  name: FigiMapping
+  nameWithType: FigiMapping
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FigiMapping
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: OpenFIGI mapping result.
+  example: []
+  syntax:
+    content: 'public sealed record FigiMapping : IEquatable<FigiMapping>'
+    content.vb: Public NotInheritable Class FigiMapping Implements IEquatable(Of FigiMapping)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.FigiMapping}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Subscriptions.Models.FigiMapping.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String)'
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: FigiMapping(string, string?, string?, string?, string?, string?, string?, string?, string?)
+  nameWithType: FigiMapping.FigiMapping(string, string?, string?, string?, string?, string?, string?, string?, string?)
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.FigiMapping(string, string?, string?, string?, string?, string?, string?, string?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 163
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: OpenFIGI mapping result.
+  example: []
+  syntax:
+    content: public FigiMapping(string Figi, string? CompositeFigi = null, string? SecurityType = null, string? MarketSector = null, string? Ticker = null, string? Name = null, string? ExchangeCode = null, string? ShareClassFigi = null, string? SecurityDescription = null)
+    parameters:
+    - id: Figi
+      type: System.String
+    - id: CompositeFigi
+      type: System.String
+    - id: SecurityType
+      type: System.String
+    - id: MarketSector
+      type: System.String
+    - id: Ticker
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: ExchangeCode
+      type: System.String
+    - id: ShareClassFigi
+      type: System.String
+    - id: SecurityDescription
+      type: System.String
+    content.vb: Public Sub New(Figi As String, CompositeFigi As String = Nothing, SecurityType As String = Nothing, MarketSector As String = Nothing, Ticker As String = Nothing, Name As String = Nothing, ExchangeCode As String = Nothing, ShareClassFigi As String = Nothing, SecurityDescription As String = Nothing)
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.#ctor*
+  nameWithType.vb: FigiMapping.New(String, String, String, String, String, String, String, String, String)
+  fullName.vb: Meridian.Application.Subscriptions.Models.FigiMapping.New(String, String, String, String, String, String, String, String, String)
+  name.vb: New(String, String, String, String, String, String, String, String, String)
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.Figi
+  commentId: P:Meridian.Application.Subscriptions.Models.FigiMapping.Figi
+  id: Figi
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: Figi
+  nameWithType: FigiMapping.Figi
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.Figi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Figi
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string Figi { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Figi As String
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.Figi*
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.CompositeFigi
+  commentId: P:Meridian.Application.Subscriptions.Models.FigiMapping.CompositeFigi
+  id: CompositeFigi
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: CompositeFigi
+  nameWithType: FigiMapping.CompositeFigi
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.CompositeFigi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompositeFigi
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? CompositeFigi { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CompositeFigi As String
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.CompositeFigi*
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityType
+  commentId: P:Meridian.Application.Subscriptions.Models.FigiMapping.SecurityType
+  id: SecurityType
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: SecurityType
+  nameWithType: FigiMapping.SecurityType
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityType
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 171
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? SecurityType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecurityType As String
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityType*
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.MarketSector
+  commentId: P:Meridian.Application.Subscriptions.Models.FigiMapping.MarketSector
+  id: MarketSector
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: MarketSector
+  nameWithType: FigiMapping.MarketSector
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.MarketSector
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MarketSector
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? MarketSector { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MarketSector As String
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.MarketSector*
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.Ticker
+  commentId: P:Meridian.Application.Subscriptions.Models.FigiMapping.Ticker
+  id: Ticker
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: Ticker
+  nameWithType: FigiMapping.Ticker
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.Ticker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ticker
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Ticker { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Ticker As String
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.Ticker*
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.Name
+  commentId: P:Meridian.Application.Subscriptions.Models.FigiMapping.Name
+  id: Name
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: FigiMapping.Name
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.Name*
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.ExchangeCode
+  commentId: P:Meridian.Application.Subscriptions.Models.FigiMapping.ExchangeCode
+  id: ExchangeCode
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: ExchangeCode
+  nameWithType: FigiMapping.ExchangeCode
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.ExchangeCode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExchangeCode
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? ExchangeCode { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExchangeCode As String
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.ExchangeCode*
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.ShareClassFigi
+  commentId: P:Meridian.Application.Subscriptions.Models.FigiMapping.ShareClassFigi
+  id: ShareClassFigi
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: ShareClassFigi
+  nameWithType: FigiMapping.ShareClassFigi
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.ShareClassFigi
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShareClassFigi
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? ShareClassFigi { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ShareClassFigi As String
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.ShareClassFigi*
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityDescription
+  commentId: P:Meridian.Application.Subscriptions.Models.FigiMapping.SecurityDescription
+  id: SecurityDescription
+  parent: Meridian.Application.Subscriptions.Models.FigiMapping
+  langs:
+  - csharp
+  - vb
+  name: SecurityDescription
+  nameWithType: FigiMapping.SecurityDescription
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityDescription
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityDescription
+    path: ../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs
+    startLine: 189
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public string? SecurityDescription { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecurityDescription As String
+  overload: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityDescription*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.FigiMapping}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.FigiMapping}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FigiMapping>
+  nameWithType: IEquatable<FigiMapping>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.FigiMapping>
+  nameWithType.vb: IEquatable(Of FigiMapping)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.FigiMapping)
+  name.vb: IEquatable(Of FigiMapping)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+    href: Meridian.Application.Subscriptions.Models.FigiMapping.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.FigiMapping
+    name: FigiMapping
+    href: Meridian.Application.Subscriptions.Models.FigiMapping.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.#ctor
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping__ctor_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_
+  name: FigiMapping
+  nameWithType: FigiMapping.FigiMapping
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.FigiMapping
+  nameWithType.vb: FigiMapping.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.FigiMapping.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.Figi*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.Figi
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping_Figi
+  name: Figi
+  nameWithType: FigiMapping.Figi
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.Figi
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.CompositeFigi*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.CompositeFigi
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping_CompositeFigi
+  name: CompositeFigi
+  nameWithType: FigiMapping.CompositeFigi
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.CompositeFigi
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityType*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.SecurityType
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping_SecurityType
+  name: SecurityType
+  nameWithType: FigiMapping.SecurityType
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityType
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.MarketSector*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.MarketSector
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping_MarketSector
+  name: MarketSector
+  nameWithType: FigiMapping.MarketSector
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.MarketSector
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.Ticker*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.Ticker
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping_Ticker
+  name: Ticker
+  nameWithType: FigiMapping.Ticker
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.Ticker
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.Name*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.Name
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping_Name
+  name: Name
+  nameWithType: FigiMapping.Name
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.Name
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.ExchangeCode*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.ExchangeCode
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping_ExchangeCode
+  name: ExchangeCode
+  nameWithType: FigiMapping.ExchangeCode
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.ExchangeCode
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.ShareClassFigi*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.ShareClassFigi
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping_ShareClassFigi
+  name: ShareClassFigi
+  nameWithType: FigiMapping.ShareClassFigi
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.ShareClassFigi
+- uid: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityDescription*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.FigiMapping.SecurityDescription
+  href: Meridian.Application.Subscriptions.Models.FigiMapping.html#Meridian_Application_Subscriptions_Models_FigiMapping_SecurityDescription
+  name: SecurityDescription
+  nameWithType: FigiMapping.SecurityDescription
+  fullName: Meridian.Application.Subscriptions.Models.FigiMapping.SecurityDescription

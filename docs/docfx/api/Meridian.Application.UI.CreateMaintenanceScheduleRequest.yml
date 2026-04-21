@@ -1,0 +1,1018 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  commentId: T:Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  id: CreateMaintenanceScheduleRequest
+  parent: Meridian.Application.UI
+  children:
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Boolean},System.Nullable{System.Int32},System.Nullable{System.Int32},System.String[],System.String[],Meridian.Application.UI.MaintenanceOptionsDto)
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.CronExpression
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.Description
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.Enabled
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxDurationMinutes
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxRetries
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.Name
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.Options
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.Preset
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.Priority
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.Tags
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.TargetPaths
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.TaskType
+  - Meridian.Application.UI.CreateMaintenanceScheduleRequest.TimeZoneId
+  langs:
+  - csharp
+  - vb
+  name: CreateMaintenanceScheduleRequest
+  nameWithType: CreateMaintenanceScheduleRequest
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateMaintenanceScheduleRequest
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 507
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: 'public record CreateMaintenanceScheduleRequest : IEquatable<CreateMaintenanceScheduleRequest>'
+    content.vb: Public Class CreateMaintenanceScheduleRequest Implements IEquatable(Of CreateMaintenanceScheduleRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.UI.CreateMaintenanceScheduleRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Boolean},System.Nullable{System.Int32},System.Nullable{System.Int32},System.String[],System.String[],Meridian.Application.UI.MaintenanceOptionsDto)
+  commentId: M:Meridian.Application.UI.CreateMaintenanceScheduleRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Boolean},System.Nullable{System.Int32},System.Nullable{System.Int32},System.String[],System.String[],Meridian.Application.UI.MaintenanceOptionsDto)
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Nullable{System.Boolean},System.Nullable{System.Int32},System.Nullable{System.Int32},System.String[],System.String[],Meridian.Application.UI.MaintenanceOptionsDto)'
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: CreateMaintenanceScheduleRequest(string, string?, string?, string?, string?, string?, string?, bool?, int?, int?, string[]?, string[]?, MaintenanceOptionsDto?)
+  nameWithType: CreateMaintenanceScheduleRequest.CreateMaintenanceScheduleRequest(string, string?, string?, string?, string?, string?, string?, bool?, int?, int?, string[]?, string[]?, MaintenanceOptionsDto?)
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.CreateMaintenanceScheduleRequest(string, string?, string?, string?, string?, string?, string?, bool?, int?, int?, string[]?, string[]?, Meridian.Application.UI.MaintenanceOptionsDto?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 507
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public CreateMaintenanceScheduleRequest(string Name, string? Description = null, string? Preset = null, string? CronExpression = null, string? TimeZoneId = null, string? TaskType = null, string? Priority = null, bool? Enabled = null, int? MaxDurationMinutes = null, int? MaxRetries = null, string[]? TargetPaths = null, string[]? Tags = null, MaintenanceOptionsDto? Options = null)
+    parameters:
+    - id: Name
+      type: System.String
+    - id: Description
+      type: System.String
+    - id: Preset
+      type: System.String
+    - id: CronExpression
+      type: System.String
+    - id: TimeZoneId
+      type: System.String
+    - id: TaskType
+      type: System.String
+    - id: Priority
+      type: System.String
+    - id: Enabled
+      type: System.Nullable{System.Boolean}
+    - id: MaxDurationMinutes
+      type: System.Nullable{System.Int32}
+    - id: MaxRetries
+      type: System.Nullable{System.Int32}
+    - id: TargetPaths
+      type: System.String[]
+    - id: Tags
+      type: System.String[]
+    - id: Options
+      type: Meridian.Application.UI.MaintenanceOptionsDto
+    content.vb: Public Sub New(Name As String, Description As String = Nothing, Preset As String = Nothing, CronExpression As String = Nothing, TimeZoneId As String = Nothing, TaskType As String = Nothing, Priority As String = Nothing, Enabled As Boolean? = Nothing, MaxDurationMinutes As Integer? = Nothing, MaxRetries As Integer? = Nothing, TargetPaths As String() = Nothing, Tags As String() = Nothing, Options As MaintenanceOptionsDto = Nothing)
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.#ctor*
+  nameWithType.vb: CreateMaintenanceScheduleRequest.New(String, String, String, String, String, String, String, Boolean?, Integer?, Integer?, String(), String(), MaintenanceOptionsDto)
+  fullName.vb: Meridian.Application.UI.CreateMaintenanceScheduleRequest.New(String, String, String, String, String, String, String, Boolean?, Integer?, Integer?, String(), String(), Meridian.Application.UI.MaintenanceOptionsDto)
+  name.vb: New(String, String, String, String, String, String, String, Boolean?, Integer?, Integer?, String(), String(), MaintenanceOptionsDto)
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Name
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Name
+  id: Name
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: CreateMaintenanceScheduleRequest.Name
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 508
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Name*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Description
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Description
+  id: Description
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: CreateMaintenanceScheduleRequest.Description
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 509
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Description*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Preset
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Preset
+  id: Preset
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: Preset
+  nameWithType: CreateMaintenanceScheduleRequest.Preset
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Preset
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Preset
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 510
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? Preset { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Preset As String
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Preset*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.CronExpression
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.CronExpression
+  id: CronExpression
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: CronExpression
+  nameWithType: CreateMaintenanceScheduleRequest.CronExpression
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.CronExpression
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CronExpression
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? CronExpression { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CronExpression As String
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.CronExpression*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TimeZoneId
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.TimeZoneId
+  id: TimeZoneId
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: TimeZoneId
+  nameWithType: CreateMaintenanceScheduleRequest.TimeZoneId
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TimeZoneId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeZoneId
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 512
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? TimeZoneId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TimeZoneId As String
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TimeZoneId*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TaskType
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.TaskType
+  id: TaskType
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: TaskType
+  nameWithType: CreateMaintenanceScheduleRequest.TaskType
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TaskType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TaskType
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 513
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? TaskType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TaskType As String
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TaskType*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Priority
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Priority
+  id: Priority
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: CreateMaintenanceScheduleRequest.Priority
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string? Priority { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Priority As String
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Priority*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Enabled
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Enabled
+  id: Enabled
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: CreateMaintenanceScheduleRequest.Enabled
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 515
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public bool? Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Boolean}
+    content.vb: Public Property Enabled As Boolean?
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Enabled*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxDurationMinutes
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxDurationMinutes
+  id: MaxDurationMinutes
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: MaxDurationMinutes
+  nameWithType: CreateMaintenanceScheduleRequest.MaxDurationMinutes
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxDurationMinutes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDurationMinutes
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 516
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public int? MaxDurationMinutes { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property MaxDurationMinutes As Integer?
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxDurationMinutes*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxRetries
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxRetries
+  id: MaxRetries
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: MaxRetries
+  nameWithType: CreateMaintenanceScheduleRequest.MaxRetries
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxRetries
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRetries
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 517
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public int? MaxRetries { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property MaxRetries As Integer?
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxRetries*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TargetPaths
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.TargetPaths
+  id: TargetPaths
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: TargetPaths
+  nameWithType: CreateMaintenanceScheduleRequest.TargetPaths
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TargetPaths
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetPaths
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 518
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string[]? TargetPaths { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property TargetPaths As String()
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TargetPaths*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Tags
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Tags
+  id: Tags
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: Tags
+  nameWithType: CreateMaintenanceScheduleRequest.Tags
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Tags
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tags
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 519
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public string[]? Tags { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Tags As String()
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Tags*
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Options
+  commentId: P:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Options
+  id: Options
+  parent: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+  langs:
+  - csharp
+  - vb
+  name: Options
+  nameWithType: CreateMaintenanceScheduleRequest.Options
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Options
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Options
+    path: ../../src/Meridian.Application/Http/Endpoints/ArchiveMaintenanceEndpoints.cs
+    startLine: 520
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.UI
+  syntax:
+    content: public MaintenanceOptionsDto? Options { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.UI.MaintenanceOptionsDto
+    content.vb: Public Property Options As MaintenanceOptionsDto
+  overload: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Options*
+references:
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.UI.CreateMaintenanceScheduleRequest}
+  commentId: T:System.IEquatable{Meridian.Application.UI.CreateMaintenanceScheduleRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CreateMaintenanceScheduleRequest>
+  nameWithType: IEquatable<CreateMaintenanceScheduleRequest>
+  fullName: System.IEquatable<Meridian.Application.UI.CreateMaintenanceScheduleRequest>
+  nameWithType.vb: IEquatable(Of CreateMaintenanceScheduleRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Application.UI.CreateMaintenanceScheduleRequest)
+  name.vb: IEquatable(Of CreateMaintenanceScheduleRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+    name: CreateMaintenanceScheduleRequest
+    href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest
+    name: CreateMaintenanceScheduleRequest
+    href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.#ctor*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.#ctor
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest__ctor_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_Nullable_System_Boolean__System_Nullable_System_Int32__System_Nullable_System_Int32__System_String___System_String___Meridian_Application_UI_MaintenanceOptionsDto_
+  name: CreateMaintenanceScheduleRequest
+  nameWithType: CreateMaintenanceScheduleRequest.CreateMaintenanceScheduleRequest
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.CreateMaintenanceScheduleRequest
+  nameWithType.vb: CreateMaintenanceScheduleRequest.New
+  fullName.vb: Meridian.Application.UI.CreateMaintenanceScheduleRequest.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Boolean}
+  commentId: T:System.Nullable{System.Boolean}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool?
+  nameWithType: bool?
+  fullName: bool?
+  nameWithType.vb: Boolean?
+  fullName.vb: Boolean?
+  name.vb: Boolean?
+  spec.csharp:
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+  spec.vb:
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '?'
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.UI.MaintenanceOptionsDto
+  commentId: T:Meridian.Application.UI.MaintenanceOptionsDto
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.MaintenanceOptionsDto.html
+  name: MaintenanceOptionsDto
+  nameWithType: MaintenanceOptionsDto
+  fullName: Meridian.Application.UI.MaintenanceOptionsDto
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Name*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Name
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_Name
+  name: Name
+  nameWithType: CreateMaintenanceScheduleRequest.Name
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Name
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Description*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Description
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_Description
+  name: Description
+  nameWithType: CreateMaintenanceScheduleRequest.Description
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Description
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Preset*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Preset
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_Preset
+  name: Preset
+  nameWithType: CreateMaintenanceScheduleRequest.Preset
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Preset
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.CronExpression*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.CronExpression
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_CronExpression
+  name: CronExpression
+  nameWithType: CreateMaintenanceScheduleRequest.CronExpression
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.CronExpression
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TimeZoneId*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.TimeZoneId
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_TimeZoneId
+  name: TimeZoneId
+  nameWithType: CreateMaintenanceScheduleRequest.TimeZoneId
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TimeZoneId
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TaskType*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.TaskType
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_TaskType
+  name: TaskType
+  nameWithType: CreateMaintenanceScheduleRequest.TaskType
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TaskType
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Priority*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Priority
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_Priority
+  name: Priority
+  nameWithType: CreateMaintenanceScheduleRequest.Priority
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Priority
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Enabled*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Enabled
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_Enabled
+  name: Enabled
+  nameWithType: CreateMaintenanceScheduleRequest.Enabled
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Enabled
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxDurationMinutes*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxDurationMinutes
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_MaxDurationMinutes
+  name: MaxDurationMinutes
+  nameWithType: CreateMaintenanceScheduleRequest.MaxDurationMinutes
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxDurationMinutes
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxRetries*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxRetries
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_MaxRetries
+  name: MaxRetries
+  nameWithType: CreateMaintenanceScheduleRequest.MaxRetries
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.MaxRetries
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TargetPaths*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.TargetPaths
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_TargetPaths
+  name: TargetPaths
+  nameWithType: CreateMaintenanceScheduleRequest.TargetPaths
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.TargetPaths
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Tags*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Tags
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_Tags
+  name: Tags
+  nameWithType: CreateMaintenanceScheduleRequest.Tags
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Tags
+- uid: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Options*
+  commentId: Overload:Meridian.Application.UI.CreateMaintenanceScheduleRequest.Options
+  href: Meridian.Application.UI.CreateMaintenanceScheduleRequest.html#Meridian_Application_UI_CreateMaintenanceScheduleRequest_Options
+  name: Options
+  nameWithType: CreateMaintenanceScheduleRequest.Options
+  fullName: Meridian.Application.UI.CreateMaintenanceScheduleRequest.Options

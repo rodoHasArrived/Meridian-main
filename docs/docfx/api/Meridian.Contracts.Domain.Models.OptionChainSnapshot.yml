@@ -1,0 +1,1379 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  id: OptionChainSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  children:
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.#ctor(System.DateTimeOffset,System.String,System.Decimal,System.DateOnly,System.Collections.Generic.IReadOnlyList{System.Decimal},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote},Meridian.Contracts.Domain.Enums.InstrumentType,System.Int64,System.String)
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.AtTheMoneyStrike
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.Calls
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.DaysToExpiration
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.Expiration
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.InstrumentType
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallOpenInterestRatio
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallVolumeRatio
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.Puts
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.SequenceNumber
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.Source
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.Strikes
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.Timestamp
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.TotalContracts
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingPrice
+  - Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingSymbol
+  langs:
+  - csharp
+  - vb
+  name: OptionChainSnapshot
+  nameWithType: OptionChainSnapshot
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionChainSnapshot
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Point-in-time snapshot of an option chain for a single underlying and expiration.
+
+    Contains quotes for all tracked strikes (calls and puts).
+  example: []
+  syntax:
+    content: 'public sealed record OptionChainSnapshot : MarketEventPayload, IMarketEventPayload, IEquatable<MarketEventPayload>, IEquatable<OptionChainSnapshot>'
+    content.vb: Public NotInheritable Class OptionChainSnapshot Inherits MarketEventPayload Implements IMarketEventPayload, IEquatable(Of MarketEventPayload), IEquatable(Of OptionChainSnapshot)
+  inheritance:
+  - System.Object
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  implements:
+  - Meridian.Contracts.Domain.Events.IMarketEventPayload
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  - System.IEquatable{Meridian.Contracts.Domain.Models.OptionChainSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Timestamp
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: OptionChainSnapshot.Timestamp
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the timestamp of this chain snapshot.
+  example: []
+  syntax:
+    content: public DateTimeOffset Timestamp { get; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public ReadOnly Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Timestamp*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingSymbol
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: OptionChainSnapshot.UnderlyingSymbol
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the underlying symbol (e.g., "SPX", "AAPL").
+  example: []
+  syntax:
+    content: public string UnderlyingSymbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property UnderlyingSymbol As String
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingSymbol*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingPrice
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingPrice
+  id: UnderlyingPrice
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingPrice
+  nameWithType: OptionChainSnapshot.UnderlyingPrice
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingPrice
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the underlying price at the time of this snapshot.
+  example: []
+  syntax:
+    content: public decimal UnderlyingPrice { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property UnderlyingPrice As Decimal
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingPrice*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Expiration
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Expiration
+  id: Expiration
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Expiration
+  nameWithType: OptionChainSnapshot.Expiration
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Expiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expiration
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the expiration date for this chain.
+  example: []
+  syntax:
+    content: public DateOnly Expiration { get; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public ReadOnly Property Expiration As DateOnly
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Expiration*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.InstrumentType
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.InstrumentType
+  id: InstrumentType
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: InstrumentType
+  nameWithType: OptionChainSnapshot.InstrumentType
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.InstrumentType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstrumentType
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the instrument type for this chain (EquityOption or IndexOption).
+  example: []
+  syntax:
+    content: public InstrumentType InstrumentType { get; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+    content.vb: Public ReadOnly Property InstrumentType As InstrumentType
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.InstrumentType*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Strikes
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Strikes
+  id: Strikes
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Strikes
+  nameWithType: OptionChainSnapshot.Strikes
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Strikes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strikes
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the available strike prices in this chain.
+  example: []
+  syntax:
+    content: public IReadOnlyList<decimal> Strikes { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.Decimal}
+    content.vb: Public ReadOnly Property Strikes As IReadOnlyList(Of Decimal)
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Strikes*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Calls
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Calls
+  id: Calls
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Calls
+  nameWithType: OptionChainSnapshot.Calls
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Calls
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Calls
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the call option quotes keyed by strike price.
+  example: []
+  syntax:
+    content: public IReadOnlyList<OptionQuote> Calls { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote}
+    content.vb: Public ReadOnly Property Calls As IReadOnlyList(Of OptionQuote)
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Calls*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Puts
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Puts
+  id: Puts
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Puts
+  nameWithType: OptionChainSnapshot.Puts
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Puts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Puts
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the put option quotes keyed by strike price.
+  example: []
+  syntax:
+    content: public IReadOnlyList<OptionQuote> Puts { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote}
+    content.vb: Public ReadOnly Property Puts As IReadOnlyList(Of OptionQuote)
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Puts*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.SequenceNumber
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: OptionChainSnapshot.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the sequence number for ordering events.
+  example: []
+  syntax:
+    content: public long SequenceNumber { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property SequenceNumber As Long
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.SequenceNumber*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Source
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Source
+  id: Source
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: OptionChainSnapshot.Source
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the data source identifier.
+  example: []
+  syntax:
+    content: public string Source { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Source As String
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Source*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.#ctor(System.DateTimeOffset,System.String,System.Decimal,System.DateOnly,System.Collections.Generic.IReadOnlyList{System.Decimal},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote},Meridian.Contracts.Domain.Enums.InstrumentType,System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Models.OptionChainSnapshot.#ctor(System.DateTimeOffset,System.String,System.Decimal,System.DateOnly,System.Collections.Generic.IReadOnlyList{System.Decimal},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote},Meridian.Contracts.Domain.Enums.InstrumentType,System.Int64,System.String)
+  id: '#ctor(System.DateTimeOffset,System.String,System.Decimal,System.DateOnly,System.Collections.Generic.IReadOnlyList{System.Decimal},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote},Meridian.Contracts.Domain.Enums.InstrumentType,System.Int64,System.String)'
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: OptionChainSnapshot(DateTimeOffset, string, decimal, DateOnly, IReadOnlyList<decimal>, IReadOnlyList<OptionQuote>, IReadOnlyList<OptionQuote>, InstrumentType, long, string)
+  nameWithType: OptionChainSnapshot.OptionChainSnapshot(DateTimeOffset, string, decimal, DateOnly, IReadOnlyList<decimal>, IReadOnlyList<OptionQuote>, IReadOnlyList<OptionQuote>, InstrumentType, long, string)
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.OptionChainSnapshot(System.DateTimeOffset, string, decimal, System.DateOnly, System.Collections.Generic.IReadOnlyList<decimal>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.OptionQuote>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.OptionQuote>, Meridian.Contracts.Domain.Enums.InstrumentType, long, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Initializes a new instance of the <xref href="Meridian.Contracts.Domain.Models.OptionChainSnapshot" data-throw-if-not-resolved="false"></xref> record.
+  example: []
+  syntax:
+    content: public OptionChainSnapshot(DateTimeOffset Timestamp, string UnderlyingSymbol, decimal UnderlyingPrice, DateOnly Expiration, IReadOnlyList<decimal> Strikes, IReadOnlyList<OptionQuote> Calls, IReadOnlyList<OptionQuote> Puts, InstrumentType InstrumentType = InstrumentType.EquityOption, long SequenceNumber = 0, string Source = "IB")
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: UnderlyingSymbol
+      type: System.String
+    - id: UnderlyingPrice
+      type: System.Decimal
+    - id: Expiration
+      type: System.DateOnly
+    - id: Strikes
+      type: System.Collections.Generic.IReadOnlyList{System.Decimal}
+    - id: Calls
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote}
+    - id: Puts
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote}
+    - id: InstrumentType
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+    - id: SequenceNumber
+      type: System.Int64
+    - id: Source
+      type: System.String
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, UnderlyingSymbol As String, UnderlyingPrice As Decimal, Expiration As DateOnly, Strikes As IReadOnlyList(Of Decimal), Calls As IReadOnlyList(Of OptionQuote), Puts As IReadOnlyList(Of OptionQuote), InstrumentType As InstrumentType = InstrumentType.EquityOption, SequenceNumber As Long = 0, Source As String = "IB")
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.#ctor*
+  nameWithType.vb: OptionChainSnapshot.New(DateTimeOffset, String, Decimal, DateOnly, IReadOnlyList(Of Decimal), IReadOnlyList(Of OptionQuote), IReadOnlyList(Of OptionQuote), InstrumentType, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Models.OptionChainSnapshot.New(System.DateTimeOffset, String, Decimal, System.DateOnly, System.Collections.Generic.IReadOnlyList(Of Decimal), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.OptionQuote), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.OptionQuote), Meridian.Contracts.Domain.Enums.InstrumentType, Long, String)
+  name.vb: New(DateTimeOffset, String, Decimal, DateOnly, IReadOnlyList(Of Decimal), IReadOnlyList(Of OptionQuote), IReadOnlyList(Of OptionQuote), InstrumentType, Long, String)
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.DaysToExpiration
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.DaysToExpiration
+  id: DaysToExpiration
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DaysToExpiration
+  nameWithType: OptionChainSnapshot.DaysToExpiration
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.DaysToExpiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DaysToExpiration
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the number of calendar days until expiration from the snapshot timestamp.
+  example: []
+  syntax:
+    content: public int DaysToExpiration { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property DaysToExpiration As Integer
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.DaysToExpiration*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.TotalContracts
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.TotalContracts
+  id: TotalContracts
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: TotalContracts
+  nameWithType: OptionChainSnapshot.TotalContracts
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.TotalContracts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalContracts
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the total number of contracts in this chain (calls + puts).
+  example: []
+  syntax:
+    content: public int TotalContracts { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property TotalContracts As Integer
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.TotalContracts*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.AtTheMoneyStrike
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.AtTheMoneyStrike
+  id: AtTheMoneyStrike
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AtTheMoneyStrike
+  nameWithType: OptionChainSnapshot.AtTheMoneyStrike
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.AtTheMoneyStrike
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AtTheMoneyStrike
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the at-the-money strike (strike closest to the underlying price).
+  example: []
+  syntax:
+    content: public decimal? AtTheMoneyStrike { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public ReadOnly Property AtTheMoneyStrike As Decimal?
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.AtTheMoneyStrike*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallVolumeRatio
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallVolumeRatio
+  id: PutCallVolumeRatio
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: PutCallVolumeRatio
+  nameWithType: OptionChainSnapshot.PutCallVolumeRatio
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallVolumeRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PutCallVolumeRatio
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 118
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Gets the aggregate put/call ratio by volume (if volume data is available).
+
+    Returns null if no volume data is present.
+  example: []
+  syntax:
+    content: public decimal? PutCallVolumeRatio { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public ReadOnly Property PutCallVolumeRatio As Decimal?
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallVolumeRatio*
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallOpenInterestRatio
+  commentId: P:Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallOpenInterestRatio
+  id: PutCallOpenInterestRatio
+  parent: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: PutCallOpenInterestRatio
+  nameWithType: OptionChainSnapshot.PutCallOpenInterestRatio
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallOpenInterestRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PutCallOpenInterestRatio
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionChainSnapshot.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Gets the aggregate put/call ratio by open interest (if OI data is available).
+
+    Returns null if no open interest data is present.
+  example: []
+  syntax:
+    content: public decimal? PutCallOpenInterestRatio { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public ReadOnly Property PutCallOpenInterestRatio As Decimal?
+  overload: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallOpenInterestRatio*
+references:
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.IMarketEventPayload.html
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventPayload>
+  nameWithType: IEquatable<MarketEventPayload>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventPayload>
+  nameWithType.vb: IEquatable(Of MarketEventPayload)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventPayload)
+  name.vb: IEquatable(Of MarketEventPayload)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: )
+- uid: System.IEquatable{Meridian.Contracts.Domain.Models.OptionChainSnapshot}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Models.OptionChainSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OptionChainSnapshot>
+  nameWithType: IEquatable<OptionChainSnapshot>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Models.OptionChainSnapshot>
+  nameWithType.vb: IEquatable(Of OptionChainSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Models.OptionChainSnapshot)
+  name.vb: IEquatable(Of OptionChainSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+    name: OptionChainSnapshot
+    href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+    name: OptionChainSnapshot
+    href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Timestamp*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Timestamp
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_Timestamp
+  name: Timestamp
+  nameWithType: OptionChainSnapshot.Timestamp
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingSymbol*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingSymbol
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: OptionChainSnapshot.UnderlyingSymbol
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingSymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingPrice*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingPrice
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_UnderlyingPrice
+  name: UnderlyingPrice
+  nameWithType: OptionChainSnapshot.UnderlyingPrice
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.UnderlyingPrice
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Expiration*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Expiration
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_Expiration
+  name: Expiration
+  nameWithType: OptionChainSnapshot.Expiration
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Expiration
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.InstrumentType*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.InstrumentType
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_InstrumentType
+  name: InstrumentType
+  nameWithType: OptionChainSnapshot.InstrumentType
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType
+  commentId: T:Meridian.Contracts.Domain.Enums.InstrumentType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.InstrumentType.html
+  name: InstrumentType
+  nameWithType: InstrumentType
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Strikes*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Strikes
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_Strikes
+  name: Strikes
+  nameWithType: OptionChainSnapshot.Strikes
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Strikes
+- uid: System.Collections.Generic.IReadOnlyList{System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<decimal>
+  nameWithType: IReadOnlyList<decimal>
+  fullName: System.Collections.Generic.IReadOnlyList<decimal>
+  nameWithType.vb: IReadOnlyList(Of Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Decimal)
+  name.vb: IReadOnlyList(Of Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Calls*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Calls
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_Calls
+  name: Calls
+  nameWithType: OptionChainSnapshot.Calls
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Calls
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.OptionQuote}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<OptionQuote>
+  nameWithType: IReadOnlyList<OptionQuote>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.OptionQuote>
+  nameWithType.vb: IReadOnlyList(Of OptionQuote)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.OptionQuote)
+  name.vb: IReadOnlyList(Of OptionQuote)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OptionQuote
+    name: OptionQuote
+    href: Meridian.Contracts.Domain.Models.OptionQuote.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OptionQuote
+    name: OptionQuote
+    href: Meridian.Contracts.Domain.Models.OptionQuote.html
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Puts*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Puts
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_Puts
+  name: Puts
+  nameWithType: OptionChainSnapshot.Puts
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Puts
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.SequenceNumber
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_SequenceNumber
+  name: SequenceNumber
+  nameWithType: OptionChainSnapshot.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.SequenceNumber
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Source*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.Source
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_Source
+  name: Source
+  nameWithType: OptionChainSnapshot.Source
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.Source
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  commentId: T:Meridian.Contracts.Domain.Models.OptionChainSnapshot
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html
+  name: OptionChainSnapshot
+  nameWithType: OptionChainSnapshot
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.#ctor
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot__ctor_System_DateTimeOffset_System_String_System_Decimal_System_DateOnly_System_Collections_Generic_IReadOnlyList_System_Decimal__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_OptionQuote__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Domain_Models_OptionQuote__Meridian_Contracts_Domain_Enums_InstrumentType_System_Int64_System_String_
+  name: OptionChainSnapshot
+  nameWithType: OptionChainSnapshot.OptionChainSnapshot
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.OptionChainSnapshot
+  nameWithType.vb: OptionChainSnapshot.New
+  fullName.vb: Meridian.Contracts.Domain.Models.OptionChainSnapshot.New
+  name.vb: New
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.DaysToExpiration*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.DaysToExpiration
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_DaysToExpiration
+  name: DaysToExpiration
+  nameWithType: OptionChainSnapshot.DaysToExpiration
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.DaysToExpiration
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.TotalContracts*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.TotalContracts
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_TotalContracts
+  name: TotalContracts
+  nameWithType: OptionChainSnapshot.TotalContracts
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.TotalContracts
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.AtTheMoneyStrike*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.AtTheMoneyStrike
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_AtTheMoneyStrike
+  name: AtTheMoneyStrike
+  nameWithType: OptionChainSnapshot.AtTheMoneyStrike
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.AtTheMoneyStrike
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallVolumeRatio*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallVolumeRatio
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_PutCallVolumeRatio
+  name: PutCallVolumeRatio
+  nameWithType: OptionChainSnapshot.PutCallVolumeRatio
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallVolumeRatio
+- uid: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallOpenInterestRatio*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallOpenInterestRatio
+  href: Meridian.Contracts.Domain.Models.OptionChainSnapshot.html#Meridian_Contracts_Domain_Models_OptionChainSnapshot_PutCallOpenInterestRatio
+  name: PutCallOpenInterestRatio
+  nameWithType: OptionChainSnapshot.PutCallOpenInterestRatio
+  fullName: Meridian.Contracts.Domain.Models.OptionChainSnapshot.PutCallOpenInterestRatio

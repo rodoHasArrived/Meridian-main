@@ -1,0 +1,1330 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase
+  commentId: T:Meridian.Ui.Services.Services.NavigationServiceBase
+  id: NavigationServiceBase
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.NavigationServiceBase.#ctor
+  - Meridian.Ui.Services.Services.NavigationServiceBase.CanGoBack
+  - Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory
+  - Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore
+  - Meridian.Ui.Services.Services.NavigationServiceBase.GetBreadcrumbs
+  - Meridian.Ui.Services.Services.NavigationServiceBase.GetCurrentPageTag
+  - Meridian.Ui.Services.Services.NavigationServiceBase.GetPageType(System.String)
+  - Meridian.Ui.Services.Services.NavigationServiceBase.GetRegisteredPages
+  - Meridian.Ui.Services.Services.NavigationServiceBase.GoBack
+  - Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore
+  - Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered(System.String)
+  - Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.String,System.Object)
+  - Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.Type,System.Object)
+  - Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.String,System.Type,System.Object)
+  - Meridian.Ui.Services.Services.NavigationServiceBase.Navigated
+  - Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed(System.String)
+  - Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages
+  - Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage(System.String,System.Type)
+  - Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(System.String,System.Type,System.Object)
+  langs:
+  - csharp
+  - vb
+  name: NavigationServiceBase
+  nameWithType: NavigationServiceBase
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NavigationServiceBase
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Abstract base class for navigation management shared across desktop applications.
+
+    Provides shared page registry, history tracking, breadcrumb generation, and event raising.
+
+    Platform-specific frame navigation is delegated to derived classes.
+
+    Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
+  example: []
+  syntax:
+    content: public abstract class NavigationServiceBase
+    content.vb: Public MustInherit Class NavigationServiceBase
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.Navigated
+  commentId: E:Meridian.Ui.Services.Services.NavigationServiceBase.Navigated
+  id: Navigated
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: Navigated
+  nameWithType: NavigationServiceBase.Navigated
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.Navigated
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Navigated
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event raised when navigation occurs.
+  example: []
+  syntax:
+    content: public event EventHandler<NavigationEventArgs>? Navigated
+    return:
+      type: System.EventHandler{Meridian.Ui.Services.Contracts.NavigationEventArgs}
+    content.vb: Public Event Navigated As EventHandler(Of NavigationEventArgs)
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.CanGoBack
+  commentId: P:Meridian.Ui.Services.Services.NavigationServiceBase.CanGoBack
+  id: CanGoBack
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CanGoBack
+  nameWithType: NavigationServiceBase.CanGoBack
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.CanGoBack
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanGoBack
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets whether navigation can go back in the history.
+  example: []
+  syntax:
+    content: public virtual bool CanGoBack { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Overridable ReadOnly Property CanGoBack As Boolean
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.CanGoBack*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.#ctor
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.#ctor
+  id: '#ctor'
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NavigationServiceBase()
+  nameWithType: NavigationServiceBase.NavigationServiceBase()
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigationServiceBase()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Initializes the navigation service. Call RegisterPages() to populate the page registry.
+  example: []
+  syntax:
+    content: protected NavigationServiceBase()
+    content.vb: Protected Sub New()
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.#ctor*
+  nameWithType.vb: NavigationServiceBase.New()
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.New()
+  name.vb: New()
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.String,System.Object)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.String,System.Object)
+  id: NavigateTo(System.String,System.Object)
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NavigateTo(string, object?)
+  nameWithType: NavigationServiceBase.NavigateTo(string, object?)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(string, object?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NavigateTo
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Navigates to a page by tag name.
+  example: []
+  syntax:
+    content: public bool NavigateTo(string pageTag, object? parameter = null)
+    parameters:
+    - id: pageTag
+      type: System.String
+      description: The page tag to navigate to.
+    - id: parameter
+      type: System.Object
+      description: Optional navigation parameter.
+    return:
+      type: System.Boolean
+      description: True if navigation succeeded.
+    content.vb: Public Function NavigateTo(pageTag As String, parameter As Object = Nothing) As Boolean
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo*
+  nameWithType.vb: NavigationServiceBase.NavigateTo(String, Object)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(String, Object)
+  name.vb: NavigateTo(String, Object)
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.Type,System.Object)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.Type,System.Object)
+  id: NavigateTo(System.Type,System.Object)
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NavigateTo(Type, object?)
+  nameWithType: NavigationServiceBase.NavigateTo(Type, object?)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.Type, object?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NavigateTo
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Navigates to a page type directly.
+  example: []
+  syntax:
+    content: public bool NavigateTo(Type pageType, object? parameter = null)
+    parameters:
+    - id: pageType
+      type: System.Type
+    - id: parameter
+      type: System.Object
+    return:
+      type: System.Boolean
+    content.vb: Public Function NavigateTo(pageType As Type, parameter As Object = Nothing) As Boolean
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo*
+  nameWithType.vb: NavigationServiceBase.NavigateTo(Type, Object)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo(System.Type, Object)
+  name.vb: NavigateTo(Type, Object)
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GoBack
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.GoBack
+  id: GoBack
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GoBack()
+  nameWithType: NavigationServiceBase.GoBack()
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GoBack()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GoBack
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Navigates back in the history.
+  example: []
+  syntax:
+    content: public virtual void GoBack()
+    content.vb: Public Overridable Sub GoBack()
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.GoBack*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GetPageType(System.String)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.GetPageType(System.String)
+  id: GetPageType(System.String)
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetPageType(string)
+  nameWithType: NavigationServiceBase.GetPageType(string)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GetPageType(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPageType
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the page type for a given tag.
+  example: []
+  syntax:
+    content: public Type? GetPageType(string pageTag)
+    parameters:
+    - id: pageTag
+      type: System.String
+    return:
+      type: System.Type
+    content.vb: Public Function GetPageType(pageTag As String) As Type
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.GetPageType*
+  nameWithType.vb: NavigationServiceBase.GetPageType(String)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.GetPageType(String)
+  name.vb: GetPageType(String)
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GetBreadcrumbs
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.GetBreadcrumbs
+  id: GetBreadcrumbs
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetBreadcrumbs()
+  nameWithType: NavigationServiceBase.GetBreadcrumbs()
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GetBreadcrumbs()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBreadcrumbs
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets navigation breadcrumbs (history entries).
+  example: []
+  syntax:
+    content: public IReadOnlyList<NavigationEntry> GetBreadcrumbs()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Contracts.NavigationEntry}
+    content.vb: Public Function GetBreadcrumbs() As IReadOnlyList(Of NavigationEntry)
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.GetBreadcrumbs*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GetRegisteredPages
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.GetRegisteredPages
+  id: GetRegisteredPages
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetRegisteredPages()
+  nameWithType: NavigationServiceBase.GetRegisteredPages()
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GetRegisteredPages()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRegisteredPages
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets all registered page tags.
+  example: []
+  syntax:
+    content: public IReadOnlyCollection<string> GetRegisteredPages()
+    return:
+      type: System.Collections.Generic.IReadOnlyCollection{System.String}
+    content.vb: Public Function GetRegisteredPages() As IReadOnlyCollection(Of String)
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.GetRegisteredPages*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered(System.String)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered(System.String)
+  id: IsPageRegistered(System.String)
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: IsPageRegistered(string)
+  nameWithType: NavigationServiceBase.IsPageRegistered(string)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsPageRegistered
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 114
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Checks if a page tag is registered.
+  example: []
+  syntax:
+    content: public bool IsPageRegistered(string pageTag)
+    parameters:
+    - id: pageTag
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsPageRegistered(pageTag As String) As Boolean
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered*
+  nameWithType.vb: NavigationServiceBase.IsPageRegistered(String)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered(String)
+  name.vb: IsPageRegistered(String)
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GetCurrentPageTag
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.GetCurrentPageTag
+  id: GetCurrentPageTag
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetCurrentPageTag()
+  nameWithType: NavigationServiceBase.GetCurrentPageTag()
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GetCurrentPageTag()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCurrentPageTag
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 119
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets the current page tag from history.
+  example: []
+  syntax:
+    content: public string? GetCurrentPageTag()
+    return:
+      type: System.String
+    content.vb: Public Function GetCurrentPageTag() As String
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.GetCurrentPageTag*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory
+  id: ClearHistory
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ClearHistory()
+  nameWithType: NavigationServiceBase.ClearHistory()
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearHistory
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 129
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Clears navigation history.
+  example: []
+  syntax:
+    content: public virtual void ClearHistory()
+    content.vb: Public Overridable Sub ClearHistory()
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage(System.String,System.Type)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage(System.String,System.Type)
+  id: RegisterPage(System.String,System.Type)
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: RegisterPage(string, Type)
+  nameWithType: NavigationServiceBase.RegisterPage(string, Type)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage(string, System.Type)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterPage
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Registers a page in the page registry.
+  example: []
+  syntax:
+    content: protected void RegisterPage(string tag, Type pageType)
+    parameters:
+    - id: tag
+      type: System.String
+      description: The unique tag for the page.
+    - id: pageType
+      type: System.Type
+      description: The Type of the page.
+    content.vb: Protected Sub RegisterPage(tag As String, pageType As Type)
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage*
+  nameWithType.vb: NavigationServiceBase.RegisterPage(String, Type)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage(String, System.Type)
+  name.vb: RegisterPage(String, Type)
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages
+  id: RegisterAllPages
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: RegisterAllPages()
+  nameWithType: NavigationServiceBase.RegisterAllPages()
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterAllPages
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, registers all navigable pages by calling RegisterPage for each.
+  example: []
+  syntax:
+    content: protected abstract void RegisterAllPages()
+    content.vb: Protected MustOverride Sub RegisterAllPages()
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.String,System.Type,System.Object)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(System.String,System.Type,System.Object)
+  id: NavigateToPageCore(System.String,System.Type,System.Object)
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: NavigateToPageCore(string, Type, object?)
+  nameWithType: NavigationServiceBase.NavigateToPageCore(string, Type, object?)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(string, System.Type, object?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NavigateToPageCore
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 157
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, performs the platform-specific navigation to a page type.
+  example: []
+  syntax:
+    content: protected abstract bool NavigateToPageCore(string pageTag, Type pageType, object? parameter)
+    parameters:
+    - id: pageTag
+      type: System.String
+      description: The registered navigation tag used for metadata-aware routing.
+    - id: pageType
+      type: System.Type
+      description: The Type of the page to navigate to.
+    - id: parameter
+      type: System.Object
+      description: Optional navigation parameter.
+    return:
+      type: System.Boolean
+      description: True if navigation succeeded.
+    content.vb: Protected MustOverride Function NavigateToPageCore(pageTag As String, pageType As Type, parameter As Object) As Boolean
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore*
+  nameWithType.vb: NavigationServiceBase.NavigateToPageCore(String, Type, Object)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore(String, System.Type, Object)
+  name.vb: NavigateToPageCore(String, Type, Object)
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore
+  id: GoBackCore
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GoBackCore()
+  nameWithType: NavigationServiceBase.GoBackCore()
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GoBackCore
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, performs the platform-specific back navigation.
+  example: []
+  syntax:
+    content: protected abstract void GoBackCore()
+    content.vb: Protected MustOverride Sub GoBackCore()
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore
+  id: ClearHistoryCore
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ClearHistoryCore()
+  nameWithType: NavigationServiceBase.ClearHistoryCore()
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClearHistoryCore
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 167
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: When overridden, clears the platform-specific navigation stack.
+  example: []
+  syntax:
+    content: protected abstract void ClearHistoryCore()
+    content.vb: Protected MustOverride Sub ClearHistoryCore()
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore*
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(System.String,System.Type,System.Object)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(System.String,System.Type,System.Object)
+  id: TransformNavigationParameter(System.String,System.Type,System.Object)
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: TransformNavigationParameter(string, Type, object?)
+  nameWithType: NavigationServiceBase.TransformNavigationParameter(string, Type, object?)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(string, System.Type, object?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TransformNavigationParameter
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Allows derived navigation services to normalize or synthesize parameters
+
+    for page-tag aliases before a page is created.
+  example: []
+  syntax:
+    content: protected virtual object? TransformNavigationParameter(string pageTag, Type pageType, object? parameter)
+    parameters:
+    - id: pageTag
+      type: System.String
+    - id: pageType
+      type: System.Type
+    - id: parameter
+      type: System.Object
+    return:
+      type: System.Object
+    content.vb: Protected Overridable Function TransformNavigationParameter(pageTag As String, pageType As Type, parameter As Object) As Object
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter*
+  nameWithType.vb: NavigationServiceBase.TransformNavigationParameter(String, Type, Object)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter(String, System.Type, Object)
+  name.vb: TransformNavigationParameter(String, Type, Object)
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed(System.String)
+  commentId: M:Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed(System.String)
+  id: OnNavigationFailed(System.String)
+  parent: Meridian.Ui.Services.Services.NavigationServiceBase
+  langs:
+  - csharp
+  - vb
+  name: OnNavigationFailed(string)
+  nameWithType: NavigationServiceBase.OnNavigationFailed(string)
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnNavigationFailed
+    path: ../../src/Meridian.Ui.Services/Services/NavigationServiceBase.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Called when navigation to an unknown page tag is attempted.
+  example: []
+  syntax:
+    content: protected virtual void OnNavigationFailed(string pageTag)
+    parameters:
+    - id: pageTag
+      type: System.String
+    content.vb: Protected Overridable Sub OnNavigationFailed(pageTag As String)
+  overload: Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed*
+  nameWithType.vb: NavigationServiceBase.OnNavigationFailed(String)
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed(String)
+  name.vb: OnNavigationFailed(String)
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.EventHandler{Meridian.Ui.Services.Contracts.NavigationEventArgs}
+  commentId: T:System.EventHandler{Meridian.Ui.Services.Contracts.NavigationEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<NavigationEventArgs>
+  nameWithType: EventHandler<NavigationEventArgs>
+  fullName: System.EventHandler<Meridian.Ui.Services.Contracts.NavigationEventArgs>
+  nameWithType.vb: EventHandler(Of NavigationEventArgs)
+  fullName.vb: System.EventHandler(Of Meridian.Ui.Services.Contracts.NavigationEventArgs)
+  name.vb: EventHandler(Of NavigationEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Ui.Services.Contracts.NavigationEventArgs
+    name: NavigationEventArgs
+    href: Meridian.Ui.Services.Contracts.NavigationEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Contracts.NavigationEventArgs
+    name: NavigationEventArgs
+    href: Meridian.Ui.Services.Contracts.NavigationEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.CanGoBack*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.CanGoBack
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_CanGoBack
+  name: CanGoBack
+  nameWithType: NavigationServiceBase.CanGoBack
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.CanGoBack
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.#ctor*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.#ctor
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase__ctor
+  name: NavigationServiceBase
+  nameWithType: NavigationServiceBase.NavigationServiceBase
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigationServiceBase
+  nameWithType.vb: NavigationServiceBase.New
+  fullName.vb: Meridian.Ui.Services.Services.NavigationServiceBase.New
+  name.vb: New
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_NavigateTo_System_String_System_Object_
+  name: NavigateTo
+  nameWithType: NavigationServiceBase.NavigateTo
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateTo
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Type
+  commentId: T:System.Type
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.type
+  name: Type
+  nameWithType: Type
+  fullName: System.Type
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GoBack*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.GoBack
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_GoBack
+  name: GoBack
+  nameWithType: NavigationServiceBase.GoBack
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GoBack
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GetPageType*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.GetPageType
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_GetPageType_System_String_
+  name: GetPageType
+  nameWithType: NavigationServiceBase.GetPageType
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GetPageType
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GetBreadcrumbs*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.GetBreadcrumbs
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_GetBreadcrumbs
+  name: GetBreadcrumbs
+  nameWithType: NavigationServiceBase.GetBreadcrumbs
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GetBreadcrumbs
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Contracts.NavigationEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.Contracts.NavigationEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<NavigationEntry>
+  nameWithType: IReadOnlyList<NavigationEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.Contracts.NavigationEntry>
+  nameWithType.vb: IReadOnlyList(Of NavigationEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.Contracts.NavigationEntry)
+  name.vb: IReadOnlyList(Of NavigationEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.Contracts.NavigationEntry
+    name: NavigationEntry
+    href: Meridian.Ui.Services.Contracts.NavigationEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Contracts.NavigationEntry
+    name: NavigationEntry
+    href: Meridian.Ui.Services.Contracts.NavigationEntry.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GetRegisteredPages*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.GetRegisteredPages
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_GetRegisteredPages
+  name: GetRegisteredPages
+  nameWithType: NavigationServiceBase.GetRegisteredPages
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GetRegisteredPages
+- uid: System.Collections.Generic.IReadOnlyCollection{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyCollection{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyCollection`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<string>
+  nameWithType: IReadOnlyCollection<string>
+  fullName: System.Collections.Generic.IReadOnlyCollection<string>
+  nameWithType.vb: IReadOnlyCollection(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of String)
+  name.vb: IReadOnlyCollection(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyCollection`1
+  commentId: T:System.Collections.Generic.IReadOnlyCollection`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<T>
+  nameWithType: IReadOnlyCollection<T>
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>
+  nameWithType.vb: IReadOnlyCollection(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T)
+  name.vb: IReadOnlyCollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_IsPageRegistered_System_String_
+  name: IsPageRegistered
+  nameWithType: NavigationServiceBase.IsPageRegistered
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.IsPageRegistered
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GetCurrentPageTag*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.GetCurrentPageTag
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_GetCurrentPageTag
+  name: GetCurrentPageTag
+  nameWithType: NavigationServiceBase.GetCurrentPageTag
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GetCurrentPageTag
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_ClearHistory
+  name: ClearHistory
+  nameWithType: NavigationServiceBase.ClearHistory
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistory
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_RegisterPage_System_String_System_Type_
+  name: RegisterPage
+  nameWithType: NavigationServiceBase.RegisterPage
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterPage
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_RegisterAllPages
+  name: RegisterAllPages
+  nameWithType: NavigationServiceBase.RegisterAllPages
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.RegisterAllPages
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_NavigateToPageCore_System_String_System_Type_System_Object_
+  name: NavigateToPageCore
+  nameWithType: NavigationServiceBase.NavigateToPageCore
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.NavigateToPageCore
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_GoBackCore
+  name: GoBackCore
+  nameWithType: NavigationServiceBase.GoBackCore
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.GoBackCore
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_ClearHistoryCore
+  name: ClearHistoryCore
+  nameWithType: NavigationServiceBase.ClearHistoryCore
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.ClearHistoryCore
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_TransformNavigationParameter_System_String_System_Type_System_Object_
+  name: TransformNavigationParameter
+  nameWithType: NavigationServiceBase.TransformNavigationParameter
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.TransformNavigationParameter
+- uid: Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed*
+  commentId: Overload:Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed
+  href: Meridian.Ui.Services.Services.NavigationServiceBase.html#Meridian_Ui_Services_Services_NavigationServiceBase_OnNavigationFailed_System_String_
+  name: OnNavigationFailed
+  nameWithType: NavigationServiceBase.OnNavigationFailed
+  fullName: Meridian.Ui.Services.Services.NavigationServiceBase.OnNavigationFailed

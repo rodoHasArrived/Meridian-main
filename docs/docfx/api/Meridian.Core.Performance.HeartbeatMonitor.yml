@@ -1,0 +1,1173 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Core.Performance.HeartbeatMonitor
+  commentId: T:Meridian.Core.Performance.HeartbeatMonitor
+  id: HeartbeatMonitor
+  parent: Meridian.Core.Performance
+  children:
+  - Meridian.Core.Performance.HeartbeatMonitor.#ctor(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},System.Action{Meridian.Core.Performance.HeartbeatResult})
+  - Meridian.Core.Performance.HeartbeatMonitor.ConnectionUnhealthy
+  - Meridian.Core.Performance.HeartbeatMonitor.ConsecutiveFailures
+  - Meridian.Core.Performance.HeartbeatMonitor.Dispose
+  - Meridian.Core.Performance.HeartbeatMonitor.HeartbeatCompleted
+  - Meridian.Core.Performance.HeartbeatMonitor.IsHealthy
+  - Meridian.Core.Performance.HeartbeatMonitor.IsRunning
+  - Meridian.Core.Performance.HeartbeatMonitor.LastLatencyUs
+  - Meridian.Core.Performance.HeartbeatMonitor.Start
+  - Meridian.Core.Performance.HeartbeatMonitor.StopAsync(System.Threading.CancellationToken)
+  - Meridian.Core.Performance.HeartbeatMonitor.TimeSinceLastSuccess
+  - Meridian.Core.Performance.HeartbeatMonitor.TotalFailures
+  - Meridian.Core.Performance.HeartbeatMonitor.TotalHeartbeats
+  langs:
+  - csharp
+  - vb
+  name: HeartbeatMonitor
+  nameWithType: HeartbeatMonitor
+  fullName: Meridian.Core.Performance.HeartbeatMonitor
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeartbeatMonitor
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Heartbeat monitor for detecting connection health and latency issues.
+  example: []
+  syntax:
+    content: 'public sealed class HeartbeatMonitor : IDisposable'
+    content.vb: Public NotInheritable Class HeartbeatMonitor Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Core.Performance.HeartbeatMonitor.IsRunning
+  commentId: P:Meridian.Core.Performance.HeartbeatMonitor.IsRunning
+  id: IsRunning
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: IsRunning
+  nameWithType: HeartbeatMonitor.IsRunning
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.IsRunning
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsRunning
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 270
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public bool IsRunning { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsRunning As Boolean
+  overload: Meridian.Core.Performance.HeartbeatMonitor.IsRunning*
+- uid: Meridian.Core.Performance.HeartbeatMonitor.ConsecutiveFailures
+  commentId: P:Meridian.Core.Performance.HeartbeatMonitor.ConsecutiveFailures
+  id: ConsecutiveFailures
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: ConsecutiveFailures
+  nameWithType: HeartbeatMonitor.ConsecutiveFailures
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.ConsecutiveFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsecutiveFailures
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 271
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public long ConsecutiveFailures { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property ConsecutiveFailures As Long
+  overload: Meridian.Core.Performance.HeartbeatMonitor.ConsecutiveFailures*
+- uid: Meridian.Core.Performance.HeartbeatMonitor.TotalHeartbeats
+  commentId: P:Meridian.Core.Performance.HeartbeatMonitor.TotalHeartbeats
+  id: TotalHeartbeats
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: TotalHeartbeats
+  nameWithType: HeartbeatMonitor.TotalHeartbeats
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.TotalHeartbeats
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalHeartbeats
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 272
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public long TotalHeartbeats { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalHeartbeats As Long
+  overload: Meridian.Core.Performance.HeartbeatMonitor.TotalHeartbeats*
+- uid: Meridian.Core.Performance.HeartbeatMonitor.TotalFailures
+  commentId: P:Meridian.Core.Performance.HeartbeatMonitor.TotalFailures
+  id: TotalFailures
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: TotalFailures
+  nameWithType: HeartbeatMonitor.TotalFailures
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.TotalFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalFailures
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 273
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public long TotalFailures { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalFailures As Long
+  overload: Meridian.Core.Performance.HeartbeatMonitor.TotalFailures*
+- uid: Meridian.Core.Performance.HeartbeatMonitor.LastLatencyUs
+  commentId: P:Meridian.Core.Performance.HeartbeatMonitor.LastLatencyUs
+  id: LastLatencyUs
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: LastLatencyUs
+  nameWithType: HeartbeatMonitor.LastLatencyUs
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.LastLatencyUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastLatencyUs
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 274
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public double LastLatencyUs { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property LastLatencyUs As Double
+  overload: Meridian.Core.Performance.HeartbeatMonitor.LastLatencyUs*
+- uid: Meridian.Core.Performance.HeartbeatMonitor.TimeSinceLastSuccess
+  commentId: P:Meridian.Core.Performance.HeartbeatMonitor.TimeSinceLastSuccess
+  id: TimeSinceLastSuccess
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: TimeSinceLastSuccess
+  nameWithType: HeartbeatMonitor.TimeSinceLastSuccess
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.TimeSinceLastSuccess
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimeSinceLastSuccess
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 276
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public TimeSpan TimeSinceLastSuccess { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public ReadOnly Property TimeSinceLastSuccess As TimeSpan
+  overload: Meridian.Core.Performance.HeartbeatMonitor.TimeSinceLastSuccess*
+- uid: Meridian.Core.Performance.HeartbeatMonitor.IsHealthy
+  commentId: P:Meridian.Core.Performance.HeartbeatMonitor.IsHealthy
+  id: IsHealthy
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: IsHealthy
+  nameWithType: HeartbeatMonitor.IsHealthy
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.IsHealthy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsHealthy
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 288
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public bool IsHealthy { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsHealthy As Boolean
+  overload: Meridian.Core.Performance.HeartbeatMonitor.IsHealthy*
+- uid: Meridian.Core.Performance.HeartbeatMonitor.HeartbeatCompleted
+  commentId: E:Meridian.Core.Performance.HeartbeatMonitor.HeartbeatCompleted
+  id: HeartbeatCompleted
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: HeartbeatCompleted
+  nameWithType: HeartbeatMonitor.HeartbeatCompleted
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.HeartbeatCompleted
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeartbeatCompleted
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public event EventHandler<HeartbeatResult>? HeartbeatCompleted
+    return:
+      type: System.EventHandler{Meridian.Core.Performance.HeartbeatResult}
+    content.vb: Public Event HeartbeatCompleted As EventHandler(Of HeartbeatResult)
+- uid: Meridian.Core.Performance.HeartbeatMonitor.ConnectionUnhealthy
+  commentId: E:Meridian.Core.Performance.HeartbeatMonitor.ConnectionUnhealthy
+  id: ConnectionUnhealthy
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: ConnectionUnhealthy
+  nameWithType: HeartbeatMonitor.ConnectionUnhealthy
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.ConnectionUnhealthy
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionUnhealthy
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 291
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public event EventHandler? ConnectionUnhealthy
+    return:
+      type: System.EventHandler
+    content.vb: Public Event ConnectionUnhealthy As EventHandler
+- uid: Meridian.Core.Performance.HeartbeatMonitor.#ctor(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},System.Action{Meridian.Core.Performance.HeartbeatResult})
+  commentId: M:Meridian.Core.Performance.HeartbeatMonitor.#ctor(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},System.Action{Meridian.Core.Performance.HeartbeatResult})
+  id: '#ctor(System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},System.Action{Meridian.Core.Performance.HeartbeatResult})'
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: HeartbeatMonitor(Func<CancellationToken, Task<bool>>, TimeSpan?, TimeSpan?, Action<HeartbeatResult>?)
+  nameWithType: HeartbeatMonitor.HeartbeatMonitor(Func<CancellationToken, Task<bool>>, TimeSpan?, TimeSpan?, Action<HeartbeatResult>?)
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.HeartbeatMonitor(System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>, System.TimeSpan?, System.TimeSpan?, System.Action<Meridian.Core.Performance.HeartbeatResult>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 293
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public HeartbeatMonitor(Func<CancellationToken, Task<bool>> heartbeatFunc, TimeSpan? interval = null, TimeSpan? timeout = null, Action<HeartbeatResult>? onHeartbeat = null)
+    parameters:
+    - id: heartbeatFunc
+      type: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}}
+    - id: interval
+      type: System.Nullable{System.TimeSpan}
+    - id: timeout
+      type: System.Nullable{System.TimeSpan}
+    - id: onHeartbeat
+      type: System.Action{Meridian.Core.Performance.HeartbeatResult}
+    content.vb: Public Sub New(heartbeatFunc As Func(Of CancellationToken, Task(Of Boolean)), interval As TimeSpan? = Nothing, timeout As TimeSpan? = Nothing, onHeartbeat As Action(Of HeartbeatResult) = Nothing)
+  overload: Meridian.Core.Performance.HeartbeatMonitor.#ctor*
+  nameWithType.vb: HeartbeatMonitor.New(Func(Of CancellationToken, Task(Of Boolean)), TimeSpan?, TimeSpan?, Action(Of HeartbeatResult))
+  fullName.vb: Meridian.Core.Performance.HeartbeatMonitor.New(System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean)), System.TimeSpan?, System.TimeSpan?, System.Action(Of Meridian.Core.Performance.HeartbeatResult))
+  name.vb: New(Func(Of CancellationToken, Task(Of Boolean)), TimeSpan?, TimeSpan?, Action(Of HeartbeatResult))
+- uid: Meridian.Core.Performance.HeartbeatMonitor.Start
+  commentId: M:Meridian.Core.Performance.HeartbeatMonitor.Start
+  id: Start
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: Start()
+  nameWithType: HeartbeatMonitor.Start()
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.Start()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 305
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public void Start()
+    content.vb: Public Sub Start()
+  overload: Meridian.Core.Performance.HeartbeatMonitor.Start*
+- uid: Meridian.Core.Performance.HeartbeatMonitor.StopAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Core.Performance.HeartbeatMonitor.StopAsync(System.Threading.CancellationToken)
+  id: StopAsync(System.Threading.CancellationToken)
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: StopAsync(CancellationToken)
+  nameWithType: HeartbeatMonitor.StopAsync(CancellationToken)
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.StopAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopAsync
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 314
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  syntax:
+    content: public Task StopAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StopAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Core.Performance.HeartbeatMonitor.StopAsync*
+- uid: Meridian.Core.Performance.HeartbeatMonitor.Dispose
+  commentId: M:Meridian.Core.Performance.HeartbeatMonitor.Dispose
+  id: Dispose
+  parent: Meridian.Core.Performance.HeartbeatMonitor
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: HeartbeatMonitor.Dispose()
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Core/Performance/Performance/ConnectionWarmUp.cs
+    startLine: 401
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Core.Performance
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Core.Performance.HeartbeatMonitor.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Core.Performance
+  commentId: N:Meridian.Core.Performance
+  href: Meridian.html
+  name: Meridian.Core.Performance
+  nameWithType: Meridian.Core.Performance
+  fullName: Meridian.Core.Performance
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Core
+    name: Core
+    href: Meridian.Core.html
+  - name: .
+  - uid: Meridian.Core.Performance
+    name: Performance
+    href: Meridian.Core.Performance.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Core.Performance.HeartbeatMonitor.IsRunning*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.IsRunning
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_IsRunning
+  name: IsRunning
+  nameWithType: HeartbeatMonitor.IsRunning
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.IsRunning
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Core.Performance.HeartbeatMonitor.ConsecutiveFailures*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.ConsecutiveFailures
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_ConsecutiveFailures
+  name: ConsecutiveFailures
+  nameWithType: HeartbeatMonitor.ConsecutiveFailures
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.ConsecutiveFailures
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Core.Performance.HeartbeatMonitor.TotalHeartbeats*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.TotalHeartbeats
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_TotalHeartbeats
+  name: TotalHeartbeats
+  nameWithType: HeartbeatMonitor.TotalHeartbeats
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.TotalHeartbeats
+- uid: Meridian.Core.Performance.HeartbeatMonitor.TotalFailures*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.TotalFailures
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_TotalFailures
+  name: TotalFailures
+  nameWithType: HeartbeatMonitor.TotalFailures
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.TotalFailures
+- uid: Meridian.Core.Performance.HeartbeatMonitor.LastLatencyUs*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.LastLatencyUs
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_LastLatencyUs
+  name: LastLatencyUs
+  nameWithType: HeartbeatMonitor.LastLatencyUs
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.LastLatencyUs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Core.Performance.HeartbeatMonitor.TimeSinceLastSuccess*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.TimeSinceLastSuccess
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_TimeSinceLastSuccess
+  name: TimeSinceLastSuccess
+  nameWithType: HeartbeatMonitor.TimeSinceLastSuccess
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.TimeSinceLastSuccess
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Core.Performance.HeartbeatMonitor.IsHealthy*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.IsHealthy
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_IsHealthy
+  name: IsHealthy
+  nameWithType: HeartbeatMonitor.IsHealthy
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.IsHealthy
+- uid: System.EventHandler{Meridian.Core.Performance.HeartbeatResult}
+  commentId: T:System.EventHandler{Meridian.Core.Performance.HeartbeatResult}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<HeartbeatResult>
+  nameWithType: EventHandler<HeartbeatResult>
+  fullName: System.EventHandler<Meridian.Core.Performance.HeartbeatResult>
+  nameWithType.vb: EventHandler(Of HeartbeatResult)
+  fullName.vb: System.EventHandler(Of Meridian.Core.Performance.HeartbeatResult)
+  name.vb: EventHandler(Of HeartbeatResult)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: Meridian.Core.Performance.HeartbeatResult
+    name: HeartbeatResult
+    href: Meridian.Core.Performance.HeartbeatResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Core.Performance.HeartbeatResult
+    name: HeartbeatResult
+    href: Meridian.Core.Performance.HeartbeatResult.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler
+- uid: Meridian.Core.Performance.HeartbeatMonitor.#ctor*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.#ctor
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor__ctor_System_Func_System_Threading_CancellationToken_System_Threading_Tasks_Task_System_Boolean___System_Nullable_System_TimeSpan__System_Nullable_System_TimeSpan__System_Action_Meridian_Core_Performance_HeartbeatResult__
+  name: HeartbeatMonitor
+  nameWithType: HeartbeatMonitor.HeartbeatMonitor
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.HeartbeatMonitor
+  nameWithType.vb: HeartbeatMonitor.New
+  fullName.vb: Meridian.Core.Performance.HeartbeatMonitor.New
+  name.vb: New
+- uid: System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}}
+  commentId: T:System.Func{System.Threading.CancellationToken,System.Threading.Tasks.Task{System.Boolean}}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<CancellationToken, Task<bool>>
+  nameWithType: Func<CancellationToken, Task<bool>>
+  fullName: System.Func<System.Threading.CancellationToken, System.Threading.Tasks.Task<bool>>
+  nameWithType.vb: Func(Of CancellationToken, Task(Of Boolean))
+  fullName.vb: System.Func(Of System.Threading.CancellationToken, System.Threading.Tasks.Task(Of Boolean))
+  name.vb: Func(Of CancellationToken, Task(Of Boolean))
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  - name: )
+- uid: System.Nullable{System.TimeSpan}
+  commentId: T:System.Nullable{System.TimeSpan}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan?
+  nameWithType: TimeSpan?
+  fullName: System.TimeSpan?
+  spec.csharp:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+  spec.vb:
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: '?'
+- uid: System.Action{Meridian.Core.Performance.HeartbeatResult}
+  commentId: T:System.Action{Meridian.Core.Performance.HeartbeatResult}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<HeartbeatResult>
+  nameWithType: Action<HeartbeatResult>
+  fullName: System.Action<Meridian.Core.Performance.HeartbeatResult>
+  nameWithType.vb: Action(Of HeartbeatResult)
+  fullName.vb: System.Action(Of Meridian.Core.Performance.HeartbeatResult)
+  name.vb: Action(Of HeartbeatResult)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Core.Performance.HeartbeatResult
+    name: HeartbeatResult
+    href: Meridian.Core.Performance.HeartbeatResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Core.Performance.HeartbeatResult
+    name: HeartbeatResult
+    href: Meridian.Core.Performance.HeartbeatResult.html
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Core.Performance.HeartbeatMonitor.Start*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.Start
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_Start
+  name: Start
+  nameWithType: HeartbeatMonitor.Start
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.Start
+- uid: Meridian.Core.Performance.HeartbeatMonitor.StopAsync*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.StopAsync
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_StopAsync_System_Threading_CancellationToken_
+  name: StopAsync
+  nameWithType: HeartbeatMonitor.StopAsync
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.StopAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Core.Performance.HeartbeatMonitor.Dispose*
+  commentId: Overload:Meridian.Core.Performance.HeartbeatMonitor.Dispose
+  href: Meridian.Core.Performance.HeartbeatMonitor.html#Meridian_Core_Performance_HeartbeatMonitor_Dispose
+  name: Dispose
+  nameWithType: HeartbeatMonitor.Dispose
+  fullName: Meridian.Core.Performance.HeartbeatMonitor.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

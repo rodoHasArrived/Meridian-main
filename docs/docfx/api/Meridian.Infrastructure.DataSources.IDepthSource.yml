@@ -1,0 +1,334 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.IDepthSource
+  commentId: T:Meridian.Infrastructure.DataSources.IDepthSource
+  id: IDepthSource
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.IDepthSource.DepthUpdates
+  - Meridian.Infrastructure.DataSources.IDepthSource.MaxDepthLevels
+  - Meridian.Infrastructure.DataSources.IDepthSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  - Meridian.Infrastructure.DataSources.IDepthSource.UnsubscribeMarketDepth(System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: IDepthSource
+  nameWithType: IDepthSource
+  fullName: Meridian.Infrastructure.DataSources.IDepthSource
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IDepthSource
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 150
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Interface for sources that provide market depth data.
+  example: []
+  syntax:
+    content: public interface IDepthSource
+    content.vb: Public Interface IDepthSource
+- uid: Meridian.Infrastructure.DataSources.IDepthSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  commentId: M:Meridian.Infrastructure.DataSources.IDepthSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  id: SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  parent: Meridian.Infrastructure.DataSources.IDepthSource
+  langs:
+  - csharp
+  - vb
+  name: SubscribeMarketDepth(SymbolConfig)
+  nameWithType: IDepthSource.SubscribeMarketDepth(SymbolConfig)
+  fullName: Meridian.Infrastructure.DataSources.IDepthSource.SubscribeMarketDepth(Meridian.Contracts.Configuration.SymbolConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeMarketDepth
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 155
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Subscribes to market depth for the given symbol.
+  example: []
+  syntax:
+    content: int SubscribeMarketDepth(SymbolConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Contracts.Configuration.SymbolConfig
+    return:
+      type: System.Int32
+    content.vb: Function SubscribeMarketDepth(config As SymbolConfig) As Integer
+  overload: Meridian.Infrastructure.DataSources.IDepthSource.SubscribeMarketDepth*
+- uid: Meridian.Infrastructure.DataSources.IDepthSource.UnsubscribeMarketDepth(System.Int32)
+  commentId: M:Meridian.Infrastructure.DataSources.IDepthSource.UnsubscribeMarketDepth(System.Int32)
+  id: UnsubscribeMarketDepth(System.Int32)
+  parent: Meridian.Infrastructure.DataSources.IDepthSource
+  langs:
+  - csharp
+  - vb
+  name: UnsubscribeMarketDepth(int)
+  nameWithType: IDepthSource.UnsubscribeMarketDepth(int)
+  fullName: Meridian.Infrastructure.DataSources.IDepthSource.UnsubscribeMarketDepth(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnsubscribeMarketDepth
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 160
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Unsubscribes from a depth subscription.
+  example: []
+  syntax:
+    content: void UnsubscribeMarketDepth(int subscriptionId)
+    parameters:
+    - id: subscriptionId
+      type: System.Int32
+    content.vb: Sub UnsubscribeMarketDepth(subscriptionId As Integer)
+  overload: Meridian.Infrastructure.DataSources.IDepthSource.UnsubscribeMarketDepth*
+  nameWithType.vb: IDepthSource.UnsubscribeMarketDepth(Integer)
+  fullName.vb: Meridian.Infrastructure.DataSources.IDepthSource.UnsubscribeMarketDepth(Integer)
+  name.vb: UnsubscribeMarketDepth(Integer)
+- uid: Meridian.Infrastructure.DataSources.IDepthSource.DepthUpdates
+  commentId: P:Meridian.Infrastructure.DataSources.IDepthSource.DepthUpdates
+  id: DepthUpdates
+  parent: Meridian.Infrastructure.DataSources.IDepthSource
+  langs:
+  - csharp
+  - vb
+  name: DepthUpdates
+  nameWithType: IDepthSource.DepthUpdates
+  fullName: Meridian.Infrastructure.DataSources.IDepthSource.DepthUpdates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthUpdates
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 165
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Observable stream of market depth updates.
+  example: []
+  syntax:
+    content: IObservable<RealtimeDepthUpdate> DepthUpdates { get; }
+    parameters: []
+    return:
+      type: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+    content.vb: ReadOnly Property DepthUpdates As IObservable(Of RealtimeDepthUpdate)
+  overload: Meridian.Infrastructure.DataSources.IDepthSource.DepthUpdates*
+- uid: Meridian.Infrastructure.DataSources.IDepthSource.MaxDepthLevels
+  commentId: P:Meridian.Infrastructure.DataSources.IDepthSource.MaxDepthLevels
+  id: MaxDepthLevels
+  parent: Meridian.Infrastructure.DataSources.IDepthSource
+  langs:
+  - csharp
+  - vb
+  name: MaxDepthLevels
+  nameWithType: IDepthSource.MaxDepthLevels
+  fullName: Meridian.Infrastructure.DataSources.IDepthSource.MaxDepthLevels
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxDepthLevels
+    path: ../../src/Meridian.ProviderSdk/IRealtimeDataSource.cs
+    startLine: 170
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Maximum number of depth levels supported.
+  example: []
+  syntax:
+    content: int MaxDepthLevels { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: ReadOnly Property MaxDepthLevels As Integer
+  overload: Meridian.Infrastructure.DataSources.IDepthSource.MaxDepthLevels*
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.DataSources.IDepthSource.SubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDepthSource.SubscribeMarketDepth
+  href: Meridian.Infrastructure.DataSources.IDepthSource.html#Meridian_Infrastructure_DataSources_IDepthSource_SubscribeMarketDepth_Meridian_Contracts_Configuration_SymbolConfig_
+  name: SubscribeMarketDepth
+  nameWithType: IDepthSource.SubscribeMarketDepth
+  fullName: Meridian.Infrastructure.DataSources.IDepthSource.SubscribeMarketDepth
+- uid: Meridian.Contracts.Configuration.SymbolConfig
+  commentId: T:Meridian.Contracts.Configuration.SymbolConfig
+  parent: Meridian.Contracts.Configuration
+  href: Meridian.Contracts.Configuration.SymbolConfig.html
+  name: SymbolConfig
+  nameWithType: SymbolConfig
+  fullName: Meridian.Contracts.Configuration.SymbolConfig
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.DataSources.IDepthSource.UnsubscribeMarketDepth*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDepthSource.UnsubscribeMarketDepth
+  href: Meridian.Infrastructure.DataSources.IDepthSource.html#Meridian_Infrastructure_DataSources_IDepthSource_UnsubscribeMarketDepth_System_Int32_
+  name: UnsubscribeMarketDepth
+  nameWithType: IDepthSource.UnsubscribeMarketDepth
+  fullName: Meridian.Infrastructure.DataSources.IDepthSource.UnsubscribeMarketDepth
+- uid: Meridian.Infrastructure.DataSources.IDepthSource.DepthUpdates*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDepthSource.DepthUpdates
+  href: Meridian.Infrastructure.DataSources.IDepthSource.html#Meridian_Infrastructure_DataSources_IDepthSource_DepthUpdates
+  name: DepthUpdates
+  nameWithType: IDepthSource.DepthUpdates
+  fullName: Meridian.Infrastructure.DataSources.IDepthSource.DepthUpdates
+- uid: System.IObservable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+  commentId: T:System.IObservable{Meridian.Infrastructure.DataSources.RealtimeDepthUpdate}
+  parent: System
+  definition: System.IObservable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<RealtimeDepthUpdate>
+  nameWithType: IObservable<RealtimeDepthUpdate>
+  fullName: System.IObservable<Meridian.Infrastructure.DataSources.RealtimeDepthUpdate>
+  nameWithType.vb: IObservable(Of RealtimeDepthUpdate)
+  fullName.vb: System.IObservable(Of Meridian.Infrastructure.DataSources.RealtimeDepthUpdate)
+  name.vb: IObservable(Of RealtimeDepthUpdate)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+    name: RealtimeDepthUpdate
+    href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate
+    name: RealtimeDepthUpdate
+    href: Meridian.Infrastructure.DataSources.RealtimeDepthUpdate.html
+  - name: )
+- uid: System.IObservable`1
+  commentId: T:System.IObservable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  name: IObservable<T>
+  nameWithType: IObservable<T>
+  fullName: System.IObservable<T>
+  nameWithType.vb: IObservable(Of T)
+  fullName.vb: System.IObservable(Of T)
+  name.vb: IObservable(Of T)
+  spec.csharp:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IObservable`1
+    name: IObservable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iobservable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.IDepthSource.MaxDepthLevels*
+  commentId: Overload:Meridian.Infrastructure.DataSources.IDepthSource.MaxDepthLevels
+  href: Meridian.Infrastructure.DataSources.IDepthSource.html#Meridian_Infrastructure_DataSources_IDepthSource_MaxDepthLevels
+  name: MaxDepthLevels
+  nameWithType: IDepthSource.MaxDepthLevels
+  fullName: Meridian.Infrastructure.DataSources.IDepthSource.MaxDepthLevels

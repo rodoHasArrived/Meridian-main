@@ -1,0 +1,1069 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  commentId: T:Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  id: KernelDomainSnapshot
+  parent: Meridian.Application.ProviderRouting
+  children:
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.#ctor(System.String,System.Int64,System.Double,Meridian.Application.ProviderRouting.KernelLatencyPercentiles,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Boolean,Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds,System.Int64,System.DateTimeOffset)
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpActive
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpAlertCount
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpThresholds
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindow
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindowSamples
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindow
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindowSamples
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.DeterminismMismatches
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.Domain
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.Evaluations
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.LastUpdatedUtc
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.Latency
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.ReasonCodeCoveragePercent
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.ScoreDrift
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.SeverityDrift
+  - Meridian.Application.ProviderRouting.KernelDomainSnapshot.ThroughputPerMinute
+  langs:
+  - csharp
+  - vb
+  name: KernelDomainSnapshot
+  nameWithType: KernelDomainSnapshot
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: KernelDomainSnapshot
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: 'public sealed record KernelDomainSnapshot : IEquatable<KernelDomainSnapshot>'
+    content.vb: Public NotInheritable Class KernelDomainSnapshot Implements IEquatable(Of KernelDomainSnapshot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.ProviderRouting.KernelDomainSnapshot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.#ctor(System.String,System.Int64,System.Double,Meridian.Application.ProviderRouting.KernelLatencyPercentiles,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Boolean,Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds,System.Int64,System.DateTimeOffset)
+  commentId: M:Meridian.Application.ProviderRouting.KernelDomainSnapshot.#ctor(System.String,System.Int64,System.Double,Meridian.Application.ProviderRouting.KernelLatencyPercentiles,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Boolean,Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds,System.Int64,System.DateTimeOffset)
+  id: '#ctor(System.String,System.Int64,System.Double,Meridian.Application.ProviderRouting.KernelLatencyPercentiles,System.Double,System.Double,System.Double,System.Double,System.Double,System.Int32,System.Int32,System.Int32,System.Boolean,Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds,System.Int64,System.DateTimeOffset)'
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: KernelDomainSnapshot(string, long, double, KernelLatencyPercentiles, double, double, double, double, double, int, int, int, bool, KernelCriticalSeverityAlertThresholds, long, DateTimeOffset)
+  nameWithType: KernelDomainSnapshot.KernelDomainSnapshot(string, long, double, KernelLatencyPercentiles, double, double, double, double, double, int, int, int, bool, KernelCriticalSeverityAlertThresholds, long, DateTimeOffset)
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.KernelDomainSnapshot(string, long, double, Meridian.Application.ProviderRouting.KernelLatencyPercentiles, double, double, double, double, double, int, int, int, bool, Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds, long, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public KernelDomainSnapshot(string Domain, long Evaluations, double ThroughputPerMinute, KernelLatencyPercentiles Latency, double ReasonCodeCoveragePercent, double ScoreDrift, double SeverityDrift, double CriticalRateShortWindow, double CriticalRateLongWindow, int CriticalRateShortWindowSamples, int CriticalRateLongWindowSamples, int CriticalJumpAlertCount, bool CriticalJumpActive, KernelCriticalSeverityAlertThresholds CriticalJumpThresholds, long DeterminismMismatches, DateTimeOffset LastUpdatedUtc)
+    parameters:
+    - id: Domain
+      type: System.String
+    - id: Evaluations
+      type: System.Int64
+    - id: ThroughputPerMinute
+      type: System.Double
+    - id: Latency
+      type: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+    - id: ReasonCodeCoveragePercent
+      type: System.Double
+    - id: ScoreDrift
+      type: System.Double
+    - id: SeverityDrift
+      type: System.Double
+    - id: CriticalRateShortWindow
+      type: System.Double
+    - id: CriticalRateLongWindow
+      type: System.Double
+    - id: CriticalRateShortWindowSamples
+      type: System.Int32
+    - id: CriticalRateLongWindowSamples
+      type: System.Int32
+    - id: CriticalJumpAlertCount
+      type: System.Int32
+    - id: CriticalJumpActive
+      type: System.Boolean
+    - id: CriticalJumpThresholds
+      type: Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
+    - id: DeterminismMismatches
+      type: System.Int64
+    - id: LastUpdatedUtc
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Domain As String, Evaluations As Long, ThroughputPerMinute As Double, Latency As KernelLatencyPercentiles, ReasonCodeCoveragePercent As Double, ScoreDrift As Double, SeverityDrift As Double, CriticalRateShortWindow As Double, CriticalRateLongWindow As Double, CriticalRateShortWindowSamples As Integer, CriticalRateLongWindowSamples As Integer, CriticalJumpAlertCount As Integer, CriticalJumpActive As Boolean, CriticalJumpThresholds As KernelCriticalSeverityAlertThresholds, DeterminismMismatches As Long, LastUpdatedUtc As DateTimeOffset)
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.#ctor*
+  nameWithType.vb: KernelDomainSnapshot.New(String, Long, Double, KernelLatencyPercentiles, Double, Double, Double, Double, Double, Integer, Integer, Integer, Boolean, KernelCriticalSeverityAlertThresholds, Long, DateTimeOffset)
+  fullName.vb: Meridian.Application.ProviderRouting.KernelDomainSnapshot.New(String, Long, Double, Meridian.Application.ProviderRouting.KernelLatencyPercentiles, Double, Double, Double, Double, Double, Integer, Integer, Integer, Boolean, Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds, Long, System.DateTimeOffset)
+  name.vb: New(String, Long, Double, KernelLatencyPercentiles, Double, Double, Double, Double, Double, Integer, Integer, Integer, Boolean, KernelCriticalSeverityAlertThresholds, Long, DateTimeOffset)
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Domain
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.Domain
+  id: Domain
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Domain
+  nameWithType: KernelDomainSnapshot.Domain
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Domain
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Domain
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public string Domain { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Domain As String
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Domain*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Evaluations
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.Evaluations
+  id: Evaluations
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Evaluations
+  nameWithType: KernelDomainSnapshot.Evaluations
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Evaluations
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Evaluations
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public long Evaluations { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Evaluations As Long
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Evaluations*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ThroughputPerMinute
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.ThroughputPerMinute
+  id: ThroughputPerMinute
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ThroughputPerMinute
+  nameWithType: KernelDomainSnapshot.ThroughputPerMinute
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ThroughputPerMinute
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ThroughputPerMinute
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public double ThroughputPerMinute { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ThroughputPerMinute As Double
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ThroughputPerMinute*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Latency
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.Latency
+  id: Latency
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Latency
+  nameWithType: KernelDomainSnapshot.Latency
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Latency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Latency
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public KernelLatencyPercentiles Latency { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+    content.vb: Public Property Latency As KernelLatencyPercentiles
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Latency*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ReasonCodeCoveragePercent
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.ReasonCodeCoveragePercent
+  id: ReasonCodeCoveragePercent
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ReasonCodeCoveragePercent
+  nameWithType: KernelDomainSnapshot.ReasonCodeCoveragePercent
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ReasonCodeCoveragePercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReasonCodeCoveragePercent
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public double ReasonCodeCoveragePercent { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ReasonCodeCoveragePercent As Double
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ReasonCodeCoveragePercent*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ScoreDrift
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.ScoreDrift
+  id: ScoreDrift
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ScoreDrift
+  nameWithType: KernelDomainSnapshot.ScoreDrift
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ScoreDrift
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScoreDrift
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public double ScoreDrift { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ScoreDrift As Double
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ScoreDrift*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.SeverityDrift
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.SeverityDrift
+  id: SeverityDrift
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SeverityDrift
+  nameWithType: KernelDomainSnapshot.SeverityDrift
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.SeverityDrift
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SeverityDrift
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public double SeverityDrift { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property SeverityDrift As Double
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.SeverityDrift*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindow
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindow
+  id: CriticalRateShortWindow
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CriticalRateShortWindow
+  nameWithType: KernelDomainSnapshot.CriticalRateShortWindow
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CriticalRateShortWindow
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public double CriticalRateShortWindow { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CriticalRateShortWindow As Double
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindow*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindow
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindow
+  id: CriticalRateLongWindow
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CriticalRateLongWindow
+  nameWithType: KernelDomainSnapshot.CriticalRateLongWindow
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CriticalRateLongWindow
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 204
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public double CriticalRateLongWindow { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property CriticalRateLongWindow As Double
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindow*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindowSamples
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindowSamples
+  id: CriticalRateShortWindowSamples
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CriticalRateShortWindowSamples
+  nameWithType: KernelDomainSnapshot.CriticalRateShortWindowSamples
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindowSamples
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CriticalRateShortWindowSamples
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public int CriticalRateShortWindowSamples { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CriticalRateShortWindowSamples As Integer
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindowSamples*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindowSamples
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindowSamples
+  id: CriticalRateLongWindowSamples
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CriticalRateLongWindowSamples
+  nameWithType: KernelDomainSnapshot.CriticalRateLongWindowSamples
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindowSamples
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CriticalRateLongWindowSamples
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 206
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public int CriticalRateLongWindowSamples { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CriticalRateLongWindowSamples As Integer
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindowSamples*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpAlertCount
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpAlertCount
+  id: CriticalJumpAlertCount
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CriticalJumpAlertCount
+  nameWithType: KernelDomainSnapshot.CriticalJumpAlertCount
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpAlertCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CriticalJumpAlertCount
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 207
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public int CriticalJumpAlertCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property CriticalJumpAlertCount As Integer
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpAlertCount*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpActive
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpActive
+  id: CriticalJumpActive
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CriticalJumpActive
+  nameWithType: KernelDomainSnapshot.CriticalJumpActive
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpActive
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CriticalJumpActive
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 208
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public bool CriticalJumpActive { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property CriticalJumpActive As Boolean
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpActive*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpThresholds
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpThresholds
+  id: CriticalJumpThresholds
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CriticalJumpThresholds
+  nameWithType: KernelDomainSnapshot.CriticalJumpThresholds
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpThresholds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CriticalJumpThresholds
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 209
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public KernelCriticalSeverityAlertThresholds CriticalJumpThresholds { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
+    content.vb: Public Property CriticalJumpThresholds As KernelCriticalSeverityAlertThresholds
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpThresholds*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.DeterminismMismatches
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.DeterminismMismatches
+  id: DeterminismMismatches
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: DeterminismMismatches
+  nameWithType: KernelDomainSnapshot.DeterminismMismatches
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.DeterminismMismatches
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeterminismMismatches
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 210
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public long DeterminismMismatches { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property DeterminismMismatches As Long
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.DeterminismMismatches*
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.LastUpdatedUtc
+  commentId: P:Meridian.Application.ProviderRouting.KernelDomainSnapshot.LastUpdatedUtc
+  id: LastUpdatedUtc
+  parent: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+  langs:
+  - csharp
+  - vb
+  name: LastUpdatedUtc
+  nameWithType: KernelDomainSnapshot.LastUpdatedUtc
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.LastUpdatedUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastUpdatedUtc
+    path: ../../src/Meridian.Application/ProviderRouting/KernelObservabilityService.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.ProviderRouting
+  syntax:
+    content: public DateTimeOffset LastUpdatedUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property LastUpdatedUtc As DateTimeOffset
+  overload: Meridian.Application.ProviderRouting.KernelDomainSnapshot.LastUpdatedUtc*
+references:
+- uid: Meridian.Application.ProviderRouting
+  commentId: N:Meridian.Application.ProviderRouting
+  href: Meridian.html
+  name: Meridian.Application.ProviderRouting
+  nameWithType: Meridian.Application.ProviderRouting
+  fullName: Meridian.Application.ProviderRouting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.ProviderRouting
+    name: ProviderRouting
+    href: Meridian.Application.ProviderRouting.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.ProviderRouting.KernelDomainSnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.ProviderRouting.KernelDomainSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<KernelDomainSnapshot>
+  nameWithType: IEquatable<KernelDomainSnapshot>
+  fullName: System.IEquatable<Meridian.Application.ProviderRouting.KernelDomainSnapshot>
+  nameWithType.vb: IEquatable(Of KernelDomainSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.ProviderRouting.KernelDomainSnapshot)
+  name.vb: IEquatable(Of KernelDomainSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+    name: KernelDomainSnapshot
+    href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot
+    name: KernelDomainSnapshot
+    href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.#ctor*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.#ctor
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot__ctor_System_String_System_Int64_System_Double_Meridian_Application_ProviderRouting_KernelLatencyPercentiles_System_Double_System_Double_System_Double_System_Double_System_Double_System_Int32_System_Int32_System_Int32_System_Boolean_Meridian_Application_ProviderRouting_KernelCriticalSeverityAlertThresholds_System_Int64_System_DateTimeOffset_
+  name: KernelDomainSnapshot
+  nameWithType: KernelDomainSnapshot.KernelDomainSnapshot
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.KernelDomainSnapshot
+  nameWithType.vb: KernelDomainSnapshot.New
+  fullName.vb: Meridian.Application.ProviderRouting.KernelDomainSnapshot.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  commentId: T:Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.KernelLatencyPercentiles.html
+  name: KernelLatencyPercentiles
+  nameWithType: KernelLatencyPercentiles
+  fullName: Meridian.Application.ProviderRouting.KernelLatencyPercentiles
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
+  commentId: T:Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
+  parent: Meridian.Application.ProviderRouting
+  href: Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds.html
+  name: KernelCriticalSeverityAlertThresholds
+  nameWithType: KernelCriticalSeverityAlertThresholds
+  fullName: Meridian.Application.ProviderRouting.KernelCriticalSeverityAlertThresholds
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Domain*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.Domain
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_Domain
+  name: Domain
+  nameWithType: KernelDomainSnapshot.Domain
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Domain
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Evaluations*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.Evaluations
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_Evaluations
+  name: Evaluations
+  nameWithType: KernelDomainSnapshot.Evaluations
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Evaluations
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ThroughputPerMinute*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.ThroughputPerMinute
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_ThroughputPerMinute
+  name: ThroughputPerMinute
+  nameWithType: KernelDomainSnapshot.ThroughputPerMinute
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ThroughputPerMinute
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Latency*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.Latency
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_Latency
+  name: Latency
+  nameWithType: KernelDomainSnapshot.Latency
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.Latency
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ReasonCodeCoveragePercent*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.ReasonCodeCoveragePercent
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_ReasonCodeCoveragePercent
+  name: ReasonCodeCoveragePercent
+  nameWithType: KernelDomainSnapshot.ReasonCodeCoveragePercent
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ReasonCodeCoveragePercent
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ScoreDrift*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.ScoreDrift
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_ScoreDrift
+  name: ScoreDrift
+  nameWithType: KernelDomainSnapshot.ScoreDrift
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.ScoreDrift
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.SeverityDrift*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.SeverityDrift
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_SeverityDrift
+  name: SeverityDrift
+  nameWithType: KernelDomainSnapshot.SeverityDrift
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.SeverityDrift
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindow*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindow
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_CriticalRateShortWindow
+  name: CriticalRateShortWindow
+  nameWithType: KernelDomainSnapshot.CriticalRateShortWindow
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindow
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindow*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindow
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_CriticalRateLongWindow
+  name: CriticalRateLongWindow
+  nameWithType: KernelDomainSnapshot.CriticalRateLongWindow
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindow
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindowSamples*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindowSamples
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_CriticalRateShortWindowSamples
+  name: CriticalRateShortWindowSamples
+  nameWithType: KernelDomainSnapshot.CriticalRateShortWindowSamples
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateShortWindowSamples
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindowSamples*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindowSamples
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_CriticalRateLongWindowSamples
+  name: CriticalRateLongWindowSamples
+  nameWithType: KernelDomainSnapshot.CriticalRateLongWindowSamples
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalRateLongWindowSamples
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpAlertCount*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpAlertCount
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_CriticalJumpAlertCount
+  name: CriticalJumpAlertCount
+  nameWithType: KernelDomainSnapshot.CriticalJumpAlertCount
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpAlertCount
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpActive*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpActive
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_CriticalJumpActive
+  name: CriticalJumpActive
+  nameWithType: KernelDomainSnapshot.CriticalJumpActive
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpActive
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpThresholds*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpThresholds
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_CriticalJumpThresholds
+  name: CriticalJumpThresholds
+  nameWithType: KernelDomainSnapshot.CriticalJumpThresholds
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.CriticalJumpThresholds
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.DeterminismMismatches*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.DeterminismMismatches
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_DeterminismMismatches
+  name: DeterminismMismatches
+  nameWithType: KernelDomainSnapshot.DeterminismMismatches
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.DeterminismMismatches
+- uid: Meridian.Application.ProviderRouting.KernelDomainSnapshot.LastUpdatedUtc*
+  commentId: Overload:Meridian.Application.ProviderRouting.KernelDomainSnapshot.LastUpdatedUtc
+  href: Meridian.Application.ProviderRouting.KernelDomainSnapshot.html#Meridian_Application_ProviderRouting_KernelDomainSnapshot_LastUpdatedUtc
+  name: LastUpdatedUtc
+  nameWithType: KernelDomainSnapshot.LastUpdatedUtc
+  fullName: Meridian.Application.ProviderRouting.KernelDomainSnapshot.LastUpdatedUtc

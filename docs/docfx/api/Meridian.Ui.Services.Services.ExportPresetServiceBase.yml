@@ -1,0 +1,1422 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  commentId: T:Meridian.Ui.Services.Services.ExportPresetServiceBase
+  id: ExportPresetServiceBase
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.#ctor(System.String)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.CreatePresetAsync(System.String,System.String,Meridian.Contracts.Export.ExportPresetFormat,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.DeletePresetAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.DuplicatePresetAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetsAsync(System.String[],System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPreset(System.String)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPresetByName(System.String)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.ImportPresetsAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.LoadPresetsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.Presets
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.PresetsChanged
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.PresetsFileName
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.RecordPresetUsageAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.SavePresetsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.Services.ExportPresetServiceBase.UpdatePresetAsync(Meridian.Contracts.Export.ExportPreset,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ExportPresetServiceBase
+  nameWithType: ExportPresetServiceBase
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportPresetServiceBase
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Export preset management service with file-based storage.
+
+    File path is injected via constructor rather than requiring platform-specific overrides.
+  example: []
+  syntax:
+    content: public class ExportPresetServiceBase
+    content.vb: Public Class ExportPresetServiceBase
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.PresetsFileName
+  commentId: F:Meridian.Ui.Services.Services.ExportPresetServiceBase.PresetsFileName
+  id: PresetsFileName
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: PresetsFileName
+  nameWithType: ExportPresetServiceBase.PresetsFileName
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.PresetsFileName
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PresetsFileName
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: protected const string PresetsFileName = "export_presets.json"
+    return:
+      type: System.String
+    content.vb: Protected Const PresetsFileName As String = "export_presets.json"
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.PresetsChanged
+  commentId: E:Meridian.Ui.Services.Services.ExportPresetServiceBase.PresetsChanged
+  id: PresetsChanged
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: PresetsChanged
+  nameWithType: ExportPresetServiceBase.PresetsChanged
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.PresetsChanged
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PresetsChanged
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Event raised when presets are modified.
+  example: []
+  syntax:
+    content: public event EventHandler? PresetsChanged
+    return:
+      type: System.EventHandler
+    content.vb: Public Event PresetsChanged As EventHandler
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.Presets
+  commentId: P:Meridian.Ui.Services.Services.ExportPresetServiceBase.Presets
+  id: Presets
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: Presets
+  nameWithType: ExportPresetServiceBase.Presets
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.Presets
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Presets
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets all available export presets.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ExportPreset> Presets { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Export.ExportPreset}
+    content.vb: Public ReadOnly Property Presets As IReadOnlyList(Of ExportPreset)
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.Presets*
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.#ctor(System.String)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ExportPresetServiceBase(string)
+  nameWithType: ExportPresetServiceBase.ExportPresetServiceBase(string)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetServiceBase(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: >-
+    Creates a new instance with the specified presets directory path.
+
+    The presets file will be stored as <code>{presetsDirectoryPath}/export_presets.json</code>.
+  example: []
+  syntax:
+    content: protected ExportPresetServiceBase(string presetsDirectoryPath)
+    parameters:
+    - id: presetsDirectoryPath
+      type: System.String
+      description: >-
+        Directory where the presets file will be stored.
+
+        The directory will be created if it does not exist.
+    content.vb: Protected Sub New(presetsDirectoryPath As String)
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.#ctor*
+  nameWithType.vb: ExportPresetServiceBase.New(String)
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.New(String)
+  name.vb: New(String)
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: ExportPresetServiceBase.InitializeAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Initializes the service and loads presets.
+  example: []
+  syntax:
+    content: public Task InitializeAsync(CancellationToken cancellationToken = default)
+    parameters:
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function InitializeAsync(cancellationToken As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.InitializeAsync*
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.LoadPresetsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.LoadPresetsAsync(System.Threading.CancellationToken)
+  id: LoadPresetsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: LoadPresetsAsync(CancellationToken)
+  nameWithType: ExportPresetServiceBase.LoadPresetsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.LoadPresetsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadPresetsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Loads presets from storage.
+  example: []
+  syntax:
+    content: public Task LoadPresetsAsync(CancellationToken cancellationToken = default)
+    parameters:
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function LoadPresetsAsync(cancellationToken As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.LoadPresetsAsync*
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.SavePresetsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.SavePresetsAsync(System.Threading.CancellationToken)
+  id: SavePresetsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: SavePresetsAsync(CancellationToken)
+  nameWithType: ExportPresetServiceBase.SavePresetsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.SavePresetsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SavePresetsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Saves presets to storage.
+  example: []
+  syntax:
+    content: public Task SavePresetsAsync(CancellationToken cancellationToken = default)
+    parameters:
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SavePresetsAsync(cancellationToken As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.SavePresetsAsync*
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.CreatePresetAsync(System.String,System.String,Meridian.Contracts.Export.ExportPresetFormat,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.CreatePresetAsync(System.String,System.String,Meridian.Contracts.Export.ExportPresetFormat,System.String,System.Threading.CancellationToken)
+  id: CreatePresetAsync(System.String,System.String,Meridian.Contracts.Export.ExportPresetFormat,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: CreatePresetAsync(string, string?, ExportPresetFormat, string?, CancellationToken)
+  nameWithType: ExportPresetServiceBase.CreatePresetAsync(string, string?, ExportPresetFormat, string?, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.CreatePresetAsync(string, string?, Meridian.Contracts.Export.ExportPresetFormat, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatePresetAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 120
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Creates a new export preset.
+  example: []
+  syntax:
+    content: public Task<ExportPreset> CreatePresetAsync(string name, string? description = null, ExportPresetFormat format = ExportPresetFormat.Parquet, string? destination = null, CancellationToken cancellationToken = default)
+    parameters:
+    - id: name
+      type: System.String
+    - id: description
+      type: System.String
+    - id: format
+      type: Meridian.Contracts.Export.ExportPresetFormat
+    - id: destination
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Export.ExportPreset}
+    content.vb: Public Function CreatePresetAsync(name As String, description As String = Nothing, format As ExportPresetFormat = ExportPresetFormat.Parquet, destination As String = Nothing, cancellationToken As CancellationToken = Nothing) As Task(Of ExportPreset)
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.CreatePresetAsync*
+  nameWithType.vb: ExportPresetServiceBase.CreatePresetAsync(String, String, ExportPresetFormat, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.CreatePresetAsync(String, String, Meridian.Contracts.Export.ExportPresetFormat, String, System.Threading.CancellationToken)
+  name.vb: CreatePresetAsync(String, String, ExportPresetFormat, String, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.UpdatePresetAsync(Meridian.Contracts.Export.ExportPreset,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.UpdatePresetAsync(Meridian.Contracts.Export.ExportPreset,System.Threading.CancellationToken)
+  id: UpdatePresetAsync(Meridian.Contracts.Export.ExportPreset,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: UpdatePresetAsync(ExportPreset, CancellationToken)
+  nameWithType: ExportPresetServiceBase.UpdatePresetAsync(ExportPreset, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.UpdatePresetAsync(Meridian.Contracts.Export.ExportPreset, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdatePresetAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Updates an existing preset.
+  example: []
+  syntax:
+    content: public Task<bool> UpdatePresetAsync(ExportPreset preset, CancellationToken cancellationToken = default)
+    parameters:
+    - id: preset
+      type: Meridian.Contracts.Export.ExportPreset
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function UpdatePresetAsync(preset As ExportPreset, cancellationToken As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.UpdatePresetAsync*
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.DeletePresetAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.DeletePresetAsync(System.String,System.Threading.CancellationToken)
+  id: DeletePresetAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: DeletePresetAsync(string, CancellationToken)
+  nameWithType: ExportPresetServiceBase.DeletePresetAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.DeletePresetAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeletePresetAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 166
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Deletes a preset by ID.
+  example: []
+  syntax:
+    content: public Task<bool> DeletePresetAsync(string presetId, CancellationToken cancellationToken = default)
+    parameters:
+    - id: presetId
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeletePresetAsync(presetId As String, cancellationToken As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.DeletePresetAsync*
+  nameWithType.vb: ExportPresetServiceBase.DeletePresetAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.DeletePresetAsync(String, System.Threading.CancellationToken)
+  name.vb: DeletePresetAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPreset(System.String)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPreset(System.String)
+  id: GetPreset(System.String)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetPreset(string)
+  nameWithType: ExportPresetServiceBase.GetPreset(string)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPreset(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPreset
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets a preset by ID.
+  example: []
+  syntax:
+    content: public ExportPreset? GetPreset(string presetId)
+    parameters:
+    - id: presetId
+      type: System.String
+    return:
+      type: Meridian.Contracts.Export.ExportPreset
+    content.vb: Public Function GetPreset(presetId As String) As ExportPreset
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPreset*
+  nameWithType.vb: ExportPresetServiceBase.GetPreset(String)
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPreset(String)
+  name.vb: GetPreset(String)
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPresetByName(System.String)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPresetByName(System.String)
+  id: GetPresetByName(System.String)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: GetPresetByName(string)
+  nameWithType: ExportPresetServiceBase.GetPresetByName(string)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPresetByName(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPresetByName
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 188
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Gets a preset by name.
+  example: []
+  syntax:
+    content: public ExportPreset? GetPresetByName(string name)
+    parameters:
+    - id: name
+      type: System.String
+    return:
+      type: Meridian.Contracts.Export.ExportPreset
+    content.vb: Public Function GetPresetByName(name As String) As ExportPreset
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPresetByName*
+  nameWithType.vb: ExportPresetServiceBase.GetPresetByName(String)
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPresetByName(String)
+  name.vb: GetPresetByName(String)
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.DuplicatePresetAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.DuplicatePresetAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: DuplicatePresetAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: DuplicatePresetAsync(string, string, CancellationToken)
+  nameWithType: ExportPresetServiceBase.DuplicatePresetAsync(string, string, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.DuplicatePresetAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DuplicatePresetAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Duplicates an existing preset with a new name.
+  example: []
+  syntax:
+    content: public Task<ExportPreset> DuplicatePresetAsync(string presetId, string newName, CancellationToken cancellationToken = default)
+    parameters:
+    - id: presetId
+      type: System.String
+    - id: newName
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Export.ExportPreset}
+    content.vb: Public Function DuplicatePresetAsync(presetId As String, newName As String, cancellationToken As CancellationToken = Nothing) As Task(Of ExportPreset)
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.DuplicatePresetAsync*
+  nameWithType.vb: ExportPresetServiceBase.DuplicatePresetAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.DuplicatePresetAsync(String, String, System.Threading.CancellationToken)
+  name.vb: DuplicatePresetAsync(String, String, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.RecordPresetUsageAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.RecordPresetUsageAsync(System.String,System.Threading.CancellationToken)
+  id: RecordPresetUsageAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: RecordPresetUsageAsync(string, CancellationToken)
+  nameWithType: ExportPresetServiceBase.RecordPresetUsageAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.RecordPresetUsageAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordPresetUsageAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 240
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Records that a preset was used for an export.
+  example: []
+  syntax:
+    content: public Task RecordPresetUsageAsync(string presetId, CancellationToken cancellationToken = default)
+    parameters:
+    - id: presetId
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordPresetUsageAsync(presetId As String, cancellationToken As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.RecordPresetUsageAsync*
+  nameWithType.vb: ExportPresetServiceBase.RecordPresetUsageAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.RecordPresetUsageAsync(String, System.Threading.CancellationToken)
+  name.vb: RecordPresetUsageAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetsAsync(System.String[],System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetsAsync(System.String[],System.String,System.Threading.CancellationToken)
+  id: ExportPresetsAsync(System.String[],System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ExportPresetsAsync(string[], string, CancellationToken)
+  nameWithType: ExportPresetServiceBase.ExportPresetsAsync(string[], string, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetsAsync(string[], string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportPresetsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 254
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Exports presets to a JSON file for sharing.
+  example: []
+  syntax:
+    content: public Task<string> ExportPresetsAsync(string[] presetIds, string destinationPath, CancellationToken cancellationToken = default)
+    parameters:
+    - id: presetIds
+      type: System.String[]
+    - id: destinationPath
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Function ExportPresetsAsync(presetIds As String(), destinationPath As String, cancellationToken As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetsAsync*
+  nameWithType.vb: ExportPresetServiceBase.ExportPresetsAsync(String(), String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetsAsync(String(), String, System.Threading.CancellationToken)
+  name.vb: ExportPresetsAsync(String(), String, CancellationToken)
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.ImportPresetsAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.Services.ExportPresetServiceBase.ImportPresetsAsync(System.String,System.Threading.CancellationToken)
+  id: ImportPresetsAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.Services.ExportPresetServiceBase
+  langs:
+  - csharp
+  - vb
+  name: ImportPresetsAsync(string, CancellationToken)
+  nameWithType: ExportPresetServiceBase.ImportPresetsAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.ImportPresetsAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportPresetsAsync
+    path: ../../src/Meridian.Ui.Services/Services/ExportPresetServiceBase.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Imports presets from a JSON file.
+  example: []
+  syntax:
+    content: public Task<int> ImportPresetsAsync(string filePath, CancellationToken cancellationToken = default)
+    parameters:
+    - id: filePath
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Int32}
+    content.vb: Public Function ImportPresetsAsync(filePath As String, cancellationToken As CancellationToken = Nothing) As Task(Of Integer)
+  overload: Meridian.Ui.Services.Services.ExportPresetServiceBase.ImportPresetsAsync*
+  nameWithType.vb: ExportPresetServiceBase.ImportPresetsAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.ImportPresetsAsync(String, System.Threading.CancellationToken)
+  name.vb: ImportPresetsAsync(String, CancellationToken)
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.EventHandler
+  commentId: T:System.EventHandler
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler
+  name: EventHandler
+  nameWithType: EventHandler
+  fullName: System.EventHandler
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.Presets*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.Presets
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_Presets
+  name: Presets
+  nameWithType: ExportPresetServiceBase.Presets
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.Presets
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Export.ExportPreset}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Export.ExportPreset}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ExportPreset>
+  nameWithType: IReadOnlyList<ExportPreset>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Export.ExportPreset>
+  nameWithType.vb: IReadOnlyList(Of ExportPreset)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Export.ExportPreset)
+  name.vb: IReadOnlyList(Of ExportPreset)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Export.ExportPreset
+    name: ExportPreset
+    href: Meridian.Contracts.Export.ExportPreset.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Export.ExportPreset
+    name: ExportPreset
+    href: Meridian.Contracts.Export.ExportPreset.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.#ctor*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.#ctor
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase__ctor_System_String_
+  name: ExportPresetServiceBase
+  nameWithType: ExportPresetServiceBase.ExportPresetServiceBase
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetServiceBase
+  nameWithType.vb: ExportPresetServiceBase.New
+  fullName.vb: Meridian.Ui.Services.Services.ExportPresetServiceBase.New
+  name.vb: New
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.InitializeAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.InitializeAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: ExportPresetServiceBase.InitializeAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.InitializeAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.LoadPresetsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.LoadPresetsAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_LoadPresetsAsync_System_Threading_CancellationToken_
+  name: LoadPresetsAsync
+  nameWithType: ExportPresetServiceBase.LoadPresetsAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.LoadPresetsAsync
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.SavePresetsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.SavePresetsAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_SavePresetsAsync_System_Threading_CancellationToken_
+  name: SavePresetsAsync
+  nameWithType: ExportPresetServiceBase.SavePresetsAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.SavePresetsAsync
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.CreatePresetAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.CreatePresetAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_CreatePresetAsync_System_String_System_String_Meridian_Contracts_Export_ExportPresetFormat_System_String_System_Threading_CancellationToken_
+  name: CreatePresetAsync
+  nameWithType: ExportPresetServiceBase.CreatePresetAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.CreatePresetAsync
+- uid: Meridian.Contracts.Export.ExportPresetFormat
+  commentId: T:Meridian.Contracts.Export.ExportPresetFormat
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.ExportPresetFormat.html
+  name: ExportPresetFormat
+  nameWithType: ExportPresetFormat
+  fullName: Meridian.Contracts.Export.ExportPresetFormat
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Export.ExportPreset}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Export.ExportPreset}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ExportPreset>
+  nameWithType: Task<ExportPreset>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Export.ExportPreset>
+  nameWithType.vb: Task(Of ExportPreset)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Export.ExportPreset)
+  name.vb: Task(Of ExportPreset)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Export.ExportPreset
+    name: ExportPreset
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Export.ExportPreset
+    name: ExportPreset
+  - name: )
+- uid: Meridian.Contracts.Export
+  commentId: N:Meridian.Contracts.Export
+  href: Meridian.html
+  name: Meridian.Contracts.Export
+  nameWithType: Meridian.Contracts.Export
+  fullName: Meridian.Contracts.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Export
+    name: Export
+    href: Meridian.Contracts.Export.html
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.UpdatePresetAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.UpdatePresetAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_UpdatePresetAsync_Meridian_Contracts_Export_ExportPreset_System_Threading_CancellationToken_
+  name: UpdatePresetAsync
+  nameWithType: ExportPresetServiceBase.UpdatePresetAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.UpdatePresetAsync
+- uid: Meridian.Contracts.Export.ExportPreset
+  commentId: T:Meridian.Contracts.Export.ExportPreset
+  parent: Meridian.Contracts.Export
+  href: Meridian.Contracts.Export.ExportPreset.html
+  name: ExportPreset
+  nameWithType: ExportPreset
+  fullName: Meridian.Contracts.Export.ExportPreset
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.DeletePresetAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.DeletePresetAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_DeletePresetAsync_System_String_System_Threading_CancellationToken_
+  name: DeletePresetAsync
+  nameWithType: ExportPresetServiceBase.DeletePresetAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.DeletePresetAsync
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPreset*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPreset
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_GetPreset_System_String_
+  name: GetPreset
+  nameWithType: ExportPresetServiceBase.GetPreset
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPreset
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPresetByName*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPresetByName
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_GetPresetByName_System_String_
+  name: GetPresetByName
+  nameWithType: ExportPresetServiceBase.GetPresetByName
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.GetPresetByName
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.DuplicatePresetAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.DuplicatePresetAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_DuplicatePresetAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: DuplicatePresetAsync
+  nameWithType: ExportPresetServiceBase.DuplicatePresetAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.DuplicatePresetAsync
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.RecordPresetUsageAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.RecordPresetUsageAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_RecordPresetUsageAsync_System_String_System_Threading_CancellationToken_
+  name: RecordPresetUsageAsync
+  nameWithType: ExportPresetServiceBase.RecordPresetUsageAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.RecordPresetUsageAsync
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetsAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_ExportPresetsAsync_System_String___System_String_System_Threading_CancellationToken_
+  name: ExportPresetsAsync
+  nameWithType: ExportPresetServiceBase.ExportPresetsAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.ExportPresetsAsync
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Ui.Services.Services.ExportPresetServiceBase.ImportPresetsAsync*
+  commentId: Overload:Meridian.Ui.Services.Services.ExportPresetServiceBase.ImportPresetsAsync
+  href: Meridian.Ui.Services.Services.ExportPresetServiceBase.html#Meridian_Ui_Services_Services_ExportPresetServiceBase_ImportPresetsAsync_System_String_System_Threading_CancellationToken_
+  name: ImportPresetsAsync
+  nameWithType: ExportPresetServiceBase.ImportPresetsAsync
+  fullName: Meridian.Ui.Services.Services.ExportPresetServiceBase.ImportPresetsAsync
+- uid: System.Threading.Tasks.Task{System.Int32}
+  commentId: T:System.Threading.Tasks.Task{System.Int32}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<int>
+  nameWithType: Task<int>
+  fullName: System.Threading.Tasks.Task<int>
+  nameWithType.vb: Task(Of Integer)
+  fullName.vb: System.Threading.Tasks.Task(Of Integer)
+  name.vb: Task(Of Integer)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )

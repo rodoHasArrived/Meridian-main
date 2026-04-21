@@ -1,0 +1,725 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison
+  commentId: T:Meridian.Contracts.Workstation.ResearchSavedComparison
+  id: ResearchSavedComparison
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ResearchSavedComparison.#ctor(System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparisonMode})
+  - Meridian.Contracts.Workstation.ResearchSavedComparison.AnchorRunId
+  - Meridian.Contracts.Workstation.ResearchSavedComparison.ComparisonId
+  - Meridian.Contracts.Workstation.ResearchSavedComparison.ModeSummary
+  - Meridian.Contracts.Workstation.ResearchSavedComparison.Modes
+  - Meridian.Contracts.Workstation.ResearchSavedComparison.StrategyName
+  - Meridian.Contracts.Workstation.ResearchSavedComparison.Summary
+  langs:
+  - csharp
+  - vb
+  name: ResearchSavedComparison
+  nameWithType: ResearchSavedComparison
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResearchSavedComparison
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Saved comparison summary surfaced from the briefing home.
+  example: []
+  syntax:
+    content: 'public sealed record ResearchSavedComparison : IEquatable<ResearchSavedComparison>'
+    content.vb: Public NotInheritable Class ResearchSavedComparison Implements IEquatable(Of ResearchSavedComparison)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.ResearchSavedComparison}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.#ctor(System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparisonMode})
+  commentId: M:Meridian.Contracts.Workstation.ResearchSavedComparison.#ctor(System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparisonMode})
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparisonMode})'
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparison
+  langs:
+  - csharp
+  - vb
+  name: ResearchSavedComparison(string, string, string, string, string?, IReadOnlyList<ResearchSavedComparisonMode>)
+  nameWithType: ResearchSavedComparison.ResearchSavedComparison(string, string, string, string, string?, IReadOnlyList<ResearchSavedComparisonMode>)
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.ResearchSavedComparison(string, string, string, string, string?, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchSavedComparisonMode>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Saved comparison summary surfaced from the briefing home.
+  example: []
+  syntax:
+    content: public ResearchSavedComparison(string ComparisonId, string StrategyName, string ModeSummary, string Summary, string? AnchorRunId, IReadOnlyList<ResearchSavedComparisonMode> Modes)
+    parameters:
+    - id: ComparisonId
+      type: System.String
+    - id: StrategyName
+      type: System.String
+    - id: ModeSummary
+      type: System.String
+    - id: Summary
+      type: System.String
+    - id: AnchorRunId
+      type: System.String
+    - id: Modes
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparisonMode}
+    content.vb: Public Sub New(ComparisonId As String, StrategyName As String, ModeSummary As String, Summary As String, AnchorRunId As String, Modes As IReadOnlyList(Of ResearchSavedComparisonMode))
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparison.#ctor*
+  nameWithType.vb: ResearchSavedComparison.New(String, String, String, String, String, IReadOnlyList(Of ResearchSavedComparisonMode))
+  fullName.vb: Meridian.Contracts.Workstation.ResearchSavedComparison.New(String, String, String, String, String, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchSavedComparisonMode))
+  name.vb: New(String, String, String, String, String, IReadOnlyList(Of ResearchSavedComparisonMode))
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.ComparisonId
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparison.ComparisonId
+  id: ComparisonId
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparison
+  langs:
+  - csharp
+  - vb
+  name: ComparisonId
+  nameWithType: ResearchSavedComparison.ComparisonId
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.ComparisonId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComparisonId
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string ComparisonId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ComparisonId As String
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparison.ComparisonId*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.StrategyName
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparison.StrategyName
+  id: StrategyName
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparison
+  langs:
+  - csharp
+  - vb
+  name: StrategyName
+  nameWithType: ResearchSavedComparison.StrategyName
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.StrategyName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyName
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string StrategyName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyName As String
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparison.StrategyName*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.ModeSummary
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparison.ModeSummary
+  id: ModeSummary
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparison
+  langs:
+  - csharp
+  - vb
+  name: ModeSummary
+  nameWithType: ResearchSavedComparison.ModeSummary
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.ModeSummary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ModeSummary
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string ModeSummary { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ModeSummary As String
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparison.ModeSummary*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.Summary
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparison.Summary
+  id: Summary
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparison
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: ResearchSavedComparison.Summary
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string Summary { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Summary As String
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparison.Summary*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.AnchorRunId
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparison.AnchorRunId
+  id: AnchorRunId
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparison
+  langs:
+  - csharp
+  - vb
+  name: AnchorRunId
+  nameWithType: ResearchSavedComparison.AnchorRunId
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.AnchorRunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AnchorRunId
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? AnchorRunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AnchorRunId As String
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparison.AnchorRunId*
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.Modes
+  commentId: P:Meridian.Contracts.Workstation.ResearchSavedComparison.Modes
+  id: Modes
+  parent: Meridian.Contracts.Workstation.ResearchSavedComparison
+  langs:
+  - csharp
+  - vb
+  name: Modes
+  nameWithType: ResearchSavedComparison.Modes
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.Modes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Modes
+    path: ../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public IReadOnlyList<ResearchSavedComparisonMode> Modes { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparisonMode}
+    content.vb: Public Property Modes As IReadOnlyList(Of ResearchSavedComparisonMode)
+  overload: Meridian.Contracts.Workstation.ResearchSavedComparison.Modes*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.ResearchSavedComparison}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.ResearchSavedComparison}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ResearchSavedComparison>
+  nameWithType: IEquatable<ResearchSavedComparison>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.ResearchSavedComparison>
+  nameWithType.vb: IEquatable(Of ResearchSavedComparison)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.ResearchSavedComparison)
+  name.vb: IEquatable(Of ResearchSavedComparison)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparison
+    name: ResearchSavedComparison
+    href: Meridian.Contracts.Workstation.ResearchSavedComparison.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparison
+    name: ResearchSavedComparison
+    href: Meridian.Contracts.Workstation.ResearchSavedComparison.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparison.#ctor
+  href: Meridian.Contracts.Workstation.ResearchSavedComparison.html#Meridian_Contracts_Workstation_ResearchSavedComparison__ctor_System_String_System_String_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyList_Meridian_Contracts_Workstation_ResearchSavedComparisonMode__
+  name: ResearchSavedComparison
+  nameWithType: ResearchSavedComparison.ResearchSavedComparison
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.ResearchSavedComparison
+  nameWithType.vb: ResearchSavedComparison.New
+  fullName.vb: Meridian.Contracts.Workstation.ResearchSavedComparison.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparisonMode}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Workstation.ResearchSavedComparisonMode}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ResearchSavedComparisonMode>
+  nameWithType: IReadOnlyList<ResearchSavedComparisonMode>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Workstation.ResearchSavedComparisonMode>
+  nameWithType.vb: IReadOnlyList(Of ResearchSavedComparisonMode)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Workstation.ResearchSavedComparisonMode)
+  name.vb: IReadOnlyList(Of ResearchSavedComparisonMode)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+    name: ResearchSavedComparisonMode
+    href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ResearchSavedComparisonMode
+    name: ResearchSavedComparisonMode
+    href: Meridian.Contracts.Workstation.ResearchSavedComparisonMode.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.ComparisonId*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparison.ComparisonId
+  href: Meridian.Contracts.Workstation.ResearchSavedComparison.html#Meridian_Contracts_Workstation_ResearchSavedComparison_ComparisonId
+  name: ComparisonId
+  nameWithType: ResearchSavedComparison.ComparisonId
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.ComparisonId
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.StrategyName*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparison.StrategyName
+  href: Meridian.Contracts.Workstation.ResearchSavedComparison.html#Meridian_Contracts_Workstation_ResearchSavedComparison_StrategyName
+  name: StrategyName
+  nameWithType: ResearchSavedComparison.StrategyName
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.StrategyName
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.ModeSummary*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparison.ModeSummary
+  href: Meridian.Contracts.Workstation.ResearchSavedComparison.html#Meridian_Contracts_Workstation_ResearchSavedComparison_ModeSummary
+  name: ModeSummary
+  nameWithType: ResearchSavedComparison.ModeSummary
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.ModeSummary
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.Summary*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparison.Summary
+  href: Meridian.Contracts.Workstation.ResearchSavedComparison.html#Meridian_Contracts_Workstation_ResearchSavedComparison_Summary
+  name: Summary
+  nameWithType: ResearchSavedComparison.Summary
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.Summary
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.AnchorRunId*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparison.AnchorRunId
+  href: Meridian.Contracts.Workstation.ResearchSavedComparison.html#Meridian_Contracts_Workstation_ResearchSavedComparison_AnchorRunId
+  name: AnchorRunId
+  nameWithType: ResearchSavedComparison.AnchorRunId
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.AnchorRunId
+- uid: Meridian.Contracts.Workstation.ResearchSavedComparison.Modes*
+  commentId: Overload:Meridian.Contracts.Workstation.ResearchSavedComparison.Modes
+  href: Meridian.Contracts.Workstation.ResearchSavedComparison.html#Meridian_Contracts_Workstation_ResearchSavedComparison_Modes
+  name: Modes
+  nameWithType: ResearchSavedComparison.Modes
+  fullName: Meridian.Contracts.Workstation.ResearchSavedComparison.Modes

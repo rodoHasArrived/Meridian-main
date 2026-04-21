@@ -1,0 +1,262 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.WorkspaceCategory
+  commentId: T:Meridian.Ui.Services.WorkspaceCategory
+  id: WorkspaceCategory
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.WorkspaceCategory.Custom
+  - Meridian.Ui.Services.WorkspaceCategory.DataOperations
+  - Meridian.Ui.Services.WorkspaceCategory.Governance
+  - Meridian.Ui.Services.WorkspaceCategory.Research
+  - Meridian.Ui.Services.WorkspaceCategory.Trading
+  langs:
+  - csharp
+  - vb
+  name: WorkspaceCategory
+  nameWithType: WorkspaceCategory
+  fullName: Meridian.Ui.Services.WorkspaceCategory
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorkspaceCategory
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Workspace category.
+  example: []
+  syntax:
+    content: 'public enum WorkspaceCategory : byte'
+    content.vb: Public Enum WorkspaceCategory As Byte
+  extensionMethods:
+  - Meridian.Ui.Services.WorkspaceCategory.Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName
+- uid: Meridian.Ui.Services.WorkspaceCategory.Research
+  commentId: F:Meridian.Ui.Services.WorkspaceCategory.Research
+  id: Research
+  parent: Meridian.Ui.Services.WorkspaceCategory
+  langs:
+  - csharp
+  - vb
+  name: Research
+  nameWithType: WorkspaceCategory.Research
+  fullName: Meridian.Ui.Services.WorkspaceCategory.Research
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Research
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Research = 0
+    return:
+      type: Meridian.Ui.Services.WorkspaceCategory
+- uid: Meridian.Ui.Services.WorkspaceCategory.Trading
+  commentId: F:Meridian.Ui.Services.WorkspaceCategory.Trading
+  id: Trading
+  parent: Meridian.Ui.Services.WorkspaceCategory
+  langs:
+  - csharp
+  - vb
+  name: Trading
+  nameWithType: WorkspaceCategory.Trading
+  fullName: Meridian.Ui.Services.WorkspaceCategory.Trading
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Trading
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Trading = 1
+    return:
+      type: Meridian.Ui.Services.WorkspaceCategory
+- uid: Meridian.Ui.Services.WorkspaceCategory.DataOperations
+  commentId: F:Meridian.Ui.Services.WorkspaceCategory.DataOperations
+  id: DataOperations
+  parent: Meridian.Ui.Services.WorkspaceCategory
+  langs:
+  - csharp
+  - vb
+  name: DataOperations
+  nameWithType: WorkspaceCategory.DataOperations
+  fullName: Meridian.Ui.Services.WorkspaceCategory.DataOperations
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataOperations
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: DataOperations = 2
+    return:
+      type: Meridian.Ui.Services.WorkspaceCategory
+- uid: Meridian.Ui.Services.WorkspaceCategory.Governance
+  commentId: F:Meridian.Ui.Services.WorkspaceCategory.Governance
+  id: Governance
+  parent: Meridian.Ui.Services.WorkspaceCategory
+  langs:
+  - csharp
+  - vb
+  name: Governance
+  nameWithType: WorkspaceCategory.Governance
+  fullName: Meridian.Ui.Services.WorkspaceCategory.Governance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Governance
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Governance = 3
+    return:
+      type: Meridian.Ui.Services.WorkspaceCategory
+- uid: Meridian.Ui.Services.WorkspaceCategory.Custom
+  commentId: F:Meridian.Ui.Services.WorkspaceCategory.Custom
+  id: Custom
+  parent: Meridian.Ui.Services.WorkspaceCategory
+  langs:
+  - csharp
+  - vb
+  name: Custom
+  nameWithType: WorkspaceCategory.Custom
+  fullName: Meridian.Ui.Services.WorkspaceCategory.Custom
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Custom
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Custom = 4
+    return:
+      type: Meridian.Ui.Services.WorkspaceCategory
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.WorkspaceCategory.Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName
+  commentId: M:Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+  parent: Meridian.Ui.Services.WorkspaceCategoryExtensions
+  definition: Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+  href: Meridian.Ui.Services.WorkspaceCategoryExtensions.html#Meridian_Ui_Services_WorkspaceCategoryExtensions_ToDisplayName_Meridian_Ui_Services_WorkspaceCategory_
+  name: ToDisplayName(WorkspaceCategory)
+  nameWithType: WorkspaceCategoryExtensions.ToDisplayName(WorkspaceCategory)
+  fullName: Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+    name: ToDisplayName
+    href: Meridian.Ui.Services.WorkspaceCategoryExtensions.html#Meridian_Ui_Services_WorkspaceCategoryExtensions_ToDisplayName_Meridian_Ui_Services_WorkspaceCategory_
+  - name: (
+  - uid: Meridian.Ui.Services.WorkspaceCategory
+    name: WorkspaceCategory
+    href: Meridian.Ui.Services.WorkspaceCategory.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+    name: ToDisplayName
+    href: Meridian.Ui.Services.WorkspaceCategoryExtensions.html#Meridian_Ui_Services_WorkspaceCategoryExtensions_ToDisplayName_Meridian_Ui_Services_WorkspaceCategory_
+  - name: (
+  - uid: Meridian.Ui.Services.WorkspaceCategory
+    name: WorkspaceCategory
+    href: Meridian.Ui.Services.WorkspaceCategory.html
+  - name: )
+- uid: Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+  commentId: M:Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+  href: Meridian.Ui.Services.WorkspaceCategoryExtensions.html#Meridian_Ui_Services_WorkspaceCategoryExtensions_ToDisplayName_Meridian_Ui_Services_WorkspaceCategory_
+  name: ToDisplayName(WorkspaceCategory)
+  nameWithType: WorkspaceCategoryExtensions.ToDisplayName(WorkspaceCategory)
+  fullName: Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+  spec.csharp:
+  - uid: Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+    name: ToDisplayName
+    href: Meridian.Ui.Services.WorkspaceCategoryExtensions.html#Meridian_Ui_Services_WorkspaceCategoryExtensions_ToDisplayName_Meridian_Ui_Services_WorkspaceCategory_
+  - name: (
+  - uid: Meridian.Ui.Services.WorkspaceCategory
+    name: WorkspaceCategory
+    href: Meridian.Ui.Services.WorkspaceCategory.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ui.Services.WorkspaceCategoryExtensions.ToDisplayName(Meridian.Ui.Services.WorkspaceCategory)
+    name: ToDisplayName
+    href: Meridian.Ui.Services.WorkspaceCategoryExtensions.html#Meridian_Ui_Services_WorkspaceCategoryExtensions_ToDisplayName_Meridian_Ui_Services_WorkspaceCategory_
+  - name: (
+  - uid: Meridian.Ui.Services.WorkspaceCategory
+    name: WorkspaceCategory
+    href: Meridian.Ui.Services.WorkspaceCategory.html
+  - name: )
+- uid: Meridian.Ui.Services.WorkspaceCategoryExtensions
+  commentId: T:Meridian.Ui.Services.WorkspaceCategoryExtensions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.WorkspaceCategoryExtensions.html
+  name: WorkspaceCategoryExtensions
+  nameWithType: WorkspaceCategoryExtensions
+  fullName: Meridian.Ui.Services.WorkspaceCategoryExtensions
+- uid: Meridian.Ui.Services.WorkspaceCategory
+  commentId: T:Meridian.Ui.Services.WorkspaceCategory
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.WorkspaceCategory.html
+  name: WorkspaceCategory
+  nameWithType: WorkspaceCategory
+  fullName: Meridian.Ui.Services.WorkspaceCategory

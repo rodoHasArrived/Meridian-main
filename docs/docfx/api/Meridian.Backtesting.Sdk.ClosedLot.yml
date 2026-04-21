@@ -1,0 +1,1003 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.ClosedLot
+  commentId: T:Meridian.Backtesting.Sdk.ClosedLot
+  id: ClosedLot
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.ClosedLot.#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Guid,System.Decimal,System.DateTimeOffset,System.Guid,System.String)
+  - Meridian.Backtesting.Sdk.ClosedLot.AccountId
+  - Meridian.Backtesting.Sdk.ClosedLot.CloseFillId
+  - Meridian.Backtesting.Sdk.ClosedLot.ClosePrice
+  - Meridian.Backtesting.Sdk.ClosedLot.ClosedAt
+  - Meridian.Backtesting.Sdk.ClosedLot.EntryPrice
+  - Meridian.Backtesting.Sdk.ClosedLot.HoldingPeriod
+  - Meridian.Backtesting.Sdk.ClosedLot.IsLongTerm
+  - Meridian.Backtesting.Sdk.ClosedLot.LotId
+  - Meridian.Backtesting.Sdk.ClosedLot.OpenFillId
+  - Meridian.Backtesting.Sdk.ClosedLot.OpenedAt
+  - Meridian.Backtesting.Sdk.ClosedLot.Quantity
+  - Meridian.Backtesting.Sdk.ClosedLot.RealizedPnl
+  - Meridian.Backtesting.Sdk.ClosedLot.RealizedPnlPerShare
+  - Meridian.Backtesting.Sdk.ClosedLot.Symbol
+  langs:
+  - csharp
+  - vb
+  name: ClosedLot
+  nameWithType: ClosedLot
+  fullName: Meridian.Backtesting.Sdk.ClosedLot
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClosedLot
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Immutable record of a realised tax lot — a block of shares that was opened and subsequently
+
+    fully or partially closed.  Each close produces exactly one <xref href="Meridian.Backtesting.Sdk.ClosedLot" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public sealed record ClosedLot : IEquatable<ClosedLot>'
+    content.vb: Public NotInheritable Class ClosedLot Implements IEquatable(Of ClosedLot)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.ClosedLot}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.ClosedLot.#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Guid,System.Decimal,System.DateTimeOffset,System.Guid,System.String)
+  commentId: M:Meridian.Backtesting.Sdk.ClosedLot.#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Guid,System.Decimal,System.DateTimeOffset,System.Guid,System.String)
+  id: '#ctor(System.Guid,System.String,System.Int64,System.Decimal,System.DateTimeOffset,System.Guid,System.Decimal,System.DateTimeOffset,System.Guid,System.String)'
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: ClosedLot(Guid, string, long, decimal, DateTimeOffset, Guid, decimal, DateTimeOffset, Guid, string?)
+  nameWithType: ClosedLot.ClosedLot(Guid, string, long, decimal, DateTimeOffset, Guid, decimal, DateTimeOffset, Guid, string?)
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.ClosedLot(System.Guid, string, long, decimal, System.DateTimeOffset, System.Guid, decimal, System.DateTimeOffset, System.Guid, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Immutable record of a realised tax lot — a block of shares that was opened and subsequently
+
+    fully or partially closed.  Each close produces exactly one <xref href="Meridian.Backtesting.Sdk.ClosedLot" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public ClosedLot(Guid LotId, string Symbol, long Quantity, decimal EntryPrice, DateTimeOffset OpenedAt, Guid OpenFillId, decimal ClosePrice, DateTimeOffset ClosedAt, Guid CloseFillId, string? AccountId = null)
+    parameters:
+    - id: LotId
+      type: System.Guid
+    - id: Symbol
+      type: System.String
+    - id: Quantity
+      type: System.Int64
+    - id: EntryPrice
+      type: System.Decimal
+    - id: OpenedAt
+      type: System.DateTimeOffset
+    - id: OpenFillId
+      type: System.Guid
+    - id: ClosePrice
+      type: System.Decimal
+    - id: ClosedAt
+      type: System.DateTimeOffset
+    - id: CloseFillId
+      type: System.Guid
+    - id: AccountId
+      type: System.String
+    content.vb: Public Sub New(LotId As Guid, Symbol As String, Quantity As Long, EntryPrice As Decimal, OpenedAt As DateTimeOffset, OpenFillId As Guid, ClosePrice As Decimal, ClosedAt As DateTimeOffset, CloseFillId As Guid, AccountId As String = Nothing)
+  overload: Meridian.Backtesting.Sdk.ClosedLot.#ctor*
+  nameWithType.vb: ClosedLot.New(Guid, String, Long, Decimal, DateTimeOffset, Guid, Decimal, DateTimeOffset, Guid, String)
+  fullName.vb: Meridian.Backtesting.Sdk.ClosedLot.New(System.Guid, String, Long, Decimal, System.DateTimeOffset, System.Guid, Decimal, System.DateTimeOffset, System.Guid, String)
+  name.vb: New(Guid, String, Long, Decimal, DateTimeOffset, Guid, Decimal, DateTimeOffset, Guid, String)
+- uid: Meridian.Backtesting.Sdk.ClosedLot.LotId
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.LotId
+  id: LotId
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: LotId
+  nameWithType: ClosedLot.LotId
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.LotId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LotId
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid LotId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property LotId As Guid
+  overload: Meridian.Backtesting.Sdk.ClosedLot.LotId*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: ClosedLot.Symbol
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.ClosedLot.Symbol*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.Quantity
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.Quantity
+  id: Quantity
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: ClosedLot.Quantity
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public long Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Quantity As Long
+  overload: Meridian.Backtesting.Sdk.ClosedLot.Quantity*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.EntryPrice
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.EntryPrice
+  id: EntryPrice
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: EntryPrice
+  nameWithType: ClosedLot.EntryPrice
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.EntryPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntryPrice
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal EntryPrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property EntryPrice As Decimal
+  overload: Meridian.Backtesting.Sdk.ClosedLot.EntryPrice*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.OpenedAt
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.OpenedAt
+  id: OpenedAt
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: OpenedAt
+  nameWithType: ClosedLot.OpenedAt
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.OpenedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenedAt
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public DateTimeOffset OpenedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property OpenedAt As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.ClosedLot.OpenedAt*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.OpenFillId
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.OpenFillId
+  id: OpenFillId
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: OpenFillId
+  nameWithType: ClosedLot.OpenFillId
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.OpenFillId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenFillId
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid OpenFillId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property OpenFillId As Guid
+  overload: Meridian.Backtesting.Sdk.ClosedLot.OpenFillId*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.ClosePrice
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.ClosePrice
+  id: ClosePrice
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: ClosePrice
+  nameWithType: ClosedLot.ClosePrice
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.ClosePrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClosePrice
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal ClosePrice { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property ClosePrice As Decimal
+  overload: Meridian.Backtesting.Sdk.ClosedLot.ClosePrice*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.ClosedAt
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.ClosedAt
+  id: ClosedAt
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: ClosedAt
+  nameWithType: ClosedLot.ClosedAt
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.ClosedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClosedAt
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public DateTimeOffset ClosedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property ClosedAt As DateTimeOffset
+  overload: Meridian.Backtesting.Sdk.ClosedLot.ClosedAt*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.CloseFillId
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.CloseFillId
+  id: CloseFillId
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: CloseFillId
+  nameWithType: ClosedLot.CloseFillId
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.CloseFillId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CloseFillId
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public Guid CloseFillId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property CloseFillId As Guid
+  overload: Meridian.Backtesting.Sdk.ClosedLot.CloseFillId*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.AccountId
+  id: AccountId
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: ClosedLot.AccountId
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string? AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AccountId As String
+  overload: Meridian.Backtesting.Sdk.ClosedLot.AccountId*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnl
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.RealizedPnl
+  id: RealizedPnl
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnl
+  nameWithType: ClosedLot.RealizedPnl
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnl
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Total realised profit or loss for this lot.
+  example: []
+  syntax:
+    content: public decimal RealizedPnl { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property RealizedPnl As Decimal
+  overload: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnl*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.HoldingPeriod
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.HoldingPeriod
+  id: HoldingPeriod
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: HoldingPeriod
+  nameWithType: ClosedLot.HoldingPeriod
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.HoldingPeriod
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HoldingPeriod
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Total holding duration from open to close.
+  example: []
+  syntax:
+    content: public TimeSpan HoldingPeriod { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public ReadOnly Property HoldingPeriod As TimeSpan
+  overload: Meridian.Backtesting.Sdk.ClosedLot.HoldingPeriod*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.IsLongTerm
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.IsLongTerm
+  id: IsLongTerm
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: IsLongTerm
+  nameWithType: ClosedLot.IsLongTerm
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.IsLongTerm
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsLongTerm
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: >-
+    Returns <code>true</code> when the lot was held for at least 365 days — the IRS
+
+    long-term capital gains threshold.
+  example: []
+  syntax:
+    content: public bool IsLongTerm { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsLongTerm As Boolean
+  overload: Meridian.Backtesting.Sdk.ClosedLot.IsLongTerm*
+- uid: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnlPerShare
+  commentId: P:Meridian.Backtesting.Sdk.ClosedLot.RealizedPnlPerShare
+  id: RealizedPnlPerShare
+  parent: Meridian.Backtesting.Sdk.ClosedLot
+  langs:
+  - csharp
+  - vb
+  name: RealizedPnlPerShare
+  nameWithType: ClosedLot.RealizedPnlPerShare
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnlPerShare
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/ClosedLot.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RealizedPnlPerShare
+    path: ../../src/Meridian.Backtesting.Sdk/ClosedLot.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Per-share realised P&amp;L (close price minus entry price).
+  example: []
+  syntax:
+    content: public decimal RealizedPnlPerShare { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property RealizedPnlPerShare As Decimal
+  overload: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnlPerShare*
+references:
+- uid: Meridian.Backtesting.Sdk.ClosedLot
+  commentId: T:Meridian.Backtesting.Sdk.ClosedLot
+  href: Meridian.Backtesting.Sdk.ClosedLot.html
+  name: ClosedLot
+  nameWithType: ClosedLot
+  fullName: Meridian.Backtesting.Sdk.ClosedLot
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.ClosedLot}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.ClosedLot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ClosedLot>
+  nameWithType: IEquatable<ClosedLot>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.ClosedLot>
+  nameWithType.vb: IEquatable(Of ClosedLot)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.ClosedLot)
+  name.vb: IEquatable(Of ClosedLot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.ClosedLot
+    name: ClosedLot
+    href: Meridian.Backtesting.Sdk.ClosedLot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.ClosedLot
+    name: ClosedLot
+    href: Meridian.Backtesting.Sdk.ClosedLot.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.ClosedLot.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.#ctor
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot__ctor_System_Guid_System_String_System_Int64_System_Decimal_System_DateTimeOffset_System_Guid_System_Decimal_System_DateTimeOffset_System_Guid_System_String_
+  name: ClosedLot
+  nameWithType: ClosedLot.ClosedLot
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.ClosedLot
+  nameWithType.vb: ClosedLot.New
+  fullName.vb: Meridian.Backtesting.Sdk.ClosedLot.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Backtesting.Sdk.ClosedLot.LotId*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.LotId
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_LotId
+  name: LotId
+  nameWithType: ClosedLot.LotId
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.LotId
+- uid: Meridian.Backtesting.Sdk.ClosedLot.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.Symbol
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_Symbol
+  name: Symbol
+  nameWithType: ClosedLot.Symbol
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.Symbol
+- uid: Meridian.Backtesting.Sdk.ClosedLot.Quantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.Quantity
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_Quantity
+  name: Quantity
+  nameWithType: ClosedLot.Quantity
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.Quantity
+- uid: Meridian.Backtesting.Sdk.ClosedLot.EntryPrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.EntryPrice
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_EntryPrice
+  name: EntryPrice
+  nameWithType: ClosedLot.EntryPrice
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.EntryPrice
+- uid: Meridian.Backtesting.Sdk.ClosedLot.OpenedAt*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.OpenedAt
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_OpenedAt
+  name: OpenedAt
+  nameWithType: ClosedLot.OpenedAt
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.OpenedAt
+- uid: Meridian.Backtesting.Sdk.ClosedLot.OpenFillId*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.OpenFillId
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_OpenFillId
+  name: OpenFillId
+  nameWithType: ClosedLot.OpenFillId
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.OpenFillId
+- uid: Meridian.Backtesting.Sdk.ClosedLot.ClosePrice*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.ClosePrice
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_ClosePrice
+  name: ClosePrice
+  nameWithType: ClosedLot.ClosePrice
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.ClosePrice
+- uid: Meridian.Backtesting.Sdk.ClosedLot.ClosedAt*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.ClosedAt
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_ClosedAt
+  name: ClosedAt
+  nameWithType: ClosedLot.ClosedAt
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.ClosedAt
+- uid: Meridian.Backtesting.Sdk.ClosedLot.CloseFillId*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.CloseFillId
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_CloseFillId
+  name: CloseFillId
+  nameWithType: ClosedLot.CloseFillId
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.CloseFillId
+- uid: Meridian.Backtesting.Sdk.ClosedLot.AccountId*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.AccountId
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_AccountId
+  name: AccountId
+  nameWithType: ClosedLot.AccountId
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.AccountId
+- uid: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnl*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.RealizedPnl
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_RealizedPnl
+  name: RealizedPnl
+  nameWithType: ClosedLot.RealizedPnl
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnl
+- uid: Meridian.Backtesting.Sdk.ClosedLot.HoldingPeriod*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.HoldingPeriod
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_HoldingPeriod
+  name: HoldingPeriod
+  nameWithType: ClosedLot.HoldingPeriod
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.HoldingPeriod
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Backtesting.Sdk.ClosedLot.IsLongTerm*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.IsLongTerm
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_IsLongTerm
+  name: IsLongTerm
+  nameWithType: ClosedLot.IsLongTerm
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.IsLongTerm
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnlPerShare*
+  commentId: Overload:Meridian.Backtesting.Sdk.ClosedLot.RealizedPnlPerShare
+  href: Meridian.Backtesting.Sdk.ClosedLot.html#Meridian_Backtesting_Sdk_ClosedLot_RealizedPnlPerShare
+  name: RealizedPnlPerShare
+  nameWithType: ClosedLot.RealizedPnlPerShare
+  fullName: Meridian.Backtesting.Sdk.ClosedLot.RealizedPnlPerShare

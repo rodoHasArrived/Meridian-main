@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Meridian.Application.Config;
 using Meridian.Application.Services;
 using Meridian.Application.Wizard.Core;
@@ -14,14 +13,6 @@ namespace Meridian.Application.Wizard.Steps;
 /// </summary>
 public sealed class ReviewConfigurationStep : IWizardStep
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter() }
-    };
-
     private readonly TextWriter _output;
     private readonly TextReader _input;
 
@@ -42,7 +33,7 @@ public sealed class ReviewConfigurationStep : IWizardStep
         var config = BuildConfiguration(context);
         context.FinalConfig = config;
 
-        var json = JsonSerializer.Serialize(config, JsonOptions);
+        var json = JsonSerializer.Serialize(config, AppConfigJsonOptions.Write);
         _output.WriteLine("\nGenerated configuration:\n");
         _output.WriteLine("```json");
         _output.WriteLine(json);
@@ -69,6 +60,7 @@ public sealed class ReviewConfigurationStep : IWizardStep
             DataSource: dataSource.DataSource,
             Alpaca: dataSource.Alpaca,
             IB: dataSource.IB,
+            IBClientPortal: dataSource.IBClientPortal,
             Polygon: dataSource.Polygon,
             Storage: context.Storage,
             Symbols: context.Symbols,

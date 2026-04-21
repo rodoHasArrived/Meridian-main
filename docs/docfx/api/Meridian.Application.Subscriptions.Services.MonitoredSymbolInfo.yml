@@ -1,0 +1,695 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  commentId: T:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  id: MonitoredSymbolInfo
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.#ctor(System.String,System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String)
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Currency
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.DepthLevels
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Exchange
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SecurityType
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeDepth
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeTrades
+  - Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Symbol
+  langs:
+  - csharp
+  - vb
+  name: MonitoredSymbolInfo
+  nameWithType: MonitoredSymbolInfo
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MonitoredSymbolInfo
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 701
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Information about a monitored symbol.
+  example: []
+  syntax:
+    content: 'public sealed record MonitoredSymbolInfo : IEquatable<MonitoredSymbolInfo>'
+    content.vb: Public NotInheritable Class MonitoredSymbolInfo Implements IEquatable(Of MonitoredSymbolInfo)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.#ctor(System.String,System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String)
+  commentId: M:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.#ctor(System.String,System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String)
+  id: '#ctor(System.String,System.Boolean,System.Boolean,System.Int32,System.String,System.String,System.String)'
+  parent: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  langs:
+  - csharp
+  - vb
+  name: MonitoredSymbolInfo(string, bool, bool, int, string, string, string)
+  nameWithType: MonitoredSymbolInfo.MonitoredSymbolInfo(string, bool, bool, int, string, string, string)
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.MonitoredSymbolInfo(string, bool, bool, int, string, string, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 701
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Information about a monitored symbol.
+  example: []
+  syntax:
+    content: public MonitoredSymbolInfo(string Symbol, bool SubscribeTrades, bool SubscribeDepth, int DepthLevels, string SecurityType, string Exchange, string Currency)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: SubscribeTrades
+      type: System.Boolean
+    - id: SubscribeDepth
+      type: System.Boolean
+    - id: DepthLevels
+      type: System.Int32
+    - id: SecurityType
+      type: System.String
+    - id: Exchange
+      type: System.String
+    - id: Currency
+      type: System.String
+    content.vb: Public Sub New(Symbol As String, SubscribeTrades As Boolean, SubscribeDepth As Boolean, DepthLevels As Integer, SecurityType As String, Exchange As String, Currency As String)
+  overload: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.#ctor*
+  nameWithType.vb: MonitoredSymbolInfo.New(String, Boolean, Boolean, Integer, String, String, String)
+  fullName.vb: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.New(String, Boolean, Boolean, Integer, String, String, String)
+  name.vb: New(String, Boolean, Boolean, Integer, String, String, String)
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Symbol
+  commentId: P:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Symbol
+  id: Symbol
+  parent: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: MonitoredSymbolInfo.Symbol
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 702
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Symbol*
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeTrades
+  commentId: P:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeTrades
+  id: SubscribeTrades
+  parent: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  langs:
+  - csharp
+  - vb
+  name: SubscribeTrades
+  nameWithType: MonitoredSymbolInfo.SubscribeTrades
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeTrades
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeTrades
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 703
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public bool SubscribeTrades { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SubscribeTrades As Boolean
+  overload: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeTrades*
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeDepth
+  commentId: P:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeDepth
+  id: SubscribeDepth
+  parent: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  langs:
+  - csharp
+  - vb
+  name: SubscribeDepth
+  nameWithType: MonitoredSymbolInfo.SubscribeDepth
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeDepth
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SubscribeDepth
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 704
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public bool SubscribeDepth { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property SubscribeDepth As Boolean
+  overload: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeDepth*
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.DepthLevels
+  commentId: P:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.DepthLevels
+  id: DepthLevels
+  parent: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  langs:
+  - csharp
+  - vb
+  name: DepthLevels
+  nameWithType: MonitoredSymbolInfo.DepthLevels
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.DepthLevels
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DepthLevels
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 705
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public int DepthLevels { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DepthLevels As Integer
+  overload: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.DepthLevels*
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SecurityType
+  commentId: P:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SecurityType
+  id: SecurityType
+  parent: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  langs:
+  - csharp
+  - vb
+  name: SecurityType
+  nameWithType: MonitoredSymbolInfo.SecurityType
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SecurityType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityType
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 706
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public string SecurityType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SecurityType As String
+  overload: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SecurityType*
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Exchange
+  commentId: P:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Exchange
+  id: Exchange
+  parent: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: MonitoredSymbolInfo.Exchange
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 707
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public string Exchange { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Exchange As String
+  overload: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Exchange*
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Currency
+  commentId: P:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Currency
+  id: Currency
+  parent: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: MonitoredSymbolInfo.Currency
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs
+    startLine: 708
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Currency*
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MonitoredSymbolInfo>
+  nameWithType: IEquatable<MonitoredSymbolInfo>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo>
+  nameWithType.vb: IEquatable(Of MonitoredSymbolInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo)
+  name.vb: IEquatable(Of MonitoredSymbolInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+    name: MonitoredSymbolInfo
+    href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo
+    name: MonitoredSymbolInfo
+    href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.#ctor
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html#Meridian_Application_Subscriptions_Services_MonitoredSymbolInfo__ctor_System_String_System_Boolean_System_Boolean_System_Int32_System_String_System_String_System_String_
+  name: MonitoredSymbolInfo
+  nameWithType: MonitoredSymbolInfo.MonitoredSymbolInfo
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.MonitoredSymbolInfo
+  nameWithType.vb: MonitoredSymbolInfo.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Symbol*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Symbol
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html#Meridian_Application_Subscriptions_Services_MonitoredSymbolInfo_Symbol
+  name: Symbol
+  nameWithType: MonitoredSymbolInfo.Symbol
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Symbol
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeTrades*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeTrades
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html#Meridian_Application_Subscriptions_Services_MonitoredSymbolInfo_SubscribeTrades
+  name: SubscribeTrades
+  nameWithType: MonitoredSymbolInfo.SubscribeTrades
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeTrades
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeDepth*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeDepth
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html#Meridian_Application_Subscriptions_Services_MonitoredSymbolInfo_SubscribeDepth
+  name: SubscribeDepth
+  nameWithType: MonitoredSymbolInfo.SubscribeDepth
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SubscribeDepth
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.DepthLevels*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.DepthLevels
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html#Meridian_Application_Subscriptions_Services_MonitoredSymbolInfo_DepthLevels
+  name: DepthLevels
+  nameWithType: MonitoredSymbolInfo.DepthLevels
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.DepthLevels
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SecurityType*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SecurityType
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html#Meridian_Application_Subscriptions_Services_MonitoredSymbolInfo_SecurityType
+  name: SecurityType
+  nameWithType: MonitoredSymbolInfo.SecurityType
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.SecurityType
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Exchange*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Exchange
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html#Meridian_Application_Subscriptions_Services_MonitoredSymbolInfo_Exchange
+  name: Exchange
+  nameWithType: MonitoredSymbolInfo.Exchange
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Exchange
+- uid: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Currency*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Currency
+  href: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.html#Meridian_Application_Subscriptions_Services_MonitoredSymbolInfo_Currency
+  name: Currency
+  nameWithType: MonitoredSymbolInfo.Currency
+  fullName: Meridian.Application.Subscriptions.Services.MonitoredSymbolInfo.Currency

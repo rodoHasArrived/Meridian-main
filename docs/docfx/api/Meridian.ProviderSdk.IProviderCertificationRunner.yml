@@ -1,0 +1,256 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.ProviderSdk.IProviderCertificationRunner
+  commentId: T:Meridian.ProviderSdk.IProviderCertificationRunner
+  id: IProviderCertificationRunner
+  parent: Meridian.ProviderSdk
+  children:
+  - Meridian.ProviderSdk.IProviderCertificationRunner.RunAsync(System.String,Meridian.ProviderSdk.IProviderFamilyAdapter,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IProviderCertificationRunner
+  nameWithType: IProviderCertificationRunner
+  fullName: Meridian.ProviderSdk.IProviderCertificationRunner
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IProviderCertificationRunner
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 46
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  summary: Executes a certification run for a provider connection.
+  example: []
+  syntax:
+    content: public interface IProviderCertificationRunner
+    content.vb: Public Interface IProviderCertificationRunner
+- uid: Meridian.ProviderSdk.IProviderCertificationRunner.RunAsync(System.String,Meridian.ProviderSdk.IProviderFamilyAdapter,System.Threading.CancellationToken)
+  commentId: M:Meridian.ProviderSdk.IProviderCertificationRunner.RunAsync(System.String,Meridian.ProviderSdk.IProviderFamilyAdapter,System.Threading.CancellationToken)
+  id: RunAsync(System.String,Meridian.ProviderSdk.IProviderFamilyAdapter,System.Threading.CancellationToken)
+  parent: Meridian.ProviderSdk.IProviderCertificationRunner
+  langs:
+  - csharp
+  - vb
+  name: RunAsync(string, IProviderFamilyAdapter, CancellationToken)
+  nameWithType: IProviderCertificationRunner.RunAsync(string, IProviderFamilyAdapter, CancellationToken)
+  fullName: Meridian.ProviderSdk.IProviderCertificationRunner.RunAsync(string, Meridian.ProviderSdk.IProviderFamilyAdapter, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunAsync
+    path: ../../src/Meridian.ProviderSdk/IProviderFamilyAdapter.cs
+    startLine: 48
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.ProviderSdk
+  syntax:
+    content: Task<ProviderCertificationRunResult> RunAsync(string connectionId, IProviderFamilyAdapter adapter, CancellationToken ct = default)
+    parameters:
+    - id: connectionId
+      type: System.String
+    - id: adapter
+      type: Meridian.ProviderSdk.IProviderFamilyAdapter
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.ProviderSdk.ProviderCertificationRunResult}
+    content.vb: Function RunAsync(connectionId As String, adapter As IProviderFamilyAdapter, ct As CancellationToken = Nothing) As Task(Of ProviderCertificationRunResult)
+  overload: Meridian.ProviderSdk.IProviderCertificationRunner.RunAsync*
+  nameWithType.vb: IProviderCertificationRunner.RunAsync(String, IProviderFamilyAdapter, CancellationToken)
+  fullName.vb: Meridian.ProviderSdk.IProviderCertificationRunner.RunAsync(String, Meridian.ProviderSdk.IProviderFamilyAdapter, System.Threading.CancellationToken)
+  name.vb: RunAsync(String, IProviderFamilyAdapter, CancellationToken)
+references:
+- uid: Meridian.ProviderSdk
+  commentId: N:Meridian.ProviderSdk
+  href: Meridian.html
+  name: Meridian.ProviderSdk
+  nameWithType: Meridian.ProviderSdk
+  fullName: Meridian.ProviderSdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.ProviderSdk
+    name: ProviderSdk
+    href: Meridian.ProviderSdk.html
+- uid: Meridian.ProviderSdk.IProviderCertificationRunner.RunAsync*
+  commentId: Overload:Meridian.ProviderSdk.IProviderCertificationRunner.RunAsync
+  href: Meridian.ProviderSdk.IProviderCertificationRunner.html#Meridian_ProviderSdk_IProviderCertificationRunner_RunAsync_System_String_Meridian_ProviderSdk_IProviderFamilyAdapter_System_Threading_CancellationToken_
+  name: RunAsync
+  nameWithType: IProviderCertificationRunner.RunAsync
+  fullName: Meridian.ProviderSdk.IProviderCertificationRunner.RunAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.ProviderSdk.IProviderFamilyAdapter
+  commentId: T:Meridian.ProviderSdk.IProviderFamilyAdapter
+  parent: Meridian.ProviderSdk
+  href: Meridian.ProviderSdk.IProviderFamilyAdapter.html
+  name: IProviderFamilyAdapter
+  nameWithType: IProviderFamilyAdapter
+  fullName: Meridian.ProviderSdk.IProviderFamilyAdapter
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.ProviderSdk.ProviderCertificationRunResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.ProviderSdk.ProviderCertificationRunResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProviderCertificationRunResult>
+  nameWithType: Task<ProviderCertificationRunResult>
+  fullName: System.Threading.Tasks.Task<Meridian.ProviderSdk.ProviderCertificationRunResult>
+  nameWithType.vb: Task(Of ProviderCertificationRunResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.ProviderSdk.ProviderCertificationRunResult)
+  name.vb: Task(Of ProviderCertificationRunResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.ProviderSdk.ProviderCertificationRunResult
+    name: ProviderCertificationRunResult
+    href: Meridian.ProviderSdk.ProviderCertificationRunResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.ProviderSdk.ProviderCertificationRunResult
+    name: ProviderCertificationRunResult
+    href: Meridian.ProviderSdk.ProviderCertificationRunResult.html
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

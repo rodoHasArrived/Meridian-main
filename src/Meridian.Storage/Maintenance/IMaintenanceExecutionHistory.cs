@@ -8,12 +8,12 @@ public interface IMaintenanceExecutionHistory
     /// <summary>
     /// Record a new execution.
     /// </summary>
-    void RecordExecution(MaintenanceExecution execution);
+    Task RecordExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default);
 
     /// <summary>
     /// Update an existing execution record.
     /// </summary>
-    void UpdateExecution(MaintenanceExecution execution);
+    Task UpdateExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default);
 
     /// <summary>
     /// Get a specific execution by ID.

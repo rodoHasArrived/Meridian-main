@@ -1,0 +1,621 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest
+  commentId: T:Meridian.Contracts.Workstation.ReconciliationRunRequest
+  id: ReconciliationRunRequest
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.ReconciliationRunRequest.#ctor(System.String,System.Decimal,System.Int32,System.Nullable{System.Guid})
+  - Meridian.Contracts.Workstation.ReconciliationRunRequest.AmountTolerance
+  - Meridian.Contracts.Workstation.ReconciliationRunRequest.BankEntityId
+  - Meridian.Contracts.Workstation.ReconciliationRunRequest.MaxAsOfDriftMinutes
+  - Meridian.Contracts.Workstation.ReconciliationRunRequest.RunId
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationRunRequest
+  nameWithType: ReconciliationRunRequest
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationRunRequest
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Request to create a reconciliation run for a recorded strategy run.
+  example: []
+  syntax:
+    content: 'public sealed record ReconciliationRunRequest : IEquatable<ReconciliationRunRequest>'
+    content.vb: Public NotInheritable Class ReconciliationRunRequest Implements IEquatable(Of ReconciliationRunRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.ReconciliationRunRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.#ctor(System.String,System.Decimal,System.Int32,System.Nullable{System.Guid})
+  commentId: M:Meridian.Contracts.Workstation.ReconciliationRunRequest.#ctor(System.String,System.Decimal,System.Int32,System.Nullable{System.Guid})
+  id: '#ctor(System.String,System.Decimal,System.Int32,System.Nullable{System.Guid})'
+  parent: Meridian.Contracts.Workstation.ReconciliationRunRequest
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationRunRequest(string, decimal, int, Guid?)
+  nameWithType: ReconciliationRunRequest.ReconciliationRunRequest(string, decimal, int, Guid?)
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.ReconciliationRunRequest(string, decimal, int, System.Guid?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Request to create a reconciliation run for a recorded strategy run.
+  example: []
+  syntax:
+    content: public ReconciliationRunRequest(string RunId, decimal AmountTolerance = 0.01, int MaxAsOfDriftMinutes = 5, Guid? BankEntityId = null)
+    parameters:
+    - id: RunId
+      type: System.String
+    - id: AmountTolerance
+      type: System.Decimal
+    - id: MaxAsOfDriftMinutes
+      type: System.Int32
+    - id: BankEntityId
+      type: System.Nullable{System.Guid}
+    content.vb: Public Sub New(RunId As String, AmountTolerance As Decimal = 0.01, MaxAsOfDriftMinutes As Integer = 5, BankEntityId As Guid? = Nothing)
+  overload: Meridian.Contracts.Workstation.ReconciliationRunRequest.#ctor*
+  nameWithType.vb: ReconciliationRunRequest.New(String, Decimal, Integer, Guid?)
+  fullName.vb: Meridian.Contracts.Workstation.ReconciliationRunRequest.New(String, Decimal, Integer, System.Guid?)
+  name.vb: New(String, Decimal, Integer, Guid?)
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.RunId
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunRequest.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.ReconciliationRunRequest
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: ReconciliationRunRequest.RunId
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.ReconciliationRunRequest.RunId*
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.AmountTolerance
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunRequest.AmountTolerance
+  id: AmountTolerance
+  parent: Meridian.Contracts.Workstation.ReconciliationRunRequest
+  langs:
+  - csharp
+  - vb
+  name: AmountTolerance
+  nameWithType: ReconciliationRunRequest.AmountTolerance
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.AmountTolerance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AmountTolerance
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public decimal AmountTolerance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AmountTolerance As Decimal
+  overload: Meridian.Contracts.Workstation.ReconciliationRunRequest.AmountTolerance*
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.MaxAsOfDriftMinutes
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunRequest.MaxAsOfDriftMinutes
+  id: MaxAsOfDriftMinutes
+  parent: Meridian.Contracts.Workstation.ReconciliationRunRequest
+  langs:
+  - csharp
+  - vb
+  name: MaxAsOfDriftMinutes
+  nameWithType: ReconciliationRunRequest.MaxAsOfDriftMinutes
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.MaxAsOfDriftMinutes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxAsOfDriftMinutes
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public int MaxAsOfDriftMinutes { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property MaxAsOfDriftMinutes As Integer
+  overload: Meridian.Contracts.Workstation.ReconciliationRunRequest.MaxAsOfDriftMinutes*
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.BankEntityId
+  commentId: P:Meridian.Contracts.Workstation.ReconciliationRunRequest.BankEntityId
+  id: BankEntityId
+  parent: Meridian.Contracts.Workstation.ReconciliationRunRequest
+  langs:
+  - csharp
+  - vb
+  name: BankEntityId
+  nameWithType: ReconciliationRunRequest.BankEntityId
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.BankEntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BankEntityId
+    path: ../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid? BankEntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property BankEntityId As Guid?
+  overload: Meridian.Contracts.Workstation.ReconciliationRunRequest.BankEntityId*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.ReconciliationRunRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.ReconciliationRunRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ReconciliationRunRequest>
+  nameWithType: IEquatable<ReconciliationRunRequest>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.ReconciliationRunRequest>
+  nameWithType.vb: IEquatable(Of ReconciliationRunRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.ReconciliationRunRequest)
+  name.vb: IEquatable(Of ReconciliationRunRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.ReconciliationRunRequest
+    name: ReconciliationRunRequest
+    href: Meridian.Contracts.Workstation.ReconciliationRunRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.ReconciliationRunRequest
+    name: ReconciliationRunRequest
+    href: Meridian.Contracts.Workstation.ReconciliationRunRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunRequest.#ctor
+  href: Meridian.Contracts.Workstation.ReconciliationRunRequest.html#Meridian_Contracts_Workstation_ReconciliationRunRequest__ctor_System_String_System_Decimal_System_Int32_System_Nullable_System_Guid__
+  name: ReconciliationRunRequest
+  nameWithType: ReconciliationRunRequest.ReconciliationRunRequest
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.ReconciliationRunRequest
+  nameWithType.vb: ReconciliationRunRequest.New
+  fullName.vb: Meridian.Contracts.Workstation.ReconciliationRunRequest.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunRequest.RunId
+  href: Meridian.Contracts.Workstation.ReconciliationRunRequest.html#Meridian_Contracts_Workstation_ReconciliationRunRequest_RunId
+  name: RunId
+  nameWithType: ReconciliationRunRequest.RunId
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.RunId
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.AmountTolerance*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunRequest.AmountTolerance
+  href: Meridian.Contracts.Workstation.ReconciliationRunRequest.html#Meridian_Contracts_Workstation_ReconciliationRunRequest_AmountTolerance
+  name: AmountTolerance
+  nameWithType: ReconciliationRunRequest.AmountTolerance
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.AmountTolerance
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.MaxAsOfDriftMinutes*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunRequest.MaxAsOfDriftMinutes
+  href: Meridian.Contracts.Workstation.ReconciliationRunRequest.html#Meridian_Contracts_Workstation_ReconciliationRunRequest_MaxAsOfDriftMinutes
+  name: MaxAsOfDriftMinutes
+  nameWithType: ReconciliationRunRequest.MaxAsOfDriftMinutes
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.MaxAsOfDriftMinutes
+- uid: Meridian.Contracts.Workstation.ReconciliationRunRequest.BankEntityId*
+  commentId: Overload:Meridian.Contracts.Workstation.ReconciliationRunRequest.BankEntityId
+  href: Meridian.Contracts.Workstation.ReconciliationRunRequest.html#Meridian_Contracts_Workstation_ReconciliationRunRequest_BankEntityId
+  name: BankEntityId
+  nameWithType: ReconciliationRunRequest.BankEntityId
+  fullName: Meridian.Contracts.Workstation.ReconciliationRunRequest.BankEntityId

@@ -337,12 +337,37 @@ internal sealed class SimulatedPortfolio
 
     public IReadOnlyDictionary<string, FinancialAccountSnapshot> GetAccountSnapshots() => BuildAccountSnapshots();
 
-    /// <summary>
-    /// Returns all closed lots accumulated across every account since portfolio creation.
-    /// Suitable for populating <see cref="BacktestResult.AllClosedLots"/> at run completion.
-    /// </summary>
-    public IReadOnlyList<ClosedLot> GetAllClosedLots() =>
-        _accounts.Values.SelectMany(static a => a.ClosedLots).ToArray();
+    /// <summary>Returns all open lots across all accounts, optionally filtered by symbol.</summary>
+    public IReadOnlyList<OpenLot> GetOpenLots(string? symbol = null)
+    {
+        var result = new List<OpenLot>();
+        foreach (var account in _accounts.Values)
+        {
+            foreach (var (sym, lots) in account.Lots)
+            {
+                if (symbol != null && !sym.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                result.AddRange(lots);
+            }
+        }
+        return result;
+    }
+
+    /// <summary>Returns all closed lots across all accounts, optionally filtered by symbol.</summary>
+    public IReadOnlyList<ClosedLot> GetClosedLots(string? symbol = null)
+    {
+        var result = new List<ClosedLot>();
+        foreach (var account in _accounts.Values)
+        {
+            foreach (var lot in account.ClosedLots)
+            {
+                if (symbol != null && !lot.Symbol.Equals(symbol, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                result.Add(lot);
+            }
+        }
+        return result;
+    }
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
@@ -768,7 +793,9 @@ internal sealed class SimulatedPortfolio
                 : totalCost / positions.Sum(position => Math.Abs(position.Quantity));
             var unrealised = positions.Sum(static position => position.UnrealizedPnl);
             var realised = positions.Sum(static position => position.RealizedPnl);
-            result[symbol] = new Position(symbol, totalQty, avgCost, unrealised, realised);
+            var openLots = positions.SelectMany(p => p.OpenLots ?? []).ToList();
+            result[symbol] = new Position(symbol, totalQty, avgCost, unrealised, realised,
+                openLots.Count > 0 ? openLots : null);
         }
 
         return result;
@@ -786,6 +813,7 @@ internal sealed class SimulatedPortfolio
                 var shortMv = positions.Values.Where(position => position.Quantity < 0)
                     .Sum(position => position.NotionalValue(_lastPrices.GetValueOrDefault(position.Symbol, position.AverageCostBasis)));
                 var equity = account.Cash + longMv + shortMv;
+                var openLots = account.Lots.Values.SelectMany(static l => l).ToList();
                 return new FinancialAccountSnapshot(
                     account.Account.AccountId,
                     account.Account.DisplayName,
@@ -797,7 +825,9 @@ internal sealed class SimulatedPortfolio
                     shortMv,
                     equity,
                     positions,
-                    account.Rules);
+                    account.Rules,
+                    openLots,
+                    account.ClosedLots.ToList());
             },
             StringComparer.OrdinalIgnoreCase);
     }
@@ -814,7 +844,10 @@ internal sealed class SimulatedPortfolio
             var lastPrice = _lastPrices.GetValueOrDefault(symbol, avgCost);
             var unrealised = (lastPrice - avgCost) * qty;
             var realised = account.RealizedPnl.GetValueOrDefault(symbol, 0m);
-            result[symbol] = new Position(symbol, qty, avgCost, unrealised, realised);
+            var openLots = account.Lots.TryGetValue(symbol, out var lots)
+                ? (IReadOnlyList<OpenLot>)lots.ToList()
+                : Array.Empty<OpenLot>();
+            result[symbol] = new Position(symbol, qty, avgCost, unrealised, realised, openLots);
         }
 
         return result;

@@ -1,0 +1,943 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig
+  commentId: T:Meridian.Application.Config.SyntheticMarketDataConfig
+  id: SyntheticMarketDataConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.SyntheticMarketDataConfig.#ctor(System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
+  - Meridian.Application.Config.SyntheticMarketDataConfig.DefaultDepthLevels
+  - Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryEnd
+  - Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryStart
+  - Meridian.Application.Config.SyntheticMarketDataConfig.Enabled
+  - Meridian.Application.Config.SyntheticMarketDataConfig.EventsPerSecond
+  - Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay
+  - Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalTradeDensityPerDay
+  - Meridian.Application.Config.SyntheticMarketDataConfig.IncludeCorporateActions
+  - Meridian.Application.Config.SyntheticMarketDataConfig.IncludeReferenceData
+  - Meridian.Application.Config.SyntheticMarketDataConfig.Priority
+  - Meridian.Application.Config.SyntheticMarketDataConfig.Seed
+  - Meridian.Application.Config.SyntheticMarketDataConfig.UniverseSymbols
+  langs:
+  - csharp
+  - vb
+  name: SyntheticMarketDataConfig
+  nameWithType: SyntheticMarketDataConfig
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SyntheticMarketDataConfig
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: >-
+    Configuration for the built-in synthetic market data provider used for local development,
+
+    offline integration testing, and historical replay without live credentials.
+  example: []
+  syntax:
+    content: 'public sealed record SyntheticMarketDataConfig : IEquatable<SyntheticMarketDataConfig>'
+    content.vb: Public NotInheritable Class SyntheticMarketDataConfig Implements IEquatable(Of SyntheticMarketDataConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.SyntheticMarketDataConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.#ctor(System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
+  commentId: M:Meridian.Application.Config.SyntheticMarketDataConfig.#ctor(System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})
+  id: '#ctor(System.Boolean,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Int32,System.Boolean,System.Boolean,System.String[],System.Nullable{System.DateOnly},System.Nullable{System.DateOnly})'
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: SyntheticMarketDataConfig(bool, int, int, int, int, int, int, bool, bool, string[]?, DateOnly?, DateOnly?)
+  nameWithType: SyntheticMarketDataConfig.SyntheticMarketDataConfig(bool, int, int, int, int, int, int, bool, bool, string[]?, DateOnly?, DateOnly?)
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.SyntheticMarketDataConfig(bool, int, int, int, int, int, int, bool, bool, string[]?, System.DateOnly?, System.DateOnly?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: >-
+    Configuration for the built-in synthetic market data provider used for local development,
+
+    offline integration testing, and historical replay without live credentials.
+  example: []
+  syntax:
+    content: public SyntheticMarketDataConfig(bool Enabled = false, int Seed = 1729, int Priority = 1, int EventsPerSecond = 8, int HistoricalTradeDensityPerDay = 120, int HistoricalQuoteDensityPerDay = 180, int DefaultDepthLevels = 10, bool IncludeCorporateActions = true, bool IncludeReferenceData = true, string[]? UniverseSymbols = null, DateOnly? DefaultHistoryStart = null, DateOnly? DefaultHistoryEnd = null)
+    parameters:
+    - id: Enabled
+      type: System.Boolean
+    - id: Seed
+      type: System.Int32
+    - id: Priority
+      type: System.Int32
+    - id: EventsPerSecond
+      type: System.Int32
+    - id: HistoricalTradeDensityPerDay
+      type: System.Int32
+    - id: HistoricalQuoteDensityPerDay
+      type: System.Int32
+    - id: DefaultDepthLevels
+      type: System.Int32
+    - id: IncludeCorporateActions
+      type: System.Boolean
+    - id: IncludeReferenceData
+      type: System.Boolean
+    - id: UniverseSymbols
+      type: System.String[]
+    - id: DefaultHistoryStart
+      type: System.Nullable{System.DateOnly}
+    - id: DefaultHistoryEnd
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Sub New(Enabled As Boolean = False, Seed As Integer = 1729, Priority As Integer = 1, EventsPerSecond As Integer = 8, HistoricalTradeDensityPerDay As Integer = 120, HistoricalQuoteDensityPerDay As Integer = 180, DefaultDepthLevels As Integer = 10, IncludeCorporateActions As Boolean = True, IncludeReferenceData As Boolean = True, UniverseSymbols As String() = Nothing, DefaultHistoryStart As DateOnly? = Nothing, DefaultHistoryEnd As DateOnly? = Nothing)
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.#ctor*
+  nameWithType.vb: SyntheticMarketDataConfig.New(Boolean, Integer, Integer, Integer, Integer, Integer, Integer, Boolean, Boolean, String(), DateOnly?, DateOnly?)
+  fullName.vb: Meridian.Application.Config.SyntheticMarketDataConfig.New(Boolean, Integer, Integer, Integer, Integer, Integer, Integer, Boolean, Boolean, String(), System.DateOnly?, System.DateOnly?)
+  name.vb: New(Boolean, Integer, Integer, Integer, Integer, Integer, Integer, Boolean, Boolean, String(), DateOnly?, DateOnly?)
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.Enabled
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.Enabled
+  id: Enabled
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: SyntheticMarketDataConfig.Enabled
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public bool Enabled { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property Enabled As Boolean
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.Enabled*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.Seed
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.Seed
+  id: Seed
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: Seed
+  nameWithType: SyntheticMarketDataConfig.Seed
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.Seed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Seed
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public int Seed { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Seed As Integer
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.Seed*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.Priority
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.Priority
+  id: Priority
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: SyntheticMarketDataConfig.Priority
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public int Priority { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Priority As Integer
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.Priority*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.EventsPerSecond
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.EventsPerSecond
+  id: EventsPerSecond
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: EventsPerSecond
+  nameWithType: SyntheticMarketDataConfig.EventsPerSecond
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.EventsPerSecond
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventsPerSecond
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public int EventsPerSecond { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property EventsPerSecond As Integer
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.EventsPerSecond*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalTradeDensityPerDay
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalTradeDensityPerDay
+  id: HistoricalTradeDensityPerDay
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: HistoricalTradeDensityPerDay
+  nameWithType: SyntheticMarketDataConfig.HistoricalTradeDensityPerDay
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalTradeDensityPerDay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalTradeDensityPerDay
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public int HistoricalTradeDensityPerDay { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HistoricalTradeDensityPerDay As Integer
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalTradeDensityPerDay*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay
+  id: HistoricalQuoteDensityPerDay
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: HistoricalQuoteDensityPerDay
+  nameWithType: SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalQuoteDensityPerDay
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public int HistoricalQuoteDensityPerDay { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property HistoricalQuoteDensityPerDay As Integer
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultDepthLevels
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.DefaultDepthLevels
+  id: DefaultDepthLevels
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: DefaultDepthLevels
+  nameWithType: SyntheticMarketDataConfig.DefaultDepthLevels
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultDepthLevels
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultDepthLevels
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public int DefaultDepthLevels { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DefaultDepthLevels As Integer
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultDepthLevels*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeCorporateActions
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.IncludeCorporateActions
+  id: IncludeCorporateActions
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: IncludeCorporateActions
+  nameWithType: SyntheticMarketDataConfig.IncludeCorporateActions
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeCorporateActions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeCorporateActions
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public bool IncludeCorporateActions { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeCorporateActions As Boolean
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeCorporateActions*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeReferenceData
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.IncludeReferenceData
+  id: IncludeReferenceData
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: IncludeReferenceData
+  nameWithType: SyntheticMarketDataConfig.IncludeReferenceData
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeReferenceData
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeReferenceData
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public bool IncludeReferenceData { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeReferenceData As Boolean
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeReferenceData*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.UniverseSymbols
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.UniverseSymbols
+  id: UniverseSymbols
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: UniverseSymbols
+  nameWithType: SyntheticMarketDataConfig.UniverseSymbols
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.UniverseSymbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UniverseSymbols
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public string[]? UniverseSymbols { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property UniverseSymbols As String()
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.UniverseSymbols*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryStart
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryStart
+  id: DefaultHistoryStart
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: DefaultHistoryStart
+  nameWithType: SyntheticMarketDataConfig.DefaultHistoryStart
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultHistoryStart
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public DateOnly? DefaultHistoryStart { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property DefaultHistoryStart As DateOnly?
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryStart*
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryEnd
+  commentId: P:Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryEnd
+  id: DefaultHistoryEnd
+  parent: Meridian.Application.Config.SyntheticMarketDataConfig
+  langs:
+  - csharp
+  - vb
+  name: DefaultHistoryEnd
+  nameWithType: SyntheticMarketDataConfig.DefaultHistoryEnd
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DefaultHistoryEnd
+    path: ../../src/Meridian.Core/Config/SyntheticMarketDataConfig.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  syntax:
+    content: public DateOnly? DefaultHistoryEnd { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateOnly}
+    content.vb: Public Property DefaultHistoryEnd As DateOnly?
+  overload: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryEnd*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.SyntheticMarketDataConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.SyntheticMarketDataConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SyntheticMarketDataConfig>
+  nameWithType: IEquatable<SyntheticMarketDataConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.SyntheticMarketDataConfig>
+  nameWithType.vb: IEquatable(Of SyntheticMarketDataConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.SyntheticMarketDataConfig)
+  name.vb: IEquatable(Of SyntheticMarketDataConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.SyntheticMarketDataConfig
+    name: SyntheticMarketDataConfig
+    href: Meridian.Application.Config.SyntheticMarketDataConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.SyntheticMarketDataConfig
+    name: SyntheticMarketDataConfig
+    href: Meridian.Application.Config.SyntheticMarketDataConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.#ctor
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig__ctor_System_Boolean_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32_System_Int32_System_Boolean_System_Boolean_System_String___System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__
+  name: SyntheticMarketDataConfig
+  nameWithType: SyntheticMarketDataConfig.SyntheticMarketDataConfig
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.SyntheticMarketDataConfig
+  nameWithType.vb: SyntheticMarketDataConfig.New
+  fullName.vb: Meridian.Application.Config.SyntheticMarketDataConfig.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.Enabled*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.Enabled
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_Enabled
+  name: Enabled
+  nameWithType: SyntheticMarketDataConfig.Enabled
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.Enabled
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.Seed*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.Seed
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_Seed
+  name: Seed
+  nameWithType: SyntheticMarketDataConfig.Seed
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.Seed
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.Priority*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.Priority
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_Priority
+  name: Priority
+  nameWithType: SyntheticMarketDataConfig.Priority
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.Priority
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.EventsPerSecond*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.EventsPerSecond
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_EventsPerSecond
+  name: EventsPerSecond
+  nameWithType: SyntheticMarketDataConfig.EventsPerSecond
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.EventsPerSecond
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalTradeDensityPerDay*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalTradeDensityPerDay
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_HistoricalTradeDensityPerDay
+  name: HistoricalTradeDensityPerDay
+  nameWithType: SyntheticMarketDataConfig.HistoricalTradeDensityPerDay
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalTradeDensityPerDay
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_HistoricalQuoteDensityPerDay
+  name: HistoricalQuoteDensityPerDay
+  nameWithType: SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.HistoricalQuoteDensityPerDay
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultDepthLevels*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.DefaultDepthLevels
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_DefaultDepthLevels
+  name: DefaultDepthLevels
+  nameWithType: SyntheticMarketDataConfig.DefaultDepthLevels
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultDepthLevels
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeCorporateActions*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.IncludeCorporateActions
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_IncludeCorporateActions
+  name: IncludeCorporateActions
+  nameWithType: SyntheticMarketDataConfig.IncludeCorporateActions
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeCorporateActions
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeReferenceData*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.IncludeReferenceData
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_IncludeReferenceData
+  name: IncludeReferenceData
+  nameWithType: SyntheticMarketDataConfig.IncludeReferenceData
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.IncludeReferenceData
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.UniverseSymbols*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.UniverseSymbols
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_UniverseSymbols
+  name: UniverseSymbols
+  nameWithType: SyntheticMarketDataConfig.UniverseSymbols
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.UniverseSymbols
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryStart*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryStart
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_DefaultHistoryStart
+  name: DefaultHistoryStart
+  nameWithType: SyntheticMarketDataConfig.DefaultHistoryStart
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryStart
+- uid: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryEnd*
+  commentId: Overload:Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryEnd
+  href: Meridian.Application.Config.SyntheticMarketDataConfig.html#Meridian_Application_Config_SyntheticMarketDataConfig_DefaultHistoryEnd
+  name: DefaultHistoryEnd
+  nameWithType: SyntheticMarketDataConfig.DefaultHistoryEnd
+  fullName: Meridian.Application.Config.SyntheticMarketDataConfig.DefaultHistoryEnd

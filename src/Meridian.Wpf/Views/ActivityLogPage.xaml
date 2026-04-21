@@ -19,7 +19,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Style="{StaticResource SectionCardStyle}" Margin="24,24,24,16">
+        <Border Grid.Row="0" Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="24,24,24,16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>

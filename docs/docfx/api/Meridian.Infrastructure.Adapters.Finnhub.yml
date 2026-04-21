@@ -1,0 +1,44 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Finnhub
+  commentId: N:Meridian.Infrastructure.Adapters.Finnhub
+  id: Meridian.Infrastructure.Adapters.Finnhub
+  children:
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Finnhub.FinnhubSymbolSearchProviderRefactored
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Adapters.Finnhub
+  nameWithType: Meridian.Infrastructure.Adapters.Finnhub
+  fullName: Meridian.Infrastructure.Adapters.Finnhub
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider.html
+  name: FinnhubHistoricalDataProvider
+  nameWithType: FinnhubHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  commentId: T:Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning.html
+  name: FinnhubEarning
+  nameWithType: FinnhubEarning
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubEarning
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile
+  commentId: T:Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile.html
+  name: FinnhubCompanyProfile
+  nameWithType: FinnhubCompanyProfile
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubCompanyProfile
+- uid: Meridian.Infrastructure.Adapters.Finnhub.FinnhubSymbolSearchProviderRefactored
+  commentId: T:Meridian.Infrastructure.Adapters.Finnhub.FinnhubSymbolSearchProviderRefactored
+  href: Meridian.Infrastructure.Adapters.Finnhub.FinnhubSymbolSearchProviderRefactored.html
+  name: FinnhubSymbolSearchProviderRefactored
+  nameWithType: FinnhubSymbolSearchProviderRefactored
+  fullName: Meridian.Infrastructure.Adapters.Finnhub.FinnhubSymbolSearchProviderRefactored

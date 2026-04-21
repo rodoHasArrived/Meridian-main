@@ -27,4 +27,16 @@ public interface ISecurityMasterQueryService
     /// Returns an empty list when no corporate actions are recorded.
     /// </summary>
     Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the preferred-equity-specific terms for a security.
+    /// Returns <c>null</c> when the security has no preferred-equity terms recorded.
+    /// </summary>
+    Task<PreferredEquityTermsDto?> GetPreferredEquityTermsAsync(Guid securityId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the convertible-equity-specific terms for a security.
+    /// Returns <c>null</c> when the security has no convertible-equity terms recorded.
+    /// </summary>
+    Task<ConvertibleEquityTermsDto?> GetConvertibleEquityTermsAsync(Guid securityId, CancellationToken ct = default);
 }

@@ -1,0 +1,154 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Interfaces.IStoragePolicy
+  commentId: T:Meridian.Storage.Interfaces.IStoragePolicy
+  id: IStoragePolicy
+  parent: Meridian.Storage.Interfaces
+  children:
+  - Meridian.Storage.Interfaces.IStoragePolicy.GetPath(Meridian.Domain.Events.MarketEvent)
+  langs:
+  - csharp
+  - vb
+  name: IStoragePolicy
+  nameWithType: IStoragePolicy
+  fullName: Meridian.Storage.Interfaces.IStoragePolicy
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStoragePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IStoragePolicy
+    path: ../../src/Meridian.Storage/Interfaces/IStoragePolicy.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  syntax:
+    content: public interface IStoragePolicy
+    content.vb: Public Interface IStoragePolicy
+  derivedClasses:
+  - Meridian.Storage.Policies.JsonlStoragePolicy
+- uid: Meridian.Storage.Interfaces.IStoragePolicy.GetPath(Meridian.Domain.Events.MarketEvent)
+  commentId: M:Meridian.Storage.Interfaces.IStoragePolicy.GetPath(Meridian.Domain.Events.MarketEvent)
+  id: GetPath(Meridian.Domain.Events.MarketEvent)
+  parent: Meridian.Storage.Interfaces.IStoragePolicy
+  langs:
+  - csharp
+  - vb
+  name: GetPath(MarketEvent)
+  nameWithType: IStoragePolicy.GetPath(MarketEvent)
+  fullName: Meridian.Storage.Interfaces.IStoragePolicy.GetPath(Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/Interfaces/IStoragePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPath
+    path: ../../src/Meridian.Storage/Interfaces/IStoragePolicy.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Interfaces
+  syntax:
+    content: string GetPath(MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    return:
+      type: System.String
+    content.vb: Function GetPath(evt As MarketEvent) As String
+  overload: Meridian.Storage.Interfaces.IStoragePolicy.GetPath*
+references:
+- uid: Meridian.Storage.Interfaces
+  commentId: N:Meridian.Storage.Interfaces
+  href: Meridian.html
+  name: Meridian.Storage.Interfaces
+  nameWithType: Meridian.Storage.Interfaces
+  fullName: Meridian.Storage.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Interfaces
+    name: Interfaces
+    href: Meridian.Storage.Interfaces.html
+- uid: Meridian.Storage.Interfaces.IStoragePolicy.GetPath*
+  commentId: Overload:Meridian.Storage.Interfaces.IStoragePolicy.GetPath
+  href: Meridian.Storage.Interfaces.IStoragePolicy.html#Meridian_Storage_Interfaces_IStoragePolicy_GetPath_Meridian_Domain_Events_MarketEvent_
+  name: GetPath
+  nameWithType: IStoragePolicy.GetPath
+  fullName: Meridian.Storage.Interfaces.IStoragePolicy.GetPath
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

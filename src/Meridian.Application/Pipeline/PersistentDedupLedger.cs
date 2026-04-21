@@ -134,9 +134,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             _log.Information("Loaded {LoadedCount} dedup entries from disk ({ExpiredCount} expired)", loaded, expired);
         }
 
-        // Open writer for appending new entries
-        var fs = new FileStream(_ledgerPath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, useAsync: true);
-        _writer = new StreamWriter(fs, Encoding.UTF8, 4096, leaveOpen: false) { AutoFlush = false };
+        // Defer opening the append writer until the first real write. This lets
+        // read-only runtime graphs initialize against the same ledger file
+        // without taking an exclusive write handle during startup.
     }
 
     /// <summary>
@@ -166,20 +166,32 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         _cache[key] = nowTicks;
 
         // Persist to disk (fire-and-forget the write, but serialize access)
-        if (_writer != null)
+        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            await _writeLock.WaitAsync(ct).ConfigureAwait(false);
-            try
-            {
-                await _writer.WriteLineAsync($"{{\"k\":\"{EscapeJson(key)}\",\"t\":{nowTicks}}}".AsMemory(), ct).ConfigureAwait(false);
-            }
-            finally
-            {
-                _writeLock.Release();
-            }
+            await EnsureWriterInitializedAsync(ct).ConfigureAwait(false);
+            await _writer!.WriteLineAsync($"{{\"k\":\"{EscapeJson(key)}\",\"t\":{nowTicks}}}".AsMemory(), ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _writeLock.Release();
         }
 
         return false;
+    }
+
+    private Task EnsureWriterInitializedAsync(CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        if (_writer != null)
+        {
+            return Task.CompletedTask;
+        }
+
+        var fs = new FileStream(_ledgerPath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, useAsync: true);
+        _writer = new StreamWriter(fs, Encoding.UTF8, 4096, leaveOpen: false) { AutoFlush = false };
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -521,9 +533,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
                 catch { /* best effort */ }
             }
 
-            // Always reopen writer so subsequent writes are not silently dropped
-            var fs = new FileStream(_ledgerPath, FileMode.Append, FileAccess.Write, FileShare.Read, 4096, useAsync: true);
-            _writer = new StreamWriter(fs, Encoding.UTF8, 4096, leaveOpen: false) { AutoFlush = false };
+            // Reopen lazily when the next write arrives so read-only consumers do not
+            // immediately reclaim an exclusive file handle after compaction.
+            _writer = null;
         }
         finally
         {

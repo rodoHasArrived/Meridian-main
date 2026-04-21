@@ -1,0 +1,176 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Export.GapType
+  commentId: T:Meridian.Storage.Export.GapType
+  id: GapType
+  parent: Meridian.Storage.Export
+  children:
+  - Meridian.Storage.Export.GapType.Holiday
+  - Meridian.Storage.Export.GapType.Overnight
+  - Meridian.Storage.Export.GapType.Unexpected
+  - Meridian.Storage.Export.GapType.Weekend
+  langs:
+  - csharp
+  - vb
+  name: GapType
+  nameWithType: GapType
+  fullName: Meridian.Storage.Export.GapType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapType
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 829
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  summary: Type of data gap.
+  example: []
+  syntax:
+    content: 'public enum GapType : byte'
+    content.vb: Public Enum GapType As Byte
+- uid: Meridian.Storage.Export.GapType.Weekend
+  commentId: F:Meridian.Storage.Export.GapType.Weekend
+  id: Weekend
+  parent: Meridian.Storage.Export.GapType
+  langs:
+  - csharp
+  - vb
+  name: Weekend
+  nameWithType: GapType.Weekend
+  fullName: Meridian.Storage.Export.GapType.Weekend
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weekend
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 831
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Weekend = 0
+    return:
+      type: Meridian.Storage.Export.GapType
+- uid: Meridian.Storage.Export.GapType.Overnight
+  commentId: F:Meridian.Storage.Export.GapType.Overnight
+  id: Overnight
+  parent: Meridian.Storage.Export.GapType
+  langs:
+  - csharp
+  - vb
+  name: Overnight
+  nameWithType: GapType.Overnight
+  fullName: Meridian.Storage.Export.GapType.Overnight
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Overnight
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 832
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Overnight = 1
+    return:
+      type: Meridian.Storage.Export.GapType
+- uid: Meridian.Storage.Export.GapType.Holiday
+  commentId: F:Meridian.Storage.Export.GapType.Holiday
+  id: Holiday
+  parent: Meridian.Storage.Export.GapType
+  langs:
+  - csharp
+  - vb
+  name: Holiday
+  nameWithType: GapType.Holiday
+  fullName: Meridian.Storage.Export.GapType.Holiday
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Holiday
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 833
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Holiday = 2
+    return:
+      type: Meridian.Storage.Export.GapType
+- uid: Meridian.Storage.Export.GapType.Unexpected
+  commentId: F:Meridian.Storage.Export.GapType.Unexpected
+  id: Unexpected
+  parent: Meridian.Storage.Export.GapType
+  langs:
+  - csharp
+  - vb
+  name: Unexpected
+  nameWithType: GapType.Unexpected
+  fullName: Meridian.Storage.Export.GapType.Unexpected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Export/AnalysisQualityReport.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unexpected
+    path: ../../src/Meridian.Storage/Export/AnalysisQualityReport.cs
+    startLine: 834
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Export
+  syntax:
+    content: Unexpected = 3
+    return:
+      type: Meridian.Storage.Export.GapType
+references:
+- uid: Meridian.Storage.Export
+  commentId: N:Meridian.Storage.Export
+  href: Meridian.html
+  name: Meridian.Storage.Export
+  nameWithType: Meridian.Storage.Export
+  fullName: Meridian.Storage.Export
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Export
+    name: Export
+    href: Meridian.Storage.Export.html
+- uid: Meridian.Storage.Export.GapType
+  commentId: T:Meridian.Storage.Export.GapType
+  parent: Meridian.Storage.Export
+  href: Meridian.Storage.Export.GapType.html
+  name: GapType
+  nameWithType: GapType
+  fullName: Meridian.Storage.Export.GapType

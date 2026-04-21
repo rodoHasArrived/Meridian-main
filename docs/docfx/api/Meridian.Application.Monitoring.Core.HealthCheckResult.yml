@@ -1,0 +1,1046 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+  commentId: T:Meridian.Application.Monitoring.Core.HealthCheckResult
+  id: HealthCheckResult
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.#ctor(System.String,Meridian.Application.Monitoring.Core.HealthSeverity,System.String,System.DateTimeOffset,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Exception)
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.CheckedAt
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.ComponentName
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.Degraded(System.String,System.String,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.Details
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.Duration
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.Exception
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.Healthy(System.String,System.String,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.Message
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.Severity
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.Unhealthy(System.String,System.String,System.TimeSpan,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  - Meridian.Application.Monitoring.Core.HealthCheckResult.Unknown(System.String,System.String,System.TimeSpan)
+  langs:
+  - csharp
+  - vb
+  name: HealthCheckResult
+  nameWithType: HealthCheckResult
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthCheckResult
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Represents a health check result with status and diagnostics.
+  example: []
+  syntax:
+    content: 'public sealed record HealthCheckResult : IEquatable<HealthCheckResult>'
+    content.vb: Public NotInheritable Class HealthCheckResult Implements IEquatable(Of HealthCheckResult)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.Core.HealthCheckResult}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.#ctor(System.String,Meridian.Application.Monitoring.Core.HealthSeverity,System.String,System.DateTimeOffset,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Exception)
+  commentId: M:Meridian.Application.Monitoring.Core.HealthCheckResult.#ctor(System.String,Meridian.Application.Monitoring.Core.HealthSeverity,System.String,System.DateTimeOffset,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Exception)
+  id: '#ctor(System.String,Meridian.Application.Monitoring.Core.HealthSeverity,System.String,System.DateTimeOffset,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object},System.Exception)'
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: HealthCheckResult(string, HealthSeverity, string, DateTimeOffset, TimeSpan, IReadOnlyDictionary<string, object>?, Exception?)
+  nameWithType: HealthCheckResult.HealthCheckResult(string, HealthSeverity, string, DateTimeOffset, TimeSpan, IReadOnlyDictionary<string, object>?, Exception?)
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.HealthCheckResult(string, Meridian.Application.Monitoring.Core.HealthSeverity, string, System.DateTimeOffset, System.TimeSpan, System.Collections.Generic.IReadOnlyDictionary<string, object>?, System.Exception?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Represents a health check result with status and diagnostics.
+  example: []
+  syntax:
+    content: public HealthCheckResult(string ComponentName, HealthSeverity Severity, string Message, DateTimeOffset CheckedAt, TimeSpan Duration, IReadOnlyDictionary<string, object>? Details = null, Exception? Exception = null)
+    parameters:
+    - id: ComponentName
+      type: System.String
+      description: Name of the component being checked.
+    - id: Severity
+      type: Meridian.Application.Monitoring.Core.HealthSeverity
+      description: Health severity level.
+    - id: Message
+      type: System.String
+      description: Human-readable status message.
+    - id: CheckedAt
+      type: System.DateTimeOffset
+      description: When the check was performed.
+    - id: Duration
+      type: System.TimeSpan
+      description: How long the check took.
+    - id: Details
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+      description: Additional diagnostic details.
+    - id: Exception
+      type: System.Exception
+      description: Exception if the check failed.
+    content.vb: Public Sub New(ComponentName As String, Severity As HealthSeverity, Message As String, CheckedAt As DateTimeOffset, Duration As TimeSpan, Details As IReadOnlyDictionary(Of String, Object) = Nothing, Exception As Exception = Nothing)
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.#ctor*
+  nameWithType.vb: HealthCheckResult.New(String, HealthSeverity, String, DateTimeOffset, TimeSpan, IReadOnlyDictionary(Of String, Object), Exception)
+  fullName.vb: Meridian.Application.Monitoring.Core.HealthCheckResult.New(String, Meridian.Application.Monitoring.Core.HealthSeverity, String, System.DateTimeOffset, System.TimeSpan, System.Collections.Generic.IReadOnlyDictionary(Of String, Object), System.Exception)
+  name.vb: New(String, HealthSeverity, String, DateTimeOffset, TimeSpan, IReadOnlyDictionary(Of String, Object), Exception)
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.ComponentName
+  commentId: P:Meridian.Application.Monitoring.Core.HealthCheckResult.ComponentName
+  id: ComponentName
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: ComponentName
+  nameWithType: HealthCheckResult.ComponentName
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.ComponentName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ComponentName
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Name of the component being checked.
+  example: []
+  syntax:
+    content: public string ComponentName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ComponentName As String
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.ComponentName*
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Severity
+  commentId: P:Meridian.Application.Monitoring.Core.HealthCheckResult.Severity
+  id: Severity
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: HealthCheckResult.Severity
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Health severity level.
+  example: []
+  syntax:
+    content: public HealthSeverity Severity { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthSeverity
+    content.vb: Public Property Severity As HealthSeverity
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.Severity*
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Message
+  commentId: P:Meridian.Application.Monitoring.Core.HealthCheckResult.Message
+  id: Message
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: HealthCheckResult.Message
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Human-readable status message.
+  example: []
+  syntax:
+    content: public string Message { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.Message*
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.CheckedAt
+  commentId: P:Meridian.Application.Monitoring.Core.HealthCheckResult.CheckedAt
+  id: CheckedAt
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: CheckedAt
+  nameWithType: HealthCheckResult.CheckedAt
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.CheckedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CheckedAt
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: When the check was performed.
+  example: []
+  syntax:
+    content: public DateTimeOffset CheckedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CheckedAt As DateTimeOffset
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.CheckedAt*
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Duration
+  commentId: P:Meridian.Application.Monitoring.Core.HealthCheckResult.Duration
+  id: Duration
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: Duration
+  nameWithType: HealthCheckResult.Duration
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Duration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Duration
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: How long the check took.
+  example: []
+  syntax:
+    content: public TimeSpan Duration { get; init; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Duration As TimeSpan
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.Duration*
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Details
+  commentId: P:Meridian.Application.Monitoring.Core.HealthCheckResult.Details
+  id: Details
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: Details
+  nameWithType: HealthCheckResult.Details
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Details
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Details
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Additional diagnostic details.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, object>? Details { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    content.vb: Public Property Details As IReadOnlyDictionary(Of String, Object)
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.Details*
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Exception
+  commentId: P:Meridian.Application.Monitoring.Core.HealthCheckResult.Exception
+  id: Exception
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: Exception
+  nameWithType: HealthCheckResult.Exception
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Exception
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exception
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Exception if the check failed.
+  example: []
+  syntax:
+    content: public Exception? Exception { get; init; }
+    parameters: []
+    return:
+      type: System.Exception
+    content.vb: Public Property Exception As Exception
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.Exception*
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Healthy(System.String,System.String,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  commentId: M:Meridian.Application.Monitoring.Core.HealthCheckResult.Healthy(System.String,System.String,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  id: Healthy(System.String,System.String,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: Healthy(string, string, TimeSpan, IReadOnlyDictionary<string, object>?)
+  nameWithType: HealthCheckResult.Healthy(string, string, TimeSpan, IReadOnlyDictionary<string, object>?)
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Healthy(string, string, System.TimeSpan, System.Collections.Generic.IReadOnlyDictionary<string, object>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Creates a healthy result.
+  example: []
+  syntax:
+    content: public static HealthCheckResult Healthy(string componentName, string message, TimeSpan duration, IReadOnlyDictionary<string, object>? details = null)
+    parameters:
+    - id: componentName
+      type: System.String
+    - id: message
+      type: System.String
+    - id: duration
+      type: System.TimeSpan
+    - id: details
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthCheckResult
+    content.vb: Public Shared Function Healthy(componentName As String, message As String, duration As TimeSpan, details As IReadOnlyDictionary(Of String, Object) = Nothing) As HealthCheckResult
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.Healthy*
+  nameWithType.vb: HealthCheckResult.Healthy(String, String, TimeSpan, IReadOnlyDictionary(Of String, Object))
+  fullName.vb: Meridian.Application.Monitoring.Core.HealthCheckResult.Healthy(String, String, System.TimeSpan, System.Collections.Generic.IReadOnlyDictionary(Of String, Object))
+  name.vb: Healthy(String, String, TimeSpan, IReadOnlyDictionary(Of String, Object))
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Degraded(System.String,System.String,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  commentId: M:Meridian.Application.Monitoring.Core.HealthCheckResult.Degraded(System.String,System.String,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  id: Degraded(System.String,System.String,System.TimeSpan,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: Degraded(string, string, TimeSpan, IReadOnlyDictionary<string, object>?)
+  nameWithType: HealthCheckResult.Degraded(string, string, TimeSpan, IReadOnlyDictionary<string, object>?)
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Degraded(string, string, System.TimeSpan, System.Collections.Generic.IReadOnlyDictionary<string, object>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Degraded
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Creates a degraded result.
+  example: []
+  syntax:
+    content: public static HealthCheckResult Degraded(string componentName, string message, TimeSpan duration, IReadOnlyDictionary<string, object>? details = null)
+    parameters:
+    - id: componentName
+      type: System.String
+    - id: message
+      type: System.String
+    - id: duration
+      type: System.TimeSpan
+    - id: details
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthCheckResult
+    content.vb: Public Shared Function Degraded(componentName As String, message As String, duration As TimeSpan, details As IReadOnlyDictionary(Of String, Object) = Nothing) As HealthCheckResult
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.Degraded*
+  nameWithType.vb: HealthCheckResult.Degraded(String, String, TimeSpan, IReadOnlyDictionary(Of String, Object))
+  fullName.vb: Meridian.Application.Monitoring.Core.HealthCheckResult.Degraded(String, String, System.TimeSpan, System.Collections.Generic.IReadOnlyDictionary(Of String, Object))
+  name.vb: Degraded(String, String, TimeSpan, IReadOnlyDictionary(Of String, Object))
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Unhealthy(System.String,System.String,System.TimeSpan,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  commentId: M:Meridian.Application.Monitoring.Core.HealthCheckResult.Unhealthy(System.String,System.String,System.TimeSpan,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  id: Unhealthy(System.String,System.String,System.TimeSpan,System.Exception,System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object})
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: Unhealthy(string, string, TimeSpan, Exception?, IReadOnlyDictionary<string, object>?)
+  nameWithType: HealthCheckResult.Unhealthy(string, string, TimeSpan, Exception?, IReadOnlyDictionary<string, object>?)
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Unhealthy(string, string, System.TimeSpan, System.Exception?, System.Collections.Generic.IReadOnlyDictionary<string, object>?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unhealthy
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Creates an unhealthy result.
+  example: []
+  syntax:
+    content: public static HealthCheckResult Unhealthy(string componentName, string message, TimeSpan duration, Exception? exception = null, IReadOnlyDictionary<string, object>? details = null)
+    parameters:
+    - id: componentName
+      type: System.String
+    - id: message
+      type: System.String
+    - id: duration
+      type: System.TimeSpan
+    - id: exception
+      type: System.Exception
+    - id: details
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthCheckResult
+    content.vb: Public Shared Function Unhealthy(componentName As String, message As String, duration As TimeSpan, exception As Exception = Nothing, details As IReadOnlyDictionary(Of String, Object) = Nothing) As HealthCheckResult
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.Unhealthy*
+  nameWithType.vb: HealthCheckResult.Unhealthy(String, String, TimeSpan, Exception, IReadOnlyDictionary(Of String, Object))
+  fullName.vb: Meridian.Application.Monitoring.Core.HealthCheckResult.Unhealthy(String, String, System.TimeSpan, System.Exception, System.Collections.Generic.IReadOnlyDictionary(Of String, Object))
+  name.vb: Unhealthy(String, String, TimeSpan, Exception, IReadOnlyDictionary(Of String, Object))
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Unknown(System.String,System.String,System.TimeSpan)
+  commentId: M:Meridian.Application.Monitoring.Core.HealthCheckResult.Unknown(System.String,System.String,System.TimeSpan)
+  id: Unknown(System.String,System.String,System.TimeSpan)
+  parent: Meridian.Application.Monitoring.Core.HealthCheckResult
+  langs:
+  - csharp
+  - vb
+  name: Unknown(string, string, TimeSpan)
+  nameWithType: HealthCheckResult.Unknown(string, string, TimeSpan)
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Unknown(string, string, System.TimeSpan)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Unknown
+    path: ../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Creates an unknown result.
+  example: []
+  syntax:
+    content: public static HealthCheckResult Unknown(string componentName, string message, TimeSpan duration)
+    parameters:
+    - id: componentName
+      type: System.String
+    - id: message
+      type: System.String
+    - id: duration
+      type: System.TimeSpan
+    return:
+      type: Meridian.Application.Monitoring.Core.HealthCheckResult
+    content.vb: Public Shared Function Unknown(componentName As String, message As String, duration As TimeSpan) As HealthCheckResult
+  overload: Meridian.Application.Monitoring.Core.HealthCheckResult.Unknown*
+  nameWithType.vb: HealthCheckResult.Unknown(String, String, TimeSpan)
+  fullName.vb: Meridian.Application.Monitoring.Core.HealthCheckResult.Unknown(String, String, System.TimeSpan)
+  name.vb: Unknown(String, String, TimeSpan)
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Monitoring.Core.HealthCheckResult}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.Core.HealthCheckResult}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<HealthCheckResult>
+  nameWithType: IEquatable<HealthCheckResult>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.Core.HealthCheckResult>
+  nameWithType.vb: IEquatable(Of HealthCheckResult)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.Core.HealthCheckResult)
+  name.vb: IEquatable(Of HealthCheckResult)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+    name: HealthCheckResult
+    href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+    name: HealthCheckResult
+    href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.#ctor
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult__ctor_System_String_Meridian_Application_Monitoring_Core_HealthSeverity_System_String_System_DateTimeOffset_System_TimeSpan_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__System_Exception_
+  name: HealthCheckResult
+  nameWithType: HealthCheckResult.HealthCheckResult
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.HealthCheckResult
+  nameWithType.vb: HealthCheckResult.New
+  fullName.vb: Meridian.Application.Monitoring.Core.HealthCheckResult.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.Core.HealthSeverity
+  commentId: T:Meridian.Application.Monitoring.Core.HealthSeverity
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.HealthSeverity.html
+  name: HealthSeverity
+  nameWithType: HealthSeverity
+  fullName: Meridian.Application.Monitoring.Core.HealthSeverity
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, object>
+  nameWithType: IReadOnlyDictionary<string, object>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, object>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Object)
+  name.vb: IReadOnlyDictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.ComponentName*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.ComponentName
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_ComponentName
+  name: ComponentName
+  nameWithType: HealthCheckResult.ComponentName
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.ComponentName
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Severity*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.Severity
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_Severity
+  name: Severity
+  nameWithType: HealthCheckResult.Severity
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Severity
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Message*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.Message
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_Message
+  name: Message
+  nameWithType: HealthCheckResult.Message
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Message
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.CheckedAt*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.CheckedAt
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_CheckedAt
+  name: CheckedAt
+  nameWithType: HealthCheckResult.CheckedAt
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.CheckedAt
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Duration*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.Duration
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_Duration
+  name: Duration
+  nameWithType: HealthCheckResult.Duration
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Duration
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Details*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.Details
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_Details
+  name: Details
+  nameWithType: HealthCheckResult.Details
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Details
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Exception*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.Exception
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_Exception
+  name: Exception
+  nameWithType: HealthCheckResult.Exception
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Exception
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Healthy*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.Healthy
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_Healthy_System_String_System_String_System_TimeSpan_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__
+  name: Healthy
+  nameWithType: HealthCheckResult.Healthy
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Healthy
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult
+  commentId: T:Meridian.Application.Monitoring.Core.HealthCheckResult
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html
+  name: HealthCheckResult
+  nameWithType: HealthCheckResult
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Degraded*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.Degraded
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_Degraded_System_String_System_String_System_TimeSpan_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__
+  name: Degraded
+  nameWithType: HealthCheckResult.Degraded
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Degraded
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Unhealthy*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.Unhealthy
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_Unhealthy_System_String_System_String_System_TimeSpan_System_Exception_System_Collections_Generic_IReadOnlyDictionary_System_String_System_Object__
+  name: Unhealthy
+  nameWithType: HealthCheckResult.Unhealthy
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Unhealthy
+- uid: Meridian.Application.Monitoring.Core.HealthCheckResult.Unknown*
+  commentId: Overload:Meridian.Application.Monitoring.Core.HealthCheckResult.Unknown
+  href: Meridian.Application.Monitoring.Core.HealthCheckResult.html#Meridian_Application_Monitoring_Core_HealthCheckResult_Unknown_System_String_System_String_System_TimeSpan_
+  name: Unknown
+  nameWithType: HealthCheckResult.Unknown
+  fullName: Meridian.Application.Monitoring.Core.HealthCheckResult.Unknown

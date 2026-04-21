@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Provider Builder"
+  short_description: "Build Meridian providers and adapter scaffolds"
+  default_prompt: "Use $meridian-provider-builder to build or extend this Meridian provider while matching current provider SDK and resilience patterns."

@@ -156,8 +156,17 @@ public sealed class OptionsViewModel : BindableBase
                 TrackedChains = summary.TrackedChains.ToString("N0");
                 TrackedUnderlyings = summary.TrackedUnderlyings.ToString("N0");
                 WithGreeks = summary.ContractsWithGreeks.ToString("N0");
-                SetProviderStatus(summary.ProviderAvailable,
-                    summary.ProviderAvailable ? "Provider connected" : "No provider configured");
+                var providerConfigured = string.Equals(summary.ProviderMode, "Configured", StringComparison.OrdinalIgnoreCase);
+                var providerName = string.IsNullOrWhiteSpace(summary.ProviderDisplayName)
+                    ? "Options provider"
+                    : summary.ProviderDisplayName;
+                var statusText = !string.IsNullOrWhiteSpace(summary.ProviderStatusMessage)
+                    ? summary.ProviderStatusMessage
+                    : providerConfigured
+                        ? $"{providerName} is configured."
+                        : $"{providerName} is unavailable.";
+
+                SetProviderStatus(providerConfigured, statusText);
             }
             else
             {

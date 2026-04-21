@@ -1,7 +1,7 @@
 # QuantScript, L3 Inference & Multi-Instance: Round 2 Feature Roadmap (Ideas #19–#30)
 
 **Version:** 1.0
-**Last Updated:** 2026-04-07
+**Last Updated:** 2026-04-08
 **Audience:** Quantitative researchers, core contributors, platform engineers, institutional operators
 **Related Plans:**
 - QuantScript v1 blueprint: [`docs/plans/quant-script-environment-blueprint.md`](quant-script-environment-blueprint.md)
@@ -14,6 +14,8 @@ This document translates twelve Round 2 feature proposals — spanning QuantScri
 L3 inference enrichment (Track H), and multi-instance cluster management (Track I) — into a
 viability-assessed, dependency-ordered implementation roadmap. Each feature is evaluated against
 Meridian's existing code, and all source file references are pinned to production paths.
+
+These tracks now sit in the optional or post-core part of the canonical roadmap. They should not outrank the Wave 1-6 path to core operator-readiness unless a specific pilot or research program explicitly pulls them forward.
 
 **Effort key:** S = days | M = 1–2 weeks | L = 1+ month
 
@@ -510,9 +512,11 @@ export requests and executing them in sequence.
 **Configuration:**
 
 ```json
-"QuantScript": {
-  "ExportChartWidthPx": 1200,
-  "ExportChartHeightPx": 800
+{
+  "QuantScript": {
+    "ExportChartWidthPx": 1200,
+    "ExportChartHeightPx": 800
+  }
 }
 ```
 
@@ -816,21 +820,30 @@ short calibration windows.
 // config/inference-model.json
 {
   "venueProfile": "Auto",  // "NASDAQ" | "NYSE" | "CBOE" | "Auto"
-  ...
+  "priorDivergenceWarningThreshold": 0.4,
+  "minCalibrationWindowDays": 5
 }
 ```
 
 **`config/venue-calibration-priors.json` format:**
 
-```jsonc
+```json
 {
   "NYSE": {
     "arrivalRatePrior": { "mean": 0.82, "stdDev": 0.12 },
     "decayAlphaPrior":  { "mean": 0.31, "stdDev": 0.05 },
     "queueDepthScalePrior": { "mean": 1.0, "stdDev": 0.15 }
   },
-  "NASDAQ": { ... },
-  "CBOE":   { ... }
+  "NASDAQ": {
+    "arrivalRatePrior": { "mean": 0.88, "stdDev": 0.10 },
+    "decayAlphaPrior":  { "mean": 0.27, "stdDev": 0.04 },
+    "queueDepthScalePrior": { "mean": 0.94, "stdDev": 0.12 }
+  },
+  "CBOE": {
+    "arrivalRatePrior": { "mean": 0.79, "stdDev": 0.11 },
+    "decayAlphaPrior":  { "mean": 0.34, "stdDev": 0.06 },
+    "queueDepthScalePrior": { "mean": 1.08, "stdDev": 0.18 }
+  }
 }
 ```
 
@@ -2176,7 +2189,7 @@ independently of Track H and Track I once the QuantScript v1 foundation is in pl
 - **L3 inference implementation plan:** [`docs/plans/l3-inference-implementation-plan.md`](l3-inference-implementation-plan.md)
 - **Previous brainstorm (ideas #1–#18):** [`docs/evaluations/quant-script-blueprint-brainstorm.md`](../evaluations/quant-script-blueprint-brainstorm.md)
 - **Feature inventory:** [`docs/status/FEATURE_INVENTORY.md`](../status/FEATURE_INVENTORY.md)
-- **Main roadmap:** [`docs/status/ROADMAP.md`](../status/ROADMAP.md)
+- **Main roadmap:** [`docs/status/ROADMAP.md`](../status/ROADMAP.md) — optional-track placement after the core operator-readiness path
 
 ### Key Source Files Referenced
 
@@ -2225,4 +2238,4 @@ paths that will be created when implementing the corresponding feature.
 
 ---
 
-_Last Updated: 2026-04-07_
+_Last Updated: 2026-04-08_

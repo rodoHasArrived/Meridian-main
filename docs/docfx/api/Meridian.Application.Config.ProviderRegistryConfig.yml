@@ -1,0 +1,456 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Config.ProviderRegistryConfig
+  commentId: T:Meridian.Application.Config.ProviderRegistryConfig
+  id: ProviderRegistryConfig
+  parent: Meridian.Application.Config
+  children:
+  - Meridian.Application.Config.ProviderRegistryConfig.#ctor(System.Boolean)
+  - Meridian.Application.Config.ProviderRegistryConfig.UseAttributeDiscovery
+  langs:
+  - csharp
+  - vb
+  name: ProviderRegistryConfig
+  nameWithType: ProviderRegistryConfig
+  fullName: Meridian.Application.Config.ProviderRegistryConfig
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderRegistryConfig
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: >-
+    Configuration for the unified provider registry (Phase 1.2).
+
+    Controls how streaming, backfill, and symbol search providers are discovered and registered.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderRegistryConfig : IEquatable<ProviderRegistryConfig>'
+    content.vb: Public NotInheritable Class ProviderRegistryConfig Implements IEquatable(Of ProviderRegistryConfig)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Config.ProviderRegistryConfig}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Config.ProviderRegistryConfig.#ctor(System.Boolean)
+  commentId: M:Meridian.Application.Config.ProviderRegistryConfig.#ctor(System.Boolean)
+  id: '#ctor(System.Boolean)'
+  parent: Meridian.Application.Config.ProviderRegistryConfig
+  langs:
+  - csharp
+  - vb
+  name: ProviderRegistryConfig(bool)
+  nameWithType: ProviderRegistryConfig.ProviderRegistryConfig(bool)
+  fullName: Meridian.Application.Config.ProviderRegistryConfig.ProviderRegistryConfig(bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: >-
+    Configuration for the unified provider registry (Phase 1.2).
+
+    Controls how streaming, backfill, and symbol search providers are discovered and registered.
+  example: []
+  syntax:
+    content: public ProviderRegistryConfig(bool UseAttributeDiscovery = false)
+    parameters:
+    - id: UseAttributeDiscovery
+      type: System.Boolean
+      description: >-
+        When true, <code>DataSourceAttribute</code>-decorated types are discovered via reflection
+
+        and automatically registered as streaming factories in the <code>ProviderRegistry</code>,
+
+        replacing manual lambda registration. Default is false (manual registration).
+    content.vb: Public Sub New(UseAttributeDiscovery As Boolean = False)
+  overload: Meridian.Application.Config.ProviderRegistryConfig.#ctor*
+  nameWithType.vb: ProviderRegistryConfig.New(Boolean)
+  fullName.vb: Meridian.Application.Config.ProviderRegistryConfig.New(Boolean)
+  name.vb: New(Boolean)
+- uid: Meridian.Application.Config.ProviderRegistryConfig.UseAttributeDiscovery
+  commentId: P:Meridian.Application.Config.ProviderRegistryConfig.UseAttributeDiscovery
+  id: UseAttributeDiscovery
+  parent: Meridian.Application.Config.ProviderRegistryConfig
+  langs:
+  - csharp
+  - vb
+  name: UseAttributeDiscovery
+  nameWithType: ProviderRegistryConfig.UseAttributeDiscovery
+  fullName: Meridian.Application.Config.ProviderRegistryConfig.UseAttributeDiscovery
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Config/AppConfig.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UseAttributeDiscovery
+    path: ../../src/Meridian.Core/Config/AppConfig.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Config
+  summary: >-
+    When true, <code>DataSourceAttribute</code>-decorated types are discovered via reflection
+
+    and automatically registered as streaming factories in the <code>ProviderRegistry</code>,
+
+    replacing manual lambda registration. Default is false (manual registration).
+  example: []
+  syntax:
+    content: public bool UseAttributeDiscovery { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property UseAttributeDiscovery As Boolean
+  overload: Meridian.Application.Config.ProviderRegistryConfig.UseAttributeDiscovery*
+references:
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Config.ProviderRegistryConfig}
+  commentId: T:System.IEquatable{Meridian.Application.Config.ProviderRegistryConfig}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderRegistryConfig>
+  nameWithType: IEquatable<ProviderRegistryConfig>
+  fullName: System.IEquatable<Meridian.Application.Config.ProviderRegistryConfig>
+  nameWithType.vb: IEquatable(Of ProviderRegistryConfig)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Config.ProviderRegistryConfig)
+  name.vb: IEquatable(Of ProviderRegistryConfig)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Config.ProviderRegistryConfig
+    name: ProviderRegistryConfig
+    href: Meridian.Application.Config.ProviderRegistryConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Config.ProviderRegistryConfig
+    name: ProviderRegistryConfig
+    href: Meridian.Application.Config.ProviderRegistryConfig.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Config.ProviderRegistryConfig.#ctor*
+  commentId: Overload:Meridian.Application.Config.ProviderRegistryConfig.#ctor
+  href: Meridian.Application.Config.ProviderRegistryConfig.html#Meridian_Application_Config_ProviderRegistryConfig__ctor_System_Boolean_
+  name: ProviderRegistryConfig
+  nameWithType: ProviderRegistryConfig.ProviderRegistryConfig
+  fullName: Meridian.Application.Config.ProviderRegistryConfig.ProviderRegistryConfig
+  nameWithType.vb: ProviderRegistryConfig.New
+  fullName.vb: Meridian.Application.Config.ProviderRegistryConfig.New
+  name.vb: New
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Config.ProviderRegistryConfig.UseAttributeDiscovery*
+  commentId: Overload:Meridian.Application.Config.ProviderRegistryConfig.UseAttributeDiscovery
+  href: Meridian.Application.Config.ProviderRegistryConfig.html#Meridian_Application_Config_ProviderRegistryConfig_UseAttributeDiscovery
+  name: UseAttributeDiscovery
+  nameWithType: ProviderRegistryConfig.UseAttributeDiscovery
+  fullName: Meridian.Application.Config.ProviderRegistryConfig.UseAttributeDiscovery

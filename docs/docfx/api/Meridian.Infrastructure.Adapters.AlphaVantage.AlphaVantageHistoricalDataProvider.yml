@@ -1,0 +1,1983 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  id: AlphaVantageHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage
+  children:
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Capabilities
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Description
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.DisplayName
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.HttpClientName
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Name
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Priority
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitDelay
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitWindow
+  - Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.SupportedIntervals
+  langs:
+  - csharp
+  - vb
+  name: AlphaVantageHistoricalDataProvider
+  nameWithType: AlphaVantageHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlphaVantageHistoricalDataProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: >-
+    Historical data provider using Alpha Vantage API (free tier with API key).
+
+    Unique capability: Intraday historical data (1, 5, 15, 30, 60 min intervals).
+
+    Coverage: US equities, global indices, forex, crypto.
+
+    Free tier: 25 requests/day (severely limited), 5 calls/minute.
+
+    Extends BaseHistoricalDataProvider for common functionality.
+  example: []
+  syntax:
+    content: >-
+      [DataSource("alphavantage", "Alpha Vantage (free tier)", DataSourceType.Historical, DataSourceCategory.Free, Priority = 25, Description = "Free tier historical OHLCV data via Alpha Vantage API")]
+
+      [ImplementsAdr("ADR-001", "Alpha Vantage historical data provider implementation")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
+
+      [RequiresCredential("ALPHA_VANTAGE_API_KEY", EnvironmentVariables = new string[] { "ALPHA_VANTAGE_API_KEY", "ALPHAVANTAGE__APIKEY" }, DisplayName = "API Key", Description = "Alpha Vantage API key from https://www.alphavantage.co/support/#api-key")]
+
+      public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvider, IHistoricalDataProvider, IProviderMetadata, IRateLimitAwareProvider, IDisposable
+    content.vb: >-
+      <DataSource("alphavantage", "Alpha Vantage (free tier)", DataSourceType.Historical, DataSourceCategory.Free, Priority:=25, Description:="Free tier historical OHLCV data via Alpha Vantage API")>
+
+      <ImplementsAdr("ADR-001", "Alpha Vantage historical data provider implementation")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      <ImplementsAdr("ADR-005", "Attribute-based provider discovery")>
+
+      <RequiresCredential("ALPHA_VANTAGE_API_KEY", EnvironmentVariables:=New String() { "ALPHA_VANTAGE_API_KEY", "ALPHAVANTAGE__APIKEY" }, DisplayName:="API Key", Description:="Alpha Vantage API key from https://www.alphavantage.co/support/#api-key")>
+
+      Public NotInheritable Class AlphaVantageHistoricalDataProvider Inherits BaseHistoricalDataProvider Implements IHistoricalDataProvider, IProviderMetadata, IRateLimitAwareProvider, IDisposable
+  inheritance:
+  - System.Object
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  implements:
+  - Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  - Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  - Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider
+  - System.IDisposable
+  inheritedMembers:
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsIntraday
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsDividends
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsSplits
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsQuotes
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsTrades
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAuctions
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportedMarkets
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.OnRateLimitHit
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+  - Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.DataSources.DataSourceAttribute
+    ctor: Meridian.Infrastructure.DataSources.DataSourceAttribute.#ctor(System.String,System.String,Meridian.Infrastructure.DataSources.DataSourceType,Meridian.Infrastructure.DataSources.DataSourceCategory)
+    arguments:
+    - type: System.String
+      value: alphavantage
+    - type: System.String
+      value: Alpha Vantage (free tier)
+    - type: Meridian.Infrastructure.DataSources.DataSourceType
+      value: 1
+    - type: Meridian.Infrastructure.DataSources.DataSourceCategory
+      value: 3
+    namedArguments:
+    - name: Priority
+      type: System.Int32
+      value: 25
+    - name: Description
+      type: System.String
+      value: Free tier historical OHLCV data via Alpha Vantage API
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Alpha Vantage historical data provider implementation
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-005
+    - type: System.String
+      value: Attribute-based provider discovery
+  - type: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute
+    ctor: Meridian.Infrastructure.Contracts.RequiresCredentialAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: ALPHA_VANTAGE_API_KEY
+    namedArguments:
+    - name: DisplayName
+      type: System.String
+      value: API Key
+    - name: Description
+      type: System.String
+      value: Alpha Vantage API key from https://www.alphavantage.co/support/#api-key
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Name
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: AlphaVantageHistoricalDataProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: Unique identifier for the provider (e.g., "alpaca", "tiingo").
+  example: []
+  syntax:
+    content: public override string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property Name As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Name
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Name*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.DisplayName
+  id: DisplayName
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: AlphaVantageHistoricalDataProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: Human-readable display name.
+  example: []
+  syntax:
+    content: public override string DisplayName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property DisplayName As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.DisplayName
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.DisplayName*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Description
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Description
+  id: Description
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: AlphaVantageHistoricalDataProvider.Description
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: Description of the provider's capabilities.
+  example: []
+  syntax:
+    content: public override string Description { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Overrides ReadOnly Property Description As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Description
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Description*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.HttpClientName
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.HttpClientName
+  id: HttpClientName
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: HttpClientName
+  nameWithType: AlphaVantageHistoricalDataProvider.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.HttpClientName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HttpClientName
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: Named HTTP client identifier from HttpClientNames.
+  example: []
+  syntax:
+    content: protected override string HttpClientName { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Protected Overrides ReadOnly Property HttpClientName As String
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.HttpClientName
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.HttpClientName*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Priority
+  id: Priority
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Priority
+  nameWithType: AlphaVantageHistoricalDataProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Priority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Priority
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: >-
+    Priority for fallback ordering (lower = higher priority, tried first).
+
+    Default: 100 for basic providers.
+  example: []
+  syntax:
+    content: public override int Priority { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Overrides ReadOnly Property Priority As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Priority
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Priority*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitDelay
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitDelay
+  id: RateLimitDelay
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: RateLimitDelay
+  nameWithType: AlphaVantageHistoricalDataProvider.RateLimitDelay
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitDelay
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitDelay
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: >-
+    Minimum delay between API calls to respect rate limits.
+
+    Default: no delay.
+  example: []
+  syntax:
+    content: public override TimeSpan RateLimitDelay { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Overrides ReadOnly Property RateLimitDelay As TimeSpan
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitDelay
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitDelay*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow
+  id: MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: MaxRequestsPerWindow
+  nameWithType: AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxRequestsPerWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: >-
+    Maximum number of requests allowed per time window.
+
+    Default: unlimited.
+  example: []
+  syntax:
+    content: public override int MaxRequestsPerWindow { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Overrides ReadOnly Property MaxRequestsPerWindow As Integer
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.MaxRequestsPerWindow
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitWindow
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitWindow
+  id: RateLimitWindow
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: RateLimitWindow
+  nameWithType: AlphaVantageHistoricalDataProvider.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitWindow
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitWindow
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: >-
+    Time window for rate limiting (e.g., 1 minute, 1 hour).
+
+    Default: 1 hour.
+  example: []
+  syntax:
+    content: public override TimeSpan RateLimitWindow { get; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Overrides ReadOnly Property RateLimitWindow As TimeSpan
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitWindow
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitWindow*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Capabilities
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Capabilities
+  id: Capabilities
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: Capabilities
+  nameWithType: AlphaVantageHistoricalDataProvider.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Capabilities
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capabilities
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: Alpha Vantage supports adjusted bars with intraday historical data (key differentiator).
+  example: []
+  syntax:
+    content: public override HistoricalDataCapabilities Capabilities { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+    content.vb: Public Overrides ReadOnly Property Capabilities As HistoricalDataCapabilities
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Capabilities*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.SupportedIntervals
+  commentId: P:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.SupportedIntervals
+  id: SupportedIntervals
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: SupportedIntervals
+  nameWithType: AlphaVantageHistoricalDataProvider.SupportedIntervals
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.SupportedIntervals
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SupportedIntervals
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: Supported intraday intervals.
+  example: []
+  syntax:
+    content: public static IReadOnlyList<string> SupportedIntervals { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.String}
+    content.vb: Public Shared ReadOnly Property SupportedIntervals As IReadOnlyList(Of String)
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.SupportedIntervals*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  commentId: M:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)
+  id: '#ctor(System.String,System.Net.Http.HttpClient,Serilog.ILogger)'
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: AlphaVantageHistoricalDataProvider(string?, HttpClient?, ILogger?)
+  nameWithType: AlphaVantageHistoricalDataProvider.AlphaVantageHistoricalDataProvider(string?, HttpClient?, ILogger?)
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.AlphaVantageHistoricalDataProvider(string?, System.Net.Http.HttpClient?, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  syntax:
+    content: public AlphaVantageHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
+    parameters:
+    - id: apiKey
+      type: System.String
+    - id: httpClient
+      type: System.Net.Http.HttpClient
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(apiKey As String = Nothing, httpClient As HttpClient = Nothing, log As ILogger = Nothing)
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.#ctor*
+  nameWithType.vb: AlphaVantageHistoricalDataProvider.New(String, HttpClient, ILogger)
+  fullName.vb: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.New(String, System.Net.Http.HttpClient, Serilog.ILogger)
+  name.vb: New(String, HttpClient, ILogger)
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  id: IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: AlphaVantageHistoricalDataProvider.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAvailableAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: >-
+    Check if the provider is currently available and healthy.
+
+    Default implementation validates credentials.
+  example: []
+  syntax:
+    content: public override Task<bool> IsAvailableAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Overrides Function IsAvailableAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.IsAvailableAsync*
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: AlphaVantageHistoricalDataProvider.GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDailyBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: >-
+    Fetch daily OHLCV bars for a symbol within the specified date range.
+
+    Must be implemented by derived classes.
+  example: []
+  syntax:
+    content: public override Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+    content.vb: Public Overrides Function GetDailyBarsAsync(symbol As String, from As DateOnly?, [to] As DateOnly?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of HistoricalBar))
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetDailyBarsAsync*
+  nameWithType.vb: AlphaVantageHistoricalDataProvider.GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  id: GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAdjustedDailyBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: >-
+    Get extended bar data with adjustment information when supported.
+
+    Default implementation converts standard bars to adjusted bars.
+  example: []
+  syntax:
+    content: public override Task<IReadOnlyList<AdjustedHistoricalBar>> GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateOnly}
+    - id: to
+      type: System.Nullable{System.DateOnly}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+    content.vb: Public Overrides Function GetAdjustedDailyBarsAsync(symbol As String, from As DateOnly?, [to] As DateOnly?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  overridden: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync*
+  nameWithType.vb: AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  id: GetIntradayBarsAsync(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider
+  langs:
+  - csharp
+  - vb
+  name: GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  nameWithType: AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync(string, string, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync(string, string, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetIntradayBarsAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.AlphaVantage
+  summary: Get intraday historical bars. This is the unique capability of Alpha Vantage.
+  remarks: Free tier only returns 1-2 months of intraday data.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<IntradayBar>> GetIntradayBarsAsync(string symbol, string interval, DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: interval
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateTimeOffset}
+    - id: to
+      type: System.Nullable{System.DateTimeOffset}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+    content.vb: Public Function GetIntradayBarsAsync(symbol As String, interval As String, from As DateTimeOffset?, [to] As DateTimeOffset?, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of IntradayBar))
+  overload: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync*
+  nameWithType.vb: AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync(String, String, System.DateTimeOffset?, System.DateTimeOffset?, System.Threading.CancellationToken)
+  name.vb: GetIntradayBarsAsync(String, String, DateTimeOffset?, DateTimeOffset?, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage
+  commentId: N:Meridian.Infrastructure.Adapters.AlphaVantage
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.AlphaVantage
+  nameWithType: Meridian.Infrastructure.Adapters.AlphaVantage
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.AlphaVantage
+    name: AlphaVantage
+    href: Meridian.Infrastructure.Adapters.AlphaVantage.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.AlphaVantage
+    name: AlphaVantage
+    href: Meridian.Infrastructure.Adapters.AlphaVantage.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html
+  name: BaseHistoricalDataProvider
+  nameWithType: BaseHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider.html
+  name: IHistoricalDataProvider
+  nameWithType: IHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IProviderMetadata.html
+  name: IProviderMetadata
+  nameWithType: IProviderMetadata
+  fullName: Meridian.Infrastructure.Adapters.Core.IProviderMetadata
+- uid: Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider.html
+  name: IRateLimitAwareProvider
+  nameWithType: IRateLimitAwareProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsAdjustedPrices
+  name: SupportsAdjustedPrices
+  nameWithType: BaseHistoricalDataProvider.SupportsAdjustedPrices
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAdjustedPrices
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsIntraday
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsIntraday
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsIntraday
+  name: SupportsIntraday
+  nameWithType: BaseHistoricalDataProvider.SupportsIntraday
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsIntraday
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsDividends
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsDividends
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsDividends
+  name: SupportsDividends
+  nameWithType: BaseHistoricalDataProvider.SupportsDividends
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsDividends
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsSplits
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsSplits
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsSplits
+  name: SupportsSplits
+  nameWithType: BaseHistoricalDataProvider.SupportsSplits
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsSplits
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsQuotes
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsQuotes
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsQuotes
+  name: SupportsQuotes
+  nameWithType: BaseHistoricalDataProvider.SupportsQuotes
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsQuotes
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsTrades
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsTrades
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsTrades
+  name: SupportsTrades
+  nameWithType: BaseHistoricalDataProvider.SupportsTrades
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsTrades
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAuctions
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAuctions
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportsAuctions
+  name: SupportsAuctions
+  nameWithType: BaseHistoricalDataProvider.SupportsAuctions
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportsAuctions
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportedMarkets
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportedMarkets
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_SupportedMarkets
+  name: SupportedMarkets
+  nameWithType: BaseHistoricalDataProvider.SupportedMarkets
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.SupportedMarkets
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.OnRateLimitHit
+  commentId: E:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.OnRateLimitHit
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_OnRateLimitHit
+  name: OnRateLimitHit
+  nameWithType: BaseHistoricalDataProvider.OnRateLimitHit
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.OnRateLimitHit
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetRateLimitInfo
+  name: GetRateLimitInfo()
+  nameWithType: BaseHistoricalDataProvider.GetRateLimitInfo()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+    name: GetRateLimitInfo
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetRateLimitInfo
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetRateLimitInfo
+    name: GetRateLimitInfo
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetRateLimitInfo
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Dispose
+  name: Dispose()
+  nameWithType: BaseHistoricalDataProvider.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose()
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+    name: Dispose
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Dispose
+    name: Dispose
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Dispose
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Name
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Name
+  name: Name
+  nameWithType: BaseHistoricalDataProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Name
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Name
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_Name
+  name: Name
+  nameWithType: AlphaVantageHistoricalDataProvider.Name
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.DisplayName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.DisplayName
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_DisplayName
+  name: DisplayName
+  nameWithType: BaseHistoricalDataProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.DisplayName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.DisplayName
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_DisplayName
+  name: DisplayName
+  nameWithType: AlphaVantageHistoricalDataProvider.DisplayName
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.DisplayName
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Description
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Description
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Description
+  name: Description
+  nameWithType: BaseHistoricalDataProvider.Description
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Description
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Description*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Description
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_Description
+  name: Description
+  nameWithType: AlphaVantageHistoricalDataProvider.Description
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Description
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.HttpClientName
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.HttpClientName
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_HttpClientName
+  name: HttpClientName
+  nameWithType: BaseHistoricalDataProvider.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.HttpClientName
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.HttpClientName*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.HttpClientName
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_HttpClientName
+  name: HttpClientName
+  nameWithType: AlphaVantageHistoricalDataProvider.HttpClientName
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.HttpClientName
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Priority
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Priority
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Priority
+  name: Priority
+  nameWithType: BaseHistoricalDataProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Priority
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Priority*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Priority
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_Priority
+  name: Priority
+  nameWithType: AlphaVantageHistoricalDataProvider.Priority
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Priority
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitDelay
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitDelay
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_RateLimitDelay
+  name: RateLimitDelay
+  nameWithType: BaseHistoricalDataProvider.RateLimitDelay
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitDelay
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitDelay*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitDelay
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_RateLimitDelay
+  name: RateLimitDelay
+  nameWithType: AlphaVantageHistoricalDataProvider.RateLimitDelay
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitDelay
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.MaxRequestsPerWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.MaxRequestsPerWindow
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: BaseHistoricalDataProvider.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_MaxRequestsPerWindow
+  name: MaxRequestsPerWindow
+  nameWithType: AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.MaxRequestsPerWindow
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitWindow
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitWindow
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_RateLimitWindow
+  name: RateLimitWindow
+  nameWithType: BaseHistoricalDataProvider.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.RateLimitWindow
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitWindow*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitWindow
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_RateLimitWindow
+  name: RateLimitWindow
+  nameWithType: AlphaVantageHistoricalDataProvider.RateLimitWindow
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.RateLimitWindow
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_Capabilities
+  name: Capabilities
+  nameWithType: BaseHistoricalDataProvider.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.Capabilities
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Capabilities*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Capabilities
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_Capabilities
+  name: Capabilities
+  nameWithType: AlphaVantageHistoricalDataProvider.Capabilities
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.Capabilities
+- uid: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+  commentId: T:Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities.html
+  name: HistoricalDataCapabilities
+  nameWithType: HistoricalDataCapabilities
+  fullName: Meridian.Infrastructure.Adapters.Core.HistoricalDataCapabilities
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.SupportedIntervals*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.SupportedIntervals
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_SupportedIntervals
+  name: SupportedIntervals
+  nameWithType: AlphaVantageHistoricalDataProvider.SupportedIntervals
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.SupportedIntervals
+- uid: System.Collections.Generic.IReadOnlyList{System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<string>
+  nameWithType: IReadOnlyList<string>
+  fullName: System.Collections.Generic.IReadOnlyList<string>
+  nameWithType.vb: IReadOnlyList(Of String)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of String)
+  name.vb: IReadOnlyList(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.#ctor
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider__ctor_System_String_System_Net_Http_HttpClient_Serilog_ILogger_
+  name: AlphaVantageHistoricalDataProvider
+  nameWithType: AlphaVantageHistoricalDataProvider.AlphaVantageHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.AlphaVantageHistoricalDataProvider
+  nameWithType.vb: AlphaVantageHistoricalDataProvider.New
+  fullName.vb: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.New
+  name.vb: New
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync(CancellationToken)
+  nameWithType: BaseHistoricalDataProvider.IsAvailableAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.IsAvailableAsync(System.Threading.CancellationToken)
+    name: IsAvailableAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.IsAvailableAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.IsAvailableAsync
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_IsAvailableAsync_System_Threading_CancellationToken_
+  name: IsAvailableAsync
+  nameWithType: AlphaVantageHistoricalDataProvider.IsAvailableAsync
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.IsAvailableAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: BaseHistoricalDataProvider.GetDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: BaseHistoricalDataProvider.GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetDailyBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetDailyBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetDailyBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetDailyBarsAsync
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_GetDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetDailyBarsAsync
+  nameWithType: AlphaVantageHistoricalDataProvider.GetDailyBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetDailyBarsAsync
+- uid: System.Nullable{System.DateOnly}
+  commentId: T:System.Nullable{System.DateOnly}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly?
+  nameWithType: DateOnly?
+  fullName: System.DateOnly?
+  spec.csharp:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  spec.vb:
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.HistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<HistoricalBar>>
+  nameWithType: Task<IReadOnlyList<HistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.HistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.HistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of HistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.HistoricalBar
+    name: HistoricalBar
+  - name: )
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider
+  isExternal: true
+  href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  nameWithType: BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(string, DateOnly?, DateOnly?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(string, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  nameWithType.vb: BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(String, System.DateOnly?, System.DateOnly?, System.Threading.CancellationToken)
+  name.vb: GetAdjustedDailyBarsAsync(String, DateOnly?, DateOnly?, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAdjustedDailyBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.GetAdjustedDailyBarsAsync(System.String,System.Nullable{System.DateOnly},System.Nullable{System.DateOnly},System.Threading.CancellationToken)
+    name: GetAdjustedDailyBarsAsync
+    href: Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_Core_BaseHistoricalDataProvider_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateOnly
+    name: DateOnly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_GetAdjustedDailyBarsAsync_System_String_System_Nullable_System_DateOnly__System_Nullable_System_DateOnly__System_Threading_CancellationToken_
+  name: GetAdjustedDailyBarsAsync
+  nameWithType: AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetAdjustedDailyBarsAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Domain.Models.AdjustedHistoricalBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<AdjustedHistoricalBar>>
+  nameWithType: Task<IReadOnlyList<AdjustedHistoricalBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Domain.Models.AdjustedHistoricalBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Domain.Models.AdjustedHistoricalBar))
+  name.vb: Task(Of IReadOnlyList(Of AdjustedHistoricalBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.AdjustedHistoricalBar
+    name: AdjustedHistoricalBar
+  - name: )
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync
+  href: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.html#Meridian_Infrastructure_Adapters_AlphaVantage_AlphaVantageHistoricalDataProvider_GetIntradayBarsAsync_System_String_System_String_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_Threading_CancellationToken_
+  name: GetIntradayBarsAsync
+  nameWithType: AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync
+  fullName: Meridian.Infrastructure.Adapters.AlphaVantage.AlphaVantageHistoricalDataProvider.GetIntradayBarsAsync
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.IntradayBar}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<IntradayBar>>
+  nameWithType: Task<IReadOnlyList<IntradayBar>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.IntradayBar>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of IntradayBar))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.IntradayBar))
+  name.vb: Task(Of IReadOnlyList(Of IntradayBar))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.IntradayBar
+    name: IntradayBar
+    href: Meridian.Infrastructure.DataSources.IntradayBar.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.IntradayBar
+    name: IntradayBar
+    href: Meridian.Infrastructure.DataSources.IntradayBar.html
+  - name: )
+  - name: )

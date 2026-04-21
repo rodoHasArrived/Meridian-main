@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.SystemHealthStatus
+  commentId: T:Meridian.Application.Monitoring.SystemHealthStatus
+  id: SystemHealthStatus
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.SystemHealthStatus.Critical
+  - Meridian.Application.Monitoring.SystemHealthStatus.Healthy
+  - Meridian.Application.Monitoring.SystemHealthStatus.Warning
+  langs:
+  - csharp
+  - vb
+  name: SystemHealthStatus
+  nameWithType: SystemHealthStatus
+  fullName: Meridian.Application.Monitoring.SystemHealthStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SystemHealthStatus
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 402
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Overall system health status.
+  example: []
+  syntax:
+    content: 'public enum SystemHealthStatus : byte'
+    content.vb: Public Enum SystemHealthStatus As Byte
+- uid: Meridian.Application.Monitoring.SystemHealthStatus.Healthy
+  commentId: F:Meridian.Application.Monitoring.SystemHealthStatus.Healthy
+  id: Healthy
+  parent: Meridian.Application.Monitoring.SystemHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: Healthy
+  nameWithType: SystemHealthStatus.Healthy
+  fullName: Meridian.Application.Monitoring.SystemHealthStatus.Healthy
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Healthy
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 404
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Healthy = 0
+    return:
+      type: Meridian.Application.Monitoring.SystemHealthStatus
+- uid: Meridian.Application.Monitoring.SystemHealthStatus.Warning
+  commentId: F:Meridian.Application.Monitoring.SystemHealthStatus.Warning
+  id: Warning
+  parent: Meridian.Application.Monitoring.SystemHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: SystemHealthStatus.Warning
+  fullName: Meridian.Application.Monitoring.SystemHealthStatus.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 405
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Monitoring.SystemHealthStatus
+- uid: Meridian.Application.Monitoring.SystemHealthStatus.Critical
+  commentId: F:Meridian.Application.Monitoring.SystemHealthStatus.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.SystemHealthStatus
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: SystemHealthStatus.Critical
+  fullName: Meridian.Application.Monitoring.SystemHealthStatus.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Monitoring/SystemHealthChecker.cs
+    startLine: 406
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Critical = 2
+    return:
+      type: Meridian.Application.Monitoring.SystemHealthStatus
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.SystemHealthStatus
+  commentId: T:Meridian.Application.Monitoring.SystemHealthStatus
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.SystemHealthStatus.html
+  name: SystemHealthStatus
+  nameWithType: SystemHealthStatus
+  fullName: Meridian.Application.Monitoring.SystemHealthStatus

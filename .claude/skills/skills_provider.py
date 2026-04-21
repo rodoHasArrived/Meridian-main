@@ -1017,13 +1017,15 @@ def _all_skill_names() -> list[str]:
     """Return the sorted union of skill names from all registries.
 
     Includes skills from :data:`_SCRIPT_REGISTRY`, :data:`_RESOURCE_REGISTRY`,
-    and :data:`_STATIC_RESOURCE_SKILL` so that a skill whose only entries are
-    static file resources still appears in list-* output.  Used by the CLI's
-    list-* commands so that the skill set is always derived from a single source
-    of truth rather than being repeated in every error-message path.
+    :data:`_STATIC_RESOURCE_SKILL`, and file-based packages discovered under
+    ``.claude/skills`` so that portable skills without code-defined companions
+    still appear in list output. Used by the CLI's list-* commands so that the
+    skill set is always derived from a single source of truth rather than being
+    repeated in every error-message path.
     """
     return sorted(
-        {skill for skill, _ in _SCRIPT_REGISTRY}
+        set(discover_skills(_SKILLS_DIR))
+        | {skill for skill, _ in _SCRIPT_REGISTRY}
         | {skill for skill, _ in _RESOURCE_REGISTRY}
         | {_STATIC_RESOURCE_SKILL}
     )
@@ -1150,6 +1152,9 @@ class SkillsProviderCli:
     _SKILL_DESCRIPTIONS: dict[str, str] = {
         "meridian-code-review": (
             "Code review and architecture compliance for the Meridian project."
+        ),
+        "meridian-simulated-user-panel": (
+            "Manifest-driven design-partner, release-gate, and usability-lab user panels."
         ),
         "ai-docs-maintain": (
             "AI documentation maintenance: freshness checks, drift detection, archiving."

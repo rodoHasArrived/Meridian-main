@@ -1,0 +1,865 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  id: ProviderAvailabilitySummary
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailabilityRate
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailableProviders
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.BackfillAvailable
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasBackfillCapability
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasStreamingCapability
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasSymbolSearchCapability
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.ProviderStatus
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.StreamingAvailable
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.SymbolSearchAvailable
+  - Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.TotalProviders
+  langs:
+  - csharp
+  - vb
+  name: ProviderAvailabilitySummary
+  nameWithType: ProviderAvailabilitySummary
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderAvailabilitySummary
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 170
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Provider availability summary for monitoring and diagnostics.
+  example: []
+  syntax:
+    content: 'public sealed record ProviderAvailabilitySummary : IEquatable<ProviderAvailabilitySummary>'
+    content.vb: Public NotInheritable Class ProviderAvailabilitySummary Implements IEquatable(Of ProviderAvailabilitySummary)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.TotalProviders
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.TotalProviders
+  id: TotalProviders
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: TotalProviders
+  nameWithType: ProviderAvailabilitySummary.TotalProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.TotalProviders
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalProviders
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 172
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public required int TotalProviders { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalProviders As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.TotalProviders*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailableProviders
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailableProviders
+  id: AvailableProviders
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: AvailableProviders
+  nameWithType: ProviderAvailabilitySummary.AvailableProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailableProviders
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvailableProviders
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 173
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public required int AvailableProviders { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property AvailableProviders As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailableProviders*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.StreamingAvailable
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.StreamingAvailable
+  id: StreamingAvailable
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: StreamingAvailable
+  nameWithType: ProviderAvailabilitySummary.StreamingAvailable
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.StreamingAvailable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamingAvailable
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 174
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public required int StreamingAvailable { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property StreamingAvailable As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.StreamingAvailable*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.BackfillAvailable
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.BackfillAvailable
+  id: BackfillAvailable
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: BackfillAvailable
+  nameWithType: ProviderAvailabilitySummary.BackfillAvailable
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.BackfillAvailable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillAvailable
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 175
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public required int BackfillAvailable { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property BackfillAvailable As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.BackfillAvailable*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.SymbolSearchAvailable
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.SymbolSearchAvailable
+  id: SymbolSearchAvailable
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: SymbolSearchAvailable
+  nameWithType: ProviderAvailabilitySummary.SymbolSearchAvailable
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.SymbolSearchAvailable
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolSearchAvailable
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 176
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public required int SymbolSearchAvailable { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property SymbolSearchAvailable As Integer
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.SymbolSearchAvailable*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.ProviderStatus
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.ProviderStatus
+  id: ProviderStatus
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: ProviderStatus
+  nameWithType: ProviderAvailabilitySummary.ProviderStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.ProviderStatus
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderStatus
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public required IReadOnlyDictionary<string, bool> ProviderStatus { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Boolean}
+    content.vb: Public Property ProviderStatus As IReadOnlyDictionary(Of String, Boolean)
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.ProviderStatus*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasStreamingCapability
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasStreamingCapability
+  id: HasStreamingCapability
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: HasStreamingCapability
+  nameWithType: ProviderAvailabilitySummary.HasStreamingCapability
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasStreamingCapability
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasStreamingCapability
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public bool HasStreamingCapability { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property HasStreamingCapability As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasStreamingCapability*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasBackfillCapability
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasBackfillCapability
+  id: HasBackfillCapability
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: HasBackfillCapability
+  nameWithType: ProviderAvailabilitySummary.HasBackfillCapability
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasBackfillCapability
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasBackfillCapability
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 180
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public bool HasBackfillCapability { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property HasBackfillCapability As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasBackfillCapability*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasSymbolSearchCapability
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasSymbolSearchCapability
+  id: HasSymbolSearchCapability
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: HasSymbolSearchCapability
+  nameWithType: ProviderAvailabilitySummary.HasSymbolSearchCapability
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasSymbolSearchCapability
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasSymbolSearchCapability
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public bool HasSymbolSearchCapability { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property HasSymbolSearchCapability As Boolean
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasSymbolSearchCapability*
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailabilityRate
+  commentId: P:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailabilityRate
+  id: AvailabilityRate
+  parent: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+  langs:
+  - csharp
+  - vb
+  name: AvailabilityRate
+  nameWithType: ProviderAvailabilitySummary.AvailabilityRate
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailabilityRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AvailabilityRate
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/ProviderServiceExtensions.cs
+    startLine: 182
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public double AvailabilityRate { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property AvailabilityRate As Double
+  overload: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailabilityRate*
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ProviderAvailabilitySummary>
+  nameWithType: IEquatable<ProviderAvailabilitySummary>
+  fullName: System.IEquatable<Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary>
+  nameWithType.vb: IEquatable(Of ProviderAvailabilitySummary)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary)
+  name.vb: IEquatable(Of ProviderAvailabilitySummary)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+    name: ProviderAvailabilitySummary
+    href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary
+    name: ProviderAvailabilitySummary
+    href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.TotalProviders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.TotalProviders
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_TotalProviders
+  name: TotalProviders
+  nameWithType: ProviderAvailabilitySummary.TotalProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.TotalProviders
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailableProviders*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailableProviders
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_AvailableProviders
+  name: AvailableProviders
+  nameWithType: ProviderAvailabilitySummary.AvailableProviders
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailableProviders
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.StreamingAvailable*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.StreamingAvailable
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_StreamingAvailable
+  name: StreamingAvailable
+  nameWithType: ProviderAvailabilitySummary.StreamingAvailable
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.StreamingAvailable
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.BackfillAvailable*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.BackfillAvailable
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_BackfillAvailable
+  name: BackfillAvailable
+  nameWithType: ProviderAvailabilitySummary.BackfillAvailable
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.BackfillAvailable
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.SymbolSearchAvailable*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.SymbolSearchAvailable
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_SymbolSearchAvailable
+  name: SymbolSearchAvailable
+  nameWithType: ProviderAvailabilitySummary.SymbolSearchAvailable
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.SymbolSearchAvailable
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.ProviderStatus*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.ProviderStatus
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_ProviderStatus
+  name: ProviderStatus
+  nameWithType: ProviderAvailabilitySummary.ProviderStatus
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.ProviderStatus
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.Boolean}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.Boolean}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, bool>
+  nameWithType: IReadOnlyDictionary<string, bool>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, bool>
+  nameWithType.vb: IReadOnlyDictionary(Of String, Boolean)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Boolean)
+  name.vb: IReadOnlyDictionary(Of String, Boolean)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasStreamingCapability*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasStreamingCapability
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_HasStreamingCapability
+  name: HasStreamingCapability
+  nameWithType: ProviderAvailabilitySummary.HasStreamingCapability
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasStreamingCapability
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasBackfillCapability*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasBackfillCapability
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_HasBackfillCapability
+  name: HasBackfillCapability
+  nameWithType: ProviderAvailabilitySummary.HasBackfillCapability
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasBackfillCapability
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasSymbolSearchCapability*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasSymbolSearchCapability
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_HasSymbolSearchCapability
+  name: HasSymbolSearchCapability
+  nameWithType: ProviderAvailabilitySummary.HasSymbolSearchCapability
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.HasSymbolSearchCapability
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailabilityRate*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailabilityRate
+  href: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.html#Meridian_Infrastructure_Adapters_Core_ProviderAvailabilitySummary_AvailabilityRate
+  name: AvailabilityRate
+  nameWithType: ProviderAvailabilitySummary.AvailabilityRate
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderAvailabilitySummary.AvailabilityRate
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double

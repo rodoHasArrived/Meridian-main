@@ -1,0 +1,504 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.CompletenessTrendPoint
+  commentId: T:Meridian.Ui.Services.CompletenessTrendPoint
+  id: CompletenessTrendPoint
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.CompletenessTrendPoint.Completeness
+  - Meridian.Ui.Services.CompletenessTrendPoint.EventCount
+  - Meridian.Ui.Services.CompletenessTrendPoint.GapCount
+  - Meridian.Ui.Services.CompletenessTrendPoint.PeriodEnd
+  - Meridian.Ui.Services.CompletenessTrendPoint.PeriodStart
+  langs:
+  - csharp
+  - vb
+  name: CompletenessTrendPoint
+  nameWithType: CompletenessTrendPoint
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletenessTrendPoint
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 661
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Completeness trend point.
+  example: []
+  syntax:
+    content: public sealed class CompletenessTrendPoint
+    content.vb: Public NotInheritable Class CompletenessTrendPoint
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.PeriodStart
+  commentId: P:Meridian.Ui.Services.CompletenessTrendPoint.PeriodStart
+  id: PeriodStart
+  parent: Meridian.Ui.Services.CompletenessTrendPoint
+  langs:
+  - csharp
+  - vb
+  name: PeriodStart
+  nameWithType: CompletenessTrendPoint.PeriodStart
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.PeriodStart
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PeriodStart
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 663
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly PeriodStart { get; set; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property PeriodStart As DateOnly
+  overload: Meridian.Ui.Services.CompletenessTrendPoint.PeriodStart*
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.PeriodEnd
+  commentId: P:Meridian.Ui.Services.CompletenessTrendPoint.PeriodEnd
+  id: PeriodEnd
+  parent: Meridian.Ui.Services.CompletenessTrendPoint
+  langs:
+  - csharp
+  - vb
+  name: PeriodEnd
+  nameWithType: CompletenessTrendPoint.PeriodEnd
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.PeriodEnd
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PeriodEnd
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 664
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly PeriodEnd { get; set; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property PeriodEnd As DateOnly
+  overload: Meridian.Ui.Services.CompletenessTrendPoint.PeriodEnd*
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.Completeness
+  commentId: P:Meridian.Ui.Services.CompletenessTrendPoint.Completeness
+  id: Completeness
+  parent: Meridian.Ui.Services.CompletenessTrendPoint
+  langs:
+  - csharp
+  - vb
+  name: Completeness
+  nameWithType: CompletenessTrendPoint.Completeness
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.Completeness
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Completeness
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 665
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double Completeness { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Completeness As Double
+  overload: Meridian.Ui.Services.CompletenessTrendPoint.Completeness*
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.EventCount
+  commentId: P:Meridian.Ui.Services.CompletenessTrendPoint.EventCount
+  id: EventCount
+  parent: Meridian.Ui.Services.CompletenessTrendPoint
+  langs:
+  - csharp
+  - vb
+  name: EventCount
+  nameWithType: CompletenessTrendPoint.EventCount
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.EventCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventCount
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 666
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long EventCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EventCount As Long
+  overload: Meridian.Ui.Services.CompletenessTrendPoint.EventCount*
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.GapCount
+  commentId: P:Meridian.Ui.Services.CompletenessTrendPoint.GapCount
+  id: GapCount
+  parent: Meridian.Ui.Services.CompletenessTrendPoint
+  langs:
+  - csharp
+  - vb
+  name: GapCount
+  nameWithType: CompletenessTrendPoint.GapCount
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.GapCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataCalendarService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapCount
+    path: ../../src/Meridian.Ui.Services/Services/DataCalendarService.cs
+    startLine: 667
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public int GapCount { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property GapCount As Integer
+  overload: Meridian.Ui.Services.CompletenessTrendPoint.GapCount*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.PeriodStart*
+  commentId: Overload:Meridian.Ui.Services.CompletenessTrendPoint.PeriodStart
+  href: Meridian.Ui.Services.CompletenessTrendPoint.html#Meridian_Ui_Services_CompletenessTrendPoint_PeriodStart
+  name: PeriodStart
+  nameWithType: CompletenessTrendPoint.PeriodStart
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.PeriodStart
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.PeriodEnd*
+  commentId: Overload:Meridian.Ui.Services.CompletenessTrendPoint.PeriodEnd
+  href: Meridian.Ui.Services.CompletenessTrendPoint.html#Meridian_Ui_Services_CompletenessTrendPoint_PeriodEnd
+  name: PeriodEnd
+  nameWithType: CompletenessTrendPoint.PeriodEnd
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.PeriodEnd
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.Completeness*
+  commentId: Overload:Meridian.Ui.Services.CompletenessTrendPoint.Completeness
+  href: Meridian.Ui.Services.CompletenessTrendPoint.html#Meridian_Ui_Services_CompletenessTrendPoint_Completeness
+  name: Completeness
+  nameWithType: CompletenessTrendPoint.Completeness
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.Completeness
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.EventCount*
+  commentId: Overload:Meridian.Ui.Services.CompletenessTrendPoint.EventCount
+  href: Meridian.Ui.Services.CompletenessTrendPoint.html#Meridian_Ui_Services_CompletenessTrendPoint_EventCount
+  name: EventCount
+  nameWithType: CompletenessTrendPoint.EventCount
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.EventCount
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.CompletenessTrendPoint.GapCount*
+  commentId: Overload:Meridian.Ui.Services.CompletenessTrendPoint.GapCount
+  href: Meridian.Ui.Services.CompletenessTrendPoint.html#Meridian_Ui_Services_CompletenessTrendPoint_GapCount
+  name: GapCount
+  nameWithType: CompletenessTrendPoint.GapCount
+  fullName: Meridian.Ui.Services.CompletenessTrendPoint.GapCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer

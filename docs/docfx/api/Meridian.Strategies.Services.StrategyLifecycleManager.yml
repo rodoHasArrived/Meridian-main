@@ -1,0 +1,1071 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager
+  commentId: T:Meridian.Strategies.Services.StrategyLifecycleManager
+  id: StrategyLifecycleManager
+  parent: Meridian.Strategies.Services
+  children:
+  - Meridian.Strategies.Services.StrategyLifecycleManager.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.StrategyLifecycleManager})
+  - Meridian.Strategies.Services.StrategyLifecycleManager.DisposeAsync
+  - Meridian.Strategies.Services.StrategyLifecycleManager.GetStatuses
+  - Meridian.Strategies.Services.StrategyLifecycleManager.PauseAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyLifecycleManager.Register(Meridian.Strategies.Interfaces.ILiveStrategy)
+  - Meridian.Strategies.Services.StrategyLifecycleManager.StartAsync(System.String,Meridian.Execution.Interfaces.IExecutionContext,Meridian.Strategies.Models.RunType,System.Threading.CancellationToken)
+  - Meridian.Strategies.Services.StrategyLifecycleManager.StopAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: StrategyLifecycleManager
+  nameWithType: StrategyLifecycleManager
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyLifecycleManager
+    path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Manages the lifecycle of registered <xref href="Meridian.Strategies.Interfaces.ILiveStrategy" data-throw-if-not-resolved="false"></xref> instances.
+
+    Tracks status transitions and coordinates startup, pause, and stop across strategies.
+
+    Enforced by ADR-016.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-016", "Strategies pillar — strategy lifecycle orchestration")]
+
+      public sealed class StrategyLifecycleManager : IAsyncDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-016", "Strategies pillar — strategy lifecycle orchestration")>
+
+      Public NotInheritable Class StrategyLifecycleManager Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-016
+    - type: System.String
+      value: Strategies pillar — strategy lifecycle orchestration
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.StrategyLifecycleManager})
+  commentId: M:Meridian.Strategies.Services.StrategyLifecycleManager.#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.StrategyLifecycleManager})
+  id: '#ctor(Meridian.Strategies.Interfaces.IStrategyRepository,Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.StrategyLifecycleManager})'
+  parent: Meridian.Strategies.Services.StrategyLifecycleManager
+  langs:
+  - csharp
+  - vb
+  name: StrategyLifecycleManager(IStrategyRepository, ILogger<StrategyLifecycleManager>)
+  nameWithType: StrategyLifecycleManager.StrategyLifecycleManager(IStrategyRepository, ILogger<StrategyLifecycleManager>)
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.StrategyLifecycleManager(Meridian.Strategies.Interfaces.IStrategyRepository, Microsoft.Extensions.Logging.ILogger<Meridian.Strategies.Services.StrategyLifecycleManager>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Creates a new lifecycle manager.
+  example: []
+  syntax:
+    content: public StrategyLifecycleManager(IStrategyRepository repository, ILogger<StrategyLifecycleManager> logger)
+    parameters:
+    - id: repository
+      type: Meridian.Strategies.Interfaces.IStrategyRepository
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.StrategyLifecycleManager}
+    content.vb: Public Sub New(repository As IStrategyRepository, logger As ILogger(Of StrategyLifecycleManager))
+  overload: Meridian.Strategies.Services.StrategyLifecycleManager.#ctor*
+  nameWithType.vb: StrategyLifecycleManager.New(IStrategyRepository, ILogger(Of StrategyLifecycleManager))
+  fullName.vb: Meridian.Strategies.Services.StrategyLifecycleManager.New(Meridian.Strategies.Interfaces.IStrategyRepository, Microsoft.Extensions.Logging.ILogger(Of Meridian.Strategies.Services.StrategyLifecycleManager))
+  name.vb: New(IStrategyRepository, ILogger(Of StrategyLifecycleManager))
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.Register(Meridian.Strategies.Interfaces.ILiveStrategy)
+  commentId: M:Meridian.Strategies.Services.StrategyLifecycleManager.Register(Meridian.Strategies.Interfaces.ILiveStrategy)
+  id: Register(Meridian.Strategies.Interfaces.ILiveStrategy)
+  parent: Meridian.Strategies.Services.StrategyLifecycleManager
+  langs:
+  - csharp
+  - vb
+  name: Register(ILiveStrategy)
+  nameWithType: StrategyLifecycleManager.Register(ILiveStrategy)
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.Register(Meridian.Strategies.Interfaces.ILiveStrategy)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Register
+    path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Registers a strategy so it can be started by this manager.
+  example: []
+  syntax:
+    content: public void Register(ILiveStrategy strategy)
+    parameters:
+    - id: strategy
+      type: Meridian.Strategies.Interfaces.ILiveStrategy
+    content.vb: Public Sub Register(strategy As ILiveStrategy)
+  overload: Meridian.Strategies.Services.StrategyLifecycleManager.Register*
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.StartAsync(System.String,Meridian.Execution.Interfaces.IExecutionContext,Meridian.Strategies.Models.RunType,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyLifecycleManager.StartAsync(System.String,Meridian.Execution.Interfaces.IExecutionContext,Meridian.Strategies.Models.RunType,System.Threading.CancellationToken)
+  id: StartAsync(System.String,Meridian.Execution.Interfaces.IExecutionContext,Meridian.Strategies.Models.RunType,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyLifecycleManager
+  langs:
+  - csharp
+  - vb
+  name: StartAsync(string, IExecutionContext, RunType, CancellationToken)
+  nameWithType: StrategyLifecycleManager.StartAsync(string, IExecutionContext, RunType, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.StartAsync(string, Meridian.Execution.Interfaces.IExecutionContext, Meridian.Strategies.Models.RunType, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Starts a registered strategy against <code class="paramref">ctx</code>.
+
+    Opens a new run record in the repository.
+  example: []
+  syntax:
+    content: public Task StartAsync(string strategyId, IExecutionContext ctx, RunType runType, CancellationToken ct = default)
+    parameters:
+    - id: strategyId
+      type: System.String
+    - id: ctx
+      type: Meridian.Execution.Interfaces.IExecutionContext
+    - id: runType
+      type: Meridian.Strategies.Models.RunType
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StartAsync(strategyId As String, ctx As IExecutionContext, runType As RunType, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Strategies.Services.StrategyLifecycleManager.StartAsync*
+  nameWithType.vb: StrategyLifecycleManager.StartAsync(String, IExecutionContext, RunType, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyLifecycleManager.StartAsync(String, Meridian.Execution.Interfaces.IExecutionContext, Meridian.Strategies.Models.RunType, System.Threading.CancellationToken)
+  name.vb: StartAsync(String, IExecutionContext, RunType, CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.PauseAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyLifecycleManager.PauseAsync(System.String,System.Threading.CancellationToken)
+  id: PauseAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyLifecycleManager
+  langs:
+  - csharp
+  - vb
+  name: PauseAsync(string, CancellationToken)
+  nameWithType: StrategyLifecycleManager.PauseAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.PauseAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PauseAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Pauses a running strategy.
+  example: []
+  syntax:
+    content: public Task PauseAsync(string strategyId, CancellationToken ct = default)
+    parameters:
+    - id: strategyId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function PauseAsync(strategyId As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Strategies.Services.StrategyLifecycleManager.PauseAsync*
+  nameWithType.vb: StrategyLifecycleManager.PauseAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyLifecycleManager.PauseAsync(String, System.Threading.CancellationToken)
+  name.vb: PauseAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.StopAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Strategies.Services.StrategyLifecycleManager.StopAsync(System.String,System.Threading.CancellationToken)
+  id: StopAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Strategies.Services.StrategyLifecycleManager
+  langs:
+  - csharp
+  - vb
+  name: StopAsync(string, CancellationToken)
+  nameWithType: StrategyLifecycleManager.StopAsync(string, CancellationToken)
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.StopAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Stops a running strategy and closes its run record in the repository.
+  example: []
+  syntax:
+    content: public Task StopAsync(string strategyId, CancellationToken ct = default)
+    parameters:
+    - id: strategyId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StopAsync(strategyId As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Strategies.Services.StrategyLifecycleManager.StopAsync*
+  nameWithType.vb: StrategyLifecycleManager.StopAsync(String, CancellationToken)
+  fullName.vb: Meridian.Strategies.Services.StrategyLifecycleManager.StopAsync(String, System.Threading.CancellationToken)
+  name.vb: StopAsync(String, CancellationToken)
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.GetStatuses
+  commentId: M:Meridian.Strategies.Services.StrategyLifecycleManager.GetStatuses
+  id: GetStatuses
+  parent: Meridian.Strategies.Services.StrategyLifecycleManager
+  langs:
+  - csharp
+  - vb
+  name: GetStatuses()
+  nameWithType: StrategyLifecycleManager.GetStatuses()
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.GetStatuses()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatuses
+    path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+    startLine: 125
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: Returns a snapshot of all registered strategy IDs and their current status.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, StrategyStatus> GetStatuses()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Strategies.Models.StrategyStatus}
+    content.vb: Public Function GetStatuses() As IReadOnlyDictionary(Of String, StrategyStatus)
+  overload: Meridian.Strategies.Services.StrategyLifecycleManager.GetStatuses*
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.DisposeAsync
+  commentId: M:Meridian.Strategies.Services.StrategyLifecycleManager.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Strategies.Services.StrategyLifecycleManager
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: StrategyLifecycleManager.DisposeAsync()
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs
+    startLine: 149
+  assemblies:
+  - Meridian.Strategies
+  namespace: Meridian.Strategies.Services
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Strategies.Services.StrategyLifecycleManager.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Strategies.Interfaces.ILiveStrategy
+  commentId: T:Meridian.Strategies.Interfaces.ILiveStrategy
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.ILiveStrategy.html
+  name: ILiveStrategy
+  nameWithType: ILiveStrategy
+  fullName: Meridian.Strategies.Interfaces.ILiveStrategy
+- uid: Meridian.Strategies.Services
+  commentId: N:Meridian.Strategies.Services
+  href: Meridian.html
+  name: Meridian.Strategies.Services
+  nameWithType: Meridian.Strategies.Services
+  fullName: Meridian.Strategies.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Services
+    name: Services
+    href: Meridian.Strategies.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Strategies.Interfaces
+  commentId: N:Meridian.Strategies.Interfaces
+  href: Meridian.html
+  name: Meridian.Strategies.Interfaces
+  nameWithType: Meridian.Strategies.Interfaces
+  fullName: Meridian.Strategies.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Interfaces
+    name: Interfaces
+    href: Meridian.Strategies.Interfaces.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.#ctor*
+  commentId: Overload:Meridian.Strategies.Services.StrategyLifecycleManager.#ctor
+  href: Meridian.Strategies.Services.StrategyLifecycleManager.html#Meridian_Strategies_Services_StrategyLifecycleManager__ctor_Meridian_Strategies_Interfaces_IStrategyRepository_Microsoft_Extensions_Logging_ILogger_Meridian_Strategies_Services_StrategyLifecycleManager__
+  name: StrategyLifecycleManager
+  nameWithType: StrategyLifecycleManager.StrategyLifecycleManager
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.StrategyLifecycleManager
+  nameWithType.vb: StrategyLifecycleManager.New
+  fullName.vb: Meridian.Strategies.Services.StrategyLifecycleManager.New
+  name.vb: New
+- uid: Meridian.Strategies.Interfaces.IStrategyRepository
+  commentId: T:Meridian.Strategies.Interfaces.IStrategyRepository
+  parent: Meridian.Strategies.Interfaces
+  href: Meridian.Strategies.Interfaces.IStrategyRepository.html
+  name: IStrategyRepository
+  nameWithType: IStrategyRepository
+  fullName: Meridian.Strategies.Interfaces.IStrategyRepository
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.StrategyLifecycleManager}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Strategies.Services.StrategyLifecycleManager}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<StrategyLifecycleManager>
+  nameWithType: ILogger<StrategyLifecycleManager>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Strategies.Services.StrategyLifecycleManager>
+  nameWithType.vb: ILogger(Of StrategyLifecycleManager)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Strategies.Services.StrategyLifecycleManager)
+  name.vb: ILogger(Of StrategyLifecycleManager)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Strategies.Services.StrategyLifecycleManager
+    name: StrategyLifecycleManager
+    href: Meridian.Strategies.Services.StrategyLifecycleManager.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Strategies.Services.StrategyLifecycleManager
+    name: StrategyLifecycleManager
+    href: Meridian.Strategies.Services.StrategyLifecycleManager.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.Register*
+  commentId: Overload:Meridian.Strategies.Services.StrategyLifecycleManager.Register
+  href: Meridian.Strategies.Services.StrategyLifecycleManager.html#Meridian_Strategies_Services_StrategyLifecycleManager_Register_Meridian_Strategies_Interfaces_ILiveStrategy_
+  name: Register
+  nameWithType: StrategyLifecycleManager.Register
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.Register
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.StartAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyLifecycleManager.StartAsync
+  href: Meridian.Strategies.Services.StrategyLifecycleManager.html#Meridian_Strategies_Services_StrategyLifecycleManager_StartAsync_System_String_Meridian_Execution_Interfaces_IExecutionContext_Meridian_Strategies_Models_RunType_System_Threading_CancellationToken_
+  name: StartAsync
+  nameWithType: StrategyLifecycleManager.StartAsync
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.StartAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Execution.Interfaces.IExecutionContext
+  commentId: T:Meridian.Execution.Interfaces.IExecutionContext
+  parent: Meridian.Execution.Interfaces
+  href: Meridian.Execution.Interfaces.IExecutionContext.html
+  name: IExecutionContext
+  nameWithType: IExecutionContext
+  fullName: Meridian.Execution.Interfaces.IExecutionContext
+- uid: Meridian.Strategies.Models.RunType
+  commentId: T:Meridian.Strategies.Models.RunType
+  parent: Meridian.Strategies.Models
+  href: Meridian.Strategies.Models.RunType.html
+  name: RunType
+  nameWithType: RunType
+  fullName: Meridian.Strategies.Models.RunType
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Execution.Interfaces
+  commentId: N:Meridian.Execution.Interfaces
+  href: Meridian.html
+  name: Meridian.Execution.Interfaces
+  nameWithType: Meridian.Execution.Interfaces
+  fullName: Meridian.Execution.Interfaces
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Interfaces
+    name: Interfaces
+    href: Meridian.Execution.Interfaces.html
+- uid: Meridian.Strategies.Models
+  commentId: N:Meridian.Strategies.Models
+  href: Meridian.html
+  name: Meridian.Strategies.Models
+  nameWithType: Meridian.Strategies.Models
+  fullName: Meridian.Strategies.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Strategies
+    name: Strategies
+    href: Meridian.Strategies.html
+  - name: .
+  - uid: Meridian.Strategies.Models
+    name: Models
+    href: Meridian.Strategies.Models.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.PauseAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyLifecycleManager.PauseAsync
+  href: Meridian.Strategies.Services.StrategyLifecycleManager.html#Meridian_Strategies_Services_StrategyLifecycleManager_PauseAsync_System_String_System_Threading_CancellationToken_
+  name: PauseAsync
+  nameWithType: StrategyLifecycleManager.PauseAsync
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.PauseAsync
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.StopAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyLifecycleManager.StopAsync
+  href: Meridian.Strategies.Services.StrategyLifecycleManager.html#Meridian_Strategies_Services_StrategyLifecycleManager_StopAsync_System_String_System_Threading_CancellationToken_
+  name: StopAsync
+  nameWithType: StrategyLifecycleManager.StopAsync
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.StopAsync
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.GetStatuses*
+  commentId: Overload:Meridian.Strategies.Services.StrategyLifecycleManager.GetStatuses
+  href: Meridian.Strategies.Services.StrategyLifecycleManager.html#Meridian_Strategies_Services_StrategyLifecycleManager_GetStatuses
+  name: GetStatuses
+  nameWithType: StrategyLifecycleManager.GetStatuses
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.GetStatuses
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Strategies.Models.StrategyStatus}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Strategies.Models.StrategyStatus}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, StrategyStatus>
+  nameWithType: IReadOnlyDictionary<string, StrategyStatus>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Strategies.Models.StrategyStatus>
+  nameWithType.vb: IReadOnlyDictionary(Of String, StrategyStatus)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Strategies.Models.StrategyStatus)
+  name.vb: IReadOnlyDictionary(Of String, StrategyStatus)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Strategies.Models.StrategyStatus
+    name: StrategyStatus
+    href: Meridian.Strategies.Models.StrategyStatus.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Strategies.Models.StrategyStatus
+    name: StrategyStatus
+    href: Meridian.Strategies.Models.StrategyStatus.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Strategies.Services.StrategyLifecycleManager.DisposeAsync*
+  commentId: Overload:Meridian.Strategies.Services.StrategyLifecycleManager.DisposeAsync
+  href: Meridian.Strategies.Services.StrategyLifecycleManager.html#Meridian_Strategies_Services_StrategyLifecycleManager_DisposeAsync
+  name: DisposeAsync
+  nameWithType: StrategyLifecycleManager.DisposeAsync
+  fullName: Meridian.Strategies.Services.StrategyLifecycleManager.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

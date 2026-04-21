@@ -78,6 +78,8 @@ The storage system comprises **61 files** across multiple subsystems.
 | `Storage/Services/SymbolRegistryService.cs` | Symbol registry management |
 | `Storage/Services/TierMigrationService.cs` | Hot/warm/cold tier migration |
 
+Persistence note: `Storage/Services/SourceRegistry.cs`, `Storage/Services/MetadataTagService.cs`, and `Storage/Services/DataLineageService.cs` must finish their atomic disk write before a mutating call returns. Do not reintroduce fire-and-forget saves for these lifecycle-sensitive metadata stores, and keep their on-disk JSON wired through source-generated `JsonSerializerContext` implementations for ADR-014 compliance.
+
 ### Export System (10 files)
 | File | Purpose |
 |------|---------|
@@ -114,6 +116,10 @@ The storage system comprises **61 files** across multiple subsystems.
 | `Storage/Maintenance/IArchiveMaintenanceService.cs` | Maintenance interface |
 | `Storage/Maintenance/IMaintenanceExecutionHistory.cs` | Execution history interface |
 | `Storage/Maintenance/ArchiveMaintenanceModels.cs` | Maintenance models |
+
+Maintenance execution history and schedule metadata are part of the execution completion contract.
+`ScheduledArchiveMaintenanceService` should await `MaintenanceExecutionHistory` and `ArchiveMaintenanceScheduleManager` persistence before a run is treated as queued, started, or finished.
+Avoid fire-and-forget persistence and avoid `CancellationToken.None` for shutdown-sensitive maintenance metadata writes.
 
 ### Interfaces (5 files)
 | File | Purpose |
@@ -177,26 +183,46 @@ data/
 
 ## Configuration
 
-### StorageOptions
+### Host-Level Data Root
+
+Meridian resolves storage roots in two stages:
+
+1. `AppConfig.DataRoot` selects the logical storage root from `appsettings.json`.
+2. The active host resolves that value against the active config file location, then passes the absolute result into `StorageOptions.RootPath`.
+
+For the installed WPF desktop host, the active config file is `%LocalAppData%\Meridian\appsettings.json`, so relative `DataRoot` values land outside the install directory by default. The repository `config/appsettings.json` file remains the normal CLI, server, and local development config surface.
+
+Legacy desktop configs that still carry `Storage.BaseDirectory` should be treated as migration input only. New guidance and new config writes should prefer top-level `DataRoot`.
+Wizard review/save flows should serialize through `AppConfigJsonOptions.Write` and persist through `ConfigStore` so the preview JSON, the saved file, and the resolved active config path stay aligned.
+Paper-session order history is part of the session continuity contract; await the durable order-history append before treating an update as committed.
+
+### AppConfig Excerpt
+
+```csharp
+public sealed record AppConfig(
+    string DataRoot = "data",
+    bool? Compress = null,
+    StorageConfig? Storage = null,
+    ...
+);
+```
+
+### StorageOptions Excerpt
 
 ```csharp
 public sealed class StorageOptions
 {
-    public string DataRoot { get; set; } = "./data";
-    public FileNamingConvention NamingConvention { get; set; } = FileNamingConvention.BySymbol;
-    public DatePartition DatePartition { get; set; } = DatePartition.Daily;
-    public bool IncludeProvider { get; set; } = false;
-    public bool CompressOutput { get; set; } = true;
-
-    // Retention
-    public int? RetentionDays { get; set; }
-    public long? MaxTotalBytes { get; set; }
-    public long? MaxTotalMegabytes { get; set; }
-
-    // WAL
-    public bool EnableWal { get; set; } = true;
-    public WalSyncMode WalSyncMode { get; set; } = WalSyncMode.BatchedSync;
-    public int WalFlushIntervalMs { get; set; } = 1000;
+    public string RootPath { get; init; } = "data";
+    public bool Compress { get; init; } = false;
+    public CompressionCodec CompressionCodec { get; init; } = CompressionCodec.Gzip;
+    public FileNamingConvention NamingConvention { get; init; } = FileNamingConvention.BySymbol;
+    public DatePartition DatePartition { get; init; } = DatePartition.Daily;
+    public bool IncludeProvider { get; init; } = false;
+    public string? FilePrefix { get; init; }
+    public int? RetentionDays { get; init; }
+    public long? MaxTotalBytes { get; init; }
+    public bool EnableParquetSink { get; init; } = false;
+    public IReadOnlyList<string>? ActiveSinks { get; init; }
 }
 ```
 
@@ -204,19 +230,22 @@ public sealed class StorageOptions
 
 ```json
 {
+  "DataRoot": "data",
   "Storage": {
-    "DataRoot": "./data",
     "NamingConvention": "BySymbol",
     "DatePartition": "Daily",
     "IncludeProvider": true,
-    "CompressOutput": true,
     "RetentionDays": 30,
     "MaxTotalMegabytes": 10240,
-    "EnableWal": true,
-    "WalSyncMode": "BatchedSync"
+    "EnableParquetSink": true,
+    "Sinks": ["jsonl", "parquet"]
   }
 }
 ```
+
+### Desktop Persistence Note
+
+On the WPF desktop host, retained local artifacts such as activity history, collection sessions, symbol-mapping overrides, schema dictionaries, watchlists, and workspace metadata follow the resolved external config and data roots instead of the install directory. When auditing upgrade safety, inspect `%LocalAppData%\Meridian\appsettings.json` and the resolved `DataRoot` first.
 
 ---
 

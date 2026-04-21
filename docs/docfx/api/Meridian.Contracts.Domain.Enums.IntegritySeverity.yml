@@ -1,0 +1,163 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Enums.IntegritySeverity
+  commentId: T:Meridian.Contracts.Domain.Enums.IntegritySeverity
+  id: IntegritySeverity
+  parent: Meridian.Contracts.Domain.Enums
+  children:
+  - Meridian.Contracts.Domain.Enums.IntegritySeverity.Error
+  - Meridian.Contracts.Domain.Enums.IntegritySeverity.Info
+  - Meridian.Contracts.Domain.Enums.IntegritySeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: IntegritySeverity
+  nameWithType: IntegritySeverity
+  fullName: Meridian.Contracts.Domain.Enums.IntegritySeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntegritySeverity
+    path: ../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Severity level for data integrity events.
+  example: []
+  syntax:
+    content: 'public enum IntegritySeverity : byte'
+    content.vb: Public Enum IntegritySeverity As Byte
+- uid: Meridian.Contracts.Domain.Enums.IntegritySeverity.Info
+  commentId: F:Meridian.Contracts.Domain.Enums.IntegritySeverity.Info
+  id: Info
+  parent: Meridian.Contracts.Domain.Enums.IntegritySeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: IntegritySeverity.Info
+  fullName: Meridian.Contracts.Domain.Enums.IntegritySeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Informational event, no action required.
+  example: []
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Contracts.Domain.Enums.IntegritySeverity
+- uid: Meridian.Contracts.Domain.Enums.IntegritySeverity.Warning
+  commentId: F:Meridian.Contracts.Domain.Enums.IntegritySeverity.Warning
+  id: Warning
+  parent: Meridian.Contracts.Domain.Enums.IntegritySeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: IntegritySeverity.Warning
+  fullName: Meridian.Contracts.Domain.Enums.IntegritySeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Warning event, may require attention.
+  example: []
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Contracts.Domain.Enums.IntegritySeverity
+- uid: Meridian.Contracts.Domain.Enums.IntegritySeverity.Error
+  commentId: F:Meridian.Contracts.Domain.Enums.IntegritySeverity.Error
+  id: Error
+  parent: Meridian.Contracts.Domain.Enums.IntegritySeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: IntegritySeverity.Error
+  fullName: Meridian.Contracts.Domain.Enums.IntegritySeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Contracts/Domain/Enums/IntegritySeverity.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Enums
+  summary: Error event, requires immediate attention.
+  example: []
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Contracts.Domain.Enums.IntegritySeverity
+references:
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Enums.IntegritySeverity
+  commentId: T:Meridian.Contracts.Domain.Enums.IntegritySeverity
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.IntegritySeverity.html
+  name: IntegritySeverity
+  nameWithType: IntegritySeverity
+  fullName: Meridian.Contracts.Domain.Enums.IntegritySeverity

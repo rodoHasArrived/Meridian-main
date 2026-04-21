@@ -1,0 +1,664 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.CollateralDto
+  commentId: T:Meridian.Contracts.DirectLending.CollateralDto
+  id: CollateralDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.CollateralDto.#ctor(System.Guid,Meridian.Contracts.DirectLending.CollateralType,System.String,System.Decimal,Meridian.Contracts.DirectLending.CurrencyCode,System.DateOnly)
+  - Meridian.Contracts.DirectLending.CollateralDto.AppraisalDate
+  - Meridian.Contracts.DirectLending.CollateralDto.CollateralId
+  - Meridian.Contracts.DirectLending.CollateralDto.CollateralType
+  - Meridian.Contracts.DirectLending.CollateralDto.Currency
+  - Meridian.Contracts.DirectLending.CollateralDto.Description
+  - Meridian.Contracts.DirectLending.CollateralDto.EstimatedValue
+  langs:
+  - csharp
+  - vb
+  name: CollateralDto
+  nameWithType: CollateralDto
+  fullName: Meridian.Contracts.DirectLending.CollateralDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollateralDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record CollateralDto : IEquatable<CollateralDto>'
+    content.vb: Public NotInheritable Class CollateralDto Implements IEquatable(Of CollateralDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.CollateralDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.CollateralDto.#ctor(System.Guid,Meridian.Contracts.DirectLending.CollateralType,System.String,System.Decimal,Meridian.Contracts.DirectLending.CurrencyCode,System.DateOnly)
+  commentId: M:Meridian.Contracts.DirectLending.CollateralDto.#ctor(System.Guid,Meridian.Contracts.DirectLending.CollateralType,System.String,System.Decimal,Meridian.Contracts.DirectLending.CurrencyCode,System.DateOnly)
+  id: '#ctor(System.Guid,Meridian.Contracts.DirectLending.CollateralType,System.String,System.Decimal,Meridian.Contracts.DirectLending.CurrencyCode,System.DateOnly)'
+  parent: Meridian.Contracts.DirectLending.CollateralDto
+  langs:
+  - csharp
+  - vb
+  name: CollateralDto(Guid, CollateralType, string, decimal, CurrencyCode, DateOnly)
+  nameWithType: CollateralDto.CollateralDto(Guid, CollateralType, string, decimal, CurrencyCode, DateOnly)
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.CollateralDto(System.Guid, Meridian.Contracts.DirectLending.CollateralType, string, decimal, Meridian.Contracts.DirectLending.CurrencyCode, System.DateOnly)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public CollateralDto(Guid CollateralId, CollateralType CollateralType, string Description, decimal EstimatedValue, CurrencyCode Currency, DateOnly AppraisalDate)
+    parameters:
+    - id: CollateralId
+      type: System.Guid
+    - id: CollateralType
+      type: Meridian.Contracts.DirectLending.CollateralType
+    - id: Description
+      type: System.String
+    - id: EstimatedValue
+      type: System.Decimal
+    - id: Currency
+      type: Meridian.Contracts.DirectLending.CurrencyCode
+    - id: AppraisalDate
+      type: System.DateOnly
+    content.vb: Public Sub New(CollateralId As Guid, CollateralType As CollateralType, Description As String, EstimatedValue As Decimal, Currency As CurrencyCode, AppraisalDate As DateOnly)
+  overload: Meridian.Contracts.DirectLending.CollateralDto.#ctor*
+  nameWithType.vb: CollateralDto.New(Guid, CollateralType, String, Decimal, CurrencyCode, DateOnly)
+  fullName.vb: Meridian.Contracts.DirectLending.CollateralDto.New(System.Guid, Meridian.Contracts.DirectLending.CollateralType, String, Decimal, Meridian.Contracts.DirectLending.CurrencyCode, System.DateOnly)
+  name.vb: New(Guid, CollateralType, String, Decimal, CurrencyCode, DateOnly)
+- uid: Meridian.Contracts.DirectLending.CollateralDto.CollateralId
+  commentId: P:Meridian.Contracts.DirectLending.CollateralDto.CollateralId
+  id: CollateralId
+  parent: Meridian.Contracts.DirectLending.CollateralDto
+  langs:
+  - csharp
+  - vb
+  name: CollateralId
+  nameWithType: CollateralDto.CollateralId
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.CollateralId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollateralId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid CollateralId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property CollateralId As Guid
+  overload: Meridian.Contracts.DirectLending.CollateralDto.CollateralId*
+- uid: Meridian.Contracts.DirectLending.CollateralDto.CollateralType
+  commentId: P:Meridian.Contracts.DirectLending.CollateralDto.CollateralType
+  id: CollateralType
+  parent: Meridian.Contracts.DirectLending.CollateralDto
+  langs:
+  - csharp
+  - vb
+  name: CollateralType
+  nameWithType: CollateralDto.CollateralType
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.CollateralType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CollateralType
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public CollateralType CollateralType { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.CollateralType
+    content.vb: Public Property CollateralType As CollateralType
+  overload: Meridian.Contracts.DirectLending.CollateralDto.CollateralType*
+- uid: Meridian.Contracts.DirectLending.CollateralDto.Description
+  commentId: P:Meridian.Contracts.DirectLending.CollateralDto.Description
+  id: Description
+  parent: Meridian.Contracts.DirectLending.CollateralDto
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: CollateralDto.Description
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.DirectLending.CollateralDto.Description*
+- uid: Meridian.Contracts.DirectLending.CollateralDto.EstimatedValue
+  commentId: P:Meridian.Contracts.DirectLending.CollateralDto.EstimatedValue
+  id: EstimatedValue
+  parent: Meridian.Contracts.DirectLending.CollateralDto
+  langs:
+  - csharp
+  - vb
+  name: EstimatedValue
+  nameWithType: CollateralDto.EstimatedValue
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.EstimatedValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EstimatedValue
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal EstimatedValue { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property EstimatedValue As Decimal
+  overload: Meridian.Contracts.DirectLending.CollateralDto.EstimatedValue*
+- uid: Meridian.Contracts.DirectLending.CollateralDto.Currency
+  commentId: P:Meridian.Contracts.DirectLending.CollateralDto.Currency
+  id: Currency
+  parent: Meridian.Contracts.DirectLending.CollateralDto
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: CollateralDto.Currency
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public CurrencyCode Currency { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.CurrencyCode
+    content.vb: Public Property Currency As CurrencyCode
+  overload: Meridian.Contracts.DirectLending.CollateralDto.Currency*
+- uid: Meridian.Contracts.DirectLending.CollateralDto.AppraisalDate
+  commentId: P:Meridian.Contracts.DirectLending.CollateralDto.AppraisalDate
+  id: AppraisalDate
+  parent: Meridian.Contracts.DirectLending.CollateralDto
+  langs:
+  - csharp
+  - vb
+  name: AppraisalDate
+  nameWithType: CollateralDto.AppraisalDate
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.AppraisalDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AppraisalDate
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateOnly AppraisalDate { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property AppraisalDate As DateOnly
+  overload: Meridian.Contracts.DirectLending.CollateralDto.AppraisalDate*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.CollateralDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.CollateralDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CollateralDto>
+  nameWithType: IEquatable<CollateralDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.CollateralDto>
+  nameWithType.vb: IEquatable(Of CollateralDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.CollateralDto)
+  name.vb: IEquatable(Of CollateralDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.CollateralDto
+    name: CollateralDto
+    href: Meridian.Contracts.DirectLending.CollateralDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.CollateralDto
+    name: CollateralDto
+    href: Meridian.Contracts.DirectLending.CollateralDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.CollateralDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.CollateralDto.#ctor
+  href: Meridian.Contracts.DirectLending.CollateralDto.html#Meridian_Contracts_DirectLending_CollateralDto__ctor_System_Guid_Meridian_Contracts_DirectLending_CollateralType_System_String_System_Decimal_Meridian_Contracts_DirectLending_CurrencyCode_System_DateOnly_
+  name: CollateralDto
+  nameWithType: CollateralDto.CollateralDto
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.CollateralDto
+  nameWithType.vb: CollateralDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.CollateralDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.DirectLending.CollateralType
+  commentId: T:Meridian.Contracts.DirectLending.CollateralType
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.CollateralType.html
+  name: CollateralType
+  nameWithType: CollateralType
+  fullName: Meridian.Contracts.DirectLending.CollateralType
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.DirectLending.CurrencyCode
+  commentId: T:Meridian.Contracts.DirectLending.CurrencyCode
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.CurrencyCode.html
+  name: CurrencyCode
+  nameWithType: CurrencyCode
+  fullName: Meridian.Contracts.DirectLending.CurrencyCode
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Contracts.DirectLending.CollateralDto.CollateralId*
+  commentId: Overload:Meridian.Contracts.DirectLending.CollateralDto.CollateralId
+  href: Meridian.Contracts.DirectLending.CollateralDto.html#Meridian_Contracts_DirectLending_CollateralDto_CollateralId
+  name: CollateralId
+  nameWithType: CollateralDto.CollateralId
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.CollateralId
+- uid: Meridian.Contracts.DirectLending.CollateralDto.CollateralType*
+  commentId: Overload:Meridian.Contracts.DirectLending.CollateralDto.CollateralType
+  href: Meridian.Contracts.DirectLending.CollateralDto.html#Meridian_Contracts_DirectLending_CollateralDto_CollateralType
+  name: CollateralType
+  nameWithType: CollateralDto.CollateralType
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.CollateralType
+- uid: Meridian.Contracts.DirectLending.CollateralDto.Description*
+  commentId: Overload:Meridian.Contracts.DirectLending.CollateralDto.Description
+  href: Meridian.Contracts.DirectLending.CollateralDto.html#Meridian_Contracts_DirectLending_CollateralDto_Description
+  name: Description
+  nameWithType: CollateralDto.Description
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.Description
+- uid: Meridian.Contracts.DirectLending.CollateralDto.EstimatedValue*
+  commentId: Overload:Meridian.Contracts.DirectLending.CollateralDto.EstimatedValue
+  href: Meridian.Contracts.DirectLending.CollateralDto.html#Meridian_Contracts_DirectLending_CollateralDto_EstimatedValue
+  name: EstimatedValue
+  nameWithType: CollateralDto.EstimatedValue
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.EstimatedValue
+- uid: Meridian.Contracts.DirectLending.CollateralDto.Currency*
+  commentId: Overload:Meridian.Contracts.DirectLending.CollateralDto.Currency
+  href: Meridian.Contracts.DirectLending.CollateralDto.html#Meridian_Contracts_DirectLending_CollateralDto_Currency
+  name: Currency
+  nameWithType: CollateralDto.Currency
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.Currency
+- uid: Meridian.Contracts.DirectLending.CollateralDto.AppraisalDate*
+  commentId: Overload:Meridian.Contracts.DirectLending.CollateralDto.AppraisalDate
+  href: Meridian.Contracts.DirectLending.CollateralDto.html#Meridian_Contracts_DirectLending_CollateralDto_AppraisalDate
+  name: AppraisalDate
+  nameWithType: CollateralDto.AppraisalDate
+  fullName: Meridian.Contracts.DirectLending.CollateralDto.AppraisalDate

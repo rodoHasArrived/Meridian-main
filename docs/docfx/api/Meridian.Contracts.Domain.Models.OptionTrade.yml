@@ -1,0 +1,1225 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Models.OptionTrade
+  commentId: T:Meridian.Contracts.Domain.Models.OptionTrade
+  id: OptionTrade
+  parent: Meridian.Contracts.Domain.Models
+  children:
+  - Meridian.Contracts.Domain.Models.OptionTrade.#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionContractSpec,System.Decimal,System.Int64,Meridian.Contracts.Domain.Enums.AggressorSide,System.Decimal,System.Nullable{System.Decimal},System.String,System.String[],System.Int64,System.String)
+  - Meridian.Contracts.Domain.Models.OptionTrade.Aggressor
+  - Meridian.Contracts.Domain.Models.OptionTrade.Conditions
+  - Meridian.Contracts.Domain.Models.OptionTrade.Contract
+  - Meridian.Contracts.Domain.Models.OptionTrade.ImpliedVolatility
+  - Meridian.Contracts.Domain.Models.OptionTrade.IsInTheMoney
+  - Meridian.Contracts.Domain.Models.OptionTrade.NotionalValue
+  - Meridian.Contracts.Domain.Models.OptionTrade.Price
+  - Meridian.Contracts.Domain.Models.OptionTrade.SequenceNumber
+  - Meridian.Contracts.Domain.Models.OptionTrade.Size
+  - Meridian.Contracts.Domain.Models.OptionTrade.Source
+  - Meridian.Contracts.Domain.Models.OptionTrade.Symbol
+  - Meridian.Contracts.Domain.Models.OptionTrade.Timestamp
+  - Meridian.Contracts.Domain.Models.OptionTrade.TradeExchange
+  - Meridian.Contracts.Domain.Models.OptionTrade.UnderlyingPrice
+  langs:
+  - csharp
+  - vb
+  name: OptionTrade
+  nameWithType: OptionTrade
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionTrade
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Immutable tick-by-tick trade record for an option contract.
+  example: []
+  syntax:
+    content: 'public sealed record OptionTrade : MarketEventPayload, IMarketEventPayload, IEquatable<MarketEventPayload>, IEquatable<OptionTrade>'
+    content.vb: Public NotInheritable Class OptionTrade Inherits MarketEventPayload Implements IMarketEventPayload, IEquatable(Of MarketEventPayload), IEquatable(Of OptionTrade)
+  inheritance:
+  - System.Object
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  implements:
+  - Meridian.Contracts.Domain.Events.IMarketEventPayload
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  - System.IEquatable{Meridian.Contracts.Domain.Models.OptionTrade}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Timestamp
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: OptionTrade.Timestamp
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the timestamp when the trade was executed.
+  example: []
+  syntax:
+    content: public DateTimeOffset Timestamp { get; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public ReadOnly Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.Timestamp*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Symbol
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: OptionTrade.Symbol
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the option contract symbol (OCC or provider-specific).
+  example: []
+  syntax:
+    content: public string Symbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Symbol As String
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.Symbol*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Contract
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.Contract
+  id: Contract
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: Contract
+  nameWithType: OptionTrade.Contract
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Contract
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contract
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the option contract specification.
+  example: []
+  syntax:
+    content: public OptionContractSpec Contract { get; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Models.OptionContractSpec
+    content.vb: Public ReadOnly Property Contract As OptionContractSpec
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.Contract*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Price
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.Price
+  id: Price
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: OptionTrade.Price
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the trade price (premium per share).
+  example: []
+  syntax:
+    content: public decimal Price { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property Price As Decimal
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.Price*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Size
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.Size
+  id: Size
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: Size
+  nameWithType: OptionTrade.Size
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Size
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Size
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the number of contracts traded.
+  example: []
+  syntax:
+    content: public long Size { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property Size As Long
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.Size*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Aggressor
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.Aggressor
+  id: Aggressor
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: Aggressor
+  nameWithType: OptionTrade.Aggressor
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Aggressor
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Aggressor
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the side that initiated the trade (buyer or seller).
+  example: []
+  syntax:
+    content: public AggressorSide Aggressor { get; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.AggressorSide
+    content.vb: Public ReadOnly Property Aggressor As AggressorSide
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.Aggressor*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.UnderlyingPrice
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.UnderlyingPrice
+  id: UnderlyingPrice
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingPrice
+  nameWithType: OptionTrade.UnderlyingPrice
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.UnderlyingPrice
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingPrice
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the underlying asset price at the time of this trade.
+  example: []
+  syntax:
+    content: public decimal UnderlyingPrice { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property UnderlyingPrice As Decimal
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.UnderlyingPrice*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.ImpliedVolatility
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.ImpliedVolatility
+  id: ImpliedVolatility
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: ImpliedVolatility
+  nameWithType: OptionTrade.ImpliedVolatility
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.ImpliedVolatility
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImpliedVolatility
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the implied volatility at the time of the trade, if available.
+  example: []
+  syntax:
+    content: public decimal? ImpliedVolatility { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public ReadOnly Property ImpliedVolatility As Decimal?
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.ImpliedVolatility*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.TradeExchange
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.TradeExchange
+  id: TradeExchange
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: TradeExchange
+  nameWithType: OptionTrade.TradeExchange
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.TradeExchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeExchange
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the exchange where the trade was executed.
+  example: []
+  syntax:
+    content: public string? TradeExchange { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property TradeExchange As String
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.TradeExchange*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Conditions
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.Conditions
+  id: Conditions
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: Conditions
+  nameWithType: OptionTrade.Conditions
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Conditions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Conditions
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets trade condition codes (e.g., "AutoExecution", "IntermarketSweep").
+  example: []
+  syntax:
+    content: public string[]? Conditions { get; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public ReadOnly Property Conditions As String()
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.Conditions*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.SequenceNumber
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: OptionTrade.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the sequence number for ordering events.
+  example: []
+  syntax:
+    content: public long SequenceNumber { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property SequenceNumber As Long
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.SequenceNumber*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Source
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.Source
+  id: Source
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: OptionTrade.Source
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the data source identifier.
+  example: []
+  syntax:
+    content: public string Source { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Source As String
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.Source*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionContractSpec,System.Decimal,System.Int64,Meridian.Contracts.Domain.Enums.AggressorSide,System.Decimal,System.Nullable{System.Decimal},System.String,System.String[],System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Models.OptionTrade.#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionContractSpec,System.Decimal,System.Int64,Meridian.Contracts.Domain.Enums.AggressorSide,System.Decimal,System.Nullable{System.Decimal},System.String,System.String[],System.Int64,System.String)
+  id: '#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionContractSpec,System.Decimal,System.Int64,Meridian.Contracts.Domain.Enums.AggressorSide,System.Decimal,System.Nullable{System.Decimal},System.String,System.String[],System.Int64,System.String)'
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: OptionTrade(DateTimeOffset, string, OptionContractSpec, decimal, long, AggressorSide, decimal, decimal?, string?, string[]?, long, string)
+  nameWithType: OptionTrade.OptionTrade(DateTimeOffset, string, OptionContractSpec, decimal, long, AggressorSide, decimal, decimal?, string?, string[]?, long, string)
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.OptionTrade(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OptionContractSpec, decimal, long, Meridian.Contracts.Domain.Enums.AggressorSide, decimal, decimal?, string?, string[]?, long, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Initializes a new instance of the <xref href="Meridian.Contracts.Domain.Models.OptionTrade" data-throw-if-not-resolved="false"></xref> record.
+  example: []
+  syntax:
+    content: public OptionTrade(DateTimeOffset Timestamp, string Symbol, OptionContractSpec Contract, decimal Price, long Size, AggressorSide Aggressor, decimal UnderlyingPrice, decimal? ImpliedVolatility = null, string? TradeExchange = null, string[]? Conditions = null, long SequenceNumber = 0, string Source = "IB")
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Symbol
+      type: System.String
+    - id: Contract
+      type: Meridian.Contracts.Domain.Models.OptionContractSpec
+    - id: Price
+      type: System.Decimal
+    - id: Size
+      type: System.Int64
+    - id: Aggressor
+      type: Meridian.Contracts.Domain.Enums.AggressorSide
+    - id: UnderlyingPrice
+      type: System.Decimal
+    - id: ImpliedVolatility
+      type: System.Nullable{System.Decimal}
+    - id: TradeExchange
+      type: System.String
+    - id: Conditions
+      type: System.String[]
+    - id: SequenceNumber
+      type: System.Int64
+    - id: Source
+      type: System.String
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Symbol As String, Contract As OptionContractSpec, Price As Decimal, Size As Long, Aggressor As AggressorSide, UnderlyingPrice As Decimal, ImpliedVolatility As Decimal? = Nothing, TradeExchange As String = Nothing, Conditions As String() = Nothing, SequenceNumber As Long = 0, Source As String = "IB")
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.#ctor*
+  nameWithType.vb: OptionTrade.New(DateTimeOffset, String, OptionContractSpec, Decimal, Long, AggressorSide, Decimal, Decimal?, String, String(), Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Models.OptionTrade.New(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OptionContractSpec, Decimal, Long, Meridian.Contracts.Domain.Enums.AggressorSide, Decimal, Decimal?, String, String(), Long, String)
+  name.vb: New(DateTimeOffset, String, OptionContractSpec, Decimal, Long, AggressorSide, Decimal, Decimal?, String, String(), Long, String)
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.NotionalValue
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.NotionalValue
+  id: NotionalValue
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: NotionalValue
+  nameWithType: OptionTrade.NotionalValue
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.NotionalValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NotionalValue
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the total premium for this trade (Price * Size * Multiplier).
+  example: []
+  syntax:
+    content: public decimal NotionalValue { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property NotionalValue As Decimal
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.NotionalValue*
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.IsInTheMoney
+  commentId: P:Meridian.Contracts.Domain.Models.OptionTrade.IsInTheMoney
+  id: IsInTheMoney
+  parent: Meridian.Contracts.Domain.Models.OptionTrade
+  langs:
+  - csharp
+  - vb
+  name: IsInTheMoney
+  nameWithType: OptionTrade.IsInTheMoney
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.IsInTheMoney
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsInTheMoney
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionTrade.cs
+    startLine: 121
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Returns true if the option is in-the-money based on the underlying price.
+  example: []
+  syntax:
+    content: public bool IsInTheMoney { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property IsInTheMoney As Boolean
+  overload: Meridian.Contracts.Domain.Models.OptionTrade.IsInTheMoney*
+references:
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.IMarketEventPayload.html
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventPayload>
+  nameWithType: IEquatable<MarketEventPayload>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventPayload>
+  nameWithType.vb: IEquatable(Of MarketEventPayload)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventPayload)
+  name.vb: IEquatable(Of MarketEventPayload)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: )
+- uid: System.IEquatable{Meridian.Contracts.Domain.Models.OptionTrade}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Models.OptionTrade}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OptionTrade>
+  nameWithType: IEquatable<OptionTrade>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Models.OptionTrade>
+  nameWithType.vb: IEquatable(Of OptionTrade)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Models.OptionTrade)
+  name.vb: IEquatable(Of OptionTrade)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OptionTrade
+    name: OptionTrade
+    href: Meridian.Contracts.Domain.Models.OptionTrade.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OptionTrade
+    name: OptionTrade
+    href: Meridian.Contracts.Domain.Models.OptionTrade.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Timestamp*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.Timestamp
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_Timestamp
+  name: Timestamp
+  nameWithType: OptionTrade.Timestamp
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Symbol*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.Symbol
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_Symbol
+  name: Symbol
+  nameWithType: OptionTrade.Symbol
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Contract*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.Contract
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_Contract
+  name: Contract
+  nameWithType: OptionTrade.Contract
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Contract
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec
+  commentId: T:Meridian.Contracts.Domain.Models.OptionContractSpec
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html
+  name: OptionContractSpec
+  nameWithType: OptionContractSpec
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Price*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.Price
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_Price
+  name: Price
+  nameWithType: OptionTrade.Price
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Price
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Size*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.Size
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_Size
+  name: Size
+  nameWithType: OptionTrade.Size
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Size
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Aggressor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.Aggressor
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_Aggressor
+  name: Aggressor
+  nameWithType: OptionTrade.Aggressor
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Aggressor
+- uid: Meridian.Contracts.Domain.Enums.AggressorSide
+  commentId: T:Meridian.Contracts.Domain.Enums.AggressorSide
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.AggressorSide.html
+  name: AggressorSide
+  nameWithType: AggressorSide
+  fullName: Meridian.Contracts.Domain.Enums.AggressorSide
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.UnderlyingPrice*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.UnderlyingPrice
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_UnderlyingPrice
+  name: UnderlyingPrice
+  nameWithType: OptionTrade.UnderlyingPrice
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.UnderlyingPrice
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.ImpliedVolatility*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.ImpliedVolatility
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_ImpliedVolatility
+  name: ImpliedVolatility
+  nameWithType: OptionTrade.ImpliedVolatility
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.ImpliedVolatility
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.TradeExchange*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.TradeExchange
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_TradeExchange
+  name: TradeExchange
+  nameWithType: OptionTrade.TradeExchange
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.TradeExchange
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Conditions*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.Conditions
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_Conditions
+  name: Conditions
+  nameWithType: OptionTrade.Conditions
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Conditions
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.SequenceNumber
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_SequenceNumber
+  name: SequenceNumber
+  nameWithType: OptionTrade.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.SequenceNumber
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.Source*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.Source
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_Source
+  name: Source
+  nameWithType: OptionTrade.Source
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.Source
+- uid: Meridian.Contracts.Domain.Models.OptionTrade
+  commentId: T:Meridian.Contracts.Domain.Models.OptionTrade
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html
+  name: OptionTrade
+  nameWithType: OptionTrade
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.#ctor
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade__ctor_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OptionContractSpec_System_Decimal_System_Int64_Meridian_Contracts_Domain_Enums_AggressorSide_System_Decimal_System_Nullable_System_Decimal__System_String_System_String___System_Int64_System_String_
+  name: OptionTrade
+  nameWithType: OptionTrade.OptionTrade
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.OptionTrade
+  nameWithType.vb: OptionTrade.New
+  fullName.vb: Meridian.Contracts.Domain.Models.OptionTrade.New
+  name.vb: New
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.NotionalValue*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.NotionalValue
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_NotionalValue
+  name: NotionalValue
+  nameWithType: OptionTrade.NotionalValue
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.NotionalValue
+- uid: Meridian.Contracts.Domain.Models.OptionTrade.IsInTheMoney*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionTrade.IsInTheMoney
+  href: Meridian.Contracts.Domain.Models.OptionTrade.html#Meridian_Contracts_Domain_Models_OptionTrade_IsInTheMoney
+  name: IsInTheMoney
+  nameWithType: OptionTrade.IsInTheMoney
+  fullName: Meridian.Contracts.Domain.Models.OptionTrade.IsInTheMoney
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

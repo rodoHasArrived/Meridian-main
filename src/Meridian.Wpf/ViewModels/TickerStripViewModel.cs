@@ -198,9 +198,10 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
                 }
             });
         }
-        catch (OperationCanceledException) { }
-        catch (Exception)
+        catch (OperationCanceledException) { /* Cancellation is expected */ }
+        catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] Failed to refresh symbols: {ex.Message}");
         }
     }
 
@@ -239,10 +240,17 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
 
             System.Windows.Application.Current?.Dispatcher.Invoke(() => UpdateSymbol(symbol, bid, ask, last, uptick));
         }
-        catch (HttpRequestException) { }
-        catch (JsonException) { }
-        catch (Exception)
+        catch (HttpRequestException ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] HTTP error polling {symbol}: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] JSON parse error for {symbol}: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] Unexpected error polling {symbol}: {ex.Message}");
         }
     }
 

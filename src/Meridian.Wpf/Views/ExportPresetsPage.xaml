@@ -6,13 +6,15 @@
       AutomationProperties.Name="Export Presets">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
         <StackPanel MaxWidth="1200">
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                <TextBlock Text="&#xE898;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                           FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="Export Presets" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
+            <StackPanel Margin="0,0,0,20" Style="{StaticResource EmbeddedShellHeaderStackPanelStyle}">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                    <TextBlock Text="&#xE898;" FontFamily="{StaticResource SymbolThemeFontFamily}"
+                               FontSize="28" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" />
+                    <TextBlock Text="Export Presets" Style="{StaticResource PageTitleStyle}" Margin="12,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="Manage reusable export configurations for consistent delivery."
+                           Style="{StaticResource PageSubtitleStyle}" />
             </StackPanel>
-            <TextBlock Text="Manage reusable export configurations for consistent delivery."
-                       Style="{StaticResource PageSubtitleStyle}" Margin="0,0,0,20" />
 
             <Grid>
                 <Grid.ColumnDefinitions>

@@ -1,6 +1,6 @@
 // Deployment Options Diagram
 // Meridian v1.6.1
-// Last Updated: 2026-02-21
+// Last Updated: 2026-04-09
 //
 // This diagram shows the different deployment options available,
 // from standalone console to distributed Kubernetes clusters.
@@ -45,7 +45,7 @@ digraph DeploymentOptions {
                     label="Best For:\n\n• Development\n• Single machine\n• Low volume\n• Quick setup"];
 
     STANDALONE_CMD [shape=note, fillcolor="#c6f6d5",
-                    label="Run Command:\n\ndotnet run --project src/Meridian\n\nOr with UI:\ndotnet run -- --ui --http-port 8080"];
+                    label="Run Command:\n\ndotnet run --project src/Meridian\n\nDesktop-local API host:\ndotnet run -- --mode desktop --http-port 8080"];
   }
 
   // Option 2: Docker Compose

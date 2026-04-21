@@ -1,0 +1,498 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1
+  commentId: T:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1
+  id: DirectLendingCommandEnvelope`1
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.#ctor(`0,Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto)
+  - Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Command
+  - Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Metadata
+  langs:
+  - csharp
+  - vb
+  name: DirectLendingCommandEnvelope<TCommand>
+  nameWithType: DirectLendingCommandEnvelope<TCommand>
+  fullName: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope<TCommand>
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DirectLendingCommandEnvelope
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record DirectLendingCommandEnvelope<TCommand> : IEquatable<DirectLendingCommandEnvelope<TCommand>>'
+    typeParameters:
+    - id: TCommand
+    content.vb: Public NotInheritable Class DirectLendingCommandEnvelope(Of TCommand) Implements IEquatable(Of DirectLendingCommandEnvelope(Of TCommand))
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  nameWithType.vb: DirectLendingCommandEnvelope(Of TCommand)
+  fullName.vb: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope(Of TCommand)
+  name.vb: DirectLendingCommandEnvelope(Of TCommand)
+- uid: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.#ctor(`0,Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto)
+  commentId: M:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.#ctor(`0,Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto)
+  id: '#ctor(`0,Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto)'
+  parent: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1
+  langs:
+  - csharp
+  - vb
+  name: DirectLendingCommandEnvelope(TCommand, DirectLendingCommandMetadataDto?)
+  nameWithType: DirectLendingCommandEnvelope<TCommand>.DirectLendingCommandEnvelope(TCommand, DirectLendingCommandMetadataDto?)
+  fullName: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope<TCommand>.DirectLendingCommandEnvelope(TCommand, Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DirectLendingCommandEnvelope(TCommand Command, DirectLendingCommandMetadataDto? Metadata)
+    parameters:
+    - id: Command
+      type: '{TCommand}'
+    - id: Metadata
+      type: Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto
+    content.vb: Public Sub New(Command As TCommand, Metadata As DirectLendingCommandMetadataDto)
+  overload: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.#ctor*
+  nameWithType.vb: DirectLendingCommandEnvelope(Of TCommand).New(TCommand, DirectLendingCommandMetadataDto)
+  fullName.vb: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope(Of TCommand).New(TCommand, Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto)
+  name.vb: New(TCommand, DirectLendingCommandMetadataDto)
+- uid: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Command
+  commentId: P:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Command
+  id: Command
+  parent: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1
+  langs:
+  - csharp
+  - vb
+  name: Command
+  nameWithType: DirectLendingCommandEnvelope<TCommand>.Command
+  fullName: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope<TCommand>.Command
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Command
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public TCommand Command { get; init; }
+    parameters: []
+    return:
+      type: '{TCommand}'
+    content.vb: Public Property Command As TCommand
+  overload: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Command*
+  nameWithType.vb: DirectLendingCommandEnvelope(Of TCommand).Command
+  fullName.vb: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope(Of TCommand).Command
+- uid: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Metadata
+  commentId: P:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Metadata
+  id: Metadata
+  parent: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1
+  langs:
+  - csharp
+  - vb
+  name: Metadata
+  nameWithType: DirectLendingCommandEnvelope<TCommand>.Metadata
+  fullName: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope<TCommand>.Metadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metadata
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DirectLendingCommandMetadataDto? Metadata { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto
+    content.vb: Public Property Metadata As DirectLendingCommandMetadataDto
+  overload: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Metadata*
+  nameWithType.vb: DirectLendingCommandEnvelope(Of TCommand).Metadata
+  fullName.vb: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope(Of TCommand).Metadata
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DirectLendingCommandEnvelope<TCommand>>
+  nameWithType: IEquatable<DirectLendingCommandEnvelope<TCommand>>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope<TCommand>>
+  nameWithType.vb: IEquatable(Of DirectLendingCommandEnvelope(Of TCommand))
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope(Of TCommand))
+  name.vb: IEquatable(Of DirectLendingCommandEnvelope(Of TCommand))
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1
+    name: DirectLendingCommandEnvelope
+    href: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope-1.html
+  - name: <
+  - name: TCommand
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1
+    name: DirectLendingCommandEnvelope
+    href: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCommand
+  - name: )
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.#ctor
+  href: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope-1.html#Meridian_Contracts_DirectLending_DirectLendingCommandEnvelope_1__ctor__0_Meridian_Contracts_DirectLending_DirectLendingCommandMetadataDto_
+  name: DirectLendingCommandEnvelope
+  nameWithType: DirectLendingCommandEnvelope<TCommand>.DirectLendingCommandEnvelope
+  fullName: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope<TCommand>.DirectLendingCommandEnvelope
+  nameWithType.vb: DirectLendingCommandEnvelope(Of TCommand).New
+  fullName.vb: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope(Of TCommand).New
+  name.vb: New
+- uid: '{TCommand}'
+  commentId: '!:TCommand'
+  definition: TCommand
+  name: TCommand
+  nameWithType: TCommand
+  fullName: TCommand
+- uid: Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto
+  commentId: T:Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto
+  parent: Meridian.Contracts.DirectLending
+  href: Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto.html
+  name: DirectLendingCommandMetadataDto
+  nameWithType: DirectLendingCommandMetadataDto
+  fullName: Meridian.Contracts.DirectLending.DirectLendingCommandMetadataDto
+- uid: TCommand
+  name: TCommand
+  nameWithType: TCommand
+  fullName: TCommand
+- uid: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Command*
+  commentId: Overload:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Command
+  href: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope-1.html#Meridian_Contracts_DirectLending_DirectLendingCommandEnvelope_1_Command
+  name: Command
+  nameWithType: DirectLendingCommandEnvelope<TCommand>.Command
+  fullName: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope<TCommand>.Command
+  nameWithType.vb: DirectLendingCommandEnvelope(Of TCommand).Command
+  fullName.vb: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope(Of TCommand).Command
+- uid: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Metadata*
+  commentId: Overload:Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope`1.Metadata
+  href: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope-1.html#Meridian_Contracts_DirectLending_DirectLendingCommandEnvelope_1_Metadata
+  name: Metadata
+  nameWithType: DirectLendingCommandEnvelope<TCommand>.Metadata
+  fullName: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope<TCommand>.Metadata
+  nameWithType.vb: DirectLendingCommandEnvelope(Of TCommand).Metadata
+  fullName.vb: Meridian.Contracts.DirectLending.DirectLendingCommandEnvelope(Of TCommand).Metadata

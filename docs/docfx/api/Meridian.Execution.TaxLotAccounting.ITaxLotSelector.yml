@@ -1,0 +1,310 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  commentId: T:Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  id: ITaxLotSelector
+  parent: Meridian.Execution.TaxLotAccounting
+  children:
+  - Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Method
+  - Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Relieve(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot},System.Int64,System.Decimal)
+  langs:
+  - csharp
+  - vb
+  name: ITaxLotSelector
+  nameWithType: ITaxLotSelector
+  fullName: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ITaxLotSelector
+    path: ../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: >-
+    Selects which open lots to relieve when a closing trade occurs.
+
+    Implementations encode cost-basis identification methods (FIFO, LIFO, HIFO, SpecificId).
+  example: []
+  syntax:
+    content: public interface ITaxLotSelector
+    content.vb: Public Interface ITaxLotSelector
+- uid: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Method
+  commentId: P:Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Method
+  id: Method
+  parent: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  langs:
+  - csharp
+  - vb
+  name: Method
+  nameWithType: ITaxLotSelector.Method
+  fullName: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Method
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Method
+    path: ../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: The accounting method this selector encodes.
+  example: []
+  syntax:
+    content: TaxLotAccountingMethod Method { get; }
+    parameters: []
+    return:
+      type: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+    content.vb: ReadOnly Property Method As TaxLotAccountingMethod
+  overload: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Method*
+- uid: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Relieve(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot},System.Int64,System.Decimal)
+  commentId: M:Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Relieve(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot},System.Int64,System.Decimal)
+  id: Relieve(System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot},System.Int64,System.Decimal)
+  parent: Meridian.Execution.TaxLotAccounting.ITaxLotSelector
+  langs:
+  - csharp
+  - vb
+  name: Relieve(IReadOnlyList<TaxLot>, long, decimal)
+  nameWithType: ITaxLotSelector.Relieve(IReadOnlyList<TaxLot>, long, decimal)
+  fullName: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Relieve(System.Collections.Generic.IReadOnlyList<Meridian.Execution.Sdk.TaxLot>, long, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Relieve
+    path: ../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.TaxLotAccounting
+  summary: >-
+    Selects lots from <code class="paramref">openLots</code> to satisfy a closing trade of
+
+    <code class="paramref">quantityToClose</code> shares/contracts at <code class="paramref">closePrice</code>.
+  example: []
+  syntax:
+    content: TaxLotReliefResult Relieve(IReadOnlyList<TaxLot> openLots, long quantityToClose, decimal closePrice)
+    parameters:
+    - id: openLots
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot}
+      description: All currently open lots for the symbol being closed.
+    - id: quantityToClose
+      type: System.Int64
+      description: Unsigned number of shares/contracts to close.
+    - id: closePrice
+      type: System.Decimal
+      description: Execution price of the closing trade.
+    return:
+      type: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+      description: >-
+        A <xref href="Meridian.Execution.TaxLotAccounting.TaxLotReliefResult" data-throw-if-not-resolved="false"></xref> listing which lots were consumed and the
+
+        updated remaining lot list.
+    content.vb: Function Relieve(openLots As IReadOnlyList(Of TaxLot), quantityToClose As Long, closePrice As Decimal) As TaxLotReliefResult
+  overload: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Relieve*
+  exceptions:
+  - type: System.InvalidOperationException
+    commentId: T:System.InvalidOperationException
+    description: When <code class="paramref">quantityToClose</code> exceeds the aggregate open quantity.
+  nameWithType.vb: ITaxLotSelector.Relieve(IReadOnlyList(Of TaxLot), Long, Decimal)
+  fullName.vb: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Relieve(System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Sdk.TaxLot), Long, Decimal)
+  name.vb: Relieve(IReadOnlyList(Of TaxLot), Long, Decimal)
+references:
+- uid: Meridian.Execution.TaxLotAccounting
+  commentId: N:Meridian.Execution.TaxLotAccounting
+  href: Meridian.html
+  name: Meridian.Execution.TaxLotAccounting
+  nameWithType: Meridian.Execution.TaxLotAccounting
+  fullName: Meridian.Execution.TaxLotAccounting
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.TaxLotAccounting
+    name: TaxLotAccounting
+    href: Meridian.Execution.TaxLotAccounting.html
+- uid: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Method*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Method
+  href: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.html#Meridian_Execution_TaxLotAccounting_ITaxLotSelector_Method
+  name: Method
+  nameWithType: ITaxLotSelector.Method
+  fullName: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Method
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  commentId: T:Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+  parent: Meridian.Execution.TaxLotAccounting
+  href: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod.html
+  name: TaxLotAccountingMethod
+  nameWithType: TaxLotAccountingMethod
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod
+- uid: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  commentId: T:Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+  parent: Meridian.Execution.TaxLotAccounting
+  href: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult.html
+  name: TaxLotReliefResult
+  nameWithType: TaxLotReliefResult
+  fullName: Meridian.Execution.TaxLotAccounting.TaxLotReliefResult
+- uid: System.InvalidOperationException
+  commentId: T:System.InvalidOperationException
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.invalidoperationexception
+  name: InvalidOperationException
+  nameWithType: InvalidOperationException
+  fullName: System.InvalidOperationException
+- uid: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Relieve*
+  commentId: Overload:Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Relieve
+  href: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.html#Meridian_Execution_TaxLotAccounting_ITaxLotSelector_Relieve_System_Collections_Generic_IReadOnlyList_Meridian_Execution_Sdk_TaxLot__System_Int64_System_Decimal_
+  name: Relieve
+  nameWithType: ITaxLotSelector.Relieve
+  fullName: Meridian.Execution.TaxLotAccounting.ITaxLotSelector.Relieve
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Execution.Sdk.TaxLot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<TaxLot>
+  nameWithType: IReadOnlyList<TaxLot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Execution.Sdk.TaxLot>
+  nameWithType.vb: IReadOnlyList(Of TaxLot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Sdk.TaxLot)
+  name.vb: IReadOnlyList(Of TaxLot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.TaxLot
+    name: TaxLot
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.TaxLot
+    name: TaxLot
+  - name: )
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

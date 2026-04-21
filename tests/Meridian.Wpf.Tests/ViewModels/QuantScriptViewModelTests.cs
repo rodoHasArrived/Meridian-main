@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Meridian.QuantScript;
 using Meridian.QuantScript.Compilation;
+using Meridian.QuantScript.Documents;
 using Meridian.QuantScript.Plotting;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.Services;
@@ -21,6 +22,8 @@ public sealed class QuantScriptViewModelTests
 
     private sealed class StubLayoutService : IQuantScriptLayoutService
     {
+        public (double ChartHeight, double EditorHeight) LoadRowHeights() => (300, 400);
+        public void SaveRowHeights(double chartHeight, double editorHeight) { }
         public (double LeftWidth, double RightWidth) LoadColumnWidths() => (300, 400);
         public void SaveColumnWidths(double l, double r) { }
         public int LoadLastActiveTab() => 0;
@@ -36,9 +39,10 @@ public sealed class QuantScriptViewModelTests
         var plotQueue    = new PlotQueue();
         var layout       = new StubLayoutService();
         var options      = Options.Create(new QuantScriptOptions { ScriptsDirectory = Path.GetTempPath() });
+        var notebookStore = new QuantScriptNotebookStore(options.Value);
         var logger       = NullLogger<QuantScriptViewModel>.Instance;
 
-        return new QuantScriptViewModel(fakeRunner, fakeCompiler, plotQueue, layout, options, logger);
+        return new QuantScriptViewModel(fakeRunner, fakeCompiler, plotQueue, layout, notebookStore, options, logger);
     }
 
     // ── Initial state ─────────────────────────────────────────────────────────
@@ -149,6 +153,41 @@ public sealed class QuantScriptViewModelTests
             vm.Dispose();
         };
         act.Should().NotThrow();
+    }
+
+    [Fact]
+    public async Task RunScriptCommand_WhenDateRangeInvalid_BlocksRunAndReportsStatus()
+    {
+        var runner = new FakeScriptRunner();
+        var vm = CreateVm(runner: runner);
+        vm.FromDate = new DateTime(2025, 1, 2);
+        vm.ToDate = new DateTime(2025, 1, 1);
+
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        runner.CallCount.Should().Be(0);
+        vm.StatusText.Should().Contain("Invalid date range");
+        vm.Diagnostics.Should().Contain(entry => entry.Key == "Validation");
+    }
+
+    [Fact]
+    public async Task RunScriptCommand_IncludesNormalizedToolbarContextInParameters()
+    {
+        var runner = new FakeScriptRunner();
+        var vm = CreateVm(runner: runner);
+        vm.AssetSymbol = " spy ";
+        vm.FromDate = new DateTime(2024, 1, 2);
+        vm.ToDate = new DateTime(2024, 2, 3);
+        vm.SelectedInterval = "Daily (Custom)";
+
+        await vm.RunScriptCommand.ExecuteAsync(null);
+
+        runner.CallCount.Should().Be(1);
+        runner.LastParameters.Should().NotBeNull();
+        runner.LastParameters!["symbol"].Should().Be("SPY");
+        runner.LastParameters["from"].Should().Be(new DateOnly(2024, 1, 2));
+        runner.LastParameters["to"].Should().Be(new DateOnly(2024, 2, 3));
+        runner.LastParameters["interval"].Should().Be("daily");
     }
 }
 

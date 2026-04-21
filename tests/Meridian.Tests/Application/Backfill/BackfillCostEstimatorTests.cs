@@ -2,6 +2,7 @@ using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Stooq;
+using Meridian.Infrastructure.Adapters.YahooFinance;
 
 namespace Meridian.Tests.Application.Backfill;
 
@@ -82,6 +83,27 @@ public sealed class BackfillCostEstimatorTests
     }
 
     [Fact]
+    public void Estimate_NoSupportingProviders_PreservesDateRangeMetadata()
+    {
+        var estimator = new BackfillCostEstimator(Array.Empty<IHistoricalDataProvider>());
+        var from = new DateOnly(2024, 1, 1);
+        var to = new DateOnly(2024, 1, 10);
+
+        var result = estimator.Estimate(new BackfillCostRequest(
+            Symbols: ["SPY"],
+            From: from,
+            To: to,
+            Granularity: DataGranularity.Minute1));
+
+        result.Symbols.Should().Equal("SPY");
+        result.From.Should().Be(from);
+        result.To.Should().Be(to);
+        result.TradingDays.Should().Be(7);
+        result.ProviderEstimates.Should().BeEmpty();
+        result.Warnings.Should().Contain(w => w.Contains("No historical providers support"));
+    }
+
+    [Fact]
     public void Estimate_WithStooqProvider_PopulatesProviderEstimates()
     {
         using var provider = new StooqHistoricalDataProvider();
@@ -109,6 +131,26 @@ public sealed class BackfillCostEstimatorTests
             To: new DateOnly(2024, 3, 31)));
 
         result.RecommendedProvider.Should().Be("stooq");
+    }
+
+    [Fact]
+    public void Estimate_YahooMinute1Intraday_UsesChunkedApiCallEstimate()
+    {
+        using var provider = new YahooFinanceHistoricalDataProvider();
+        var estimator = new BackfillCostEstimator([provider]);
+
+        var result = estimator.Estimate(new BackfillCostRequest(
+            Symbols: ["SPY"],
+            Provider: "yahoo",
+            From: new DateOnly(2024, 1, 1),
+            To: new DateOnly(2024, 2, 1),
+            Granularity: DataGranularity.Minute1));
+
+        result.ProviderEstimates.Should().ContainSingle();
+        result.ProviderEstimates[0].ProviderName.Should().Be("yahoo");
+        result.ProviderEstimates[0].EstimatedApiCalls.Should().Be(3);
+        result.ProviderEstimates[0].SupportsDateRange.Should().BeFalse();
+        result.RecommendedProvider.Should().Be("yahoo");
     }
 
     [Fact]

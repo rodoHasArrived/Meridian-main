@@ -1,0 +1,569 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+  commentId: T:Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+  id: ColorPalette.ArgbColor
+  parent: Meridian.Ui.Services.Services
+  children:
+  - Meridian.Ui.Services.Services.ColorPalette.ArgbColor.#ctor(System.Byte,System.Byte,System.Byte,System.Byte)
+  - Meridian.Ui.Services.Services.ColorPalette.ArgbColor.A
+  - Meridian.Ui.Services.Services.ColorPalette.ArgbColor.B
+  - Meridian.Ui.Services.Services.ColorPalette.ArgbColor.G
+  - Meridian.Ui.Services.Services.ColorPalette.ArgbColor.R
+  langs:
+  - csharp
+  - vb
+  name: ColorPalette.ArgbColor
+  nameWithType: ColorPalette.ArgbColor
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ColorPalette.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ArgbColor
+    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Represents an ARGB color value.
+  example: []
+  syntax:
+    content: 'public readonly record struct ColorPalette.ArgbColor : IEquatable<ColorPalette.ArgbColor>'
+    content.vb: Public Structure ColorPalette.ArgbColor Implements IEquatable(Of ColorPalette.ArgbColor)
+  implements:
+  - System.IEquatable{Meridian.Ui.Services.Services.ColorPalette.ArgbColor}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.#ctor(System.Byte,System.Byte,System.Byte,System.Byte)
+  commentId: M:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.#ctor(System.Byte,System.Byte,System.Byte,System.Byte)
+  id: '#ctor(System.Byte,System.Byte,System.Byte,System.Byte)'
+  parent: Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+  langs:
+  - csharp
+  - vb
+  name: ArgbColor(byte, byte, byte, byte)
+  nameWithType: ColorPalette.ArgbColor.ArgbColor(byte, byte, byte, byte)
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.ArgbColor(byte, byte, byte, byte)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ColorPalette.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  summary: Represents an ARGB color value.
+  example: []
+  syntax:
+    content: public ArgbColor(byte A, byte R, byte G, byte B)
+    parameters:
+    - id: A
+      type: System.Byte
+    - id: R
+      type: System.Byte
+    - id: G
+      type: System.Byte
+    - id: B
+      type: System.Byte
+    content.vb: Public Sub New(A As Byte, R As Byte, G As Byte, B As Byte)
+  overload: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.#ctor*
+  nameWithType.vb: ColorPalette.ArgbColor.New(Byte, Byte, Byte, Byte)
+  fullName.vb: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.New(Byte, Byte, Byte, Byte)
+  name.vb: New(Byte, Byte, Byte, Byte)
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.A
+  commentId: P:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.A
+  id: A
+  parent: Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+  langs:
+  - csharp
+  - vb
+  name: A
+  nameWithType: ColorPalette.ArgbColor.A
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.A
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ColorPalette.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: A
+    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public byte A { get; init; }
+    parameters: []
+    return:
+      type: System.Byte
+    content.vb: Public Property A As Byte
+  overload: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.A*
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.R
+  commentId: P:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.R
+  id: R
+  parent: Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+  langs:
+  - csharp
+  - vb
+  name: R
+  nameWithType: ColorPalette.ArgbColor.R
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.R
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ColorPalette.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: R
+    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public byte R { get; init; }
+    parameters: []
+    return:
+      type: System.Byte
+    content.vb: Public Property R As Byte
+  overload: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.R*
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.G
+  commentId: P:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.G
+  id: G
+  parent: Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+  langs:
+  - csharp
+  - vb
+  name: G
+  nameWithType: ColorPalette.ArgbColor.G
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.G
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ColorPalette.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: G
+    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public byte G { get; init; }
+    parameters: []
+    return:
+      type: System.Byte
+    content.vb: Public Property G As Byte
+  overload: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.G*
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.B
+  commentId: P:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.B
+  id: B
+  parent: Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+  langs:
+  - csharp
+  - vb
+  name: B
+  nameWithType: ColorPalette.ArgbColor.B
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.B
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ColorPalette.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: B
+    path: ../../src/Meridian.Ui.Services/Services/ColorPalette.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.Services
+  syntax:
+    content: public byte B { get; init; }
+    parameters: []
+    return:
+      type: System.Byte
+    content.vb: Public Property B As Byte
+  overload: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.B*
+references:
+- uid: Meridian.Ui.Services.Services
+  commentId: N:Meridian.Ui.Services.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services.Services
+  nameWithType: Meridian.Ui.Services.Services
+  fullName: Meridian.Ui.Services.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services
+    name: Services
+    href: Meridian.Ui.Services.Services.html
+- uid: System.IEquatable{Meridian.Ui.Services.Services.ColorPalette.ArgbColor}
+  commentId: T:System.IEquatable{Meridian.Ui.Services.Services.ColorPalette.ArgbColor}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ColorPalette.ArgbColor>
+  nameWithType: IEquatable<ColorPalette.ArgbColor>
+  fullName: System.IEquatable<Meridian.Ui.Services.Services.ColorPalette.ArgbColor>
+  nameWithType.vb: IEquatable(Of ColorPalette.ArgbColor)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Services.Services.ColorPalette.ArgbColor)
+  name.vb: IEquatable(Of ColorPalette.ArgbColor)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Services.Services.ColorPalette
+    name: ColorPalette
+    href: Meridian.Ui.Services.Services.ColorPalette.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+    name: ArgbColor
+    href: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Services.ColorPalette
+    name: ColorPalette
+    href: Meridian.Ui.Services.Services.ColorPalette.html
+  - name: .
+  - uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor
+    name: ArgbColor
+    href: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.#ctor*
+  commentId: Overload:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.#ctor
+  href: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.html#Meridian_Ui_Services_Services_ColorPalette_ArgbColor__ctor_System_Byte_System_Byte_System_Byte_System_Byte_
+  name: ArgbColor
+  nameWithType: ColorPalette.ArgbColor.ArgbColor
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.ArgbColor
+  nameWithType.vb: ColorPalette.ArgbColor.New
+  fullName.vb: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.New
+  name.vb: New
+- uid: System.Byte
+  commentId: T:System.Byte
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte
+  nameWithType: byte
+  fullName: byte
+  nameWithType.vb: Byte
+  fullName.vb: Byte
+  name.vb: Byte
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.A*
+  commentId: Overload:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.A
+  href: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.html#Meridian_Ui_Services_Services_ColorPalette_ArgbColor_A
+  name: A
+  nameWithType: ColorPalette.ArgbColor.A
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.A
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.R*
+  commentId: Overload:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.R
+  href: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.html#Meridian_Ui_Services_Services_ColorPalette_ArgbColor_R
+  name: R
+  nameWithType: ColorPalette.ArgbColor.R
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.R
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.G*
+  commentId: Overload:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.G
+  href: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.html#Meridian_Ui_Services_Services_ColorPalette_ArgbColor_G
+  name: G
+  nameWithType: ColorPalette.ArgbColor.G
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.G
+- uid: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.B*
+  commentId: Overload:Meridian.Ui.Services.Services.ColorPalette.ArgbColor.B
+  href: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.html#Meridian_Ui_Services_Services_ColorPalette_ArgbColor_B
+  name: B
+  nameWithType: ColorPalette.ArgbColor.B
+  fullName: Meridian.Ui.Services.Services.ColorPalette.ArgbColor.B

@@ -1,0 +1,981 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.TemplateService
+  commentId: T:Meridian.Application.Subscriptions.Services.TemplateService
+  id: TemplateService
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.TemplateService.#ctor(Meridian.Application.UI.ConfigStore,System.String)
+  - Meridian.Application.Subscriptions.Services.TemplateService.ApplyTemplateAsync(Meridian.Application.Subscriptions.Models.ApplyTemplateRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.TemplateService.CreateFromCurrentAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.TemplateService.CreateTemplateAsync(System.String,System.String,Meridian.Application.Subscriptions.Models.TemplateCategory,System.String[],Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.TemplateService.DeleteTemplateAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.TemplateService.GetAllTemplatesAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.TemplateService.GetTemplateAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: TemplateService
+  nameWithType: TemplateService
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TemplateService
+    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Service for managing subscription templates (equity groups, sectors, indices).
+  example: []
+  syntax:
+    content: public sealed class TemplateService
+    content.vb: Public NotInheritable Class TemplateService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.#ctor(Meridian.Application.UI.ConfigStore,System.String)
+  commentId: M:Meridian.Application.Subscriptions.Services.TemplateService.#ctor(Meridian.Application.UI.ConfigStore,System.String)
+  id: '#ctor(Meridian.Application.UI.ConfigStore,System.String)'
+  parent: Meridian.Application.Subscriptions.Services.TemplateService
+  langs:
+  - csharp
+  - vb
+  name: TemplateService(ConfigStore, string?)
+  nameWithType: TemplateService.TemplateService(ConfigStore, string?)
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.TemplateService(Meridian.Application.UI.ConfigStore, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public TemplateService(ConfigStore configStore, string? templatesPath = null)
+    parameters:
+    - id: configStore
+      type: Meridian.Application.UI.ConfigStore
+    - id: templatesPath
+      type: System.String
+    content.vb: Public Sub New(configStore As ConfigStore, templatesPath As String = Nothing)
+  overload: Meridian.Application.Subscriptions.Services.TemplateService.#ctor*
+  nameWithType.vb: TemplateService.New(ConfigStore, String)
+  fullName.vb: Meridian.Application.Subscriptions.Services.TemplateService.New(Meridian.Application.UI.ConfigStore, String)
+  name.vb: New(ConfigStore, String)
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.GetAllTemplatesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.TemplateService.GetAllTemplatesAsync(System.Threading.CancellationToken)
+  id: GetAllTemplatesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.TemplateService
+  langs:
+  - csharp
+  - vb
+  name: GetAllTemplatesAsync(CancellationToken)
+  nameWithType: TemplateService.GetAllTemplatesAsync(CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.GetAllTemplatesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllTemplatesAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get all available templates (built-in + custom).
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<SymbolTemplate>> GetAllTemplatesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolTemplate}}
+    content.vb: Public Function GetAllTemplatesAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SymbolTemplate))
+  overload: Meridian.Application.Subscriptions.Services.TemplateService.GetAllTemplatesAsync*
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.GetTemplateAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.TemplateService.GetTemplateAsync(System.String,System.Threading.CancellationToken)
+  id: GetTemplateAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.TemplateService
+  langs:
+  - csharp
+  - vb
+  name: GetTemplateAsync(string, CancellationToken)
+  nameWithType: TemplateService.GetTemplateAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.GetTemplateAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTemplateAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get a specific template by ID.
+  example: []
+  syntax:
+    content: public Task<SymbolTemplate?> GetTemplateAsync(string templateId, CancellationToken ct = default)
+    parameters:
+    - id: templateId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolTemplate}
+    content.vb: Public Function GetTemplateAsync(templateId As String, ct As CancellationToken = Nothing) As Task(Of SymbolTemplate)
+  overload: Meridian.Application.Subscriptions.Services.TemplateService.GetTemplateAsync*
+  nameWithType.vb: TemplateService.GetTemplateAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.TemplateService.GetTemplateAsync(String, System.Threading.CancellationToken)
+  name.vb: GetTemplateAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.ApplyTemplateAsync(Meridian.Application.Subscriptions.Models.ApplyTemplateRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.TemplateService.ApplyTemplateAsync(Meridian.Application.Subscriptions.Models.ApplyTemplateRequest,System.Threading.CancellationToken)
+  id: ApplyTemplateAsync(Meridian.Application.Subscriptions.Models.ApplyTemplateRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.TemplateService
+  langs:
+  - csharp
+  - vb
+  name: ApplyTemplateAsync(ApplyTemplateRequest, CancellationToken)
+  nameWithType: TemplateService.ApplyTemplateAsync(ApplyTemplateRequest, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.ApplyTemplateAsync(Meridian.Application.Subscriptions.Models.ApplyTemplateRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyTemplateAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Apply a template to the current subscriptions.
+  example: []
+  syntax:
+    content: public Task<ApplyTemplateResult> ApplyTemplateAsync(ApplyTemplateRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Application.Subscriptions.Models.ApplyTemplateRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.ApplyTemplateResult}
+    content.vb: Public Function ApplyTemplateAsync(request As ApplyTemplateRequest, ct As CancellationToken = Nothing) As Task(Of ApplyTemplateResult)
+  overload: Meridian.Application.Subscriptions.Services.TemplateService.ApplyTemplateAsync*
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.CreateTemplateAsync(System.String,System.String,Meridian.Application.Subscriptions.Models.TemplateCategory,System.String[],Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.TemplateService.CreateTemplateAsync(System.String,System.String,Meridian.Application.Subscriptions.Models.TemplateCategory,System.String[],Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults,System.Threading.CancellationToken)
+  id: CreateTemplateAsync(System.String,System.String,Meridian.Application.Subscriptions.Models.TemplateCategory,System.String[],Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.TemplateService
+  langs:
+  - csharp
+  - vb
+  name: CreateTemplateAsync(string, string, TemplateCategory, string[], TemplateSubscriptionDefaults?, CancellationToken)
+  nameWithType: TemplateService.CreateTemplateAsync(string, string, TemplateCategory, string[], TemplateSubscriptionDefaults?, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.CreateTemplateAsync(string, string, Meridian.Application.Subscriptions.Models.TemplateCategory, string[], Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateTemplateAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Create a custom template.
+  example: []
+  syntax:
+    content: public Task<SymbolTemplate> CreateTemplateAsync(string name, string description, TemplateCategory category, string[] symbols, TemplateSubscriptionDefaults? defaults = null, CancellationToken ct = default)
+    parameters:
+    - id: name
+      type: System.String
+    - id: description
+      type: System.String
+    - id: category
+      type: Meridian.Application.Subscriptions.Models.TemplateCategory
+    - id: symbols
+      type: System.String[]
+    - id: defaults
+      type: Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolTemplate}
+    content.vb: Public Function CreateTemplateAsync(name As String, description As String, category As TemplateCategory, symbols As String(), defaults As TemplateSubscriptionDefaults = Nothing, ct As CancellationToken = Nothing) As Task(Of SymbolTemplate)
+  overload: Meridian.Application.Subscriptions.Services.TemplateService.CreateTemplateAsync*
+  nameWithType.vb: TemplateService.CreateTemplateAsync(String, String, TemplateCategory, String(), TemplateSubscriptionDefaults, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.TemplateService.CreateTemplateAsync(String, String, Meridian.Application.Subscriptions.Models.TemplateCategory, String(), Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults, System.Threading.CancellationToken)
+  name.vb: CreateTemplateAsync(String, String, TemplateCategory, String(), TemplateSubscriptionDefaults, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.DeleteTemplateAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.TemplateService.DeleteTemplateAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteTemplateAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.TemplateService
+  langs:
+  - csharp
+  - vb
+  name: DeleteTemplateAsync(string, CancellationToken)
+  nameWithType: TemplateService.DeleteTemplateAsync(string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.DeleteTemplateAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteTemplateAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Delete a custom template.
+  example: []
+  syntax:
+    content: public Task<bool> DeleteTemplateAsync(string templateId, CancellationToken ct = default)
+    parameters:
+    - id: templateId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function DeleteTemplateAsync(templateId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Subscriptions.Services.TemplateService.DeleteTemplateAsync*
+  nameWithType.vb: TemplateService.DeleteTemplateAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.TemplateService.DeleteTemplateAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteTemplateAsync(String, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.CreateFromCurrentAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.TemplateService.CreateFromCurrentAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: CreateFromCurrentAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.TemplateService
+  langs:
+  - csharp
+  - vb
+  name: CreateFromCurrentAsync(string, string, CancellationToken)
+  nameWithType: TemplateService.CreateFromCurrentAsync(string, string, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.CreateFromCurrentAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateFromCurrentAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Create a template from current subscriptions.
+  example: []
+  syntax:
+    content: public Task<SymbolTemplate> CreateFromCurrentAsync(string name, string description, CancellationToken ct = default)
+    parameters:
+    - id: name
+      type: System.String
+    - id: description
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolTemplate}
+    content.vb: Public Function CreateFromCurrentAsync(name As String, description As String, ct As CancellationToken = Nothing) As Task(Of SymbolTemplate)
+  overload: Meridian.Application.Subscriptions.Services.TemplateService.CreateFromCurrentAsync*
+  nameWithType.vb: TemplateService.CreateFromCurrentAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.TemplateService.CreateFromCurrentAsync(String, String, System.Threading.CancellationToken)
+  name.vb: CreateFromCurrentAsync(String, String, CancellationToken)
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.TemplateService.#ctor
+  href: Meridian.Application.Subscriptions.Services.TemplateService.html#Meridian_Application_Subscriptions_Services_TemplateService__ctor_Meridian_Application_UI_ConfigStore_System_String_
+  name: TemplateService
+  nameWithType: TemplateService.TemplateService
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.TemplateService
+  nameWithType.vb: TemplateService.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.TemplateService.New
+  name.vb: New
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.GetAllTemplatesAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.TemplateService.GetAllTemplatesAsync
+  href: Meridian.Application.Subscriptions.Services.TemplateService.html#Meridian_Application_Subscriptions_Services_TemplateService_GetAllTemplatesAsync_System_Threading_CancellationToken_
+  name: GetAllTemplatesAsync
+  nameWithType: TemplateService.GetAllTemplatesAsync
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.GetAllTemplatesAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolTemplate}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Application.Subscriptions.Models.SymbolTemplate}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SymbolTemplate>>
+  nameWithType: Task<IReadOnlyList<SymbolTemplate>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Application.Subscriptions.Models.SymbolTemplate>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SymbolTemplate))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Subscriptions.Models.SymbolTemplate))
+  name.vb: Task(Of IReadOnlyList(Of SymbolTemplate))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolTemplate
+    name: SymbolTemplate
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolTemplate
+    name: SymbolTemplate
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.GetTemplateAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.TemplateService.GetTemplateAsync
+  href: Meridian.Application.Subscriptions.Services.TemplateService.html#Meridian_Application_Subscriptions_Services_TemplateService_GetTemplateAsync_System_String_System_Threading_CancellationToken_
+  name: GetTemplateAsync
+  nameWithType: TemplateService.GetTemplateAsync
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.GetTemplateAsync
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolTemplate}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.SymbolTemplate}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolTemplate>
+  nameWithType: Task<SymbolTemplate>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.SymbolTemplate>
+  nameWithType.vb: Task(Of SymbolTemplate)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.SymbolTemplate)
+  name.vb: Task(Of SymbolTemplate)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.SymbolTemplate
+    name: SymbolTemplate
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.SymbolTemplate
+    name: SymbolTemplate
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.ApplyTemplateAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.TemplateService.ApplyTemplateAsync
+  href: Meridian.Application.Subscriptions.Services.TemplateService.html#Meridian_Application_Subscriptions_Services_TemplateService_ApplyTemplateAsync_Meridian_Application_Subscriptions_Models_ApplyTemplateRequest_System_Threading_CancellationToken_
+  name: ApplyTemplateAsync
+  nameWithType: TemplateService.ApplyTemplateAsync
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.ApplyTemplateAsync
+- uid: Meridian.Application.Subscriptions.Models.ApplyTemplateRequest
+  commentId: T:Meridian.Application.Subscriptions.Models.ApplyTemplateRequest
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.ApplyTemplateRequest.html
+  name: ApplyTemplateRequest
+  nameWithType: ApplyTemplateRequest
+  fullName: Meridian.Application.Subscriptions.Models.ApplyTemplateRequest
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.ApplyTemplateResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Services.ApplyTemplateResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ApplyTemplateResult>
+  nameWithType: Task<ApplyTemplateResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Services.ApplyTemplateResult>
+  nameWithType.vb: Task(Of ApplyTemplateResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Services.ApplyTemplateResult)
+  name.vb: Task(Of ApplyTemplateResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Services.ApplyTemplateResult
+    name: ApplyTemplateResult
+    href: Meridian.Application.Subscriptions.Services.ApplyTemplateResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Services.ApplyTemplateResult
+    name: ApplyTemplateResult
+    href: Meridian.Application.Subscriptions.Services.ApplyTemplateResult.html
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.CreateTemplateAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.TemplateService.CreateTemplateAsync
+  href: Meridian.Application.Subscriptions.Services.TemplateService.html#Meridian_Application_Subscriptions_Services_TemplateService_CreateTemplateAsync_System_String_System_String_Meridian_Application_Subscriptions_Models_TemplateCategory_System_String___Meridian_Application_Subscriptions_Models_TemplateSubscriptionDefaults_System_Threading_CancellationToken_
+  name: CreateTemplateAsync
+  nameWithType: TemplateService.CreateTemplateAsync
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.CreateTemplateAsync
+- uid: Meridian.Application.Subscriptions.Models.TemplateCategory
+  commentId: T:Meridian.Application.Subscriptions.Models.TemplateCategory
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.TemplateCategory.html
+  name: TemplateCategory
+  nameWithType: TemplateCategory
+  fullName: Meridian.Application.Subscriptions.Models.TemplateCategory
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults
+  commentId: T:Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults.html
+  name: TemplateSubscriptionDefaults
+  nameWithType: TemplateSubscriptionDefaults
+  fullName: Meridian.Application.Subscriptions.Models.TemplateSubscriptionDefaults
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.DeleteTemplateAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.TemplateService.DeleteTemplateAsync
+  href: Meridian.Application.Subscriptions.Services.TemplateService.html#Meridian_Application_Subscriptions_Services_TemplateService_DeleteTemplateAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteTemplateAsync
+  nameWithType: TemplateService.DeleteTemplateAsync
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.DeleteTemplateAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Subscriptions.Services.TemplateService.CreateFromCurrentAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.TemplateService.CreateFromCurrentAsync
+  href: Meridian.Application.Subscriptions.Services.TemplateService.html#Meridian_Application_Subscriptions_Services_TemplateService_CreateFromCurrentAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: CreateFromCurrentAsync
+  nameWithType: TemplateService.CreateFromCurrentAsync
+  fullName: Meridian.Application.Subscriptions.Services.TemplateService.CreateFromCurrentAsync

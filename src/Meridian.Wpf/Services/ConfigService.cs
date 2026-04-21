@@ -57,6 +57,9 @@ public sealed class ConfigService : ConfigServiceBase
 
     public override string ConfigPath => FirstRunService.Instance.ConfigFilePath;
 
+    public string ResolveDataRoot(AppConfigDto? config = null)
+        => MeridianPathDefaults.ResolveDataRoot(ConfigPath, config?.DataRoot);
+
     private ConfigService()
     {
     }
@@ -110,7 +113,67 @@ public sealed class ConfigService : ConfigServiceBase
     }
 
     /// <summary>
-    /// Gets the currently active data source identifier from configuration.
+    /// Adds a new data source or updates an existing one (matched by <see cref="DataSourceConfigDto.Id"/>).
+    /// </summary>
+    public new async Task AddOrUpdateDataSourceAsync(DataSourceConfigDto source, CancellationToken ct = default)
+    {
+        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
+        config.DataSources ??= new DataSourcesConfigDto();
+
+        var sources = (config.DataSources.Sources ?? Array.Empty<DataSourceConfigDto>()).ToList();
+        var index = sources.FindIndex(s => s.Id == source.Id);
+        if (index >= 0)
+            sources[index] = source;
+        else
+            sources.Add(source);
+
+        config.DataSources.Sources = sources.ToArray();
+        await SaveConfigCoreAsync(config, ct);
+    }
+
+    /// <summary>
+    /// Deletes the data source with the specified <paramref name="id"/>.
+    /// </summary>
+    public new async Task DeleteDataSourceAsync(string id, CancellationToken ct = default)
+    {
+        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
+        if (config.DataSources?.Sources == null) return;
+
+        config.DataSources.Sources = config.DataSources.Sources
+            .Where(s => s.Id != id)
+            .ToArray();
+        await SaveConfigCoreAsync(config, ct);
+    }
+
+    /// <summary>
+    /// Sets the default real-time or historical data source.
+    /// </summary>
+    public new async Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default)
+    {
+        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
+        config.DataSources ??= new DataSourcesConfigDto();
+
+        if (isHistorical)
+            config.DataSources.DefaultHistoricalSourceId = id;
+        else
+            config.DataSources.DefaultRealTimeSourceId = id;
+
+        await SaveConfigCoreAsync(config, ct);
+    }
+
+    /// <summary>
+    /// Updates the failover settings (enabled flag and timeout).
+    /// </summary>
+    public new async Task UpdateFailoverSettingsAsync(bool enabled, int timeoutSeconds, CancellationToken ct = default)
+    {
+        var config = await LoadConfigCoreAsync(ct) ?? new AppConfigDto();
+        config.DataSources ??= new DataSourcesConfigDto();
+        config.DataSources.EnableFailover = enabled;
+        config.DataSources.FailoverTimeoutSeconds = timeoutSeconds;
+        await SaveConfigCoreAsync(config, ct);
+    }
+
+
     /// Returns null when no active source is set.
     /// </summary>
     public async Task<string?> GetActiveDataSourceAsync(CancellationToken ct = default)
@@ -232,7 +295,9 @@ public sealed class ConfigService : ConfigServiceBase
                 return new AppConfigDto();
             }
 
-            return JsonSerializer.Deserialize<AppConfigDto>(json, SharedJsonOptions) ?? new AppConfigDto();
+            var config = JsonSerializer.Deserialize<AppConfigDto>(json, SharedJsonOptions) ?? new AppConfigDto();
+            config.DataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, config.DataRoot);
+            return config;
         }
         catch (Exception ex)
         {
@@ -250,6 +315,10 @@ public sealed class ConfigService : ConfigServiceBase
             {
                 Directory.CreateDirectory(directory);
             }
+
+            config.DataRoot = string.IsNullOrWhiteSpace(config.DataRoot)
+                ? MeridianPathDefaults.DefaultDataRoot
+                : config.DataRoot;
 
             var json = JsonSerializer.Serialize(config, SharedJsonOptions);
             await File.WriteAllTextAsync(ConfigPath, json, ct);

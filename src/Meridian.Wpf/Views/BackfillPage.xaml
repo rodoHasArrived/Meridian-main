@@ -30,7 +30,7 @@
             <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="28,20,16,32">
             <StackPanel MaxWidth="900">
                 <!-- Header -->
-                <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+                <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,24">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -297,7 +297,10 @@
                                   SelectionChanged="GranularityCombo_SelectionChanged"
                                   Margin="0,0,0,8">
                             <ComboBoxItem Content="Daily (EOD)" Tag="Daily" IsSelected="True" />
+                            <ComboBoxItem Content="4 Hour" Tag="4Hour" />
                             <ComboBoxItem Content="Hourly" Tag="Hourly" />
+                            <ComboBoxItem Content="30 Minute" Tag="30Min" />
+                            <ComboBoxItem Content="5 Minute" Tag="5Min" />
                             <ComboBoxItem Content="15 Minute" Tag="15Min" />
                             <ComboBoxItem Content="1 Minute" Tag="1Min" />
                         </ComboBox>

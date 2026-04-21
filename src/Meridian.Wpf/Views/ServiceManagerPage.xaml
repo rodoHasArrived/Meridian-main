@@ -3,79 +3,177 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
-      AutomationProperties.Name="Service Manager">
+      AutomationProperties.Name="Service Manager"
+      AutomationProperties.AutomationId="ServiceManagerPage">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="28,20,28,32">
-        <StackPanel MaxWidth="1200">
-            <Border Style="{StaticResource SectionCardStyle}" Margin="0,0,0,24">
+        <StackPanel MaxWidth="1260">
+            <Border Style="{StaticResource EmbeddedShellHeroCardStyle}" Margin="0,0,0,20">
                 <StackPanel Orientation="Horizontal">
-                    <Border Width="44" Height="44" CornerRadius="14"
+                    <Border Width="44"
+                            Height="44"
+                            CornerRadius="14"
                             Background="{StaticResource ConsoleAccentBlueAlpha20Brush}"
-                            BorderBrush="{StaticResource InfoColorBrush}" BorderThickness="1">
-                        <TextBlock Text="&#xE912;" FontFamily="{StaticResource SymbolThemeFontFamily}"
-                                   FontSize="24" Foreground="{StaticResource InfoColorBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            BorderBrush="{StaticResource InfoColorBrush}"
+                            BorderThickness="1">
+                        <TextBlock Text="&#xE912;"
+                                   FontFamily="{StaticResource SymbolThemeFontFamily}"
+                                   FontSize="24"
+                                   Foreground="{StaticResource InfoColorBrush}"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center" />
                     </Border>
                     <StackPanel Margin="12,0,0,0">
                         <TextBlock Text="Service Manager" Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="Backend lifecycle controls, health posture, and runtime service registration for workstation operations."
+                        <TextBlock Text="Backend lifecycle controls, runtime posture, and workstation service registration from one operator workbench."
                                    Style="{StaticResource CardDescriptionStyle}" />
                     </StackPanel>
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
-                <StackPanel>
-                    <TextBlock Text="Backend lifecycle" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,16" />
-
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock Text="Status:" FontWeight="SemiBold" Margin="0,0,8,0" />
-                        <TextBlock Text="{Binding StatusText}" />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock Text="Health:" FontWeight="SemiBold" Margin="0,0,8,0" />
-                        <TextBlock Text="{Binding HealthText}" />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
-                        <TextBlock Text="Process ID:" FontWeight="SemiBold" Margin="0,0,8,0" />
-                        <TextBlock Text="{Binding ProcessIdText}" />
-                    </StackPanel>
-
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <TextBlock Text="Executable:" FontWeight="SemiBold" Margin="0,0,8,0" />
-                        <TextBlock Text="{Binding ExecutablePathText}" TextWrapping="Wrap" Width="900" />
-                    </StackPanel>
-
-                    <TextBlock Text="{Binding OperationResultText}" Foreground="{StaticResource ConsoleTextMutedBrush}" Margin="0,0,0,16" />
-
-                    <WrapPanel>
-                        <Button Content="Install"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Margin="0,0,12,0"
-                                Command="{Binding InstallCommand}"
-                                IsEnabled="{Binding CanInstall}" />
-                        <Button Content="Start"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Margin="0,0,12,0"
-                                Command="{Binding StartCommand}"
-                                IsEnabled="{Binding CanStart}" />
-                        <Button Content="Stop"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Margin="0,0,12,0"
-                                Command="{Binding StopCommand}"
-                                IsEnabled="{Binding CanStop}" />
-                        <Button Content="Restart"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Margin="0,0,12,0"
-                                Command="{Binding RestartCommand}"
-                                IsEnabled="{Binding CanRestart}" />
-                        <Button Content="Refresh Status"
-                                Style="{StaticResource SecondaryButtonStyle}"
-                                Command="{Binding RefreshCommand}"
-                                IsEnabled="{Binding CanRefresh}" />
-                    </WrapPanel>
-                </StackPanel>
+            <Border Style="{StaticResource WorkspaceContextStripStyle}" Margin="0,0,0,20">
+                <UniformGrid Columns="3">
+                    <Border Style="{StaticResource WorkspaceContextBadgeStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Service State" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding ServiceStateBadgeText}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource WorkspaceContextBadgeStyle}" Margin="0,0,12,0">
+                        <StackPanel>
+                            <TextBlock Text="Runtime Posture" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding RuntimePostureText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource WorkspaceContextBadgeStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Registration" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                            <TextBlock Text="{Binding RegistrationPostureText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </UniformGrid>
             </Border>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="16" />
+                    <ColumnDefinition Width="1.5*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0"
+                        Style="{StaticResource WorkspaceWorkbenchCardStyle}"
+                        AutomationProperties.AutomationId="ServiceManagerControlWorkbench">
+                    <StackPanel>
+                        <TextBlock Text="Lifecycle Control Lane" Style="{StaticResource CardHeaderStyle}" />
+                        <TextBlock Text="{Binding RecommendedActionText}"
+                                   Style="{StaticResource CardDescriptionStyle}"
+                                   Margin="0,8,0,16"
+                                   TextWrapping="Wrap" />
+
+                        <UniformGrid Columns="2" Margin="0,0,0,16">
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,10">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding StatusText}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Status" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding HealthText}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Health" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}" Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding ProcessIdText}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Process ID" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource WorkspaceQueueCardStyle}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding ServiceStateBadgeText}" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource ConsoleTextPrimaryBrush}" />
+                                    <TextBlock Text="Operator posture" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <TextBlock Text="Executable Path" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <TextBlock Text="{Binding ExecutablePathText}"
+                                   Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,4,0,16" />
+
+                        <TextBlock Text="Operation Output" FontSize="11" Foreground="{StaticResource ConsoleTextMutedBrush}" />
+                        <Border Style="{StaticResource TerminalCardStyle}" Margin="0,4,0,16">
+                            <TextBlock Text="{Binding OperationResultText}"
+                                       Foreground="{StaticResource ConsoleTextSecondaryBrush}"
+                                       TextWrapping="Wrap"
+                                       Padding="14" />
+                        </Border>
+
+                        <WrapPanel>
+                            <Button Content="Install"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,0"
+                                    Command="{Binding InstallCommand}"
+                                    IsEnabled="{Binding CanInstall}" />
+                            <Button Content="Start"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="0,0,12,0"
+                                    Command="{Binding StartCommand}"
+                                    IsEnabled="{Binding CanStart}" />
+                            <Button Content="Stop"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,0"
+                                    Command="{Binding StopCommand}"
+                                    IsEnabled="{Binding CanStop}" />
+                            <Button Content="Restart"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Margin="0,0,12,0"
+                                    Command="{Binding RestartCommand}"
+                                    IsEnabled="{Binding CanRestart}" />
+                            <Button Content="Refresh Status"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding RefreshCommand}"
+                                    IsEnabled="{Binding CanRefresh}" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Grid.Column="2">
+                    <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                            AutomationProperties.AutomationId="ServiceManagerRuntimeInspector">
+                        <StackPanel>
+                            <TextBlock Text="Runtime Inspector" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding RuntimePostureText}"
+                                       Style="{StaticResource CardDescriptionStyle}"
+                                       Margin="0,8,0,12"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="The lifecycle lane keeps install/start/stop controls close to the registration and runtime proof you need before opening service-dependent workflows."
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource WorkspaceInspectorCardStyle}"
+                            AutomationProperties.AutomationId="ServiceManagerActionInspector">
+                        <StackPanel>
+                            <TextBlock Text="Recommended Next Step" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding RecommendedActionText}"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource ConsoleTextPrimaryBrush}"
+                                       Margin="0,8,0,12"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding RegistrationPostureText}"
+                                       FontSize="11"
+                                       Foreground="{StaticResource ConsoleTextMutedBrush}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </Page>

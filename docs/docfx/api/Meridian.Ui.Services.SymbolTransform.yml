@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SymbolTransform
+  commentId: T:Meridian.Ui.Services.SymbolTransform
+  id: SymbolTransform
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SymbolTransform.DotsToDashes
+  - Meridian.Ui.Services.SymbolTransform.DotsToSpaces
+  - Meridian.Ui.Services.SymbolTransform.Lowercase
+  - Meridian.Ui.Services.SymbolTransform.None
+  - Meridian.Ui.Services.SymbolTransform.StooqFormat
+  - Meridian.Ui.Services.SymbolTransform.Uppercase
+  langs:
+  - csharp
+  - vb
+  name: SymbolTransform
+  nameWithType: SymbolTransform
+  fullName: Meridian.Ui.Services.SymbolTransform
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolTransform
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 616
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Symbol transformation types.
+  example: []
+  syntax:
+    content: 'public enum SymbolTransform : byte'
+    content.vb: Public Enum SymbolTransform As Byte
+- uid: Meridian.Ui.Services.SymbolTransform.None
+  commentId: F:Meridian.Ui.Services.SymbolTransform.None
+  id: None
+  parent: Meridian.Ui.Services.SymbolTransform
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: SymbolTransform.None
+  fullName: Meridian.Ui.Services.SymbolTransform.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 619
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: No transformation, identity.
+  example: []
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Ui.Services.SymbolTransform
+- uid: Meridian.Ui.Services.SymbolTransform.Uppercase
+  commentId: F:Meridian.Ui.Services.SymbolTransform.Uppercase
+  id: Uppercase
+  parent: Meridian.Ui.Services.SymbolTransform
+  langs:
+  - csharp
+  - vb
+  name: Uppercase
+  nameWithType: SymbolTransform.Uppercase
+  fullName: Meridian.Ui.Services.SymbolTransform.Uppercase
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Uppercase
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 621
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Convert to uppercase.
+  example: []
+  syntax:
+    content: Uppercase = 1
+    return:
+      type: Meridian.Ui.Services.SymbolTransform
+- uid: Meridian.Ui.Services.SymbolTransform.Lowercase
+  commentId: F:Meridian.Ui.Services.SymbolTransform.Lowercase
+  id: Lowercase
+  parent: Meridian.Ui.Services.SymbolTransform
+  langs:
+  - csharp
+  - vb
+  name: Lowercase
+  nameWithType: SymbolTransform.Lowercase
+  fullName: Meridian.Ui.Services.SymbolTransform.Lowercase
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Lowercase
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 623
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Convert to lowercase.
+  example: []
+  syntax:
+    content: Lowercase = 2
+    return:
+      type: Meridian.Ui.Services.SymbolTransform
+- uid: Meridian.Ui.Services.SymbolTransform.DotsToSpaces
+  commentId: F:Meridian.Ui.Services.SymbolTransform.DotsToSpaces
+  id: DotsToSpaces
+  parent: Meridian.Ui.Services.SymbolTransform
+  langs:
+  - csharp
+  - vb
+  name: DotsToSpaces
+  nameWithType: SymbolTransform.DotsToSpaces
+  fullName: Meridian.Ui.Services.SymbolTransform.DotsToSpaces
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DotsToSpaces
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 625
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Replace dots with spaces (IB format).
+  example: []
+  syntax:
+    content: DotsToSpaces = 3
+    return:
+      type: Meridian.Ui.Services.SymbolTransform
+- uid: Meridian.Ui.Services.SymbolTransform.DotsToDashes
+  commentId: F:Meridian.Ui.Services.SymbolTransform.DotsToDashes
+  id: DotsToDashes
+  parent: Meridian.Ui.Services.SymbolTransform
+  langs:
+  - csharp
+  - vb
+  name: DotsToDashes
+  nameWithType: SymbolTransform.DotsToDashes
+  fullName: Meridian.Ui.Services.SymbolTransform.DotsToDashes
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DotsToDashes
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 627
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Replace dots with dashes (Yahoo format).
+  example: []
+  syntax:
+    content: DotsToDashes = 4
+    return:
+      type: Meridian.Ui.Services.SymbolTransform
+- uid: Meridian.Ui.Services.SymbolTransform.StooqFormat
+  commentId: F:Meridian.Ui.Services.SymbolTransform.StooqFormat
+  id: StooqFormat
+  parent: Meridian.Ui.Services.SymbolTransform
+  langs:
+  - csharp
+  - vb
+  name: StooqFormat
+  nameWithType: SymbolTransform.StooqFormat
+  fullName: Meridian.Ui.Services.SymbolTransform.StooqFormat
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StooqFormat
+    path: ../../src/Meridian.Ui.Services/Services/SymbolMappingService.cs
+    startLine: 629
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: 'Stooq format: lowercase with .us suffix.'
+  example: []
+  syntax:
+    content: StooqFormat = 5
+    return:
+      type: Meridian.Ui.Services.SymbolTransform
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.SymbolTransform
+  commentId: T:Meridian.Ui.Services.SymbolTransform
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SymbolTransform.html
+  name: SymbolTransform
+  nameWithType: SymbolTransform
+  fullName: Meridian.Ui.Services.SymbolTransform

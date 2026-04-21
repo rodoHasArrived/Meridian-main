@@ -1,0 +1,1029 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  commentId: T:Meridian.Application.Canonicalization.CanonicalizingPublisher
+  id: CanonicalizingPublisher
+  parent: Meridian.Application.Canonicalization
+  children:
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Application.Canonicalization.IEventCanonicalizer,System.Collections.Generic.IEnumerable{System.String},System.Boolean,Meridian.Application.Pipeline.DeadLetterSink,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Canonicalization.CanonicalizingPublisher})
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher.AverageDurationUs
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizationCount
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher.DualWriteCount
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher.GetMetricsSnapshot
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher.QuarantinedCount
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher.SkippedCount
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  - Meridian.Application.Canonicalization.CanonicalizingPublisher.UnresolvedCount
+  langs:
+  - csharp
+  - vb
+  name: CanonicalizingPublisher
+  nameWithType: CanonicalizingPublisher
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalizingPublisher
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: >-
+    Decorator that canonicalizes events before forwarding them to the inner publisher.
+
+    Wraps any <xref href="Meridian.Domain.Events.IMarketEventPublisher" data-throw-if-not-resolved="false"></xref> to apply symbol resolution, venue
+
+    normalization, and condition code mapping transparently.
+  remarks: >-
+    <p><b>Phase 2 (Dual-Write):</b> When <code>DualWriteEnabled</code> is true,
+
+    the raw event is published first, then the canonicalized version. This allows
+
+    downstream consumers to validate parity between raw and enriched paths.</p>
+
+    <p><b>Phase 3 (Canonical-only):</b> When dual-write is off,
+
+    only the canonicalized event is published.</p>
+
+    <p>Pilot symbol filtering limits canonicalization to a configurable subset
+
+    during rollout. Events for non-pilot symbols pass through unchanged.</p>
+
+    <p><b>Quarantine Sink:</b> When a <xref href="Meridian.Application.Pipeline.DeadLetterSink" data-throw-if-not-resolved="false"></xref> is provided via
+
+    the <code>quarantine</code> constructor parameter, events whose symbol cannot be resolved are written
+
+    to the quarantine file in addition to being published with raw data.
+
+    This prevents unmappable events from silently accumulating with no audit trail.</p>
+  example: []
+  syntax:
+    content: 'public sealed class CanonicalizingPublisher : IMarketEventPublisher'
+    content.vb: Public NotInheritable Class CanonicalizingPublisher Implements IMarketEventPublisher
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Domain.Events.IMarketEventPublisher
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Application.Canonicalization.IEventCanonicalizer,System.Collections.Generic.IEnumerable{System.String},System.Boolean,Meridian.Application.Pipeline.DeadLetterSink,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Canonicalization.CanonicalizingPublisher})
+  commentId: M:Meridian.Application.Canonicalization.CanonicalizingPublisher.#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Application.Canonicalization.IEventCanonicalizer,System.Collections.Generic.IEnumerable{System.String},System.Boolean,Meridian.Application.Pipeline.DeadLetterSink,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Canonicalization.CanonicalizingPublisher})
+  id: '#ctor(Meridian.Domain.Events.IMarketEventPublisher,Meridian.Application.Canonicalization.IEventCanonicalizer,System.Collections.Generic.IEnumerable{System.String},System.Boolean,Meridian.Application.Pipeline.DeadLetterSink,Microsoft.Extensions.Logging.ILogger{Meridian.Application.Canonicalization.CanonicalizingPublisher})'
+  parent: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  langs:
+  - csharp
+  - vb
+  name: CanonicalizingPublisher(IMarketEventPublisher, IEventCanonicalizer, IEnumerable<string>?, bool, DeadLetterSink?, ILogger<CanonicalizingPublisher>?)
+  nameWithType: CanonicalizingPublisher.CanonicalizingPublisher(IMarketEventPublisher, IEventCanonicalizer, IEnumerable<string>?, bool, DeadLetterSink?, ILogger<CanonicalizingPublisher>?)
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizingPublisher(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Application.Canonicalization.IEventCanonicalizer, System.Collections.Generic.IEnumerable<string>?, bool, Meridian.Application.Pipeline.DeadLetterSink?, Microsoft.Extensions.Logging.ILogger<Meridian.Application.Canonicalization.CanonicalizingPublisher>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  syntax:
+    content: public CanonicalizingPublisher(IMarketEventPublisher inner, IEventCanonicalizer canonicalizer, IEnumerable<string>? pilotSymbols = null, bool dualWrite = true, DeadLetterSink? quarantine = null, ILogger<CanonicalizingPublisher>? logger = null)
+    parameters:
+    - id: inner
+      type: Meridian.Domain.Events.IMarketEventPublisher
+    - id: canonicalizer
+      type: Meridian.Application.Canonicalization.IEventCanonicalizer
+    - id: pilotSymbols
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: dualWrite
+      type: System.Boolean
+    - id: quarantine
+      type: Meridian.Application.Pipeline.DeadLetterSink
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Canonicalization.CanonicalizingPublisher}
+    content.vb: Public Sub New(inner As IMarketEventPublisher, canonicalizer As IEventCanonicalizer, pilotSymbols As IEnumerable(Of String) = Nothing, dualWrite As Boolean = True, quarantine As DeadLetterSink = Nothing, logger As ILogger(Of CanonicalizingPublisher) = Nothing)
+  overload: Meridian.Application.Canonicalization.CanonicalizingPublisher.#ctor*
+  nameWithType.vb: CanonicalizingPublisher.New(IMarketEventPublisher, IEventCanonicalizer, IEnumerable(Of String), Boolean, DeadLetterSink, ILogger(Of CanonicalizingPublisher))
+  fullName.vb: Meridian.Application.Canonicalization.CanonicalizingPublisher.New(Meridian.Domain.Events.IMarketEventPublisher, Meridian.Application.Canonicalization.IEventCanonicalizer, System.Collections.Generic.IEnumerable(Of String), Boolean, Meridian.Application.Pipeline.DeadLetterSink, Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Canonicalization.CanonicalizingPublisher))
+  name.vb: New(IMarketEventPublisher, IEventCanonicalizer, IEnumerable(Of String), Boolean, DeadLetterSink, ILogger(Of CanonicalizingPublisher))
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizationCount
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizationCount
+  id: CanonicalizationCount
+  parent: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  langs:
+  - csharp
+  - vb
+  name: CanonicalizationCount
+  nameWithType: CanonicalizingPublisher.CanonicalizationCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizationCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CanonicalizationCount
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Total events successfully canonicalized.
+  example: []
+  syntax:
+    content: public long CanonicalizationCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property CanonicalizationCount As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizationCount*
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.SkippedCount
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizingPublisher.SkippedCount
+  id: SkippedCount
+  parent: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  langs:
+  - csharp
+  - vb
+  name: SkippedCount
+  nameWithType: CanonicalizingPublisher.SkippedCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.SkippedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkippedCount
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Events skipped (non-pilot or heartbeat).
+  example: []
+  syntax:
+    content: public long SkippedCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property SkippedCount As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizingPublisher.SkippedCount*
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.UnresolvedCount
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizingPublisher.UnresolvedCount
+  id: UnresolvedCount
+  parent: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  langs:
+  - csharp
+  - vb
+  name: UnresolvedCount
+  nameWithType: CanonicalizingPublisher.UnresolvedCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.UnresolvedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnresolvedCount
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Events with unresolved canonical symbols.
+  example: []
+  syntax:
+    content: public long UnresolvedCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property UnresolvedCount As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizingPublisher.UnresolvedCount*
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.DualWriteCount
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizingPublisher.DualWriteCount
+  id: DualWriteCount
+  parent: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  langs:
+  - csharp
+  - vb
+  name: DualWriteCount
+  nameWithType: CanonicalizingPublisher.DualWriteCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.DualWriteCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DualWriteCount
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Events dual-written (raw + canonical).
+  example: []
+  syntax:
+    content: public long DualWriteCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property DualWriteCount As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizingPublisher.DualWriteCount*
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.QuarantinedCount
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizingPublisher.QuarantinedCount
+  id: QuarantinedCount
+  parent: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  langs:
+  - csharp
+  - vb
+  name: QuarantinedCount
+  nameWithType: CanonicalizingPublisher.QuarantinedCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.QuarantinedCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: QuarantinedCount
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Events with unresolved symbols sent to the quarantine sink.
+  example: []
+  syntax:
+    content: public long QuarantinedCount { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property QuarantinedCount As Long
+  overload: Meridian.Application.Canonicalization.CanonicalizingPublisher.QuarantinedCount*
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.AverageDurationUs
+  commentId: P:Meridian.Application.Canonicalization.CanonicalizingPublisher.AverageDurationUs
+  id: AverageDurationUs
+  parent: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  langs:
+  - csharp
+  - vb
+  name: AverageDurationUs
+  nameWithType: CanonicalizingPublisher.AverageDurationUs
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.AverageDurationUs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageDurationUs
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Average canonicalization time in microseconds.
+  example: []
+  syntax:
+    content: public double AverageDurationUs { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property AverageDurationUs As Double
+  overload: Meridian.Application.Canonicalization.CanonicalizingPublisher.AverageDurationUs*
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Application.Canonicalization.CanonicalizingPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  id: TryPublish(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  langs:
+  - csharp
+  - vb
+  name: TryPublish(in MarketEvent)
+  nameWithType: CanonicalizingPublisher.TryPublish(in MarketEvent)
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.TryPublish(in Meridian.Domain.Events.MarketEvent)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryPublish
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 93
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  example: []
+  syntax:
+    content: public bool TryPublish(in MarketEvent evt)
+    parameters:
+    - id: evt
+      type: Meridian.Domain.Events.MarketEvent
+    return:
+      type: System.Boolean
+    content.vb: Public Function TryPublish(evt As MarketEvent) As Boolean
+  overload: Meridian.Application.Canonicalization.CanonicalizingPublisher.TryPublish*
+  implements:
+  - Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  nameWithType.vb: CanonicalizingPublisher.TryPublish(MarketEvent)
+  fullName.vb: Meridian.Application.Canonicalization.CanonicalizingPublisher.TryPublish(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublish(MarketEvent)
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.GetMetricsSnapshot
+  commentId: M:Meridian.Application.Canonicalization.CanonicalizingPublisher.GetMetricsSnapshot
+  id: GetMetricsSnapshot
+  parent: Meridian.Application.Canonicalization.CanonicalizingPublisher
+  langs:
+  - csharp
+  - vb
+  name: GetMetricsSnapshot()
+  nameWithType: CanonicalizingPublisher.GetMetricsSnapshot()
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.GetMetricsSnapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMetricsSnapshot
+    path: ../../src/Meridian.Application/Canonicalization/CanonicalizingPublisher.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Canonicalization
+  summary: Gets a snapshot of canonicalization metrics for Prometheus export.
+  example: []
+  syntax:
+    content: public CanonicalizationMetricsSnapshot GetMetricsSnapshot()
+    return:
+      type: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+    content.vb: Public Function GetMetricsSnapshot() As CanonicalizationMetricsSnapshot
+  overload: Meridian.Application.Canonicalization.CanonicalizingPublisher.GetMetricsSnapshot*
+references:
+- uid: Meridian.Domain.Events.IMarketEventPublisher
+  commentId: T:Meridian.Domain.Events.IMarketEventPublisher
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.IMarketEventPublisher.html
+  name: IMarketEventPublisher
+  nameWithType: IMarketEventPublisher
+  fullName: Meridian.Domain.Events.IMarketEventPublisher
+- uid: Meridian.Application.Pipeline.DeadLetterSink
+  commentId: T:Meridian.Application.Pipeline.DeadLetterSink
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.DeadLetterSink.html
+  name: DeadLetterSink
+  nameWithType: DeadLetterSink
+  fullName: Meridian.Application.Pipeline.DeadLetterSink
+- uid: Meridian.Application.Canonicalization
+  commentId: N:Meridian.Application.Canonicalization
+  href: Meridian.html
+  name: Meridian.Application.Canonicalization
+  nameWithType: Meridian.Application.Canonicalization
+  fullName: Meridian.Application.Canonicalization
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Canonicalization
+    name: Canonicalization
+    href: Meridian.Application.Canonicalization.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Domain.Events
+  commentId: N:Meridian.Domain.Events
+  href: Meridian.html
+  name: Meridian.Domain.Events
+  nameWithType: Meridian.Domain.Events
+  fullName: Meridian.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Domain
+    name: Domain
+    href: Meridian.Domain.html
+  - name: .
+  - uid: Meridian.Domain.Events
+    name: Events
+    href: Meridian.Domain.Events.html
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.#ctor*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizingPublisher.#ctor
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html#Meridian_Application_Canonicalization_CanonicalizingPublisher__ctor_Meridian_Domain_Events_IMarketEventPublisher_Meridian_Application_Canonicalization_IEventCanonicalizer_System_Collections_Generic_IEnumerable_System_String__System_Boolean_Meridian_Application_Pipeline_DeadLetterSink_Microsoft_Extensions_Logging_ILogger_Meridian_Application_Canonicalization_CanonicalizingPublisher__
+  name: CanonicalizingPublisher
+  nameWithType: CanonicalizingPublisher.CanonicalizingPublisher
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizingPublisher
+  nameWithType.vb: CanonicalizingPublisher.New
+  fullName.vb: Meridian.Application.Canonicalization.CanonicalizingPublisher.New
+  name.vb: New
+- uid: Meridian.Application.Canonicalization.IEventCanonicalizer
+  commentId: T:Meridian.Application.Canonicalization.IEventCanonicalizer
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.IEventCanonicalizer.html
+  name: IEventCanonicalizer
+  nameWithType: IEventCanonicalizer
+  fullName: Meridian.Application.Canonicalization.IEventCanonicalizer
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Application.Canonicalization.CanonicalizingPublisher}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Application.Canonicalization.CanonicalizingPublisher}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<CanonicalizingPublisher>
+  nameWithType: ILogger<CanonicalizingPublisher>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Application.Canonicalization.CanonicalizingPublisher>
+  nameWithType.vb: ILogger(Of CanonicalizingPublisher)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Application.Canonicalization.CanonicalizingPublisher)
+  name.vb: ILogger(Of CanonicalizingPublisher)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Application.Canonicalization.CanonicalizingPublisher
+    name: CanonicalizingPublisher
+    href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Canonicalization.CanonicalizingPublisher
+    name: CanonicalizingPublisher
+    href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizationCount*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizationCount
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html#Meridian_Application_Canonicalization_CanonicalizingPublisher_CanonicalizationCount
+  name: CanonicalizationCount
+  nameWithType: CanonicalizingPublisher.CanonicalizationCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.CanonicalizationCount
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.SkippedCount*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizingPublisher.SkippedCount
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html#Meridian_Application_Canonicalization_CanonicalizingPublisher_SkippedCount
+  name: SkippedCount
+  nameWithType: CanonicalizingPublisher.SkippedCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.SkippedCount
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.UnresolvedCount*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizingPublisher.UnresolvedCount
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html#Meridian_Application_Canonicalization_CanonicalizingPublisher_UnresolvedCount
+  name: UnresolvedCount
+  nameWithType: CanonicalizingPublisher.UnresolvedCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.UnresolvedCount
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.DualWriteCount*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizingPublisher.DualWriteCount
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html#Meridian_Application_Canonicalization_CanonicalizingPublisher_DualWriteCount
+  name: DualWriteCount
+  nameWithType: CanonicalizingPublisher.DualWriteCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.DualWriteCount
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.QuarantinedCount*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizingPublisher.QuarantinedCount
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html#Meridian_Application_Canonicalization_CanonicalizingPublisher_QuarantinedCount
+  name: QuarantinedCount
+  nameWithType: CanonicalizingPublisher.QuarantinedCount
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.QuarantinedCount
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.AverageDurationUs*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizingPublisher.AverageDurationUs
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html#Meridian_Application_Canonicalization_CanonicalizingPublisher_AverageDurationUs
+  name: AverageDurationUs
+  nameWithType: CanonicalizingPublisher.AverageDurationUs
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.AverageDurationUs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.TryPublish*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizingPublisher.TryPublish
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html#Meridian_Application_Canonicalization_CanonicalizingPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  name: TryPublish
+  nameWithType: CanonicalizingPublisher.TryPublish
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.TryPublish
+- uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  commentId: M:Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+  parent: Meridian.Domain.Events.IMarketEventPublisher
+  href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  name: TryPublish(in MarketEvent)
+  nameWithType: IMarketEventPublisher.TryPublish(in MarketEvent)
+  fullName: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(in Meridian.Domain.Events.MarketEvent)
+  nameWithType.vb: IMarketEventPublisher.TryPublish(MarketEvent)
+  fullName.vb: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent)
+  name.vb: TryPublish(MarketEvent)
+  spec.csharp:
+  - uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - name: in
+  - name: " "
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+    href: Meridian.Domain.Events.MarketEvent.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Domain.Events.IMarketEventPublisher.TryPublish(Meridian.Domain.Events.MarketEvent@)
+    name: TryPublish
+    href: Meridian.Domain.Events.IMarketEventPublisher.html#Meridian_Domain_Events_IMarketEventPublisher_TryPublish_Meridian_Domain_Events_MarketEvent__
+  - name: (
+  - uid: Meridian.Domain.Events.MarketEvent
+    name: MarketEvent
+    href: Meridian.Domain.Events.MarketEvent.html
+  - name: )
+- uid: Meridian.Domain.Events.MarketEvent
+  commentId: T:Meridian.Domain.Events.MarketEvent
+  parent: Meridian.Domain.Events
+  href: Meridian.Domain.Events.MarketEvent.html
+  name: MarketEvent
+  nameWithType: MarketEvent
+  fullName: Meridian.Domain.Events.MarketEvent
+- uid: Meridian.Application.Canonicalization.CanonicalizingPublisher.GetMetricsSnapshot*
+  commentId: Overload:Meridian.Application.Canonicalization.CanonicalizingPublisher.GetMetricsSnapshot
+  href: Meridian.Application.Canonicalization.CanonicalizingPublisher.html#Meridian_Application_Canonicalization_CanonicalizingPublisher_GetMetricsSnapshot
+  name: GetMetricsSnapshot
+  nameWithType: CanonicalizingPublisher.GetMetricsSnapshot
+  fullName: Meridian.Application.Canonicalization.CanonicalizingPublisher.GetMetricsSnapshot
+- uid: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  commentId: T:Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot
+  parent: Meridian.Application.Canonicalization
+  href: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot.html
+  name: CanonicalizationMetricsSnapshot
+  nameWithType: CanonicalizationMetricsSnapshot
+  fullName: Meridian.Application.Canonicalization.CanonicalizationMetricsSnapshot

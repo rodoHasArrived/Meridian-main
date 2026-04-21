@@ -32,6 +32,7 @@ public static class ServiceCompositionRoot
         new ConfigurationFeatureRegistration(),
         new CoordinationFeatureRegistration(),
         new StorageFeatureRegistration(),
+        new LedgerFeatureRegistration(),
         new CredentialFeatureRegistration(),
         new ProviderFeatureRegistration(),
         new SymbolManagementFeatureRegistration(),
@@ -74,6 +75,9 @@ public static class ServiceCompositionRoot
         services.RegisterFeature<ConfigurationFeatureRegistration>(options);
         services.RegisterFeature<CoordinationFeatureRegistration>(options);
         services.RegisterFeature<StorageFeatureRegistration>(options);
+
+        // Ledger services — always registered; ProjectLedgerBook is a lightweight singleton
+        services.RegisterFeature<LedgerFeatureRegistration>(options);
 
         // Credential services — must come before provider services
         if (options.EnableCredentialServices)

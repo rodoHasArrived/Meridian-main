@@ -1,0 +1,1209 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  commentId: T:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  id: StreamingFailoverService
+  parent: Meridian.Infrastructure.Adapters.Failover
+  children:
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.#ctor(Meridian.Application.Monitoring.IConnectionHealthMonitor)
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Dispose
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.ForceFailover(System.String,System.String)
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetActiveProviderId(System.String)
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetProviderHealthSnapshots
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetRuleSnapshots
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.OnFailoverRecovered
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.OnFailoverTriggered
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordFailure(System.String,System.String)
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordLatency(System.String,System.Double)
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordSuccess(System.String)
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RegisterProvider(System.String)
+  - Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Start(Meridian.Application.Config.DataSourcesConfig)
+  langs:
+  - csharp
+  - vb
+  name: StreamingFailoverService
+  nameWithType: StreamingFailoverService
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StreamingFailoverService
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: >-
+    Orchestrates automatic failover between streaming market data providers.
+
+    Monitors provider health via <xref href="Meridian.Application.Monitoring.IConnectionHealthMonitor" data-throw-if-not-resolved="false"></xref>, evaluates
+
+    configured <xref href="Meridian.Application.Config.FailoverRuleConfig" data-throw-if-not-resolved="false"></xref> rules, and triggers switchover
+
+    when consecutive failures exceed the threshold.
+  remarks: >-
+    Implements ADR-001 provider abstraction with runtime failover coordination
+
+    that was previously missing for streaming providers.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Runtime streaming provider failover orchestration")]
+
+      [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
+
+      public sealed class StreamingFailoverService : IDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Runtime streaming provider failover orchestration")>
+
+      <ImplementsAdr("ADR-004", "All async methods support CancellationToken")>
+
+      Public NotInheritable Class StreamingFailoverService Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Runtime streaming provider failover orchestration
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-004
+    - type: System.String
+      value: All async methods support CancellationToken
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.OnFailoverTriggered
+  commentId: E:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.OnFailoverTriggered
+  id: OnFailoverTriggered
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: OnFailoverTriggered
+  nameWithType: StreamingFailoverService.OnFailoverTriggered
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.OnFailoverTriggered
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnFailoverTriggered
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Raised when a failover is triggered, providing the rule ID, the failed provider, and the new active provider.
+  example: []
+  syntax:
+    content: public event Action<FailoverTriggeredEvent>? OnFailoverTriggered
+    return:
+      type: System.Action{Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent}
+    content.vb: Public Event OnFailoverTriggered As Action(Of FailoverTriggeredEvent)
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.OnFailoverRecovered
+  commentId: E:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.OnFailoverRecovered
+  id: OnFailoverRecovered
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: OnFailoverRecovered
+  nameWithType: StreamingFailoverService.OnFailoverRecovered
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.OnFailoverRecovered
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnFailoverRecovered
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Raised when a provider recovers and becomes the active provider again.
+  example: []
+  syntax:
+    content: public event Action<FailoverRecoveredEvent>? OnFailoverRecovered
+    return:
+      type: System.Action{Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent}
+    content.vb: Public Event OnFailoverRecovered As Action(Of FailoverRecoveredEvent)
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.#ctor(Meridian.Application.Monitoring.IConnectionHealthMonitor)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.#ctor(Meridian.Application.Monitoring.IConnectionHealthMonitor)
+  id: '#ctor(Meridian.Application.Monitoring.IConnectionHealthMonitor)'
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: StreamingFailoverService(IConnectionHealthMonitor)
+  nameWithType: StreamingFailoverService.StreamingFailoverService(IConnectionHealthMonitor)
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.StreamingFailoverService(Meridian.Application.Monitoring.IConnectionHealthMonitor)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  syntax:
+    content: public StreamingFailoverService(IConnectionHealthMonitor healthMonitor)
+    parameters:
+    - id: healthMonitor
+      type: Meridian.Application.Monitoring.IConnectionHealthMonitor
+    content.vb: Public Sub New(healthMonitor As IConnectionHealthMonitor)
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.#ctor*
+  nameWithType.vb: StreamingFailoverService.New(IConnectionHealthMonitor)
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.New(Meridian.Application.Monitoring.IConnectionHealthMonitor)
+  name.vb: New(IConnectionHealthMonitor)
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Start(Meridian.Application.Config.DataSourcesConfig)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Start(Meridian.Application.Config.DataSourcesConfig)
+  id: Start(Meridian.Application.Config.DataSourcesConfig)
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: Start(DataSourcesConfig)
+  nameWithType: StreamingFailoverService.Start(DataSourcesConfig)
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Start(Meridian.Application.Config.DataSourcesConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Start
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Starts periodic health evaluation based on the configured interval.
+  example: []
+  syntax:
+    content: public void Start(DataSourcesConfig config)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.DataSourcesConfig
+    content.vb: Public Sub Start(config As DataSourcesConfig)
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Start*
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RegisterProvider(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RegisterProvider(System.String)
+  id: RegisterProvider(System.String)
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: RegisterProvider(string)
+  nameWithType: StreamingFailoverService.RegisterProvider(string)
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RegisterProvider(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterProvider
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Registers a provider for health tracking.
+  example: []
+  syntax:
+    content: public void RegisterProvider(string providerId)
+    parameters:
+    - id: providerId
+      type: System.String
+    content.vb: Public Sub RegisterProvider(providerId As String)
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RegisterProvider*
+  nameWithType.vb: StreamingFailoverService.RegisterProvider(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RegisterProvider(String)
+  name.vb: RegisterProvider(String)
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordSuccess(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordSuccess(System.String)
+  id: RecordSuccess(System.String)
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: RecordSuccess(string)
+  nameWithType: StreamingFailoverService.RecordSuccess(string)
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordSuccess(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordSuccess
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Records a successful operation for a provider (resets failure counter, increments success counter).
+  example: []
+  syntax:
+    content: public void RecordSuccess(string providerId)
+    parameters:
+    - id: providerId
+      type: System.String
+    content.vb: Public Sub RecordSuccess(providerId As String)
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordSuccess*
+  nameWithType.vb: StreamingFailoverService.RecordSuccess(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordSuccess(String)
+  name.vb: RecordSuccess(String)
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordFailure(System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordFailure(System.String,System.String)
+  id: RecordFailure(System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: RecordFailure(string, string)
+  nameWithType: StreamingFailoverService.RecordFailure(string, string)
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordFailure(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordFailure
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 109
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Records a failure for a provider.
+  example: []
+  syntax:
+    content: public void RecordFailure(string providerId, string reason)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: reason
+      type: System.String
+    content.vb: Public Sub RecordFailure(providerId As String, reason As String)
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordFailure*
+  nameWithType.vb: StreamingFailoverService.RecordFailure(String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordFailure(String, String)
+  name.vb: RecordFailure(String, String)
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordLatency(System.String,System.Double)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordLatency(System.String,System.Double)
+  id: RecordLatency(System.String,System.Double)
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: RecordLatency(string, double)
+  nameWithType: StreamingFailoverService.RecordLatency(string, double)
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordLatency(string, double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordLatency
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 123
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: >-
+    Records latency for a provider. If latency exceeds the configured threshold for any rule,
+
+    it counts as a failure for that rule.
+  example: []
+  syntax:
+    content: public void RecordLatency(string providerId, double latencyMs)
+    parameters:
+    - id: providerId
+      type: System.String
+    - id: latencyMs
+      type: System.Double
+    content.vb: Public Sub RecordLatency(providerId As String, latencyMs As Double)
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordLatency*
+  nameWithType.vb: StreamingFailoverService.RecordLatency(String, Double)
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordLatency(String, Double)
+  name.vb: RecordLatency(String, Double)
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.ForceFailover(System.String,System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.ForceFailover(System.String,System.String)
+  id: ForceFailover(System.String,System.String)
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: ForceFailover(string, string)
+  nameWithType: StreamingFailoverService.ForceFailover(string, string)
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.ForceFailover(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ForceFailover
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Forces failover for a specific rule to a target provider.
+  example: []
+  syntax:
+    content: public bool ForceFailover(string ruleId, string targetProviderId)
+    parameters:
+    - id: ruleId
+      type: System.String
+    - id: targetProviderId
+      type: System.String
+    return:
+      type: System.Boolean
+      description: True if the failover was executed.
+    content.vb: Public Function ForceFailover(ruleId As String, targetProviderId As String) As Boolean
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.ForceFailover*
+  nameWithType.vb: StreamingFailoverService.ForceFailover(String, String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.ForceFailover(String, String)
+  name.vb: ForceFailover(String, String)
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetActiveProviderId(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetActiveProviderId(System.String)
+  id: GetActiveProviderId(System.String)
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: GetActiveProviderId(string)
+  nameWithType: StreamingFailoverService.GetActiveProviderId(string)
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetActiveProviderId(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetActiveProviderId
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 169
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Gets the current active provider ID for a given rule.
+  example: []
+  syntax:
+    content: public string? GetActiveProviderId(string ruleId)
+    parameters:
+    - id: ruleId
+      type: System.String
+    return:
+      type: System.String
+    content.vb: Public Function GetActiveProviderId(ruleId As String) As String
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetActiveProviderId*
+  nameWithType.vb: StreamingFailoverService.GetActiveProviderId(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetActiveProviderId(String)
+  name.vb: GetActiveProviderId(String)
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetRuleSnapshots
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetRuleSnapshots
+  id: GetRuleSnapshots
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: GetRuleSnapshots()
+  nameWithType: StreamingFailoverService.GetRuleSnapshots()
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetRuleSnapshots()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRuleSnapshots
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Gets the current failover state for all rules.
+  example: []
+  syntax:
+    content: public IReadOnlyList<FailoverRuleSnapshot> GetRuleSnapshots()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot}
+    content.vb: Public Function GetRuleSnapshots() As IReadOnlyList(Of FailoverRuleSnapshot)
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetRuleSnapshots*
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetProviderHealthSnapshots
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetProviderHealthSnapshots
+  id: GetProviderHealthSnapshots
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: GetProviderHealthSnapshots()
+  nameWithType: StreamingFailoverService.GetProviderHealthSnapshots()
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetProviderHealthSnapshots()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderHealthSnapshots
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 185
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Gets the health state for all registered providers.
+  example: []
+  syntax:
+    content: public IReadOnlyList<ProviderHealthSnapshot> GetProviderHealthSnapshots()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot}
+    content.vb: Public Function GetProviderHealthSnapshots() As IReadOnlyList(Of ProviderHealthSnapshot)
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetProviderHealthSnapshots*
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: StreamingFailoverService.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs
+    startLine: 341
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Failover
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring.IConnectionHealthMonitor
+  commentId: T:Meridian.Application.Monitoring.IConnectionHealthMonitor
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.IConnectionHealthMonitor.html
+  name: IConnectionHealthMonitor
+  nameWithType: IConnectionHealthMonitor
+  fullName: Meridian.Application.Monitoring.IConnectionHealthMonitor
+- uid: Meridian.Application.Config.FailoverRuleConfig
+  commentId: T:Meridian.Application.Config.FailoverRuleConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.FailoverRuleConfig.html
+  name: FailoverRuleConfig
+  nameWithType: FailoverRuleConfig
+  fullName: Meridian.Application.Config.FailoverRuleConfig
+- uid: Meridian.Infrastructure.Adapters.Failover
+  commentId: N:Meridian.Infrastructure.Adapters.Failover
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Failover
+  nameWithType: Meridian.Infrastructure.Adapters.Failover
+  fullName: Meridian.Infrastructure.Adapters.Failover
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Failover
+    name: Failover
+    href: Meridian.Infrastructure.Adapters.Failover.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent}
+  commentId: T:System.Action{Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<FailoverTriggeredEvent>
+  nameWithType: Action<FailoverTriggeredEvent>
+  fullName: System.Action<Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent>
+  nameWithType.vb: Action(Of FailoverTriggeredEvent)
+  fullName.vb: System.Action(Of Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent)
+  name.vb: Action(Of FailoverTriggeredEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+    name: FailoverTriggeredEvent
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent
+    name: FailoverTriggeredEvent
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverTriggeredEvent.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Action{Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent}
+  commentId: T:System.Action{Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<FailoverRecoveredEvent>
+  nameWithType: Action<FailoverRecoveredEvent>
+  fullName: System.Action<Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent>
+  nameWithType.vb: Action(Of FailoverRecoveredEvent)
+  fullName.vb: System.Action(Of Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent)
+  name.vb: Action(Of FailoverRecoveredEvent)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent
+    name: FailoverRecoveredEvent
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent
+    name: FailoverRecoveredEvent
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.#ctor
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService__ctor_Meridian_Application_Monitoring_IConnectionHealthMonitor_
+  name: StreamingFailoverService
+  nameWithType: StreamingFailoverService.StreamingFailoverService
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.StreamingFailoverService
+  nameWithType.vb: StreamingFailoverService.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.New
+  name.vb: New
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Start*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Start
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_Start_Meridian_Application_Config_DataSourcesConfig_
+  name: Start
+  nameWithType: StreamingFailoverService.Start
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Start
+- uid: Meridian.Application.Config.DataSourcesConfig
+  commentId: T:Meridian.Application.Config.DataSourcesConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.DataSourcesConfig.html
+  name: DataSourcesConfig
+  nameWithType: DataSourcesConfig
+  fullName: Meridian.Application.Config.DataSourcesConfig
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RegisterProvider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RegisterProvider
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_RegisterProvider_System_String_
+  name: RegisterProvider
+  nameWithType: StreamingFailoverService.RegisterProvider
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RegisterProvider
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordSuccess*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordSuccess
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_RecordSuccess_System_String_
+  name: RecordSuccess
+  nameWithType: StreamingFailoverService.RecordSuccess
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordSuccess
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordFailure*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordFailure
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_RecordFailure_System_String_System_String_
+  name: RecordFailure
+  nameWithType: StreamingFailoverService.RecordFailure
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordFailure
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordLatency*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordLatency
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_RecordLatency_System_String_System_Double_
+  name: RecordLatency
+  nameWithType: StreamingFailoverService.RecordLatency
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.RecordLatency
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.ForceFailover*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.ForceFailover
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_ForceFailover_System_String_System_String_
+  name: ForceFailover
+  nameWithType: StreamingFailoverService.ForceFailover
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.ForceFailover
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetActiveProviderId*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetActiveProviderId
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_GetActiveProviderId_System_String_
+  name: GetActiveProviderId
+  nameWithType: StreamingFailoverService.GetActiveProviderId
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetActiveProviderId
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetRuleSnapshots*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetRuleSnapshots
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_GetRuleSnapshots
+  name: GetRuleSnapshots
+  nameWithType: StreamingFailoverService.GetRuleSnapshots
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetRuleSnapshots
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<FailoverRuleSnapshot>
+  nameWithType: IReadOnlyList<FailoverRuleSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot>
+  nameWithType.vb: IReadOnlyList(Of FailoverRuleSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot)
+  name.vb: IReadOnlyList(Of FailoverRuleSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+    name: FailoverRuleSnapshot
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot
+    name: FailoverRuleSnapshot
+    href: Meridian.Infrastructure.Adapters.Failover.FailoverRuleSnapshot.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetProviderHealthSnapshots*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetProviderHealthSnapshots
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_GetProviderHealthSnapshots
+  name: GetProviderHealthSnapshots
+  nameWithType: StreamingFailoverService.GetProviderHealthSnapshots
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.GetProviderHealthSnapshots
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<ProviderHealthSnapshot>
+  nameWithType: IReadOnlyList<ProviderHealthSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot>
+  nameWithType.vb: IReadOnlyList(Of ProviderHealthSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot)
+  name.vb: IReadOnlyList(Of ProviderHealthSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+    name: ProviderHealthSnapshot
+    href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot
+    name: ProviderHealthSnapshot
+    href: Meridian.Infrastructure.Adapters.Failover.ProviderHealthSnapshot.html
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Dispose
+  href: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.html#Meridian_Infrastructure_Adapters_Failover_StreamingFailoverService_Dispose
+  name: Dispose
+  nameWithType: StreamingFailoverService.Dispose
+  fullName: Meridian.Infrastructure.Adapters.Failover.StreamingFailoverService.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

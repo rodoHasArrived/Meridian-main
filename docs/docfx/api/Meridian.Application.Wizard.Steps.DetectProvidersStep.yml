@@ -1,0 +1,774 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Wizard.Steps.DetectProvidersStep
+  commentId: T:Meridian.Application.Wizard.Steps.DetectProvidersStep
+  id: DetectProvidersStep
+  parent: Meridian.Application.Wizard.Steps
+  children:
+  - Meridian.Application.Wizard.Steps.DetectProvidersStep.#ctor(Meridian.Application.Services.AutoConfigurationService,System.IO.TextWriter)
+  - Meridian.Application.Wizard.Steps.DetectProvidersStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext,System.Threading.CancellationToken)
+  - Meridian.Application.Wizard.Steps.DetectProvidersStep.StepId
+  langs:
+  - csharp
+  - vb
+  name: DetectProvidersStep
+  nameWithType: DetectProvidersStep
+  fullName: Meridian.Application.Wizard.Steps.DetectProvidersStep
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectProvidersStep
+    path: ../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Steps
+  summary: >-
+    Step 1: Scans environment variables and returns the list of detected providers.
+
+    Writes <xref href="Meridian.Application.Wizard.Core.WizardContext.DetectedProviders" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: 'public sealed class DetectProvidersStep : IWizardStep'
+    content.vb: Public NotInheritable Class DetectProvidersStep Implements IWizardStep
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Wizard.Core.IWizardStep
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Wizard.Steps.DetectProvidersStep.StepId
+  commentId: P:Meridian.Application.Wizard.Steps.DetectProvidersStep.StepId
+  id: StepId
+  parent: Meridian.Application.Wizard.Steps.DetectProvidersStep
+  langs:
+  - csharp
+  - vb
+  name: StepId
+  nameWithType: DetectProvidersStep.StepId
+  fullName: Meridian.Application.Wizard.Steps.DetectProvidersStep.StepId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StepId
+    path: ../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Steps
+  summary: The unique identifier of this step in the workflow graph.
+  example: []
+  syntax:
+    content: public WizardStepId StepId { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Wizard.Core.WizardStepId
+    content.vb: Public ReadOnly Property StepId As WizardStepId
+  overload: Meridian.Application.Wizard.Steps.DetectProvidersStep.StepId*
+  implements:
+  - Meridian.Application.Wizard.Core.IWizardStep.StepId
+- uid: Meridian.Application.Wizard.Steps.DetectProvidersStep.#ctor(Meridian.Application.Services.AutoConfigurationService,System.IO.TextWriter)
+  commentId: M:Meridian.Application.Wizard.Steps.DetectProvidersStep.#ctor(Meridian.Application.Services.AutoConfigurationService,System.IO.TextWriter)
+  id: '#ctor(Meridian.Application.Services.AutoConfigurationService,System.IO.TextWriter)'
+  parent: Meridian.Application.Wizard.Steps.DetectProvidersStep
+  langs:
+  - csharp
+  - vb
+  name: DetectProvidersStep(AutoConfigurationService, TextWriter)
+  nameWithType: DetectProvidersStep.DetectProvidersStep(AutoConfigurationService, TextWriter)
+  fullName: Meridian.Application.Wizard.Steps.DetectProvidersStep.DetectProvidersStep(Meridian.Application.Services.AutoConfigurationService, System.IO.TextWriter)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Steps
+  syntax:
+    content: public DetectProvidersStep(AutoConfigurationService autoConfig, TextWriter output)
+    parameters:
+    - id: autoConfig
+      type: Meridian.Application.Services.AutoConfigurationService
+    - id: output
+      type: System.IO.TextWriter
+    content.vb: Public Sub New(autoConfig As AutoConfigurationService, output As TextWriter)
+  overload: Meridian.Application.Wizard.Steps.DetectProvidersStep.#ctor*
+  nameWithType.vb: DetectProvidersStep.New(AutoConfigurationService, TextWriter)
+  fullName.vb: Meridian.Application.Wizard.Steps.DetectProvidersStep.New(Meridian.Application.Services.AutoConfigurationService, System.IO.TextWriter)
+  name.vb: New(AutoConfigurationService, TextWriter)
+- uid: Meridian.Application.Wizard.Steps.DetectProvidersStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Wizard.Steps.DetectProvidersStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext,System.Threading.CancellationToken)
+  id: ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext,System.Threading.CancellationToken)
+  parent: Meridian.Application.Wizard.Steps.DetectProvidersStep
+  langs:
+  - csharp
+  - vb
+  name: ExecuteAsync(WizardContext, CancellationToken)
+  nameWithType: DetectProvidersStep.ExecuteAsync(WizardContext, CancellationToken)
+  fullName: Meridian.Application.Wizard.Steps.DetectProvidersStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteAsync
+    path: ../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Steps
+  summary: >-
+    Executes the step.
+
+    Implementations should not throw for user-facing cancellations — return
+
+    <xref href="Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(System.String)" data-throw-if-not-resolved="false"></xref> instead.
+  example: []
+  syntax:
+    content: public Task<WizardStepResult> ExecuteAsync(WizardContext context, CancellationToken ct)
+    parameters:
+    - id: context
+      type: Meridian.Application.Wizard.Core.WizardContext
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Wizard.Core.WizardStepResult}
+    content.vb: Public Function ExecuteAsync(context As WizardContext, ct As CancellationToken) As Task(Of WizardStepResult)
+  overload: Meridian.Application.Wizard.Steps.DetectProvidersStep.ExecuteAsync*
+  implements:
+  - Meridian.Application.Wizard.Core.IWizardStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Application.Wizard.Core.WizardContext.DetectedProviders
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.DetectedProviders
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_DetectedProviders
+  name: DetectedProviders
+  nameWithType: WizardContext.DetectedProviders
+  fullName: Meridian.Application.Wizard.Core.WizardContext.DetectedProviders
+- uid: Meridian.Application.Wizard.Steps
+  commentId: N:Meridian.Application.Wizard.Steps
+  href: Meridian.html
+  name: Meridian.Application.Wizard.Steps
+  nameWithType: Meridian.Application.Wizard.Steps
+  fullName: Meridian.Application.Wizard.Steps
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Steps
+    name: Steps
+    href: Meridian.Application.Wizard.Steps.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Steps
+    name: Steps
+    href: Meridian.Application.Wizard.Steps.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Wizard.Core.IWizardStep
+  commentId: T:Meridian.Application.Wizard.Core.IWizardStep
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.IWizardStep.html
+  name: IWizardStep
+  nameWithType: IWizardStep
+  fullName: Meridian.Application.Wizard.Core.IWizardStep
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Wizard.Core
+  commentId: N:Meridian.Application.Wizard.Core
+  href: Meridian.html
+  name: Meridian.Application.Wizard.Core
+  nameWithType: Meridian.Application.Wizard.Core
+  fullName: Meridian.Application.Wizard.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+- uid: Meridian.Application.Wizard.Steps.DetectProvidersStep.StepId*
+  commentId: Overload:Meridian.Application.Wizard.Steps.DetectProvidersStep.StepId
+  href: Meridian.Application.Wizard.Steps.DetectProvidersStep.html#Meridian_Application_Wizard_Steps_DetectProvidersStep_StepId
+  name: StepId
+  nameWithType: DetectProvidersStep.StepId
+  fullName: Meridian.Application.Wizard.Steps.DetectProvidersStep.StepId
+- uid: Meridian.Application.Wizard.Core.IWizardStep.StepId
+  commentId: P:Meridian.Application.Wizard.Core.IWizardStep.StepId
+  parent: Meridian.Application.Wizard.Core.IWizardStep
+  href: Meridian.Application.Wizard.Core.IWizardStep.html#Meridian_Application_Wizard_Core_IWizardStep_StepId
+  name: StepId
+  nameWithType: IWizardStep.StepId
+  fullName: Meridian.Application.Wizard.Core.IWizardStep.StepId
+- uid: Meridian.Application.Wizard.Core.WizardStepId
+  commentId: T:Meridian.Application.Wizard.Core.WizardStepId
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardStepId.html
+  name: WizardStepId
+  nameWithType: WizardStepId
+  fullName: Meridian.Application.Wizard.Core.WizardStepId
+- uid: Meridian.Application.Wizard.Steps.DetectProvidersStep.#ctor*
+  commentId: Overload:Meridian.Application.Wizard.Steps.DetectProvidersStep.#ctor
+  href: Meridian.Application.Wizard.Steps.DetectProvidersStep.html#Meridian_Application_Wizard_Steps_DetectProvidersStep__ctor_Meridian_Application_Services_AutoConfigurationService_System_IO_TextWriter_
+  name: DetectProvidersStep
+  nameWithType: DetectProvidersStep.DetectProvidersStep
+  fullName: Meridian.Application.Wizard.Steps.DetectProvidersStep.DetectProvidersStep
+  nameWithType.vb: DetectProvidersStep.New
+  fullName.vb: Meridian.Application.Wizard.Steps.DetectProvidersStep.New
+  name.vb: New
+- uid: Meridian.Application.Services.AutoConfigurationService
+  commentId: T:Meridian.Application.Services.AutoConfigurationService
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.AutoConfigurationService.html
+  name: AutoConfigurationService
+  nameWithType: AutoConfigurationService
+  fullName: Meridian.Application.Services.AutoConfigurationService
+- uid: System.IO.TextWriter
+  commentId: T:System.IO.TextWriter
+  parent: System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.textwriter
+  name: TextWriter
+  nameWithType: TextWriter
+  fullName: System.IO.TextWriter
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.IO
+  commentId: N:System.IO
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.IO
+  nameWithType: System.IO
+  fullName: System.IO
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.IO
+    name: IO
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.io
+- uid: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(System.String)
+  commentId: M:Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(System.String)
+  isExternal: true
+  href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_Cancelled_System_String_
+  name: Cancelled(string)
+  nameWithType: WizardStepResult.Cancelled(string)
+  fullName: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(string)
+  nameWithType.vb: WizardStepResult.Cancelled(String)
+  fullName.vb: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(String)
+  name.vb: Cancelled(String)
+  spec.csharp:
+  - uid: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(System.String)
+    name: Cancelled
+    href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_Cancelled_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Wizard.Core.WizardStepResult.Cancelled(System.String)
+    name: Cancelled
+    href: Meridian.Application.Wizard.Core.WizardStepResult.html#Meridian_Application_Wizard_Core_WizardStepResult_Cancelled_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Wizard.Steps.DetectProvidersStep.ExecuteAsync*
+  commentId: Overload:Meridian.Application.Wizard.Steps.DetectProvidersStep.ExecuteAsync
+  href: Meridian.Application.Wizard.Steps.DetectProvidersStep.html#Meridian_Application_Wizard_Steps_DetectProvidersStep_ExecuteAsync_Meridian_Application_Wizard_Core_WizardContext_System_Threading_CancellationToken_
+  name: ExecuteAsync
+  nameWithType: DetectProvidersStep.ExecuteAsync
+  fullName: Meridian.Application.Wizard.Steps.DetectProvidersStep.ExecuteAsync
+- uid: Meridian.Application.Wizard.Core.IWizardStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Wizard.Core.IWizardStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext,System.Threading.CancellationToken)
+  parent: Meridian.Application.Wizard.Core.IWizardStep
+  isExternal: true
+  href: Meridian.Application.Wizard.Core.IWizardStep.html#Meridian_Application_Wizard_Core_IWizardStep_ExecuteAsync_Meridian_Application_Wizard_Core_WizardContext_System_Threading_CancellationToken_
+  name: ExecuteAsync(WizardContext, CancellationToken)
+  nameWithType: IWizardStep.ExecuteAsync(WizardContext, CancellationToken)
+  fullName: Meridian.Application.Wizard.Core.IWizardStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Wizard.Core.IWizardStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext,System.Threading.CancellationToken)
+    name: ExecuteAsync
+    href: Meridian.Application.Wizard.Core.IWizardStep.html#Meridian_Application_Wizard_Core_IWizardStep_ExecuteAsync_Meridian_Application_Wizard_Core_WizardContext_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Application.Wizard.Core.WizardContext
+    name: WizardContext
+    href: Meridian.Application.Wizard.Core.WizardContext.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Wizard.Core.IWizardStep.ExecuteAsync(Meridian.Application.Wizard.Core.WizardContext,System.Threading.CancellationToken)
+    name: ExecuteAsync
+    href: Meridian.Application.Wizard.Core.IWizardStep.html#Meridian_Application_Wizard_Core_IWizardStep_ExecuteAsync_Meridian_Application_Wizard_Core_WizardContext_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Application.Wizard.Core.WizardContext
+    name: WizardContext
+    href: Meridian.Application.Wizard.Core.WizardContext.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Wizard.Core.WizardContext
+  commentId: T:Meridian.Application.Wizard.Core.WizardContext
+  parent: Meridian.Application.Wizard.Core
+  href: Meridian.Application.Wizard.Core.WizardContext.html
+  name: WizardContext
+  nameWithType: WizardContext
+  fullName: Meridian.Application.Wizard.Core.WizardContext
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Wizard.Core.WizardStepResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Wizard.Core.WizardStepResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<WizardStepResult>
+  nameWithType: Task<WizardStepResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Wizard.Core.WizardStepResult>
+  nameWithType.vb: Task(Of WizardStepResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Wizard.Core.WizardStepResult)
+  name.vb: Task(Of WizardStepResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Wizard.Core.WizardStepResult
+    name: WizardStepResult
+    href: Meridian.Application.Wizard.Core.WizardStepResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Wizard.Core.WizardStepResult
+    name: WizardStepResult
+    href: Meridian.Application.Wizard.Core.WizardStepResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

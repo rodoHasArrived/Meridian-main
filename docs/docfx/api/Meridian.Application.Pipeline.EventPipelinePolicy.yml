@@ -1,0 +1,1169 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy
+  commentId: T:Meridian.Application.Pipeline.EventPipelinePolicy
+  id: EventPipelinePolicy
+  parent: Meridian.Application.Pipeline
+  children:
+  - Meridian.Application.Pipeline.EventPipelinePolicy.#ctor(System.Int32,System.Threading.Channels.BoundedChannelFullMode,System.Boolean)
+  - Meridian.Application.Pipeline.EventPipelinePolicy.Capacity
+  - Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue
+  - Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel``1(System.Boolean,System.Boolean)
+  - Meridian.Application.Pipeline.EventPipelinePolicy.Default
+  - Meridian.Application.Pipeline.EventPipelinePolicy.EnableMetrics
+  - Meridian.Application.Pipeline.EventPipelinePolicy.FullMode
+  - Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput
+  - Meridian.Application.Pipeline.EventPipelinePolicy.Logging
+  - Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue
+  - Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer
+  - Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(System.Boolean,System.Boolean)
+  langs:
+  - csharp
+  - vb
+  name: EventPipelinePolicy
+  nameWithType: EventPipelinePolicy
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventPipelinePolicy
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Central configuration policy for bounded-channel pipelines.
+
+    Provides consistent backpressure settings across the application.
+
+
+    <p>
+
+    Use static presets for common scenarios:
+
+
+    <ul><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.Default" data-throw-if-not-resolved="false"></xref> - General-purpose event pipelines (100k capacity, DropOldest)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput" data-throw-if-not-resolved="false"></xref> - Streaming data pipelines (50k capacity, DropOldest)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer" data-throw-if-not-resolved="false"></xref> - Internal message buffering (50k capacity, DropOldest, no metrics)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue" data-throw-if-not-resolved="false"></xref> - Background tasks (100 capacity, Wait/backpressure)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.Logging" data-throw-if-not-resolved="false"></xref> - Log channels (1k capacity, DropOldest)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue" data-throw-if-not-resolved="false"></xref> - Completion notifications (500 capacity, Wait/backpressure)</li></ul>
+
+    </p>
+  remarks: >-
+    All channel creation in the application should use this policy to ensure consistent
+
+    backpressure behavior. Use <xref href="Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel%60%601(System.Boolean%2cSystem.Boolean)" data-throw-if-not-resolved="false"></xref> for direct channel creation
+
+    or <xref href="Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(System.Boolean%2cSystem.Boolean)" data-throw-if-not-resolved="false"></xref> when you need to configure additional options.
+  example: []
+  syntax:
+    content: 'public sealed record EventPipelinePolicy : IEquatable<EventPipelinePolicy>'
+    content.vb: Public NotInheritable Class EventPipelinePolicy Implements IEquatable(Of EventPipelinePolicy)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Application.Pipeline.EventPipelinePolicy}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.#ctor(System.Int32,System.Threading.Channels.BoundedChannelFullMode,System.Boolean)
+  commentId: M:Meridian.Application.Pipeline.EventPipelinePolicy.#ctor(System.Int32,System.Threading.Channels.BoundedChannelFullMode,System.Boolean)
+  id: '#ctor(System.Int32,System.Threading.Channels.BoundedChannelFullMode,System.Boolean)'
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: EventPipelinePolicy(int, BoundedChannelFullMode, bool)
+  nameWithType: EventPipelinePolicy.EventPipelinePolicy(int, BoundedChannelFullMode, bool)
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.EventPipelinePolicy(int, System.Threading.Channels.BoundedChannelFullMode, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Central configuration policy for bounded-channel pipelines.
+
+    Provides consistent backpressure settings across the application.
+
+
+    <p>
+
+    Use static presets for common scenarios:
+
+
+    <ul><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.Default" data-throw-if-not-resolved="false"></xref> - General-purpose event pipelines (100k capacity, DropOldest)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput" data-throw-if-not-resolved="false"></xref> - Streaming data pipelines (50k capacity, DropOldest)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer" data-throw-if-not-resolved="false"></xref> - Internal message buffering (50k capacity, DropOldest, no metrics)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue" data-throw-if-not-resolved="false"></xref> - Background tasks (100 capacity, Wait/backpressure)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.Logging" data-throw-if-not-resolved="false"></xref> - Log channels (1k capacity, DropOldest)</li><li><xref href="Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue" data-throw-if-not-resolved="false"></xref> - Completion notifications (500 capacity, Wait/backpressure)</li></ul>
+
+    </p>
+  remarks: >-
+    All channel creation in the application should use this policy to ensure consistent
+
+    backpressure behavior. Use <xref href="Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel%60%601(System.Boolean%2cSystem.Boolean)" data-throw-if-not-resolved="false"></xref> for direct channel creation
+
+    or <xref href="Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(System.Boolean%2cSystem.Boolean)" data-throw-if-not-resolved="false"></xref> when you need to configure additional options.
+  example: []
+  syntax:
+    content: public EventPipelinePolicy(int Capacity = 100000, BoundedChannelFullMode FullMode = BoundedChannelFullMode.DropOldest, bool EnableMetrics = true)
+    parameters:
+    - id: Capacity
+      type: System.Int32
+    - id: FullMode
+      type: System.Threading.Channels.BoundedChannelFullMode
+    - id: EnableMetrics
+      type: System.Boolean
+    content.vb: Public Sub New(Capacity As Integer = 100000, FullMode As BoundedChannelFullMode = BoundedChannelFullMode.DropOldest, EnableMetrics As Boolean = True)
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.#ctor*
+  nameWithType.vb: EventPipelinePolicy.New(Integer, BoundedChannelFullMode, Boolean)
+  fullName.vb: Meridian.Application.Pipeline.EventPipelinePolicy.New(Integer, System.Threading.Channels.BoundedChannelFullMode, Boolean)
+  name.vb: New(Integer, BoundedChannelFullMode, Boolean)
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.Capacity
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.Capacity
+  id: Capacity
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: Capacity
+  nameWithType: EventPipelinePolicy.Capacity
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.Capacity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Capacity
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public int Capacity { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Capacity As Integer
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.Capacity*
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.FullMode
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.FullMode
+  id: FullMode
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: FullMode
+  nameWithType: EventPipelinePolicy.FullMode
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.FullMode
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FullMode
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public BoundedChannelFullMode FullMode { get; init; }
+    parameters: []
+    return:
+      type: System.Threading.Channels.BoundedChannelFullMode
+    content.vb: Public Property FullMode As BoundedChannelFullMode
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.FullMode*
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.EnableMetrics
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.EnableMetrics
+  id: EnableMetrics
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: EnableMetrics
+  nameWithType: EventPipelinePolicy.EnableMetrics
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.EnableMetrics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EnableMetrics
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  syntax:
+    content: public bool EnableMetrics { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property EnableMetrics As Boolean
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.EnableMetrics*
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.Default
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.Default
+  id: Default
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: Default
+  nameWithType: EventPipelinePolicy.Default
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.Default
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Default
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Default policy for general-purpose event pipelines.
+
+    High capacity (100k), drops oldest on overflow, metrics enabled.
+  example: []
+  syntax:
+    content: public static EventPipelinePolicy Default { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Pipeline.EventPipelinePolicy
+    content.vb: Public Shared ReadOnly Property [Default] As EventPipelinePolicy
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.Default*
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput
+  id: HighThroughput
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: HighThroughput
+  nameWithType: EventPipelinePolicy.HighThroughput
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HighThroughput
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Policy for high-throughput streaming data pipelines (e.g., market data clients).
+
+    Moderate capacity (50k), drops oldest on overflow, metrics enabled for monitoring.
+  example: []
+  syntax:
+    content: public static EventPipelinePolicy HighThroughput { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Pipeline.EventPipelinePolicy
+    content.vb: Public Shared ReadOnly Property HighThroughput As EventPipelinePolicy
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput*
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer
+  id: MessageBuffer
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: MessageBuffer
+  nameWithType: EventPipelinePolicy.MessageBuffer
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MessageBuffer
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Policy for internal message buffering channels used by provider adapters.
+
+    Moderate capacity (50k), drops oldest on overflow, metrics disabled for performance.
+  example: []
+  syntax:
+    content: public static EventPipelinePolicy MessageBuffer { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Pipeline.EventPipelinePolicy
+    content.vb: Public Shared ReadOnly Property MessageBuffer As EventPipelinePolicy
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer*
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue
+  id: MaintenanceQueue
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: MaintenanceQueue
+  nameWithType: EventPipelinePolicy.MaintenanceQueue
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaintenanceQueue
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Policy for background task/maintenance queues where no messages should be dropped.
+
+    Low capacity (100), waits when full (backpressure), metrics disabled.
+  example: []
+  syntax:
+    content: public static EventPipelinePolicy MaintenanceQueue { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Pipeline.EventPipelinePolicy
+    content.vb: Public Shared ReadOnly Property MaintenanceQueue As EventPipelinePolicy
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue*
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.Logging
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.Logging
+  id: Logging
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: Logging
+  nameWithType: EventPipelinePolicy.Logging
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.Logging
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Logging
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Policy for logging channels.
+
+    Low capacity (1k), drops oldest on overflow, metrics disabled.
+  example: []
+  syntax:
+    content: public static EventPipelinePolicy Logging { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Pipeline.EventPipelinePolicy
+    content.vb: Public Shared ReadOnly Property Logging As EventPipelinePolicy
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.Logging*
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue
+  id: CompletionQueue
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: CompletionQueue
+  nameWithType: EventPipelinePolicy.CompletionQueue
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CompletionQueue
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Policy for completion notification channels (e.g., backfill request completions).
+
+    Moderate capacity (500), waits when full (no drops), metrics disabled.
+
+    Use this for channels where completion notifications must not be lost.
+  example: []
+  syntax:
+    content: public static EventPipelinePolicy CompletionQueue { get; }
+    parameters: []
+    return:
+      type: Meridian.Application.Pipeline.EventPipelinePolicy
+    content.vb: Public Shared ReadOnly Property CompletionQueue As EventPipelinePolicy
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue*
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel``1(System.Boolean,System.Boolean)
+  commentId: M:Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel``1(System.Boolean,System.Boolean)
+  id: CreateChannel``1(System.Boolean,System.Boolean)
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: CreateChannel<T>(bool, bool)
+  nameWithType: EventPipelinePolicy.CreateChannel<T>(bool, bool)
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel<T>(bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateChannel
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Creates a bounded channel with this policy's configuration.
+
+    This is the preferred method for creating channels to ensure consistent backpressure behavior.
+  example:
+  - >-
+    <pre><code class="lang-csharp">// Using a preset
+
+    var channel = EventPipelinePolicy.Logging.CreateChannel&lt;LogEntry&gt;();
+
+
+    // Using default policy
+
+    var channel = EventPipelinePolicy.Default.CreateChannel&lt;MarketEvent&gt;();</code></pre>
+  syntax:
+    content: public Channel<T> CreateChannel<T>(bool singleReader = true, bool singleWriter = false)
+    parameters:
+    - id: singleReader
+      type: System.Boolean
+      description: Whether there is a single consumer reading from the channel. Default is true.
+    - id: singleWriter
+      type: System.Boolean
+      description: Whether there is a single producer writing to the channel. Default is false.
+    typeParameters:
+    - id: T
+      description: The type of items in the channel.
+    return:
+      type: System.Threading.Channels.Channel{{T}}
+      description: A configured bounded channel.
+    content.vb: Public Function CreateChannel(Of T)(singleReader As Boolean = True, singleWriter As Boolean = False) As Channel(Of T)
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel*
+  nameWithType.vb: EventPipelinePolicy.CreateChannel(Of T)(Boolean, Boolean)
+  fullName.vb: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel(Of T)(Boolean, Boolean)
+  name.vb: CreateChannel(Of T)(Boolean, Boolean)
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(System.Boolean,System.Boolean)
+  commentId: M:Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(System.Boolean,System.Boolean)
+  id: ToBoundedOptions(System.Boolean,System.Boolean)
+  parent: Meridian.Application.Pipeline.EventPipelinePolicy
+  langs:
+  - csharp
+  - vb
+  name: ToBoundedOptions(bool, bool)
+  nameWithType: EventPipelinePolicy.ToBoundedOptions(bool, bool)
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToBoundedOptions
+    path: ../../src/Meridian.Core/Pipeline/EventPipelinePolicy.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Pipeline
+  summary: >-
+    Creates a <xref href="System.Threading.Channels.BoundedChannelOptions" data-throw-if-not-resolved="false"></xref> instance from this policy.
+
+    Use this when you need to further customize channel options before creation.
+  example: []
+  syntax:
+    content: public BoundedChannelOptions ToBoundedOptions(bool singleReader, bool singleWriter)
+    parameters:
+    - id: singleReader
+      type: System.Boolean
+      description: Whether there is a single consumer reading from the channel.
+    - id: singleWriter
+      type: System.Boolean
+      description: Whether there is a single producer writing to the channel.
+    return:
+      type: System.Threading.Channels.BoundedChannelOptions
+      description: Configured <xref href="System.Threading.Channels.BoundedChannelOptions" data-throw-if-not-resolved="false"></xref>.
+    content.vb: Public Function ToBoundedOptions(singleReader As Boolean, singleWriter As Boolean) As BoundedChannelOptions
+  overload: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions*
+  nameWithType.vb: EventPipelinePolicy.ToBoundedOptions(Boolean, Boolean)
+  fullName.vb: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(Boolean, Boolean)
+  name.vb: ToBoundedOptions(Boolean, Boolean)
+references:
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.Default
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.Default
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_Default
+  name: Default
+  nameWithType: EventPipelinePolicy.Default
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.Default
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_HighThroughput
+  name: HighThroughput
+  nameWithType: EventPipelinePolicy.HighThroughput
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_MessageBuffer
+  name: MessageBuffer
+  nameWithType: EventPipelinePolicy.MessageBuffer
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_MaintenanceQueue
+  name: MaintenanceQueue
+  nameWithType: EventPipelinePolicy.MaintenanceQueue
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.Logging
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.Logging
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_Logging
+  name: Logging
+  nameWithType: EventPipelinePolicy.Logging
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.Logging
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue
+  commentId: P:Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_CompletionQueue
+  name: CompletionQueue
+  nameWithType: EventPipelinePolicy.CompletionQueue
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel``1(System.Boolean,System.Boolean)
+  commentId: M:Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel``1(System.Boolean,System.Boolean)
+  isExternal: true
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_CreateChannel__1_System_Boolean_System_Boolean_
+  name: CreateChannel<T>(bool, bool)
+  nameWithType: EventPipelinePolicy.CreateChannel<T>(bool, bool)
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel<T>(bool, bool)
+  nameWithType.vb: EventPipelinePolicy.CreateChannel(Of T)(Boolean, Boolean)
+  fullName.vb: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel(Of T)(Boolean, Boolean)
+  name.vb: CreateChannel(Of T)(Boolean, Boolean)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel``1(System.Boolean,System.Boolean)
+    name: CreateChannel
+    href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_CreateChannel__1_System_Boolean_System_Boolean_
+  - name: <
+  - name: T
+  - name: '>'
+  - name: (
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel``1(System.Boolean,System.Boolean)
+    name: CreateChannel
+    href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_CreateChannel__1_System_Boolean_System_Boolean_
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+  - name: (
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(System.Boolean,System.Boolean)
+  commentId: M:Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(System.Boolean,System.Boolean)
+  isExternal: true
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_ToBoundedOptions_System_Boolean_System_Boolean_
+  name: ToBoundedOptions(bool, bool)
+  nameWithType: EventPipelinePolicy.ToBoundedOptions(bool, bool)
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(bool, bool)
+  nameWithType.vb: EventPipelinePolicy.ToBoundedOptions(Boolean, Boolean)
+  fullName.vb: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(Boolean, Boolean)
+  name.vb: ToBoundedOptions(Boolean, Boolean)
+  spec.csharp:
+  - uid: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(System.Boolean,System.Boolean)
+    name: ToBoundedOptions
+    href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_ToBoundedOptions_System_Boolean_System_Boolean_
+  - name: (
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions(System.Boolean,System.Boolean)
+    name: ToBoundedOptions
+    href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_ToBoundedOptions_System_Boolean_System_Boolean_
+  - name: (
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Pipeline
+  commentId: N:Meridian.Application.Pipeline
+  href: Meridian.html
+  name: Meridian.Application.Pipeline
+  nameWithType: Meridian.Application.Pipeline
+  fullName: Meridian.Application.Pipeline
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Pipeline
+    name: Pipeline
+    href: Meridian.Application.Pipeline.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Application.Pipeline.EventPipelinePolicy}
+  commentId: T:System.IEquatable{Meridian.Application.Pipeline.EventPipelinePolicy}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<EventPipelinePolicy>
+  nameWithType: IEquatable<EventPipelinePolicy>
+  fullName: System.IEquatable<Meridian.Application.Pipeline.EventPipelinePolicy>
+  nameWithType.vb: IEquatable(Of EventPipelinePolicy)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Pipeline.EventPipelinePolicy)
+  name.vb: IEquatable(Of EventPipelinePolicy)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Pipeline.EventPipelinePolicy
+    name: EventPipelinePolicy
+    href: Meridian.Application.Pipeline.EventPipelinePolicy.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Pipeline.EventPipelinePolicy
+    name: EventPipelinePolicy
+    href: Meridian.Application.Pipeline.EventPipelinePolicy.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.#ctor*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.#ctor
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy__ctor_System_Int32_System_Threading_Channels_BoundedChannelFullMode_System_Boolean_
+  name: EventPipelinePolicy
+  nameWithType: EventPipelinePolicy.EventPipelinePolicy
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.EventPipelinePolicy
+  nameWithType.vb: EventPipelinePolicy.New
+  fullName.vb: Meridian.Application.Pipeline.EventPipelinePolicy.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Channels.BoundedChannelFullMode
+  commentId: T:System.Threading.Channels.BoundedChannelFullMode
+  parent: System.Threading.Channels
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.channels.boundedchannelfullmode
+  name: BoundedChannelFullMode
+  nameWithType: BoundedChannelFullMode
+  fullName: System.Threading.Channels.BoundedChannelFullMode
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.Channels
+  commentId: N:System.Threading.Channels
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Channels
+  nameWithType: System.Threading.Channels
+  fullName: System.Threading.Channels
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Channels
+    name: Channels
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.channels
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Channels
+    name: Channels
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.channels
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.Capacity*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.Capacity
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_Capacity
+  name: Capacity
+  nameWithType: EventPipelinePolicy.Capacity
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.Capacity
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.FullMode*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.FullMode
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_FullMode
+  name: FullMode
+  nameWithType: EventPipelinePolicy.FullMode
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.FullMode
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.EnableMetrics*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.EnableMetrics
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_EnableMetrics
+  name: EnableMetrics
+  nameWithType: EventPipelinePolicy.EnableMetrics
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.EnableMetrics
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.Default*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.Default
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_Default
+  name: Default
+  nameWithType: EventPipelinePolicy.Default
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.Default
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy
+  commentId: T:Meridian.Application.Pipeline.EventPipelinePolicy
+  parent: Meridian.Application.Pipeline
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html
+  name: EventPipelinePolicy
+  nameWithType: EventPipelinePolicy
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_HighThroughput
+  name: HighThroughput
+  nameWithType: EventPipelinePolicy.HighThroughput
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.HighThroughput
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_MessageBuffer
+  name: MessageBuffer
+  nameWithType: EventPipelinePolicy.MessageBuffer
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.MessageBuffer
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_MaintenanceQueue
+  name: MaintenanceQueue
+  nameWithType: EventPipelinePolicy.MaintenanceQueue
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.MaintenanceQueue
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.Logging*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.Logging
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_Logging
+  name: Logging
+  nameWithType: EventPipelinePolicy.Logging
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.Logging
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_CompletionQueue
+  name: CompletionQueue
+  nameWithType: EventPipelinePolicy.CompletionQueue
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.CompletionQueue
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_CreateChannel__1_System_Boolean_System_Boolean_
+  name: CreateChannel
+  nameWithType: EventPipelinePolicy.CreateChannel
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.CreateChannel
+- uid: System.Threading.Channels.Channel{{T}}
+  commentId: T:System.Threading.Channels.Channel{``0}
+  parent: System.Threading.Channels
+  definition: System.Threading.Channels.Channel`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.channels.channel-1
+  name: Channel<T>
+  nameWithType: Channel<T>
+  fullName: System.Threading.Channels.Channel<T>
+  nameWithType.vb: Channel(Of T)
+  fullName.vb: System.Threading.Channels.Channel(Of T)
+  name.vb: Channel(Of T)
+  spec.csharp:
+  - uid: System.Threading.Channels.Channel`1
+    name: Channel
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.channels.channel-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Channels.Channel`1
+    name: Channel
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.channels.channel-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading.Channels.Channel`1
+  commentId: T:System.Threading.Channels.Channel`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.channels.channel-1
+  name: Channel<T>
+  nameWithType: Channel<T>
+  fullName: System.Threading.Channels.Channel<T>
+  nameWithType.vb: Channel(Of T)
+  fullName.vb: System.Threading.Channels.Channel(Of T)
+  name.vb: Channel(Of T)
+  spec.csharp:
+  - uid: System.Threading.Channels.Channel`1
+    name: Channel
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.channels.channel-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Channels.Channel`1
+    name: Channel
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.channels.channel-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Threading.Channels.BoundedChannelOptions
+  commentId: T:System.Threading.Channels.BoundedChannelOptions
+  parent: System.Threading.Channels
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.channels.boundedchanneloptions
+  name: BoundedChannelOptions
+  nameWithType: BoundedChannelOptions
+  fullName: System.Threading.Channels.BoundedChannelOptions
+- uid: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions*
+  commentId: Overload:Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions
+  href: Meridian.Application.Pipeline.EventPipelinePolicy.html#Meridian_Application_Pipeline_EventPipelinePolicy_ToBoundedOptions_System_Boolean_System_Boolean_
+  name: ToBoundedOptions
+  nameWithType: EventPipelinePolicy.ToBoundedOptions
+  fullName: Meridian.Application.Pipeline.EventPipelinePolicy.ToBoundedOptions

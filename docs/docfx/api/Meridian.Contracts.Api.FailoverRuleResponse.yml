@@ -1,0 +1,822 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Api.FailoverRuleResponse
+  commentId: T:Meridian.Contracts.Api.FailoverRuleResponse
+  id: FailoverRuleResponse
+  parent: Meridian.Contracts.Api
+  children:
+  - Meridian.Contracts.Api.FailoverRuleResponse.#ctor(System.String,System.String,System.String[],System.Int32,System.Int32,System.Double,System.Double,System.Boolean,System.String)
+  - Meridian.Contracts.Api.FailoverRuleResponse.BackupProviderIds
+  - Meridian.Contracts.Api.FailoverRuleResponse.CurrentActiveProviderId
+  - Meridian.Contracts.Api.FailoverRuleResponse.DataQualityThreshold
+  - Meridian.Contracts.Api.FailoverRuleResponse.FailoverThreshold
+  - Meridian.Contracts.Api.FailoverRuleResponse.Id
+  - Meridian.Contracts.Api.FailoverRuleResponse.IsInFailoverState
+  - Meridian.Contracts.Api.FailoverRuleResponse.MaxLatencyMs
+  - Meridian.Contracts.Api.FailoverRuleResponse.PrimaryProviderId
+  - Meridian.Contracts.Api.FailoverRuleResponse.RecoveryThreshold
+  langs:
+  - csharp
+  - vb
+  name: FailoverRuleResponse
+  nameWithType: FailoverRuleResponse
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverRuleResponse
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response containing a failover rule.
+  example: []
+  syntax:
+    content: 'public record FailoverRuleResponse : IEquatable<FailoverRuleResponse>'
+    content.vb: Public Class FailoverRuleResponse Implements IEquatable(Of FailoverRuleResponse)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Api.FailoverRuleResponse}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.#ctor(System.String,System.String,System.String[],System.Int32,System.Int32,System.Double,System.Double,System.Boolean,System.String)
+  commentId: M:Meridian.Contracts.Api.FailoverRuleResponse.#ctor(System.String,System.String,System.String[],System.Int32,System.Int32,System.Double,System.Double,System.Boolean,System.String)
+  id: '#ctor(System.String,System.String,System.String[],System.Int32,System.Int32,System.Double,System.Double,System.Boolean,System.String)'
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: FailoverRuleResponse(string, string, string[], int, int, double, double, bool, string?)
+  nameWithType: FailoverRuleResponse.FailoverRuleResponse(string, string, string[], int, int, double, double, bool, string?)
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.FailoverRuleResponse(string, string, string[], int, int, double, double, bool, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  summary: Response containing a failover rule.
+  example: []
+  syntax:
+    content: public FailoverRuleResponse(string Id, string PrimaryProviderId, string[] BackupProviderIds, int FailoverThreshold, int RecoveryThreshold, double DataQualityThreshold, double MaxLatencyMs, bool IsInFailoverState, string? CurrentActiveProviderId)
+    parameters:
+    - id: Id
+      type: System.String
+    - id: PrimaryProviderId
+      type: System.String
+    - id: BackupProviderIds
+      type: System.String[]
+    - id: FailoverThreshold
+      type: System.Int32
+    - id: RecoveryThreshold
+      type: System.Int32
+    - id: DataQualityThreshold
+      type: System.Double
+    - id: MaxLatencyMs
+      type: System.Double
+    - id: IsInFailoverState
+      type: System.Boolean
+    - id: CurrentActiveProviderId
+      type: System.String
+    content.vb: Public Sub New(Id As String, PrimaryProviderId As String, BackupProviderIds As String(), FailoverThreshold As Integer, RecoveryThreshold As Integer, DataQualityThreshold As Double, MaxLatencyMs As Double, IsInFailoverState As Boolean, CurrentActiveProviderId As String)
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.#ctor*
+  nameWithType.vb: FailoverRuleResponse.New(String, String, String(), Integer, Integer, Double, Double, Boolean, String)
+  fullName.vb: Meridian.Contracts.Api.FailoverRuleResponse.New(String, String, String(), Integer, Integer, Double, Double, Boolean, String)
+  name.vb: New(String, String, String(), Integer, Integer, Double, Double, Boolean, String)
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.Id
+  commentId: P:Meridian.Contracts.Api.FailoverRuleResponse.Id
+  id: Id
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: FailoverRuleResponse.Id
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 133
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string Id { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.Id*
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.PrimaryProviderId
+  commentId: P:Meridian.Contracts.Api.FailoverRuleResponse.PrimaryProviderId
+  id: PrimaryProviderId
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: PrimaryProviderId
+  nameWithType: FailoverRuleResponse.PrimaryProviderId
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.PrimaryProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryProviderId
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string PrimaryProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PrimaryProviderId As String
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.PrimaryProviderId*
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.BackupProviderIds
+  commentId: P:Meridian.Contracts.Api.FailoverRuleResponse.BackupProviderIds
+  id: BackupProviderIds
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: BackupProviderIds
+  nameWithType: FailoverRuleResponse.BackupProviderIds
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.BackupProviderIds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackupProviderIds
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 135
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string[] BackupProviderIds { get; init; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property BackupProviderIds As String()
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.BackupProviderIds*
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.FailoverThreshold
+  commentId: P:Meridian.Contracts.Api.FailoverRuleResponse.FailoverThreshold
+  id: FailoverThreshold
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: FailoverThreshold
+  nameWithType: FailoverRuleResponse.FailoverThreshold
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.FailoverThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FailoverThreshold
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int FailoverThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property FailoverThreshold As Integer
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.FailoverThreshold*
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.RecoveryThreshold
+  commentId: P:Meridian.Contracts.Api.FailoverRuleResponse.RecoveryThreshold
+  id: RecoveryThreshold
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: RecoveryThreshold
+  nameWithType: FailoverRuleResponse.RecoveryThreshold
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.RecoveryThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecoveryThreshold
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 137
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public int RecoveryThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property RecoveryThreshold As Integer
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.RecoveryThreshold*
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.DataQualityThreshold
+  commentId: P:Meridian.Contracts.Api.FailoverRuleResponse.DataQualityThreshold
+  id: DataQualityThreshold
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: DataQualityThreshold
+  nameWithType: FailoverRuleResponse.DataQualityThreshold
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.DataQualityThreshold
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataQualityThreshold
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 138
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public double DataQualityThreshold { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property DataQualityThreshold As Double
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.DataQualityThreshold*
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.MaxLatencyMs
+  commentId: P:Meridian.Contracts.Api.FailoverRuleResponse.MaxLatencyMs
+  id: MaxLatencyMs
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: MaxLatencyMs
+  nameWithType: FailoverRuleResponse.MaxLatencyMs
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.MaxLatencyMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MaxLatencyMs
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 139
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public double MaxLatencyMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property MaxLatencyMs As Double
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.MaxLatencyMs*
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.IsInFailoverState
+  commentId: P:Meridian.Contracts.Api.FailoverRuleResponse.IsInFailoverState
+  id: IsInFailoverState
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: IsInFailoverState
+  nameWithType: FailoverRuleResponse.IsInFailoverState
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.IsInFailoverState
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsInFailoverState
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 140
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public bool IsInFailoverState { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsInFailoverState As Boolean
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.IsInFailoverState*
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.CurrentActiveProviderId
+  commentId: P:Meridian.Contracts.Api.FailoverRuleResponse.CurrentActiveProviderId
+  id: CurrentActiveProviderId
+  parent: Meridian.Contracts.Api.FailoverRuleResponse
+  langs:
+  - csharp
+  - vb
+  name: CurrentActiveProviderId
+  nameWithType: FailoverRuleResponse.CurrentActiveProviderId
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.CurrentActiveProviderId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Api/UiDashboardModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentActiveProviderId
+    path: ../../src/Meridian.Contracts/Api/UiDashboardModels.cs
+    startLine: 141
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Api
+  syntax:
+    content: public string? CurrentActiveProviderId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CurrentActiveProviderId As String
+  overload: Meridian.Contracts.Api.FailoverRuleResponse.CurrentActiveProviderId*
+references:
+- uid: Meridian.Contracts.Api
+  commentId: N:Meridian.Contracts.Api
+  href: Meridian.html
+  name: Meridian.Contracts.Api
+  nameWithType: Meridian.Contracts.Api
+  fullName: Meridian.Contracts.Api
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Api
+    name: Api
+    href: Meridian.Contracts.Api.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Api.FailoverRuleResponse}
+  commentId: T:System.IEquatable{Meridian.Contracts.Api.FailoverRuleResponse}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FailoverRuleResponse>
+  nameWithType: IEquatable<FailoverRuleResponse>
+  fullName: System.IEquatable<Meridian.Contracts.Api.FailoverRuleResponse>
+  nameWithType.vb: IEquatable(Of FailoverRuleResponse)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Api.FailoverRuleResponse)
+  name.vb: IEquatable(Of FailoverRuleResponse)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Api.FailoverRuleResponse
+    name: FailoverRuleResponse
+    href: Meridian.Contracts.Api.FailoverRuleResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Api.FailoverRuleResponse
+    name: FailoverRuleResponse
+    href: Meridian.Contracts.Api.FailoverRuleResponse.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.#ctor*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.#ctor
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse__ctor_System_String_System_String_System_String___System_Int32_System_Int32_System_Double_System_Double_System_Boolean_System_String_
+  name: FailoverRuleResponse
+  nameWithType: FailoverRuleResponse.FailoverRuleResponse
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.FailoverRuleResponse
+  nameWithType.vb: FailoverRuleResponse.New
+  fullName.vb: Meridian.Contracts.Api.FailoverRuleResponse.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.Id*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.Id
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse_Id
+  name: Id
+  nameWithType: FailoverRuleResponse.Id
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.Id
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.PrimaryProviderId*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.PrimaryProviderId
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse_PrimaryProviderId
+  name: PrimaryProviderId
+  nameWithType: FailoverRuleResponse.PrimaryProviderId
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.PrimaryProviderId
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.BackupProviderIds*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.BackupProviderIds
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse_BackupProviderIds
+  name: BackupProviderIds
+  nameWithType: FailoverRuleResponse.BackupProviderIds
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.BackupProviderIds
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.FailoverThreshold*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.FailoverThreshold
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse_FailoverThreshold
+  name: FailoverThreshold
+  nameWithType: FailoverRuleResponse.FailoverThreshold
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.FailoverThreshold
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.RecoveryThreshold*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.RecoveryThreshold
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse_RecoveryThreshold
+  name: RecoveryThreshold
+  nameWithType: FailoverRuleResponse.RecoveryThreshold
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.RecoveryThreshold
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.DataQualityThreshold*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.DataQualityThreshold
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse_DataQualityThreshold
+  name: DataQualityThreshold
+  nameWithType: FailoverRuleResponse.DataQualityThreshold
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.DataQualityThreshold
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.MaxLatencyMs*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.MaxLatencyMs
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse_MaxLatencyMs
+  name: MaxLatencyMs
+  nameWithType: FailoverRuleResponse.MaxLatencyMs
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.MaxLatencyMs
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.IsInFailoverState*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.IsInFailoverState
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse_IsInFailoverState
+  name: IsInFailoverState
+  nameWithType: FailoverRuleResponse.IsInFailoverState
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.IsInFailoverState
+- uid: Meridian.Contracts.Api.FailoverRuleResponse.CurrentActiveProviderId*
+  commentId: Overload:Meridian.Contracts.Api.FailoverRuleResponse.CurrentActiveProviderId
+  href: Meridian.Contracts.Api.FailoverRuleResponse.html#Meridian_Contracts_Api_FailoverRuleResponse_CurrentActiveProviderId
+  name: CurrentActiveProviderId
+  nameWithType: FailoverRuleResponse.CurrentActiveProviderId
+  fullName: Meridian.Contracts.Api.FailoverRuleResponse.CurrentActiveProviderId

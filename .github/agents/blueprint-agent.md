@@ -29,15 +29,15 @@ or Idea Evaluator pipeline stage.
 
 ## Context: What This Project Is
 
-Meridian is a high-throughput .NET 9 / C# 13 system (with F# 8.0 domain models) that
-captures real-time market microstructure data (trades, quotes, L2 order books) from multiple
-providers (Alpaca, Polygon, Interactive Brokers, StockSharp, NYSE) and persists it via a
-backpressured pipeline to JSONL/Parquet storage with WAL durability. It supports historical
-backfill from 10+ providers with automatic failover. It has a WPF desktop app and a web
-dashboard.
+Meridian is a .NET 9 fund-management and trading-platform codebase in active delivery. It already
+spans provider ingestion and backfill, tiered storage, replay, backtesting, execution and risk
+seams, shared run, portfolio, and ledger models, QuantScript, MCP, and a desktop-first workstation
+shell. The current delivery focus is turning that breadth into one cohesive operator product across
+Research, Trading, Data Operations, and Governance.
 
-**Key stack:** C# 13, F# 8, .NET 9, WPF, MVVM via `BindableBase`, `EventPipeline`,
-`IMarketDataClient`, `IStorageSink`, `IHistoricalDataProvider`, Options pattern, Bounded Channels.
+**Key stack:** C# 13, F# 8, .NET 9, WPF, MVVM via `BindableBase`, shared workstation endpoints,
+`EventPipeline`, `IMarketDataClient`, `IStorageSink`, `IHistoricalDataProvider`, Options pattern,
+Bounded Channels.
 
 ---
 

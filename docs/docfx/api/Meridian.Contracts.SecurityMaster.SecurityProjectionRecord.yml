@@ -1,0 +1,1223 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  id: SecurityProjectionRecord
+  parent: Meridian.Contracts.SecurityMaster
+  children:
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.#ctor(System.Guid,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String,System.String,System.String,System.Text.Json.JsonElement,System.Text.Json.JsonElement,System.Text.Json.JsonElement,System.Int64,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityIdentifierDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityAliasDto})
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Aliases
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetClass
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetSpecificTerms
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.CommonTerms
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Currency
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.DisplayName
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveFrom
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveTo
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Identifiers
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierKind
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierValue
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Provenance
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityId
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Status
+  - Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Version
+  langs:
+  - csharp
+  - vb
+  name: SecurityProjectionRecord
+  nameWithType: SecurityProjectionRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityProjectionRecord
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: 'public sealed record SecurityProjectionRecord : IEquatable<SecurityProjectionRecord>'
+    content.vb: Public NotInheritable Class SecurityProjectionRecord Implements IEquatable(Of SecurityProjectionRecord)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.#ctor(System.Guid,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String,System.String,System.String,System.Text.Json.JsonElement,System.Text.Json.JsonElement,System.Text.Json.JsonElement,System.Int64,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityIdentifierDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityAliasDto})
+  commentId: M:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.#ctor(System.Guid,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String,System.String,System.String,System.Text.Json.JsonElement,System.Text.Json.JsonElement,System.Text.Json.JsonElement,System.Int64,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityIdentifierDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityAliasDto})
+  id: '#ctor(System.Guid,System.String,Meridian.Contracts.SecurityMaster.SecurityStatusDto,System.String,System.String,System.String,System.String,System.Text.Json.JsonElement,System.Text.Json.JsonElement,System.Text.Json.JsonElement,System.Int64,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityIdentifierDto},System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityAliasDto})'
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: SecurityProjectionRecord(Guid, string, SecurityStatusDto, string, string, string, string, JsonElement, JsonElement, JsonElement, long, DateTimeOffset, DateTimeOffset?, IReadOnlyList<SecurityIdentifierDto>, IReadOnlyList<SecurityAliasDto>)
+  nameWithType: SecurityProjectionRecord.SecurityProjectionRecord(Guid, string, SecurityStatusDto, string, string, string, string, JsonElement, JsonElement, JsonElement, long, DateTimeOffset, DateTimeOffset?, IReadOnlyList<SecurityIdentifierDto>, IReadOnlyList<SecurityAliasDto>)
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityProjectionRecord(System.Guid, string, Meridian.Contracts.SecurityMaster.SecurityStatusDto, string, string, string, string, System.Text.Json.JsonElement, System.Text.Json.JsonElement, System.Text.Json.JsonElement, long, System.DateTimeOffset, System.DateTimeOffset?, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityIdentifierDto>, System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityAliasDto>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public SecurityProjectionRecord(Guid SecurityId, string AssetClass, SecurityStatusDto Status, string DisplayName, string Currency, string PrimaryIdentifierKind, string PrimaryIdentifierValue, JsonElement CommonTerms, JsonElement AssetSpecificTerms, JsonElement Provenance, long Version, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<SecurityIdentifierDto> Identifiers, IReadOnlyList<SecurityAliasDto> Aliases)
+    parameters:
+    - id: SecurityId
+      type: System.Guid
+    - id: AssetClass
+      type: System.String
+    - id: Status
+      type: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+    - id: DisplayName
+      type: System.String
+    - id: Currency
+      type: System.String
+    - id: PrimaryIdentifierKind
+      type: System.String
+    - id: PrimaryIdentifierValue
+      type: System.String
+    - id: CommonTerms
+      type: System.Text.Json.JsonElement
+    - id: AssetSpecificTerms
+      type: System.Text.Json.JsonElement
+    - id: Provenance
+      type: System.Text.Json.JsonElement
+    - id: Version
+      type: System.Int64
+    - id: EffectiveFrom
+      type: System.DateTimeOffset
+    - id: EffectiveTo
+      type: System.Nullable{System.DateTimeOffset}
+    - id: Identifiers
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityIdentifierDto}
+    - id: Aliases
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityAliasDto}
+    content.vb: Public Sub New(SecurityId As Guid, AssetClass As String, Status As SecurityStatusDto, DisplayName As String, Currency As String, PrimaryIdentifierKind As String, PrimaryIdentifierValue As String, CommonTerms As JsonElement, AssetSpecificTerms As JsonElement, Provenance As JsonElement, Version As Long, EffectiveFrom As DateTimeOffset, EffectiveTo As DateTimeOffset?, Identifiers As IReadOnlyList(Of SecurityIdentifierDto), Aliases As IReadOnlyList(Of SecurityAliasDto))
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.#ctor*
+  nameWithType.vb: SecurityProjectionRecord.New(Guid, String, SecurityStatusDto, String, String, String, String, JsonElement, JsonElement, JsonElement, Long, DateTimeOffset, DateTimeOffset?, IReadOnlyList(Of SecurityIdentifierDto), IReadOnlyList(Of SecurityAliasDto))
+  fullName.vb: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.New(System.Guid, String, Meridian.Contracts.SecurityMaster.SecurityStatusDto, String, String, String, String, System.Text.Json.JsonElement, System.Text.Json.JsonElement, System.Text.Json.JsonElement, Long, System.DateTimeOffset, System.DateTimeOffset?, System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityIdentifierDto), System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityAliasDto))
+  name.vb: New(Guid, String, SecurityStatusDto, String, String, String, String, JsonElement, JsonElement, JsonElement, Long, DateTimeOffset, DateTimeOffset?, IReadOnlyList(Of SecurityIdentifierDto), IReadOnlyList(Of SecurityAliasDto))
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityId
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityId
+  id: SecurityId
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: SecurityId
+  nameWithType: SecurityProjectionRecord.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityId
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public Guid SecurityId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SecurityId As Guid
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityId*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetClass
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetClass
+  id: AssetClass
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: AssetClass
+  nameWithType: SecurityProjectionRecord.AssetClass
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetClass
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetClass
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string AssetClass { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AssetClass As String
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetClass*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Status
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Status
+  id: Status
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: SecurityProjectionRecord.Status
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public SecurityStatusDto Status { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+    content.vb: Public Property Status As SecurityStatusDto
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Status*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.DisplayName
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.DisplayName
+  id: DisplayName
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: DisplayName
+  nameWithType: SecurityProjectionRecord.DisplayName
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.DisplayName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisplayName
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string DisplayName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property DisplayName As String
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.DisplayName*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Currency
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Currency
+  id: Currency
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: SecurityProjectionRecord.Currency
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 64
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string Currency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Currency As String
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Currency*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierKind
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierKind
+  id: PrimaryIdentifierKind
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: PrimaryIdentifierKind
+  nameWithType: SecurityProjectionRecord.PrimaryIdentifierKind
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryIdentifierKind
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string PrimaryIdentifierKind { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PrimaryIdentifierKind As String
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierKind*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierValue
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierValue
+  id: PrimaryIdentifierValue
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: PrimaryIdentifierValue
+  nameWithType: SecurityProjectionRecord.PrimaryIdentifierValue
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PrimaryIdentifierValue
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public string PrimaryIdentifierValue { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PrimaryIdentifierValue As String
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierValue*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.CommonTerms
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.CommonTerms
+  id: CommonTerms
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: CommonTerms
+  nameWithType: SecurityProjectionRecord.CommonTerms
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.CommonTerms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CommonTerms
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public JsonElement CommonTerms { get; init; }
+    parameters: []
+    return:
+      type: System.Text.Json.JsonElement
+    content.vb: Public Property CommonTerms As JsonElement
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.CommonTerms*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetSpecificTerms
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetSpecificTerms
+  id: AssetSpecificTerms
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: AssetSpecificTerms
+  nameWithType: SecurityProjectionRecord.AssetSpecificTerms
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetSpecificTerms
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AssetSpecificTerms
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public JsonElement AssetSpecificTerms { get; init; }
+    parameters: []
+    return:
+      type: System.Text.Json.JsonElement
+    content.vb: Public Property AssetSpecificTerms As JsonElement
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetSpecificTerms*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Provenance
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Provenance
+  id: Provenance
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: Provenance
+  nameWithType: SecurityProjectionRecord.Provenance
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Provenance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provenance
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 69
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public JsonElement Provenance { get; init; }
+    parameters: []
+    return:
+      type: System.Text.Json.JsonElement
+    content.vb: Public Property Provenance As JsonElement
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Provenance*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Version
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Version
+  id: Version
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: Version
+  nameWithType: SecurityProjectionRecord.Version
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Version
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Version
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 70
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public long Version { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Version As Long
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Version*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveFrom
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveFrom
+  id: EffectiveFrom
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: EffectiveFrom
+  nameWithType: SecurityProjectionRecord.EffectiveFrom
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveFrom
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateTimeOffset EffectiveFrom { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EffectiveFrom As DateTimeOffset
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveFrom*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveTo
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveTo
+  id: EffectiveTo
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: EffectiveTo
+  nameWithType: SecurityProjectionRecord.EffectiveTo
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveTo
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveTo
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public DateTimeOffset? EffectiveTo { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property EffectiveTo As DateTimeOffset?
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveTo*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Identifiers
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Identifiers
+  id: Identifiers
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: Identifiers
+  nameWithType: SecurityProjectionRecord.Identifiers
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Identifiers
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Identifiers
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 73
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public IReadOnlyList<SecurityIdentifierDto> Identifiers { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityIdentifierDto}
+    content.vb: Public Property Identifiers As IReadOnlyList(Of SecurityIdentifierDto)
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Identifiers*
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Aliases
+  commentId: P:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Aliases
+  id: Aliases
+  parent: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  langs:
+  - csharp
+  - vb
+  name: Aliases
+  nameWithType: SecurityProjectionRecord.Aliases
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Aliases
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Aliases
+    path: ../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.SecurityMaster
+  syntax:
+    content: public IReadOnlyList<SecurityAliasDto> Aliases { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityAliasDto}
+    content.vb: Public Property Aliases As IReadOnlyList(Of SecurityAliasDto)
+  overload: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Aliases*
+references:
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  commentId: T:System.IEquatable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<SecurityProjectionRecord>
+  nameWithType: IEquatable<SecurityProjectionRecord>
+  fullName: System.IEquatable<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>
+  nameWithType.vb: IEquatable(Of SecurityProjectionRecord)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  name.vb: IEquatable(Of SecurityProjectionRecord)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+    href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+    href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.#ctor*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.#ctor
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord__ctor_System_Guid_System_String_Meridian_Contracts_SecurityMaster_SecurityStatusDto_System_String_System_String_System_String_System_String_System_Text_Json_JsonElement_System_Text_Json_JsonElement_System_Text_Json_JsonElement_System_Int64_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_SecurityMaster_SecurityIdentifierDto__System_Collections_Generic_IReadOnlyList_Meridian_Contracts_SecurityMaster_SecurityAliasDto__
+  name: SecurityProjectionRecord
+  nameWithType: SecurityProjectionRecord.SecurityProjectionRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityProjectionRecord
+  nameWithType.vb: SecurityProjectionRecord.New
+  fullName.vb: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityStatusDto
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityStatusDto.html
+  name: SecurityStatusDto
+  nameWithType: SecurityStatusDto
+  fullName: Meridian.Contracts.SecurityMaster.SecurityStatusDto
+- uid: System.Text.Json.JsonElement
+  commentId: T:System.Text.Json.JsonElement
+  parent: System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.jsonelement
+  name: JsonElement
+  nameWithType: JsonElement
+  fullName: System.Text.Json.JsonElement
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityIdentifierDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityIdentifierDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SecurityIdentifierDto>
+  nameWithType: IReadOnlyList<SecurityIdentifierDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityIdentifierDto>
+  nameWithType.vb: IReadOnlyList(Of SecurityIdentifierDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityIdentifierDto)
+  name.vb: IReadOnlyList(Of SecurityIdentifierDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierDto
+    name: SecurityIdentifierDto
+    href: Meridian.Contracts.SecurityMaster.SecurityIdentifierDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityIdentifierDto
+    name: SecurityIdentifierDto
+    href: Meridian.Contracts.SecurityMaster.SecurityIdentifierDto.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityAliasDto}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.SecurityAliasDto}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SecurityAliasDto>
+  nameWithType: IReadOnlyList<SecurityAliasDto>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.SecurityAliasDto>
+  nameWithType.vb: IReadOnlyList(Of SecurityAliasDto)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.SecurityAliasDto)
+  name.vb: IReadOnlyList(Of SecurityAliasDto)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityAliasDto
+    name: SecurityAliasDto
+    href: Meridian.Contracts.SecurityMaster.SecurityAliasDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityAliasDto
+    name: SecurityAliasDto
+    href: Meridian.Contracts.SecurityMaster.SecurityAliasDto.html
+  - name: )
+- uid: System.Text.Json
+  commentId: N:System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.Json
+  nameWithType: System.Text.Json
+  fullName: System.Text.Json
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityId*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityId
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_SecurityId
+  name: SecurityId
+  nameWithType: SecurityProjectionRecord.SecurityId
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.SecurityId
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetClass*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetClass
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_AssetClass
+  name: AssetClass
+  nameWithType: SecurityProjectionRecord.AssetClass
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetClass
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Status*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Status
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_Status
+  name: Status
+  nameWithType: SecurityProjectionRecord.Status
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Status
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.DisplayName*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.DisplayName
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_DisplayName
+  name: DisplayName
+  nameWithType: SecurityProjectionRecord.DisplayName
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.DisplayName
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Currency*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Currency
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_Currency
+  name: Currency
+  nameWithType: SecurityProjectionRecord.Currency
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Currency
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierKind*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierKind
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_PrimaryIdentifierKind
+  name: PrimaryIdentifierKind
+  nameWithType: SecurityProjectionRecord.PrimaryIdentifierKind
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierKind
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierValue*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierValue
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_PrimaryIdentifierValue
+  name: PrimaryIdentifierValue
+  nameWithType: SecurityProjectionRecord.PrimaryIdentifierValue
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.PrimaryIdentifierValue
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.CommonTerms*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.CommonTerms
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_CommonTerms
+  name: CommonTerms
+  nameWithType: SecurityProjectionRecord.CommonTerms
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.CommonTerms
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetSpecificTerms*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetSpecificTerms
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_AssetSpecificTerms
+  name: AssetSpecificTerms
+  nameWithType: SecurityProjectionRecord.AssetSpecificTerms
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.AssetSpecificTerms
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Provenance*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Provenance
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_Provenance
+  name: Provenance
+  nameWithType: SecurityProjectionRecord.Provenance
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Provenance
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Version*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Version
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_Version
+  name: Version
+  nameWithType: SecurityProjectionRecord.Version
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Version
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveFrom*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveFrom
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_EffectiveFrom
+  name: EffectiveFrom
+  nameWithType: SecurityProjectionRecord.EffectiveFrom
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveFrom
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveTo*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveTo
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_EffectiveTo
+  name: EffectiveTo
+  nameWithType: SecurityProjectionRecord.EffectiveTo
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.EffectiveTo
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Identifiers*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Identifiers
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_Identifiers
+  name: Identifiers
+  nameWithType: SecurityProjectionRecord.Identifiers
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Identifiers
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Aliases*
+  commentId: Overload:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Aliases
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html#Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_Aliases
+  name: Aliases
+  nameWithType: SecurityProjectionRecord.Aliases
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.Aliases

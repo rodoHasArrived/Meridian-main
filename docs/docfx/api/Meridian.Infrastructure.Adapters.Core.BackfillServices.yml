@@ -1,0 +1,865 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillServices
+  id: BackfillServices
+  parent: Meridian.Infrastructure.Adapters.Core
+  children:
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.#ctor(Meridian.Infrastructure.Adapters.Core.BackfillJobManager,Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue,Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker,Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider,Meridian.Infrastructure.Adapters.Core.BackfillWorkerService)
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.Dispose
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.GapAnalyzer
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.InitializeAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.JobManager
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.Provider
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.RateLimitTracker
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.RequestQueue
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.StartWorker
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.StopWorkerAsync(System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.BackfillServices.Worker
+  langs:
+  - csharp
+  - vb
+  name: BackfillServices
+  nameWithType: BackfillServices
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackfillServices
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 769
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Container for all backfill-related services.
+  example: []
+  syntax:
+    content: 'public sealed class BackfillServices : IDisposable'
+    content.vb: Public NotInheritable Class BackfillServices Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.JobManager
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillServices.JobManager
+  id: JobManager
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: JobManager
+  nameWithType: BackfillServices.JobManager
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.JobManager
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JobManager
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 771
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public BackfillJobManager JobManager { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobManager
+    content.vb: Public ReadOnly Property JobManager As BackfillJobManager
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.JobManager*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.RequestQueue
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillServices.RequestQueue
+  id: RequestQueue
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: RequestQueue
+  nameWithType: BackfillServices.RequestQueue
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.RequestQueue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RequestQueue
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 772
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public BackfillRequestQueue RequestQueue { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue
+    content.vb: Public ReadOnly Property RequestQueue As BackfillRequestQueue
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.RequestQueue*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.GapAnalyzer
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillServices.GapAnalyzer
+  id: GapAnalyzer
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: GapAnalyzer
+  nameWithType: BackfillServices.GapAnalyzer
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.GapAnalyzer
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapAnalyzer
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 773
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public DataGapAnalyzer GapAnalyzer { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+    content.vb: Public ReadOnly Property GapAnalyzer As DataGapAnalyzer
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.GapAnalyzer*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.RateLimitTracker
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillServices.RateLimitTracker
+  id: RateLimitTracker
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: RateLimitTracker
+  nameWithType: BackfillServices.RateLimitTracker
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.RateLimitTracker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitTracker
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 774
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public ProviderRateLimitTracker RateLimitTracker { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+    content.vb: Public ReadOnly Property RateLimitTracker As ProviderRateLimitTracker
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.RateLimitTracker*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.Provider
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillServices.Provider
+  id: Provider
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: Provider
+  nameWithType: BackfillServices.Provider
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.Provider
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Provider
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 775
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public CompositeHistoricalDataProvider Provider { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+    content.vb: Public ReadOnly Property Provider As CompositeHistoricalDataProvider
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.Provider*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.Worker
+  commentId: P:Meridian.Infrastructure.Adapters.Core.BackfillServices.Worker
+  id: Worker
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: Worker
+  nameWithType: BackfillServices.Worker
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.Worker
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Worker
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 776
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public BackfillWorkerService Worker { get; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.Adapters.Core.BackfillWorkerService
+    content.vb: Public ReadOnly Property Worker As BackfillWorkerService
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.Worker*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.#ctor(Meridian.Infrastructure.Adapters.Core.BackfillJobManager,Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue,Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker,Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider,Meridian.Infrastructure.Adapters.Core.BackfillWorkerService)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BackfillServices.#ctor(Meridian.Infrastructure.Adapters.Core.BackfillJobManager,Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue,Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker,Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider,Meridian.Infrastructure.Adapters.Core.BackfillWorkerService)
+  id: '#ctor(Meridian.Infrastructure.Adapters.Core.BackfillJobManager,Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue,Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer,Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker,Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider,Meridian.Infrastructure.Adapters.Core.BackfillWorkerService)'
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: BackfillServices(BackfillJobManager, BackfillRequestQueue, DataGapAnalyzer, ProviderRateLimitTracker, CompositeHistoricalDataProvider, BackfillWorkerService)
+  nameWithType: BackfillServices.BackfillServices(BackfillJobManager, BackfillRequestQueue, DataGapAnalyzer, ProviderRateLimitTracker, CompositeHistoricalDataProvider, BackfillWorkerService)
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.BackfillServices(Meridian.Infrastructure.Adapters.Core.BackfillJobManager, Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue, Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer, Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker, Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider, Meridian.Infrastructure.Adapters.Core.BackfillWorkerService)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 778
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  syntax:
+    content: public BackfillServices(BackfillJobManager jobManager, BackfillRequestQueue requestQueue, DataGapAnalyzer gapAnalyzer, ProviderRateLimitTracker rateLimitTracker, CompositeHistoricalDataProvider provider, BackfillWorkerService worker)
+    parameters:
+    - id: jobManager
+      type: Meridian.Infrastructure.Adapters.Core.BackfillJobManager
+    - id: requestQueue
+      type: Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue
+    - id: gapAnalyzer
+      type: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+    - id: rateLimitTracker
+      type: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+    - id: provider
+      type: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+    - id: worker
+      type: Meridian.Infrastructure.Adapters.Core.BackfillWorkerService
+    content.vb: Public Sub New(jobManager As BackfillJobManager, requestQueue As BackfillRequestQueue, gapAnalyzer As DataGapAnalyzer, rateLimitTracker As ProviderRateLimitTracker, provider As CompositeHistoricalDataProvider, worker As BackfillWorkerService)
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.#ctor*
+  nameWithType.vb: BackfillServices.New(BackfillJobManager, BackfillRequestQueue, DataGapAnalyzer, ProviderRateLimitTracker, CompositeHistoricalDataProvider, BackfillWorkerService)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BackfillServices.New(Meridian.Infrastructure.Adapters.Core.BackfillJobManager, Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue, Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer, Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker, Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider, Meridian.Infrastructure.Adapters.Core.BackfillWorkerService)
+  name.vb: New(BackfillJobManager, BackfillRequestQueue, DataGapAnalyzer, ProviderRateLimitTracker, CompositeHistoricalDataProvider, BackfillWorkerService)
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.InitializeAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BackfillServices.InitializeAsync(System.Threading.CancellationToken)
+  id: InitializeAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: InitializeAsync(CancellationToken)
+  nameWithType: BackfillServices.InitializeAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.InitializeAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitializeAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 797
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Initialize services (load persisted jobs).
+  example: []
+  syntax:
+    content: public Task InitializeAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function InitializeAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.InitializeAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.StartWorker
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BackfillServices.StartWorker
+  id: StartWorker
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: StartWorker()
+  nameWithType: BackfillServices.StartWorker()
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.StartWorker()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartWorker
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 805
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Start the worker service.
+  example: []
+  syntax:
+    content: public void StartWorker()
+    content.vb: Public Sub StartWorker()
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.StartWorker*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.StopWorkerAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BackfillServices.StopWorkerAsync(System.Threading.CancellationToken)
+  id: StopWorkerAsync(System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: StopWorkerAsync(CancellationToken)
+  nameWithType: BackfillServices.StopWorkerAsync(CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.StopWorkerAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StopWorkerAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 813
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Stop the worker service.
+  example: []
+  syntax:
+    content: public Task StopWorkerAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function StopWorkerAsync(ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.StopWorkerAsync*
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.Dispose
+  commentId: M:Meridian.Infrastructure.Adapters.Core.BackfillServices.Dispose
+  id: Dispose
+  parent: Meridian.Infrastructure.Adapters.Core.BackfillServices
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: BackfillServices.Dispose()
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs
+    startLine: 818
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Infrastructure.Adapters.Core.BackfillServices.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Infrastructure.Adapters.Core
+  commentId: N:Meridian.Infrastructure.Adapters.Core
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core
+  nameWithType: Meridian.Infrastructure.Adapters.Core
+  fullName: Meridian.Infrastructure.Adapters.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.JobManager*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.JobManager
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_JobManager
+  name: JobManager
+  nameWithType: BackfillServices.JobManager
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.JobManager
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillJobManager
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillJobManager
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillJobManager.html
+  name: BackfillJobManager
+  nameWithType: BackfillJobManager
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillJobManager
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.RequestQueue*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.RequestQueue
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_RequestQueue
+  name: RequestQueue
+  nameWithType: BackfillServices.RequestQueue
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.RequestQueue
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue.html
+  name: BackfillRequestQueue
+  nameWithType: BackfillRequestQueue
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.GapAnalyzer*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.GapAnalyzer
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_GapAnalyzer
+  name: GapAnalyzer
+  nameWithType: BackfillServices.GapAnalyzer
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.GapAnalyzer
+- uid: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+  commentId: T:Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer.html
+  name: DataGapAnalyzer
+  nameWithType: DataGapAnalyzer
+  fullName: Meridian.Infrastructure.Adapters.Core.DataGapAnalyzer
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.RateLimitTracker*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.RateLimitTracker
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_RateLimitTracker
+  name: RateLimitTracker
+  nameWithType: BackfillServices.RateLimitTracker
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.RateLimitTracker
+- uid: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  commentId: T:Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker.html
+  name: ProviderRateLimitTracker
+  nameWithType: ProviderRateLimitTracker
+  fullName: Meridian.Infrastructure.Adapters.Core.ProviderRateLimitTracker
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.Provider*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.Provider
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_Provider
+  name: Provider
+  nameWithType: BackfillServices.Provider
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.Provider
+- uid: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+  commentId: T:Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider.html
+  name: CompositeHistoricalDataProvider
+  nameWithType: CompositeHistoricalDataProvider
+  fullName: Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.Worker*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.Worker
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_Worker
+  name: Worker
+  nameWithType: BackfillServices.Worker
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.Worker
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillWorkerService
+  commentId: T:Meridian.Infrastructure.Adapters.Core.BackfillWorkerService
+  parent: Meridian.Infrastructure.Adapters.Core
+  href: Meridian.Infrastructure.Adapters.Core.BackfillWorkerService.html
+  name: BackfillWorkerService
+  nameWithType: BackfillWorkerService
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillWorkerService
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.#ctor*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.#ctor
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices__ctor_Meridian_Infrastructure_Adapters_Core_BackfillJobManager_Meridian_Infrastructure_Adapters_Core_BackfillRequestQueue_Meridian_Infrastructure_Adapters_Core_DataGapAnalyzer_Meridian_Infrastructure_Adapters_Core_ProviderRateLimitTracker_Meridian_Infrastructure_Adapters_Core_CompositeHistoricalDataProvider_Meridian_Infrastructure_Adapters_Core_BackfillWorkerService_
+  name: BackfillServices
+  nameWithType: BackfillServices.BackfillServices
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.BackfillServices
+  nameWithType.vb: BackfillServices.New
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.BackfillServices.New
+  name.vb: New
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.InitializeAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.InitializeAsync
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_InitializeAsync_System_Threading_CancellationToken_
+  name: InitializeAsync
+  nameWithType: BackfillServices.InitializeAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.InitializeAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.StartWorker*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.StartWorker
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_StartWorker
+  name: StartWorker
+  nameWithType: BackfillServices.StartWorker
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.StartWorker
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.StopWorkerAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.StopWorkerAsync
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_StopWorkerAsync_System_Threading_CancellationToken_
+  name: StopWorkerAsync
+  nameWithType: BackfillServices.StopWorkerAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.StopWorkerAsync
+- uid: Meridian.Infrastructure.Adapters.Core.BackfillServices.Dispose*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.BackfillServices.Dispose
+  href: Meridian.Infrastructure.Adapters.Core.BackfillServices.html#Meridian_Infrastructure_Adapters_Core_BackfillServices_Dispose
+  name: Dispose
+  nameWithType: BackfillServices.Dispose
+  fullName: Meridian.Infrastructure.Adapters.Core.BackfillServices.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

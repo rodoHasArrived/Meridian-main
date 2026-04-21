@@ -1,0 +1,997 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataLossAccounting
+  commentId: T:Meridian.Application.Monitoring.DataLossAccounting
+  id: DataLossAccounting
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.DataLossAccounting.GetReconciliationReport
+  - Meridian.Application.Monitoring.DataLossAccounting.IncPipelineAccepted
+  - Meridian.Application.Monitoring.DataLossAccounting.IncPipelineDropped
+  - Meridian.Application.Monitoring.DataLossAccounting.IncReceived(System.String)
+  - Meridian.Application.Monitoring.DataLossAccounting.IncReceivedDuplicate(System.String)
+  - Meridian.Application.Monitoring.DataLossAccounting.IncRejected
+  - Meridian.Application.Monitoring.DataLossAccounting.IncStoreFailed
+  - Meridian.Application.Monitoring.DataLossAccounting.IncStored
+  - Meridian.Application.Monitoring.DataLossAccounting.IncValidated
+  - Meridian.Application.Monitoring.DataLossAccounting.PipelineAccepted
+  - Meridian.Application.Monitoring.DataLossAccounting.PipelineDropped
+  - Meridian.Application.Monitoring.DataLossAccounting.Received
+  - Meridian.Application.Monitoring.DataLossAccounting.ReceivedDuplicates
+  - Meridian.Application.Monitoring.DataLossAccounting.Rejected
+  - Meridian.Application.Monitoring.DataLossAccounting.Reset
+  - Meridian.Application.Monitoring.DataLossAccounting.StoreFailed
+  - Meridian.Application.Monitoring.DataLossAccounting.Stored
+  - Meridian.Application.Monitoring.DataLossAccounting.Validated
+  langs:
+  - csharp
+  - vb
+  name: DataLossAccounting
+  nameWithType: DataLossAccounting
+  fullName: Meridian.Application.Monitoring.DataLossAccounting
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataLossAccounting
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    End-to-end data loss accounting across the entire event pipeline.
+
+    Tracks events at each stage: ingestion → validation → pipeline → storage,
+
+    enabling reconciliation to detect unexplained data loss.
+  example: []
+  syntax:
+    content: public static class DataLossAccounting
+    content.vb: Public Module DataLossAccounting
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Received
+  commentId: P:Meridian.Application.Monitoring.DataLossAccounting.Received
+  id: Received
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: Received
+  nameWithType: DataLossAccounting.Received
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Received
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Received
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Total events received from all providers.
+  example: []
+  syntax:
+    content: public static long Received { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Received As Long
+  overload: Meridian.Application.Monitoring.DataLossAccounting.Received*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.ReceivedDuplicates
+  commentId: P:Meridian.Application.Monitoring.DataLossAccounting.ReceivedDuplicates
+  id: ReceivedDuplicates
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: ReceivedDuplicates
+  nameWithType: DataLossAccounting.ReceivedDuplicates
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.ReceivedDuplicates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReceivedDuplicates
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Events identified as duplicates at ingestion.
+  example: []
+  syntax:
+    content: public static long ReceivedDuplicates { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property ReceivedDuplicates As Long
+  overload: Meridian.Application.Monitoring.DataLossAccounting.ReceivedDuplicates*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncReceived(System.String)
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.IncReceived(System.String)
+  id: IncReceived(System.String)
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: IncReceived(string?)
+  nameWithType: DataLossAccounting.IncReceived(string?)
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncReceived(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncReceived
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncReceived(string? provider = null)
+    parameters:
+    - id: provider
+      type: System.String
+    content.vb: Public Shared Sub IncReceived(provider As String = Nothing)
+  overload: Meridian.Application.Monitoring.DataLossAccounting.IncReceived*
+  nameWithType.vb: DataLossAccounting.IncReceived(String)
+  fullName.vb: Meridian.Application.Monitoring.DataLossAccounting.IncReceived(String)
+  name.vb: IncReceived(String)
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncReceivedDuplicate(System.String)
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.IncReceivedDuplicate(System.String)
+  id: IncReceivedDuplicate(System.String)
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: IncReceivedDuplicate(string?)
+  nameWithType: DataLossAccounting.IncReceivedDuplicate(string?)
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncReceivedDuplicate(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncReceivedDuplicate
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncReceivedDuplicate(string? provider = null)
+    parameters:
+    - id: provider
+      type: System.String
+    content.vb: Public Shared Sub IncReceivedDuplicate(provider As String = Nothing)
+  overload: Meridian.Application.Monitoring.DataLossAccounting.IncReceivedDuplicate*
+  nameWithType.vb: DataLossAccounting.IncReceivedDuplicate(String)
+  fullName.vb: Meridian.Application.Monitoring.DataLossAccounting.IncReceivedDuplicate(String)
+  name.vb: IncReceivedDuplicate(String)
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Validated
+  commentId: P:Meridian.Application.Monitoring.DataLossAccounting.Validated
+  id: Validated
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: Validated
+  nameWithType: DataLossAccounting.Validated
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Validated
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Validated
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Events that passed validation.
+  example: []
+  syntax:
+    content: public static long Validated { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Validated As Long
+  overload: Meridian.Application.Monitoring.DataLossAccounting.Validated*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Rejected
+  commentId: P:Meridian.Application.Monitoring.DataLossAccounting.Rejected
+  id: Rejected
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: Rejected
+  nameWithType: DataLossAccounting.Rejected
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Rejected
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rejected
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Events rejected by validators.
+  example: []
+  syntax:
+    content: public static long Rejected { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Rejected As Long
+  overload: Meridian.Application.Monitoring.DataLossAccounting.Rejected*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncValidated
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.IncValidated
+  id: IncValidated
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: IncValidated()
+  nameWithType: DataLossAccounting.IncValidated()
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncValidated()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncValidated
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncValidated()
+    content.vb: Public Shared Sub IncValidated()
+  overload: Meridian.Application.Monitoring.DataLossAccounting.IncValidated*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncRejected
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.IncRejected
+  id: IncRejected
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: IncRejected()
+  nameWithType: DataLossAccounting.IncRejected()
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncRejected()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncRejected
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncRejected()
+    content.vb: Public Shared Sub IncRejected()
+  overload: Meridian.Application.Monitoring.DataLossAccounting.IncRejected*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.PipelineAccepted
+  commentId: P:Meridian.Application.Monitoring.DataLossAccounting.PipelineAccepted
+  id: PipelineAccepted
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: PipelineAccepted
+  nameWithType: DataLossAccounting.PipelineAccepted
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.PipelineAccepted
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PipelineAccepted
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 72
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Events accepted into the pipeline channel.
+  example: []
+  syntax:
+    content: public static long PipelineAccepted { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property PipelineAccepted As Long
+  overload: Meridian.Application.Monitoring.DataLossAccounting.PipelineAccepted*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.PipelineDropped
+  commentId: P:Meridian.Application.Monitoring.DataLossAccounting.PipelineDropped
+  id: PipelineDropped
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: PipelineDropped
+  nameWithType: DataLossAccounting.PipelineDropped
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.PipelineDropped
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PipelineDropped
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Events dropped by pipeline backpressure.
+  example: []
+  syntax:
+    content: public static long PipelineDropped { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property PipelineDropped As Long
+  overload: Meridian.Application.Monitoring.DataLossAccounting.PipelineDropped*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineAccepted
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.IncPipelineAccepted
+  id: IncPipelineAccepted
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: IncPipelineAccepted()
+  nameWithType: DataLossAccounting.IncPipelineAccepted()
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineAccepted()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncPipelineAccepted
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncPipelineAccepted()
+    content.vb: Public Shared Sub IncPipelineAccepted()
+  overload: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineAccepted*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineDropped
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.IncPipelineDropped
+  id: IncPipelineDropped
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: IncPipelineDropped()
+  nameWithType: DataLossAccounting.IncPipelineDropped()
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineDropped()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncPipelineDropped
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncPipelineDropped()
+    content.vb: Public Shared Sub IncPipelineDropped()
+  overload: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineDropped*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Stored
+  commentId: P:Meridian.Application.Monitoring.DataLossAccounting.Stored
+  id: Stored
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: Stored
+  nameWithType: DataLossAccounting.Stored
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Stored
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Stored
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Events successfully persisted to storage.
+  example: []
+  syntax:
+    content: public static long Stored { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property Stored As Long
+  overload: Meridian.Application.Monitoring.DataLossAccounting.Stored*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.StoreFailed
+  commentId: P:Meridian.Application.Monitoring.DataLossAccounting.StoreFailed
+  id: StoreFailed
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: StoreFailed
+  nameWithType: DataLossAccounting.StoreFailed
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.StoreFailed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StoreFailed
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Events that failed to persist.
+  example: []
+  syntax:
+    content: public static long StoreFailed { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Shared ReadOnly Property StoreFailed As Long
+  overload: Meridian.Application.Monitoring.DataLossAccounting.StoreFailed*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncStored
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.IncStored
+  id: IncStored
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: IncStored()
+  nameWithType: DataLossAccounting.IncStored()
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncStored()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncStored
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncStored()
+    content.vb: Public Shared Sub IncStored()
+  overload: Meridian.Application.Monitoring.DataLossAccounting.IncStored*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncStoreFailed
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.IncStoreFailed
+  id: IncStoreFailed
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: IncStoreFailed()
+  nameWithType: DataLossAccounting.IncStoreFailed()
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncStoreFailed()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncStoreFailed
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 94
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public static void IncStoreFailed()
+    content.vb: Public Shared Sub IncStoreFailed()
+  overload: Meridian.Application.Monitoring.DataLossAccounting.IncStoreFailed*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.GetReconciliationReport
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.GetReconciliationReport
+  id: GetReconciliationReport
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: GetReconciliationReport()
+  nameWithType: DataLossAccounting.GetReconciliationReport()
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.GetReconciliationReport()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetReconciliationReport
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Generates a full reconciliation report across all pipeline stages.
+
+    The formula: Received = Duplicates + Rejected + PipelineDropped + StoreFailed + Stored + Unaccounted
+  example: []
+  syntax:
+    content: public static ReconciliationReport GetReconciliationReport()
+    return:
+      type: Meridian.Application.Monitoring.ReconciliationReport
+    content.vb: Public Shared Function GetReconciliationReport() As ReconciliationReport
+  overload: Meridian.Application.Monitoring.DataLossAccounting.GetReconciliationReport*
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Reset
+  commentId: M:Meridian.Application.Monitoring.DataLossAccounting.Reset
+  id: Reset
+  parent: Meridian.Application.Monitoring.DataLossAccounting
+  langs:
+  - csharp
+  - vb
+  name: Reset()
+  nameWithType: DataLossAccounting.Reset()
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Reset()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataLossAccounting.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Monitoring/DataLossAccounting.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Resets all accounting counters. Useful for testing.
+  example: []
+  syntax:
+    content: public static void Reset()
+    content.vb: Public Shared Sub Reset()
+  overload: Meridian.Application.Monitoring.DataLossAccounting.Reset*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Received*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.Received
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_Received
+  name: Received
+  nameWithType: DataLossAccounting.Received
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Received
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.DataLossAccounting.ReceivedDuplicates*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.ReceivedDuplicates
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_ReceivedDuplicates
+  name: ReceivedDuplicates
+  nameWithType: DataLossAccounting.ReceivedDuplicates
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.ReceivedDuplicates
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncReceived*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.IncReceived
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_IncReceived_System_String_
+  name: IncReceived
+  nameWithType: DataLossAccounting.IncReceived
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncReceived
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncReceivedDuplicate*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.IncReceivedDuplicate
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_IncReceivedDuplicate_System_String_
+  name: IncReceivedDuplicate
+  nameWithType: DataLossAccounting.IncReceivedDuplicate
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncReceivedDuplicate
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Validated*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.Validated
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_Validated
+  name: Validated
+  nameWithType: DataLossAccounting.Validated
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Validated
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Rejected*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.Rejected
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_Rejected
+  name: Rejected
+  nameWithType: DataLossAccounting.Rejected
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Rejected
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncValidated*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.IncValidated
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_IncValidated
+  name: IncValidated
+  nameWithType: DataLossAccounting.IncValidated
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncValidated
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncRejected*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.IncRejected
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_IncRejected
+  name: IncRejected
+  nameWithType: DataLossAccounting.IncRejected
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncRejected
+- uid: Meridian.Application.Monitoring.DataLossAccounting.PipelineAccepted*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.PipelineAccepted
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_PipelineAccepted
+  name: PipelineAccepted
+  nameWithType: DataLossAccounting.PipelineAccepted
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.PipelineAccepted
+- uid: Meridian.Application.Monitoring.DataLossAccounting.PipelineDropped*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.PipelineDropped
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_PipelineDropped
+  name: PipelineDropped
+  nameWithType: DataLossAccounting.PipelineDropped
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.PipelineDropped
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineAccepted*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.IncPipelineAccepted
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_IncPipelineAccepted
+  name: IncPipelineAccepted
+  nameWithType: DataLossAccounting.IncPipelineAccepted
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineAccepted
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineDropped*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.IncPipelineDropped
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_IncPipelineDropped
+  name: IncPipelineDropped
+  nameWithType: DataLossAccounting.IncPipelineDropped
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncPipelineDropped
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Stored*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.Stored
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_Stored
+  name: Stored
+  nameWithType: DataLossAccounting.Stored
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Stored
+- uid: Meridian.Application.Monitoring.DataLossAccounting.StoreFailed*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.StoreFailed
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_StoreFailed
+  name: StoreFailed
+  nameWithType: DataLossAccounting.StoreFailed
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.StoreFailed
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncStored*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.IncStored
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_IncStored
+  name: IncStored
+  nameWithType: DataLossAccounting.IncStored
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncStored
+- uid: Meridian.Application.Monitoring.DataLossAccounting.IncStoreFailed*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.IncStoreFailed
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_IncStoreFailed
+  name: IncStoreFailed
+  nameWithType: DataLossAccounting.IncStoreFailed
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.IncStoreFailed
+- uid: Meridian.Application.Monitoring.DataLossAccounting.GetReconciliationReport*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.GetReconciliationReport
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_GetReconciliationReport
+  name: GetReconciliationReport
+  nameWithType: DataLossAccounting.GetReconciliationReport
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.GetReconciliationReport
+- uid: Meridian.Application.Monitoring.ReconciliationReport
+  commentId: T:Meridian.Application.Monitoring.ReconciliationReport
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ReconciliationReport.html
+  name: ReconciliationReport
+  nameWithType: ReconciliationReport
+  fullName: Meridian.Application.Monitoring.ReconciliationReport
+- uid: Meridian.Application.Monitoring.DataLossAccounting.Reset*
+  commentId: Overload:Meridian.Application.Monitoring.DataLossAccounting.Reset
+  href: Meridian.Application.Monitoring.DataLossAccounting.html#Meridian_Application_Monitoring_DataLossAccounting_Reset
+  name: Reset
+  nameWithType: DataLossAccounting.Reset
+  fullName: Meridian.Application.Monitoring.DataLossAccounting.Reset

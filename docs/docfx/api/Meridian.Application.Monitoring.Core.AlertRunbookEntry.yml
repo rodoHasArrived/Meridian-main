@@ -1,0 +1,667 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  commentId: T:Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  id: AlertRunbookEntry
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry.AlertName
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry.ImmediateActions
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry.IncidentPriority
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry.ProbableCauses
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry.RollbackCriteria
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry.RunbookUrl
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry.Severity
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry.SloId
+  - Meridian.Application.Monitoring.Core.AlertRunbookEntry.Summary
+  langs:
+  - csharp
+  - vb
+  name: AlertRunbookEntry
+  nameWithType: AlertRunbookEntry
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertRunbookEntry
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 376
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Maps a Prometheus alert rule to its operator runbook entry.
+  example: []
+  syntax:
+    content: public sealed class AlertRunbookEntry
+    content.vb: Public NotInheritable Class AlertRunbookEntry
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.AlertName
+  commentId: P:Meridian.Application.Monitoring.Core.AlertRunbookEntry.AlertName
+  id: AlertName
+  parent: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  langs:
+  - csharp
+  - vb
+  name: AlertName
+  nameWithType: AlertRunbookEntry.AlertName
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.AlertName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertName
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 379
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Alert rule name (matches Prometheus alert name).
+  example: []
+  syntax:
+    content: public string AlertName { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AlertName As String
+  overload: Meridian.Application.Monitoring.Core.AlertRunbookEntry.AlertName*
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Severity
+  commentId: P:Meridian.Application.Monitoring.Core.AlertRunbookEntry.Severity
+  id: Severity
+  parent: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  langs:
+  - csharp
+  - vb
+  name: Severity
+  nameWithType: AlertRunbookEntry.Severity
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Severity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Severity
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 382
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Alert severity (critical, warning, info).
+  example: []
+  syntax:
+    content: public string Severity { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Severity As String
+  overload: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Severity*
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.IncidentPriority
+  commentId: P:Meridian.Application.Monitoring.Core.AlertRunbookEntry.IncidentPriority
+  id: IncidentPriority
+  parent: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  langs:
+  - csharp
+  - vb
+  name: IncidentPriority
+  nameWithType: AlertRunbookEntry.IncidentPriority
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.IncidentPriority
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncidentPriority
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 385
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Incident priority (P1, P2, P3).
+  example: []
+  syntax:
+    content: public string IncidentPriority { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property IncidentPriority As String
+  overload: Meridian.Application.Monitoring.Core.AlertRunbookEntry.IncidentPriority*
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Summary
+  commentId: P:Meridian.Application.Monitoring.Core.AlertRunbookEntry.Summary
+  id: Summary
+  parent: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: AlertRunbookEntry.Summary
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 388
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Short summary of the alert condition.
+  example: []
+  syntax:
+    content: public string Summary { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Summary As String
+  overload: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Summary*
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RunbookUrl
+  commentId: P:Meridian.Application.Monitoring.Core.AlertRunbookEntry.RunbookUrl
+  id: RunbookUrl
+  parent: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  langs:
+  - csharp
+  - vb
+  name: RunbookUrl
+  nameWithType: AlertRunbookEntry.RunbookUrl
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RunbookUrl
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunbookUrl
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 391
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Path to the runbook section for this alert.
+  example: []
+  syntax:
+    content: public string RunbookUrl { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunbookUrl As String
+  overload: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RunbookUrl*
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.SloId
+  commentId: P:Meridian.Application.Monitoring.Core.AlertRunbookEntry.SloId
+  id: SloId
+  parent: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  langs:
+  - csharp
+  - vb
+  name: SloId
+  nameWithType: AlertRunbookEntry.SloId
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.SloId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SloId
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 394
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: SLO ID this alert maps to, if any.
+  example: []
+  syntax:
+    content: public string? SloId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SloId As String
+  overload: Meridian.Application.Monitoring.Core.AlertRunbookEntry.SloId*
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ProbableCauses
+  commentId: P:Meridian.Application.Monitoring.Core.AlertRunbookEntry.ProbableCauses
+  id: ProbableCauses
+  parent: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  langs:
+  - csharp
+  - vb
+  name: ProbableCauses
+  nameWithType: AlertRunbookEntry.ProbableCauses
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ProbableCauses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProbableCauses
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 397
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Probable causes of this alert condition.
+  example: []
+  syntax:
+    content: public string[] ProbableCauses { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property ProbableCauses As String()
+  overload: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ProbableCauses*
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ImmediateActions
+  commentId: P:Meridian.Application.Monitoring.Core.AlertRunbookEntry.ImmediateActions
+  id: ImmediateActions
+  parent: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  langs:
+  - csharp
+  - vb
+  name: ImmediateActions
+  nameWithType: AlertRunbookEntry.ImmediateActions
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ImmediateActions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImmediateActions
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 400
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Immediate mitigation actions.
+  example: []
+  syntax:
+    content: public string[] ImmediateActions { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property ImmediateActions As String()
+  overload: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ImmediateActions*
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RollbackCriteria
+  commentId: P:Meridian.Application.Monitoring.Core.AlertRunbookEntry.RollbackCriteria
+  id: RollbackCriteria
+  parent: Meridian.Application.Monitoring.Core.AlertRunbookEntry
+  langs:
+  - csharp
+  - vb
+  name: RollbackCriteria
+  nameWithType: AlertRunbookEntry.RollbackCriteria
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RollbackCriteria
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RollbackCriteria
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertRunbookRegistry.cs
+    startLine: 403
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Criteria for determining when a rollback is needed.
+  example: []
+  syntax:
+    content: public string? RollbackCriteria { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RollbackCriteria As String
+  overload: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RollbackCriteria*
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.AlertName*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertRunbookEntry.AlertName
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html#Meridian_Application_Monitoring_Core_AlertRunbookEntry_AlertName
+  name: AlertName
+  nameWithType: AlertRunbookEntry.AlertName
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.AlertName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Severity*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertRunbookEntry.Severity
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html#Meridian_Application_Monitoring_Core_AlertRunbookEntry_Severity
+  name: Severity
+  nameWithType: AlertRunbookEntry.Severity
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Severity
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.IncidentPriority*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertRunbookEntry.IncidentPriority
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html#Meridian_Application_Monitoring_Core_AlertRunbookEntry_IncidentPriority
+  name: IncidentPriority
+  nameWithType: AlertRunbookEntry.IncidentPriority
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.IncidentPriority
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Summary*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertRunbookEntry.Summary
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html#Meridian_Application_Monitoring_Core_AlertRunbookEntry_Summary
+  name: Summary
+  nameWithType: AlertRunbookEntry.Summary
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.Summary
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RunbookUrl*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertRunbookEntry.RunbookUrl
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html#Meridian_Application_Monitoring_Core_AlertRunbookEntry_RunbookUrl
+  name: RunbookUrl
+  nameWithType: AlertRunbookEntry.RunbookUrl
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RunbookUrl
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.SloId*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertRunbookEntry.SloId
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html#Meridian_Application_Monitoring_Core_AlertRunbookEntry_SloId
+  name: SloId
+  nameWithType: AlertRunbookEntry.SloId
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.SloId
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ProbableCauses*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertRunbookEntry.ProbableCauses
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html#Meridian_Application_Monitoring_Core_AlertRunbookEntry_ProbableCauses
+  name: ProbableCauses
+  nameWithType: AlertRunbookEntry.ProbableCauses
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ProbableCauses
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ImmediateActions*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertRunbookEntry.ImmediateActions
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html#Meridian_Application_Monitoring_Core_AlertRunbookEntry_ImmediateActions
+  name: ImmediateActions
+  nameWithType: AlertRunbookEntry.ImmediateActions
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.ImmediateActions
+- uid: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RollbackCriteria*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertRunbookEntry.RollbackCriteria
+  href: Meridian.Application.Monitoring.Core.AlertRunbookEntry.html#Meridian_Application_Monitoring_Core_AlertRunbookEntry_RollbackCriteria
+  name: RollbackCriteria
+  nameWithType: AlertRunbookEntry.RollbackCriteria
+  fullName: Meridian.Application.Monitoring.Core.AlertRunbookEntry.RollbackCriteria

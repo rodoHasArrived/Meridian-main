@@ -1,0 +1,1203 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Coordination.LeaseManager
+  commentId: T:Meridian.Application.Coordination.LeaseManager
+  id: LeaseManager
+  parent: Meridian.Application.Coordination
+  children:
+  - Meridian.Application.Coordination.LeaseManager.#ctor(Meridian.Application.Config.CoordinationConfig,Meridian.Application.Coordination.ICoordinationStore,Serilog.ILogger)
+  - Meridian.Application.Coordination.LeaseManager.DisposeAsync
+  - Meridian.Application.Coordination.LeaseManager.Enabled
+  - Meridian.Application.Coordination.LeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.LeaseManager.HoldsLease(System.String)
+  - Meridian.Application.Coordination.LeaseManager.InstanceId
+  - Meridian.Application.Coordination.LeaseManager.ReleaseAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.LeaseManager.RenewAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Application.Coordination.LeaseManager.TryAcquireAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: LeaseManager
+  nameWithType: LeaseManager
+  fullName: Meridian.Application.Coordination.LeaseManager
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LeaseManager
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: High-level lease manager with automatic renewal and operator diagnostics.
+  example: []
+  syntax:
+    content: 'public sealed class LeaseManager : ILeaseManager, IAsyncDisposable'
+    content.vb: Public NotInheritable Class LeaseManager Implements ILeaseManager, IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Coordination.ILeaseManager
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Coordination.LeaseManager.#ctor(Meridian.Application.Config.CoordinationConfig,Meridian.Application.Coordination.ICoordinationStore,Serilog.ILogger)
+  commentId: M:Meridian.Application.Coordination.LeaseManager.#ctor(Meridian.Application.Config.CoordinationConfig,Meridian.Application.Coordination.ICoordinationStore,Serilog.ILogger)
+  id: '#ctor(Meridian.Application.Config.CoordinationConfig,Meridian.Application.Coordination.ICoordinationStore,Serilog.ILogger)'
+  parent: Meridian.Application.Coordination.LeaseManager
+  langs:
+  - csharp
+  - vb
+  name: LeaseManager(CoordinationConfig, ICoordinationStore, ILogger?)
+  nameWithType: LeaseManager.LeaseManager(CoordinationConfig, ICoordinationStore, ILogger?)
+  fullName: Meridian.Application.Coordination.LeaseManager.LeaseManager(Meridian.Application.Config.CoordinationConfig, Meridian.Application.Coordination.ICoordinationStore, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  syntax:
+    content: public LeaseManager(CoordinationConfig config, ICoordinationStore store, ILogger? log = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Config.CoordinationConfig
+    - id: store
+      type: Meridian.Application.Coordination.ICoordinationStore
+    - id: log
+      type: Serilog.ILogger
+    content.vb: Public Sub New(config As CoordinationConfig, store As ICoordinationStore, log As ILogger = Nothing)
+  overload: Meridian.Application.Coordination.LeaseManager.#ctor*
+  nameWithType.vb: LeaseManager.New(CoordinationConfig, ICoordinationStore, ILogger)
+  fullName.vb: Meridian.Application.Coordination.LeaseManager.New(Meridian.Application.Config.CoordinationConfig, Meridian.Application.Coordination.ICoordinationStore, Serilog.ILogger)
+  name.vb: New(CoordinationConfig, ICoordinationStore, ILogger)
+- uid: Meridian.Application.Coordination.LeaseManager.Enabled
+  commentId: P:Meridian.Application.Coordination.LeaseManager.Enabled
+  id: Enabled
+  parent: Meridian.Application.Coordination.LeaseManager
+  langs:
+  - csharp
+  - vb
+  name: Enabled
+  nameWithType: LeaseManager.Enabled
+  fullName: Meridian.Application.Coordination.LeaseManager.Enabled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Enabled
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public bool Enabled { get; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public ReadOnly Property Enabled As Boolean
+  overload: Meridian.Application.Coordination.LeaseManager.Enabled*
+  implements:
+  - Meridian.Application.Coordination.ILeaseManager.Enabled
+- uid: Meridian.Application.Coordination.LeaseManager.InstanceId
+  commentId: P:Meridian.Application.Coordination.LeaseManager.InstanceId
+  id: InstanceId
+  parent: Meridian.Application.Coordination.LeaseManager
+  langs:
+  - csharp
+  - vb
+  name: InstanceId
+  nameWithType: LeaseManager.InstanceId
+  fullName: Meridian.Application.Coordination.LeaseManager.InstanceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstanceId
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public string InstanceId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property InstanceId As String
+  overload: Meridian.Application.Coordination.LeaseManager.InstanceId*
+  implements:
+  - Meridian.Application.Coordination.ILeaseManager.InstanceId
+- uid: Meridian.Application.Coordination.LeaseManager.TryAcquireAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.LeaseManager.TryAcquireAsync(System.String,System.Threading.CancellationToken)
+  id: TryAcquireAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.LeaseManager
+  langs:
+  - csharp
+  - vb
+  name: TryAcquireAsync(string, CancellationToken)
+  nameWithType: LeaseManager.TryAcquireAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.LeaseManager.TryAcquireAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryAcquireAsync
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<LeaseAcquireResult> TryAcquireAsync(string resourceId, CancellationToken ct = default)
+    parameters:
+    - id: resourceId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+    content.vb: Public Function TryAcquireAsync(resourceId As String, ct As CancellationToken = Nothing) As Task(Of LeaseAcquireResult)
+  overload: Meridian.Application.Coordination.LeaseManager.TryAcquireAsync*
+  implements:
+  - Meridian.Application.Coordination.ILeaseManager.TryAcquireAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: LeaseManager.TryAcquireAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.LeaseManager.TryAcquireAsync(String, System.Threading.CancellationToken)
+  name.vb: TryAcquireAsync(String, CancellationToken)
+- uid: Meridian.Application.Coordination.LeaseManager.RenewAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.LeaseManager.RenewAsync(System.String,System.Threading.CancellationToken)
+  id: RenewAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.LeaseManager
+  langs:
+  - csharp
+  - vb
+  name: RenewAsync(string, CancellationToken)
+  nameWithType: LeaseManager.RenewAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.LeaseManager.RenewAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RenewAsync
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<bool> RenewAsync(string resourceId, CancellationToken ct = default)
+    parameters:
+    - id: resourceId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function RenewAsync(resourceId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Coordination.LeaseManager.RenewAsync*
+  implements:
+  - Meridian.Application.Coordination.ILeaseManager.RenewAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: LeaseManager.RenewAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.LeaseManager.RenewAsync(String, System.Threading.CancellationToken)
+  name.vb: RenewAsync(String, CancellationToken)
+- uid: Meridian.Application.Coordination.LeaseManager.ReleaseAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.LeaseManager.ReleaseAsync(System.String,System.Threading.CancellationToken)
+  id: ReleaseAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.LeaseManager
+  langs:
+  - csharp
+  - vb
+  name: ReleaseAsync(string, CancellationToken)
+  nameWithType: LeaseManager.ReleaseAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.LeaseManager.ReleaseAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReleaseAsync
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<bool> ReleaseAsync(string resourceId, CancellationToken ct = default)
+    parameters:
+    - id: resourceId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Public Function ReleaseAsync(resourceId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Application.Coordination.LeaseManager.ReleaseAsync*
+  implements:
+  - Meridian.Application.Coordination.ILeaseManager.ReleaseAsync(System.String,System.Threading.CancellationToken)
+  nameWithType.vb: LeaseManager.ReleaseAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.LeaseManager.ReleaseAsync(String, System.Threading.CancellationToken)
+  name.vb: ReleaseAsync(String, CancellationToken)
+- uid: Meridian.Application.Coordination.LeaseManager.HoldsLease(System.String)
+  commentId: M:Meridian.Application.Coordination.LeaseManager.HoldsLease(System.String)
+  id: HoldsLease(System.String)
+  parent: Meridian.Application.Coordination.LeaseManager
+  langs:
+  - csharp
+  - vb
+  name: HoldsLease(string)
+  nameWithType: LeaseManager.HoldsLease(string)
+  fullName: Meridian.Application.Coordination.LeaseManager.HoldsLease(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HoldsLease
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public bool HoldsLease(string resourceId)
+    parameters:
+    - id: resourceId
+      type: System.String
+    return:
+      type: System.Boolean
+    content.vb: Public Function HoldsLease(resourceId As String) As Boolean
+  overload: Meridian.Application.Coordination.LeaseManager.HoldsLease*
+  implements:
+  - Meridian.Application.Coordination.ILeaseManager.HoldsLease(System.String)
+  nameWithType.vb: LeaseManager.HoldsLease(String)
+  fullName.vb: Meridian.Application.Coordination.LeaseManager.HoldsLease(String)
+  name.vb: HoldsLease(String)
+- uid: Meridian.Application.Coordination.LeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.LeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+  id: GetSnapshotAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.LeaseManager
+  langs:
+  - csharp
+  - vb
+  name: GetSnapshotAsync(CancellationToken)
+  nameWithType: LeaseManager.GetSnapshotAsync(CancellationToken)
+  fullName: Meridian.Application.Coordination.LeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSnapshotAsync
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 116
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  example: []
+  syntax:
+    content: public Task<CoordinationSnapshot> GetSnapshotAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Coordination.CoordinationSnapshot}
+    content.vb: Public Function GetSnapshotAsync(ct As CancellationToken = Nothing) As Task(Of CoordinationSnapshot)
+  overload: Meridian.Application.Coordination.LeaseManager.GetSnapshotAsync*
+  implements:
+  - Meridian.Application.Coordination.ILeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+- uid: Meridian.Application.Coordination.LeaseManager.DisposeAsync
+  commentId: M:Meridian.Application.Coordination.LeaseManager.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Application.Coordination.LeaseManager
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: LeaseManager.DisposeAsync()
+  fullName: Meridian.Application.Coordination.LeaseManager.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Coordination/LeaseManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Application/Coordination/LeaseManager.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Coordination
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Application.Coordination.LeaseManager.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Application.Coordination
+  commentId: N:Meridian.Application.Coordination
+  href: Meridian.html
+  name: Meridian.Application.Coordination
+  nameWithType: Meridian.Application.Coordination
+  fullName: Meridian.Application.Coordination
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Coordination
+    name: Coordination
+    href: Meridian.Application.Coordination.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Coordination.ILeaseManager
+  commentId: T:Meridian.Application.Coordination.ILeaseManager
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.ILeaseManager.html
+  name: ILeaseManager
+  nameWithType: ILeaseManager
+  fullName: Meridian.Application.Coordination.ILeaseManager
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Coordination.LeaseManager.#ctor*
+  commentId: Overload:Meridian.Application.Coordination.LeaseManager.#ctor
+  href: Meridian.Application.Coordination.LeaseManager.html#Meridian_Application_Coordination_LeaseManager__ctor_Meridian_Application_Config_CoordinationConfig_Meridian_Application_Coordination_ICoordinationStore_Serilog_ILogger_
+  name: LeaseManager
+  nameWithType: LeaseManager.LeaseManager
+  fullName: Meridian.Application.Coordination.LeaseManager.LeaseManager
+  nameWithType.vb: LeaseManager.New
+  fullName.vb: Meridian.Application.Coordination.LeaseManager.New
+  name.vb: New
+- uid: Meridian.Application.Config.CoordinationConfig
+  commentId: T:Meridian.Application.Config.CoordinationConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.CoordinationConfig.html
+  name: CoordinationConfig
+  nameWithType: CoordinationConfig
+  fullName: Meridian.Application.Config.CoordinationConfig
+- uid: Meridian.Application.Coordination.ICoordinationStore
+  commentId: T:Meridian.Application.Coordination.ICoordinationStore
+  parent: Meridian.Application.Coordination
+  href: Meridian.Application.Coordination.ICoordinationStore.html
+  name: ICoordinationStore
+  nameWithType: ICoordinationStore
+  fullName: Meridian.Application.Coordination.ICoordinationStore
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Coordination.LeaseManager.Enabled*
+  commentId: Overload:Meridian.Application.Coordination.LeaseManager.Enabled
+  href: Meridian.Application.Coordination.LeaseManager.html#Meridian_Application_Coordination_LeaseManager_Enabled
+  name: Enabled
+  nameWithType: LeaseManager.Enabled
+  fullName: Meridian.Application.Coordination.LeaseManager.Enabled
+- uid: Meridian.Application.Coordination.ILeaseManager.Enabled
+  commentId: P:Meridian.Application.Coordination.ILeaseManager.Enabled
+  parent: Meridian.Application.Coordination.ILeaseManager
+  href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_Enabled
+  name: Enabled
+  nameWithType: ILeaseManager.Enabled
+  fullName: Meridian.Application.Coordination.ILeaseManager.Enabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Coordination.LeaseManager.InstanceId*
+  commentId: Overload:Meridian.Application.Coordination.LeaseManager.InstanceId
+  href: Meridian.Application.Coordination.LeaseManager.html#Meridian_Application_Coordination_LeaseManager_InstanceId
+  name: InstanceId
+  nameWithType: LeaseManager.InstanceId
+  fullName: Meridian.Application.Coordination.LeaseManager.InstanceId
+- uid: Meridian.Application.Coordination.ILeaseManager.InstanceId
+  commentId: P:Meridian.Application.Coordination.ILeaseManager.InstanceId
+  parent: Meridian.Application.Coordination.ILeaseManager
+  href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_InstanceId
+  name: InstanceId
+  nameWithType: ILeaseManager.InstanceId
+  fullName: Meridian.Application.Coordination.ILeaseManager.InstanceId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Coordination.LeaseManager.TryAcquireAsync*
+  commentId: Overload:Meridian.Application.Coordination.LeaseManager.TryAcquireAsync
+  href: Meridian.Application.Coordination.LeaseManager.html#Meridian_Application_Coordination_LeaseManager_TryAcquireAsync_System_String_System_Threading_CancellationToken_
+  name: TryAcquireAsync
+  nameWithType: LeaseManager.TryAcquireAsync
+  fullName: Meridian.Application.Coordination.LeaseManager.TryAcquireAsync
+- uid: Meridian.Application.Coordination.ILeaseManager.TryAcquireAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ILeaseManager.TryAcquireAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ILeaseManager
+  isExternal: true
+  href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_TryAcquireAsync_System_String_System_Threading_CancellationToken_
+  name: TryAcquireAsync(string, CancellationToken)
+  nameWithType: ILeaseManager.TryAcquireAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.ILeaseManager.TryAcquireAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: ILeaseManager.TryAcquireAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.ILeaseManager.TryAcquireAsync(String, System.Threading.CancellationToken)
+  name.vb: TryAcquireAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.ILeaseManager.TryAcquireAsync(System.String,System.Threading.CancellationToken)
+    name: TryAcquireAsync
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_TryAcquireAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.ILeaseManager.TryAcquireAsync(System.String,System.Threading.CancellationToken)
+    name: TryAcquireAsync
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_TryAcquireAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Coordination.LeaseAcquireResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<LeaseAcquireResult>
+  nameWithType: Task<LeaseAcquireResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Coordination.LeaseAcquireResult>
+  nameWithType.vb: Task(Of LeaseAcquireResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Coordination.LeaseAcquireResult)
+  name.vb: Task(Of LeaseAcquireResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Coordination.LeaseAcquireResult
+    name: LeaseAcquireResult
+    href: Meridian.Application.Coordination.LeaseAcquireResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Coordination.LeaseAcquireResult
+    name: LeaseAcquireResult
+    href: Meridian.Application.Coordination.LeaseAcquireResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Coordination.LeaseManager.RenewAsync*
+  commentId: Overload:Meridian.Application.Coordination.LeaseManager.RenewAsync
+  href: Meridian.Application.Coordination.LeaseManager.html#Meridian_Application_Coordination_LeaseManager_RenewAsync_System_String_System_Threading_CancellationToken_
+  name: RenewAsync
+  nameWithType: LeaseManager.RenewAsync
+  fullName: Meridian.Application.Coordination.LeaseManager.RenewAsync
+- uid: Meridian.Application.Coordination.ILeaseManager.RenewAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ILeaseManager.RenewAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ILeaseManager
+  isExternal: true
+  href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_RenewAsync_System_String_System_Threading_CancellationToken_
+  name: RenewAsync(string, CancellationToken)
+  nameWithType: ILeaseManager.RenewAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.ILeaseManager.RenewAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: ILeaseManager.RenewAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.ILeaseManager.RenewAsync(String, System.Threading.CancellationToken)
+  name.vb: RenewAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.ILeaseManager.RenewAsync(System.String,System.Threading.CancellationToken)
+    name: RenewAsync
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_RenewAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.ILeaseManager.RenewAsync(System.String,System.Threading.CancellationToken)
+    name: RenewAsync
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_RenewAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Application.Coordination.LeaseManager.ReleaseAsync*
+  commentId: Overload:Meridian.Application.Coordination.LeaseManager.ReleaseAsync
+  href: Meridian.Application.Coordination.LeaseManager.html#Meridian_Application_Coordination_LeaseManager_ReleaseAsync_System_String_System_Threading_CancellationToken_
+  name: ReleaseAsync
+  nameWithType: LeaseManager.ReleaseAsync
+  fullName: Meridian.Application.Coordination.LeaseManager.ReleaseAsync
+- uid: Meridian.Application.Coordination.ILeaseManager.ReleaseAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ILeaseManager.ReleaseAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ILeaseManager
+  isExternal: true
+  href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_ReleaseAsync_System_String_System_Threading_CancellationToken_
+  name: ReleaseAsync(string, CancellationToken)
+  nameWithType: ILeaseManager.ReleaseAsync(string, CancellationToken)
+  fullName: Meridian.Application.Coordination.ILeaseManager.ReleaseAsync(string, System.Threading.CancellationToken)
+  nameWithType.vb: ILeaseManager.ReleaseAsync(String, CancellationToken)
+  fullName.vb: Meridian.Application.Coordination.ILeaseManager.ReleaseAsync(String, System.Threading.CancellationToken)
+  name.vb: ReleaseAsync(String, CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.ILeaseManager.ReleaseAsync(System.String,System.Threading.CancellationToken)
+    name: ReleaseAsync
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_ReleaseAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.ILeaseManager.ReleaseAsync(System.String,System.Threading.CancellationToken)
+    name: ReleaseAsync
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_ReleaseAsync_System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Application.Coordination.LeaseManager.HoldsLease*
+  commentId: Overload:Meridian.Application.Coordination.LeaseManager.HoldsLease
+  href: Meridian.Application.Coordination.LeaseManager.html#Meridian_Application_Coordination_LeaseManager_HoldsLease_System_String_
+  name: HoldsLease
+  nameWithType: LeaseManager.HoldsLease
+  fullName: Meridian.Application.Coordination.LeaseManager.HoldsLease
+- uid: Meridian.Application.Coordination.ILeaseManager.HoldsLease(System.String)
+  commentId: M:Meridian.Application.Coordination.ILeaseManager.HoldsLease(System.String)
+  parent: Meridian.Application.Coordination.ILeaseManager
+  isExternal: true
+  href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_HoldsLease_System_String_
+  name: HoldsLease(string)
+  nameWithType: ILeaseManager.HoldsLease(string)
+  fullName: Meridian.Application.Coordination.ILeaseManager.HoldsLease(string)
+  nameWithType.vb: ILeaseManager.HoldsLease(String)
+  fullName.vb: Meridian.Application.Coordination.ILeaseManager.HoldsLease(String)
+  name.vb: HoldsLease(String)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.ILeaseManager.HoldsLease(System.String)
+    name: HoldsLease
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_HoldsLease_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.ILeaseManager.HoldsLease(System.String)
+    name: HoldsLease
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_HoldsLease_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Application.Coordination.LeaseManager.GetSnapshotAsync*
+  commentId: Overload:Meridian.Application.Coordination.LeaseManager.GetSnapshotAsync
+  href: Meridian.Application.Coordination.LeaseManager.html#Meridian_Application_Coordination_LeaseManager_GetSnapshotAsync_System_Threading_CancellationToken_
+  name: GetSnapshotAsync
+  nameWithType: LeaseManager.GetSnapshotAsync
+  fullName: Meridian.Application.Coordination.LeaseManager.GetSnapshotAsync
+- uid: Meridian.Application.Coordination.ILeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Coordination.ILeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+  parent: Meridian.Application.Coordination.ILeaseManager
+  isExternal: true
+  href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_GetSnapshotAsync_System_Threading_CancellationToken_
+  name: GetSnapshotAsync(CancellationToken)
+  nameWithType: ILeaseManager.GetSnapshotAsync(CancellationToken)
+  fullName: Meridian.Application.Coordination.ILeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Coordination.ILeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+    name: GetSnapshotAsync
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_GetSnapshotAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Coordination.ILeaseManager.GetSnapshotAsync(System.Threading.CancellationToken)
+    name: GetSnapshotAsync
+    href: Meridian.Application.Coordination.ILeaseManager.html#Meridian_Application_Coordination_ILeaseManager_GetSnapshotAsync_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Application.Coordination.CoordinationSnapshot}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Coordination.CoordinationSnapshot}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CoordinationSnapshot>
+  nameWithType: Task<CoordinationSnapshot>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Coordination.CoordinationSnapshot>
+  nameWithType.vb: Task(Of CoordinationSnapshot)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Coordination.CoordinationSnapshot)
+  name.vb: Task(Of CoordinationSnapshot)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Coordination.CoordinationSnapshot
+    name: CoordinationSnapshot
+    href: Meridian.Application.Coordination.CoordinationSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Coordination.CoordinationSnapshot
+    name: CoordinationSnapshot
+    href: Meridian.Application.Coordination.CoordinationSnapshot.html
+  - name: )
+- uid: Meridian.Application.Coordination.LeaseManager.DisposeAsync*
+  commentId: Overload:Meridian.Application.Coordination.LeaseManager.DisposeAsync
+  href: Meridian.Application.Coordination.LeaseManager.html#Meridian_Application_Coordination_LeaseManager_DisposeAsync
+  name: DisposeAsync
+  nameWithType: LeaseManager.DisposeAsync
+  fullName: Meridian.Application.Coordination.LeaseManager.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

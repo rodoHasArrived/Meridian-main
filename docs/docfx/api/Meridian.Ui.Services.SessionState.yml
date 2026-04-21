@@ -1,0 +1,938 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SessionState
+  commentId: T:Meridian.Ui.Services.SessionState
+  id: SessionState
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SessionState.ActiveFilters
+  - Meridian.Ui.Services.SessionState.ActivePageTag
+  - Meridian.Ui.Services.SessionState.ActiveWorkspaceId
+  - Meridian.Ui.Services.SessionState.OpenPages
+  - Meridian.Ui.Services.SessionState.RecentPages
+  - Meridian.Ui.Services.SessionState.SavedAt
+  - Meridian.Ui.Services.SessionState.WidgetLayout
+  - Meridian.Ui.Services.SessionState.WindowBounds
+  - Meridian.Ui.Services.SessionState.WorkspaceContext
+  - Meridian.Ui.Services.SessionState.WorkstationLayout
+  langs:
+  - csharp
+  - vb
+  name: SessionState
+  nameWithType: SessionState
+  fullName: Meridian.Ui.Services.SessionState
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionState
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 97
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Session state for restore.
+  example: []
+  syntax:
+    content: public sealed class SessionState
+    content.vb: Public NotInheritable Class SessionState
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SessionState.ActivePageTag
+  commentId: P:Meridian.Ui.Services.SessionState.ActivePageTag
+  id: ActivePageTag
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: ActivePageTag
+  nameWithType: SessionState.ActivePageTag
+  fullName: Meridian.Ui.Services.SessionState.ActivePageTag
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActivePageTag
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 99
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string ActivePageTag { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ActivePageTag As String
+  overload: Meridian.Ui.Services.SessionState.ActivePageTag*
+- uid: Meridian.Ui.Services.SessionState.OpenPages
+  commentId: P:Meridian.Ui.Services.SessionState.OpenPages
+  id: OpenPages
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: OpenPages
+  nameWithType: SessionState.OpenPages
+  fullName: Meridian.Ui.Services.SessionState.OpenPages
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenPages
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 100
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<WorkspacePage> OpenPages { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Ui.Services.WorkspacePage}
+    content.vb: Public Property OpenPages As List(Of WorkspacePage)
+  overload: Meridian.Ui.Services.SessionState.OpenPages*
+- uid: Meridian.Ui.Services.SessionState.RecentPages
+  commentId: P:Meridian.Ui.Services.SessionState.RecentPages
+  id: RecentPages
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: RecentPages
+  nameWithType: SessionState.RecentPages
+  fullName: Meridian.Ui.Services.SessionState.RecentPages
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecentPages
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 101
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public List<string> RecentPages { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Public Property RecentPages As List(Of String)
+  overload: Meridian.Ui.Services.SessionState.RecentPages*
+- uid: Meridian.Ui.Services.SessionState.WidgetLayout
+  commentId: P:Meridian.Ui.Services.SessionState.WidgetLayout
+  id: WidgetLayout
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: WidgetLayout
+  nameWithType: SessionState.WidgetLayout
+  fullName: Meridian.Ui.Services.SessionState.WidgetLayout
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WidgetLayout
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 102
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public Dictionary<string, WidgetPosition> WidgetLayout { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,Meridian.Ui.Services.WidgetPosition}
+    content.vb: Public Property WidgetLayout As Dictionary(Of String, WidgetPosition)
+  overload: Meridian.Ui.Services.SessionState.WidgetLayout*
+- uid: Meridian.Ui.Services.SessionState.ActiveFilters
+  commentId: P:Meridian.Ui.Services.SessionState.ActiveFilters
+  id: ActiveFilters
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: ActiveFilters
+  nameWithType: SessionState.ActiveFilters
+  fullName: Meridian.Ui.Services.SessionState.ActiveFilters
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveFilters
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public Dictionary<string, string> ActiveFilters { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Public Property ActiveFilters As Dictionary(Of String, String)
+  overload: Meridian.Ui.Services.SessionState.ActiveFilters*
+- uid: Meridian.Ui.Services.SessionState.WorkspaceContext
+  commentId: P:Meridian.Ui.Services.SessionState.WorkspaceContext
+  id: WorkspaceContext
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: WorkspaceContext
+  nameWithType: SessionState.WorkspaceContext
+  fullName: Meridian.Ui.Services.SessionState.WorkspaceContext
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorkspaceContext
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 104
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public Dictionary<string, string> WorkspaceContext { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Public Property WorkspaceContext As Dictionary(Of String, String)
+  overload: Meridian.Ui.Services.SessionState.WorkspaceContext*
+- uid: Meridian.Ui.Services.SessionState.WindowBounds
+  commentId: P:Meridian.Ui.Services.SessionState.WindowBounds
+  id: WindowBounds
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: WindowBounds
+  nameWithType: SessionState.WindowBounds
+  fullName: Meridian.Ui.Services.SessionState.WindowBounds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WindowBounds
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 105
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public WindowBounds? WindowBounds { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.WindowBounds
+    content.vb: Public Property WindowBounds As WindowBounds
+  overload: Meridian.Ui.Services.SessionState.WindowBounds*
+- uid: Meridian.Ui.Services.SessionState.SavedAt
+  commentId: P:Meridian.Ui.Services.SessionState.SavedAt
+  id: SavedAt
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: SavedAt
+  nameWithType: SessionState.SavedAt
+  fullName: Meridian.Ui.Services.SessionState.SavedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SavedAt
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateTime SavedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property SavedAt As Date
+  overload: Meridian.Ui.Services.SessionState.SavedAt*
+- uid: Meridian.Ui.Services.SessionState.ActiveWorkspaceId
+  commentId: P:Meridian.Ui.Services.SessionState.ActiveWorkspaceId
+  id: ActiveWorkspaceId
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: ActiveWorkspaceId
+  nameWithType: SessionState.ActiveWorkspaceId
+  fullName: Meridian.Ui.Services.SessionState.ActiveWorkspaceId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActiveWorkspaceId
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 107
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string? ActiveWorkspaceId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ActiveWorkspaceId As String
+  overload: Meridian.Ui.Services.SessionState.ActiveWorkspaceId*
+- uid: Meridian.Ui.Services.SessionState.WorkstationLayout
+  commentId: P:Meridian.Ui.Services.SessionState.WorkstationLayout
+  id: WorkstationLayout
+  parent: Meridian.Ui.Services.SessionState
+  langs:
+  - csharp
+  - vb
+  name: WorkstationLayout
+  nameWithType: SessionState.WorkstationLayout
+  fullName: Meridian.Ui.Services.SessionState.WorkstationLayout
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WorkstationLayout
+    path: ../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public WorkstationLayoutState? WorkstationLayout { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.WorkstationLayoutState
+    content.vb: Public Property WorkstationLayout As WorkstationLayoutState
+  overload: Meridian.Ui.Services.SessionState.WorkstationLayout*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SessionState.ActivePageTag*
+  commentId: Overload:Meridian.Ui.Services.SessionState.ActivePageTag
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_ActivePageTag
+  name: ActivePageTag
+  nameWithType: SessionState.ActivePageTag
+  fullName: Meridian.Ui.Services.SessionState.ActivePageTag
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.SessionState.OpenPages*
+  commentId: Overload:Meridian.Ui.Services.SessionState.OpenPages
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_OpenPages
+  name: OpenPages
+  nameWithType: SessionState.OpenPages
+  fullName: Meridian.Ui.Services.SessionState.OpenPages
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.WorkspacePage}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.WorkspacePage}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<WorkspacePage>
+  nameWithType: List<WorkspacePage>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.WorkspacePage>
+  nameWithType.vb: List(Of WorkspacePage)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.WorkspacePage)
+  name.vb: List(Of WorkspacePage)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.WorkspacePage
+    name: WorkspacePage
+    href: Meridian.Ui.Services.WorkspacePage.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.WorkspacePage
+    name: WorkspacePage
+    href: Meridian.Ui.Services.WorkspacePage.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.SessionState.RecentPages*
+  commentId: Overload:Meridian.Ui.Services.SessionState.RecentPages
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_RecentPages
+  name: RecentPages
+  nameWithType: SessionState.RecentPages
+  fullName: Meridian.Ui.Services.SessionState.RecentPages
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Ui.Services.SessionState.WidgetLayout*
+  commentId: Overload:Meridian.Ui.Services.SessionState.WidgetLayout
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_WidgetLayout
+  name: WidgetLayout
+  nameWithType: SessionState.WidgetLayout
+  fullName: Meridian.Ui.Services.SessionState.WidgetLayout
+- uid: System.Collections.Generic.Dictionary{System.String,Meridian.Ui.Services.WidgetPosition}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,Meridian.Ui.Services.WidgetPosition}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, WidgetPosition>
+  nameWithType: Dictionary<string, WidgetPosition>
+  fullName: System.Collections.Generic.Dictionary<string, Meridian.Ui.Services.WidgetPosition>
+  nameWithType.vb: Dictionary(Of String, WidgetPosition)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Meridian.Ui.Services.WidgetPosition)
+  name.vb: Dictionary(Of String, WidgetPosition)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ui.Services.WidgetPosition
+    name: WidgetPosition
+    href: Meridian.Ui.Services.WidgetPosition.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ui.Services.WidgetPosition
+    name: WidgetPosition
+    href: Meridian.Ui.Services.WidgetPosition.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Ui.Services.SessionState.ActiveFilters*
+  commentId: Overload:Meridian.Ui.Services.SessionState.ActiveFilters
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_ActiveFilters
+  name: ActiveFilters
+  nameWithType: SessionState.ActiveFilters
+  fullName: Meridian.Ui.Services.SessionState.ActiveFilters
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Ui.Services.SessionState.WorkspaceContext*
+  commentId: Overload:Meridian.Ui.Services.SessionState.WorkspaceContext
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_WorkspaceContext
+  name: WorkspaceContext
+  nameWithType: SessionState.WorkspaceContext
+  fullName: Meridian.Ui.Services.SessionState.WorkspaceContext
+- uid: Meridian.Ui.Services.SessionState.WindowBounds*
+  commentId: Overload:Meridian.Ui.Services.SessionState.WindowBounds
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_WindowBounds
+  name: WindowBounds
+  nameWithType: SessionState.WindowBounds
+  fullName: Meridian.Ui.Services.SessionState.WindowBounds
+- uid: Meridian.Ui.Services.WindowBounds
+  commentId: T:Meridian.Ui.Services.WindowBounds
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.WindowBounds.html
+  name: WindowBounds
+  nameWithType: WindowBounds
+  fullName: Meridian.Ui.Services.WindowBounds
+- uid: Meridian.Ui.Services.SessionState.SavedAt*
+  commentId: Overload:Meridian.Ui.Services.SessionState.SavedAt
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_SavedAt
+  name: SavedAt
+  nameWithType: SessionState.SavedAt
+  fullName: Meridian.Ui.Services.SessionState.SavedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Ui.Services.SessionState.ActiveWorkspaceId*
+  commentId: Overload:Meridian.Ui.Services.SessionState.ActiveWorkspaceId
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_ActiveWorkspaceId
+  name: ActiveWorkspaceId
+  nameWithType: SessionState.ActiveWorkspaceId
+  fullName: Meridian.Ui.Services.SessionState.ActiveWorkspaceId
+- uid: Meridian.Ui.Services.SessionState.WorkstationLayout*
+  commentId: Overload:Meridian.Ui.Services.SessionState.WorkstationLayout
+  href: Meridian.Ui.Services.SessionState.html#Meridian_Ui_Services_SessionState_WorkstationLayout
+  name: WorkstationLayout
+  nameWithType: SessionState.WorkstationLayout
+  fullName: Meridian.Ui.Services.SessionState.WorkstationLayout
+- uid: Meridian.Ui.Services.WorkstationLayoutState
+  commentId: T:Meridian.Ui.Services.WorkstationLayoutState
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.WorkstationLayoutState.html
+  name: WorkstationLayoutState
+  nameWithType: WorkstationLayoutState
+  fullName: Meridian.Ui.Services.WorkstationLayoutState

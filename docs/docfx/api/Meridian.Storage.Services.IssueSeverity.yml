@@ -1,0 +1,147 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.IssueSeverity
+  commentId: T:Meridian.Storage.Services.IssueSeverity
+  id: IssueSeverity
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.IssueSeverity.Critical
+  - Meridian.Storage.Services.IssueSeverity.Info
+  - Meridian.Storage.Services.IssueSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: IssueSeverity
+  nameWithType: IssueSeverity
+  fullName: Meridian.Storage.Services.IssueSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IssueSeverity
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 611
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum IssueSeverity : byte'
+    content.vb: Public Enum IssueSeverity As Byte
+- uid: Meridian.Storage.Services.IssueSeverity.Info
+  commentId: F:Meridian.Storage.Services.IssueSeverity.Info
+  id: Info
+  parent: Meridian.Storage.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: IssueSeverity.Info
+  fullName: Meridian.Storage.Services.IssueSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 611
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Storage.Services.IssueSeverity
+- uid: Meridian.Storage.Services.IssueSeverity.Warning
+  commentId: F:Meridian.Storage.Services.IssueSeverity.Warning
+  id: Warning
+  parent: Meridian.Storage.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: IssueSeverity.Warning
+  fullName: Meridian.Storage.Services.IssueSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 611
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Storage.Services.IssueSeverity
+- uid: Meridian.Storage.Services.IssueSeverity.Critical
+  commentId: F:Meridian.Storage.Services.IssueSeverity.Critical
+  id: Critical
+  parent: Meridian.Storage.Services.IssueSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: IssueSeverity.Critical
+  fullName: Meridian.Storage.Services.IssueSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 611
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: Critical = 2
+    return:
+      type: Meridian.Storage.Services.IssueSeverity
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.IssueSeverity
+  commentId: T:Meridian.Storage.Services.IssueSeverity
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.IssueSeverity.html
+  name: IssueSeverity
+  nameWithType: IssueSeverity
+  fullName: Meridian.Storage.Services.IssueSeverity

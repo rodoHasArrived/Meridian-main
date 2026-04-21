@@ -1,0 +1,683 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  commentId: T:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  id: ManualOverrideCommandRequest
+  parent: Meridian.Ui.Shared.Endpoints
+  children:
+  - Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})
+  - Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ExpiresAt
+  - Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Kind
+  - Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Reason
+  - Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.RunId
+  - Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.StrategyId
+  - Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Symbol
+  langs:
+  - csharp
+  - vb
+  name: ManualOverrideCommandRequest
+  nameWithType: ManualOverrideCommandRequest
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ManualOverrideCommandRequest
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 797
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: Request to create a manual execution override.
+  example: []
+  syntax:
+    content: 'public sealed record ManualOverrideCommandRequest : IEquatable<ManualOverrideCommandRequest>'
+    content.vb: Public NotInheritable Class ManualOverrideCommandRequest Implements IEquatable(Of ManualOverrideCommandRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.#ctor(System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})
+  id: '#ctor(System.String,System.String,System.String,System.String,System.String,System.Nullable{System.DateTimeOffset})'
+  parent: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  langs:
+  - csharp
+  - vb
+  name: ManualOverrideCommandRequest(string, string, string?, string?, string?, DateTimeOffset?)
+  nameWithType: ManualOverrideCommandRequest.ManualOverrideCommandRequest(string, string, string?, string?, string?, DateTimeOffset?)
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ManualOverrideCommandRequest(string, string, string?, string?, string?, System.DateTimeOffset?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 797
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  summary: Request to create a manual execution override.
+  example: []
+  syntax:
+    content: public ManualOverrideCommandRequest(string Kind, string Reason, string? Symbol = null, string? StrategyId = null, string? RunId = null, DateTimeOffset? ExpiresAt = null)
+    parameters:
+    - id: Kind
+      type: System.String
+    - id: Reason
+      type: System.String
+    - id: Symbol
+      type: System.String
+    - id: StrategyId
+      type: System.String
+    - id: RunId
+      type: System.String
+    - id: ExpiresAt
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Sub New(Kind As String, Reason As String, Symbol As String = Nothing, StrategyId As String = Nothing, RunId As String = Nothing, ExpiresAt As DateTimeOffset? = Nothing)
+  overload: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.#ctor*
+  nameWithType.vb: ManualOverrideCommandRequest.New(String, String, String, String, String, DateTimeOffset?)
+  fullName.vb: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.New(String, String, String, String, String, System.DateTimeOffset?)
+  name.vb: New(String, String, String, String, String, DateTimeOffset?)
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Kind
+  commentId: P:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Kind
+  id: Kind
+  parent: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  langs:
+  - csharp
+  - vb
+  name: Kind
+  nameWithType: ManualOverrideCommandRequest.Kind
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Kind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Kind
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 798
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string Kind { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Kind As String
+  overload: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Kind*
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Reason
+  commentId: P:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Reason
+  id: Reason
+  parent: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  langs:
+  - csharp
+  - vb
+  name: Reason
+  nameWithType: ManualOverrideCommandRequest.Reason
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Reason
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reason
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 799
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string Reason { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Reason As String
+  overload: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Reason*
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Symbol
+  commentId: P:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Symbol
+  id: Symbol
+  parent: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: ManualOverrideCommandRequest.Symbol
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 800
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string? Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Symbol*
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.StrategyId
+  commentId: P:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.StrategyId
+  id: StrategyId
+  parent: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  langs:
+  - csharp
+  - vb
+  name: StrategyId
+  nameWithType: ManualOverrideCommandRequest.StrategyId
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.StrategyId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StrategyId
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 801
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string? StrategyId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StrategyId As String
+  overload: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.StrategyId*
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.RunId
+  commentId: P:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.RunId
+  id: RunId
+  parent: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: ManualOverrideCommandRequest.RunId
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 802
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.RunId*
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ExpiresAt
+  commentId: P:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ExpiresAt
+  id: ExpiresAt
+  parent: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+  langs:
+  - csharp
+  - vb
+  name: ExpiresAt
+  nameWithType: ManualOverrideCommandRequest.ExpiresAt
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ExpiresAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+      branch: codex/ci-repair-path
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpiresAt
+    path: ../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs
+    startLine: 803
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Endpoints
+  syntax:
+    content: public DateTimeOffset? ExpiresAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ExpiresAt As DateTimeOffset?
+  overload: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ExpiresAt*
+references:
+- uid: Meridian.Ui.Shared.Endpoints
+  commentId: N:Meridian.Ui.Shared.Endpoints
+  href: Meridian.html
+  name: Meridian.Ui.Shared.Endpoints
+  nameWithType: Meridian.Ui.Shared.Endpoints
+  fullName: Meridian.Ui.Shared.Endpoints
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Endpoints
+    name: Endpoints
+    href: Meridian.Ui.Shared.Endpoints.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest}
+  commentId: T:System.IEquatable{Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ManualOverrideCommandRequest>
+  nameWithType: IEquatable<ManualOverrideCommandRequest>
+  fullName: System.IEquatable<Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest>
+  nameWithType.vb: IEquatable(Of ManualOverrideCommandRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest)
+  name.vb: IEquatable(Of ManualOverrideCommandRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+    name: ManualOverrideCommandRequest
+    href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest
+    name: ManualOverrideCommandRequest
+    href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.#ctor
+  href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ManualOverrideCommandRequest__ctor_System_String_System_String_System_String_System_String_System_String_System_Nullable_System_DateTimeOffset__
+  name: ManualOverrideCommandRequest
+  nameWithType: ManualOverrideCommandRequest.ManualOverrideCommandRequest
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ManualOverrideCommandRequest
+  nameWithType.vb: ManualOverrideCommandRequest.New
+  fullName.vb: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Kind*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Kind
+  href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ManualOverrideCommandRequest_Kind
+  name: Kind
+  nameWithType: ManualOverrideCommandRequest.Kind
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Kind
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Reason*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Reason
+  href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ManualOverrideCommandRequest_Reason
+  name: Reason
+  nameWithType: ManualOverrideCommandRequest.Reason
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Reason
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Symbol*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Symbol
+  href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ManualOverrideCommandRequest_Symbol
+  name: Symbol
+  nameWithType: ManualOverrideCommandRequest.Symbol
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.Symbol
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.StrategyId*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.StrategyId
+  href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ManualOverrideCommandRequest_StrategyId
+  name: StrategyId
+  nameWithType: ManualOverrideCommandRequest.StrategyId
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.StrategyId
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.RunId*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.RunId
+  href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ManualOverrideCommandRequest_RunId
+  name: RunId
+  nameWithType: ManualOverrideCommandRequest.RunId
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.RunId
+- uid: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ExpiresAt*
+  commentId: Overload:Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ExpiresAt
+  href: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.html#Meridian_Ui_Shared_Endpoints_ManualOverrideCommandRequest_ExpiresAt
+  name: ExpiresAt
+  nameWithType: ManualOverrideCommandRequest.ExpiresAt
+  fullName: Meridian.Ui.Shared.Endpoints.ManualOverrideCommandRequest.ExpiresAt

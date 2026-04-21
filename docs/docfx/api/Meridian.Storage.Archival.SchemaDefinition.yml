@@ -1,0 +1,742 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Archival.SchemaDefinition
+  commentId: T:Meridian.Storage.Archival.SchemaDefinition
+  id: SchemaDefinition
+  parent: Meridian.Storage.Archival
+  children:
+  - Meridian.Storage.Archival.SchemaDefinition.DeprecatedAt
+  - Meridian.Storage.Archival.SchemaDefinition.Description
+  - Meridian.Storage.Archival.SchemaDefinition.EventType
+  - Meridian.Storage.Archival.SchemaDefinition.Fields
+  - Meridian.Storage.Archival.SchemaDefinition.IntroducedAt
+  - Meridian.Storage.Archival.SchemaDefinition.Version
+  langs:
+  - csharp
+  - vb
+  name: SchemaDefinition
+  nameWithType: SchemaDefinition
+  fullName: Meridian.Storage.Archival.SchemaDefinition
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SchemaDefinition
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 542
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  summary: Schema definition for an event type.
+  example: []
+  syntax:
+    content: public sealed class SchemaDefinition
+    content.vb: Public NotInheritable Class SchemaDefinition
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Archival.SchemaDefinition.EventType
+  commentId: P:Meridian.Storage.Archival.SchemaDefinition.EventType
+  id: EventType
+  parent: Meridian.Storage.Archival.SchemaDefinition
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: SchemaDefinition.EventType
+  fullName: Meridian.Storage.Archival.SchemaDefinition.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 544
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("eventType")]
+
+      public string EventType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("eventType")>
+
+      Public Property EventType As String
+  overload: Meridian.Storage.Archival.SchemaDefinition.EventType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: eventType
+- uid: Meridian.Storage.Archival.SchemaDefinition.Version
+  commentId: P:Meridian.Storage.Archival.SchemaDefinition.Version
+  id: Version
+  parent: Meridian.Storage.Archival.SchemaDefinition
+  langs:
+  - csharp
+  - vb
+  name: Version
+  nameWithType: SchemaDefinition.Version
+  fullName: Meridian.Storage.Archival.SchemaDefinition.Version
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Version
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 547
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("version")]
+
+      public string Version { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("version")>
+
+      Public Property Version As String
+  overload: Meridian.Storage.Archival.SchemaDefinition.Version*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: version
+- uid: Meridian.Storage.Archival.SchemaDefinition.Description
+  commentId: P:Meridian.Storage.Archival.SchemaDefinition.Description
+  id: Description
+  parent: Meridian.Storage.Archival.SchemaDefinition
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: SchemaDefinition.Description
+  fullName: Meridian.Storage.Archival.SchemaDefinition.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 550
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("description")]
+
+      public string? Description { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("description")>
+
+      Public Property Description As String
+  overload: Meridian.Storage.Archival.SchemaDefinition.Description*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: description
+- uid: Meridian.Storage.Archival.SchemaDefinition.IntroducedAt
+  commentId: P:Meridian.Storage.Archival.SchemaDefinition.IntroducedAt
+  id: IntroducedAt
+  parent: Meridian.Storage.Archival.SchemaDefinition
+  langs:
+  - csharp
+  - vb
+  name: IntroducedAt
+  nameWithType: SchemaDefinition.IntroducedAt
+  fullName: Meridian.Storage.Archival.SchemaDefinition.IntroducedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IntroducedAt
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 553
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("introducedAt")]
+
+      public DateTime IntroducedAt { get; set; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("introducedAt")>
+
+      Public Property IntroducedAt As Date
+  overload: Meridian.Storage.Archival.SchemaDefinition.IntroducedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: introducedAt
+- uid: Meridian.Storage.Archival.SchemaDefinition.DeprecatedAt
+  commentId: P:Meridian.Storage.Archival.SchemaDefinition.DeprecatedAt
+  id: DeprecatedAt
+  parent: Meridian.Storage.Archival.SchemaDefinition
+  langs:
+  - csharp
+  - vb
+  name: DeprecatedAt
+  nameWithType: SchemaDefinition.DeprecatedAt
+  fullName: Meridian.Storage.Archival.SchemaDefinition.DeprecatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeprecatedAt
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 556
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("deprecatedAt")]
+
+      public DateTime? DeprecatedAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTime}
+    content.vb: >-
+      <JsonPropertyName("deprecatedAt")>
+
+      Public Property DeprecatedAt As Date?
+  overload: Meridian.Storage.Archival.SchemaDefinition.DeprecatedAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: deprecatedAt
+- uid: Meridian.Storage.Archival.SchemaDefinition.Fields
+  commentId: P:Meridian.Storage.Archival.SchemaDefinition.Fields
+  id: Fields
+  parent: Meridian.Storage.Archival.SchemaDefinition
+  langs:
+  - csharp
+  - vb
+  name: Fields
+  nameWithType: SchemaDefinition.Fields
+  fullName: Meridian.Storage.Archival.SchemaDefinition.Fields
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Archival/SchemaVersionManager.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Fields
+    path: ../../src/Meridian.Storage/Archival/SchemaVersionManager.cs
+    startLine: 559
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Archival
+  syntax:
+    content: >-
+      [JsonPropertyName("fields")]
+
+      public List<SchemaField> Fields { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{Meridian.Storage.Archival.SchemaField}
+    content.vb: >-
+      <JsonPropertyName("fields")>
+
+      Public Property Fields As List(Of SchemaField)
+  overload: Meridian.Storage.Archival.SchemaDefinition.Fields*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fields
+references:
+- uid: Meridian.Storage.Archival
+  commentId: N:Meridian.Storage.Archival
+  href: Meridian.html
+  name: Meridian.Storage.Archival
+  nameWithType: Meridian.Storage.Archival
+  fullName: Meridian.Storage.Archival
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Archival
+    name: Archival
+    href: Meridian.Storage.Archival.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Archival.SchemaDefinition.EventType*
+  commentId: Overload:Meridian.Storage.Archival.SchemaDefinition.EventType
+  href: Meridian.Storage.Archival.SchemaDefinition.html#Meridian_Storage_Archival_SchemaDefinition_EventType
+  name: EventType
+  nameWithType: SchemaDefinition.EventType
+  fullName: Meridian.Storage.Archival.SchemaDefinition.EventType
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Archival.SchemaDefinition.Version*
+  commentId: Overload:Meridian.Storage.Archival.SchemaDefinition.Version
+  href: Meridian.Storage.Archival.SchemaDefinition.html#Meridian_Storage_Archival_SchemaDefinition_Version
+  name: Version
+  nameWithType: SchemaDefinition.Version
+  fullName: Meridian.Storage.Archival.SchemaDefinition.Version
+- uid: Meridian.Storage.Archival.SchemaDefinition.Description*
+  commentId: Overload:Meridian.Storage.Archival.SchemaDefinition.Description
+  href: Meridian.Storage.Archival.SchemaDefinition.html#Meridian_Storage_Archival_SchemaDefinition_Description
+  name: Description
+  nameWithType: SchemaDefinition.Description
+  fullName: Meridian.Storage.Archival.SchemaDefinition.Description
+- uid: Meridian.Storage.Archival.SchemaDefinition.IntroducedAt*
+  commentId: Overload:Meridian.Storage.Archival.SchemaDefinition.IntroducedAt
+  href: Meridian.Storage.Archival.SchemaDefinition.html#Meridian_Storage_Archival_SchemaDefinition_IntroducedAt
+  name: IntroducedAt
+  nameWithType: SchemaDefinition.IntroducedAt
+  fullName: Meridian.Storage.Archival.SchemaDefinition.IntroducedAt
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: Meridian.Storage.Archival.SchemaDefinition.DeprecatedAt*
+  commentId: Overload:Meridian.Storage.Archival.SchemaDefinition.DeprecatedAt
+  href: Meridian.Storage.Archival.SchemaDefinition.html#Meridian_Storage_Archival_SchemaDefinition_DeprecatedAt
+  name: DeprecatedAt
+  nameWithType: SchemaDefinition.DeprecatedAt
+  fullName: Meridian.Storage.Archival.SchemaDefinition.DeprecatedAt
+- uid: System.Nullable{System.DateTime}
+  commentId: T:System.Nullable{System.DateTime}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime?
+  nameWithType: DateTime?
+  fullName: System.DateTime?
+  nameWithType.vb: Date?
+  fullName.vb: Date?
+  name.vb: Date?
+  spec.csharp:
+  - uid: System.DateTime
+    name: DateTime
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTime
+    name: Date
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetime
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Archival.SchemaDefinition.Fields*
+  commentId: Overload:Meridian.Storage.Archival.SchemaDefinition.Fields
+  href: Meridian.Storage.Archival.SchemaDefinition.html#Meridian_Storage_Archival_SchemaDefinition_Fields
+  name: Fields
+  nameWithType: SchemaDefinition.Fields
+  fullName: Meridian.Storage.Archival.SchemaDefinition.Fields
+- uid: System.Collections.Generic.List{Meridian.Storage.Archival.SchemaField}
+  commentId: T:System.Collections.Generic.List{Meridian.Storage.Archival.SchemaField}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<SchemaField>
+  nameWithType: List<SchemaField>
+  fullName: System.Collections.Generic.List<Meridian.Storage.Archival.SchemaField>
+  nameWithType.vb: List(Of SchemaField)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Storage.Archival.SchemaField)
+  name.vb: List(Of SchemaField)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Storage.Archival.SchemaField
+    name: SchemaField
+    href: Meridian.Storage.Archival.SchemaField.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Archival.SchemaField
+    name: SchemaField
+    href: Meridian.Storage.Archival.SchemaField.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

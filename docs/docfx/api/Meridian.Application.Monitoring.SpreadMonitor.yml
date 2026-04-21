@@ -1,0 +1,905 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.SpreadMonitor
+  commentId: T:Meridian.Application.Monitoring.SpreadMonitor
+  id: SpreadMonitor
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.SpreadMonitor.#ctor(Meridian.Application.Monitoring.SpreadMonitorConfig)
+  - Meridian.Application.Monitoring.SpreadMonitor.Dispose
+  - Meridian.Application.Monitoring.SpreadMonitor.GetAllSpreadSnapshots
+  - Meridian.Application.Monitoring.SpreadMonitor.GetSpreadSnapshot(System.String)
+  - Meridian.Application.Monitoring.SpreadMonitor.GetStats
+  - Meridian.Application.Monitoring.SpreadMonitor.OnWideSpread
+  - Meridian.Application.Monitoring.SpreadMonitor.ProcessQuote(System.String,System.Decimal,System.Decimal,System.String)
+  - Meridian.Application.Monitoring.SpreadMonitor.TotalWideSpreadEvents
+  langs:
+  - csharp
+  - vb
+  name: SpreadMonitor
+  nameWithType: SpreadMonitor
+  fullName: Meridian.Application.Monitoring.SpreadMonitor
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpreadMonitor
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: >-
+    Monitors bid-ask spreads and alerts on abnormally wide spreads.
+
+    Part of the data quality framework (QW-7) to detect liquidity
+
+    issues, stale quotes, or data quality problems.
+  remarks: >-
+    Tracks spread statistics per symbol and fires alerts when spreads
+
+    exceed configurable thresholds (absolute or relative to price).
+  example: []
+  syntax:
+    content: 'public sealed class SpreadMonitor : IDisposable'
+    content.vb: Public NotInheritable Class SpreadMonitor Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.SpreadMonitor.OnWideSpread
+  commentId: E:Meridian.Application.Monitoring.SpreadMonitor.OnWideSpread
+  id: OnWideSpread
+  parent: Meridian.Application.Monitoring.SpreadMonitor
+  langs:
+  - csharp
+  - vb
+  name: OnWideSpread
+  nameWithType: SpreadMonitor.OnWideSpread
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.OnWideSpread
+  type: Event
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OnWideSpread
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Event raised when a wide spread is detected.
+  example: []
+  syntax:
+    content: public event Action<WideSpreadAlert>? OnWideSpread
+    return:
+      type: System.Action{Meridian.Application.Monitoring.WideSpreadAlert}
+    content.vb: Public Event OnWideSpread As Action(Of WideSpreadAlert)
+- uid: Meridian.Application.Monitoring.SpreadMonitor.#ctor(Meridian.Application.Monitoring.SpreadMonitorConfig)
+  commentId: M:Meridian.Application.Monitoring.SpreadMonitor.#ctor(Meridian.Application.Monitoring.SpreadMonitorConfig)
+  id: '#ctor(Meridian.Application.Monitoring.SpreadMonitorConfig)'
+  parent: Meridian.Application.Monitoring.SpreadMonitor
+  langs:
+  - csharp
+  - vb
+  name: SpreadMonitor(SpreadMonitorConfig?)
+  nameWithType: SpreadMonitor.SpreadMonitor(SpreadMonitorConfig?)
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.SpreadMonitor(Meridian.Application.Monitoring.SpreadMonitorConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public SpreadMonitor(SpreadMonitorConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.SpreadMonitorConfig
+    content.vb: Public Sub New(config As SpreadMonitorConfig = Nothing)
+  overload: Meridian.Application.Monitoring.SpreadMonitor.#ctor*
+  nameWithType.vb: SpreadMonitor.New(SpreadMonitorConfig)
+  fullName.vb: Meridian.Application.Monitoring.SpreadMonitor.New(Meridian.Application.Monitoring.SpreadMonitorConfig)
+  name.vb: New(SpreadMonitorConfig)
+- uid: Meridian.Application.Monitoring.SpreadMonitor.ProcessQuote(System.String,System.Decimal,System.Decimal,System.String)
+  commentId: M:Meridian.Application.Monitoring.SpreadMonitor.ProcessQuote(System.String,System.Decimal,System.Decimal,System.String)
+  id: ProcessQuote(System.String,System.Decimal,System.Decimal,System.String)
+  parent: Meridian.Application.Monitoring.SpreadMonitor
+  langs:
+  - csharp
+  - vb
+  name: ProcessQuote(string, decimal, decimal, string?)
+  nameWithType: SpreadMonitor.ProcessQuote(string, decimal, decimal, string?)
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.ProcessQuote(string, decimal, decimal, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessQuote
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Processes a quote and monitors the spread.
+  example: []
+  syntax:
+    content: public bool ProcessQuote(string symbol, decimal bidPrice, decimal askPrice, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: The symbol ticker.
+    - id: bidPrice
+      type: System.Decimal
+      description: The bid price.
+    - id: askPrice
+      type: System.Decimal
+      description: The ask price.
+    - id: provider
+      type: System.String
+      description: The data provider (optional).
+    return:
+      type: System.Boolean
+      description: True if a wide spread was detected.
+    content.vb: Public Function ProcessQuote(symbol As String, bidPrice As Decimal, askPrice As Decimal, provider As String = Nothing) As Boolean
+  overload: Meridian.Application.Monitoring.SpreadMonitor.ProcessQuote*
+  nameWithType.vb: SpreadMonitor.ProcessQuote(String, Decimal, Decimal, String)
+  fullName.vb: Meridian.Application.Monitoring.SpreadMonitor.ProcessQuote(String, Decimal, Decimal, String)
+  name.vb: ProcessQuote(String, Decimal, Decimal, String)
+- uid: Meridian.Application.Monitoring.SpreadMonitor.GetSpreadSnapshot(System.String)
+  commentId: M:Meridian.Application.Monitoring.SpreadMonitor.GetSpreadSnapshot(System.String)
+  id: GetSpreadSnapshot(System.String)
+  parent: Meridian.Application.Monitoring.SpreadMonitor
+  langs:
+  - csharp
+  - vb
+  name: GetSpreadSnapshot(string)
+  nameWithType: SpreadMonitor.GetSpreadSnapshot(string)
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.GetSpreadSnapshot(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSpreadSnapshot
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 144
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the current spread statistics for a symbol.
+  example: []
+  syntax:
+    content: public SpreadSnapshot? GetSpreadSnapshot(string symbol)
+    parameters:
+    - id: symbol
+      type: System.String
+    return:
+      type: System.Nullable{Meridian.Application.Monitoring.SpreadSnapshot}
+    content.vb: Public Function GetSpreadSnapshot(symbol As String) As SpreadSnapshot?
+  overload: Meridian.Application.Monitoring.SpreadMonitor.GetSpreadSnapshot*
+  nameWithType.vb: SpreadMonitor.GetSpreadSnapshot(String)
+  fullName.vb: Meridian.Application.Monitoring.SpreadMonitor.GetSpreadSnapshot(String)
+  name.vb: GetSpreadSnapshot(String)
+- uid: Meridian.Application.Monitoring.SpreadMonitor.GetAllSpreadSnapshots
+  commentId: M:Meridian.Application.Monitoring.SpreadMonitor.GetAllSpreadSnapshots
+  id: GetAllSpreadSnapshots
+  parent: Meridian.Application.Monitoring.SpreadMonitor
+  langs:
+  - csharp
+  - vb
+  name: GetAllSpreadSnapshots()
+  nameWithType: SpreadMonitor.GetAllSpreadSnapshots()
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.GetAllSpreadSnapshots()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllSpreadSnapshots
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 164
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets spread snapshots for all tracked symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SpreadSnapshot> GetAllSpreadSnapshots()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.SpreadSnapshot}
+    content.vb: Public Function GetAllSpreadSnapshots() As IReadOnlyList(Of SpreadSnapshot)
+  overload: Meridian.Application.Monitoring.SpreadMonitor.GetAllSpreadSnapshots*
+- uid: Meridian.Application.Monitoring.SpreadMonitor.GetStats
+  commentId: M:Meridian.Application.Monitoring.SpreadMonitor.GetStats
+  id: GetStats
+  parent: Meridian.Application.Monitoring.SpreadMonitor
+  langs:
+  - csharp
+  - vb
+  name: GetStats()
+  nameWithType: SpreadMonitor.GetStats()
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.GetStats()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStats
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 181
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets statistics about spread monitoring.
+  example: []
+  syntax:
+    content: public SpreadMonitorStats GetStats()
+    return:
+      type: Meridian.Application.Monitoring.SpreadMonitorStats
+    content.vb: Public Function GetStats() As SpreadMonitorStats
+  overload: Meridian.Application.Monitoring.SpreadMonitor.GetStats*
+- uid: Meridian.Application.Monitoring.SpreadMonitor.TotalWideSpreadEvents
+  commentId: P:Meridian.Application.Monitoring.SpreadMonitor.TotalWideSpreadEvents
+  id: TotalWideSpreadEvents
+  parent: Meridian.Application.Monitoring.SpreadMonitor
+  langs:
+  - csharp
+  - vb
+  name: TotalWideSpreadEvents
+  nameWithType: SpreadMonitor.TotalWideSpreadEvents
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.TotalWideSpreadEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalWideSpreadEvents
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Gets the total count of wide spread events detected.
+  example: []
+  syntax:
+    content: public long TotalWideSpreadEvents { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property TotalWideSpreadEvents As Long
+  overload: Meridian.Application.Monitoring.SpreadMonitor.TotalWideSpreadEvents*
+- uid: Meridian.Application.Monitoring.SpreadMonitor.Dispose
+  commentId: M:Meridian.Application.Monitoring.SpreadMonitor.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.SpreadMonitor
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: SpreadMonitor.Dispose()
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/SpreadMonitor.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/SpreadMonitor.cs
+    startLine: 236
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.SpreadMonitor.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Action{Meridian.Application.Monitoring.WideSpreadAlert}
+  commentId: T:System.Action{Meridian.Application.Monitoring.WideSpreadAlert}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<WideSpreadAlert>
+  nameWithType: Action<WideSpreadAlert>
+  fullName: System.Action<Meridian.Application.Monitoring.WideSpreadAlert>
+  nameWithType.vb: Action(Of WideSpreadAlert)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.WideSpreadAlert)
+  name.vb: Action(Of WideSpreadAlert)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.WideSpreadAlert
+    name: WideSpreadAlert
+    href: Meridian.Application.Monitoring.WideSpreadAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.WideSpreadAlert
+    name: WideSpreadAlert
+    href: Meridian.Application.Monitoring.WideSpreadAlert.html
+  - name: )
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.SpreadMonitor.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadMonitor.#ctor
+  href: Meridian.Application.Monitoring.SpreadMonitor.html#Meridian_Application_Monitoring_SpreadMonitor__ctor_Meridian_Application_Monitoring_SpreadMonitorConfig_
+  name: SpreadMonitor
+  nameWithType: SpreadMonitor.SpreadMonitor
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.SpreadMonitor
+  nameWithType.vb: SpreadMonitor.New
+  fullName.vb: Meridian.Application.Monitoring.SpreadMonitor.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.SpreadMonitorConfig
+  commentId: T:Meridian.Application.Monitoring.SpreadMonitorConfig
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.SpreadMonitorConfig.html
+  name: SpreadMonitorConfig
+  nameWithType: SpreadMonitorConfig
+  fullName: Meridian.Application.Monitoring.SpreadMonitorConfig
+- uid: Meridian.Application.Monitoring.SpreadMonitor.ProcessQuote*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadMonitor.ProcessQuote
+  href: Meridian.Application.Monitoring.SpreadMonitor.html#Meridian_Application_Monitoring_SpreadMonitor_ProcessQuote_System_String_System_Decimal_System_Decimal_System_String_
+  name: ProcessQuote
+  nameWithType: SpreadMonitor.ProcessQuote
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.ProcessQuote
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Monitoring.SpreadMonitor.GetSpreadSnapshot*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadMonitor.GetSpreadSnapshot
+  href: Meridian.Application.Monitoring.SpreadMonitor.html#Meridian_Application_Monitoring_SpreadMonitor_GetSpreadSnapshot_System_String_
+  name: GetSpreadSnapshot
+  nameWithType: SpreadMonitor.GetSpreadSnapshot
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.GetSpreadSnapshot
+- uid: System.Nullable{Meridian.Application.Monitoring.SpreadSnapshot}
+  commentId: T:System.Nullable{Meridian.Application.Monitoring.SpreadSnapshot}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Application.Monitoring.SpreadSnapshot.html
+  name: SpreadSnapshot?
+  nameWithType: SpreadSnapshot?
+  fullName: Meridian.Application.Monitoring.SpreadSnapshot?
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.SpreadSnapshot
+    name: SpreadSnapshot
+    href: Meridian.Application.Monitoring.SpreadSnapshot.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.SpreadSnapshot
+    name: SpreadSnapshot
+    href: Meridian.Application.Monitoring.SpreadSnapshot.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.SpreadMonitor.GetAllSpreadSnapshots*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadMonitor.GetAllSpreadSnapshots
+  href: Meridian.Application.Monitoring.SpreadMonitor.html#Meridian_Application_Monitoring_SpreadMonitor_GetAllSpreadSnapshots
+  name: GetAllSpreadSnapshots
+  nameWithType: SpreadMonitor.GetAllSpreadSnapshots
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.GetAllSpreadSnapshots
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.SpreadSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.SpreadSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SpreadSnapshot>
+  nameWithType: IReadOnlyList<SpreadSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.SpreadSnapshot>
+  nameWithType.vb: IReadOnlyList(Of SpreadSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.SpreadSnapshot)
+  name.vb: IReadOnlyList(Of SpreadSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.SpreadSnapshot
+    name: SpreadSnapshot
+    href: Meridian.Application.Monitoring.SpreadSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.SpreadSnapshot
+    name: SpreadSnapshot
+    href: Meridian.Application.Monitoring.SpreadSnapshot.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.SpreadMonitor.GetStats*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadMonitor.GetStats
+  href: Meridian.Application.Monitoring.SpreadMonitor.html#Meridian_Application_Monitoring_SpreadMonitor_GetStats
+  name: GetStats
+  nameWithType: SpreadMonitor.GetStats
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.GetStats
+- uid: Meridian.Application.Monitoring.SpreadMonitorStats
+  commentId: T:Meridian.Application.Monitoring.SpreadMonitorStats
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.SpreadMonitorStats.html
+  name: SpreadMonitorStats
+  nameWithType: SpreadMonitorStats
+  fullName: Meridian.Application.Monitoring.SpreadMonitorStats
+- uid: Meridian.Application.Monitoring.SpreadMonitor.TotalWideSpreadEvents*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadMonitor.TotalWideSpreadEvents
+  href: Meridian.Application.Monitoring.SpreadMonitor.html#Meridian_Application_Monitoring_SpreadMonitor_TotalWideSpreadEvents
+  name: TotalWideSpreadEvents
+  nameWithType: SpreadMonitor.TotalWideSpreadEvents
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.TotalWideSpreadEvents
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.SpreadMonitor.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.SpreadMonitor.Dispose
+  href: Meridian.Application.Monitoring.SpreadMonitor.html#Meridian_Application_Monitoring_SpreadMonitor_Dispose
+  name: Dispose
+  nameWithType: SpreadMonitor.Dispose
+  fullName: Meridian.Application.Monitoring.SpreadMonitor.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

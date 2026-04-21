@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader
+  commentId: N:Meridian.Infrastructure.CppTrader
+  id: Meridian.Infrastructure.CppTrader
+  children:
+  - Meridian.Infrastructure.CppTrader.CppTraderServiceCollectionExtensions
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.CppTrader
+  nameWithType: Meridian.Infrastructure.CppTrader
+  fullName: Meridian.Infrastructure.CppTrader
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+references:
+- uid: Meridian.Infrastructure.CppTrader.CppTraderServiceCollectionExtensions
+  commentId: T:Meridian.Infrastructure.CppTrader.CppTraderServiceCollectionExtensions
+  href: Meridian.Infrastructure.CppTrader.CppTraderServiceCollectionExtensions.html
+  name: CppTraderServiceCollectionExtensions
+  nameWithType: CppTraderServiceCollectionExtensions
+  fullName: Meridian.Infrastructure.CppTrader.CppTraderServiceCollectionExtensions

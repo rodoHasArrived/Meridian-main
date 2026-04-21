@@ -349,8 +349,11 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
 
             await RefreshQuoteAsync();
         }
-        catch (OperationCanceledException) { }
-        catch (HttpRequestException) { }
+        catch (OperationCanceledException) { /* Cancellation is expected */ }
+        catch (HttpRequestException ex)
+        {
+            _loggingService.LogError("HTTP error refreshing live data", ex);
+        }
         catch (Exception ex)
         {
             _loggingService.LogError("Failed to refresh live data", ex);
@@ -378,9 +381,15 @@ public sealed class LiveDataViewerViewModel : BindableBase, IDisposable
                 UpdateQuoteDisplay();
             }
         }
-        catch (OperationCanceledException) { }
-        catch (HttpRequestException) { }
-        catch (JsonException) { }
+        catch (OperationCanceledException) { /* Cancellation is expected */ }
+        catch (HttpRequestException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LiveDataViewerViewModel] HTTP error refreshing quote: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[LiveDataViewerViewModel] JSON parse error in quote refresh: {ex.Message}");
+        }
     }
 
     // P1: Returns static cached brushes — avoids allocating two SolidColorBrush objects per event.

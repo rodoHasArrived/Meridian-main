@@ -1,0 +1,953 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  commentId: T:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  id: CreateInvestmentPortfolioRequest
+  parent: Meridian.Contracts.FundStructure
+  children:
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String)
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BaseCurrency
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BusinessId
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.ClientId
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Code
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreatedBy
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Description
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EffectiveFrom
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EntityId
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.FundId
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.InvestmentPortfolioId
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Name
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.SleeveId
+  - Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.VehicleId
+  langs:
+  - csharp
+  - vb
+  name: CreateInvestmentPortfolioRequest
+  nameWithType: CreateInvestmentPortfolioRequest
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateInvestmentPortfolioRequest
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: 'public sealed record CreateInvestmentPortfolioRequest : IEquatable<CreateInvestmentPortfolioRequest>'
+    content.vb: Public NotInheritable Class CreateInvestmentPortfolioRequest Implements IEquatable(Of CreateInvestmentPortfolioRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String)
+  commentId: M:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String)
+  id: '#ctor(System.Guid,System.Guid,System.String,System.String,System.String,System.DateTimeOffset,System.String,System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.Nullable{System.Guid},System.String)'
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: CreateInvestmentPortfolioRequest(Guid, Guid, string, string, string, DateTimeOffset, string, Guid?, Guid?, Guid?, Guid?, Guid?, string?)
+  nameWithType: CreateInvestmentPortfolioRequest.CreateInvestmentPortfolioRequest(Guid, Guid, string, string, string, DateTimeOffset, string, Guid?, Guid?, Guid?, Guid?, Guid?, string?)
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreateInvestmentPortfolioRequest(System.Guid, System.Guid, string, string, string, System.DateTimeOffset, string, System.Guid?, System.Guid?, System.Guid?, System.Guid?, System.Guid?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 75
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public CreateInvestmentPortfolioRequest(Guid InvestmentPortfolioId, Guid BusinessId, string Code, string Name, string BaseCurrency, DateTimeOffset EffectiveFrom, string CreatedBy, Guid? ClientId = null, Guid? FundId = null, Guid? SleeveId = null, Guid? VehicleId = null, Guid? EntityId = null, string? Description = null)
+    parameters:
+    - id: InvestmentPortfolioId
+      type: System.Guid
+    - id: BusinessId
+      type: System.Guid
+    - id: Code
+      type: System.String
+    - id: Name
+      type: System.String
+    - id: BaseCurrency
+      type: System.String
+    - id: EffectiveFrom
+      type: System.DateTimeOffset
+    - id: CreatedBy
+      type: System.String
+    - id: ClientId
+      type: System.Nullable{System.Guid}
+    - id: FundId
+      type: System.Nullable{System.Guid}
+    - id: SleeveId
+      type: System.Nullable{System.Guid}
+    - id: VehicleId
+      type: System.Nullable{System.Guid}
+    - id: EntityId
+      type: System.Nullable{System.Guid}
+    - id: Description
+      type: System.String
+    content.vb: Public Sub New(InvestmentPortfolioId As Guid, BusinessId As Guid, Code As String, Name As String, BaseCurrency As String, EffectiveFrom As DateTimeOffset, CreatedBy As String, ClientId As Guid? = Nothing, FundId As Guid? = Nothing, SleeveId As Guid? = Nothing, VehicleId As Guid? = Nothing, EntityId As Guid? = Nothing, Description As String = Nothing)
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.#ctor*
+  nameWithType.vb: CreateInvestmentPortfolioRequest.New(Guid, Guid, String, String, String, DateTimeOffset, String, Guid?, Guid?, Guid?, Guid?, Guid?, String)
+  fullName.vb: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.New(System.Guid, System.Guid, String, String, String, System.DateTimeOffset, String, System.Guid?, System.Guid?, System.Guid?, System.Guid?, System.Guid?, String)
+  name.vb: New(Guid, Guid, String, String, String, DateTimeOffset, String, Guid?, Guid?, Guid?, Guid?, Guid?, String)
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.InvestmentPortfolioId
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.InvestmentPortfolioId
+  id: InvestmentPortfolioId
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: InvestmentPortfolioId
+  nameWithType: CreateInvestmentPortfolioRequest.InvestmentPortfolioId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.InvestmentPortfolioId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InvestmentPortfolioId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 76
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid InvestmentPortfolioId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property InvestmentPortfolioId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.InvestmentPortfolioId*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BusinessId
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BusinessId
+  id: BusinessId
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: BusinessId
+  nameWithType: CreateInvestmentPortfolioRequest.BusinessId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BusinessId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BusinessId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid BusinessId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property BusinessId As Guid
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BusinessId*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Code
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Code
+  id: Code
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: Code
+  nameWithType: CreateInvestmentPortfolioRequest.Code
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Code
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Code
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Code { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Code As String
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Code*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Name
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Name
+  id: Name
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: CreateInvestmentPortfolioRequest.Name
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string Name { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Name As String
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Name*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BaseCurrency
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BaseCurrency
+  id: BaseCurrency
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: BaseCurrency
+  nameWithType: CreateInvestmentPortfolioRequest.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BaseCurrency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BaseCurrency
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 80
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string BaseCurrency { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property BaseCurrency As String
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BaseCurrency*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EffectiveFrom
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EffectiveFrom
+  id: EffectiveFrom
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: EffectiveFrom
+  nameWithType: CreateInvestmentPortfolioRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EffectiveFrom
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EffectiveFrom
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 81
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public DateTimeOffset EffectiveFrom { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property EffectiveFrom As DateTimeOffset
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EffectiveFrom*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreatedBy
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreatedBy
+  id: CreatedBy
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: CreatedBy
+  nameWithType: CreateInvestmentPortfolioRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreatedBy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedBy
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 82
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string CreatedBy { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property CreatedBy As String
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreatedBy*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.ClientId
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.ClientId
+  id: ClientId
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: ClientId
+  nameWithType: CreateInvestmentPortfolioRequest.ClientId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.ClientId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ClientId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 83
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? ClientId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property ClientId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.ClientId*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.FundId
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.FundId
+  id: FundId
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: FundId
+  nameWithType: CreateInvestmentPortfolioRequest.FundId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.FundId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 84
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? FundId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property FundId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.FundId*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.SleeveId
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.SleeveId
+  id: SleeveId
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: SleeveId
+  nameWithType: CreateInvestmentPortfolioRequest.SleeveId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.SleeveId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SleeveId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 85
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? SleeveId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property SleeveId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.SleeveId*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.VehicleId
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.VehicleId
+  id: VehicleId
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: VehicleId
+  nameWithType: CreateInvestmentPortfolioRequest.VehicleId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.VehicleId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VehicleId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 86
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? VehicleId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property VehicleId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.VehicleId*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EntityId
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EntityId
+  id: EntityId
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: EntityId
+  nameWithType: CreateInvestmentPortfolioRequest.EntityId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EntityId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityId
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public Guid? EntityId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property EntityId As Guid?
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EntityId*
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Description
+  commentId: P:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Description
+  id: Description
+  parent: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+  langs:
+  - csharp
+  - vb
+  name: Description
+  nameWithType: CreateInvestmentPortfolioRequest.Description
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Description
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Description
+    path: ../../src/Meridian.Contracts/FundStructure/FundStructureCommands.cs
+    startLine: 88
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.FundStructure
+  syntax:
+    content: public string? Description { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Description As String
+  overload: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Description*
+references:
+- uid: Meridian.Contracts.FundStructure
+  commentId: N:Meridian.Contracts.FundStructure
+  href: Meridian.html
+  name: Meridian.Contracts.FundStructure
+  nameWithType: Meridian.Contracts.FundStructure
+  fullName: Meridian.Contracts.FundStructure
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.FundStructure
+    name: FundStructure
+    href: Meridian.Contracts.FundStructure.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CreateInvestmentPortfolioRequest>
+  nameWithType: IEquatable<CreateInvestmentPortfolioRequest>
+  fullName: System.IEquatable<Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest>
+  nameWithType.vb: IEquatable(Of CreateInvestmentPortfolioRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest)
+  name.vb: IEquatable(Of CreateInvestmentPortfolioRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+    name: CreateInvestmentPortfolioRequest
+    href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest
+    name: CreateInvestmentPortfolioRequest
+    href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.#ctor
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest__ctor_System_Guid_System_Guid_System_String_System_String_System_String_System_DateTimeOffset_System_String_System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_Nullable_System_Guid__System_String_
+  name: CreateInvestmentPortfolioRequest
+  nameWithType: CreateInvestmentPortfolioRequest.CreateInvestmentPortfolioRequest
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreateInvestmentPortfolioRequest
+  nameWithType.vb: CreateInvestmentPortfolioRequest.New
+  fullName.vb: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.InvestmentPortfolioId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.InvestmentPortfolioId
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_InvestmentPortfolioId
+  name: InvestmentPortfolioId
+  nameWithType: CreateInvestmentPortfolioRequest.InvestmentPortfolioId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.InvestmentPortfolioId
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BusinessId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BusinessId
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_BusinessId
+  name: BusinessId
+  nameWithType: CreateInvestmentPortfolioRequest.BusinessId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BusinessId
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Code*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Code
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_Code
+  name: Code
+  nameWithType: CreateInvestmentPortfolioRequest.Code
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Code
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Name*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Name
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_Name
+  name: Name
+  nameWithType: CreateInvestmentPortfolioRequest.Name
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Name
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BaseCurrency*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BaseCurrency
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_BaseCurrency
+  name: BaseCurrency
+  nameWithType: CreateInvestmentPortfolioRequest.BaseCurrency
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.BaseCurrency
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EffectiveFrom*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EffectiveFrom
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_EffectiveFrom
+  name: EffectiveFrom
+  nameWithType: CreateInvestmentPortfolioRequest.EffectiveFrom
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EffectiveFrom
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreatedBy*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreatedBy
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_CreatedBy
+  name: CreatedBy
+  nameWithType: CreateInvestmentPortfolioRequest.CreatedBy
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.CreatedBy
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.ClientId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.ClientId
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_ClientId
+  name: ClientId
+  nameWithType: CreateInvestmentPortfolioRequest.ClientId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.ClientId
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.FundId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.FundId
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_FundId
+  name: FundId
+  nameWithType: CreateInvestmentPortfolioRequest.FundId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.FundId
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.SleeveId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.SleeveId
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_SleeveId
+  name: SleeveId
+  nameWithType: CreateInvestmentPortfolioRequest.SleeveId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.SleeveId
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.VehicleId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.VehicleId
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_VehicleId
+  name: VehicleId
+  nameWithType: CreateInvestmentPortfolioRequest.VehicleId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.VehicleId
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EntityId*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EntityId
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_EntityId
+  name: EntityId
+  nameWithType: CreateInvestmentPortfolioRequest.EntityId
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.EntityId
+- uid: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Description*
+  commentId: Overload:Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Description
+  href: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.html#Meridian_Contracts_FundStructure_CreateInvestmentPortfolioRequest_Description
+  name: Description
+  nameWithType: CreateInvestmentPortfolioRequest.Description
+  fullName: Meridian.Contracts.FundStructure.CreateInvestmentPortfolioRequest.Description

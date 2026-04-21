@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-02T20:52:04Z",
+  "generatedAt": "2026-04-21T20:52:11Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "/home/runner/work/Meridian-main/Meridian-main",
   "subsystems": [
@@ -133,13 +133,11 @@
       "title": "Desktop and UI Workflows",
       "summary": "WPF desktop shell, shared UI services, and browser-facing UI surfaces.",
       "projects": [
-        "Meridian.Ui",
         "Meridian.Ui.Services",
         "Meridian.Ui.Shared",
         "Meridian.Wpf"
       ],
       "projectPaths": [
-        "src/Meridian.Ui",
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
         "src/Meridian.Wpf"
@@ -154,8 +152,6 @@
         "components",
         "contracts",
         "desktop",
-        "frontend",
-        "page",
         "shared state",
         "shared ui",
         "shell",
@@ -163,12 +159,10 @@
         "ui services",
         "viewmodel",
         "viewmodel services",
-        "web",
         "workspace",
         "wpf"
       ],
       "keyContracts": [
-        "src/Meridian.Ui",
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
         "src/Meridian.Wpf/App.xaml.cs",
@@ -177,7 +171,6 @@
       "entrypoints": [
         "src/Meridian.Ui.Services",
         "src/Meridian.Ui.Shared",
-        "src/Meridian.Ui/Program.cs",
         "src/Meridian.Wpf/App.xaml.cs",
         "src/Meridian.Wpf/MainWindow.xaml",
         "src/Meridian.Wpf/ViewModels"
@@ -188,7 +181,7 @@
         "docs/ai/navigation/README.md",
         "docs/plans/trading-workstation-migration-blueprint.md"
       ],
-      "recommendedStart": "Meridian.Ui",
+      "recommendedStart": "Meridian.Ui.Services",
       "docCoverageHint": "high"
     },
     {
@@ -514,7 +507,8 @@
       "projectReferences": [
         "..\\Meridian.Application\\Meridian.Application",
         "..\\Meridian.Backtesting.Sdk\\Meridian.Backtesting.Sdk",
-        "..\\Meridian.Storage\\Meridian.Storage"
+        "..\\Meridian.Storage\\Meridian.Storage",
+        "..\\Meridian.Strategies\\Meridian.Strategies"
       ],
       "relatedDocs": []
     },
@@ -718,6 +712,7 @@
         "src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs"
       ],
       "projectReferences": [
+        "$(ResolvedIbApiProjectPath)",
         "..\\Meridian.Contracts\\Meridian.Contracts",
         "..\\Meridian.Core\\Meridian.Core",
         "..\\Meridian.Domain\\Meridian.Domain",
@@ -987,36 +982,6 @@
         "..\\Meridian.Infrastructure\\Meridian.Infrastructure"
       ],
       "relatedDocs": []
-    },
-    {
-      "name": "Meridian.Ui",
-      "path": "src/Meridian.Ui",
-      "kind": "web-ui",
-      "subsystem": "workstation-ui",
-      "summary": "Web UI surface and browser-facing application experiences.",
-      "commonTasks": [
-        "web ui",
-        "frontend route",
-        "page issue"
-      ],
-      "keywords": [
-        "frontend",
-        "page",
-        "ui",
-        "web"
-      ],
-      "entrypoints": [
-        "src/Meridian.Ui/Program.cs"
-      ],
-      "keyContracts": [
-        "src/Meridian.Ui"
-      ],
-      "projectReferences": [
-        "..\\Meridian.Ui.Shared\\Meridian.Ui.Shared"
-      ],
-      "relatedDocs": [
-        "docs/ai/README.md"
-      ]
     },
     {
       "name": "Meridian.Ui.Services",
@@ -1552,7 +1517,8 @@
       "startProjects": [
         "Meridian.Wpf",
         "Meridian.Ui.Services",
-        "Meridian.Ui.Shared"
+        "Meridian.Ui.Shared",
+        "Meridian"
       ],
       "startSymbols": [
         {

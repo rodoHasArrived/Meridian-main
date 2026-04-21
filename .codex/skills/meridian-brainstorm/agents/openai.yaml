@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Brainstorm"
+  short_description: "Generate Meridian product and architecture ideas"
+  default_prompt: "Use $meridian-brainstorm to generate Meridian-native ideas that fit the current workstation, governance, and fund-ops direction."

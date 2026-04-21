@@ -1,0 +1,850 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  commentId: T:Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  id: DirectLendingOutboxMessage
+  parent: Meridian.Storage.DirectLending
+  children:
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Int32,System.String)
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ErrorCount
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.HeadersJson
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.LastError
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.MessageKey
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OccurredAt
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OutboxMessageId
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.PayloadJson
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ProcessedAt
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.Topic
+  - Meridian.Storage.DirectLending.DirectLendingOutboxMessage.VisibleAfter
+  langs:
+  - csharp
+  - vb
+  name: DirectLendingOutboxMessage
+  nameWithType: DirectLendingOutboxMessage
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DirectLendingOutboxMessage
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: 'public sealed record DirectLendingOutboxMessage : IEquatable<DirectLendingOutboxMessage>'
+    content.vb: Public NotInheritable Class DirectLendingOutboxMessage Implements IEquatable(Of DirectLendingOutboxMessage)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.DirectLending.DirectLendingOutboxMessage}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Int32,System.String)
+  commentId: M:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Int32,System.String)
+  id: '#ctor(System.Guid,System.String,System.String,System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Nullable{System.DateTimeOffset},System.Int32,System.String)'
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: DirectLendingOutboxMessage(Guid, string, string, string, string?, DateTimeOffset, DateTimeOffset, DateTimeOffset?, int, string?)
+  nameWithType: DirectLendingOutboxMessage.DirectLendingOutboxMessage(Guid, string, string, string, string?, DateTimeOffset, DateTimeOffset, DateTimeOffset?, int, string?)
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.DirectLendingOutboxMessage(System.Guid, string, string, string, string?, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset?, int, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 4
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public DirectLendingOutboxMessage(Guid OutboxMessageId, string Topic, string MessageKey, string PayloadJson, string? HeadersJson, DateTimeOffset OccurredAt, DateTimeOffset VisibleAfter, DateTimeOffset? ProcessedAt, int ErrorCount, string? LastError)
+    parameters:
+    - id: OutboxMessageId
+      type: System.Guid
+    - id: Topic
+      type: System.String
+    - id: MessageKey
+      type: System.String
+    - id: PayloadJson
+      type: System.String
+    - id: HeadersJson
+      type: System.String
+    - id: OccurredAt
+      type: System.DateTimeOffset
+    - id: VisibleAfter
+      type: System.DateTimeOffset
+    - id: ProcessedAt
+      type: System.Nullable{System.DateTimeOffset}
+    - id: ErrorCount
+      type: System.Int32
+    - id: LastError
+      type: System.String
+    content.vb: Public Sub New(OutboxMessageId As Guid, Topic As String, MessageKey As String, PayloadJson As String, HeadersJson As String, OccurredAt As DateTimeOffset, VisibleAfter As DateTimeOffset, ProcessedAt As DateTimeOffset?, ErrorCount As Integer, LastError As String)
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.#ctor*
+  nameWithType.vb: DirectLendingOutboxMessage.New(Guid, String, String, String, String, DateTimeOffset, DateTimeOffset, DateTimeOffset?, Integer, String)
+  fullName.vb: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.New(System.Guid, String, String, String, String, System.DateTimeOffset, System.DateTimeOffset, System.DateTimeOffset?, Integer, String)
+  name.vb: New(Guid, String, String, String, String, DateTimeOffset, DateTimeOffset, DateTimeOffset?, Integer, String)
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OutboxMessageId
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OutboxMessageId
+  id: OutboxMessageId
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: OutboxMessageId
+  nameWithType: DirectLendingOutboxMessage.OutboxMessageId
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OutboxMessageId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutboxMessageId
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public Guid OutboxMessageId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property OutboxMessageId As Guid
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OutboxMessageId*
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.Topic
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.Topic
+  id: Topic
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: Topic
+  nameWithType: DirectLendingOutboxMessage.Topic
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.Topic
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Topic
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public string Topic { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Topic As String
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.Topic*
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.MessageKey
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.MessageKey
+  id: MessageKey
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: MessageKey
+  nameWithType: DirectLendingOutboxMessage.MessageKey
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.MessageKey
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MessageKey
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public string MessageKey { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property MessageKey As String
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.MessageKey*
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.PayloadJson
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.PayloadJson
+  id: PayloadJson
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: PayloadJson
+  nameWithType: DirectLendingOutboxMessage.PayloadJson
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.PayloadJson
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PayloadJson
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 8
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public string PayloadJson { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property PayloadJson As String
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.PayloadJson*
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.HeadersJson
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.HeadersJson
+  id: HeadersJson
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: HeadersJson
+  nameWithType: DirectLendingOutboxMessage.HeadersJson
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.HeadersJson
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HeadersJson
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public string? HeadersJson { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property HeadersJson As String
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.HeadersJson*
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OccurredAt
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OccurredAt
+  id: OccurredAt
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: OccurredAt
+  nameWithType: DirectLendingOutboxMessage.OccurredAt
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OccurredAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OccurredAt
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public DateTimeOffset OccurredAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property OccurredAt As DateTimeOffset
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OccurredAt*
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.VisibleAfter
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.VisibleAfter
+  id: VisibleAfter
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: VisibleAfter
+  nameWithType: DirectLendingOutboxMessage.VisibleAfter
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.VisibleAfter
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VisibleAfter
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public DateTimeOffset VisibleAfter { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property VisibleAfter As DateTimeOffset
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.VisibleAfter*
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ProcessedAt
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ProcessedAt
+  id: ProcessedAt
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: ProcessedAt
+  nameWithType: DirectLendingOutboxMessage.ProcessedAt
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ProcessedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProcessedAt
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public DateTimeOffset? ProcessedAt { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: Public Property ProcessedAt As DateTimeOffset?
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ProcessedAt*
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ErrorCount
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ErrorCount
+  id: ErrorCount
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: ErrorCount
+  nameWithType: DirectLendingOutboxMessage.ErrorCount
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ErrorCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorCount
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public int ErrorCount { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property ErrorCount As Integer
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ErrorCount*
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.LastError
+  commentId: P:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.LastError
+  id: LastError
+  parent: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+  langs:
+  - csharp
+  - vb
+  name: LastError
+  nameWithType: DirectLendingOutboxMessage.LastError
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.LastError
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastError
+    path: ../../src/Meridian.Storage/DirectLending/IDirectLendingOperationsStore.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.DirectLending
+  syntax:
+    content: public string? LastError { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property LastError As String
+  overload: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.LastError*
+references:
+- uid: Meridian.Storage.DirectLending
+  commentId: N:Meridian.Storage.DirectLending
+  href: Meridian.html
+  name: Meridian.Storage.DirectLending
+  nameWithType: Meridian.Storage.DirectLending
+  fullName: Meridian.Storage.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.DirectLending
+    name: DirectLending
+    href: Meridian.Storage.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.DirectLending.DirectLendingOutboxMessage}
+  commentId: T:System.IEquatable{Meridian.Storage.DirectLending.DirectLendingOutboxMessage}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<DirectLendingOutboxMessage>
+  nameWithType: IEquatable<DirectLendingOutboxMessage>
+  fullName: System.IEquatable<Meridian.Storage.DirectLending.DirectLendingOutboxMessage>
+  nameWithType.vb: IEquatable(Of DirectLendingOutboxMessage)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.DirectLending.DirectLendingOutboxMessage)
+  name.vb: IEquatable(Of DirectLendingOutboxMessage)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+    name: DirectLendingOutboxMessage
+    href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage
+    name: DirectLendingOutboxMessage
+    href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.#ctor*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.#ctor
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage__ctor_System_Guid_System_String_System_String_System_String_System_String_System_DateTimeOffset_System_DateTimeOffset_System_Nullable_System_DateTimeOffset__System_Int32_System_String_
+  name: DirectLendingOutboxMessage
+  nameWithType: DirectLendingOutboxMessage.DirectLendingOutboxMessage
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.DirectLendingOutboxMessage
+  nameWithType.vb: DirectLendingOutboxMessage.New
+  fullName.vb: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OutboxMessageId*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OutboxMessageId
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_OutboxMessageId
+  name: OutboxMessageId
+  nameWithType: DirectLendingOutboxMessage.OutboxMessageId
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OutboxMessageId
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.Topic*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.Topic
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_Topic
+  name: Topic
+  nameWithType: DirectLendingOutboxMessage.Topic
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.Topic
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.MessageKey*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.MessageKey
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_MessageKey
+  name: MessageKey
+  nameWithType: DirectLendingOutboxMessage.MessageKey
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.MessageKey
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.PayloadJson*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.PayloadJson
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_PayloadJson
+  name: PayloadJson
+  nameWithType: DirectLendingOutboxMessage.PayloadJson
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.PayloadJson
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.HeadersJson*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.HeadersJson
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_HeadersJson
+  name: HeadersJson
+  nameWithType: DirectLendingOutboxMessage.HeadersJson
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.HeadersJson
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OccurredAt*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OccurredAt
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_OccurredAt
+  name: OccurredAt
+  nameWithType: DirectLendingOutboxMessage.OccurredAt
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.OccurredAt
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.VisibleAfter*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.VisibleAfter
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_VisibleAfter
+  name: VisibleAfter
+  nameWithType: DirectLendingOutboxMessage.VisibleAfter
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.VisibleAfter
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ProcessedAt*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ProcessedAt
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_ProcessedAt
+  name: ProcessedAt
+  nameWithType: DirectLendingOutboxMessage.ProcessedAt
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ProcessedAt
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ErrorCount*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ErrorCount
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_ErrorCount
+  name: ErrorCount
+  nameWithType: DirectLendingOutboxMessage.ErrorCount
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.ErrorCount
+- uid: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.LastError*
+  commentId: Overload:Meridian.Storage.DirectLending.DirectLendingOutboxMessage.LastError
+  href: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.html#Meridian_Storage_DirectLending_DirectLendingOutboxMessage_LastError
+  name: LastError
+  nameWithType: DirectLendingOutboxMessage.LastError
+  fullName: Meridian.Storage.DirectLending.DirectLendingOutboxMessage.LastError

@@ -1,0 +1,590 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.TrackedError
+  commentId: T:Meridian.Application.Services.TrackedError
+  id: TrackedError
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.TrackedError.Context
+  - Meridian.Application.Services.TrackedError.ExceptionType
+  - Meridian.Application.Services.TrackedError.Id
+  - Meridian.Application.Services.TrackedError.InnerException
+  - Meridian.Application.Services.TrackedError.Level
+  - Meridian.Application.Services.TrackedError.Message
+  - Meridian.Application.Services.TrackedError.StackTrace
+  - Meridian.Application.Services.TrackedError.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: TrackedError
+  nameWithType: TrackedError
+  fullName: Meridian.Application.Services.TrackedError
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrackedError
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: A tracked error entry.
+  example: []
+  syntax:
+    content: public sealed class TrackedError
+    content.vb: Public NotInheritable Class TrackedError
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Services.TrackedError.Id
+  commentId: P:Meridian.Application.Services.TrackedError.Id
+  id: Id
+  parent: Meridian.Application.Services.TrackedError
+  langs:
+  - csharp
+  - vb
+  name: Id
+  nameWithType: TrackedError.Id
+  fullName: Meridian.Application.Services.TrackedError.Id
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Id
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 285
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Id { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Id As String
+  overload: Meridian.Application.Services.TrackedError.Id*
+- uid: Meridian.Application.Services.TrackedError.Timestamp
+  commentId: P:Meridian.Application.Services.TrackedError.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Services.TrackedError
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: TrackedError.Timestamp
+  fullName: Meridian.Application.Services.TrackedError.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 286
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public DateTimeOffset Timestamp { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Services.TrackedError.Timestamp*
+- uid: Meridian.Application.Services.TrackedError.Level
+  commentId: P:Meridian.Application.Services.TrackedError.Level
+  id: Level
+  parent: Meridian.Application.Services.TrackedError
+  langs:
+  - csharp
+  - vb
+  name: Level
+  nameWithType: TrackedError.Level
+  fullName: Meridian.Application.Services.TrackedError.Level
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Level
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 287
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Level { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Level As String
+  overload: Meridian.Application.Services.TrackedError.Level*
+- uid: Meridian.Application.Services.TrackedError.Message
+  commentId: P:Meridian.Application.Services.TrackedError.Message
+  id: Message
+  parent: Meridian.Application.Services.TrackedError
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: TrackedError.Message
+  fullName: Meridian.Application.Services.TrackedError.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 288
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Message { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Message As String
+  overload: Meridian.Application.Services.TrackedError.Message*
+- uid: Meridian.Application.Services.TrackedError.ExceptionType
+  commentId: P:Meridian.Application.Services.TrackedError.ExceptionType
+  id: ExceptionType
+  parent: Meridian.Application.Services.TrackedError
+  langs:
+  - csharp
+  - vb
+  name: ExceptionType
+  nameWithType: TrackedError.ExceptionType
+  fullName: Meridian.Application.Services.TrackedError.ExceptionType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExceptionType
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 289
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? ExceptionType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ExceptionType As String
+  overload: Meridian.Application.Services.TrackedError.ExceptionType*
+- uid: Meridian.Application.Services.TrackedError.StackTrace
+  commentId: P:Meridian.Application.Services.TrackedError.StackTrace
+  id: StackTrace
+  parent: Meridian.Application.Services.TrackedError
+  langs:
+  - csharp
+  - vb
+  name: StackTrace
+  nameWithType: TrackedError.StackTrace
+  fullName: Meridian.Application.Services.TrackedError.StackTrace
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StackTrace
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 290
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? StackTrace { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property StackTrace As String
+  overload: Meridian.Application.Services.TrackedError.StackTrace*
+- uid: Meridian.Application.Services.TrackedError.Context
+  commentId: P:Meridian.Application.Services.TrackedError.Context
+  id: Context
+  parent: Meridian.Application.Services.TrackedError
+  langs:
+  - csharp
+  - vb
+  name: Context
+  nameWithType: TrackedError.Context
+  fullName: Meridian.Application.Services.TrackedError.Context
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Context
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 291
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? Context { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Context As String
+  overload: Meridian.Application.Services.TrackedError.Context*
+- uid: Meridian.Application.Services.TrackedError.InnerException
+  commentId: P:Meridian.Application.Services.TrackedError.InnerException
+  id: InnerException
+  parent: Meridian.Application.Services.TrackedError
+  langs:
+  - csharp
+  - vb
+  name: InnerException
+  nameWithType: TrackedError.InnerException
+  fullName: Meridian.Application.Services.TrackedError.InnerException
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Services/ErrorTracker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InnerException
+    path: ../../src/Meridian.Application/Services/ErrorTracker.cs
+    startLine: 292
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  syntax:
+    content: public string? InnerException { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property InnerException As String
+  overload: Meridian.Application.Services.TrackedError.InnerException*
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Services.TrackedError.Id*
+  commentId: Overload:Meridian.Application.Services.TrackedError.Id
+  href: Meridian.Application.Services.TrackedError.html#Meridian_Application_Services_TrackedError_Id
+  name: Id
+  nameWithType: TrackedError.Id
+  fullName: Meridian.Application.Services.TrackedError.Id
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Services.TrackedError.Timestamp*
+  commentId: Overload:Meridian.Application.Services.TrackedError.Timestamp
+  href: Meridian.Application.Services.TrackedError.html#Meridian_Application_Services_TrackedError_Timestamp
+  name: Timestamp
+  nameWithType: TrackedError.Timestamp
+  fullName: Meridian.Application.Services.TrackedError.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Services.TrackedError.Level*
+  commentId: Overload:Meridian.Application.Services.TrackedError.Level
+  href: Meridian.Application.Services.TrackedError.html#Meridian_Application_Services_TrackedError_Level
+  name: Level
+  nameWithType: TrackedError.Level
+  fullName: Meridian.Application.Services.TrackedError.Level
+- uid: Meridian.Application.Services.TrackedError.Message*
+  commentId: Overload:Meridian.Application.Services.TrackedError.Message
+  href: Meridian.Application.Services.TrackedError.html#Meridian_Application_Services_TrackedError_Message
+  name: Message
+  nameWithType: TrackedError.Message
+  fullName: Meridian.Application.Services.TrackedError.Message
+- uid: Meridian.Application.Services.TrackedError.ExceptionType*
+  commentId: Overload:Meridian.Application.Services.TrackedError.ExceptionType
+  href: Meridian.Application.Services.TrackedError.html#Meridian_Application_Services_TrackedError_ExceptionType
+  name: ExceptionType
+  nameWithType: TrackedError.ExceptionType
+  fullName: Meridian.Application.Services.TrackedError.ExceptionType
+- uid: Meridian.Application.Services.TrackedError.StackTrace*
+  commentId: Overload:Meridian.Application.Services.TrackedError.StackTrace
+  href: Meridian.Application.Services.TrackedError.html#Meridian_Application_Services_TrackedError_StackTrace
+  name: StackTrace
+  nameWithType: TrackedError.StackTrace
+  fullName: Meridian.Application.Services.TrackedError.StackTrace
+- uid: Meridian.Application.Services.TrackedError.Context*
+  commentId: Overload:Meridian.Application.Services.TrackedError.Context
+  href: Meridian.Application.Services.TrackedError.html#Meridian_Application_Services_TrackedError_Context
+  name: Context
+  nameWithType: TrackedError.Context
+  fullName: Meridian.Application.Services.TrackedError.Context
+- uid: Meridian.Application.Services.TrackedError.InnerException*
+  commentId: Overload:Meridian.Application.Services.TrackedError.InnerException
+  href: Meridian.Application.Services.TrackedError.html#Meridian_Application_Services_TrackedError_InnerException
+  name: InnerException
+  nameWithType: TrackedError.InnerException
+  fullName: Meridian.Application.Services.TrackedError.InnerException

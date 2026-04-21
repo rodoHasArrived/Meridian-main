@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Test Writer"
+  short_description: "Write scenario-first Meridian regression tests"
+  default_prompt: "Use $meridian-test-writer to add Meridian tests grounded in a real operator or market scenario across the full relevant code path."

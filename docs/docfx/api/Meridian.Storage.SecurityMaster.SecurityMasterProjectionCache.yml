@@ -1,0 +1,676 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  commentId: T:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  id: SecurityMasterProjectionCache
+  parent: Meridian.Storage.SecurityMaster
+  children:
+  - Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Count
+  - Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Get(System.Guid)
+  - Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.ReplaceAll(System.Collections.Generic.IEnumerable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord})
+  - Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Snapshot
+  - Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Upsert(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterProjectionCache
+  nameWithType: SecurityMasterProjectionCache
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterProjectionCache
+    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public sealed class SecurityMasterProjectionCache
+    content.vb: Public NotInheritable Class SecurityMasterProjectionCache
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Count
+  commentId: P:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Count
+  id: Count
+  parent: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  langs:
+  - csharp
+  - vb
+  name: Count
+  nameWithType: SecurityMasterProjectionCache.Count
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Count
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Count
+    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public int Count { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property Count As Integer
+  overload: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Count*
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Get(System.Guid)
+  commentId: M:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Get(System.Guid)
+  id: Get(System.Guid)
+  parent: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  langs:
+  - csharp
+  - vb
+  name: Get(Guid)
+  nameWithType: SecurityMasterProjectionCache.Get(Guid)
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Get(System.Guid)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Get
+    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public SecurityProjectionRecord? Get(Guid securityId)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    return:
+      type: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    content.vb: Public Function [Get](securityId As Guid) As SecurityProjectionRecord
+  overload: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Get*
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Upsert(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  commentId: M:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Upsert(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  id: Upsert(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  parent: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  langs:
+  - csharp
+  - vb
+  name: Upsert(SecurityProjectionRecord)
+  nameWithType: SecurityMasterProjectionCache.Upsert(SecurityProjectionRecord)
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Upsert(Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Upsert
+    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public void Upsert(SecurityProjectionRecord record)
+    parameters:
+    - id: record
+      type: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    content.vb: Public Sub Upsert(record As SecurityProjectionRecord)
+  overload: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Upsert*
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.ReplaceAll(System.Collections.Generic.IEnumerable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord})
+  commentId: M:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.ReplaceAll(System.Collections.Generic.IEnumerable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord})
+  id: ReplaceAll(System.Collections.Generic.IEnumerable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord})
+  parent: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  langs:
+  - csharp
+  - vb
+  name: ReplaceAll(IEnumerable<SecurityProjectionRecord>)
+  nameWithType: SecurityMasterProjectionCache.ReplaceAll(IEnumerable<SecurityProjectionRecord>)
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.ReplaceAll(System.Collections.Generic.IEnumerable<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReplaceAll
+    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public void ReplaceAll(IEnumerable<SecurityProjectionRecord> records)
+    parameters:
+    - id: records
+      type: System.Collections.Generic.IEnumerable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+    content.vb: Public Sub ReplaceAll(records As IEnumerable(Of SecurityProjectionRecord))
+  overload: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.ReplaceAll*
+  nameWithType.vb: SecurityMasterProjectionCache.ReplaceAll(IEnumerable(Of SecurityProjectionRecord))
+  fullName.vb: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.ReplaceAll(System.Collections.Generic.IEnumerable(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord))
+  name.vb: ReplaceAll(IEnumerable(Of SecurityProjectionRecord))
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Snapshot
+  commentId: M:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Snapshot
+  id: Snapshot
+  parent: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache
+  langs:
+  - csharp
+  - vb
+  name: Snapshot()
+  nameWithType: SecurityMasterProjectionCache.Snapshot()
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Snapshot()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Snapshot
+    path: ../../src/Meridian.Storage/SecurityMaster/SecurityMasterProjectionCache.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.SecurityMaster
+  syntax:
+    content: public IReadOnlyCollection<SecurityProjectionRecord> Snapshot()
+    return:
+      type: System.Collections.Generic.IReadOnlyCollection{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+    content.vb: Public Function Snapshot() As IReadOnlyCollection(Of SecurityProjectionRecord)
+  overload: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Snapshot*
+references:
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Count*
+  commentId: Overload:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Count
+  href: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.html#Meridian_Storage_SecurityMaster_SecurityMasterProjectionCache_Count
+  name: Count
+  nameWithType: SecurityMasterProjectionCache.Count
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Count
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Get*
+  commentId: Overload:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Get
+  href: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.html#Meridian_Storage_SecurityMaster_SecurityMasterProjectionCache_Get_System_Guid_
+  name: Get
+  nameWithType: SecurityMasterProjectionCache.Get
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Get
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html
+  name: SecurityProjectionRecord
+  nameWithType: SecurityProjectionRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Upsert*
+  commentId: Overload:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Upsert
+  href: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.html#Meridian_Storage_SecurityMaster_SecurityMasterProjectionCache_Upsert_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_
+  name: Upsert
+  nameWithType: SecurityMasterProjectionCache.Upsert
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Upsert
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.ReplaceAll*
+  commentId: Overload:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.ReplaceAll
+  href: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.html#Meridian_Storage_SecurityMaster_SecurityMasterProjectionCache_ReplaceAll_System_Collections_Generic_IEnumerable_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord__
+  name: ReplaceAll
+  nameWithType: SecurityMasterProjectionCache.ReplaceAll
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.ReplaceAll
+- uid: System.Collections.Generic.IEnumerable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<SecurityProjectionRecord>
+  nameWithType: IEnumerable<SecurityProjectionRecord>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>
+  nameWithType.vb: IEnumerable(Of SecurityProjectionRecord)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  name.vb: IEnumerable(Of SecurityProjectionRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Snapshot*
+  commentId: Overload:Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Snapshot
+  href: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.html#Meridian_Storage_SecurityMaster_SecurityMasterProjectionCache_Snapshot
+  name: Snapshot
+  nameWithType: SecurityMasterProjectionCache.Snapshot
+  fullName: Meridian.Storage.SecurityMaster.SecurityMasterProjectionCache.Snapshot
+- uid: System.Collections.Generic.IReadOnlyCollection{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  commentId: T:System.Collections.Generic.IReadOnlyCollection{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyCollection`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<SecurityProjectionRecord>
+  nameWithType: IReadOnlyCollection<SecurityProjectionRecord>
+  fullName: System.Collections.Generic.IReadOnlyCollection<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>
+  nameWithType.vb: IReadOnlyCollection(Of SecurityProjectionRecord)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  name.vb: IReadOnlyCollection(Of SecurityProjectionRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyCollection`1
+  commentId: T:System.Collections.Generic.IReadOnlyCollection`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<T>
+  nameWithType: IReadOnlyCollection<T>
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>
+  nameWithType.vb: IReadOnlyCollection(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T)
+  name.vb: IReadOnlyCollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

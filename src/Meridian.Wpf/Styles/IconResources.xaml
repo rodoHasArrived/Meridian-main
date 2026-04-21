@@ -164,6 +164,11 @@
     <sys:String x:Key="IconUnpin">&#xE77A;</sys:String>
     <sys:String x:Key="IconLock">&#xE72E;</sys:String>
     <sys:String x:Key="IconUnlock">&#xE785;</sys:String>
+    <!-- Legacy aliases used by older workstation pages -->
+    <sys:String x:Key="IconKey">&#xE72E;</sys:String>
+    <sys:String x:Key="IconKeyboard">&#xE765;</sys:String>
+    <sys:String x:Key="IconWizard">&#xEC7A;</sys:String>
+    <sys:String x:Key="IconWrench">&#xE90F;</sys:String>
     <sys:String x:Key="IconEye">&#xE7B3;</sys:String>
     <sys:String x:Key="IconEyeOff">&#xED1A;</sys:String>
     <sys:String x:Key="IconExpand">&#xE740;</sys:String>

@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Services.WebhookType
+  commentId: T:Meridian.Application.Services.WebhookType
+  id: WebhookType
+  parent: Meridian.Application.Services
+  children:
+  - Meridian.Application.Services.WebhookType.Discord
+  - Meridian.Application.Services.WebhookType.Generic
+  - Meridian.Application.Services.WebhookType.Slack
+  - Meridian.Application.Services.WebhookType.Teams
+  langs:
+  - csharp
+  - vb
+  name: WebhookType
+  nameWithType: WebhookType
+  fullName: Meridian.Application.Services.WebhookType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WebhookType
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 584
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Supported webhook types.
+  example: []
+  syntax:
+    content: 'public enum WebhookType : byte'
+    content.vb: Public Enum WebhookType As Byte
+- uid: Meridian.Application.Services.WebhookType.Generic
+  commentId: F:Meridian.Application.Services.WebhookType.Generic
+  id: Generic
+  parent: Meridian.Application.Services.WebhookType
+  langs:
+  - csharp
+  - vb
+  name: Generic
+  nameWithType: WebhookType.Generic
+  fullName: Meridian.Application.Services.WebhookType.Generic
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Generic
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 587
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Generic JSON webhook.
+  example: []
+  syntax:
+    content: Generic = 0
+    return:
+      type: Meridian.Application.Services.WebhookType
+- uid: Meridian.Application.Services.WebhookType.Slack
+  commentId: F:Meridian.Application.Services.WebhookType.Slack
+  id: Slack
+  parent: Meridian.Application.Services.WebhookType
+  langs:
+  - csharp
+  - vb
+  name: Slack
+  nameWithType: WebhookType.Slack
+  fullName: Meridian.Application.Services.WebhookType.Slack
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Slack
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 590
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Slack incoming webhook.
+  example: []
+  syntax:
+    content: Slack = 1
+    return:
+      type: Meridian.Application.Services.WebhookType
+- uid: Meridian.Application.Services.WebhookType.Discord
+  commentId: F:Meridian.Application.Services.WebhookType.Discord
+  id: Discord
+  parent: Meridian.Application.Services.WebhookType
+  langs:
+  - csharp
+  - vb
+  name: Discord
+  nameWithType: WebhookType.Discord
+  fullName: Meridian.Application.Services.WebhookType.Discord
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Discord
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 593
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Discord webhook.
+  example: []
+  syntax:
+    content: Discord = 2
+    return:
+      type: Meridian.Application.Services.WebhookType
+- uid: Meridian.Application.Services.WebhookType.Teams
+  commentId: F:Meridian.Application.Services.WebhookType.Teams
+  id: Teams
+  parent: Meridian.Application.Services.WebhookType
+  langs:
+  - csharp
+  - vb
+  name: Teams
+  nameWithType: WebhookType.Teams
+  fullName: Meridian.Application.Services.WebhookType.Teams
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Services/DailySummaryWebhook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Teams
+    path: ../../src/Meridian.Application/Services/DailySummaryWebhook.cs
+    startLine: 596
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Services
+  summary: Microsoft Teams webhook connector.
+  example: []
+  syntax:
+    content: Teams = 3
+    return:
+      type: Meridian.Application.Services.WebhookType
+references:
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Services.WebhookType
+  commentId: T:Meridian.Application.Services.WebhookType
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.WebhookType.html
+  name: WebhookType
+  nameWithType: WebhookType
+  fullName: Meridian.Application.Services.WebhookType

@@ -1,0 +1,1214 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Banking.InMemoryBankingService
+  commentId: T:Meridian.Application.Banking.InMemoryBankingService
+  id: InMemoryBankingService
+  parent: Meridian.Application.Banking
+  children:
+  - Meridian.Application.Banking.InMemoryBankingService.ApprovePaymentAsync(System.Guid,Meridian.Contracts.Banking.ApprovePaymentRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Banking.InMemoryBankingService.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  - Meridian.Application.Banking.InMemoryBankingService.GetPendingPaymentsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  - Meridian.Application.Banking.InMemoryBankingService.InitiatePaymentAsync(System.Guid,Meridian.Contracts.Banking.InitiatePaymentRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Banking.InMemoryBankingService.RejectPaymentAsync(System.Guid,Meridian.Contracts.Banking.RejectPaymentRequest,System.Threading.CancellationToken)
+  - Meridian.Application.Banking.InMemoryBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: InMemoryBankingService
+  nameWithType: InMemoryBankingService
+  fullName: Meridian.Application.Banking.InMemoryBankingService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Banking/InMemoryBankingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InMemoryBankingService
+    path: ../../src/Meridian.Application/Banking/InMemoryBankingService.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Banking
+  summary: >-
+    In-memory implementation of <xref href="Meridian.Application.Banking.IBankingService" data-throw-if-not-resolved="false"></xref>.
+
+    Holds pending payments and bank transactions in process memory; suitable for
+
+    testing and non-persistent deployments.
+  example: []
+  syntax:
+    content: 'public sealed class InMemoryBankingService : IBankingService, IBankTransactionSource'
+    content.vb: Public NotInheritable Class InMemoryBankingService Implements IBankingService, IBankTransactionSource
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Banking.IBankingService
+  - Meridian.Contracts.Banking.IBankTransactionSource
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Banking.InMemoryBankingService.InitiatePaymentAsync(System.Guid,Meridian.Contracts.Banking.InitiatePaymentRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.InMemoryBankingService.InitiatePaymentAsync(System.Guid,Meridian.Contracts.Banking.InitiatePaymentRequest,System.Threading.CancellationToken)
+  id: InitiatePaymentAsync(System.Guid,Meridian.Contracts.Banking.InitiatePaymentRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.InMemoryBankingService
+  langs:
+  - csharp
+  - vb
+  name: InitiatePaymentAsync(Guid, InitiatePaymentRequest, CancellationToken)
+  nameWithType: InMemoryBankingService.InitiatePaymentAsync(Guid, InitiatePaymentRequest, CancellationToken)
+  fullName: Meridian.Application.Banking.InMemoryBankingService.InitiatePaymentAsync(System.Guid, Meridian.Contracts.Banking.InitiatePaymentRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Banking/InMemoryBankingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InitiatePaymentAsync
+    path: ../../src/Meridian.Application/Banking/InMemoryBankingService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Banking
+  summary: Submit a payment for review. Returns the pending payment record.
+  example: []
+  syntax:
+    content: public Task<PendingPaymentDto> InitiatePaymentAsync(Guid entityId, InitiatePaymentRequest request, CancellationToken ct = default)
+    parameters:
+    - id: entityId
+      type: System.Guid
+    - id: request
+      type: Meridian.Contracts.Banking.InitiatePaymentRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Banking.PendingPaymentDto}
+    content.vb: Public Function InitiatePaymentAsync(entityId As Guid, request As InitiatePaymentRequest, ct As CancellationToken = Nothing) As Task(Of PendingPaymentDto)
+  overload: Meridian.Application.Banking.InMemoryBankingService.InitiatePaymentAsync*
+  implements:
+  - Meridian.Application.Banking.IBankingService.InitiatePaymentAsync(System.Guid,Meridian.Contracts.Banking.InitiatePaymentRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.Banking.InMemoryBankingService.ApprovePaymentAsync(System.Guid,Meridian.Contracts.Banking.ApprovePaymentRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.InMemoryBankingService.ApprovePaymentAsync(System.Guid,Meridian.Contracts.Banking.ApprovePaymentRequest,System.Threading.CancellationToken)
+  id: ApprovePaymentAsync(System.Guid,Meridian.Contracts.Banking.ApprovePaymentRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.InMemoryBankingService
+  langs:
+  - csharp
+  - vb
+  name: ApprovePaymentAsync(Guid, ApprovePaymentRequest, CancellationToken)
+  nameWithType: InMemoryBankingService.ApprovePaymentAsync(Guid, ApprovePaymentRequest, CancellationToken)
+  fullName: Meridian.Application.Banking.InMemoryBankingService.ApprovePaymentAsync(System.Guid, Meridian.Contracts.Banking.ApprovePaymentRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Banking/InMemoryBankingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApprovePaymentAsync
+    path: ../../src/Meridian.Application/Banking/InMemoryBankingService.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Banking
+  summary: Approve a pending payment. Records a bank transaction.
+  example: []
+  syntax:
+    content: public Task<PendingPaymentDto?> ApprovePaymentAsync(Guid pendingPaymentId, ApprovePaymentRequest request, CancellationToken ct = default)
+    parameters:
+    - id: pendingPaymentId
+      type: System.Guid
+    - id: request
+      type: Meridian.Contracts.Banking.ApprovePaymentRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Banking.PendingPaymentDto}
+    content.vb: Public Function ApprovePaymentAsync(pendingPaymentId As Guid, request As ApprovePaymentRequest, ct As CancellationToken = Nothing) As Task(Of PendingPaymentDto)
+  overload: Meridian.Application.Banking.InMemoryBankingService.ApprovePaymentAsync*
+  implements:
+  - Meridian.Application.Banking.IBankingService.ApprovePaymentAsync(System.Guid,Meridian.Contracts.Banking.ApprovePaymentRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.Banking.InMemoryBankingService.RejectPaymentAsync(System.Guid,Meridian.Contracts.Banking.RejectPaymentRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.InMemoryBankingService.RejectPaymentAsync(System.Guid,Meridian.Contracts.Banking.RejectPaymentRequest,System.Threading.CancellationToken)
+  id: RejectPaymentAsync(System.Guid,Meridian.Contracts.Banking.RejectPaymentRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.InMemoryBankingService
+  langs:
+  - csharp
+  - vb
+  name: RejectPaymentAsync(Guid, RejectPaymentRequest, CancellationToken)
+  nameWithType: InMemoryBankingService.RejectPaymentAsync(Guid, RejectPaymentRequest, CancellationToken)
+  fullName: Meridian.Application.Banking.InMemoryBankingService.RejectPaymentAsync(System.Guid, Meridian.Contracts.Banking.RejectPaymentRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Banking/InMemoryBankingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RejectPaymentAsync
+    path: ../../src/Meridian.Application/Banking/InMemoryBankingService.cs
+    startLine: 98
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Banking
+  summary: Reject a pending payment without recording a bank transaction.
+  example: []
+  syntax:
+    content: public Task<PendingPaymentDto?> RejectPaymentAsync(Guid pendingPaymentId, RejectPaymentRequest request, CancellationToken ct = default)
+    parameters:
+    - id: pendingPaymentId
+      type: System.Guid
+    - id: request
+      type: Meridian.Contracts.Banking.RejectPaymentRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Banking.PendingPaymentDto}
+    content.vb: Public Function RejectPaymentAsync(pendingPaymentId As Guid, request As RejectPaymentRequest, ct As CancellationToken = Nothing) As Task(Of PendingPaymentDto)
+  overload: Meridian.Application.Banking.InMemoryBankingService.RejectPaymentAsync*
+  implements:
+  - Meridian.Application.Banking.IBankingService.RejectPaymentAsync(System.Guid,Meridian.Contracts.Banking.RejectPaymentRequest,System.Threading.CancellationToken)
+- uid: Meridian.Application.Banking.InMemoryBankingService.GetPendingPaymentsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.InMemoryBankingService.GetPendingPaymentsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  id: GetPendingPaymentsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.InMemoryBankingService
+  langs:
+  - csharp
+  - vb
+  name: GetPendingPaymentsAsync(Guid?, CancellationToken)
+  nameWithType: InMemoryBankingService.GetPendingPaymentsAsync(Guid?, CancellationToken)
+  fullName: Meridian.Application.Banking.InMemoryBankingService.GetPendingPaymentsAsync(System.Guid?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Banking/InMemoryBankingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPendingPaymentsAsync
+    path: ../../src/Meridian.Application/Banking/InMemoryBankingService.cs
+    startLine: 134
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Banking
+  summary: >-
+    Get all pending payments. When <code class="paramref">entityId</code> is provided, results are
+
+    scoped to that entity; otherwise all pending payments are returned.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<PendingPaymentDto>> GetPendingPaymentsAsync(Guid? entityId = null, CancellationToken ct = default)
+    parameters:
+    - id: entityId
+      type: System.Nullable{System.Guid}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.PendingPaymentDto}}
+    content.vb: Public Function GetPendingPaymentsAsync(entityId As Guid? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of PendingPaymentDto))
+  overload: Meridian.Application.Banking.InMemoryBankingService.GetPendingPaymentsAsync*
+  implements:
+  - Meridian.Application.Banking.IBankingService.GetPendingPaymentsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+- uid: Meridian.Application.Banking.InMemoryBankingService.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.InMemoryBankingService.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  id: GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.InMemoryBankingService
+  langs:
+  - csharp
+  - vb
+  name: GetBankTransactionsAsync(Guid?, CancellationToken)
+  nameWithType: InMemoryBankingService.GetBankTransactionsAsync(Guid?, CancellationToken)
+  fullName: Meridian.Application.Banking.InMemoryBankingService.GetBankTransactionsAsync(System.Guid?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Banking/InMemoryBankingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBankTransactionsAsync
+    path: ../../src/Meridian.Application/Banking/InMemoryBankingService.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Banking
+  summary: >-
+    Return bank transactions.  When <code class="paramref">entityId</code> is provided
+
+    the result is scoped to that entity; otherwise all transactions are returned.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<BankTransactionDto>> GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default)
+    parameters:
+    - id: entityId
+      type: System.Nullable{System.Guid}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}}
+    content.vb: Public Function GetBankTransactionsAsync(entityId As Guid? = Nothing, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of BankTransactionDto))
+  overload: Meridian.Application.Banking.InMemoryBankingService.GetBankTransactionsAsync*
+  implements:
+  - Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+- uid: Meridian.Application.Banking.InMemoryBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.InMemoryBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest,System.Threading.CancellationToken)
+  id: SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.InMemoryBankingService
+  langs:
+  - csharp
+  - vb
+  name: SeedBankTransactionsAsync(BankTransactionSeedRequest, CancellationToken)
+  nameWithType: InMemoryBankingService.SeedBankTransactionsAsync(BankTransactionSeedRequest, CancellationToken)
+  fullName: Meridian.Application.Banking.InMemoryBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Banking/InMemoryBankingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SeedBankTransactionsAsync
+    path: ../../src/Meridian.Application/Banking/InMemoryBankingService.cs
+    startLine: 183
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Banking
+  summary: >-
+    Seed representative bank transactions for one or more entities.
+
+    Useful for development, demos, and integration test setup.
+  example: []
+  syntax:
+    content: public Task<BankTransactionSeedResultDto> SeedBankTransactionsAsync(BankTransactionSeedRequest request, CancellationToken ct = default)
+    parameters:
+    - id: request
+      type: Meridian.Contracts.Banking.BankTransactionSeedRequest
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.Banking.BankTransactionSeedResultDto}
+    content.vb: Public Function SeedBankTransactionsAsync(request As BankTransactionSeedRequest, ct As CancellationToken = Nothing) As Task(Of BankTransactionSeedResultDto)
+  overload: Meridian.Application.Banking.InMemoryBankingService.SeedBankTransactionsAsync*
+  implements:
+  - Meridian.Application.Banking.IBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest,System.Threading.CancellationToken)
+references:
+- uid: Meridian.Application.Banking.IBankingService
+  commentId: T:Meridian.Application.Banking.IBankingService
+  parent: Meridian.Application.Banking
+  href: Meridian.Application.Banking.IBankingService.html
+  name: IBankingService
+  nameWithType: IBankingService
+  fullName: Meridian.Application.Banking.IBankingService
+- uid: Meridian.Application.Banking
+  commentId: N:Meridian.Application.Banking
+  href: Meridian.html
+  name: Meridian.Application.Banking
+  nameWithType: Meridian.Application.Banking
+  fullName: Meridian.Application.Banking
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Banking
+    name: Banking
+    href: Meridian.Application.Banking.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Banking
+    name: Banking
+    href: Meridian.Application.Banking.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Banking.IBankTransactionSource
+  commentId: T:Meridian.Contracts.Banking.IBankTransactionSource
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.IBankTransactionSource.html
+  name: IBankTransactionSource
+  nameWithType: IBankTransactionSource
+  fullName: Meridian.Contracts.Banking.IBankTransactionSource
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Banking
+  commentId: N:Meridian.Contracts.Banking
+  href: Meridian.html
+  name: Meridian.Contracts.Banking
+  nameWithType: Meridian.Contracts.Banking
+  fullName: Meridian.Contracts.Banking
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Banking
+    name: Banking
+    href: Meridian.Contracts.Banking.html
+- uid: Meridian.Application.Banking.InMemoryBankingService.InitiatePaymentAsync*
+  commentId: Overload:Meridian.Application.Banking.InMemoryBankingService.InitiatePaymentAsync
+  href: Meridian.Application.Banking.InMemoryBankingService.html#Meridian_Application_Banking_InMemoryBankingService_InitiatePaymentAsync_System_Guid_Meridian_Contracts_Banking_InitiatePaymentRequest_System_Threading_CancellationToken_
+  name: InitiatePaymentAsync
+  nameWithType: InMemoryBankingService.InitiatePaymentAsync
+  fullName: Meridian.Application.Banking.InMemoryBankingService.InitiatePaymentAsync
+- uid: Meridian.Application.Banking.IBankingService.InitiatePaymentAsync(System.Guid,Meridian.Contracts.Banking.InitiatePaymentRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.IBankingService.InitiatePaymentAsync(System.Guid,Meridian.Contracts.Banking.InitiatePaymentRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.IBankingService
+  isExternal: true
+  href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_InitiatePaymentAsync_System_Guid_Meridian_Contracts_Banking_InitiatePaymentRequest_System_Threading_CancellationToken_
+  name: InitiatePaymentAsync(Guid, InitiatePaymentRequest, CancellationToken)
+  nameWithType: IBankingService.InitiatePaymentAsync(Guid, InitiatePaymentRequest, CancellationToken)
+  fullName: Meridian.Application.Banking.IBankingService.InitiatePaymentAsync(System.Guid, Meridian.Contracts.Banking.InitiatePaymentRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Banking.IBankingService.InitiatePaymentAsync(System.Guid,Meridian.Contracts.Banking.InitiatePaymentRequest,System.Threading.CancellationToken)
+    name: InitiatePaymentAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_InitiatePaymentAsync_System_Guid_Meridian_Contracts_Banking_InitiatePaymentRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Banking.InitiatePaymentRequest
+    name: InitiatePaymentRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Banking.IBankingService.InitiatePaymentAsync(System.Guid,Meridian.Contracts.Banking.InitiatePaymentRequest,System.Threading.CancellationToken)
+    name: InitiatePaymentAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_InitiatePaymentAsync_System_Guid_Meridian_Contracts_Banking_InitiatePaymentRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Banking.InitiatePaymentRequest
+    name: InitiatePaymentRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: Meridian.Contracts.Banking.InitiatePaymentRequest
+  commentId: T:Meridian.Contracts.Banking.InitiatePaymentRequest
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.InitiatePaymentRequest.html
+  name: InitiatePaymentRequest
+  nameWithType: InitiatePaymentRequest
+  fullName: Meridian.Contracts.Banking.InitiatePaymentRequest
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Banking.PendingPaymentDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Banking.PendingPaymentDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PendingPaymentDto>
+  nameWithType: Task<PendingPaymentDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Banking.PendingPaymentDto>
+  nameWithType.vb: Task(Of PendingPaymentDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Banking.PendingPaymentDto)
+  name.vb: Task(Of PendingPaymentDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Banking.PendingPaymentDto
+    name: PendingPaymentDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Banking.PendingPaymentDto
+    name: PendingPaymentDto
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Banking.InMemoryBankingService.ApprovePaymentAsync*
+  commentId: Overload:Meridian.Application.Banking.InMemoryBankingService.ApprovePaymentAsync
+  href: Meridian.Application.Banking.InMemoryBankingService.html#Meridian_Application_Banking_InMemoryBankingService_ApprovePaymentAsync_System_Guid_Meridian_Contracts_Banking_ApprovePaymentRequest_System_Threading_CancellationToken_
+  name: ApprovePaymentAsync
+  nameWithType: InMemoryBankingService.ApprovePaymentAsync
+  fullName: Meridian.Application.Banking.InMemoryBankingService.ApprovePaymentAsync
+- uid: Meridian.Application.Banking.IBankingService.ApprovePaymentAsync(System.Guid,Meridian.Contracts.Banking.ApprovePaymentRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.IBankingService.ApprovePaymentAsync(System.Guid,Meridian.Contracts.Banking.ApprovePaymentRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.IBankingService
+  isExternal: true
+  href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_ApprovePaymentAsync_System_Guid_Meridian_Contracts_Banking_ApprovePaymentRequest_System_Threading_CancellationToken_
+  name: ApprovePaymentAsync(Guid, ApprovePaymentRequest, CancellationToken)
+  nameWithType: IBankingService.ApprovePaymentAsync(Guid, ApprovePaymentRequest, CancellationToken)
+  fullName: Meridian.Application.Banking.IBankingService.ApprovePaymentAsync(System.Guid, Meridian.Contracts.Banking.ApprovePaymentRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Banking.IBankingService.ApprovePaymentAsync(System.Guid,Meridian.Contracts.Banking.ApprovePaymentRequest,System.Threading.CancellationToken)
+    name: ApprovePaymentAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_ApprovePaymentAsync_System_Guid_Meridian_Contracts_Banking_ApprovePaymentRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Banking.ApprovePaymentRequest
+    name: ApprovePaymentRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Banking.IBankingService.ApprovePaymentAsync(System.Guid,Meridian.Contracts.Banking.ApprovePaymentRequest,System.Threading.CancellationToken)
+    name: ApprovePaymentAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_ApprovePaymentAsync_System_Guid_Meridian_Contracts_Banking_ApprovePaymentRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Banking.ApprovePaymentRequest
+    name: ApprovePaymentRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.Banking.ApprovePaymentRequest
+  commentId: T:Meridian.Contracts.Banking.ApprovePaymentRequest
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.ApprovePaymentRequest.html
+  name: ApprovePaymentRequest
+  nameWithType: ApprovePaymentRequest
+  fullName: Meridian.Contracts.Banking.ApprovePaymentRequest
+- uid: Meridian.Application.Banking.InMemoryBankingService.RejectPaymentAsync*
+  commentId: Overload:Meridian.Application.Banking.InMemoryBankingService.RejectPaymentAsync
+  href: Meridian.Application.Banking.InMemoryBankingService.html#Meridian_Application_Banking_InMemoryBankingService_RejectPaymentAsync_System_Guid_Meridian_Contracts_Banking_RejectPaymentRequest_System_Threading_CancellationToken_
+  name: RejectPaymentAsync
+  nameWithType: InMemoryBankingService.RejectPaymentAsync
+  fullName: Meridian.Application.Banking.InMemoryBankingService.RejectPaymentAsync
+- uid: Meridian.Application.Banking.IBankingService.RejectPaymentAsync(System.Guid,Meridian.Contracts.Banking.RejectPaymentRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.IBankingService.RejectPaymentAsync(System.Guid,Meridian.Contracts.Banking.RejectPaymentRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.IBankingService
+  isExternal: true
+  href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_RejectPaymentAsync_System_Guid_Meridian_Contracts_Banking_RejectPaymentRequest_System_Threading_CancellationToken_
+  name: RejectPaymentAsync(Guid, RejectPaymentRequest, CancellationToken)
+  nameWithType: IBankingService.RejectPaymentAsync(Guid, RejectPaymentRequest, CancellationToken)
+  fullName: Meridian.Application.Banking.IBankingService.RejectPaymentAsync(System.Guid, Meridian.Contracts.Banking.RejectPaymentRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Banking.IBankingService.RejectPaymentAsync(System.Guid,Meridian.Contracts.Banking.RejectPaymentRequest,System.Threading.CancellationToken)
+    name: RejectPaymentAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_RejectPaymentAsync_System_Guid_Meridian_Contracts_Banking_RejectPaymentRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Banking.RejectPaymentRequest
+    name: RejectPaymentRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Banking.IBankingService.RejectPaymentAsync(System.Guid,Meridian.Contracts.Banking.RejectPaymentRequest,System.Threading.CancellationToken)
+    name: RejectPaymentAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_RejectPaymentAsync_System_Guid_Meridian_Contracts_Banking_RejectPaymentRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: ','
+  - name: " "
+  - uid: Meridian.Contracts.Banking.RejectPaymentRequest
+    name: RejectPaymentRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.Banking.RejectPaymentRequest
+  commentId: T:Meridian.Contracts.Banking.RejectPaymentRequest
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.RejectPaymentRequest.html
+  name: RejectPaymentRequest
+  nameWithType: RejectPaymentRequest
+  fullName: Meridian.Contracts.Banking.RejectPaymentRequest
+- uid: Meridian.Application.Banking.InMemoryBankingService.GetPendingPaymentsAsync*
+  commentId: Overload:Meridian.Application.Banking.InMemoryBankingService.GetPendingPaymentsAsync
+  href: Meridian.Application.Banking.InMemoryBankingService.html#Meridian_Application_Banking_InMemoryBankingService_GetPendingPaymentsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: GetPendingPaymentsAsync
+  nameWithType: InMemoryBankingService.GetPendingPaymentsAsync
+  fullName: Meridian.Application.Banking.InMemoryBankingService.GetPendingPaymentsAsync
+- uid: Meridian.Application.Banking.IBankingService.GetPendingPaymentsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.IBankingService.GetPendingPaymentsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.IBankingService
+  isExternal: true
+  href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_GetPendingPaymentsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: GetPendingPaymentsAsync(Guid?, CancellationToken)
+  nameWithType: IBankingService.GetPendingPaymentsAsync(Guid?, CancellationToken)
+  fullName: Meridian.Application.Banking.IBankingService.GetPendingPaymentsAsync(System.Guid?, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Banking.IBankingService.GetPendingPaymentsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: GetPendingPaymentsAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_GetPendingPaymentsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Banking.IBankingService.GetPendingPaymentsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: GetPendingPaymentsAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_GetPendingPaymentsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.PendingPaymentDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.PendingPaymentDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<PendingPaymentDto>>
+  nameWithType: Task<IReadOnlyList<PendingPaymentDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Banking.PendingPaymentDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of PendingPaymentDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Banking.PendingPaymentDto))
+  name.vb: Task(Of IReadOnlyList(Of PendingPaymentDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Banking.PendingPaymentDto
+    name: PendingPaymentDto
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Banking.PendingPaymentDto
+    name: PendingPaymentDto
+  - name: )
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Banking.InMemoryBankingService.GetBankTransactionsAsync*
+  commentId: Overload:Meridian.Application.Banking.InMemoryBankingService.GetBankTransactionsAsync
+  href: Meridian.Application.Banking.InMemoryBankingService.html#Meridian_Application_Banking_InMemoryBankingService_GetBankTransactionsAsync_System_Nullable_System_Guid__System_Threading_CancellationToken_
+  name: GetBankTransactionsAsync
+  nameWithType: InMemoryBankingService.GetBankTransactionsAsync
+  fullName: Meridian.Application.Banking.InMemoryBankingService.GetBankTransactionsAsync
+- uid: Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  commentId: M:Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+  parent: Meridian.Contracts.Banking.IBankTransactionSource
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: GetBankTransactionsAsync(Guid?, CancellationToken)
+  nameWithType: IBankTransactionSource.GetBankTransactionsAsync(Guid?, CancellationToken)
+  fullName: Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Guid?, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: GetBankTransactionsAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Contracts.Banking.IBankTransactionSource.GetBankTransactionsAsync(System.Nullable{System.Guid},System.Threading.CancellationToken)
+    name: GetBankTransactionsAsync
+  - name: (
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.Banking.BankTransactionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<BankTransactionDto>>
+  nameWithType: Task<IReadOnlyList<BankTransactionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.Banking.BankTransactionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of BankTransactionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.Banking.BankTransactionDto))
+  name.vb: Task(Of IReadOnlyList(Of BankTransactionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.Banking.BankTransactionDto
+    name: BankTransactionDto
+    href: Meridian.Contracts.Banking.BankTransactionDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Banking.BankTransactionDto
+    name: BankTransactionDto
+    href: Meridian.Contracts.Banking.BankTransactionDto.html
+  - name: )
+  - name: )
+- uid: Meridian.Application.Banking.InMemoryBankingService.SeedBankTransactionsAsync*
+  commentId: Overload:Meridian.Application.Banking.InMemoryBankingService.SeedBankTransactionsAsync
+  href: Meridian.Application.Banking.InMemoryBankingService.html#Meridian_Application_Banking_InMemoryBankingService_SeedBankTransactionsAsync_Meridian_Contracts_Banking_BankTransactionSeedRequest_System_Threading_CancellationToken_
+  name: SeedBankTransactionsAsync
+  nameWithType: InMemoryBankingService.SeedBankTransactionsAsync
+  fullName: Meridian.Application.Banking.InMemoryBankingService.SeedBankTransactionsAsync
+- uid: Meridian.Application.Banking.IBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Banking.IBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest,System.Threading.CancellationToken)
+  parent: Meridian.Application.Banking.IBankingService
+  isExternal: true
+  href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_SeedBankTransactionsAsync_Meridian_Contracts_Banking_BankTransactionSeedRequest_System_Threading_CancellationToken_
+  name: SeedBankTransactionsAsync(BankTransactionSeedRequest, CancellationToken)
+  nameWithType: IBankingService.SeedBankTransactionsAsync(BankTransactionSeedRequest, CancellationToken)
+  fullName: Meridian.Application.Banking.IBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Banking.IBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest,System.Threading.CancellationToken)
+    name: SeedBankTransactionsAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_SeedBankTransactionsAsync_Meridian_Contracts_Banking_BankTransactionSeedRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Banking.BankTransactionSeedRequest
+    name: BankTransactionSeedRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Banking.IBankingService.SeedBankTransactionsAsync(Meridian.Contracts.Banking.BankTransactionSeedRequest,System.Threading.CancellationToken)
+    name: SeedBankTransactionsAsync
+    href: Meridian.Application.Banking.IBankingService.html#Meridian_Application_Banking_IBankingService_SeedBankTransactionsAsync_Meridian_Contracts_Banking_BankTransactionSeedRequest_System_Threading_CancellationToken_
+  - name: (
+  - uid: Meridian.Contracts.Banking.BankTransactionSeedRequest
+    name: BankTransactionSeedRequest
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: Meridian.Contracts.Banking.BankTransactionSeedRequest
+  commentId: T:Meridian.Contracts.Banking.BankTransactionSeedRequest
+  parent: Meridian.Contracts.Banking
+  href: Meridian.Contracts.Banking.BankTransactionSeedRequest.html
+  name: BankTransactionSeedRequest
+  nameWithType: BankTransactionSeedRequest
+  fullName: Meridian.Contracts.Banking.BankTransactionSeedRequest
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.Banking.BankTransactionSeedResultDto}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.Banking.BankTransactionSeedResultDto}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BankTransactionSeedResultDto>
+  nameWithType: Task<BankTransactionSeedResultDto>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.Banking.BankTransactionSeedResultDto>
+  nameWithType.vb: Task(Of BankTransactionSeedResultDto)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.Banking.BankTransactionSeedResultDto)
+  name.vb: Task(Of BankTransactionSeedResultDto)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.Banking.BankTransactionSeedResultDto
+    name: BankTransactionSeedResultDto
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Banking.BankTransactionSeedResultDto
+    name: BankTransactionSeedResultDto
+  - name: )

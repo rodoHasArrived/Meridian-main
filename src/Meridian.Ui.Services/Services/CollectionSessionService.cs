@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Meridian.Contracts.Configuration;
+using Meridian.Ui.Services.Contracts;
 
 namespace Meridian.Ui.Services;
 
@@ -14,19 +16,27 @@ namespace Meridian.Ui.Services;
 public sealed class CollectionSessionService
 {
     private static readonly Lazy<CollectionSessionService> _instance = new(() => new CollectionSessionService());
-    private readonly ConfigService _configService;
+    private readonly IConfigService _configService;
     private readonly NotificationService _notificationService;
-    private readonly string _sessionsFilePath;
+    private readonly string _legacySessionsFilePath;
+    private readonly Lock _pathInitializationLock = new();
+    private Task? _pathInitializationTask;
+    private string? _sessionsFilePath;
     private CollectionSessionsConfig? _sessionsConfig;
     private CollectionSession? _activeSession;
 
     public static CollectionSessionService Instance => _instance.Value;
 
     private CollectionSessionService()
+        : this(new ConfigService(), NotificationService.Instance)
     {
-        _configService = new ConfigService();
-        _notificationService = NotificationService.Instance;
-        _sessionsFilePath = Path.Combine(AppContext.BaseDirectory, "sessions.json");
+    }
+
+    internal CollectionSessionService(IConfigService configService, NotificationService notificationService)
+    {
+        _configService = configService;
+        _notificationService = notificationService;
+        _legacySessionsFilePath = Path.Combine(AppContext.BaseDirectory, "sessions.json");
     }
 
     /// <summary>
@@ -41,10 +51,25 @@ public sealed class CollectionSessionService
 
         try
         {
-            if (File.Exists(_sessionsFilePath))
+            var sessionsFilePath = await GetSessionsFilePathAsync(ct);
+            var loadPath = sessionsFilePath;
+            var migratedFromLegacy = false;
+            if (!File.Exists(loadPath) &&
+                !PathsEqual(sessionsFilePath, _legacySessionsFilePath) &&
+                File.Exists(_legacySessionsFilePath))
             {
-                var json = await File.ReadAllTextAsync(_sessionsFilePath);
+                loadPath = _legacySessionsFilePath;
+                migratedFromLegacy = true;
+            }
+
+            if (File.Exists(loadPath))
+            {
+                var json = await File.ReadAllTextAsync(loadPath, ct);
                 _sessionsConfig = JsonSerializer.Deserialize<CollectionSessionsConfig>(json, DesktopJsonOptions.Compact);
+                if (migratedFromLegacy && _sessionsConfig != null)
+                {
+                    await SaveSessionsAsync(ct);
+                }
             }
         }
         catch (Exception)
@@ -65,8 +90,15 @@ public sealed class CollectionSessionService
 
         try
         {
+            var sessionsFilePath = await GetSessionsFilePathAsync(ct);
+            var directory = Path.GetDirectoryName(sessionsFilePath);
+            if (!string.IsNullOrWhiteSpace(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
             var json = JsonSerializer.Serialize(_sessionsConfig, DesktopJsonOptions.PrettyPrint);
-            await File.WriteAllTextAsync(_sessionsFilePath, json);
+            await File.WriteAllTextAsync(sessionsFilePath, json, ct);
         }
         catch (Exception)
         {
@@ -78,7 +110,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task<CollectionSession[]> GetSessionsAsync(CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         return config.Sessions ?? Array.Empty<CollectionSession>();
     }
 
@@ -87,7 +119,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task<CollectionSession?> GetActiveSessionAsync(CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         if (string.IsNullOrEmpty(config.ActiveSessionId))
         {
             return null;
@@ -101,8 +133,8 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task<CollectionSession> CreateSessionAsync(string name, string? description = null, string[]? tags = null, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
-        var appConfig = await _configService.LoadConfigAsync();
+        var config = await LoadSessionsAsync(ct);
+        var appConfig = await _configService.LoadConfigAsync(ct);
 
         var session = new CollectionSession
         {
@@ -122,7 +154,7 @@ public sealed class CollectionSessionService
         sessions.Add(session);
         config.Sessions = sessions.ToArray();
 
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
 
         SessionCreated?.Invoke(this, new CollectionSessionEventArgs { Session = session });
 
@@ -134,7 +166,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task<CollectionSession> CreateDailySessionAsync(CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var pattern = config.SessionNamingPattern ?? "{date}-{mode}";
         var date = DateTime.UtcNow.ToString(FormatHelpers.IsoDateFormat);
         var mode = "regular-hours";
@@ -143,7 +175,7 @@ public sealed class CollectionSessionService
             .Replace("{date}", date)
             .Replace("{mode}", mode);
 
-        return await CreateSessionAsync(name, $"Auto-generated daily session for {date}", new[] { "auto", "daily" });
+        return await CreateSessionAsync(name, $"Auto-generated daily session for {date}", new[] { "auto", "daily" }, ct);
     }
 
     /// <summary>
@@ -151,7 +183,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task StartSessionAsync(string sessionId, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
         if (session == null)
@@ -175,7 +207,7 @@ public sealed class CollectionSessionService
         config.ActiveSessionId = sessionId;
 
         _activeSession = session;
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
 
         SessionStarted?.Invoke(this, new CollectionSessionEventArgs { Session = session });
 
@@ -190,7 +222,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task StopSessionAsync(string sessionId, bool generateManifest = true, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
         if (session == null)
@@ -214,7 +246,7 @@ public sealed class CollectionSessionService
         }
 
         _activeSession = null;
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
 
         // Generate manifest if configured
         if (generateManifest && config.GenerateManifestOnComplete)
@@ -224,7 +256,7 @@ public sealed class CollectionSessionService
                 var manifestService = ManifestService.Instance;
                 var manifest = await manifestService.GenerateManifestForSessionAsync(session);
                 session.ManifestPath = manifest.Item2;
-                await SaveSessionsAsync();
+                await SaveSessionsAsync(ct);
             }
             catch (Exception)
             {
@@ -244,7 +276,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task PauseSessionAsync(string sessionId, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
         if (session == null || session.Status != "Active")
@@ -255,7 +287,7 @@ public sealed class CollectionSessionService
         session.Status = "Paused";
         session.UpdatedAt = DateTime.UtcNow;
 
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
         SessionPaused?.Invoke(this, new CollectionSessionEventArgs { Session = session });
     }
 
@@ -264,7 +296,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task ResumeSessionAsync(string sessionId, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
         if (session == null || session.Status != "Paused")
@@ -275,7 +307,7 @@ public sealed class CollectionSessionService
         session.Status = "Active";
         session.UpdatedAt = DateTime.UtcNow;
 
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
         SessionResumed?.Invoke(this, new CollectionSessionEventArgs { Session = session });
     }
 
@@ -284,7 +316,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task UpdateSessionStatisticsAsync(string sessionId, long newEvents, long newBytes, string eventType, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
         if (session?.Statistics == null)
@@ -320,7 +352,7 @@ public sealed class CollectionSessionService
         }
 
         session.UpdatedAt = DateTime.UtcNow;
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
 
         StatisticsUpdated?.Invoke(this, new CollectionSessionEventArgs { Session = session });
     }
@@ -330,7 +362,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task RecordGapDetectedAsync(string sessionId, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
         if (session?.Statistics == null)
@@ -338,7 +370,7 @@ public sealed class CollectionSessionService
 
         session.Statistics.GapsDetected++;
         session.UpdatedAt = DateTime.UtcNow;
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
     }
 
     /// <summary>
@@ -346,7 +378,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task RecordSequenceErrorAsync(string sessionId, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
         if (session?.Statistics == null)
@@ -354,7 +386,7 @@ public sealed class CollectionSessionService
 
         session.Statistics.SequenceErrors++;
         session.UpdatedAt = DateTime.UtcNow;
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
     }
 
     /// <summary>
@@ -362,7 +394,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task DeleteSessionAsync(string sessionId, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var sessions = config.Sessions?.ToList() ?? new List<CollectionSession>();
         var session = sessions.FirstOrDefault(s => s.Id == sessionId);
 
@@ -382,7 +414,7 @@ public sealed class CollectionSessionService
             config.ActiveSessionId = null;
         }
 
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
         SessionDeleted?.Invoke(this, new CollectionSessionEventArgs { Session = session });
     }
 
@@ -391,7 +423,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task UpdateSessionNotesAsync(string sessionId, string? notes, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
         if (session == null)
@@ -399,7 +431,7 @@ public sealed class CollectionSessionService
 
         session.Notes = notes;
         session.UpdatedAt = DateTime.UtcNow;
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
     }
 
     /// <summary>
@@ -407,7 +439,7 @@ public sealed class CollectionSessionService
     /// </summary>
     public async Task UpdateSessionTagsAsync(string sessionId, string[]? tags, CancellationToken ct = default)
     {
-        var config = await LoadSessionsAsync();
+        var config = await LoadSessionsAsync(ct);
         var session = config.Sessions?.FirstOrDefault(s => s.Id == sessionId);
 
         if (session == null)
@@ -415,7 +447,7 @@ public sealed class CollectionSessionService
 
         session.Tags = tags;
         session.UpdatedAt = DateTime.UtcNow;
-        await SaveSessionsAsync();
+        await SaveSessionsAsync(ct);
     }
 
     /// <summary>
@@ -489,6 +521,45 @@ Verification: {(session.ManifestPath != null ? "✓ Manifest generated" : "Pendi
 
         return Math.Max(0, Math.Min(100, score));
     }
+
+    private async Task<string> GetSessionsFilePathAsync(CancellationToken ct)
+    {
+        await EnsurePathsResolvedAsync(ct);
+        return _sessionsFilePath!;
+    }
+
+    private async Task EnsurePathsResolvedAsync(CancellationToken ct)
+    {
+        Task initializationTask;
+        lock (_pathInitializationLock)
+        {
+            _pathInitializationTask ??= InitialisePathsAsync(CancellationToken.None);
+            initializationTask = _pathInitializationTask;
+        }
+
+        await initializationTask.WaitAsync(ct);
+    }
+
+    private async Task InitialisePathsAsync(CancellationToken ct)
+    {
+        AppConfig? config = null;
+        try
+        {
+            config = await _configService.LoadConfigAsync(ct);
+        }
+        catch
+        {
+        }
+
+        var dataRoot = MeridianPathDefaults.ResolveDataRoot(_configService.ConfigPath, config?.DataRoot);
+        _sessionsFilePath = Path.Combine(dataRoot, "_sessions", "sessions.json");
+    }
+
+    private static bool PathsEqual(string left, string right)
+        => string.Equals(
+            Path.GetFullPath(left),
+            Path.GetFullPath(right),
+            StringComparison.OrdinalIgnoreCase);
 
     private static string FormatDuration(TimeSpan duration)
     {

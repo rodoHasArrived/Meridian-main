@@ -18,8 +18,11 @@ namespace Meridian.Ui.Services;
 public class ConfigService : IConfigService
 {
     private static readonly Lazy<ConfigService> _instance = new(() => new ConfigService());
+    private static readonly Func<string> _defaultPathResolver = () =>
+        Path.Combine(AppContext.BaseDirectory, "config", "appsettings.json");
 
     public static ConfigService Instance => _instance.Value;
+    public static Func<string> DefaultPathResolver { get; set; } = _defaultPathResolver;
 
     private static readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -31,7 +34,10 @@ public class ConfigService : IConfigService
 
     public ConfigService()
     {
-        ConfigPath = Path.Combine(AppContext.BaseDirectory, "config", "appsettings.json");
+        var configPath = DefaultPathResolver();
+        ConfigPath = Path.IsPathRooted(configPath)
+            ? configPath
+            : Path.GetFullPath(configPath);
     }
 
     public virtual async Task<AppConfig?> LoadConfigAsync(CancellationToken ct = default)
@@ -41,7 +47,12 @@ public class ConfigService : IConfigService
         try
         {
             var json = await File.ReadAllTextAsync(ConfigPath, ct);
-            return JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions);
+            var config = JsonSerializer.Deserialize<AppConfig>(json, _jsonOptions);
+            if (config == null)
+                return null;
+
+            config.DataRoot = MeridianPathDefaults.ResolveConfiguredDataRootFromJson(json, config.DataRoot);
+            return config;
         }
         catch (IOException) { return null; }
         catch (UnauthorizedAccessException) { return null; }
@@ -52,9 +63,17 @@ public class ConfigService : IConfigService
         var dir = Path.GetDirectoryName(ConfigPath);
         if (dir != null)
             Directory.CreateDirectory(dir);
+
+        config.DataRoot = string.IsNullOrWhiteSpace(config.DataRoot)
+            ? MeridianPathDefaults.DefaultDataRoot
+            : config.DataRoot;
+
         var json = JsonSerializer.Serialize(config, _jsonOptions);
         await File.WriteAllTextAsync(ConfigPath, json, ct);
     }
+
+    public string ResolveDataRoot(AppConfig? config = null)
+        => MeridianPathDefaults.ResolveDataRoot(ConfigPath, config?.DataRoot);
 
     public async Task SaveDataSourceAsync(string dataSource, CancellationToken ct = default)
     {

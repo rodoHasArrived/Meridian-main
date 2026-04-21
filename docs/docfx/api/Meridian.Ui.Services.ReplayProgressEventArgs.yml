@@ -1,0 +1,556 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs
+  commentId: T:Meridian.Ui.Services.ReplayProgressEventArgs
+  id: ReplayProgressEventArgs
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ReplayProgressEventArgs.Elapsed
+  - Meridian.Ui.Services.ReplayProgressEventArgs.EventsReplayed
+  - Meridian.Ui.Services.ReplayProgressEventArgs.ProgressPercent
+  - Meridian.Ui.Services.ReplayProgressEventArgs.Remaining
+  - Meridian.Ui.Services.ReplayProgressEventArgs.SessionId
+  - Meridian.Ui.Services.ReplayProgressEventArgs.TotalEvents
+  langs:
+  - csharp
+  - vb
+  name: ReplayProgressEventArgs
+  nameWithType: ReplayProgressEventArgs
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/EventReplayService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReplayProgressEventArgs
+    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    startLine: 276
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: 'public sealed class ReplayProgressEventArgs : EventArgs'
+    content.vb: Public NotInheritable Class ReplayProgressEventArgs Inherits EventArgs
+  inheritance:
+  - System.Object
+  - System.EventArgs
+  inheritedMembers:
+  - System.EventArgs.Empty
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.SessionId
+  commentId: P:Meridian.Ui.Services.ReplayProgressEventArgs.SessionId
+  id: SessionId
+  parent: Meridian.Ui.Services.ReplayProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: SessionId
+  nameWithType: ReplayProgressEventArgs.SessionId
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.SessionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/EventReplayService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionId
+    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    startLine: 278
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string SessionId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SessionId As String
+  overload: Meridian.Ui.Services.ReplayProgressEventArgs.SessionId*
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.EventsReplayed
+  commentId: P:Meridian.Ui.Services.ReplayProgressEventArgs.EventsReplayed
+  id: EventsReplayed
+  parent: Meridian.Ui.Services.ReplayProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: EventsReplayed
+  nameWithType: ReplayProgressEventArgs.EventsReplayed
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.EventsReplayed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/EventReplayService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventsReplayed
+    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    startLine: 279
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long EventsReplayed { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property EventsReplayed As Long
+  overload: Meridian.Ui.Services.ReplayProgressEventArgs.EventsReplayed*
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.TotalEvents
+  commentId: P:Meridian.Ui.Services.ReplayProgressEventArgs.TotalEvents
+  id: TotalEvents
+  parent: Meridian.Ui.Services.ReplayProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: TotalEvents
+  nameWithType: ReplayProgressEventArgs.TotalEvents
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.TotalEvents
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/EventReplayService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalEvents
+    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    startLine: 280
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public long TotalEvents { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalEvents As Long
+  overload: Meridian.Ui.Services.ReplayProgressEventArgs.TotalEvents*
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.ProgressPercent
+  commentId: P:Meridian.Ui.Services.ReplayProgressEventArgs.ProgressPercent
+  id: ProgressPercent
+  parent: Meridian.Ui.Services.ReplayProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: ProgressPercent
+  nameWithType: ReplayProgressEventArgs.ProgressPercent
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.ProgressPercent
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/EventReplayService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProgressPercent
+    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    startLine: 281
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public double ProgressPercent { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ProgressPercent As Double
+  overload: Meridian.Ui.Services.ReplayProgressEventArgs.ProgressPercent*
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.Elapsed
+  commentId: P:Meridian.Ui.Services.ReplayProgressEventArgs.Elapsed
+  id: Elapsed
+  parent: Meridian.Ui.Services.ReplayProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Elapsed
+  nameWithType: ReplayProgressEventArgs.Elapsed
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.Elapsed
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/EventReplayService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Elapsed
+    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public TimeSpan Elapsed { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Elapsed As TimeSpan
+  overload: Meridian.Ui.Services.ReplayProgressEventArgs.Elapsed*
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.Remaining
+  commentId: P:Meridian.Ui.Services.ReplayProgressEventArgs.Remaining
+  id: Remaining
+  parent: Meridian.Ui.Services.ReplayProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Remaining
+  nameWithType: ReplayProgressEventArgs.Remaining
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.Remaining
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/EventReplayService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Remaining
+    path: ../../src/Meridian.Ui.Services/Services/EventReplayService.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public TimeSpan Remaining { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property Remaining As TimeSpan
+  overload: Meridian.Ui.Services.ReplayProgressEventArgs.Remaining*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.EventArgs
+  commentId: T:System.EventArgs
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs
+  name: EventArgs
+  nameWithType: EventArgs
+  fullName: System.EventArgs
+- uid: System.EventArgs.Empty
+  commentId: F:System.EventArgs.Empty
+  parent: System.EventArgs
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs.empty
+  name: Empty
+  nameWithType: EventArgs.Empty
+  fullName: System.EventArgs.Empty
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.SessionId*
+  commentId: Overload:Meridian.Ui.Services.ReplayProgressEventArgs.SessionId
+  href: Meridian.Ui.Services.ReplayProgressEventArgs.html#Meridian_Ui_Services_ReplayProgressEventArgs_SessionId
+  name: SessionId
+  nameWithType: ReplayProgressEventArgs.SessionId
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.SessionId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.EventsReplayed*
+  commentId: Overload:Meridian.Ui.Services.ReplayProgressEventArgs.EventsReplayed
+  href: Meridian.Ui.Services.ReplayProgressEventArgs.html#Meridian_Ui_Services_ReplayProgressEventArgs_EventsReplayed
+  name: EventsReplayed
+  nameWithType: ReplayProgressEventArgs.EventsReplayed
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.EventsReplayed
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.TotalEvents*
+  commentId: Overload:Meridian.Ui.Services.ReplayProgressEventArgs.TotalEvents
+  href: Meridian.Ui.Services.ReplayProgressEventArgs.html#Meridian_Ui_Services_ReplayProgressEventArgs_TotalEvents
+  name: TotalEvents
+  nameWithType: ReplayProgressEventArgs.TotalEvents
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.TotalEvents
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.ProgressPercent*
+  commentId: Overload:Meridian.Ui.Services.ReplayProgressEventArgs.ProgressPercent
+  href: Meridian.Ui.Services.ReplayProgressEventArgs.html#Meridian_Ui_Services_ReplayProgressEventArgs_ProgressPercent
+  name: ProgressPercent
+  nameWithType: ReplayProgressEventArgs.ProgressPercent
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.ProgressPercent
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.Elapsed*
+  commentId: Overload:Meridian.Ui.Services.ReplayProgressEventArgs.Elapsed
+  href: Meridian.Ui.Services.ReplayProgressEventArgs.html#Meridian_Ui_Services_ReplayProgressEventArgs_Elapsed
+  name: Elapsed
+  nameWithType: ReplayProgressEventArgs.Elapsed
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.Elapsed
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: Meridian.Ui.Services.ReplayProgressEventArgs.Remaining*
+  commentId: Overload:Meridian.Ui.Services.ReplayProgressEventArgs.Remaining
+  href: Meridian.Ui.Services.ReplayProgressEventArgs.html#Meridian_Ui_Services_ReplayProgressEventArgs_Remaining
+  name: Remaining
+  nameWithType: ReplayProgressEventArgs.Remaining
+  fullName: Meridian.Ui.Services.ReplayProgressEventArgs.Remaining

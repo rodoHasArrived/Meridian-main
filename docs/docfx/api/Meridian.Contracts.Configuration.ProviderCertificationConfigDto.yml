@@ -1,0 +1,710 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  commentId: T:Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  id: ProviderCertificationConfigDto
+  parent: Meridian.Contracts.Configuration
+  children:
+  - Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Checks
+  - Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ConnectionId
+  - Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ExpiresAt
+  - Meridian.Contracts.Configuration.ProviderCertificationConfigDto.LastRunAt
+  - Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Notes
+  - Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ProductionReady
+  - Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Status
+  langs:
+  - csharp
+  - vb
+  name: ProviderCertificationConfigDto
+  nameWithType: ProviderCertificationConfigDto
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProviderCertificationConfigDto
+    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: public sealed class ProviderCertificationConfigDto
+    content.vb: Public NotInheritable Class ProviderCertificationConfigDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ConnectionId
+  commentId: P:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ConnectionId
+  id: ConnectionId
+  parent: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  langs:
+  - csharp
+  - vb
+  name: ConnectionId
+  nameWithType: ProviderCertificationConfigDto.ConnectionId
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ConnectionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConnectionId
+    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    startLine: 150
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("connectionId")]
+
+      public string ConnectionId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("connectionId")>
+
+      Public Property ConnectionId As String
+  overload: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ConnectionId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: connectionId
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Status
+  commentId: P:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Status
+  id: Status
+  parent: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: ProviderCertificationConfigDto.Status
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Status
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Status
+    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    startLine: 153
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("status")]
+
+      public string Status { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("status")>
+
+      Public Property Status As String
+  overload: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Status*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: status
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.LastRunAt
+  commentId: P:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.LastRunAt
+  id: LastRunAt
+  parent: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  langs:
+  - csharp
+  - vb
+  name: LastRunAt
+  nameWithType: ProviderCertificationConfigDto.LastRunAt
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.LastRunAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LastRunAt
+    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("lastRunAt")]
+
+      public DateTimeOffset? LastRunAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: >-
+      <JsonPropertyName("lastRunAt")>
+
+      Public Property LastRunAt As DateTimeOffset?
+  overload: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.LastRunAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: lastRunAt
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ExpiresAt
+  commentId: P:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ExpiresAt
+  id: ExpiresAt
+  parent: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  langs:
+  - csharp
+  - vb
+  name: ExpiresAt
+  nameWithType: ProviderCertificationConfigDto.ExpiresAt
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ExpiresAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpiresAt
+    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("expiresAt")]
+
+      public DateTimeOffset? ExpiresAt { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.DateTimeOffset}
+    content.vb: >-
+      <JsonPropertyName("expiresAt")>
+
+      Public Property ExpiresAt As DateTimeOffset?
+  overload: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ExpiresAt*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: expiresAt
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ProductionReady
+  commentId: P:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ProductionReady
+  id: ProductionReady
+  parent: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  langs:
+  - csharp
+  - vb
+  name: ProductionReady
+  nameWithType: ProviderCertificationConfigDto.ProductionReady
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ProductionReady
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ProductionReady
+    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    startLine: 162
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("productionReady")]
+
+      public bool ProductionReady { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("productionReady")>
+
+      Public Property ProductionReady As Boolean
+  overload: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ProductionReady*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: productionReady
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Checks
+  commentId: P:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Checks
+  id: Checks
+  parent: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Checks
+  nameWithType: ProviderCertificationConfigDto.Checks
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Checks
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Checks
+    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("checks")]
+
+      public string[]? Checks { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("checks")>
+
+      Public Property Checks As String()
+  overload: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Checks*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: checks
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Notes
+  commentId: P:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Notes
+  id: Notes
+  parent: Meridian.Contracts.Configuration.ProviderCertificationConfigDto
+  langs:
+  - csharp
+  - vb
+  name: Notes
+  nameWithType: ProviderCertificationConfigDto.Notes
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Notes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Notes
+    path: ../../src/Meridian.Contracts/Configuration/ProviderConnectionsConfigDto.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Configuration
+  syntax:
+    content: >-
+      [JsonPropertyName("notes")]
+
+      public string[]? Notes { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: >-
+      <JsonPropertyName("notes")>
+
+      Public Property Notes As String()
+  overload: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Notes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: notes
+references:
+- uid: Meridian.Contracts.Configuration
+  commentId: N:Meridian.Contracts.Configuration
+  href: Meridian.html
+  name: Meridian.Contracts.Configuration
+  nameWithType: Meridian.Contracts.Configuration
+  fullName: Meridian.Contracts.Configuration
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Configuration
+    name: Configuration
+    href: Meridian.Contracts.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ConnectionId*
+  commentId: Overload:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ConnectionId
+  href: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.html#Meridian_Contracts_Configuration_ProviderCertificationConfigDto_ConnectionId
+  name: ConnectionId
+  nameWithType: ProviderCertificationConfigDto.ConnectionId
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ConnectionId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Status*
+  commentId: Overload:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Status
+  href: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.html#Meridian_Contracts_Configuration_ProviderCertificationConfigDto_Status
+  name: Status
+  nameWithType: ProviderCertificationConfigDto.Status
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Status
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.LastRunAt*
+  commentId: Overload:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.LastRunAt
+  href: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.html#Meridian_Contracts_Configuration_ProviderCertificationConfigDto_LastRunAt
+  name: LastRunAt
+  nameWithType: ProviderCertificationConfigDto.LastRunAt
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.LastRunAt
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ExpiresAt*
+  commentId: Overload:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ExpiresAt
+  href: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.html#Meridian_Contracts_Configuration_ProviderCertificationConfigDto_ExpiresAt
+  name: ExpiresAt
+  nameWithType: ProviderCertificationConfigDto.ExpiresAt
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ExpiresAt
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ProductionReady*
+  commentId: Overload:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ProductionReady
+  href: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.html#Meridian_Contracts_Configuration_ProviderCertificationConfigDto_ProductionReady
+  name: ProductionReady
+  nameWithType: ProviderCertificationConfigDto.ProductionReady
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.ProductionReady
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Checks*
+  commentId: Overload:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Checks
+  href: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.html#Meridian_Contracts_Configuration_ProviderCertificationConfigDto_Checks
+  name: Checks
+  nameWithType: ProviderCertificationConfigDto.Checks
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Checks
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Notes*
+  commentId: Overload:Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Notes
+  href: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.html#Meridian_Contracts_Configuration_ProviderCertificationConfigDto_Notes
+  name: Notes
+  nameWithType: ProviderCertificationConfigDto.Notes
+  fullName: Meridian.Contracts.Configuration.ProviderCertificationConfigDto.Notes

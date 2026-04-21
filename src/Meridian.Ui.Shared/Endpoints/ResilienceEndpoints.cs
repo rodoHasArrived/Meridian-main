@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Application.Backfill;
 using Meridian.Application.Monitoring;
 using Meridian.Contracts.Api;
+using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -55,11 +56,22 @@ public static class ResilienceEndpoints
                 }, jsonOptions, statusCode: 503);
             }
 
+            if (!DataGranularityExtensions.TryParseValue(req.Granularity, out var granularity) &&
+                !string.IsNullOrWhiteSpace(req.Granularity))
+            {
+                return Results.Json(new
+                {
+                    error = $"Unsupported granularity '{req.Granularity}'.",
+                    timestamp = DateTimeOffset.UtcNow
+                }, jsonOptions, statusCode: 400);
+            }
+
             var costRequest = new BackfillCostRequest(
                 Symbols: req.Symbols,
                 Provider: req.Provider,
                 From: req.From,
-                To: req.To);
+                To: req.To,
+                Granularity: granularity);
 
             var estimate = estimator.Estimate(costRequest);
             return Results.Json(estimate, jsonOptions);
@@ -97,5 +109,6 @@ public static class ResilienceEndpoints
         string[]? Symbols,
         string? Provider = null,
         DateOnly? From = null,
-        DateOnly? To = null);
+        DateOnly? To = null,
+        string? Granularity = null);
 }

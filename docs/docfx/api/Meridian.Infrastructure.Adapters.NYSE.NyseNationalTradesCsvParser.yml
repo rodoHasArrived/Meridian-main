@@ -1,0 +1,941 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  id: NyseNationalTradesCsvParser
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  children:
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.GetMessageType(System.String)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.MapExchangeCode(System.Int32)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseAllTrades(System.Collections.Generic.IEnumerable{System.String},System.DateOnly)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseTradeLine(System.String,System.DateOnly)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.StatusMessageType
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.SummaryMessageType
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ToRealtimeTrade(Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord)
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TradeMessageType
+  - Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TryParseNanosecondTime(System.String,System.DateOnly,System.DateTimeOffset@)
+  langs:
+  - csharp
+  - vb
+  name: NyseNationalTradesCsvParser
+  nameWithType: NyseNationalTradesCsvParser
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NyseNationalTradesCsvParser
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Parser for NYSE TAQ (Trade and Quote) National Trades CSV files.
+
+
+    File format: EQY_US_TAQ_NATIONAL_TRADES_YYYYMMDD.gz
+
+    Distributed via NYSE FTP: ftp.nyse.com/Historical Data Samples/TAQ NYSE NATIONAL TRADES/
+
+
+    Message types in the CSV:
+      3   - Symbol summary record (open price, daily statistics)
+      34  - Trading status record (halt, resume, etc.)
+      220 - Trade print record (actual executed trades)
+
+    Type-220 column layout (1-indexed):
+      1  msg_type       : Always 220
+      2  global_seq_num : SIP-assigned sequence number (unique within day)
+      3  time           : HH:MM:SS.nnnnnnnnn (nanosecond precision, Eastern Time)
+      4  symbol         : Ticker symbol (may contain spaces for test symbols)
+      5  exchange_code  : Numeric SIP participant code for reporting exchange
+      6  exch_seq_num   : Exchange-provided trade sequence number
+      7  price          : Trade price (decimal; may omit leading zero, e.g., ".1185")
+      8  volume         : Trade volume (shares)
+      9  sale_condition : Sale condition character(s) (e.g., "@" = regular round-lot)
+      10 correction     : Correction indicator ("F" = final correction, " " = normal)
+      11 tape           : Consolidated tape ("T" = Tape A/NYSE-listed, " " = other)
+      12 stopped_stock  : Stopped stock indicator ("I" = stopped/indicated, " " = normal)
+
+    Exchange codes (field 5) — SIP participant numbering:
+      4 = NYSE Arca (P)     5 = NYSE (N)          6 = CBOE EDGX (K)
+      7 = CBOE EDGA (J)     8 = CBOE BZX (Z)      9 = CBOE BYX (Y)
+     10 = NYSE American (A) 11 = NASDAQ (Q)       12 = NASDAQ BX (B)
+     13 = IEX (V)           14 = MEMX (U)         15 = LTSE (L)
+  example: []
+  syntax:
+    content: public static class NyseNationalTradesCsvParser
+    content.vb: Public Module NyseNationalTradesCsvParser
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TradeMessageType
+  commentId: F:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TradeMessageType
+  id: TradeMessageType
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  langs:
+  - csharp
+  - vb
+  name: TradeMessageType
+  nameWithType: NyseNationalTradesCsvParser.TradeMessageType
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TradeMessageType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeMessageType
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Trade message type code in NYSE TAQ National Trades CSV files.
+  example: []
+  syntax:
+    content: public const int TradeMessageType = 220
+    return:
+      type: System.Int32
+    content.vb: Public Const TradeMessageType As Integer = 220
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.SummaryMessageType
+  commentId: F:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.SummaryMessageType
+  id: SummaryMessageType
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  langs:
+  - csharp
+  - vb
+  name: SummaryMessageType
+  nameWithType: NyseNationalTradesCsvParser.SummaryMessageType
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.SummaryMessageType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SummaryMessageType
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Symbol summary message type.
+  example: []
+  syntax:
+    content: public const int SummaryMessageType = 3
+    return:
+      type: System.Int32
+    content.vb: Public Const SummaryMessageType As Integer = 3
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.StatusMessageType
+  commentId: F:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.StatusMessageType
+  id: StatusMessageType
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  langs:
+  - csharp
+  - vb
+  name: StatusMessageType
+  nameWithType: NyseNationalTradesCsvParser.StatusMessageType
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.StatusMessageType
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StatusMessageType
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Trading status message type.
+  example: []
+  syntax:
+    content: public const int StatusMessageType = 34
+    return:
+      type: System.Int32
+    content.vb: Public Const StatusMessageType As Integer = 34
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseTradeLine(System.String,System.DateOnly)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseTradeLine(System.String,System.DateOnly)
+  id: ParseTradeLine(System.String,System.DateOnly)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  langs:
+  - csharp
+  - vb
+  name: ParseTradeLine(string, DateOnly)
+  nameWithType: NyseNationalTradesCsvParser.ParseTradeLine(string, DateOnly)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseTradeLine(string, System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseTradeLine
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Parses a single type-220 (trade) CSV line into a <xref href="Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord" data-throw-if-not-resolved="false"></xref>.
+
+    Returns <code>null</code> for non-trade records or lines that fail to parse.
+  example: []
+  syntax:
+    content: public static NyseTaqTradeRecord? ParseTradeLine(string line, DateOnly sessionDate)
+    parameters:
+    - id: line
+      type: System.String
+    - id: sessionDate
+      type: System.DateOnly
+    return:
+      type: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+    content.vb: Public Shared Function ParseTradeLine(line As String, sessionDate As DateOnly) As NyseTaqTradeRecord
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseTradeLine*
+  nameWithType.vb: NyseNationalTradesCsvParser.ParseTradeLine(String, DateOnly)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseTradeLine(String, System.DateOnly)
+  name.vb: ParseTradeLine(String, DateOnly)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ToRealtimeTrade(Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ToRealtimeTrade(Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord)
+  id: ToRealtimeTrade(Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  langs:
+  - csharp
+  - vb
+  name: ToRealtimeTrade(NyseTaqTradeRecord)
+  nameWithType: NyseNationalTradesCsvParser.ToRealtimeTrade(NyseTaqTradeRecord)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ToRealtimeTrade(Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToRealtimeTrade
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 112
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Converts a <xref href="Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord" data-throw-if-not-resolved="false"></xref> to a <xref href="Meridian.Infrastructure.DataSources.RealtimeTrade" data-throw-if-not-resolved="false"></xref>
+
+    suitable for ingestion into the Meridian event pipeline.
+  example: []
+  syntax:
+    content: public static RealtimeTrade ToRealtimeTrade(NyseTaqTradeRecord record)
+    parameters:
+    - id: record
+      type: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+    return:
+      type: Meridian.Infrastructure.DataSources.RealtimeTrade
+    content.vb: Public Shared Function ToRealtimeTrade(record As NyseTaqTradeRecord) As RealtimeTrade
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ToRealtimeTrade*
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseAllTrades(System.Collections.Generic.IEnumerable{System.String},System.DateOnly)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseAllTrades(System.Collections.Generic.IEnumerable{System.String},System.DateOnly)
+  id: ParseAllTrades(System.Collections.Generic.IEnumerable{System.String},System.DateOnly)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  langs:
+  - csharp
+  - vb
+  name: ParseAllTrades(IEnumerable<string>, DateOnly)
+  nameWithType: NyseNationalTradesCsvParser.ParseAllTrades(IEnumerable<string>, DateOnly)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseAllTrades(System.Collections.Generic.IEnumerable<string>, System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ParseAllTrades
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 130
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Lazily parses all type-220 trade records from a sequence of CSV lines.
+
+    Non-trade lines and unparseable rows are silently skipped.
+  example: []
+  syntax:
+    content: public static IEnumerable<NyseTaqTradeRecord> ParseAllTrades(IEnumerable<string> lines, DateOnly sessionDate)
+    parameters:
+    - id: lines
+      type: System.Collections.Generic.IEnumerable{System.String}
+    - id: sessionDate
+      type: System.DateOnly
+    return:
+      type: System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord}
+    content.vb: Public Shared Function ParseAllTrades(lines As IEnumerable(Of String), sessionDate As DateOnly) As IEnumerable(Of NyseTaqTradeRecord)
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseAllTrades*
+  nameWithType.vb: NyseNationalTradesCsvParser.ParseAllTrades(IEnumerable(Of String), DateOnly)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseAllTrades(System.Collections.Generic.IEnumerable(Of String), System.DateOnly)
+  name.vb: ParseAllTrades(IEnumerable(Of String), DateOnly)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.GetMessageType(System.String)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.GetMessageType(System.String)
+  id: GetMessageType(System.String)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  langs:
+  - csharp
+  - vb
+  name: GetMessageType(string)
+  nameWithType: NyseNationalTradesCsvParser.GetMessageType(string)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.GetMessageType(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMessageType
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 143
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Returns the message type code of a CSV line (field 1), or -1 if unparseable.
+  example: []
+  syntax:
+    content: public static int GetMessageType(string line)
+    parameters:
+    - id: line
+      type: System.String
+    return:
+      type: System.Int32
+    content.vb: Public Shared Function GetMessageType(line As String) As Integer
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.GetMessageType*
+  nameWithType.vb: NyseNationalTradesCsvParser.GetMessageType(String)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.GetMessageType(String)
+  name.vb: GetMessageType(String)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.MapExchangeCode(System.Int32)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.MapExchangeCode(System.Int32)
+  id: MapExchangeCode(System.Int32)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  langs:
+  - csharp
+  - vb
+  name: MapExchangeCode(int)
+  nameWithType: NyseNationalTradesCsvParser.MapExchangeCode(int)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.MapExchangeCode(int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MapExchangeCode
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 178
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: Maps a numeric SIP exchange code to its mnemonic string.
+  example: []
+  syntax:
+    content: public static string MapExchangeCode(int code)
+    parameters:
+    - id: code
+      type: System.Int32
+    return:
+      type: System.String
+    content.vb: Public Shared Function MapExchangeCode(code As Integer) As String
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.MapExchangeCode*
+  nameWithType.vb: NyseNationalTradesCsvParser.MapExchangeCode(Integer)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.MapExchangeCode(Integer)
+  name.vb: MapExchangeCode(Integer)
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TryParseNanosecondTime(System.String,System.DateOnly,System.DateTimeOffset@)
+  commentId: M:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TryParseNanosecondTime(System.String,System.DateOnly,System.DateTimeOffset@)
+  id: TryParseNanosecondTime(System.String,System.DateOnly,System.DateTimeOffset@)
+  parent: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser
+  langs:
+  - csharp
+  - vb
+  name: TryParseNanosecondTime(string, DateOnly, out DateTimeOffset)
+  nameWithType: NyseNationalTradesCsvParser.TryParseNanosecondTime(string, DateOnly, out DateTimeOffset)
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TryParseNanosecondTime(string, System.DateOnly, out System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryParseNanosecondTime
+    path: ../../src/Meridian.Infrastructure/Adapters/NYSE/NyseNationalTradesCsvParser.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.NYSE
+  summary: >-
+    Parses a NYSE TAQ time string with nanosecond precision.
+
+    Format: HH:MM:SS.nnnnnnnnn
+
+    Clips nanoseconds to .NET's 100-nanosecond tick resolution.
+  example: []
+  syntax:
+    content: public static bool TryParseNanosecondTime(string timeStr, DateOnly sessionDate, out DateTimeOffset result)
+    parameters:
+    - id: timeStr
+      type: System.String
+    - id: sessionDate
+      type: System.DateOnly
+    - id: result
+      type: System.DateTimeOffset
+    return:
+      type: System.Boolean
+    content.vb: Public Shared Function TryParseNanosecondTime(timeStr As String, sessionDate As DateOnly, result As DateTimeOffset) As Boolean
+  overload: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TryParseNanosecondTime*
+  nameWithType.vb: NyseNationalTradesCsvParser.TryParseNanosecondTime(String, DateOnly, DateTimeOffset)
+  fullName.vb: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TryParseNanosecondTime(String, System.DateOnly, System.DateTimeOffset)
+  name.vb: TryParseNanosecondTime(String, DateOnly, DateTimeOffset)
+references:
+- uid: Meridian.Infrastructure.Adapters.NYSE
+  commentId: N:Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.NYSE
+  nameWithType: Meridian.Infrastructure.Adapters.NYSE
+  fullName: Meridian.Infrastructure.Adapters.NYSE
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.NYSE
+    name: NYSE
+    href: Meridian.Infrastructure.Adapters.NYSE.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  commentId: T:Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+  parent: Meridian.Infrastructure.Adapters.NYSE
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html
+  name: NyseTaqTradeRecord
+  nameWithType: NyseTaqTradeRecord
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseTradeLine*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseTradeLine
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.html#Meridian_Infrastructure_Adapters_NYSE_NyseNationalTradesCsvParser_ParseTradeLine_System_String_System_DateOnly_
+  name: ParseTradeLine
+  nameWithType: NyseNationalTradesCsvParser.ParseTradeLine
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseTradeLine
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Infrastructure.DataSources.RealtimeTrade
+  commentId: T:Meridian.Infrastructure.DataSources.RealtimeTrade
+  parent: Meridian.Infrastructure.DataSources
+  href: Meridian.Infrastructure.DataSources.RealtimeTrade.html
+  name: RealtimeTrade
+  nameWithType: RealtimeTrade
+  fullName: Meridian.Infrastructure.DataSources.RealtimeTrade
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ToRealtimeTrade*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ToRealtimeTrade
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.html#Meridian_Infrastructure_Adapters_NYSE_NyseNationalTradesCsvParser_ToRealtimeTrade_Meridian_Infrastructure_Adapters_NYSE_NyseTaqTradeRecord_
+  name: ToRealtimeTrade
+  nameWithType: NyseNationalTradesCsvParser.ToRealtimeTrade
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ToRealtimeTrade
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseAllTrades*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseAllTrades
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.html#Meridian_Infrastructure_Adapters_NYSE_NyseNationalTradesCsvParser_ParseAllTrades_System_Collections_Generic_IEnumerable_System_String__System_DateOnly_
+  name: ParseAllTrades
+  nameWithType: NyseNationalTradesCsvParser.ParseAllTrades
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.ParseAllTrades
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord}
+  commentId: T:System.Collections.Generic.IEnumerable{Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<NyseTaqTradeRecord>
+  nameWithType: IEnumerable<NyseTaqTradeRecord>
+  fullName: System.Collections.Generic.IEnumerable<Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord>
+  nameWithType.vb: IEnumerable(Of NyseTaqTradeRecord)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord)
+  name.vb: IEnumerable(Of NyseTaqTradeRecord)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+    name: NyseTaqTradeRecord
+    href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord
+    name: NyseTaqTradeRecord
+    href: Meridian.Infrastructure.Adapters.NYSE.NyseTaqTradeRecord.html
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.GetMessageType*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.GetMessageType
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.html#Meridian_Infrastructure_Adapters_NYSE_NyseNationalTradesCsvParser_GetMessageType_System_String_
+  name: GetMessageType
+  nameWithType: NyseNationalTradesCsvParser.GetMessageType
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.GetMessageType
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.MapExchangeCode*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.MapExchangeCode
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.html#Meridian_Infrastructure_Adapters_NYSE_NyseNationalTradesCsvParser_MapExchangeCode_System_Int32_
+  name: MapExchangeCode
+  nameWithType: NyseNationalTradesCsvParser.MapExchangeCode
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.MapExchangeCode
+- uid: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TryParseNanosecondTime*
+  commentId: Overload:Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TryParseNanosecondTime
+  href: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.html#Meridian_Infrastructure_Adapters_NYSE_NyseNationalTradesCsvParser_TryParseNanosecondTime_System_String_System_DateOnly_System_DateTimeOffset__
+  name: TryParseNanosecondTime
+  nameWithType: NyseNationalTradesCsvParser.TryParseNanosecondTime
+  fullName: Meridian.Infrastructure.Adapters.NYSE.NyseNationalTradesCsvParser.TryParseNanosecondTime
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

@@ -1,0 +1,760 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+  commentId: T:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+  id: SecurityMasterAggregateRebuilder
+  parent: Meridian.Application.SecurityMaster
+  children:
+  - Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore)
+  - Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildAsync(System.Guid,Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  - Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync(System.Guid,Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterAggregateRebuilder
+  nameWithType: SecurityMasterAggregateRebuilder
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SecurityMasterAggregateRebuilder
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    startLine: 5
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public sealed class SecurityMasterAggregateRebuilder
+    content.vb: Public NotInheritable Class SecurityMasterAggregateRebuilder
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  id: GetCorporateActionsAsync(System.Guid,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+  langs:
+  - csharp
+  - vb
+  name: GetCorporateActionsAsync(Guid, CancellationToken)
+  nameWithType: SecurityMasterAggregateRebuilder.GetCorporateActionsAsync(Guid, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.GetCorporateActionsAsync(System.Guid, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetCorporateActionsAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  summary: >-
+    Returns all corporate action events for a security in ascending ex-date order,
+
+    folding the separate CorpActEvent stream into the aggregate view for a security.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<CorporateActionDto>> GetCorporateActionsAsync(Guid securityId, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+    content.vb: Public Function GetCorporateActionsAsync(securityId As Guid, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of CorporateActionDto))
+  overload: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.GetCorporateActionsAsync*
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore)
+  id: '#ctor(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore,Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore)'
+  parent: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+  langs:
+  - csharp
+  - vb
+  name: SecurityMasterAggregateRebuilder(ISecurityMasterEventStore, ISecurityMasterSnapshotStore)
+  nameWithType: SecurityMasterAggregateRebuilder.SecurityMasterAggregateRebuilder(ISecurityMasterEventStore, ISecurityMasterSnapshotStore)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.SecurityMasterAggregateRebuilder(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore, Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public SecurityMasterAggregateRebuilder(ISecurityMasterEventStore eventStore, ISecurityMasterSnapshotStore snapshotStore)
+    parameters:
+    - id: eventStore
+      type: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+    - id: snapshotStore
+      type: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+    content.vb: Public Sub New(eventStore As ISecurityMasterEventStore, snapshotStore As ISecurityMasterSnapshotStore)
+  overload: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.#ctor*
+  nameWithType.vb: SecurityMasterAggregateRebuilder.New(ISecurityMasterEventStore, ISecurityMasterSnapshotStore)
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.New(Meridian.Storage.SecurityMaster.ISecurityMasterEventStore, Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore)
+  name.vb: New(ISecurityMasterEventStore, ISecurityMasterSnapshotStore)
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync(System.Guid,Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync(System.Guid,Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  id: RebuildEconomicDefinitionAsync(System.Guid,Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+  langs:
+  - csharp
+  - vb
+  name: RebuildEconomicDefinitionAsync(Guid, SecurityProjectionRecord?, CancellationToken)
+  nameWithType: SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync(Guid, SecurityProjectionRecord?, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync(System.Guid, Meridian.Contracts.SecurityMaster.SecurityProjectionRecord?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RebuildEconomicDefinitionAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public Task<SecurityEconomicDefinitionRecord?> RebuildEconomicDefinitionAsync(Guid securityId, SecurityProjectionRecord? projectionWithAliases, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: projectionWithAliases
+      type: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord}
+    content.vb: Public Function RebuildEconomicDefinitionAsync(securityId As Guid, projectionWithAliases As SecurityProjectionRecord, ct As CancellationToken = Nothing) As Task(Of SecurityEconomicDefinitionRecord)
+  overload: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync*
+  nameWithType.vb: SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync(Guid, SecurityProjectionRecord, CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync(System.Guid, Meridian.Contracts.SecurityMaster.SecurityProjectionRecord, System.Threading.CancellationToken)
+  name.vb: RebuildEconomicDefinitionAsync(Guid, SecurityProjectionRecord, CancellationToken)
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildAsync(System.Guid,Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildAsync(System.Guid,Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  id: RebuildAsync(System.Guid,Meridian.Contracts.SecurityMaster.SecurityProjectionRecord,System.Threading.CancellationToken)
+  parent: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder
+  langs:
+  - csharp
+  - vb
+  name: RebuildAsync(Guid, SecurityProjectionRecord?, CancellationToken)
+  nameWithType: SecurityMasterAggregateRebuilder.RebuildAsync(Guid, SecurityProjectionRecord?, CancellationToken)
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildAsync(System.Guid, Meridian.Contracts.SecurityMaster.SecurityProjectionRecord?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RebuildAsync
+    path: ../../src/Meridian.Application/SecurityMaster/SecurityMasterAggregateRebuilder.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.SecurityMaster
+  syntax:
+    content: public Task<SecurityProjectionRecord?> RebuildAsync(Guid securityId, SecurityProjectionRecord? projectionWithAliases, CancellationToken ct = default)
+    parameters:
+    - id: securityId
+      type: System.Guid
+    - id: projectionWithAliases
+      type: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+    content.vb: Public Function RebuildAsync(securityId As Guid, projectionWithAliases As SecurityProjectionRecord, ct As CancellationToken = Nothing) As Task(Of SecurityProjectionRecord)
+  overload: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildAsync*
+  nameWithType.vb: SecurityMasterAggregateRebuilder.RebuildAsync(Guid, SecurityProjectionRecord, CancellationToken)
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildAsync(System.Guid, Meridian.Contracts.SecurityMaster.SecurityProjectionRecord, System.Threading.CancellationToken)
+  name.vb: RebuildAsync(Guid, SecurityProjectionRecord, CancellationToken)
+references:
+- uid: Meridian.Application.SecurityMaster
+  commentId: N:Meridian.Application.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Application.SecurityMaster
+  nameWithType: Meridian.Application.SecurityMaster
+  fullName: Meridian.Application.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Application.SecurityMaster.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.GetCorporateActionsAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.GetCorporateActionsAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.html#Meridian_Application_SecurityMaster_SecurityMasterAggregateRebuilder_GetCorporateActionsAsync_System_Guid_System_Threading_CancellationToken_
+  name: GetCorporateActionsAsync
+  nameWithType: SecurityMasterAggregateRebuilder.GetCorporateActionsAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.GetCorporateActionsAsync
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Contracts.SecurityMaster.CorporateActionDto}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<CorporateActionDto>>
+  nameWithType: Task<IReadOnlyList<CorporateActionDto>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Contracts.SecurityMaster.CorporateActionDto>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of CorporateActionDto))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Contracts.SecurityMaster.CorporateActionDto))
+  name.vb: Task(Of IReadOnlyList(Of CorporateActionDto))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.CorporateActionDto
+    name: CorporateActionDto
+    href: Meridian.Contracts.SecurityMaster.CorporateActionDto.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.#ctor*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.#ctor
+  href: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.html#Meridian_Application_SecurityMaster_SecurityMasterAggregateRebuilder__ctor_Meridian_Storage_SecurityMaster_ISecurityMasterEventStore_Meridian_Storage_SecurityMaster_ISecurityMasterSnapshotStore_
+  name: SecurityMasterAggregateRebuilder
+  nameWithType: SecurityMasterAggregateRebuilder.SecurityMasterAggregateRebuilder
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.SecurityMasterAggregateRebuilder
+  nameWithType.vb: SecurityMasterAggregateRebuilder.New
+  fullName.vb: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.New
+  name.vb: New
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore.html
+  name: ISecurityMasterEventStore
+  nameWithType: ISecurityMasterEventStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterEventStore
+- uid: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  commentId: T:Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+  parent: Meridian.Storage.SecurityMaster
+  href: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore.html
+  name: ISecurityMasterSnapshotStore
+  nameWithType: ISecurityMasterSnapshotStore
+  fullName: Meridian.Storage.SecurityMaster.ISecurityMasterSnapshotStore
+- uid: Meridian.Storage.SecurityMaster
+  commentId: N:Meridian.Storage.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Storage.SecurityMaster
+  nameWithType: Meridian.Storage.SecurityMaster
+  fullName: Meridian.Storage.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Storage.SecurityMaster.html
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.html#Meridian_Application_SecurityMaster_SecurityMasterAggregateRebuilder_RebuildEconomicDefinitionAsync_System_Guid_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_System_Threading_CancellationToken_
+  name: RebuildEconomicDefinitionAsync
+  nameWithType: SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildEconomicDefinitionAsync
+- uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  commentId: T:Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+  parent: Meridian.Contracts.SecurityMaster
+  href: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord.html
+  name: SecurityProjectionRecord
+  nameWithType: SecurityProjectionRecord
+  fullName: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityEconomicDefinitionRecord>
+  nameWithType: Task<SecurityEconomicDefinitionRecord>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord>
+  nameWithType.vb: Task(Of SecurityEconomicDefinitionRecord)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord)
+  name.vb: Task(Of SecurityEconomicDefinitionRecord)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord
+    name: SecurityEconomicDefinitionRecord
+    href: Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord
+    name: SecurityEconomicDefinitionRecord
+    href: Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord.html
+  - name: )
+- uid: Meridian.Contracts.SecurityMaster
+  commentId: N:Meridian.Contracts.SecurityMaster
+  href: Meridian.html
+  name: Meridian.Contracts.SecurityMaster
+  nameWithType: Meridian.Contracts.SecurityMaster
+  fullName: Meridian.Contracts.SecurityMaster
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.SecurityMaster
+    name: SecurityMaster
+    href: Meridian.Contracts.SecurityMaster.html
+- uid: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildAsync*
+  commentId: Overload:Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildAsync
+  href: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.html#Meridian_Application_SecurityMaster_SecurityMasterAggregateRebuilder_RebuildAsync_System_Guid_Meridian_Contracts_SecurityMaster_SecurityProjectionRecord_System_Threading_CancellationToken_
+  name: RebuildAsync
+  nameWithType: SecurityMasterAggregateRebuilder.RebuildAsync
+  fullName: Meridian.Application.SecurityMaster.SecurityMasterAggregateRebuilder.RebuildAsync
+- uid: System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Contracts.SecurityMaster.SecurityProjectionRecord}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SecurityProjectionRecord>
+  nameWithType: Task<SecurityProjectionRecord>
+  fullName: System.Threading.Tasks.Task<Meridian.Contracts.SecurityMaster.SecurityProjectionRecord>
+  nameWithType.vb: Task(Of SecurityProjectionRecord)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Contracts.SecurityMaster.SecurityProjectionRecord)
+  name.vb: Task(Of SecurityProjectionRecord)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.SecurityMaster.SecurityProjectionRecord
+    name: SecurityProjectionRecord
+  - name: )

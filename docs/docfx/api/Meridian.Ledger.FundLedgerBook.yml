@@ -1,0 +1,1070 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ledger.FundLedgerBook
+  commentId: T:Meridian.Ledger.FundLedgerBook
+  id: FundLedgerBook
+  parent: Meridian.Ledger
+  children:
+  - Meridian.Ledger.FundLedgerBook.#ctor(System.String)
+  - Meridian.Ledger.FundLedgerBook.ConsolidatedJournalEntries
+  - Meridian.Ledger.FundLedgerBook.ConsolidatedSnapshotAsOf(System.DateTimeOffset)
+  - Meridian.Ledger.FundLedgerBook.ConsolidatedTrialBalance
+  - Meridian.Ledger.FundLedgerBook.EntityLedger(System.String)
+  - Meridian.Ledger.FundLedgerBook.EntitySnapshotsAsOf(System.DateTimeOffset)
+  - Meridian.Ledger.FundLedgerBook.FundId
+  - Meridian.Ledger.FundLedgerBook.FundLedger
+  - Meridian.Ledger.FundLedgerBook.ReconciliationSnapshot(System.DateTimeOffset)
+  - Meridian.Ledger.FundLedgerBook.SleeveLedger(System.String)
+  - Meridian.Ledger.FundLedgerBook.SleeveSnapshotsAsOf(System.DateTimeOffset)
+  - Meridian.Ledger.FundLedgerBook.VehicleLedger(System.String)
+  - Meridian.Ledger.FundLedgerBook.VehicleSnapshotsAsOf(System.DateTimeOffset)
+  langs:
+  - csharp
+  - vb
+  name: FundLedgerBook
+  nameWithType: FundLedgerBook
+  fullName: Meridian.Ledger.FundLedgerBook
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundLedgerBook
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    A fund-structure-aware ledger that organises independent double-entry
+
+    sub-ledgers by entity, sleeve, and vehicle boundaries, backed by
+
+    <xref href="Meridian.Ledger.ProjectLedgerBook" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public sealed class FundLedgerBook
+    content.vb: Public NotInheritable Class FundLedgerBook
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ledger.FundLedgerBook.#ctor(System.String)
+  commentId: M:Meridian.Ledger.FundLedgerBook.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: FundLedgerBook(string)
+  nameWithType: FundLedgerBook.FundLedgerBook(string)
+  fullName: Meridian.Ledger.FundLedgerBook.FundLedgerBook(string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public FundLedgerBook(string fundId)
+    parameters:
+    - id: fundId
+      type: System.String
+    content.vb: Public Sub New(fundId As String)
+  overload: Meridian.Ledger.FundLedgerBook.#ctor*
+  nameWithType.vb: FundLedgerBook.New(String)
+  fullName.vb: Meridian.Ledger.FundLedgerBook.New(String)
+  name.vb: New(String)
+- uid: Meridian.Ledger.FundLedgerBook.FundId
+  commentId: P:Meridian.Ledger.FundLedgerBook.FundId
+  id: FundId
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: FundId
+  nameWithType: FundLedgerBook.FundId
+  fullName: Meridian.Ledger.FundLedgerBook.FundId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundId
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  syntax:
+    content: public string FundId { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property FundId As String
+  overload: Meridian.Ledger.FundLedgerBook.FundId*
+- uid: Meridian.Ledger.FundLedgerBook.FundLedger
+  commentId: P:Meridian.Ledger.FundLedgerBook.FundLedger
+  id: FundLedger
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: FundLedger
+  nameWithType: FundLedgerBook.FundLedger
+  fullName: Meridian.Ledger.FundLedgerBook.FundLedger
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundLedger
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Gets (or lazily creates) the top-level fund ledger.
+  example: []
+  syntax:
+    content: public Ledger FundLedger { get; }
+    parameters: []
+    return:
+      type: Meridian.Ledger.Ledger
+    content.vb: Public ReadOnly Property FundLedger As Ledger
+  overload: Meridian.Ledger.FundLedgerBook.FundLedger*
+- uid: Meridian.Ledger.FundLedgerBook.EntityLedger(System.String)
+  commentId: M:Meridian.Ledger.FundLedgerBook.EntityLedger(System.String)
+  id: EntityLedger(System.String)
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: EntityLedger(string)
+  nameWithType: FundLedgerBook.EntityLedger(string)
+  fullName: Meridian.Ledger.FundLedgerBook.EntityLedger(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntityLedger
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Gets (or lazily creates) the ledger for a named entity.
+  example: []
+  syntax:
+    content: public Ledger EntityLedger(string entityId)
+    parameters:
+    - id: entityId
+      type: System.String
+    return:
+      type: Meridian.Ledger.Ledger
+    content.vb: Public Function EntityLedger(entityId As String) As Ledger
+  overload: Meridian.Ledger.FundLedgerBook.EntityLedger*
+  nameWithType.vb: FundLedgerBook.EntityLedger(String)
+  fullName.vb: Meridian.Ledger.FundLedgerBook.EntityLedger(String)
+  name.vb: EntityLedger(String)
+- uid: Meridian.Ledger.FundLedgerBook.SleeveLedger(System.String)
+  commentId: M:Meridian.Ledger.FundLedgerBook.SleeveLedger(System.String)
+  id: SleeveLedger(System.String)
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: SleeveLedger(string)
+  nameWithType: FundLedgerBook.SleeveLedger(string)
+  fullName: Meridian.Ledger.FundLedgerBook.SleeveLedger(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SleeveLedger
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Gets (or lazily creates) the ledger for a named sleeve.
+  example: []
+  syntax:
+    content: public Ledger SleeveLedger(string sleeveId)
+    parameters:
+    - id: sleeveId
+      type: System.String
+    return:
+      type: Meridian.Ledger.Ledger
+    content.vb: Public Function SleeveLedger(sleeveId As String) As Ledger
+  overload: Meridian.Ledger.FundLedgerBook.SleeveLedger*
+  nameWithType.vb: FundLedgerBook.SleeveLedger(String)
+  fullName.vb: Meridian.Ledger.FundLedgerBook.SleeveLedger(String)
+  name.vb: SleeveLedger(String)
+- uid: Meridian.Ledger.FundLedgerBook.VehicleLedger(System.String)
+  commentId: M:Meridian.Ledger.FundLedgerBook.VehicleLedger(System.String)
+  id: VehicleLedger(System.String)
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: VehicleLedger(string)
+  nameWithType: FundLedgerBook.VehicleLedger(string)
+  fullName: Meridian.Ledger.FundLedgerBook.VehicleLedger(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VehicleLedger
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Gets (or lazily creates) the ledger for a named vehicle.
+  example: []
+  syntax:
+    content: public Ledger VehicleLedger(string vehicleId)
+    parameters:
+    - id: vehicleId
+      type: System.String
+    return:
+      type: Meridian.Ledger.Ledger
+    content.vb: Public Function VehicleLedger(vehicleId As String) As Ledger
+  overload: Meridian.Ledger.FundLedgerBook.VehicleLedger*
+  nameWithType.vb: FundLedgerBook.VehicleLedger(String)
+  fullName.vb: Meridian.Ledger.FundLedgerBook.VehicleLedger(String)
+  name.vb: VehicleLedger(String)
+- uid: Meridian.Ledger.FundLedgerBook.ConsolidatedTrialBalance
+  commentId: M:Meridian.Ledger.FundLedgerBook.ConsolidatedTrialBalance
+  id: ConsolidatedTrialBalance
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ConsolidatedTrialBalance()
+  nameWithType: FundLedgerBook.ConsolidatedTrialBalance()
+  fullName: Meridian.Ledger.FundLedgerBook.ConsolidatedTrialBalance()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsolidatedTrialBalance
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Consolidated trial balance across all sub-ledgers in this fund.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<LedgerAccount, decimal> ConsolidatedTrialBalance()
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+    content.vb: Public Function ConsolidatedTrialBalance() As IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  overload: Meridian.Ledger.FundLedgerBook.ConsolidatedTrialBalance*
+- uid: Meridian.Ledger.FundLedgerBook.ConsolidatedSnapshotAsOf(System.DateTimeOffset)
+  commentId: M:Meridian.Ledger.FundLedgerBook.ConsolidatedSnapshotAsOf(System.DateTimeOffset)
+  id: ConsolidatedSnapshotAsOf(System.DateTimeOffset)
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ConsolidatedSnapshotAsOf(DateTimeOffset)
+  nameWithType: FundLedgerBook.ConsolidatedSnapshotAsOf(DateTimeOffset)
+  fullName: Meridian.Ledger.FundLedgerBook.ConsolidatedSnapshotAsOf(System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsolidatedSnapshotAsOf
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Consolidated point-in-time snapshot across all sub-ledgers.
+  example: []
+  syntax:
+    content: public LedgerSnapshot ConsolidatedSnapshotAsOf(DateTimeOffset asOf)
+    parameters:
+    - id: asOf
+      type: System.DateTimeOffset
+    return:
+      type: Meridian.Ledger.LedgerSnapshot
+    content.vb: Public Function ConsolidatedSnapshotAsOf(asOf As DateTimeOffset) As LedgerSnapshot
+  overload: Meridian.Ledger.FundLedgerBook.ConsolidatedSnapshotAsOf*
+- uid: Meridian.Ledger.FundLedgerBook.ConsolidatedJournalEntries
+  commentId: M:Meridian.Ledger.FundLedgerBook.ConsolidatedJournalEntries
+  id: ConsolidatedJournalEntries
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ConsolidatedJournalEntries()
+  nameWithType: FundLedgerBook.ConsolidatedJournalEntries()
+  fullName: Meridian.Ledger.FundLedgerBook.ConsolidatedJournalEntries()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsolidatedJournalEntries
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: All journal entries across all sub-ledgers, ordered by timestamp.
+  example: []
+  syntax:
+    content: public IReadOnlyList<JournalEntry> ConsolidatedJournalEntries()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+    content.vb: Public Function ConsolidatedJournalEntries() As IReadOnlyList(Of JournalEntry)
+  overload: Meridian.Ledger.FundLedgerBook.ConsolidatedJournalEntries*
+- uid: Meridian.Ledger.FundLedgerBook.EntitySnapshotsAsOf(System.DateTimeOffset)
+  commentId: M:Meridian.Ledger.FundLedgerBook.EntitySnapshotsAsOf(System.DateTimeOffset)
+  id: EntitySnapshotsAsOf(System.DateTimeOffset)
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: EntitySnapshotsAsOf(DateTimeOffset)
+  nameWithType: FundLedgerBook.EntitySnapshotsAsOf(DateTimeOffset)
+  fullName: Meridian.Ledger.FundLedgerBook.EntitySnapshotsAsOf(System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EntitySnapshotsAsOf
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Point-in-time snapshots keyed by entity identifier.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, LedgerSnapshot> EntitySnapshotsAsOf(DateTimeOffset asOf)
+    parameters:
+    - id: asOf
+      type: System.DateTimeOffset
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Ledger.LedgerSnapshot}
+    content.vb: Public Function EntitySnapshotsAsOf(asOf As DateTimeOffset) As IReadOnlyDictionary(Of String, LedgerSnapshot)
+  overload: Meridian.Ledger.FundLedgerBook.EntitySnapshotsAsOf*
+- uid: Meridian.Ledger.FundLedgerBook.SleeveSnapshotsAsOf(System.DateTimeOffset)
+  commentId: M:Meridian.Ledger.FundLedgerBook.SleeveSnapshotsAsOf(System.DateTimeOffset)
+  id: SleeveSnapshotsAsOf(System.DateTimeOffset)
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: SleeveSnapshotsAsOf(DateTimeOffset)
+  nameWithType: FundLedgerBook.SleeveSnapshotsAsOf(DateTimeOffset)
+  fullName: Meridian.Ledger.FundLedgerBook.SleeveSnapshotsAsOf(System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SleeveSnapshotsAsOf
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Point-in-time snapshots keyed by sleeve identifier.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, LedgerSnapshot> SleeveSnapshotsAsOf(DateTimeOffset asOf)
+    parameters:
+    - id: asOf
+      type: System.DateTimeOffset
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Ledger.LedgerSnapshot}
+    content.vb: Public Function SleeveSnapshotsAsOf(asOf As DateTimeOffset) As IReadOnlyDictionary(Of String, LedgerSnapshot)
+  overload: Meridian.Ledger.FundLedgerBook.SleeveSnapshotsAsOf*
+- uid: Meridian.Ledger.FundLedgerBook.VehicleSnapshotsAsOf(System.DateTimeOffset)
+  commentId: M:Meridian.Ledger.FundLedgerBook.VehicleSnapshotsAsOf(System.DateTimeOffset)
+  id: VehicleSnapshotsAsOf(System.DateTimeOffset)
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: VehicleSnapshotsAsOf(DateTimeOffset)
+  nameWithType: FundLedgerBook.VehicleSnapshotsAsOf(DateTimeOffset)
+  fullName: Meridian.Ledger.FundLedgerBook.VehicleSnapshotsAsOf(System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VehicleSnapshotsAsOf
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Point-in-time snapshots keyed by vehicle identifier.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<string, LedgerSnapshot> VehicleSnapshotsAsOf(DateTimeOffset asOf)
+    parameters:
+    - id: asOf
+      type: System.DateTimeOffset
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Ledger.LedgerSnapshot}
+    content.vb: Public Function VehicleSnapshotsAsOf(asOf As DateTimeOffset) As IReadOnlyDictionary(Of String, LedgerSnapshot)
+  overload: Meridian.Ledger.FundLedgerBook.VehicleSnapshotsAsOf*
+- uid: Meridian.Ledger.FundLedgerBook.ReconciliationSnapshot(System.DateTimeOffset)
+  commentId: M:Meridian.Ledger.FundLedgerBook.ReconciliationSnapshot(System.DateTimeOffset)
+  id: ReconciliationSnapshot(System.DateTimeOffset)
+  parent: Meridian.Ledger.FundLedgerBook
+  langs:
+  - csharp
+  - vb
+  name: ReconciliationSnapshot(DateTimeOffset)
+  nameWithType: FundLedgerBook.ReconciliationSnapshot(DateTimeOffset)
+  fullName: Meridian.Ledger.FundLedgerBook.ReconciliationSnapshot(System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/FundLedgerBook.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconciliationSnapshot
+    path: ../../src/Meridian.Ledger/FundLedgerBook.cs
+    startLine: 74
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Returns a reconciliation-friendly snapshot that includes the consolidated
+
+    fund view together with per-entity, per-sleeve, and per-vehicle breakdowns.
+  example: []
+  syntax:
+    content: public FundLedgerSnapshot ReconciliationSnapshot(DateTimeOffset asOf)
+    parameters:
+    - id: asOf
+      type: System.DateTimeOffset
+    return:
+      type: Meridian.Ledger.FundLedgerSnapshot
+    content.vb: Public Function ReconciliationSnapshot(asOf As DateTimeOffset) As FundLedgerSnapshot
+  overload: Meridian.Ledger.FundLedgerBook.ReconciliationSnapshot*
+references:
+- uid: Meridian.Ledger.ProjectLedgerBook
+  commentId: T:Meridian.Ledger.ProjectLedgerBook
+  href: Meridian.Ledger.ProjectLedgerBook.html
+  name: ProjectLedgerBook
+  nameWithType: ProjectLedgerBook
+  fullName: Meridian.Ledger.ProjectLedgerBook
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ledger.FundLedgerBook.#ctor*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.#ctor
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook__ctor_System_String_
+  name: FundLedgerBook
+  nameWithType: FundLedgerBook.FundLedgerBook
+  fullName: Meridian.Ledger.FundLedgerBook.FundLedgerBook
+  nameWithType.vb: FundLedgerBook.New
+  fullName.vb: Meridian.Ledger.FundLedgerBook.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ledger.FundLedgerBook.FundId*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.FundId
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_FundId
+  name: FundId
+  nameWithType: FundLedgerBook.FundId
+  fullName: Meridian.Ledger.FundLedgerBook.FundId
+- uid: Meridian.Ledger.FundLedgerBook.FundLedger*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.FundLedger
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_FundLedger
+  name: FundLedger
+  nameWithType: FundLedgerBook.FundLedger
+  fullName: Meridian.Ledger.FundLedgerBook.FundLedger
+- uid: Meridian.Ledger.Ledger
+  commentId: T:Meridian.Ledger.Ledger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.Ledger.html
+  name: Ledger
+  nameWithType: Ledger
+  fullName: Meridian.Ledger.Ledger
+- uid: Meridian.Ledger.FundLedgerBook.EntityLedger*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.EntityLedger
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_EntityLedger_System_String_
+  name: EntityLedger
+  nameWithType: FundLedgerBook.EntityLedger
+  fullName: Meridian.Ledger.FundLedgerBook.EntityLedger
+- uid: Meridian.Ledger.FundLedgerBook.SleeveLedger*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.SleeveLedger
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_SleeveLedger_System_String_
+  name: SleeveLedger
+  nameWithType: FundLedgerBook.SleeveLedger
+  fullName: Meridian.Ledger.FundLedgerBook.SleeveLedger
+- uid: Meridian.Ledger.FundLedgerBook.VehicleLedger*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.VehicleLedger
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_VehicleLedger_System_String_
+  name: VehicleLedger
+  nameWithType: FundLedgerBook.VehicleLedger
+  fullName: Meridian.Ledger.FundLedgerBook.VehicleLedger
+- uid: Meridian.Ledger.FundLedgerBook.ConsolidatedTrialBalance*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.ConsolidatedTrialBalance
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_ConsolidatedTrialBalance
+  name: ConsolidatedTrialBalance
+  nameWithType: FundLedgerBook.ConsolidatedTrialBalance
+  fullName: Meridian.Ledger.FundLedgerBook.ConsolidatedTrialBalance
+- uid: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<LedgerAccount, decimal>
+  nameWithType: IReadOnlyDictionary<LedgerAccount, decimal>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<Meridian.Ledger.LedgerAccount, decimal>
+  nameWithType.vb: IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of Meridian.Ledger.LedgerAccount, Decimal)
+  name.vb: IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ledger.FundLedgerBook.ConsolidatedSnapshotAsOf*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.ConsolidatedSnapshotAsOf
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_ConsolidatedSnapshotAsOf_System_DateTimeOffset_
+  name: ConsolidatedSnapshotAsOf
+  nameWithType: FundLedgerBook.ConsolidatedSnapshotAsOf
+  fullName: Meridian.Ledger.FundLedgerBook.ConsolidatedSnapshotAsOf
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Ledger.LedgerSnapshot
+  commentId: T:Meridian.Ledger.LedgerSnapshot
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerSnapshot.html
+  name: LedgerSnapshot
+  nameWithType: LedgerSnapshot
+  fullName: Meridian.Ledger.LedgerSnapshot
+- uid: Meridian.Ledger.FundLedgerBook.ConsolidatedJournalEntries*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.ConsolidatedJournalEntries
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_ConsolidatedJournalEntries
+  name: ConsolidatedJournalEntries
+  nameWithType: FundLedgerBook.ConsolidatedJournalEntries
+  fullName: Meridian.Ledger.FundLedgerBook.ConsolidatedJournalEntries
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<JournalEntry>
+  nameWithType: IReadOnlyList<JournalEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ledger.JournalEntry>
+  nameWithType.vb: IReadOnlyList(Of JournalEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ledger.JournalEntry)
+  name.vb: IReadOnlyList(Of JournalEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ledger.JournalEntry
+    name: JournalEntry
+    href: Meridian.Ledger.JournalEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.JournalEntry
+    name: JournalEntry
+    href: Meridian.Ledger.JournalEntry.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ledger.FundLedgerBook.EntitySnapshotsAsOf*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.EntitySnapshotsAsOf
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_EntitySnapshotsAsOf_System_DateTimeOffset_
+  name: EntitySnapshotsAsOf
+  nameWithType: FundLedgerBook.EntitySnapshotsAsOf
+  fullName: Meridian.Ledger.FundLedgerBook.EntitySnapshotsAsOf
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Ledger.LedgerSnapshot}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,Meridian.Ledger.LedgerSnapshot}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, LedgerSnapshot>
+  nameWithType: IReadOnlyDictionary<string, LedgerSnapshot>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, Meridian.Ledger.LedgerSnapshot>
+  nameWithType.vb: IReadOnlyDictionary(Of String, LedgerSnapshot)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, Meridian.Ledger.LedgerSnapshot)
+  name.vb: IReadOnlyDictionary(Of String, LedgerSnapshot)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ledger.LedgerSnapshot
+    name: LedgerSnapshot
+    href: Meridian.Ledger.LedgerSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: Meridian.Ledger.LedgerSnapshot
+    name: LedgerSnapshot
+    href: Meridian.Ledger.LedgerSnapshot.html
+  - name: )
+- uid: Meridian.Ledger.FundLedgerBook.SleeveSnapshotsAsOf*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.SleeveSnapshotsAsOf
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_SleeveSnapshotsAsOf_System_DateTimeOffset_
+  name: SleeveSnapshotsAsOf
+  nameWithType: FundLedgerBook.SleeveSnapshotsAsOf
+  fullName: Meridian.Ledger.FundLedgerBook.SleeveSnapshotsAsOf
+- uid: Meridian.Ledger.FundLedgerBook.VehicleSnapshotsAsOf*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.VehicleSnapshotsAsOf
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_VehicleSnapshotsAsOf_System_DateTimeOffset_
+  name: VehicleSnapshotsAsOf
+  nameWithType: FundLedgerBook.VehicleSnapshotsAsOf
+  fullName: Meridian.Ledger.FundLedgerBook.VehicleSnapshotsAsOf
+- uid: Meridian.Ledger.FundLedgerBook.ReconciliationSnapshot*
+  commentId: Overload:Meridian.Ledger.FundLedgerBook.ReconciliationSnapshot
+  href: Meridian.Ledger.FundLedgerBook.html#Meridian_Ledger_FundLedgerBook_ReconciliationSnapshot_System_DateTimeOffset_
+  name: ReconciliationSnapshot
+  nameWithType: FundLedgerBook.ReconciliationSnapshot
+  fullName: Meridian.Ledger.FundLedgerBook.ReconciliationSnapshot
+- uid: Meridian.Ledger.FundLedgerSnapshot
+  commentId: T:Meridian.Ledger.FundLedgerSnapshot
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.FundLedgerSnapshot.html
+  name: FundLedgerSnapshot
+  nameWithType: FundLedgerSnapshot
+  fullName: Meridian.Ledger.FundLedgerSnapshot

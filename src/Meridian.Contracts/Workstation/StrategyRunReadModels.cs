@@ -117,7 +117,10 @@ public sealed record StrategyRunSummary(
     string? AuditReference = null,
     StrategyRunExecutionSummary? Execution = null,
     StrategyRunPromotionSummary? Promotion = null,
-    StrategyRunGovernanceSummary? Governance = null);
+    StrategyRunGovernanceSummary? Governance = null,
+    string? FundProfileId = null,
+    string? FundDisplayName = null,
+    string? ParentRunId = null);
 
 /// <summary>
 /// Expanded detail for a single run, including derived portfolio and ledger views.
@@ -132,6 +135,18 @@ public sealed record StrategyRunDetail(
     StrategyRunGovernanceSummary? Governance = null);
 
 /// <summary>
+/// Security Master coverage state associated with a workstation security reference.
+/// </summary>
+[JsonConverter(typeof(JsonStringEnumConverter<WorkstationSecurityCoverageStatus>))]
+public enum WorkstationSecurityCoverageStatus : byte
+{
+    Resolved,
+    Partial,
+    Missing,
+    Unavailable
+}
+
+/// <summary>
 /// Lightweight Security Master reference used by workstation portfolio and ledger surfaces.
 /// <para><see cref="SubType"/> is the most specific classification available at query time
 /// (e.g. "CommonShare", "Bond", "OptionContract"). It is derived from the security's asset
@@ -144,7 +159,12 @@ public sealed record WorkstationSecurityReference(
     string Currency,
     SecurityStatusDto Status,
     string? PrimaryIdentifier,
-    string? SubType = null);
+    string? SubType = null,
+    WorkstationSecurityCoverageStatus CoverageStatus = WorkstationSecurityCoverageStatus.Resolved,
+    string? MatchedIdentifierKind = null,
+    string? MatchedIdentifierValue = null,
+    string? MatchedProvider = null,
+    string? ResolutionReason = null);
 
 /// <summary>
 /// Shared portfolio rollup for workstation research and trading surfaces.
@@ -416,6 +436,75 @@ public sealed record RunCashFlowSummary(
     IReadOnlyList<CashFlowEntryDto> Entries,
     RunCashLadder Ladder);
 
+/// <summary>
+/// Lightweight run identity used to connect research, trading, and governance flows.
+/// </summary>
+public sealed record StrategyRunContinuityLink(
+    string RunId,
+    string StrategyId,
+    string StrategyName,
+    StrategyRunMode Mode,
+    StrategyRunStatus Status,
+    DateTimeOffset StartedAt,
+    DateTimeOffset? CompletedAt,
+    StrategyRunPromotionState PromotionState,
+    string? FundProfileId = null,
+    string? FundDisplayName = null);
+
+/// <summary>
+/// Parent/child run linkage used by shared continuity drill-ins.
+/// </summary>
+public sealed record StrategyRunContinuityLineage(
+    string? ParentRunId,
+    StrategyRunContinuityLink? ParentRun,
+    IReadOnlyList<StrategyRunContinuityLink> ChildRuns);
+
+/// <summary>
+/// Compact cash-flow digest attached to a continuity drill-in.
+/// </summary>
+public sealed record StrategyRunCashFlowDigest(
+    DateTimeOffset AsOf,
+    string Currency,
+    int TotalEntries,
+    decimal TotalInflows,
+    decimal TotalOutflows,
+    decimal NetCashFlow,
+    decimal ProjectedNetPosition,
+    int BucketCount,
+    DateTimeOffset? NextBucketStart = null,
+    DateTimeOffset? NextBucketEnd = null,
+    decimal? NextBucketNetFlow = null);
+
+/// <summary>
+/// Machine-readable continuity warning for shared run-centered workflows.
+/// </summary>
+public sealed record StrategyRunContinuityWarning(
+    string Code,
+    string Message);
+
+/// <summary>
+/// Continuity posture across run, portfolio, ledger, cash-flow, and reconciliation seams.
+/// </summary>
+public sealed record StrategyRunContinuityStatus(
+    bool HasPortfolio,
+    bool HasLedger,
+    bool HasCashFlow,
+    bool HasReconciliation,
+    int AsOfDriftMinutes,
+    int OpenReconciliationBreaks,
+    int SecurityCoverageIssueCount,
+    bool HasWarnings,
+    IReadOnlyList<StrategyRunContinuityWarning> Warnings);
+
+/// <summary>
+/// Shared continuity drill-in that bundles the run-centered seams used across workspaces.
+/// </summary>
+public sealed record StrategyRunContinuityDetail(
+    StrategyRunDetail Run,
+    StrategyRunContinuityLineage Lineage,
+    StrategyRunCashFlowDigest? CashFlow,
+    ReconciliationRunSummary? Reconciliation,
+    StrategyRunContinuityStatus ContinuityStatus);
 // ---------------------------------------------------------------------------
 // Lot-level tracking read models
 // ---------------------------------------------------------------------------

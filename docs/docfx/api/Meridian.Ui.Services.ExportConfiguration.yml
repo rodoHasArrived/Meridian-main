@@ -1,0 +1,785 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ExportConfiguration
+  commentId: T:Meridian.Ui.Services.ExportConfiguration
+  id: ExportConfiguration
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ExportConfiguration.AdditionalOptions
+  - Meridian.Ui.Services.ExportConfiguration.DataTypes
+  - Meridian.Ui.Services.ExportConfiguration.FromDate
+  - Meridian.Ui.Services.ExportConfiguration.IncludeQualityReport
+  - Meridian.Ui.Services.ExportConfiguration.IncludeSchema
+  - Meridian.Ui.Services.ExportConfiguration.OutputPath
+  - Meridian.Ui.Services.ExportConfiguration.Profile
+  - Meridian.Ui.Services.ExportConfiguration.Symbols
+  - Meridian.Ui.Services.ExportConfiguration.ToDate
+  langs:
+  - csharp
+  - vb
+  name: ExportConfiguration
+  nameWithType: ExportConfiguration
+  fullName: Meridian.Ui.Services.ExportConfiguration
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportConfiguration
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1241
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Export configuration.
+  example: []
+  syntax:
+    content: public sealed class ExportConfiguration
+    content.vb: Public NotInheritable Class ExportConfiguration
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.ExportConfiguration.Profile
+  commentId: P:Meridian.Ui.Services.ExportConfiguration.Profile
+  id: Profile
+  parent: Meridian.Ui.Services.ExportConfiguration
+  langs:
+  - csharp
+  - vb
+  name: Profile
+  nameWithType: ExportConfiguration.Profile
+  fullName: Meridian.Ui.Services.ExportConfiguration.Profile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Profile
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1243
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public ExportProfile Profile { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Ui.Services.ExportProfile
+    content.vb: Public Property Profile As ExportProfile
+  overload: Meridian.Ui.Services.ExportConfiguration.Profile*
+- uid: Meridian.Ui.Services.ExportConfiguration.Symbols
+  commentId: P:Meridian.Ui.Services.ExportConfiguration.Symbols
+  id: Symbols
+  parent: Meridian.Ui.Services.ExportConfiguration
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: ExportConfiguration.Symbols
+  fullName: Meridian.Ui.Services.ExportConfiguration.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1244
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string[] Symbols { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property Symbols As String()
+  overload: Meridian.Ui.Services.ExportConfiguration.Symbols*
+- uid: Meridian.Ui.Services.ExportConfiguration.DataTypes
+  commentId: P:Meridian.Ui.Services.ExportConfiguration.DataTypes
+  id: DataTypes
+  parent: Meridian.Ui.Services.ExportConfiguration
+  langs:
+  - csharp
+  - vb
+  name: DataTypes
+  nameWithType: ExportConfiguration.DataTypes
+  fullName: Meridian.Ui.Services.ExportConfiguration.DataTypes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataTypes
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1245
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string[] DataTypes { get; set; }
+    parameters: []
+    return:
+      type: System.String[]
+    content.vb: Public Property DataTypes As String()
+  overload: Meridian.Ui.Services.ExportConfiguration.DataTypes*
+- uid: Meridian.Ui.Services.ExportConfiguration.FromDate
+  commentId: P:Meridian.Ui.Services.ExportConfiguration.FromDate
+  id: FromDate
+  parent: Meridian.Ui.Services.ExportConfiguration
+  langs:
+  - csharp
+  - vb
+  name: FromDate
+  nameWithType: ExportConfiguration.FromDate
+  fullName: Meridian.Ui.Services.ExportConfiguration.FromDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FromDate
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1246
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly FromDate { get; set; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property FromDate As DateOnly
+  overload: Meridian.Ui.Services.ExportConfiguration.FromDate*
+- uid: Meridian.Ui.Services.ExportConfiguration.ToDate
+  commentId: P:Meridian.Ui.Services.ExportConfiguration.ToDate
+  id: ToDate
+  parent: Meridian.Ui.Services.ExportConfiguration
+  langs:
+  - csharp
+  - vb
+  name: ToDate
+  nameWithType: ExportConfiguration.ToDate
+  fullName: Meridian.Ui.Services.ExportConfiguration.ToDate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToDate
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1247
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public DateOnly ToDate { get; set; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property ToDate As DateOnly
+  overload: Meridian.Ui.Services.ExportConfiguration.ToDate*
+- uid: Meridian.Ui.Services.ExportConfiguration.OutputPath
+  commentId: P:Meridian.Ui.Services.ExportConfiguration.OutputPath
+  id: OutputPath
+  parent: Meridian.Ui.Services.ExportConfiguration
+  langs:
+  - csharp
+  - vb
+  name: OutputPath
+  nameWithType: ExportConfiguration.OutputPath
+  fullName: Meridian.Ui.Services.ExportConfiguration.OutputPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OutputPath
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1248
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public string OutputPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property OutputPath As String
+  overload: Meridian.Ui.Services.ExportConfiguration.OutputPath*
+- uid: Meridian.Ui.Services.ExportConfiguration.IncludeQualityReport
+  commentId: P:Meridian.Ui.Services.ExportConfiguration.IncludeQualityReport
+  id: IncludeQualityReport
+  parent: Meridian.Ui.Services.ExportConfiguration
+  langs:
+  - csharp
+  - vb
+  name: IncludeQualityReport
+  nameWithType: ExportConfiguration.IncludeQualityReport
+  fullName: Meridian.Ui.Services.ExportConfiguration.IncludeQualityReport
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeQualityReport
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1249
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IncludeQualityReport { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeQualityReport As Boolean
+  overload: Meridian.Ui.Services.ExportConfiguration.IncludeQualityReport*
+- uid: Meridian.Ui.Services.ExportConfiguration.IncludeSchema
+  commentId: P:Meridian.Ui.Services.ExportConfiguration.IncludeSchema
+  id: IncludeSchema
+  parent: Meridian.Ui.Services.ExportConfiguration
+  langs:
+  - csharp
+  - vb
+  name: IncludeSchema
+  nameWithType: ExportConfiguration.IncludeSchema
+  fullName: Meridian.Ui.Services.ExportConfiguration.IncludeSchema
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IncludeSchema
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1250
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public bool IncludeSchema { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IncludeSchema As Boolean
+  overload: Meridian.Ui.Services.ExportConfiguration.IncludeSchema*
+- uid: Meridian.Ui.Services.ExportConfiguration.AdditionalOptions
+  commentId: P:Meridian.Ui.Services.ExportConfiguration.AdditionalOptions
+  id: AdditionalOptions
+  parent: Meridian.Ui.Services.ExportConfiguration
+  langs:
+  - csharp
+  - vb
+  name: AdditionalOptions
+  nameWithType: ExportConfiguration.AdditionalOptions
+  fullName: Meridian.Ui.Services.ExportConfiguration.AdditionalOptions
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AdditionalOptions
+    path: ../../src/Meridian.Ui.Services/Services/AnalysisExportWizardService.cs
+    startLine: 1251
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public Dictionary<string, string> AdditionalOptions { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    content.vb: Public Property AdditionalOptions As Dictionary(Of String, String)
+  overload: Meridian.Ui.Services.ExportConfiguration.AdditionalOptions*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.ExportConfiguration.Profile*
+  commentId: Overload:Meridian.Ui.Services.ExportConfiguration.Profile
+  href: Meridian.Ui.Services.ExportConfiguration.html#Meridian_Ui_Services_ExportConfiguration_Profile
+  name: Profile
+  nameWithType: ExportConfiguration.Profile
+  fullName: Meridian.Ui.Services.ExportConfiguration.Profile
+- uid: Meridian.Ui.Services.ExportProfile
+  commentId: T:Meridian.Ui.Services.ExportProfile
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ExportProfile.html
+  name: ExportProfile
+  nameWithType: ExportProfile
+  fullName: Meridian.Ui.Services.ExportProfile
+- uid: Meridian.Ui.Services.ExportConfiguration.Symbols*
+  commentId: Overload:Meridian.Ui.Services.ExportConfiguration.Symbols
+  href: Meridian.Ui.Services.ExportConfiguration.html#Meridian_Ui_Services_ExportConfiguration_Symbols
+  name: Symbols
+  nameWithType: ExportConfiguration.Symbols
+  fullName: Meridian.Ui.Services.ExportConfiguration.Symbols
+- uid: System.String[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string[]
+  nameWithType: string[]
+  fullName: string[]
+  nameWithType.vb: String()
+  fullName.vb: String()
+  name.vb: String()
+  spec.csharp:
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: (
+  - name: )
+- uid: Meridian.Ui.Services.ExportConfiguration.DataTypes*
+  commentId: Overload:Meridian.Ui.Services.ExportConfiguration.DataTypes
+  href: Meridian.Ui.Services.ExportConfiguration.html#Meridian_Ui_Services_ExportConfiguration_DataTypes
+  name: DataTypes
+  nameWithType: ExportConfiguration.DataTypes
+  fullName: Meridian.Ui.Services.ExportConfiguration.DataTypes
+- uid: Meridian.Ui.Services.ExportConfiguration.FromDate*
+  commentId: Overload:Meridian.Ui.Services.ExportConfiguration.FromDate
+  href: Meridian.Ui.Services.ExportConfiguration.html#Meridian_Ui_Services_ExportConfiguration_FromDate
+  name: FromDate
+  nameWithType: ExportConfiguration.FromDate
+  fullName: Meridian.Ui.Services.ExportConfiguration.FromDate
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Ui.Services.ExportConfiguration.ToDate*
+  commentId: Overload:Meridian.Ui.Services.ExportConfiguration.ToDate
+  href: Meridian.Ui.Services.ExportConfiguration.html#Meridian_Ui_Services_ExportConfiguration_ToDate
+  name: ToDate
+  nameWithType: ExportConfiguration.ToDate
+  fullName: Meridian.Ui.Services.ExportConfiguration.ToDate
+- uid: Meridian.Ui.Services.ExportConfiguration.OutputPath*
+  commentId: Overload:Meridian.Ui.Services.ExportConfiguration.OutputPath
+  href: Meridian.Ui.Services.ExportConfiguration.html#Meridian_Ui_Services_ExportConfiguration_OutputPath
+  name: OutputPath
+  nameWithType: ExportConfiguration.OutputPath
+  fullName: Meridian.Ui.Services.ExportConfiguration.OutputPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Services.ExportConfiguration.IncludeQualityReport*
+  commentId: Overload:Meridian.Ui.Services.ExportConfiguration.IncludeQualityReport
+  href: Meridian.Ui.Services.ExportConfiguration.html#Meridian_Ui_Services_ExportConfiguration_IncludeQualityReport
+  name: IncludeQualityReport
+  nameWithType: ExportConfiguration.IncludeQualityReport
+  fullName: Meridian.Ui.Services.ExportConfiguration.IncludeQualityReport
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ui.Services.ExportConfiguration.IncludeSchema*
+  commentId: Overload:Meridian.Ui.Services.ExportConfiguration.IncludeSchema
+  href: Meridian.Ui.Services.ExportConfiguration.html#Meridian_Ui_Services_ExportConfiguration_IncludeSchema
+  name: IncludeSchema
+  nameWithType: ExportConfiguration.IncludeSchema
+  fullName: Meridian.Ui.Services.ExportConfiguration.IncludeSchema
+- uid: Meridian.Ui.Services.ExportConfiguration.AdditionalOptions*
+  commentId: Overload:Meridian.Ui.Services.ExportConfiguration.AdditionalOptions
+  href: Meridian.Ui.Services.ExportConfiguration.html#Meridian_Ui_Services_ExportConfiguration_AdditionalOptions
+  name: AdditionalOptions
+  nameWithType: ExportConfiguration.AdditionalOptions
+  fullName: Meridian.Ui.Services.ExportConfiguration.AdditionalOptions
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

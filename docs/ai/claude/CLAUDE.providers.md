@@ -43,7 +43,7 @@ The system uses a unified abstraction layer supporting both **real-time streamin
 
 ## Current Provider Inventory (2026-03-31)
 
-The repository currently includes **30 concrete provider implementations** plus shared base and registry components.
+The repository currently includes **32 concrete provider implementations** plus shared base and registry components.
 
 ### Streaming / Hybrid Providers
 | Provider | Class | Path |
@@ -81,9 +81,11 @@ The repository currently includes **30 concrete provider implementations** plus 
 | Provider | Class | Path |
 |----------|-------|------|
 | Alpaca | `AlpacaSymbolSearchProviderRefactored` | `src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
+| EDGAR | `EdgarSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
 | Finnhub | `FinnhubSymbolSearchProviderRefactored` | `src/Meridian.Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
 | OpenFIGI | `OpenFigiClient` | `src/Meridian.Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
 | Polygon | `PolygonSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
+| Robinhood | `RobinhoodSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
 | StockSharp | `StockSharpSymbolSearchProvider` | `src/Meridian.Infrastructure/Adapters/StockSharp/StockSharpSymbolSearchProvider.cs` |
 | Synthetic | `SyntheticMarketDataClient` | `src/Meridian.Infrastructure/Adapters/Synthetic/SyntheticMarketDataClient.cs` |
 
@@ -204,9 +206,11 @@ The repository currently includes **30 concrete provider implementations** plus 
 | Provider | Location |
 |----------|----------|
 | Alpaca | `Infrastructure/Adapters/Alpaca/AlpacaSymbolSearchProviderRefactored.cs` |
+| EDGAR | `Infrastructure/Adapters/Edgar/EdgarSymbolSearchProvider.cs` |
 | Polygon | `Infrastructure/Adapters/Polygon/PolygonSymbolSearchProvider.cs` |
 | Finnhub | `Infrastructure/Adapters/Finnhub/FinnhubSymbolSearchProviderRefactored.cs` |
 | OpenFIGI | `Infrastructure/Adapters/OpenFigi/OpenFigiClient.cs` |
+| Robinhood | `Infrastructure/Adapters/Robinhood/RobinhoodSymbolSearchProvider.cs` |
 
 Supporting files:
 - `ISymbolSearchProvider.cs` - Base interface

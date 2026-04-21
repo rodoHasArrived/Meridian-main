@@ -1,0 +1,612 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext
+  commentId: T:Meridian.Contracts.Workstation.FundOperationsNavigationContext
+  id: FundOperationsNavigationContext
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundOperationsNavigationContext.#ctor(Meridian.Contracts.Workstation.FundOperationsTab,System.String,System.Nullable{System.Guid},System.String)
+  - Meridian.Contracts.Workstation.FundOperationsNavigationContext.AccountId
+  - Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundProfileId
+  - Meridian.Contracts.Workstation.FundOperationsNavigationContext.RunId
+  - Meridian.Contracts.Workstation.FundOperationsNavigationContext.Tab
+  langs:
+  - csharp
+  - vb
+  name: FundOperationsNavigationContext
+  nameWithType: FundOperationsNavigationContext
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundOperationsNavigationContext
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: >-
+    Normalized navigation context that allows fund operations surfaces to open from a fund,
+
+    account, or run entry point without duplicating page implementations.
+  example: []
+  syntax:
+    content: 'public sealed record FundOperationsNavigationContext : IEquatable<FundOperationsNavigationContext>'
+    content.vb: Public NotInheritable Class FundOperationsNavigationContext Implements IEquatable(Of FundOperationsNavigationContext)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Workstation.FundOperationsNavigationContext}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.#ctor(Meridian.Contracts.Workstation.FundOperationsTab,System.String,System.Nullable{System.Guid},System.String)
+  commentId: M:Meridian.Contracts.Workstation.FundOperationsNavigationContext.#ctor(Meridian.Contracts.Workstation.FundOperationsTab,System.String,System.Nullable{System.Guid},System.String)
+  id: '#ctor(Meridian.Contracts.Workstation.FundOperationsTab,System.String,System.Nullable{System.Guid},System.String)'
+  parent: Meridian.Contracts.Workstation.FundOperationsNavigationContext
+  langs:
+  - csharp
+  - vb
+  name: FundOperationsNavigationContext(FundOperationsTab, string?, Guid?, string?)
+  nameWithType: FundOperationsNavigationContext.FundOperationsNavigationContext(FundOperationsTab, string?, Guid?, string?)
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundOperationsNavigationContext(Meridian.Contracts.Workstation.FundOperationsTab, string?, System.Guid?, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: >-
+    Normalized navigation context that allows fund operations surfaces to open from a fund,
+
+    account, or run entry point without duplicating page implementations.
+  example: []
+  syntax:
+    content: public FundOperationsNavigationContext(FundOperationsTab Tab = FundOperationsTab.Overview, string? FundProfileId = null, Guid? AccountId = null, string? RunId = null)
+    parameters:
+    - id: Tab
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+    - id: FundProfileId
+      type: System.String
+    - id: AccountId
+      type: System.Nullable{System.Guid}
+    - id: RunId
+      type: System.String
+    content.vb: Public Sub New(Tab As FundOperationsTab = FundOperationsTab.Overview, FundProfileId As String = Nothing, AccountId As Guid? = Nothing, RunId As String = Nothing)
+  overload: Meridian.Contracts.Workstation.FundOperationsNavigationContext.#ctor*
+  nameWithType.vb: FundOperationsNavigationContext.New(FundOperationsTab, String, Guid?, String)
+  fullName.vb: Meridian.Contracts.Workstation.FundOperationsNavigationContext.New(Meridian.Contracts.Workstation.FundOperationsTab, String, System.Guid?, String)
+  name.vb: New(FundOperationsTab, String, Guid?, String)
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.Tab
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsNavigationContext.Tab
+  id: Tab
+  parent: Meridian.Contracts.Workstation.FundOperationsNavigationContext
+  langs:
+  - csharp
+  - vb
+  name: Tab
+  nameWithType: FundOperationsNavigationContext.Tab
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.Tab
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Tab
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public FundOperationsTab Tab { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+    content.vb: Public Property Tab As FundOperationsTab
+  overload: Meridian.Contracts.Workstation.FundOperationsNavigationContext.Tab*
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundProfileId
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundProfileId
+  id: FundProfileId
+  parent: Meridian.Contracts.Workstation.FundOperationsNavigationContext
+  langs:
+  - csharp
+  - vb
+  name: FundProfileId
+  nameWithType: FundOperationsNavigationContext.FundProfileId
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundProfileId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundProfileId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? FundProfileId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property FundProfileId As String
+  overload: Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundProfileId*
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.AccountId
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsNavigationContext.AccountId
+  id: AccountId
+  parent: Meridian.Contracts.Workstation.FundOperationsNavigationContext
+  langs:
+  - csharp
+  - vb
+  name: AccountId
+  nameWithType: FundOperationsNavigationContext.AccountId
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.AccountId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AccountId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 28
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public Guid? AccountId { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Guid}
+    content.vb: Public Property AccountId As Guid?
+  overload: Meridian.Contracts.Workstation.FundOperationsNavigationContext.AccountId*
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.RunId
+  commentId: P:Meridian.Contracts.Workstation.FundOperationsNavigationContext.RunId
+  id: RunId
+  parent: Meridian.Contracts.Workstation.FundOperationsNavigationContext
+  langs:
+  - csharp
+  - vb
+  name: RunId
+  nameWithType: FundOperationsNavigationContext.RunId
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.RunId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunId
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: public string? RunId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property RunId As String
+  overload: Meridian.Contracts.Workstation.FundOperationsNavigationContext.RunId*
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Workstation.FundOperationsNavigationContext}
+  commentId: T:System.IEquatable{Meridian.Contracts.Workstation.FundOperationsNavigationContext}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<FundOperationsNavigationContext>
+  nameWithType: IEquatable<FundOperationsNavigationContext>
+  fullName: System.IEquatable<Meridian.Contracts.Workstation.FundOperationsNavigationContext>
+  nameWithType.vb: IEquatable(Of FundOperationsNavigationContext)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Workstation.FundOperationsNavigationContext)
+  name.vb: IEquatable(Of FundOperationsNavigationContext)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext
+    name: FundOperationsNavigationContext
+    href: Meridian.Contracts.Workstation.FundOperationsNavigationContext.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext
+    name: FundOperationsNavigationContext
+    href: Meridian.Contracts.Workstation.FundOperationsNavigationContext.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.#ctor*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsNavigationContext.#ctor
+  href: Meridian.Contracts.Workstation.FundOperationsNavigationContext.html#Meridian_Contracts_Workstation_FundOperationsNavigationContext__ctor_Meridian_Contracts_Workstation_FundOperationsTab_System_String_System_Nullable_System_Guid__System_String_
+  name: FundOperationsNavigationContext
+  nameWithType: FundOperationsNavigationContext.FundOperationsNavigationContext
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundOperationsNavigationContext
+  nameWithType.vb: FundOperationsNavigationContext.New
+  fullName.vb: Meridian.Contracts.Workstation.FundOperationsNavigationContext.New
+  name.vb: New
+- uid: Meridian.Contracts.Workstation.FundOperationsTab
+  commentId: T:Meridian.Contracts.Workstation.FundOperationsTab
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundOperationsTab.html
+  name: FundOperationsTab
+  nameWithType: FundOperationsTab
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Nullable{System.Guid}
+  commentId: T:System.Nullable{System.Guid}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid?
+  nameWithType: Guid?
+  fullName: System.Guid?
+  spec.csharp:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+  spec.vb:
+  - uid: System.Guid
+    name: Guid
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.guid
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.Tab*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsNavigationContext.Tab
+  href: Meridian.Contracts.Workstation.FundOperationsNavigationContext.html#Meridian_Contracts_Workstation_FundOperationsNavigationContext_Tab
+  name: Tab
+  nameWithType: FundOperationsNavigationContext.Tab
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.Tab
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundProfileId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundProfileId
+  href: Meridian.Contracts.Workstation.FundOperationsNavigationContext.html#Meridian_Contracts_Workstation_FundOperationsNavigationContext_FundProfileId
+  name: FundProfileId
+  nameWithType: FundOperationsNavigationContext.FundProfileId
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.FundProfileId
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.AccountId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsNavigationContext.AccountId
+  href: Meridian.Contracts.Workstation.FundOperationsNavigationContext.html#Meridian_Contracts_Workstation_FundOperationsNavigationContext_AccountId
+  name: AccountId
+  nameWithType: FundOperationsNavigationContext.AccountId
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.AccountId
+- uid: Meridian.Contracts.Workstation.FundOperationsNavigationContext.RunId*
+  commentId: Overload:Meridian.Contracts.Workstation.FundOperationsNavigationContext.RunId
+  href: Meridian.Contracts.Workstation.FundOperationsNavigationContext.html#Meridian_Contracts_Workstation_FundOperationsNavigationContext_RunId
+  name: RunId
+  nameWithType: FundOperationsNavigationContext.RunId
+  fullName: Meridian.Contracts.Workstation.FundOperationsNavigationContext.RunId

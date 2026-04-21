@@ -1,0 +1,619 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry
+  commentId: T:Meridian.Infrastructure.DataSources.DataSourceRegistry
+  id: DataSourceRegistry
+  parent: Meridian.Infrastructure.DataSources
+  children:
+  - Meridian.Infrastructure.DataSources.DataSourceRegistry.DiscoverFromAssemblies(System.Reflection.Assembly[])
+  - Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterModules(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly[])
+  - Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)
+  - Meridian.Infrastructure.DataSources.DataSourceRegistry.Sources
+  langs:
+  - csharp
+  - vb
+  name: DataSourceRegistry
+  nameWithType: DataSourceRegistry
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSourceRegistry
+    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    startLine: 8
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Registry for discovering and registering data source providers.
+  example: []
+  syntax:
+    content: public sealed class DataSourceRegistry
+    content.vb: Public NotInheritable Class DataSourceRegistry
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry.Sources
+  commentId: P:Meridian.Infrastructure.DataSources.DataSourceRegistry.Sources
+  id: Sources
+  parent: Meridian.Infrastructure.DataSources.DataSourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: Sources
+  nameWithType: DataSourceRegistry.Sources
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry.Sources
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Sources
+    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    startLine: 15
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Gets the discovered data source metadata entries.
+  example: []
+  syntax:
+    content: public IReadOnlyList<DataSourceMetadata> Sources { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceMetadata}
+    content.vb: Public ReadOnly Property Sources As IReadOnlyList(Of DataSourceMetadata)
+  overload: Meridian.Infrastructure.DataSources.DataSourceRegistry.Sources*
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry.DiscoverFromAssemblies(System.Reflection.Assembly[])
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceRegistry.DiscoverFromAssemblies(System.Reflection.Assembly[])
+  id: DiscoverFromAssemblies(System.Reflection.Assembly[])
+  parent: Meridian.Infrastructure.DataSources.DataSourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: DiscoverFromAssemblies(params Assembly[])
+  nameWithType: DataSourceRegistry.DiscoverFromAssemblies(params Assembly[])
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry.DiscoverFromAssemblies(params System.Reflection.Assembly[])
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DiscoverFromAssemblies
+    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    startLine: 20
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Discover data sources from the provided assemblies.
+  example: []
+  syntax:
+    content: public void DiscoverFromAssemblies(params Assembly[] assemblies)
+    parameters:
+    - id: assemblies
+      type: System.Reflection.Assembly[]
+    content.vb: Public Sub DiscoverFromAssemblies(ParamArray assemblies As Assembly())
+  overload: Meridian.Infrastructure.DataSources.DataSourceRegistry.DiscoverFromAssemblies*
+  nameWithType.vb: DataSourceRegistry.DiscoverFromAssemblies(ParamArray Assembly())
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceRegistry.DiscoverFromAssemblies(ParamArray System.Reflection.Assembly())
+  name.vb: DiscoverFromAssemblies(ParamArray Assembly())
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)
+  id: RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.DependencyInjection.ServiceLifetime)
+  parent: Meridian.Infrastructure.DataSources.DataSourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterServices(IServiceCollection, ServiceLifetime)
+  nameWithType: DataSourceRegistry.RegisterServices(IServiceCollection, ServiceLifetime)
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterServices(Microsoft.Extensions.DependencyInjection.IServiceCollection, Microsoft.Extensions.DependencyInjection.ServiceLifetime)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterServices
+    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    startLine: 49
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Registers discovered data sources into the service collection.
+  example: []
+  syntax:
+    content: public void RegisterServices(IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton)
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    - id: lifetime
+      type: Microsoft.Extensions.DependencyInjection.ServiceLifetime
+    content.vb: Public Sub RegisterServices(services As IServiceCollection, lifetime As ServiceLifetime = ServiceLifetime.Singleton)
+  overload: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterServices*
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterModules(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly[])
+  commentId: M:Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterModules(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly[])
+  id: RegisterModules(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Reflection.Assembly[])
+  parent: Meridian.Infrastructure.DataSources.DataSourceRegistry
+  langs:
+  - csharp
+  - vb
+  name: RegisterModules(IServiceCollection, params Assembly[])
+  nameWithType: DataSourceRegistry.RegisterModules(IServiceCollection, params Assembly[])
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterModules(Microsoft.Extensions.DependencyInjection.IServiceCollection, params System.Reflection.Assembly[])
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.ProviderSdk/DataSourceRegistry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RegisterModules
+    path: ../../src/Meridian.ProviderSdk/DataSourceRegistry.cs
+    startLine: 69
+  assemblies:
+  - Meridian.ProviderSdk
+  namespace: Meridian.Infrastructure.DataSources
+  summary: Discovers provider modules and executes their registrations.
+  example: []
+  syntax:
+    content: public void RegisterModules(IServiceCollection services, params Assembly[] assemblies)
+    parameters:
+    - id: services
+      type: Microsoft.Extensions.DependencyInjection.IServiceCollection
+    - id: assemblies
+      type: System.Reflection.Assembly[]
+    content.vb: Public Sub RegisterModules(services As IServiceCollection, ParamArray assemblies As Assembly())
+  overload: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterModules*
+  nameWithType.vb: DataSourceRegistry.RegisterModules(IServiceCollection, ParamArray Assembly())
+  fullName.vb: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterModules(Microsoft.Extensions.DependencyInjection.IServiceCollection, ParamArray System.Reflection.Assembly())
+  name.vb: RegisterModules(IServiceCollection, ParamArray Assembly())
+references:
+- uid: Meridian.Infrastructure.DataSources
+  commentId: N:Meridian.Infrastructure.DataSources
+  href: Meridian.html
+  name: Meridian.Infrastructure.DataSources
+  nameWithType: Meridian.Infrastructure.DataSources
+  fullName: Meridian.Infrastructure.DataSources
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.DataSources
+    name: DataSources
+    href: Meridian.Infrastructure.DataSources.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry.Sources*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceRegistry.Sources
+  href: Meridian.Infrastructure.DataSources.DataSourceRegistry.html#Meridian_Infrastructure_DataSources_DataSourceRegistry_Sources
+  name: Sources
+  nameWithType: DataSourceRegistry.Sources
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry.Sources
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceMetadata}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.DataSources.DataSourceMetadata}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<DataSourceMetadata>
+  nameWithType: IReadOnlyList<DataSourceMetadata>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.DataSources.DataSourceMetadata>
+  nameWithType.vb: IReadOnlyList(Of DataSourceMetadata)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.DataSources.DataSourceMetadata)
+  name.vb: IReadOnlyList(Of DataSourceMetadata)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.DataSources.DataSourceMetadata
+    name: DataSourceMetadata
+    href: Meridian.Infrastructure.DataSources.DataSourceMetadata.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.DataSources.DataSourceMetadata
+    name: DataSourceMetadata
+    href: Meridian.Infrastructure.DataSources.DataSourceMetadata.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry.DiscoverFromAssemblies*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceRegistry.DiscoverFromAssemblies
+  href: Meridian.Infrastructure.DataSources.DataSourceRegistry.html#Meridian_Infrastructure_DataSources_DataSourceRegistry_DiscoverFromAssemblies_System_Reflection_Assembly___
+  name: DiscoverFromAssemblies
+  nameWithType: DataSourceRegistry.DiscoverFromAssemblies
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry.DiscoverFromAssemblies
+- uid: System.Reflection.Assembly[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.reflection.assembly
+  name: Assembly[]
+  nameWithType: Assembly[]
+  fullName: System.Reflection.Assembly[]
+  nameWithType.vb: Assembly()
+  fullName.vb: System.Reflection.Assembly()
+  name.vb: Assembly()
+  spec.csharp:
+  - uid: System.Reflection.Assembly
+    name: Assembly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.reflection.assembly
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.Reflection.Assembly
+    name: Assembly
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.reflection.assembly
+  - name: (
+  - name: )
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterServices*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterServices
+  href: Meridian.Infrastructure.DataSources.DataSourceRegistry.html#Meridian_Infrastructure_DataSources_DataSourceRegistry_RegisterServices_Microsoft_Extensions_DependencyInjection_IServiceCollection_Microsoft_Extensions_DependencyInjection_ServiceLifetime_
+  name: RegisterServices
+  nameWithType: DataSourceRegistry.RegisterServices
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterServices
+- uid: Microsoft.Extensions.DependencyInjection.IServiceCollection
+  commentId: T:Microsoft.Extensions.DependencyInjection.IServiceCollection
+  parent: Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.iservicecollection
+  name: IServiceCollection
+  nameWithType: IServiceCollection
+  fullName: Microsoft.Extensions.DependencyInjection.IServiceCollection
+- uid: Microsoft.Extensions.DependencyInjection.ServiceLifetime
+  commentId: T:Microsoft.Extensions.DependencyInjection.ServiceLifetime
+  parent: Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection.servicelifetime
+  name: ServiceLifetime
+  nameWithType: ServiceLifetime
+  fullName: Microsoft.Extensions.DependencyInjection.ServiceLifetime
+- uid: Microsoft.Extensions.DependencyInjection
+  commentId: N:Microsoft.Extensions.DependencyInjection
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.DependencyInjection
+  nameWithType: Microsoft.Extensions.DependencyInjection
+  fullName: Microsoft.Extensions.DependencyInjection
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.DependencyInjection
+    name: DependencyInjection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.dependencyinjection
+- uid: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterModules*
+  commentId: Overload:Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterModules
+  href: Meridian.Infrastructure.DataSources.DataSourceRegistry.html#Meridian_Infrastructure_DataSources_DataSourceRegistry_RegisterModules_Microsoft_Extensions_DependencyInjection_IServiceCollection_System_Reflection_Assembly___
+  name: RegisterModules
+  nameWithType: DataSourceRegistry.RegisterModules
+  fullName: Meridian.Infrastructure.DataSources.DataSourceRegistry.RegisterModules

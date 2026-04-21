@@ -191,7 +191,7 @@ public sealed class PaperSessionPersistenceService
         ExecutionPortfolioSnapshotDto? portfolioSnapshot = null;
         if (session.Portfolio is not null)
         {
-            var positions = session.Portfolio.Positions.Values.ToArray();
+            var positions = session.Portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
             portfolioSnapshot = new ExecutionPortfolioSnapshotDto(
                 Cash: session.Portfolio.Cash,
                 PortfolioValue: session.Portfolio.PortfolioValue,
@@ -203,6 +203,7 @@ public sealed class PaperSessionPersistenceService
 
         return new PaperSessionDetailDto(
             Summary: ToSummary(session),
+            Symbols: session.Symbols.ToArray(),
             Portfolio: portfolioSnapshot,
             OrderHistory: session.OrderHistory.ToArray());
     }
@@ -229,8 +230,14 @@ public sealed class PaperSessionPersistenceService
         return session.Portfolio?.Ledger ?? session.ReconstructedLedger;
     }
 
-    /// <summary>Records an order status update for a session.</summary>
-    public void RecordOrderUpdate(string sessionId, OrderState orderState)
+    /// <summary>
+    /// Records an order status update for a session and does not complete until
+    /// the durable order-history append finishes.
+    /// </summary>
+    public async Task RecordOrderUpdateAsync(
+        string sessionId,
+        OrderState orderState,
+        CancellationToken ct = default)
     {
         if (_sessions.TryGetValue(sessionId, out var session))
         {
@@ -239,13 +246,7 @@ public sealed class PaperSessionPersistenceService
 
         if (_store is not null)
         {
-            // Fire-and-forget — order-history persistence is best-effort.
-            _ = _store.AppendOrderUpdateAsync(sessionId, orderState)
-                .ContinueWith(
-                    t => _logger.LogWarning(t.Exception, "Failed to persist order update for session {SessionId}", sessionId),
-                    default,
-                    TaskContinuationOptions.OnlyOnFaulted,
-                    TaskScheduler.Default);
+            await _store.AppendOrderUpdateAsync(sessionId, orderState, ct).ConfigureAwait(false);
         }
     }
 
@@ -301,7 +302,7 @@ public sealed class PaperSessionPersistenceService
         foreach (var fill in fills)
             portfolio.ApplyFill(fill);
 
-        var positions = portfolio.Positions.Values.ToArray();
+        var positions = portfolio.Positions.Values.Cast<ExecutionPosition>().ToArray();
         return new ExecutionPortfolioSnapshotDto(
             Cash: portfolio.Cash,
             PortfolioValue: portfolio.PortfolioValue,
@@ -309,6 +310,39 @@ public sealed class PaperSessionPersistenceService
             RealisedPnl: portfolio.RealisedPnl,
             Positions: positions,
             AsOf: DateTimeOffset.UtcNow);
+    }
+
+    /// <summary>
+    /// Verifies that the current session portfolio matches the replayed fill-log state.
+    /// This gives operators an explicit continuity check for paper sessions that are
+    /// expected to survive restarts and replay cleanly from durable fills.
+    /// </summary>
+    public async Task<PaperSessionReplayVerificationDto?> VerifyReplayAsync(
+        string sessionId,
+        CancellationToken ct = default)
+    {
+        var detail = GetSession(sessionId);
+        if (detail is null)
+        {
+            return null;
+        }
+
+        var replayPortfolio = await ReplaySessionAsync(sessionId, ct).ConfigureAwait(false);
+        if (replayPortfolio is null)
+        {
+            return null;
+        }
+
+        var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
+        return new PaperSessionReplayVerificationDto(
+            Summary: detail.Summary,
+            Symbols: detail.Symbols,
+            ReplaySource: _store is null ? "InMemoryFallback" : "DurableFillLog",
+            IsConsistent: mismatchReasons.Count == 0,
+            MismatchReasons: mismatchReasons,
+            CurrentPortfolio: detail.Portfolio,
+            ReplayPortfolio: replayPortfolio,
+            VerifiedAt: DateTimeOffset.UtcNow);
     }
 
     // ------------------------------------------------------------------
@@ -413,6 +447,82 @@ public sealed class PaperSessionPersistenceService
         IsActive: session.IsActive,
         Symbols: session.Symbols);
 
+    private static IReadOnlyList<string> ComparePortfolios(
+        ExecutionPortfolioSnapshotDto? current,
+        ExecutionPortfolioSnapshotDto replay)
+    {
+        var mismatchReasons = new List<string>();
+        if (current is null)
+        {
+            mismatchReasons.Add("Current session portfolio is unavailable for comparison.");
+            return mismatchReasons;
+        }
+
+        CompareDecimal("cash", current.Cash, replay.Cash, mismatchReasons);
+        CompareDecimal("portfolio value", current.PortfolioValue, replay.PortfolioValue, mismatchReasons);
+        CompareDecimal("unrealised PnL", current.UnrealisedPnl, replay.UnrealisedPnl, mismatchReasons);
+        CompareDecimal("realised PnL", current.RealisedPnl, replay.RealisedPnl, mismatchReasons);
+
+        var currentPositions = current.Positions.ToDictionary(
+            static position => position.Symbol,
+            StringComparer.OrdinalIgnoreCase);
+        var replayPositions = replay.Positions.ToDictionary(
+            static position => position.Symbol,
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var currentSymbol in currentPositions.Keys.Except(replayPositions.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            mismatchReasons.Add($"Replay is missing position {currentSymbol}.");
+        }
+
+        foreach (var replaySymbol in replayPositions.Keys.Except(currentPositions.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            mismatchReasons.Add($"Replay produced unexpected position {replaySymbol}.");
+        }
+
+        foreach (var symbol in currentPositions.Keys.Intersect(replayPositions.Keys, StringComparer.OrdinalIgnoreCase))
+        {
+            var currentPosition = currentPositions[symbol];
+            var replayPosition = replayPositions[symbol];
+
+            if (currentPosition.Quantity != replayPosition.Quantity)
+            {
+                mismatchReasons.Add(
+                    $"Position {symbol} quantity differs: current={currentPosition.Quantity:G29}, replay={replayPosition.Quantity:G29}.");
+            }
+
+            CompareDecimal(
+                $"{symbol} average cost basis",
+                currentPosition.AverageCostBasis,
+                replayPosition.AverageCostBasis,
+                mismatchReasons);
+            CompareDecimal(
+                $"{symbol} unrealised PnL",
+                currentPosition.UnrealisedPnl,
+                replayPosition.UnrealisedPnl,
+                mismatchReasons);
+            CompareDecimal(
+                $"{symbol} realised PnL",
+                currentPosition.RealisedPnl,
+                replayPosition.RealisedPnl,
+                mismatchReasons);
+        }
+
+        return mismatchReasons;
+    }
+
+    private static void CompareDecimal(
+        string label,
+        decimal current,
+        decimal replay,
+        ICollection<string> mismatchReasons)
+    {
+        if (current != replay)
+        {
+            mismatchReasons.Add($"{label} differs: current={current:G29}, replay={replay:G29}.");
+        }
+    }
+
     private sealed class PaperSession
     {
         public required string SessionId { get; init; }
@@ -457,6 +567,7 @@ public sealed record PaperSessionSummaryDto(
 /// <summary>Detailed session DTO.</summary>
 public sealed record PaperSessionDetailDto(
     PaperSessionSummaryDto Summary,
+    IReadOnlyList<string> Symbols,
     ExecutionPortfolioSnapshotDto? Portfolio,
     IReadOnlyList<OrderState>? OrderHistory);
 
@@ -468,3 +579,17 @@ public sealed record ExecutionPortfolioSnapshotDto(
     decimal RealisedPnl,
     IReadOnlyList<ExecutionPosition> Positions,
     DateTimeOffset AsOf);
+
+/// <summary>
+/// Result of replaying a paper session and comparing the replayed state to the
+/// currently tracked portfolio snapshot.
+/// </summary>
+public sealed record PaperSessionReplayVerificationDto(
+    PaperSessionSummaryDto Summary,
+    IReadOnlyList<string> Symbols,
+    string ReplaySource,
+    bool IsConsistent,
+    IReadOnlyList<string> MismatchReasons,
+    ExecutionPortfolioSnapshotDto? CurrentPortfolio,
+    ExecutionPortfolioSnapshotDto ReplayPortfolio,
+    DateTimeOffset VerifiedAt);

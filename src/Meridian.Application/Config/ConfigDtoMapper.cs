@@ -40,6 +40,14 @@ public static class ConfigDtoMapper
                 DepthLevels: dto.DepthLevels,
                 TickByTick: dto.TickByTick);
 
+    public static IBClientPortalOptions? ToDomain(this IBClientPortalOptionsDto? dto)
+        => dto is null
+            ? null
+            : new IBClientPortalOptions(
+                Enabled: dto.Enabled,
+                BaseUrl: dto.BaseUrl,
+                AllowSelfSignedCertificates: dto.AllowSelfSignedCertificates);
+
     public static DerivativesConfig? ToDomain(this DerivativesConfigDto? dto)
         => dto is null
             ? null

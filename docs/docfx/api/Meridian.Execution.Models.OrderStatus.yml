@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Models.OrderStatus
+  commentId: T:Meridian.Execution.Models.OrderStatus
+  id: OrderStatus
+  parent: Meridian.Execution.Models
+  children:
+  - Meridian.Execution.Models.OrderStatus.Accepted
+  - Meridian.Execution.Models.OrderStatus.Cancelled
+  - Meridian.Execution.Models.OrderStatus.Filled
+  - Meridian.Execution.Models.OrderStatus.PartiallyFilled
+  - Meridian.Execution.Models.OrderStatus.Rejected
+  - Meridian.Execution.Models.OrderStatus.Working
+  langs:
+  - csharp
+  - vb
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Execution.Models.OrderStatus
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OrderStatus
+    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    startLine: 3
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Lifecycle states an order can be in.
+  example: []
+  syntax:
+    content: public enum OrderStatus
+    content.vb: Public Enum OrderStatus
+- uid: Meridian.Execution.Models.OrderStatus.Accepted
+  commentId: F:Meridian.Execution.Models.OrderStatus.Accepted
+  id: Accepted
+  parent: Meridian.Execution.Models.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Accepted
+  nameWithType: OrderStatus.Accepted
+  fullName: Meridian.Execution.Models.OrderStatus.Accepted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accepted
+    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Order has been accepted by the gateway and is pending routing.
+  example: []
+  syntax:
+    content: Accepted = 0
+    return:
+      type: Meridian.Execution.Models.OrderStatus
+- uid: Meridian.Execution.Models.OrderStatus.Working
+  commentId: F:Meridian.Execution.Models.OrderStatus.Working
+  id: Working
+  parent: Meridian.Execution.Models.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Working
+  nameWithType: OrderStatus.Working
+  fullName: Meridian.Execution.Models.OrderStatus.Working
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Working
+    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Order has been sent to the venue and is resting in the book.
+  example: []
+  syntax:
+    content: Working = 1
+    return:
+      type: Meridian.Execution.Models.OrderStatus
+- uid: Meridian.Execution.Models.OrderStatus.Filled
+  commentId: F:Meridian.Execution.Models.OrderStatus.Filled
+  id: Filled
+  parent: Meridian.Execution.Models.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Filled
+  nameWithType: OrderStatus.Filled
+  fullName: Meridian.Execution.Models.OrderStatus.Filled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Filled
+    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Order has been completely filled.
+  example: []
+  syntax:
+    content: Filled = 2
+    return:
+      type: Meridian.Execution.Models.OrderStatus
+- uid: Meridian.Execution.Models.OrderStatus.PartiallyFilled
+  commentId: F:Meridian.Execution.Models.OrderStatus.PartiallyFilled
+  id: PartiallyFilled
+  parent: Meridian.Execution.Models.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: PartiallyFilled
+  nameWithType: OrderStatus.PartiallyFilled
+  fullName: Meridian.Execution.Models.OrderStatus.PartiallyFilled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PartiallyFilled
+    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Order has been partially filled; remainder is still working.
+  example: []
+  syntax:
+    content: PartiallyFilled = 3
+    return:
+      type: Meridian.Execution.Models.OrderStatus
+- uid: Meridian.Execution.Models.OrderStatus.Cancelled
+  commentId: F:Meridian.Execution.Models.OrderStatus.Cancelled
+  id: Cancelled
+  parent: Meridian.Execution.Models.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Cancelled
+  nameWithType: OrderStatus.Cancelled
+  fullName: Meridian.Execution.Models.OrderStatus.Cancelled
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Cancelled
+    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Order was cancelled before being filled.
+  example: []
+  syntax:
+    content: Cancelled = 4
+    return:
+      type: Meridian.Execution.Models.OrderStatus
+- uid: Meridian.Execution.Models.OrderStatus.Rejected
+  commentId: F:Meridian.Execution.Models.OrderStatus.Rejected
+  id: Rejected
+  parent: Meridian.Execution.Models.OrderStatus
+  langs:
+  - csharp
+  - vb
+  name: Rejected
+  nameWithType: OrderStatus.Rejected
+  fullName: Meridian.Execution.Models.OrderStatus.Rejected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Execution/Models/OrderStatus.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rejected
+    path: ../../src/Meridian.Execution/Models/OrderStatus.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Models
+  summary: Order was rejected by the broker or risk engine.
+  example: []
+  syntax:
+    content: Rejected = 5
+    return:
+      type: Meridian.Execution.Models.OrderStatus
+references:
+- uid: Meridian.Execution.Models
+  commentId: N:Meridian.Execution.Models
+  href: Meridian.html
+  name: Meridian.Execution.Models
+  nameWithType: Meridian.Execution.Models
+  fullName: Meridian.Execution.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Models
+    name: Models
+    href: Meridian.Execution.Models.html
+- uid: Meridian.Execution.Models.OrderStatus
+  commentId: T:Meridian.Execution.Models.OrderStatus
+  parent: Meridian.Execution.Models
+  href: Meridian.Execution.Models.OrderStatus.html
+  name: OrderStatus
+  nameWithType: OrderStatus
+  fullName: Meridian.Execution.Models.OrderStatus

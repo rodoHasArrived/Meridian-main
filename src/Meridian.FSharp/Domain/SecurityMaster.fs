@@ -25,6 +25,14 @@ type CommonTerms = {
     Exchange: string option
     LotSize: decimal option
     TickSize: decimal option
+    /// ISO 10383 Market Identifier Code of the primary listing venue (e.g. "XNAS", "XNYS").
+    PrimaryListingMic: string option
+    /// Country of legal incorporation; may differ from CountryOfRisk (e.g. Bermuda-domiciled NYSE-listed company).
+    CountryOfIncorporation: string option
+    /// Standard settlement lag in business days (e.g. 1 for T+1 US equities, 2 for most bonds and EU equities).
+    SettlementCycleDays: int option
+    /// Named holiday calendar used for settlement and accrual calculations (e.g. "NYSE", "LDN", "T2S").
+    HolidayCalendarId: string option
 }
 
 [<RequireQualifiedAccess>]
@@ -40,9 +48,90 @@ module CommonTerms =
             terms with
                 DisplayName = normalizedDisplayName terms
                 Currency = normalizedCurrency terms
+                PrimaryListingMic = terms.PrimaryListingMic |> Option.map (fun m -> m.Trim().ToUpperInvariant())
         }
 
-type EquityTerms = { ShareClass: string option }
+[<RequireQualifiedAccess>]
+type DividendType =
+    | Fixed
+    | Floating
+    | Cumulative
+
+[<RequireQualifiedAccess>]
+module DividendType =
+    let asString dividendType =
+        match dividendType with
+        | DividendType.Fixed -> "Fixed"
+        | DividendType.Floating -> "Floating"
+        | DividendType.Cumulative -> "Cumulative"
+
+type ParticipationTerms = {
+    ParticipatesInCommonDividends: bool
+    AdditionalDividendThreshold: decimal option
+}
+
+[<RequireQualifiedAccess>]
+type LiquidationPreference =
+    | Pari
+    | Senior of multiple: decimal
+    | Subordinated
+
+[<RequireQualifiedAccess>]
+module LiquidationPreference =
+    let asString preference =
+        match preference with
+        | LiquidationPreference.Pari -> "Pari"
+        | LiquidationPreference.Senior _ -> "Senior"
+        | LiquidationPreference.Subordinated -> "Subordinated"
+
+type PreferredTerms = {
+    DividendRate: decimal option
+    DividendType: DividendType
+    RedemptionPrice: decimal option
+    RedemptionDate: DateOnly option
+    CallableDate: DateOnly option
+    ParticipationTerms: ParticipationTerms option
+    LiquidationPreference: LiquidationPreference
+}
+
+type ConvertibleTerms = {
+    UnderlyingSecurityId: SecurityId
+    ConversionRatio: decimal
+    ConversionPrice: decimal option
+    ConversionStartDate: DateOnly option
+    ConversionEndDate: DateOnly option
+}
+
+[<RequireQualifiedAccess>]
+type EquityClassification =
+    | Common
+    | Preferred of PreferredTerms
+    | Convertible of ConvertibleTerms
+    | ConvertiblePreferred of PreferredTerms * ConvertibleTerms
+    | Other of string
+
+[<RequireQualifiedAccess>]
+module EquityClassification =
+    let asString classification =
+        match classification with
+        | EquityClassification.Common -> "Common"
+        | EquityClassification.Preferred _ -> "Preferred"
+        | EquityClassification.Convertible _ -> "Convertible"
+        | EquityClassification.ConvertiblePreferred _ -> "ConvertiblePreferred"
+        | EquityClassification.Other s -> s
+
+type EquityTerms = {
+    ShareClass: string option
+    VotingRightsCat: VotingRightsCat option
+    Classification: EquityClassification option
+}
+
+/// Exercise style for options and warrants.
+[<RequireQualifiedAccess>]
+type ExerciseStyle =
+    | American
+    | European
+    | Bermudan
 
 type OptionTerms = {
     UnderlyingId: SecurityId
@@ -50,6 +139,14 @@ type OptionTerms = {
     Strike: decimal
     Expiry: DateOnly
     Multiplier: decimal
+    /// Links this contract to its option chain / series aggregate.
+    OptChainId: string option
+    ExerciseStyle: ExerciseStyle option
+    /// "Physical" or "Cash".
+    SettlementType: string option
+    /// True when this contract has been adjusted for a corporate action (split, special dividend, etc.).
+    IsAdjusted: bool
+    LastTradingDt: DateOnly option
 }
 
 type FutureTerms = {
@@ -57,7 +154,51 @@ type FutureTerms = {
     ContractMonth: string
     Expiry: DateOnly
     Multiplier: decimal
+    LastTradingDt: DateOnly option
+    FirstNoticeDt: DateOnly option
+    DeliveryMonthDt: DateOnly option
+    /// "Physical" or "Cash".
+    SettlementType: string option
+    /// Delivery point code for physically settled commodity futures.
+    DeliveryLocationCode: string option
+    /// True when this contract is the current front-month / roll target.
+    IsRollTarget: bool
+    /// Number of calendar days before expiry when the roll window opens.
+    RollWindowDays: int option
 }
+
+/// Discriminated union identifying the bond's economic subclass.
+[<RequireQualifiedAccess>]
+type BondSubclass =
+    | Sovereign
+    | Corporate
+    | Municipal
+    | Agency
+    | Convertible
+    | InflationLinked
+    | FloatingRate
+    // --- Asset-backed / structured credit ---
+    /// Generic asset-backed security (auto loans, credit cards, student loans, etc.).
+    | AssetBacked
+    /// Agency or non-agency residential mortgage-backed security (pass-through pool).
+    | MortgageBacked
+    /// Agency MBS guaranteed by Fannie Mae, Freddie Mac, or Ginnie Mae.
+    | AgencyMbs
+    /// Commercial mortgage-backed security.
+    | CommercialMbs
+    /// Collateralized Mortgage Obligation — a CMO tranche carved from an MBS pool.
+    | Cmo
+    /// Collateralized Loan Obligation — CLO tranche backed by leveraged loans.
+    | Clo
+    /// Collateralized Debt Obligation — generic CDO tranche.
+    | Cdo
+    /// Principal-Only strip: receives only scheduled and unscheduled principal cash flows.
+    | PrincipalOnly
+    /// Interest-Only strip: receives only interest cash flows; notional-referenced.
+    | InterestOnly
+    /// Inverse Interest-Only strip: leveraged IO with inverse-floating coupon.
+    | InverseInterestOnly
+    | Other of string
 
 [<RequireQualifiedAccess>]
 type BondCouponStructure =
@@ -73,18 +214,20 @@ type BondTerms = {
     CallDate: DateOnly option
     IssuerName: string option
     Seniority: string option
+    /// Economic subclass of this bond instrument.
+    Subclass: BondSubclass
 }
 
 [<RequireQualifiedAccess>]
 module BondTerms =
     let fixedRate maturity couponRate dayCount issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Fixed(couponRate, dayCount); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Corporate }
 
     let floatingRate maturity index spreadBps issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.Floating(index, spreadBps, None, None, None); IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.FloatingRate }
 
     let zeroCoupon maturity issuerName =
-        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None }
+        { Maturity = maturity; IssueDate = None; Coupon = BondCouponStructure.ZeroCoupon; IsCallable = false; CallDate = None; IssuerName = issuerName; Seniority = None; Subclass = BondSubclass.Corporate }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with

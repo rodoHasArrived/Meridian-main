@@ -1,114 +1,162 @@
 # Meridian - Production Status
 
 **Version:** 1.7.2
-**Last Updated:** 2026-03-31
-**Status:** Development / Pilot Ready (comprehensive fund-management planning active)
+**Last Updated:** 2026-04-21
+**Status:** Development / Pilot Ready - Wave 1 trust gate is closed and Waves 2-4 productization work remain active
 
-This document summarizes the current production-readiness posture and the next product-delivery gaps from the current repository state.
+This document summarizes Meridian's current readiness posture and active delivery gaps from the current repository state. It is subordinate to [`ROADMAP.md`](ROADMAP.md): use this file for readiness language and current posture, and use the roadmap for full wave sequencing.
+
+---
+
+## Canonical Program State
+
+Program wave status is canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md). Any wave status wording in this file is explanatory context only.
+
+<!-- program-state:begin -->
+| Wave | Owner | Status | Target Date | Evidence Link |
+| --- | --- | --- | --- | --- |
+| W1 | Data Operations + Provider Reliability | Done | 2026-04-17 | [`production-status.md#provider-evidence-summary`](production-status.md#provider-evidence-summary) |
+| W2 | Trading Workstation | In Progress | 2026-05-29 | [`ROADMAP.md#wave-2-web-paper-trading-cockpit-completion`](ROADMAP.md#wave-2-web-paper-trading-cockpit-completion) |
+| W3 | Shared Platform Interop | In Progress | 2026-06-26 | [`ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity`](ROADMAP.md#wave-3-shared-run--portfolio--ledger-continuity) |
+| W4 | Governance + Fund Ops | In Progress | 2026-07-24 | [`ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline`](ROADMAP.md#wave-4-governance-and-fund-operations-productization-on-top-of-the-delivered-security-master-baseline) |
+| W5 | Research Platform | Planned | 2026-08-21 | [`ROADMAP.md#wave-5-backtest-studio-unification`](ROADMAP.md#wave-5-backtest-studio-unification) |
+| W6 | Execution + Brokerage Integrations | Planned | 2026-09-18 | [`ROADMAP.md#wave-6-live-integration-readiness`](ROADMAP.md#wave-6-live-integration-readiness) |
+<!-- program-state:end -->
+
+---
 
 ## Executive Summary
 
-Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, and a web dashboard. The current product gap is not the absence of core building blocks; it is the remaining work required to unify those blocks into a coherent operator-facing fund-management product spanning front, middle, and back office workflows.
+Meridian already has working ingestion, storage, replay, backtesting, provider orchestration, export tooling, shared workstation endpoints, web and WPF workstation shells, and a delivered Security Master baseline. The main product gap is no longer missing foundations. It is the remaining work required to turn those foundations into a coherent operator-facing trading workstation and fund-operations product with trustworthy provider evidence, a dependable paper-trading lane, one shared run-centered model, and deeper governance workflows.
 
-The active plan now has two connected delivery tracks:
-
-1. **Front-office workstation delivery** across Research, Trading, Data Operations, and Governance workspaces using shared run, portfolio, and ledger models.
-2. **Middle- and back-office fund-operations delivery** adding Security Master productization, account/entity support, multi-ledger views, trial balance, cash-flow modeling, reconciliation, trade-management support, and investor/report-pack generation.
+The current working tree reinforces that direction rather than changing it. WPF workspace-shell consolidation is actively moving through `ShellNavigationCatalog`, workspace shell pages, `MainPageViewModel` orchestration, and new shell smoke tests, but that work should still be treated as in-flight support for Waves 2-4 rather than as a closed migration milestone.
 
 ### Overall Assessment: **DEVELOPMENT / PILOT READY**
 
-| Category | Status | Notes |
-|----------|--------|-------|
-| Core event pipeline | Implemented | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
-| Storage layer | Implemented | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
-| Backfill providers | Implemented | 10+ providers with fallback chain; some require credentials |
-| Backtesting engine | Implemented | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
-| Paper trading gateway | Implemented | Risk rules (position limits, drawdown stops, order rate throttle), position and fill tracking |
-| **Brokerage gateway framework** | **Implemented** | `BaseBrokerageGateway` + Alpaca, IB, StockSharp adapters; live-validated runtime paths pending |
-| Direct lending module | Implemented | PostgreSQL-backed services, workflows, and `/api/loans/*` endpoints |
-| CppTrader integration | Implemented | Host management, order gateway, ITCH ingestion, replay service |
-| WPF desktop shell | Active | Included in solution build; builds full WPF app on Windows, CI stub on Linux/macOS |
-| Shared run / portfolio / ledger model | In progress | First workstation browser/detail/portfolio/ledger flow is in code; broader paper/live coverage remains |
-| Security Master baseline | Implemented in code, not yet productized | Contracts, application, storage, and F# domain anchors exist |
-| Governance product surfaces | Planned | Trial balance, multi-ledger, cash-flow, reconciliation, investor reporting, and governed reporting are blueprint-backed but not fully implemented |
-| Monitoring and observability | Implemented | Prometheus and OpenTelemetry foundations are in place |
-| Provider confidence | Mixed | Evidence-backed matrix now tracked in `provider-validation-matrix.md` with per-scenario pass/fail status and links |
-| Improvement tracking | Core baseline complete | 35/35 core items are complete; current focus has moved to workstation and governance expansion |
+| Capability | Maturity | Notes |
+| --- | --- | --- |
+| Core event pipeline | Complete | Channel-based processing with backpressure, metrics, validation, and storage fan-out |
+| Storage layer | Complete | JSONL/Parquet composite sink with WAL, catalog, packaging, and export support |
+| Backfill providers | Partial | Broad provider baseline with fallback chain; some paths still need credentials or runtime proof |
+| Backtesting engine | Complete | Tick-by-tick replay with fill models, portfolio metrics, and Lean integration |
+| Paper-trading gateway baseline | Complete | Risk rules, position and fill tracking, session endpoints, and promotion seam are in code |
+| Brokerage gateway framework | Partial | Alpaca, IB, Robinhood, and StockSharp paths exist; broader runtime proof remains open |
+| Shared run / portfolio / ledger baseline | Partial | Shared run, portfolio, ledger, and reconciliation seams are in code; broader paper/live, cash-flow, and multi-ledger depth remains |
+| Security Master platform seam | Complete | WPF, Research, Trading, Portfolio, Ledger, Reconciliation, and Governance share one authoritative coverage/provenance contract |
+| Governance product surfaces | Partial | Security coverage, reconciliation drill-ins, direct lending, and reporting-adjacent seams are live; broader multi-ledger, cash-flow, and governed reporting workflows remain incomplete |
+| Web and WPF workstation shells | Partial | Both surfaces expose meaningful workspace flows; workflow hardening and deeper workflow-first consolidation remain |
+| Monitoring and observability | Complete | Prometheus, OpenTelemetry, SLO registry, and alert/runbook linkage are in place |
+| Provider confidence | Complete | The active Wave 1 gate is Alpaca, Robinhood, and Yahoo; Alpaca and Yahoo are repo-closed, Robinhood remains explicitly runtime-bounded by committed artifacts, and deferred providers stay outside the active closure target |
+| Test baseline | Partial | Cross-project coverage is strong, but operator-grade acceptance coverage is still catching up in active Wave 1-4 areas |
+
+---
 
 ## Current Strengths
 
-- Mature ingestion, replay, storage, and export foundations
-- Shared composition and host startup patterns
-- **Brokerage gateway framework** with Alpaca, IB, and StockSharp adapters ready for cockpit integration
-- Backtesting engine with tick replay, fill models, and QuantConnect Lean integration
-- Direct lending module with PostgreSQL persistence, workflows, and API endpoints
-- Portfolio and ledger concepts already present in the codebase (double-entry accounting, F# ledger, trading state machines)
-- Security Master foundations already present in contracts, storage, application, and F# domain modules
-- Existing export infrastructure that can support future report-pack generation
-- WPF desktop application included in solution build (`src/Meridian.Wpf/`; builds full WPF app on Windows, CI stub on Linux/macOS)
-- Comprehensive test coverage (~4,756 tests across 8 test projects)
+- mature ingestion, replay, storage, export, and data-quality foundations
+- shared composition and host startup patterns
+- shared workstation shell in web plus materially aligned WPF workstation surfaces
+- paper trading, execution, lifecycle, and promotion seams already exposed through stable REST surfaces
+- Security Master as the shared instrument-definition baseline across Research, Trading, Portfolio, Ledger, Reconciliation, Governance, and WPF
+- direct lending, reconciliation, and governance-facing export/report-adjacent seams already present in the repo
+- existing shared run, portfolio, and ledger read services that give Meridian a real cross-workspace integration seam
+- workflow guide and screenshot-refresh tooling for ongoing operator-facing validation
 
-## Current Gaps
+---
 
-### Workstation productization
+## Active Gaps By Wave
 
-Meridian still exposes too much capability through page-first flows instead of operator workflows. The Research, Trading, Data Operations, and Governance taxonomy is now established, but richer cockpit shells and broader shared-run coverage remain to be implemented.
+Wave status labels and dates are canonical in [`PROGRAM_STATE.md`](PROGRAM_STATE.md).
+### Wave 1: Closed provider confidence and checkpoint gate
 
-### Governance and fund operations
+- Alpaca, Robinhood, and Yahoo define the closed active Wave 1 provider gate; Alpaca and Yahoo are closed by repo-backed evidence, while Robinhood remains explicitly bounded by committed runtime broker-session scenarios
+- backfill checkpoint reliability and Parquet L2 flush behavior are closed Wave 1 sub-gates backed by repo tests, including retry-safe L2 flush retention on failed or cancelled writes
+- Polygon, Interactive Brokers, NYSE, and StockSharp remain deferred or non-blocking inventory for the current wave and should not be described as active Wave 1 blockers
+- provider-confidence language must stay tied to [`provider-validation-matrix.md`](provider-validation-matrix.md), `artifacts/provider-validation/`, `run-wave1-provider-validation.ps1`, and the latest generated validation summary instead of architecture intent
 
-The target governance capability set is now defined, but still mostly pending implementation:
+### Wave 2: Paper-trading cockpit hardening
 
-- Security Master product surfaces
-- account, entity, and strategy-structure management
-- multi-ledger tracking
-- consolidated and per-ledger trial balance
-- cash-flow modeling
-- reconciliation engine
-- report generation tools and report packs
-- investor reporting and stakeholder-ready outputs
+- the web trading cockpit already has real surfaces for positions, orders, fills, replay, sessions, and promotion, but it still needs clearer daily-use acceptance criteria
+- session persistence, replay behavior, audit visibility, and execution-control flows need more explicit operator validation
+- live-readiness claims must remain downstream of a trustworthy paper workflow
 
-### Provider readiness
+#### Cockpit hardened acceptance gate (objective pass/fail)
 
-Some providers remain conditionally operator-ready:
+“Cockpit hardened” is **Pass** only when all three scenario acceptance criteria below are green in CI and locally reproducible. It is **Fail** if any criterion is red.
 
-- **Polygon**: replay fixture and parser coverage is passing in-repo, but live reconnect/rate-limit runtime proof is still partial ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/PolygonRecordedSessionReplayTests.cs), [partial gap evidence](provider-validation-matrix.md)).
-- **Interactive Brokers**: non-`IBAPI` guidance and smoke-build checks pass, but full live runtime path remains partially validated ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/IBRuntimeGuidanceTests.cs), [prerequisites](../providers/interactive-brokers-setup.md)).
-- **StockSharp**: connector capability and subscription-guidance tests pass, with runtime connector validation still partial ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/StockSharpSubscriptionTests.cs), [runbook](../providers/stocksharp-connectors.md)).
-- **NYSE**: reconnect and parser lifecycle tests pass; auth/rate-limit explicit evidence still pending ([pass evidence](../../tests/Meridian.Tests/Infrastructure/Providers/NyseMarketDataClientTests.cs), [open checks](provider-validation-matrix.md)).
+| Scenario acceptance criterion | Pass evidence | Fail condition |
+| --- | --- | --- |
+| `/api/execution/*` to `/api/promotion/*` continuity | `Scenario_SessionCloseReplayAndPromotionReview_BacktestToPaperFlowRemainsContinuousAndAuditable` proves one operator flow can create/close/replay a paper session, evaluate promotion eligibility, approve promotion, and see both execution and promotion evidence in returned contracts. | Any break in endpoint contract continuity, missing promotion-history visibility, or missing audit linkage (`PromotionId`/actor/correlation) in the same scenario run. |
+| Session persistence + replay verification | The same continuity scenario asserts `/api/execution/sessions/{sessionId}/replay` returns `ReplaySource=DurableFillLog`, `IsConsistent=true`, empty mismatches, and deterministic replayed cash after persisted fills. | Replay endpoint unavailable, inconsistent replay state, mismatch reasons present for the deterministic baseline, or missing durable-fill-log provenance fields. |
+| Promotion decision visibility + audit rationale | `Scenario_RiskTriggeredPromotionRejection_DecisionRemainsVisibleWithBlockingRationale` verifies blocked promotion evaluations expose policy reasons (`BlockingReasons`) and rejected decisions keep explicit operator rationale in the decision payload. | Evaluation omits blocking rationale for an ineligible run, or rejection response does not carry an explicit reason suitable for operator audit/review. |
 
-## Provider Evidence Links (Pass/Fail)
+Operator-readiness language for Wave 2 should stay “in progress” until the full cockpit-hardened gate above is continuously passing.
 
-| Provider | Scenario | Status | Evidence |
-|---|---|---|---|
-| Polygon | Replay fixtures (trades/quotes/aggregates/status) | ✅ Pass | `PolygonRecordedSessionReplayTests`, `PolygonMessageParsingTests`, fixtures in `tests/.../Fixtures/Polygon` |
-| Polygon | Reconnect + live rate-limit runtime proof | ⚠️ Partial | `ProviderResilienceTests` baseline + outstanding live validation in matrix |
-| IB | Non-IBAPI runtime guidance + smoke compile path | ✅ Pass | `IBRuntimeGuidanceTests`, `scripts/dev/build-ibapi-smoke.ps1` |
-| IB | Real vendor runtime (`IBAPI` + TWS/Gateway) | ⚠️ Partial | prerequisites/checklist in `docs/providers/interactive-brokers-setup.md` |
-| StockSharp | Subscription guidance + conversion contracts | ✅ Pass | `StockSharpSubscriptionTests`, `StockSharpMessageConversionTests`, `StockSharpConnectorFactoryTests` |
-| StockSharp | End-to-end connector runtime profile | ⚠️ Partial | validated baseline + runbook in `docs/providers/stocksharp-connectors.md` |
-| NYSE | Reconnect lifecycle behavior | ✅ Pass | `NyseMarketDataClientTests` |
-| NYSE | Auth failure and rate-limit behavior | ❌ Fail (evidence missing) | tracked in `provider-validation-matrix.md` |
+### Wave 3: Shared run / portfolio / ledger continuity
 
-## Blueprint References
+- the shared run seam exists, but paper/live-adjacent history, cash-flow, and reconciliation continuity are not equally deep in every surface yet
+- portfolio, ledger, fills, attribution, and reconciliation need to feel like one run-centered system rather than adjacent slices
+- WPF workflow work must keep reinforcing the same read-model seam instead of reintroducing page-local orchestration
 
-The current planning set is synchronized around these documents:
+### Wave 4: Governance and fund-operations productization on top of the delivered Security Master baseline
+
+- Security Master is a delivered baseline, not an open foundation item
+- governance still needs deeper account/entity, multi-ledger, cash-flow, reconciliation, and governed reporting workflows
+- the next governance slices should extend shared DTOs, read models, and export seams instead of creating a second governance stack
+
+Use this file for readiness evidence and operator-facing risk notes; use [`ROADMAP.md`](ROADMAP.md) for full wave sequencing.
+
+---
+
+## Provider Evidence Summary
+
+Use [`provider-validation-matrix.md`](provider-validation-matrix.md) as the primary per-scenario evidence source. Current high-signal summary:
+
+| Provider | Posture | Notes |
+| --- | --- | --- |
+| Alpaca | Complete | Checked-in provider suites plus the stable `/api/execution/*` seam close the active core-provider row in repo evidence |
+| Robinhood | Partial | Brokerage, polling, historical, and symbol-search evidence exist; remaining runtime scenarios stay bounded under `artifacts/provider-validation/robinhood/2026-04-09/` |
+| Yahoo | Complete | Deterministic historical-provider and intraday contract evidence close the historical-only core-provider row |
+
+Deferred from the active Wave 1 gate: Polygon, Interactive Brokers, NYSE, and StockSharp remain part of broader provider inventory, but they are not current closure blockers.
+
+---
+
+## Core Operator-Readiness Gates
+
+Meridian can reasonably claim **core operator-readiness** when the wave-aligned gates below are true:
+
+1. **Wave 1 gates:** the matrix in `provider-validation-matrix.md` points to executable suites or committed artifact folders for every row, and `run-wave1-provider-validation.ps1` can reproduce the offline gate.
+2. **Wave 2 gates:** the web workstation exposes a dependable paper-trading cockpit, not just endpoint coverage or partial UI, and `Backtest -> Paper` is explicit and auditable.
+3. **Wave 3 gates:** run history, portfolio, fills, attribution, ledger, cash-flow, and reconciliation views are connected through one shared model across backtest and paper flows.
+4. **Wave 4 gates:** Security Master remains operator-accessible and governance has concrete account/entity, multi-ledger, cash-flow, reconciliation, and reporting seams built on shared contracts rather than blueprint-only intent.
+
+Waves 5 and 6 deepen the product and widen later claims, but they are not prerequisites for core operator-readiness.
+
+---
+
+<a id="pre-production-checklist"></a>
+
+## Immediate Readiness Checklist
+
+- [x] Keep provider claims synchronized with executable evidence in [`provider-validation-matrix.md`](provider-validation-matrix.md)
+- [x] Keep Robinhood runtime-bounded evidence and deferred-provider labels consistent with the closed Wave 1 gate
+- [x] Keep `artifacts/provider-validation/` and `run-wave1-provider-validation.ps1` current as the Wave 1 gate evolves
+- [ ] Harden the paper-trading cockpit against realistic operator scenarios before widening live-readiness language
+- [ ] Keep `Backtest -> Paper` explicit, auditable, and operator-visible through the workstation
+- [ ] Extend shared run / portfolio / ledger / reconciliation continuity across `Research`, `Trading`, and `Governance`
+- [ ] Extend governance beyond the delivered Security Master baseline into account/entity, multi-ledger, cash-flow, reconciliation, and reporting workflows
+- [ ] Validate operator-facing observability and diagnostics against the active workstation surfaces
+
+---
+
+## Reference Documents
 
 - [ROADMAP.md](ROADMAP.md)
+- [ROADMAP_COMBINED.md](ROADMAP_COMBINED.md)
 - [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md)
 - [IMPROVEMENTS.md](IMPROVEMENTS.md)
 - [Provider Validation Matrix](provider-validation-matrix.md)
 - [Trading Workstation Migration Blueprint](../plans/trading-workstation-migration-blueprint.md)
 - [Governance and Fund Operations Blueprint](../plans/governance-fund-ops-blueprint.md)
-
-## Pre-Production Checklist
-
-- [ ] Configure real provider credentials and validate operator startup paths
-- [ ] Complete remaining provider-confidence hardening for Polygon, StockSharp, IB, and optional NYSE
-- [ ] Validate brokerage gateway adapters (Alpaca, IB, StockSharp) against live vendor surfaces
-- [ ] Build paper-trading cockpit in web dashboard wired to brokerage gateways
-- [ ] Finish workspace-first trading workstation flows beyond the first shared run baseline
-- [ ] Productize Security Master for workstation use
-- [ ] Implement multi-ledger, trial-balance, and cash-flow governance views
-- [ ] Implement reconciliation workflows and break-review UX
-- [ ] Implement report generation and governed export/report-pack flows
-- [ ] Validate end-to-end observability and operator diagnostics against the final product surfaces
+- [Meridian 6-Week Roadmap](../plans/meridian-6-week-roadmap.md)

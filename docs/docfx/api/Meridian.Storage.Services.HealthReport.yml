@@ -1,0 +1,757 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.HealthReport
+  commentId: T:Meridian.Storage.Services.HealthReport
+  id: HealthReport
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.HealthReport.#ctor(System.String,System.DateTime,System.Int64,Meridian.Storage.Services.HealthSummary,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.HealthIssue},Meridian.Storage.Services.HealthStatistics)
+  - Meridian.Storage.Services.HealthReport.GeneratedAt
+  - Meridian.Storage.Services.HealthReport.Issues
+  - Meridian.Storage.Services.HealthReport.ReportId
+  - Meridian.Storage.Services.HealthReport.ScanDurationMs
+  - Meridian.Storage.Services.HealthReport.Statistics
+  - Meridian.Storage.Services.HealthReport.Summary
+  langs:
+  - csharp
+  - vb
+  name: HealthReport
+  nameWithType: HealthReport
+  fullName: Meridian.Storage.Services.HealthReport
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HealthReport
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 568
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record HealthReport : IEquatable<HealthReport>'
+    content.vb: Public NotInheritable Class HealthReport Implements IEquatable(Of HealthReport)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.HealthReport}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.HealthReport.#ctor(System.String,System.DateTime,System.Int64,Meridian.Storage.Services.HealthSummary,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.HealthIssue},Meridian.Storage.Services.HealthStatistics)
+  commentId: M:Meridian.Storage.Services.HealthReport.#ctor(System.String,System.DateTime,System.Int64,Meridian.Storage.Services.HealthSummary,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.HealthIssue},Meridian.Storage.Services.HealthStatistics)
+  id: '#ctor(System.String,System.DateTime,System.Int64,Meridian.Storage.Services.HealthSummary,System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.HealthIssue},Meridian.Storage.Services.HealthStatistics)'
+  parent: Meridian.Storage.Services.HealthReport
+  langs:
+  - csharp
+  - vb
+  name: HealthReport(string, DateTime, long, HealthSummary, IReadOnlyList<HealthIssue>, HealthStatistics)
+  nameWithType: HealthReport.HealthReport(string, DateTime, long, HealthSummary, IReadOnlyList<HealthIssue>, HealthStatistics)
+  fullName: Meridian.Storage.Services.HealthReport.HealthReport(string, System.DateTime, long, Meridian.Storage.Services.HealthSummary, System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.HealthIssue>, Meridian.Storage.Services.HealthStatistics)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 568
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public HealthReport(string ReportId, DateTime GeneratedAt, long ScanDurationMs, HealthSummary Summary, IReadOnlyList<HealthIssue> Issues, HealthStatistics Statistics)
+    parameters:
+    - id: ReportId
+      type: System.String
+    - id: GeneratedAt
+      type: System.DateTime
+    - id: ScanDurationMs
+      type: System.Int64
+    - id: Summary
+      type: Meridian.Storage.Services.HealthSummary
+    - id: Issues
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.HealthIssue}
+    - id: Statistics
+      type: Meridian.Storage.Services.HealthStatistics
+    content.vb: Public Sub New(ReportId As String, GeneratedAt As Date, ScanDurationMs As Long, Summary As HealthSummary, Issues As IReadOnlyList(Of HealthIssue), Statistics As HealthStatistics)
+  overload: Meridian.Storage.Services.HealthReport.#ctor*
+  nameWithType.vb: HealthReport.New(String, Date, Long, HealthSummary, IReadOnlyList(Of HealthIssue), HealthStatistics)
+  fullName.vb: Meridian.Storage.Services.HealthReport.New(String, Date, Long, Meridian.Storage.Services.HealthSummary, System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.HealthIssue), Meridian.Storage.Services.HealthStatistics)
+  name.vb: New(String, Date, Long, HealthSummary, IReadOnlyList(Of HealthIssue), HealthStatistics)
+- uid: Meridian.Storage.Services.HealthReport.ReportId
+  commentId: P:Meridian.Storage.Services.HealthReport.ReportId
+  id: ReportId
+  parent: Meridian.Storage.Services.HealthReport
+  langs:
+  - csharp
+  - vb
+  name: ReportId
+  nameWithType: HealthReport.ReportId
+  fullName: Meridian.Storage.Services.HealthReport.ReportId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportId
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 569
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public string ReportId { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ReportId As String
+  overload: Meridian.Storage.Services.HealthReport.ReportId*
+- uid: Meridian.Storage.Services.HealthReport.GeneratedAt
+  commentId: P:Meridian.Storage.Services.HealthReport.GeneratedAt
+  id: GeneratedAt
+  parent: Meridian.Storage.Services.HealthReport
+  langs:
+  - csharp
+  - vb
+  name: GeneratedAt
+  nameWithType: HealthReport.GeneratedAt
+  fullName: Meridian.Storage.Services.HealthReport.GeneratedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GeneratedAt
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 570
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public DateTime GeneratedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: Public Property GeneratedAt As Date
+  overload: Meridian.Storage.Services.HealthReport.GeneratedAt*
+- uid: Meridian.Storage.Services.HealthReport.ScanDurationMs
+  commentId: P:Meridian.Storage.Services.HealthReport.ScanDurationMs
+  id: ScanDurationMs
+  parent: Meridian.Storage.Services.HealthReport
+  langs:
+  - csharp
+  - vb
+  name: ScanDurationMs
+  nameWithType: HealthReport.ScanDurationMs
+  fullName: Meridian.Storage.Services.HealthReport.ScanDurationMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ScanDurationMs
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 571
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long ScanDurationMs { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ScanDurationMs As Long
+  overload: Meridian.Storage.Services.HealthReport.ScanDurationMs*
+- uid: Meridian.Storage.Services.HealthReport.Summary
+  commentId: P:Meridian.Storage.Services.HealthReport.Summary
+  id: Summary
+  parent: Meridian.Storage.Services.HealthReport
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: HealthReport.Summary
+  fullName: Meridian.Storage.Services.HealthReport.Summary
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Summary
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 572
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public HealthSummary Summary { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.HealthSummary
+    content.vb: Public Property Summary As HealthSummary
+  overload: Meridian.Storage.Services.HealthReport.Summary*
+- uid: Meridian.Storage.Services.HealthReport.Issues
+  commentId: P:Meridian.Storage.Services.HealthReport.Issues
+  id: Issues
+  parent: Meridian.Storage.Services.HealthReport
+  langs:
+  - csharp
+  - vb
+  name: Issues
+  nameWithType: HealthReport.Issues
+  fullName: Meridian.Storage.Services.HealthReport.Issues
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Issues
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 573
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public IReadOnlyList<HealthIssue> Issues { get; init; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.HealthIssue}
+    content.vb: Public Property Issues As IReadOnlyList(Of HealthIssue)
+  overload: Meridian.Storage.Services.HealthReport.Issues*
+- uid: Meridian.Storage.Services.HealthReport.Statistics
+  commentId: P:Meridian.Storage.Services.HealthReport.Statistics
+  id: Statistics
+  parent: Meridian.Storage.Services.HealthReport
+  langs:
+  - csharp
+  - vb
+  name: Statistics
+  nameWithType: HealthReport.Statistics
+  fullName: Meridian.Storage.Services.HealthReport.Statistics
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/FileMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Statistics
+    path: ../../src/Meridian.Storage/Services/FileMaintenanceService.cs
+    startLine: 574
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public HealthStatistics Statistics { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.HealthStatistics
+    content.vb: Public Property Statistics As HealthStatistics
+  overload: Meridian.Storage.Services.HealthReport.Statistics*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.HealthReport}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.HealthReport}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<HealthReport>
+  nameWithType: IEquatable<HealthReport>
+  fullName: System.IEquatable<Meridian.Storage.Services.HealthReport>
+  nameWithType.vb: IEquatable(Of HealthReport)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.HealthReport)
+  name.vb: IEquatable(Of HealthReport)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.HealthReport
+    name: HealthReport
+    href: Meridian.Storage.Services.HealthReport.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.HealthReport
+    name: HealthReport
+    href: Meridian.Storage.Services.HealthReport.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.HealthReport.#ctor*
+  commentId: Overload:Meridian.Storage.Services.HealthReport.#ctor
+  href: Meridian.Storage.Services.HealthReport.html#Meridian_Storage_Services_HealthReport__ctor_System_String_System_DateTime_System_Int64_Meridian_Storage_Services_HealthSummary_System_Collections_Generic_IReadOnlyList_Meridian_Storage_Services_HealthIssue__Meridian_Storage_Services_HealthStatistics_
+  name: HealthReport
+  nameWithType: HealthReport.HealthReport
+  fullName: Meridian.Storage.Services.HealthReport.HealthReport
+  nameWithType.vb: HealthReport.New
+  fullName.vb: Meridian.Storage.Services.HealthReport.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Services.HealthSummary
+  commentId: T:Meridian.Storage.Services.HealthSummary
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.HealthSummary.html
+  name: HealthSummary
+  nameWithType: HealthSummary
+  fullName: Meridian.Storage.Services.HealthSummary
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.HealthIssue}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Storage.Services.HealthIssue}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<HealthIssue>
+  nameWithType: IReadOnlyList<HealthIssue>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Storage.Services.HealthIssue>
+  nameWithType.vb: IReadOnlyList(Of HealthIssue)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Storage.Services.HealthIssue)
+  name.vb: IReadOnlyList(Of HealthIssue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Storage.Services.HealthIssue
+    name: HealthIssue
+    href: Meridian.Storage.Services.HealthIssue.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.HealthIssue
+    name: HealthIssue
+    href: Meridian.Storage.Services.HealthIssue.html
+  - name: )
+- uid: Meridian.Storage.Services.HealthStatistics
+  commentId: T:Meridian.Storage.Services.HealthStatistics
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.HealthStatistics.html
+  name: HealthStatistics
+  nameWithType: HealthStatistics
+  fullName: Meridian.Storage.Services.HealthStatistics
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Storage.Services.HealthReport.ReportId*
+  commentId: Overload:Meridian.Storage.Services.HealthReport.ReportId
+  href: Meridian.Storage.Services.HealthReport.html#Meridian_Storage_Services_HealthReport_ReportId
+  name: ReportId
+  nameWithType: HealthReport.ReportId
+  fullName: Meridian.Storage.Services.HealthReport.ReportId
+- uid: Meridian.Storage.Services.HealthReport.GeneratedAt*
+  commentId: Overload:Meridian.Storage.Services.HealthReport.GeneratedAt
+  href: Meridian.Storage.Services.HealthReport.html#Meridian_Storage_Services_HealthReport_GeneratedAt
+  name: GeneratedAt
+  nameWithType: HealthReport.GeneratedAt
+  fullName: Meridian.Storage.Services.HealthReport.GeneratedAt
+- uid: Meridian.Storage.Services.HealthReport.ScanDurationMs*
+  commentId: Overload:Meridian.Storage.Services.HealthReport.ScanDurationMs
+  href: Meridian.Storage.Services.HealthReport.html#Meridian_Storage_Services_HealthReport_ScanDurationMs
+  name: ScanDurationMs
+  nameWithType: HealthReport.ScanDurationMs
+  fullName: Meridian.Storage.Services.HealthReport.ScanDurationMs
+- uid: Meridian.Storage.Services.HealthReport.Summary*
+  commentId: Overload:Meridian.Storage.Services.HealthReport.Summary
+  href: Meridian.Storage.Services.HealthReport.html#Meridian_Storage_Services_HealthReport_Summary
+  name: Summary
+  nameWithType: HealthReport.Summary
+  fullName: Meridian.Storage.Services.HealthReport.Summary
+- uid: Meridian.Storage.Services.HealthReport.Issues*
+  commentId: Overload:Meridian.Storage.Services.HealthReport.Issues
+  href: Meridian.Storage.Services.HealthReport.html#Meridian_Storage_Services_HealthReport_Issues
+  name: Issues
+  nameWithType: HealthReport.Issues
+  fullName: Meridian.Storage.Services.HealthReport.Issues
+- uid: Meridian.Storage.Services.HealthReport.Statistics*
+  commentId: Overload:Meridian.Storage.Services.HealthReport.Statistics
+  href: Meridian.Storage.Services.HealthReport.html#Meridian_Storage_Services_HealthReport_Statistics
+  name: Statistics
+  nameWithType: HealthReport.Statistics
+  fullName: Meridian.Storage.Services.HealthReport.Statistics

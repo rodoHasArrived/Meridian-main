@@ -318,3 +318,4 @@ jobs:
             *) DB_LABEL="❌ Failed" ;;
           esac
           echo "| PostgreSQL | $DB_LABEL |" >> $GITHUB_STEP_SUMMARY
+          echo "| PostgreSQL | $DB_LABEL |" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,1138 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Wizard.Core.WizardContext
+  commentId: T:Meridian.Application.Wizard.Core.WizardContext
+  id: WizardContext
+  parent: Meridian.Application.Wizard.Core
+  children:
+  - Meridian.Application.Wizard.Core.WizardContext.Backfill
+  - Meridian.Application.Wizard.Core.WizardContext.DataSource
+  - Meridian.Application.Wizard.Core.WizardContext.DetectedProviders
+  - Meridian.Application.Wizard.Core.WizardContext.FinalConfig
+  - Meridian.Application.Wizard.Core.WizardContext.GetMeta``1(System.String)
+  - Meridian.Application.Wizard.Core.WizardContext.IsCancelled
+  - Meridian.Application.Wizard.Core.WizardContext.Metadata
+  - Meridian.Application.Wizard.Core.WizardContext.SavedConfigPath
+  - Meridian.Application.Wizard.Core.WizardContext.SelectedUseCase
+  - Meridian.Application.Wizard.Core.WizardContext.SetMeta``1(System.String,``0)
+  - Meridian.Application.Wizard.Core.WizardContext.Storage
+  - Meridian.Application.Wizard.Core.WizardContext.Symbols
+  langs:
+  - csharp
+  - vb
+  name: WizardContext
+  nameWithType: WizardContext
+  fullName: Meridian.Application.Wizard.Core.WizardContext
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: WizardContext
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: >-
+    Mutable bag of state threaded through all wizard steps.
+
+    Each step reads from it, updates it, and the coordinator persists it across calls.
+  example: []
+  syntax:
+    content: public sealed class WizardContext
+    content.vb: Public NotInheritable Class WizardContext
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Wizard.Core.WizardContext.DetectedProviders
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.DetectedProviders
+  id: DetectedProviders
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: DetectedProviders
+  nameWithType: WizardContext.DetectedProviders
+  fullName: Meridian.Application.Wizard.Core.WizardContext.DetectedProviders
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectedProviders
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Providers detected from environment variables.
+  example: []
+  syntax:
+    content: public IReadOnlyList<AutoConfigurationService.DetectedProvider> DetectedProviders { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+    content.vb: Public Property DetectedProviders As IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  overload: Meridian.Application.Wizard.Core.WizardContext.DetectedProviders*
+- uid: Meridian.Application.Wizard.Core.WizardContext.SelectedUseCase
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.SelectedUseCase
+  id: SelectedUseCase
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: SelectedUseCase
+  nameWithType: WizardContext.SelectedUseCase
+  fullName: Meridian.Application.Wizard.Core.WizardContext.SelectedUseCase
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SelectedUseCase
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Use-case chosen by the user in <code>SelectUseCaseStep</code>.
+  example: []
+  syntax:
+    content: public UseCase? SelectedUseCase { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{Meridian.Application.Services.UseCase}
+    content.vb: Public Property SelectedUseCase As UseCase?
+  overload: Meridian.Application.Wizard.Core.WizardContext.SelectedUseCase*
+- uid: Meridian.Application.Wizard.Core.WizardContext.DataSource
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.DataSource
+  id: DataSource
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: DataSource
+  nameWithType: WizardContext.DataSource
+  fullName: Meridian.Application.Wizard.Core.WizardContext.DataSource
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DataSource
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Data-source selection assembled by <code>ConfigureDataSourceStep</code>.
+  example: []
+  syntax:
+    content: public DataSourceSelection? DataSource { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Services.DataSourceSelection
+    content.vb: Public Property DataSource As DataSourceSelection
+  overload: Meridian.Application.Wizard.Core.WizardContext.DataSource*
+- uid: Meridian.Application.Wizard.Core.WizardContext.Symbols
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.Symbols
+  id: Symbols
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: Symbols
+  nameWithType: WizardContext.Symbols
+  fullName: Meridian.Application.Wizard.Core.WizardContext.Symbols
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbols
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Symbol list assembled by <code>ConfigureSymbolsStep</code>.
+  example: []
+  syntax:
+    content: public SymbolConfig[]? Symbols { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Configuration.SymbolConfig[]
+    content.vb: Public Property Symbols As SymbolConfig()
+  overload: Meridian.Application.Wizard.Core.WizardContext.Symbols*
+- uid: Meridian.Application.Wizard.Core.WizardContext.Storage
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.Storage
+  id: Storage
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: Storage
+  nameWithType: WizardContext.Storage
+  fullName: Meridian.Application.Wizard.Core.WizardContext.Storage
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Storage
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Storage config assembled by <code>ConfigureStorageStep</code>.
+  example: []
+  syntax:
+    content: public StorageConfig? Storage { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.StorageConfig
+    content.vb: Public Property Storage As StorageConfig
+  overload: Meridian.Application.Wizard.Core.WizardContext.Storage*
+- uid: Meridian.Application.Wizard.Core.WizardContext.Backfill
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.Backfill
+  id: Backfill
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: Backfill
+  nameWithType: WizardContext.Backfill
+  fullName: Meridian.Application.Wizard.Core.WizardContext.Backfill
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Backfill
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Backfill config assembled by <code>ConfigureBackfillStep</code>.
+  example: []
+  syntax:
+    content: public BackfillConfig? Backfill { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.BackfillConfig
+    content.vb: Public Property Backfill As BackfillConfig
+  overload: Meridian.Application.Wizard.Core.WizardContext.Backfill*
+- uid: Meridian.Application.Wizard.Core.WizardContext.FinalConfig
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.FinalConfig
+  id: FinalConfig
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: FinalConfig
+  nameWithType: WizardContext.FinalConfig
+  fullName: Meridian.Application.Wizard.Core.WizardContext.FinalConfig
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FinalConfig
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: The assembled application config, available after <code>ReviewConfigurationStep</code>.
+  example: []
+  syntax:
+    content: public AppConfig? FinalConfig { get; set; }
+    parameters: []
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Property FinalConfig As AppConfig
+  overload: Meridian.Application.Wizard.Core.WizardContext.FinalConfig*
+- uid: Meridian.Application.Wizard.Core.WizardContext.SavedConfigPath
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.SavedConfigPath
+  id: SavedConfigPath
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: SavedConfigPath
+  nameWithType: WizardContext.SavedConfigPath
+  fullName: Meridian.Application.Wizard.Core.WizardContext.SavedConfigPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SavedConfigPath
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: File path where configuration was saved by <code>SaveConfigurationStep</code>.
+  example: []
+  syntax:
+    content: public string? SavedConfigPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SavedConfigPath As String
+  overload: Meridian.Application.Wizard.Core.WizardContext.SavedConfigPath*
+- uid: Meridian.Application.Wizard.Core.WizardContext.Metadata
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.Metadata
+  id: Metadata
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: Metadata
+  nameWithType: WizardContext.Metadata
+  fullName: Meridian.Application.Wizard.Core.WizardContext.Metadata
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Metadata
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: >-
+    Open bag for steps to exchange information that does not fit a typed property.
+
+    Keys are step-specific strings; values must be serialisable.
+  example: []
+  syntax:
+    content: public Dictionary<string, object> Metadata { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+    content.vb: Public ReadOnly Property Metadata As Dictionary(Of String, Object)
+  overload: Meridian.Application.Wizard.Core.WizardContext.Metadata*
+- uid: Meridian.Application.Wizard.Core.WizardContext.IsCancelled
+  commentId: P:Meridian.Application.Wizard.Core.WizardContext.IsCancelled
+  id: IsCancelled
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: IsCancelled
+  nameWithType: WizardContext.IsCancelled
+  fullName: Meridian.Application.Wizard.Core.WizardContext.IsCancelled
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsCancelled
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: When <code>true</code> the coordinator stops execution immediately.
+  example: []
+  syntax:
+    content: public bool IsCancelled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property IsCancelled As Boolean
+  overload: Meridian.Application.Wizard.Core.WizardContext.IsCancelled*
+- uid: Meridian.Application.Wizard.Core.WizardContext.GetMeta``1(System.String)
+  commentId: M:Meridian.Application.Wizard.Core.WizardContext.GetMeta``1(System.String)
+  id: GetMeta``1(System.String)
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: GetMeta<T>(string)
+  nameWithType: WizardContext.GetMeta<T>(string)
+  fullName: Meridian.Application.Wizard.Core.WizardContext.GetMeta<T>(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMeta
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Gets a typed metadata value set by a previous step, or the default if not present.
+  example: []
+  syntax:
+    content: public T? GetMeta<T>(string key)
+    parameters:
+    - id: key
+      type: System.String
+    typeParameters:
+    - id: T
+    return:
+      type: '{T}'
+    content.vb: Public Function GetMeta(Of T)(key As String) As T
+  overload: Meridian.Application.Wizard.Core.WizardContext.GetMeta*
+  nameWithType.vb: WizardContext.GetMeta(Of T)(String)
+  fullName.vb: Meridian.Application.Wizard.Core.WizardContext.GetMeta(Of T)(String)
+  name.vb: GetMeta(Of T)(String)
+- uid: Meridian.Application.Wizard.Core.WizardContext.SetMeta``1(System.String,``0)
+  commentId: M:Meridian.Application.Wizard.Core.WizardContext.SetMeta``1(System.String,``0)
+  id: SetMeta``1(System.String,``0)
+  parent: Meridian.Application.Wizard.Core.WizardContext
+  langs:
+  - csharp
+  - vb
+  name: SetMeta<T>(string, T)
+  nameWithType: WizardContext.SetMeta<T>(string, T)
+  fullName: Meridian.Application.Wizard.Core.WizardContext.SetMeta<T>(string, T)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Wizard/Core/WizardContext.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetMeta
+    path: ../../src/Meridian.Application/Wizard/Core/WizardContext.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Wizard.Core
+  summary: Stores a typed metadata value.
+  example: []
+  syntax:
+    content: 'public void SetMeta<T>(string key, T value) where T : notnull'
+    parameters:
+    - id: key
+      type: System.String
+    - id: value
+      type: '{T}'
+    typeParameters:
+    - id: T
+    content.vb: Public Sub SetMeta(Of T)(key As String, value As T)
+  overload: Meridian.Application.Wizard.Core.WizardContext.SetMeta*
+  nameWithType.vb: WizardContext.SetMeta(Of T)(String, T)
+  fullName.vb: Meridian.Application.Wizard.Core.WizardContext.SetMeta(Of T)(String, T)
+  name.vb: SetMeta(Of T)(String, T)
+references:
+- uid: Meridian.Application.Wizard.Core
+  commentId: N:Meridian.Application.Wizard.Core
+  href: Meridian.html
+  name: Meridian.Application.Wizard.Core
+  nameWithType: Meridian.Application.Wizard.Core
+  fullName: Meridian.Application.Wizard.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Wizard
+    name: Wizard
+    href: Meridian.Application.Wizard.html
+  - name: .
+  - uid: Meridian.Application.Wizard.Core
+    name: Core
+    href: Meridian.Application.Wizard.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Wizard.Core.WizardContext.DetectedProviders*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.DetectedProviders
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_DetectedProviders
+  name: DetectedProviders
+  nameWithType: WizardContext.DetectedProviders
+  fullName: Meridian.Application.Wizard.Core.WizardContext.DetectedProviders
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Services.AutoConfigurationService.DetectedProvider}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<AutoConfigurationService.DetectedProvider>
+  nameWithType: IReadOnlyList<AutoConfigurationService.DetectedProvider>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Services.AutoConfigurationService.DetectedProvider>
+  nameWithType.vb: IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Services.AutoConfigurationService.DetectedProvider)
+  name.vb: IReadOnlyList(Of AutoConfigurationService.DetectedProvider)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+    name: DetectedProvider
+    href: Meridian.Application.Services.AutoConfigurationService.DetectedProvider.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Services.AutoConfigurationService
+    name: AutoConfigurationService
+    href: Meridian.Application.Services.AutoConfigurationService.html
+  - name: .
+  - uid: Meridian.Application.Services.AutoConfigurationService.DetectedProvider
+    name: DetectedProvider
+    href: Meridian.Application.Services.AutoConfigurationService.DetectedProvider.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Wizard.Core.WizardContext.SelectedUseCase*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.SelectedUseCase
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_SelectedUseCase
+  name: SelectedUseCase
+  nameWithType: WizardContext.SelectedUseCase
+  fullName: Meridian.Application.Wizard.Core.WizardContext.SelectedUseCase
+- uid: System.Nullable{Meridian.Application.Services.UseCase}
+  commentId: T:System.Nullable{Meridian.Application.Services.UseCase}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Application.Services.UseCase.html
+  name: UseCase?
+  nameWithType: UseCase?
+  fullName: Meridian.Application.Services.UseCase?
+  spec.csharp:
+  - uid: Meridian.Application.Services.UseCase
+    name: UseCase
+    href: Meridian.Application.Services.UseCase.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Application.Services.UseCase
+    name: UseCase
+    href: Meridian.Application.Services.UseCase.html
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Wizard.Core.WizardContext.DataSource*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.DataSource
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_DataSource
+  name: DataSource
+  nameWithType: WizardContext.DataSource
+  fullName: Meridian.Application.Wizard.Core.WizardContext.DataSource
+- uid: Meridian.Application.Services.DataSourceSelection
+  commentId: T:Meridian.Application.Services.DataSourceSelection
+  parent: Meridian.Application.Services
+  href: Meridian.Application.Services.DataSourceSelection.html
+  name: DataSourceSelection
+  nameWithType: DataSourceSelection
+  fullName: Meridian.Application.Services.DataSourceSelection
+- uid: Meridian.Application.Services
+  commentId: N:Meridian.Application.Services
+  href: Meridian.html
+  name: Meridian.Application.Services
+  nameWithType: Meridian.Application.Services
+  fullName: Meridian.Application.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Services
+    name: Services
+    href: Meridian.Application.Services.html
+- uid: Meridian.Application.Wizard.Core.WizardContext.Symbols*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.Symbols
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_Symbols
+  name: Symbols
+  nameWithType: WizardContext.Symbols
+  fullName: Meridian.Application.Wizard.Core.WizardContext.Symbols
+- uid: Meridian.Contracts.Configuration.SymbolConfig[]
+  isExternal: true
+  name: SymbolConfig[]
+  nameWithType: SymbolConfig[]
+  fullName: Meridian.Contracts.Configuration.SymbolConfig[]
+  nameWithType.vb: SymbolConfig()
+  fullName.vb: Meridian.Contracts.Configuration.SymbolConfig()
+  name.vb: SymbolConfig()
+  spec.csharp:
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: Meridian.Contracts.Configuration.SymbolConfig
+    name: SymbolConfig
+  - name: (
+  - name: )
+- uid: Meridian.Application.Wizard.Core.WizardContext.Storage*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.Storage
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_Storage
+  name: Storage
+  nameWithType: WizardContext.Storage
+  fullName: Meridian.Application.Wizard.Core.WizardContext.Storage
+- uid: Meridian.Application.Config.StorageConfig
+  commentId: T:Meridian.Application.Config.StorageConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.StorageConfig.html
+  name: StorageConfig
+  nameWithType: StorageConfig
+  fullName: Meridian.Application.Config.StorageConfig
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Application.Wizard.Core.WizardContext.Backfill*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.Backfill
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_Backfill
+  name: Backfill
+  nameWithType: WizardContext.Backfill
+  fullName: Meridian.Application.Wizard.Core.WizardContext.Backfill
+- uid: Meridian.Application.Config.BackfillConfig
+  commentId: T:Meridian.Application.Config.BackfillConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.BackfillConfig.html
+  name: BackfillConfig
+  nameWithType: BackfillConfig
+  fullName: Meridian.Application.Config.BackfillConfig
+- uid: Meridian.Application.Wizard.Core.WizardContext.FinalConfig*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.FinalConfig
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_FinalConfig
+  name: FinalConfig
+  nameWithType: WizardContext.FinalConfig
+  fullName: Meridian.Application.Wizard.Core.WizardContext.FinalConfig
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Application.Wizard.Core.WizardContext.SavedConfigPath*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.SavedConfigPath
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_SavedConfigPath
+  name: SavedConfigPath
+  nameWithType: WizardContext.SavedConfigPath
+  fullName: Meridian.Application.Wizard.Core.WizardContext.SavedConfigPath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Wizard.Core.WizardContext.Metadata*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.Metadata
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_Metadata
+  name: Metadata
+  nameWithType: WizardContext.Metadata
+  fullName: Meridian.Application.Wizard.Core.WizardContext.Metadata
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Application.Wizard.Core.WizardContext.IsCancelled*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.IsCancelled
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_IsCancelled
+  name: IsCancelled
+  nameWithType: WizardContext.IsCancelled
+  fullName: Meridian.Application.Wizard.Core.WizardContext.IsCancelled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Application.Wizard.Core.WizardContext.GetMeta*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.GetMeta
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_GetMeta__1_System_String_
+  name: GetMeta
+  nameWithType: WizardContext.GetMeta
+  fullName: Meridian.Application.Wizard.Core.WizardContext.GetMeta
+- uid: '{T}'
+  commentId: '!:T'
+  definition: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: T
+  name: T
+  nameWithType: T
+  fullName: T
+- uid: Meridian.Application.Wizard.Core.WizardContext.SetMeta*
+  commentId: Overload:Meridian.Application.Wizard.Core.WizardContext.SetMeta
+  href: Meridian.Application.Wizard.Core.WizardContext.html#Meridian_Application_Wizard_Core_WizardContext_SetMeta__1_System_String___0_
+  name: SetMeta
+  nameWithType: WizardContext.SetMeta
+  fullName: Meridian.Application.Wizard.Core.WizardContext.SetMeta

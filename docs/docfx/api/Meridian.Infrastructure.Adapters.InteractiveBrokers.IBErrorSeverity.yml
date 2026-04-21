@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  id: IBErrorSeverity
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  children:
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Critical
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Error
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Info
+  - Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Warning
+  langs:
+  - csharp
+  - vb
+  name: IBErrorSeverity
+  nameWithType: IBErrorSeverity
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IBErrorSeverity
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  summary: Severity level for IB API errors.
+  example: []
+  syntax:
+    content: 'public enum IBErrorSeverity : byte'
+    content.vb: Public Enum IBErrorSeverity As Byte
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Info
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Info
+  id: Info
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  langs:
+  - csharp
+  - vb
+  name: Info
+  nameWithType: IBErrorSeverity.Info
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Info
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Info
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: Info = 0
+    return:
+      type: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Warning
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Warning
+  id: Warning
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: IBErrorSeverity.Warning
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Error
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Error
+  id: Error
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  langs:
+  - csharp
+  - vb
+  name: Error
+  nameWithType: IBErrorSeverity.Error
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Error
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Error
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: Error = 2
+    return:
+      type: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Critical
+  commentId: F:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Critical
+  id: Critical
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: IBErrorSeverity.Critical
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  syntax:
+    content: Critical = 3
+    return:
+      type: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+references:
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  commentId: N:Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  nameWithType: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.InteractiveBrokers
+    name: InteractiveBrokers
+    href: Meridian.Infrastructure.Adapters.InteractiveBrokers.html
+- uid: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  commentId: T:Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity
+  parent: Meridian.Infrastructure.Adapters.InteractiveBrokers
+  href: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity.html
+  name: IBErrorSeverity
+  nameWithType: IBErrorSeverity
+  fullName: Meridian.Infrastructure.Adapters.InteractiveBrokers.IBErrorSeverity

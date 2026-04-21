@@ -1,0 +1,2313 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ledger.Ledger
+  commentId: T:Meridian.Ledger.Ledger
+  id: Ledger
+  parent: Meridian.Ledger
+  children:
+  - Meridian.Ledger.Ledger.Accounts
+  - Meridian.Ledger.Ledger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+  - Meridian.Ledger.Ledger.GetBalance(Meridian.Ledger.LedgerAccount)
+  - Meridian.Ledger.Ledger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount,System.DateTimeOffset)
+  - Meridian.Ledger.Ledger.GetEntries(Meridian.Ledger.LedgerAccount)
+  - Meridian.Ledger.Ledger.GetEntries(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  - Meridian.Ledger.Ledger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+  - Meridian.Ledger.Ledger.GetJournalEntries(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String)
+  - Meridian.Ledger.Ledger.GetRunningBalance(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  - Meridian.Ledger.Ledger.HasAccount(Meridian.Ledger.LedgerAccount)
+  - Meridian.Ledger.Ledger.Journal
+  - Meridian.Ledger.Ledger.JournalEntryCount
+  - Meridian.Ledger.Ledger.Post(Meridian.Ledger.JournalEntry)
+  - Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}})
+  - Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}},Meridian.Ledger.JournalEntryMetadata)
+  - Meridian.Ledger.Ledger.SnapshotAsOf(System.DateTimeOffset,System.String)
+  - Meridian.Ledger.Ledger.SummarizeAccounts(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String)
+  - Meridian.Ledger.Ledger.TotalLedgerEntryCount
+  - Meridian.Ledger.Ledger.TrialBalance(System.String)
+  - Meridian.Ledger.Ledger.TrialBalanceAsOf(System.DateTimeOffset,System.String)
+  langs:
+  - csharp
+  - vb
+  name: Ledger
+  nameWithType: Ledger
+  fullName: Meridian.Ledger.Ledger
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ledger
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Double-entry accounting ledger.
+
+    Holds all <xref href="Meridian.Ledger.JournalEntry" data-throw-if-not-resolved="false"></xref> records posted during a run and provides
+
+    account-balance queries, filtered journal views, and trial-balance summaries.
+  remarks: >-
+    <p>
+
+    Every economic event (fill, commission, margin interest, transfers, etc.) is recorded as
+
+    a balanced journal entry: the sum of debits always equals the sum of credits.
+
+    </p>
+
+    <p>
+
+    Normal-balance rules followed here:
+
+
+    <ul><li><span class="term">Asset / Expense</span>Debit-normal (debit increases, credit decreases).</li><li><span class="term">Liability / Equity / Revenue</span>Credit-normal (credit increases, debit decreases).</li></ul>
+
+    </p>
+  example: []
+  syntax:
+    content: 'public sealed class Ledger : IReadOnlyLedger'
+    content.vb: Public NotInheritable Class Ledger Implements IReadOnlyLedger
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ledger.Ledger.Journal
+  commentId: P:Meridian.Ledger.Ledger.Journal
+  id: Journal
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: Journal
+  nameWithType: Ledger.Journal
+  fullName: Meridian.Ledger.Ledger.Journal
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Journal
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: All journal entries in chronological posting order.
+  example: []
+  syntax:
+    content: public IReadOnlyList<JournalEntry> Journal { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+    content.vb: Public ReadOnly Property Journal As IReadOnlyList(Of JournalEntry)
+  overload: Meridian.Ledger.Ledger.Journal*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.Journal
+- uid: Meridian.Ledger.Ledger.Accounts
+  commentId: P:Meridian.Ledger.Ledger.Accounts
+  id: Accounts
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: Accounts
+  nameWithType: Ledger.Accounts
+  fullName: Meridian.Ledger.Ledger.Accounts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounts
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: All accounts that have been posted to, in first-seen order.
+  example: []
+  syntax:
+    content: public IReadOnlyCollection<LedgerAccount> Accounts { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyCollection{Meridian.Ledger.LedgerAccount}
+    content.vb: Public ReadOnly Property Accounts As IReadOnlyCollection(Of LedgerAccount)
+  overload: Meridian.Ledger.Ledger.Accounts*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.Accounts
+- uid: Meridian.Ledger.Ledger.JournalEntryCount
+  commentId: P:Meridian.Ledger.Ledger.JournalEntryCount
+  id: JournalEntryCount
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: JournalEntryCount
+  nameWithType: Ledger.JournalEntryCount
+  fullName: Meridian.Ledger.Ledger.JournalEntryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JournalEntryCount
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Total number of journal entries posted to this ledger.
+  example: []
+  syntax:
+    content: public int JournalEntryCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property JournalEntryCount As Integer
+  overload: Meridian.Ledger.Ledger.JournalEntryCount*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.JournalEntryCount
+- uid: Meridian.Ledger.Ledger.TotalLedgerEntryCount
+  commentId: P:Meridian.Ledger.Ledger.TotalLedgerEntryCount
+  id: TotalLedgerEntryCount
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: TotalLedgerEntryCount
+  nameWithType: Ledger.TotalLedgerEntryCount
+  fullName: Meridian.Ledger.Ledger.TotalLedgerEntryCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalLedgerEntryCount
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Total number of individual ledger entry lines (debit/credit rows) posted.
+  example: []
+  syntax:
+    content: public int TotalLedgerEntryCount { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property TotalLedgerEntryCount As Integer
+  overload: Meridian.Ledger.Ledger.TotalLedgerEntryCount*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.TotalLedgerEntryCount
+- uid: Meridian.Ledger.Ledger.Post(Meridian.Ledger.JournalEntry)
+  commentId: M:Meridian.Ledger.Ledger.Post(Meridian.Ledger.JournalEntry)
+  id: Post(Meridian.Ledger.JournalEntry)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: Post(JournalEntry)
+  nameWithType: Ledger.Post(JournalEntry)
+  fullName: Meridian.Ledger.Ledger.Post(Meridian.Ledger.JournalEntry)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Post
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Posts a <xref href="Meridian.Ledger.JournalEntry" data-throw-if-not-resolved="false"></xref> to the ledger.
+  example: []
+  syntax:
+    content: public void Post(JournalEntry entry)
+    parameters:
+    - id: entry
+      type: Meridian.Ledger.JournalEntry
+      description: The journal entry to post.
+    content.vb: Public Sub Post(entry As JournalEntry)
+  overload: Meridian.Ledger.Ledger.Post*
+  exceptions:
+  - type: Meridian.Ledger.LedgerValidationException
+    commentId: T:Meridian.Ledger.LedgerValidationException
+    description: Thrown when the entry fails validation.
+- uid: Meridian.Ledger.Ledger.GetEntries(Meridian.Ledger.LedgerAccount)
+  commentId: M:Meridian.Ledger.Ledger.GetEntries(Meridian.Ledger.LedgerAccount)
+  id: GetEntries(Meridian.Ledger.LedgerAccount)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: GetEntries(LedgerAccount)
+  nameWithType: Ledger.GetEntries(LedgerAccount)
+  fullName: Meridian.Ledger.Ledger.GetEntries(Meridian.Ledger.LedgerAccount)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEntries
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 67
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns all individual ledger lines posted to <code class="paramref">account</code>.
+  example: []
+  syntax:
+    content: public IReadOnlyList<LedgerEntry> GetEntries(LedgerAccount account)
+    parameters:
+    - id: account
+      type: Meridian.Ledger.LedgerAccount
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerEntry}
+    content.vb: Public Function GetEntries(account As LedgerAccount) As IReadOnlyList(Of LedgerEntry)
+  overload: Meridian.Ledger.Ledger.GetEntries*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount)
+- uid: Meridian.Ledger.Ledger.GetEntries(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Ledger.Ledger.GetEntries(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  id: GetEntries(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: GetEntries(LedgerAccount, DateTimeOffset?, DateTimeOffset?)
+  nameWithType: Ledger.GetEntries(LedgerAccount, DateTimeOffset?, DateTimeOffset?)
+  fullName: Meridian.Ledger.Ledger.GetEntries(Meridian.Ledger.LedgerAccount, System.DateTimeOffset?, System.DateTimeOffset?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetEntries
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 79
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns all individual ledger lines posted to <code class="paramref">account</code> within the supplied time range.
+  example: []
+  syntax:
+    content: public IReadOnlyList<LedgerEntry> GetEntries(LedgerAccount account, DateTimeOffset? from, DateTimeOffset? to)
+    parameters:
+    - id: account
+      type: Meridian.Ledger.LedgerAccount
+    - id: from
+      type: System.Nullable{System.DateTimeOffset}
+    - id: to
+      type: System.Nullable{System.DateTimeOffset}
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerEntry}
+    content.vb: Public Function GetEntries(account As LedgerAccount, from As DateTimeOffset?, [to] As DateTimeOffset?) As IReadOnlyList(Of LedgerEntry)
+  overload: Meridian.Ledger.Ledger.GetEntries*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+- uid: Meridian.Ledger.Ledger.GetBalance(Meridian.Ledger.LedgerAccount)
+  commentId: M:Meridian.Ledger.Ledger.GetBalance(Meridian.Ledger.LedgerAccount)
+  id: GetBalance(Meridian.Ledger.LedgerAccount)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: GetBalance(LedgerAccount)
+  nameWithType: Ledger.GetBalance(LedgerAccount)
+  fullName: Meridian.Ledger.Ledger.GetBalance(Meridian.Ledger.LedgerAccount)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBalance
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Returns the net balance for <code class="paramref">account</code> using normal-balance rules.
+
+    Assets and expenses carry debit-normal balances (debits − credits).
+
+    Liabilities, equity, and revenues carry credit-normal balances (credits − debits).
+  example: []
+  syntax:
+    content: public decimal GetBalance(LedgerAccount account)
+    parameters:
+    - id: account
+      type: Meridian.Ledger.LedgerAccount
+    return:
+      type: System.Decimal
+    content.vb: Public Function GetBalance(account As LedgerAccount) As Decimal
+  overload: Meridian.Ledger.Ledger.GetBalance*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.GetBalance(Meridian.Ledger.LedgerAccount)
+- uid: Meridian.Ledger.Ledger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount,System.DateTimeOffset)
+  commentId: M:Meridian.Ledger.Ledger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount,System.DateTimeOffset)
+  id: GetBalanceAsOf(Meridian.Ledger.LedgerAccount,System.DateTimeOffset)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: GetBalanceAsOf(LedgerAccount, DateTimeOffset)
+  nameWithType: Ledger.GetBalanceAsOf(LedgerAccount, DateTimeOffset)
+  fullName: Meridian.Ledger.Ledger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount, System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBalanceAsOf
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 108
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns the balance for <code class="paramref">account</code> considering only postings on or before <code class="paramref">timestamp</code>.
+  example: []
+  syntax:
+    content: public decimal GetBalanceAsOf(LedgerAccount account, DateTimeOffset timestamp)
+    parameters:
+    - id: account
+      type: Meridian.Ledger.LedgerAccount
+    - id: timestamp
+      type: System.DateTimeOffset
+    return:
+      type: System.Decimal
+    content.vb: Public Function GetBalanceAsOf(account As LedgerAccount, timestamp As DateTimeOffset) As Decimal
+  overload: Meridian.Ledger.Ledger.GetBalanceAsOf*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount,System.DateTimeOffset)
+- uid: Meridian.Ledger.Ledger.GetJournalEntries(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Ledger.Ledger.GetJournalEntries(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String)
+  id: GetJournalEntries(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: GetJournalEntries(DateTimeOffset?, DateTimeOffset?, string?)
+  nameWithType: Ledger.GetJournalEntries(DateTimeOffset?, DateTimeOffset?, string?)
+  fullName: Meridian.Ledger.Ledger.GetJournalEntries(System.DateTimeOffset?, System.DateTimeOffset?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJournalEntries
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 136
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns journal entries matching the supplied range and optional description filter.
+  example: []
+  syntax:
+    content: public IReadOnlyList<JournalEntry> GetJournalEntries(DateTimeOffset? from = null, DateTimeOffset? to = null, string? descriptionContains = null)
+    parameters:
+    - id: from
+      type: System.Nullable{System.DateTimeOffset}
+    - id: to
+      type: System.Nullable{System.DateTimeOffset}
+    - id: descriptionContains
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+    content.vb: Public Function GetJournalEntries(from As DateTimeOffset? = Nothing, [to] As DateTimeOffset? = Nothing, descriptionContains As String = Nothing) As IReadOnlyList(Of JournalEntry)
+  overload: Meridian.Ledger.Ledger.GetJournalEntries*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String)
+  nameWithType.vb: Ledger.GetJournalEntries(DateTimeOffset?, DateTimeOffset?, String)
+  fullName.vb: Meridian.Ledger.Ledger.GetJournalEntries(System.DateTimeOffset?, System.DateTimeOffset?, String)
+  name.vb: GetJournalEntries(DateTimeOffset?, DateTimeOffset?, String)
+- uid: Meridian.Ledger.Ledger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+  commentId: M:Meridian.Ledger.Ledger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+  id: GetJournalEntries(Meridian.Ledger.LedgerQuery)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: GetJournalEntries(LedgerQuery)
+  nameWithType: Ledger.GetJournalEntries(LedgerQuery)
+  fullName: Meridian.Ledger.Ledger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetJournalEntries
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 147
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns journal entries matching the supplied structured query.
+  example: []
+  syntax:
+    content: public IReadOnlyList<JournalEntry> GetJournalEntries(LedgerQuery query)
+    parameters:
+    - id: query
+      type: Meridian.Ledger.LedgerQuery
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+    content.vb: Public Function GetJournalEntries(query As LedgerQuery) As IReadOnlyList(Of JournalEntry)
+  overload: Meridian.Ledger.Ledger.GetJournalEntries*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+- uid: Meridian.Ledger.Ledger.HasAccount(Meridian.Ledger.LedgerAccount)
+  commentId: M:Meridian.Ledger.Ledger.HasAccount(Meridian.Ledger.LedgerAccount)
+  id: HasAccount(Meridian.Ledger.LedgerAccount)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: HasAccount(LedgerAccount)
+  nameWithType: Ledger.HasAccount(LedgerAccount)
+  fullName: Meridian.Ledger.Ledger.HasAccount(Meridian.Ledger.LedgerAccount)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasAccount
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 211
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns whether the ledger contains postings for <code class="paramref">account</code>.
+  example: []
+  syntax:
+    content: public bool HasAccount(LedgerAccount account)
+    parameters:
+    - id: account
+      type: Meridian.Ledger.LedgerAccount
+    return:
+      type: System.Boolean
+    content.vb: Public Function HasAccount(account As LedgerAccount) As Boolean
+  overload: Meridian.Ledger.Ledger.HasAccount*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.HasAccount(Meridian.Ledger.LedgerAccount)
+- uid: Meridian.Ledger.Ledger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+  commentId: M:Meridian.Ledger.Ledger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+  id: GetAccountSummary(Meridian.Ledger.LedgerAccount)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: GetAccountSummary(LedgerAccount)
+  nameWithType: Ledger.GetAccountSummary(LedgerAccount)
+  fullName: Meridian.Ledger.Ledger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAccountSummary
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 221
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Returns a summarized view of a posted account, including totals and posting metadata.
+
+    Accounts with no activity return a zero-valued summary.
+  example: []
+  syntax:
+    content: public LedgerAccountSummary GetAccountSummary(LedgerAccount account)
+    parameters:
+    - id: account
+      type: Meridian.Ledger.LedgerAccount
+    return:
+      type: Meridian.Ledger.LedgerAccountSummary
+    content.vb: Public Function GetAccountSummary(account As LedgerAccount) As LedgerAccountSummary
+  overload: Meridian.Ledger.Ledger.GetAccountSummary*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+- uid: Meridian.Ledger.Ledger.SummarizeAccounts(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String)
+  commentId: M:Meridian.Ledger.Ledger.SummarizeAccounts(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String)
+  id: SummarizeAccounts(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: SummarizeAccounts(LedgerAccountType?, string?)
+  nameWithType: Ledger.SummarizeAccounts(LedgerAccountType?, string?)
+  fullName: Meridian.Ledger.Ledger.SummarizeAccounts(Meridian.Ledger.LedgerAccountType?, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SummarizeAccounts
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 241
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns account summaries for every posted account, optionally filtered by account type and account scope.
+  example: []
+  syntax:
+    content: public IReadOnlyList<LedgerAccountSummary> SummarizeAccounts(LedgerAccountType? accountType = null, string? financialAccountId = null)
+    parameters:
+    - id: accountType
+      type: System.Nullable{Meridian.Ledger.LedgerAccountType}
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerAccountSummary}
+    content.vb: Public Function SummarizeAccounts(accountType As LedgerAccountType? = Nothing, financialAccountId As String = Nothing) As IReadOnlyList(Of LedgerAccountSummary)
+  overload: Meridian.Ledger.Ledger.SummarizeAccounts*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.SummarizeAccounts(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String)
+  nameWithType.vb: Ledger.SummarizeAccounts(LedgerAccountType?, String)
+  fullName.vb: Meridian.Ledger.Ledger.SummarizeAccounts(Meridian.Ledger.LedgerAccountType?, String)
+  name.vb: SummarizeAccounts(LedgerAccountType?, String)
+- uid: Meridian.Ledger.Ledger.TrialBalance(System.String)
+  commentId: M:Meridian.Ledger.Ledger.TrialBalance(System.String)
+  id: TrialBalance(System.String)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: TrialBalance(string?)
+  nameWithType: Ledger.TrialBalance(string?)
+  fullName: Meridian.Ledger.Ledger.TrialBalance(string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrialBalance
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 266
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Returns a trial balance mapping every account that has been posted to its net balance.
+
+    If accounting is correct the sum of asset and expense balances equals the sum of liability,
+
+    equity, and revenue balances (the accounting equation holds).
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<LedgerAccount, decimal> TrialBalance(string? financialAccountId = null)
+    parameters:
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+    content.vb: Public Function TrialBalance(financialAccountId As String = Nothing) As IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  overload: Meridian.Ledger.Ledger.TrialBalance*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.TrialBalance(System.String)
+  nameWithType.vb: Ledger.TrialBalance(String)
+  fullName.vb: Meridian.Ledger.Ledger.TrialBalance(String)
+  name.vb: TrialBalance(String)
+- uid: Meridian.Ledger.Ledger.TrialBalanceAsOf(System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Ledger.Ledger.TrialBalanceAsOf(System.DateTimeOffset,System.String)
+  id: TrialBalanceAsOf(System.DateTimeOffset,System.String)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: TrialBalanceAsOf(DateTimeOffset, string?)
+  nameWithType: Ledger.TrialBalanceAsOf(DateTimeOffset, string?)
+  fullName: Meridian.Ledger.Ledger.TrialBalanceAsOf(System.DateTimeOffset, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrialBalanceAsOf
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns a trial balance as of the supplied timestamp.
+  example: []
+  syntax:
+    content: public IReadOnlyDictionary<LedgerAccount, decimal> TrialBalanceAsOf(DateTimeOffset timestamp, string? financialAccountId = null)
+    parameters:
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+    content.vb: Public Function TrialBalanceAsOf(timestamp As DateTimeOffset, financialAccountId As String = Nothing) As IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  overload: Meridian.Ledger.Ledger.TrialBalanceAsOf*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.TrialBalanceAsOf(System.DateTimeOffset,System.String)
+  nameWithType.vb: Ledger.TrialBalanceAsOf(DateTimeOffset, String)
+  fullName.vb: Meridian.Ledger.Ledger.TrialBalanceAsOf(System.DateTimeOffset, String)
+  name.vb: TrialBalanceAsOf(DateTimeOffset, String)
+- uid: Meridian.Ledger.Ledger.GetRunningBalance(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Ledger.Ledger.GetRunningBalance(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  id: GetRunningBalance(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: GetRunningBalance(LedgerAccount, DateTimeOffset?, DateTimeOffset?)
+  nameWithType: Ledger.GetRunningBalance(LedgerAccount, DateTimeOffset?, DateTimeOffset?)
+  fullName: Meridian.Ledger.Ledger.GetRunningBalance(Meridian.Ledger.LedgerAccount, System.DateTimeOffset?, System.DateTimeOffset?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRunningBalance
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 309
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns running-balance checkpoints for an account in chronological order.
+  example: []
+  syntax:
+    content: public IReadOnlyList<LedgerBalancePoint> GetRunningBalance(LedgerAccount account, DateTimeOffset? from = null, DateTimeOffset? to = null)
+    parameters:
+    - id: account
+      type: Meridian.Ledger.LedgerAccount
+    - id: from
+      type: System.Nullable{System.DateTimeOffset}
+    - id: to
+      type: System.Nullable{System.DateTimeOffset}
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerBalancePoint}
+    content.vb: Public Function GetRunningBalance(account As LedgerAccount, from As DateTimeOffset? = Nothing, [to] As DateTimeOffset? = Nothing) As IReadOnlyList(Of LedgerBalancePoint)
+  overload: Meridian.Ledger.Ledger.GetRunningBalance*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.GetRunningBalance(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+- uid: Meridian.Ledger.Ledger.SnapshotAsOf(System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Ledger.Ledger.SnapshotAsOf(System.DateTimeOffset,System.String)
+  id: SnapshotAsOf(System.DateTimeOffset,System.String)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: SnapshotAsOf(DateTimeOffset, string?)
+  nameWithType: Ledger.SnapshotAsOf(DateTimeOffset, string?)
+  fullName: Meridian.Ledger.Ledger.SnapshotAsOf(System.DateTimeOffset, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SnapshotAsOf
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 356
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Returns point-in-time balances and posting counts.
+  example: []
+  syntax:
+    content: public LedgerSnapshot SnapshotAsOf(DateTimeOffset timestamp, string? financialAccountId = null)
+    parameters:
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: financialAccountId
+      type: System.String
+    return:
+      type: Meridian.Ledger.LedgerSnapshot
+    content.vb: Public Function SnapshotAsOf(timestamp As DateTimeOffset, financialAccountId As String = Nothing) As LedgerSnapshot
+  overload: Meridian.Ledger.Ledger.SnapshotAsOf*
+  implements:
+  - Meridian.Ledger.IReadOnlyLedger.SnapshotAsOf(System.DateTimeOffset,System.String)
+  nameWithType.vb: Ledger.SnapshotAsOf(DateTimeOffset, String)
+  fullName.vb: Meridian.Ledger.Ledger.SnapshotAsOf(System.DateTimeOffset, String)
+  name.vb: SnapshotAsOf(DateTimeOffset, String)
+- uid: Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}})
+  commentId: M:Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}})
+  id: PostLines(System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}})
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: PostLines(DateTimeOffset, string, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)>)
+  nameWithType: Ledger.PostLines(DateTimeOffset, string, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)>)
+  fullName: Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset, string, System.Collections.Generic.IReadOnlyList<(Meridian.Ledger.LedgerAccount account, decimal debit, decimal credit)>)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostLines
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 386
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: >-
+    Creates a balanced <xref href="Meridian.Ledger.JournalEntry" data-throw-if-not-resolved="false"></xref> from a list of (account, debit, credit) tuples
+
+    and immediately posts it. All lines share the same journal entry ID and timestamp.
+  example: []
+  syntax:
+    content: public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> lines)
+    parameters:
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: description
+      type: System.String
+    - id: lines
+      type: System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}}
+    content.vb: Public Sub PostLines(timestamp As DateTimeOffset, description As String, lines As IReadOnlyList(Of (account As LedgerAccount, debit As Decimal, credit As Decimal)))
+  overload: Meridian.Ledger.Ledger.PostLines*
+  exceptions:
+  - type: System.ArgumentNullException
+    commentId: T:System.ArgumentNullException
+    description: Thrown when <code class="paramref">lines</code> is null.
+  - type: System.ArgumentException
+    commentId: T:System.ArgumentException
+    description: Thrown when <code class="paramref">description</code> is null or whitespace, or when <code class="paramref">lines</code> is empty.
+  nameWithType.vb: Ledger.PostLines(DateTimeOffset, String, IReadOnlyList(Of (account As LedgerAccount, debit As Decimal, credit As Decimal)))
+  fullName.vb: Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset, String, System.Collections.Generic.IReadOnlyList(Of (account As Meridian.Ledger.LedgerAccount, debit As Decimal, credit As Decimal)))
+  name.vb: PostLines(DateTimeOffset, String, IReadOnlyList(Of (account As LedgerAccount, debit As Decimal, credit As Decimal)))
+- uid: Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}},Meridian.Ledger.JournalEntryMetadata)
+  commentId: M:Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}},Meridian.Ledger.JournalEntryMetadata)
+  id: PostLines(System.DateTimeOffset,System.String,System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}},Meridian.Ledger.JournalEntryMetadata)
+  parent: Meridian.Ledger.Ledger
+  langs:
+  - csharp
+  - vb
+  name: PostLines(DateTimeOffset, string, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)>, JournalEntryMetadata?)
+  nameWithType: Ledger.PostLines(DateTimeOffset, string, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)>, JournalEntryMetadata?)
+  fullName: Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset, string, System.Collections.Generic.IReadOnlyList<(Meridian.Ledger.LedgerAccount account, decimal debit, decimal credit)>, Meridian.Ledger.JournalEntryMetadata?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ledger/Ledger.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PostLines
+    path: ../../src/Meridian.Ledger/Ledger.cs
+    startLine: 395
+  assemblies:
+  - Meridian.Ledger
+  namespace: Meridian.Ledger
+  summary: Creates and posts a balanced journal entry with optional audit metadata.
+  example: []
+  syntax:
+    content: public void PostLines(DateTimeOffset timestamp, string description, IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> lines, JournalEntryMetadata? metadata)
+    parameters:
+    - id: timestamp
+      type: System.DateTimeOffset
+    - id: description
+      type: System.String
+    - id: lines
+      type: System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}}
+    - id: metadata
+      type: Meridian.Ledger.JournalEntryMetadata
+    content.vb: Public Sub PostLines(timestamp As DateTimeOffset, description As String, lines As IReadOnlyList(Of (account As LedgerAccount, debit As Decimal, credit As Decimal)), metadata As JournalEntryMetadata)
+  overload: Meridian.Ledger.Ledger.PostLines*
+  nameWithType.vb: Ledger.PostLines(DateTimeOffset, String, IReadOnlyList(Of (account As LedgerAccount, debit As Decimal, credit As Decimal)), JournalEntryMetadata)
+  fullName.vb: Meridian.Ledger.Ledger.PostLines(System.DateTimeOffset, String, System.Collections.Generic.IReadOnlyList(Of (account As Meridian.Ledger.LedgerAccount, debit As Decimal, credit As Decimal)), Meridian.Ledger.JournalEntryMetadata)
+  name.vb: PostLines(DateTimeOffset, String, IReadOnlyList(Of (account As LedgerAccount, debit As Decimal, credit As Decimal)), JournalEntryMetadata)
+references:
+- uid: Meridian.Ledger.JournalEntry
+  commentId: T:Meridian.Ledger.JournalEntry
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.JournalEntry.html
+  name: JournalEntry
+  nameWithType: JournalEntry
+  fullName: Meridian.Ledger.JournalEntry
+- uid: Meridian.Ledger
+  commentId: N:Meridian.Ledger
+  href: Meridian.html
+  name: Meridian.Ledger
+  nameWithType: Meridian.Ledger
+  fullName: Meridian.Ledger
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ledger
+    name: Ledger
+    href: Meridian.Ledger.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Ledger.IReadOnlyLedger
+  commentId: T:Meridian.Ledger.IReadOnlyLedger
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.IReadOnlyLedger.html
+  name: IReadOnlyLedger
+  nameWithType: IReadOnlyLedger
+  fullName: Meridian.Ledger.IReadOnlyLedger
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ledger.Ledger.Journal*
+  commentId: Overload:Meridian.Ledger.Ledger.Journal
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_Journal
+  name: Journal
+  nameWithType: Ledger.Journal
+  fullName: Meridian.Ledger.Ledger.Journal
+- uid: Meridian.Ledger.IReadOnlyLedger.Journal
+  commentId: P:Meridian.Ledger.IReadOnlyLedger.Journal
+  parent: Meridian.Ledger.IReadOnlyLedger
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_Journal
+  name: Journal
+  nameWithType: IReadOnlyLedger.Journal
+  fullName: Meridian.Ledger.IReadOnlyLedger.Journal
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ledger.JournalEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<JournalEntry>
+  nameWithType: IReadOnlyList<JournalEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ledger.JournalEntry>
+  nameWithType.vb: IReadOnlyList(Of JournalEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ledger.JournalEntry)
+  name.vb: IReadOnlyList(Of JournalEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ledger.JournalEntry
+    name: JournalEntry
+    href: Meridian.Ledger.JournalEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.JournalEntry
+    name: JournalEntry
+    href: Meridian.Ledger.JournalEntry.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ledger.Ledger.Accounts*
+  commentId: Overload:Meridian.Ledger.Ledger.Accounts
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_Accounts
+  name: Accounts
+  nameWithType: Ledger.Accounts
+  fullName: Meridian.Ledger.Ledger.Accounts
+- uid: Meridian.Ledger.IReadOnlyLedger.Accounts
+  commentId: P:Meridian.Ledger.IReadOnlyLedger.Accounts
+  parent: Meridian.Ledger.IReadOnlyLedger
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_Accounts
+  name: Accounts
+  nameWithType: IReadOnlyLedger.Accounts
+  fullName: Meridian.Ledger.IReadOnlyLedger.Accounts
+- uid: System.Collections.Generic.IReadOnlyCollection{Meridian.Ledger.LedgerAccount}
+  commentId: T:System.Collections.Generic.IReadOnlyCollection{Meridian.Ledger.LedgerAccount}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyCollection`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<LedgerAccount>
+  nameWithType: IReadOnlyCollection<LedgerAccount>
+  fullName: System.Collections.Generic.IReadOnlyCollection<Meridian.Ledger.LedgerAccount>
+  nameWithType.vb: IReadOnlyCollection(Of LedgerAccount)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of Meridian.Ledger.LedgerAccount)
+  name.vb: IReadOnlyCollection(Of LedgerAccount)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyCollection`1
+  commentId: T:System.Collections.Generic.IReadOnlyCollection`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  name: IReadOnlyCollection<T>
+  nameWithType: IReadOnlyCollection<T>
+  fullName: System.Collections.Generic.IReadOnlyCollection<T>
+  nameWithType.vb: IReadOnlyCollection(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyCollection(Of T)
+  name.vb: IReadOnlyCollection(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyCollection`1
+    name: IReadOnlyCollection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlycollection-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ledger.Ledger.JournalEntryCount*
+  commentId: Overload:Meridian.Ledger.Ledger.JournalEntryCount
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_JournalEntryCount
+  name: JournalEntryCount
+  nameWithType: Ledger.JournalEntryCount
+  fullName: Meridian.Ledger.Ledger.JournalEntryCount
+- uid: Meridian.Ledger.IReadOnlyLedger.JournalEntryCount
+  commentId: P:Meridian.Ledger.IReadOnlyLedger.JournalEntryCount
+  parent: Meridian.Ledger.IReadOnlyLedger
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_JournalEntryCount
+  name: JournalEntryCount
+  nameWithType: IReadOnlyLedger.JournalEntryCount
+  fullName: Meridian.Ledger.IReadOnlyLedger.JournalEntryCount
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Ledger.Ledger.TotalLedgerEntryCount*
+  commentId: Overload:Meridian.Ledger.Ledger.TotalLedgerEntryCount
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_TotalLedgerEntryCount
+  name: TotalLedgerEntryCount
+  nameWithType: Ledger.TotalLedgerEntryCount
+  fullName: Meridian.Ledger.Ledger.TotalLedgerEntryCount
+- uid: Meridian.Ledger.IReadOnlyLedger.TotalLedgerEntryCount
+  commentId: P:Meridian.Ledger.IReadOnlyLedger.TotalLedgerEntryCount
+  parent: Meridian.Ledger.IReadOnlyLedger
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_TotalLedgerEntryCount
+  name: TotalLedgerEntryCount
+  nameWithType: IReadOnlyLedger.TotalLedgerEntryCount
+  fullName: Meridian.Ledger.IReadOnlyLedger.TotalLedgerEntryCount
+- uid: Meridian.Ledger.LedgerValidationException
+  commentId: T:Meridian.Ledger.LedgerValidationException
+  href: Meridian.Ledger.LedgerValidationException.html
+  name: LedgerValidationException
+  nameWithType: LedgerValidationException
+  fullName: Meridian.Ledger.LedgerValidationException
+- uid: Meridian.Ledger.Ledger.Post*
+  commentId: Overload:Meridian.Ledger.Ledger.Post
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_Post_Meridian_Ledger_JournalEntry_
+  name: Post
+  nameWithType: Ledger.Post
+  fullName: Meridian.Ledger.Ledger.Post
+- uid: Meridian.Ledger.Ledger.GetEntries*
+  commentId: Overload:Meridian.Ledger.Ledger.GetEntries
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_GetEntries_Meridian_Ledger_LedgerAccount_
+  name: GetEntries
+  nameWithType: Ledger.GetEntries
+  fullName: Meridian.Ledger.Ledger.GetEntries
+- uid: Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetEntries_Meridian_Ledger_LedgerAccount_
+  name: GetEntries(LedgerAccount)
+  nameWithType: IReadOnlyLedger.GetEntries(LedgerAccount)
+  fullName: Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount)
+    name: GetEntries
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetEntries_Meridian_Ledger_LedgerAccount_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount)
+    name: GetEntries
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetEntries_Meridian_Ledger_LedgerAccount_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: )
+- uid: Meridian.Ledger.LedgerAccount
+  commentId: T:Meridian.Ledger.LedgerAccount
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerAccount.html
+  name: LedgerAccount
+  nameWithType: LedgerAccount
+  fullName: Meridian.Ledger.LedgerAccount
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerEntry}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerEntry}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<LedgerEntry>
+  nameWithType: IReadOnlyList<LedgerEntry>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ledger.LedgerEntry>
+  nameWithType.vb: IReadOnlyList(Of LedgerEntry)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ledger.LedgerEntry)
+  name.vb: IReadOnlyList(Of LedgerEntry)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ledger.LedgerEntry
+    name: LedgerEntry
+    href: Meridian.Ledger.LedgerEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerEntry
+    name: LedgerEntry
+    href: Meridian.Ledger.LedgerEntry.html
+  - name: )
+- uid: Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  parent: Meridian.Ledger.IReadOnlyLedger
+  isExternal: true
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetEntries_Meridian_Ledger_LedgerAccount_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  name: GetEntries(LedgerAccount, DateTimeOffset?, DateTimeOffset?)
+  nameWithType: IReadOnlyLedger.GetEntries(LedgerAccount, DateTimeOffset?, DateTimeOffset?)
+  fullName: Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount, System.DateTimeOffset?, System.DateTimeOffset?)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+    name: GetEntries
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetEntries_Meridian_Ledger_LedgerAccount_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetEntries(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+    name: GetEntries
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetEntries_Meridian_Ledger_LedgerAccount_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: )
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ledger.Ledger.GetBalance*
+  commentId: Overload:Meridian.Ledger.Ledger.GetBalance
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_GetBalance_Meridian_Ledger_LedgerAccount_
+  name: GetBalance
+  nameWithType: Ledger.GetBalance
+  fullName: Meridian.Ledger.Ledger.GetBalance
+- uid: Meridian.Ledger.IReadOnlyLedger.GetBalance(Meridian.Ledger.LedgerAccount)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.GetBalance(Meridian.Ledger.LedgerAccount)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetBalance_Meridian_Ledger_LedgerAccount_
+  name: GetBalance(LedgerAccount)
+  nameWithType: IReadOnlyLedger.GetBalance(LedgerAccount)
+  fullName: Meridian.Ledger.IReadOnlyLedger.GetBalance(Meridian.Ledger.LedgerAccount)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetBalance(Meridian.Ledger.LedgerAccount)
+    name: GetBalance
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetBalance_Meridian_Ledger_LedgerAccount_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetBalance(Meridian.Ledger.LedgerAccount)
+    name: GetBalance
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetBalance_Meridian_Ledger_LedgerAccount_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: )
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Ledger.Ledger.GetBalanceAsOf*
+  commentId: Overload:Meridian.Ledger.Ledger.GetBalanceAsOf
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_GetBalanceAsOf_Meridian_Ledger_LedgerAccount_System_DateTimeOffset_
+  name: GetBalanceAsOf
+  nameWithType: Ledger.GetBalanceAsOf
+  fullName: Meridian.Ledger.Ledger.GetBalanceAsOf
+- uid: Meridian.Ledger.IReadOnlyLedger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount,System.DateTimeOffset)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount,System.DateTimeOffset)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  isExternal: true
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetBalanceAsOf_Meridian_Ledger_LedgerAccount_System_DateTimeOffset_
+  name: GetBalanceAsOf(LedgerAccount, DateTimeOffset)
+  nameWithType: IReadOnlyLedger.GetBalanceAsOf(LedgerAccount, DateTimeOffset)
+  fullName: Meridian.Ledger.IReadOnlyLedger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount, System.DateTimeOffset)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount,System.DateTimeOffset)
+    name: GetBalanceAsOf
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetBalanceAsOf_Meridian_Ledger_LedgerAccount_System_DateTimeOffset_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetBalanceAsOf(Meridian.Ledger.LedgerAccount,System.DateTimeOffset)
+    name: GetBalanceAsOf
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetBalanceAsOf_Meridian_Ledger_LedgerAccount_System_DateTimeOffset_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: )
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Ledger.Ledger.GetJournalEntries*
+  commentId: Overload:Meridian.Ledger.Ledger.GetJournalEntries
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_GetJournalEntries_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_String_
+  name: GetJournalEntries
+  nameWithType: Ledger.GetJournalEntries
+  fullName: Meridian.Ledger.Ledger.GetJournalEntries
+- uid: Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  isExternal: true
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetJournalEntries_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_String_
+  name: GetJournalEntries(DateTimeOffset?, DateTimeOffset?, string)
+  nameWithType: IReadOnlyLedger.GetJournalEntries(DateTimeOffset?, DateTimeOffset?, string)
+  fullName: Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(System.DateTimeOffset?, System.DateTimeOffset?, string)
+  nameWithType.vb: IReadOnlyLedger.GetJournalEntries(DateTimeOffset?, DateTimeOffset?, String)
+  fullName.vb: Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(System.DateTimeOffset?, System.DateTimeOffset?, String)
+  name.vb: GetJournalEntries(DateTimeOffset?, DateTimeOffset?, String)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String)
+    name: GetJournalEntries
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetJournalEntries_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_String_
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset},System.String)
+    name: GetJournalEntries
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetJournalEntries_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__System_String_
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetJournalEntries_Meridian_Ledger_LedgerQuery_
+  name: GetJournalEntries(LedgerQuery)
+  nameWithType: IReadOnlyLedger.GetJournalEntries(LedgerQuery)
+  fullName: Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+    name: GetJournalEntries
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetJournalEntries_Meridian_Ledger_LedgerQuery_
+  - name: (
+  - uid: Meridian.Ledger.LedgerQuery
+    name: LedgerQuery
+    href: Meridian.Ledger.LedgerQuery.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetJournalEntries(Meridian.Ledger.LedgerQuery)
+    name: GetJournalEntries
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetJournalEntries_Meridian_Ledger_LedgerQuery_
+  - name: (
+  - uid: Meridian.Ledger.LedgerQuery
+    name: LedgerQuery
+    href: Meridian.Ledger.LedgerQuery.html
+  - name: )
+- uid: Meridian.Ledger.LedgerQuery
+  commentId: T:Meridian.Ledger.LedgerQuery
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerQuery.html
+  name: LedgerQuery
+  nameWithType: LedgerQuery
+  fullName: Meridian.Ledger.LedgerQuery
+- uid: Meridian.Ledger.Ledger.HasAccount*
+  commentId: Overload:Meridian.Ledger.Ledger.HasAccount
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_HasAccount_Meridian_Ledger_LedgerAccount_
+  name: HasAccount
+  nameWithType: Ledger.HasAccount
+  fullName: Meridian.Ledger.Ledger.HasAccount
+- uid: Meridian.Ledger.IReadOnlyLedger.HasAccount(Meridian.Ledger.LedgerAccount)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.HasAccount(Meridian.Ledger.LedgerAccount)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_HasAccount_Meridian_Ledger_LedgerAccount_
+  name: HasAccount(LedgerAccount)
+  nameWithType: IReadOnlyLedger.HasAccount(LedgerAccount)
+  fullName: Meridian.Ledger.IReadOnlyLedger.HasAccount(Meridian.Ledger.LedgerAccount)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.HasAccount(Meridian.Ledger.LedgerAccount)
+    name: HasAccount
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_HasAccount_Meridian_Ledger_LedgerAccount_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.HasAccount(Meridian.Ledger.LedgerAccount)
+    name: HasAccount
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_HasAccount_Meridian_Ledger_LedgerAccount_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Ledger.Ledger.GetAccountSummary*
+  commentId: Overload:Meridian.Ledger.Ledger.GetAccountSummary
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_GetAccountSummary_Meridian_Ledger_LedgerAccount_
+  name: GetAccountSummary
+  nameWithType: Ledger.GetAccountSummary
+  fullName: Meridian.Ledger.Ledger.GetAccountSummary
+- uid: Meridian.Ledger.IReadOnlyLedger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetAccountSummary_Meridian_Ledger_LedgerAccount_
+  name: GetAccountSummary(LedgerAccount)
+  nameWithType: IReadOnlyLedger.GetAccountSummary(LedgerAccount)
+  fullName: Meridian.Ledger.IReadOnlyLedger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+    name: GetAccountSummary
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetAccountSummary_Meridian_Ledger_LedgerAccount_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetAccountSummary(Meridian.Ledger.LedgerAccount)
+    name: GetAccountSummary
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetAccountSummary_Meridian_Ledger_LedgerAccount_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: )
+- uid: Meridian.Ledger.LedgerAccountSummary
+  commentId: T:Meridian.Ledger.LedgerAccountSummary
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerAccountSummary.html
+  name: LedgerAccountSummary
+  nameWithType: LedgerAccountSummary
+  fullName: Meridian.Ledger.LedgerAccountSummary
+- uid: Meridian.Ledger.Ledger.SummarizeAccounts*
+  commentId: Overload:Meridian.Ledger.Ledger.SummarizeAccounts
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_SummarizeAccounts_System_Nullable_Meridian_Ledger_LedgerAccountType__System_String_
+  name: SummarizeAccounts
+  nameWithType: Ledger.SummarizeAccounts
+  fullName: Meridian.Ledger.Ledger.SummarizeAccounts
+- uid: Meridian.Ledger.IReadOnlyLedger.SummarizeAccounts(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.SummarizeAccounts(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  isExternal: true
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_SummarizeAccounts_System_Nullable_Meridian_Ledger_LedgerAccountType__System_String_
+  name: SummarizeAccounts(LedgerAccountType?, string)
+  nameWithType: IReadOnlyLedger.SummarizeAccounts(LedgerAccountType?, string)
+  fullName: Meridian.Ledger.IReadOnlyLedger.SummarizeAccounts(Meridian.Ledger.LedgerAccountType?, string)
+  nameWithType.vb: IReadOnlyLedger.SummarizeAccounts(LedgerAccountType?, String)
+  fullName.vb: Meridian.Ledger.IReadOnlyLedger.SummarizeAccounts(Meridian.Ledger.LedgerAccountType?, String)
+  name.vb: SummarizeAccounts(LedgerAccountType?, String)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.SummarizeAccounts(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String)
+    name: SummarizeAccounts
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_SummarizeAccounts_System_Nullable_Meridian_Ledger_LedgerAccountType__System_String_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccountType
+    name: LedgerAccountType
+    href: Meridian.Ledger.LedgerAccountType.html
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.SummarizeAccounts(System.Nullable{Meridian.Ledger.LedgerAccountType},System.String)
+    name: SummarizeAccounts
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_SummarizeAccounts_System_Nullable_Meridian_Ledger_LedgerAccountType__System_String_
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccountType
+    name: LedgerAccountType
+    href: Meridian.Ledger.LedgerAccountType.html
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Nullable{Meridian.Ledger.LedgerAccountType}
+  commentId: T:System.Nullable{Meridian.Ledger.LedgerAccountType}
+  parent: System
+  definition: System.Nullable`1
+  href: Meridian.Ledger.LedgerAccountType.html
+  name: LedgerAccountType?
+  nameWithType: LedgerAccountType?
+  fullName: Meridian.Ledger.LedgerAccountType?
+  spec.csharp:
+  - uid: Meridian.Ledger.LedgerAccountType
+    name: LedgerAccountType
+    href: Meridian.Ledger.LedgerAccountType.html
+  - name: '?'
+  spec.vb:
+  - uid: Meridian.Ledger.LedgerAccountType
+    name: LedgerAccountType
+    href: Meridian.Ledger.LedgerAccountType.html
+  - name: '?'
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerAccountSummary}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerAccountSummary}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<LedgerAccountSummary>
+  nameWithType: IReadOnlyList<LedgerAccountSummary>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ledger.LedgerAccountSummary>
+  nameWithType.vb: IReadOnlyList(Of LedgerAccountSummary)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ledger.LedgerAccountSummary)
+  name.vb: IReadOnlyList(Of LedgerAccountSummary)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ledger.LedgerAccountSummary
+    name: LedgerAccountSummary
+    href: Meridian.Ledger.LedgerAccountSummary.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerAccountSummary
+    name: LedgerAccountSummary
+    href: Meridian.Ledger.LedgerAccountSummary.html
+  - name: )
+- uid: Meridian.Ledger.Ledger.TrialBalance*
+  commentId: Overload:Meridian.Ledger.Ledger.TrialBalance
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_TrialBalance_System_String_
+  name: TrialBalance
+  nameWithType: Ledger.TrialBalance
+  fullName: Meridian.Ledger.Ledger.TrialBalance
+- uid: Meridian.Ledger.IReadOnlyLedger.TrialBalance(System.String)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.TrialBalance(System.String)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  isExternal: true
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_TrialBalance_System_String_
+  name: TrialBalance(string)
+  nameWithType: IReadOnlyLedger.TrialBalance(string)
+  fullName: Meridian.Ledger.IReadOnlyLedger.TrialBalance(string)
+  nameWithType.vb: IReadOnlyLedger.TrialBalance(String)
+  fullName.vb: Meridian.Ledger.IReadOnlyLedger.TrialBalance(String)
+  name.vb: TrialBalance(String)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.TrialBalance(System.String)
+    name: TrialBalance
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_TrialBalance_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.TrialBalance(System.String)
+    name: TrialBalance
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_TrialBalance_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{Meridian.Ledger.LedgerAccount,System.Decimal}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<LedgerAccount, decimal>
+  nameWithType: IReadOnlyDictionary<LedgerAccount, decimal>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<Meridian.Ledger.LedgerAccount, decimal>
+  nameWithType.vb: IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of Meridian.Ledger.LedgerAccount, Decimal)
+  name.vb: IReadOnlyDictionary(Of LedgerAccount, Decimal)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: Meridian.Ledger.Ledger.TrialBalanceAsOf*
+  commentId: Overload:Meridian.Ledger.Ledger.TrialBalanceAsOf
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_TrialBalanceAsOf_System_DateTimeOffset_System_String_
+  name: TrialBalanceAsOf
+  nameWithType: Ledger.TrialBalanceAsOf
+  fullName: Meridian.Ledger.Ledger.TrialBalanceAsOf
+- uid: Meridian.Ledger.IReadOnlyLedger.TrialBalanceAsOf(System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.TrialBalanceAsOf(System.DateTimeOffset,System.String)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  isExternal: true
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_TrialBalanceAsOf_System_DateTimeOffset_System_String_
+  name: TrialBalanceAsOf(DateTimeOffset, string)
+  nameWithType: IReadOnlyLedger.TrialBalanceAsOf(DateTimeOffset, string)
+  fullName: Meridian.Ledger.IReadOnlyLedger.TrialBalanceAsOf(System.DateTimeOffset, string)
+  nameWithType.vb: IReadOnlyLedger.TrialBalanceAsOf(DateTimeOffset, String)
+  fullName.vb: Meridian.Ledger.IReadOnlyLedger.TrialBalanceAsOf(System.DateTimeOffset, String)
+  name.vb: TrialBalanceAsOf(DateTimeOffset, String)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.TrialBalanceAsOf(System.DateTimeOffset,System.String)
+    name: TrialBalanceAsOf
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_TrialBalanceAsOf_System_DateTimeOffset_System_String_
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.TrialBalanceAsOf(System.DateTimeOffset,System.String)
+    name: TrialBalanceAsOf
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_TrialBalanceAsOf_System_DateTimeOffset_System_String_
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Ledger.Ledger.GetRunningBalance*
+  commentId: Overload:Meridian.Ledger.Ledger.GetRunningBalance
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_GetRunningBalance_Meridian_Ledger_LedgerAccount_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  name: GetRunningBalance
+  nameWithType: Ledger.GetRunningBalance
+  fullName: Meridian.Ledger.Ledger.GetRunningBalance
+- uid: Meridian.Ledger.IReadOnlyLedger.GetRunningBalance(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.GetRunningBalance(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  parent: Meridian.Ledger.IReadOnlyLedger
+  isExternal: true
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetRunningBalance_Meridian_Ledger_LedgerAccount_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  name: GetRunningBalance(LedgerAccount, DateTimeOffset?, DateTimeOffset?)
+  nameWithType: IReadOnlyLedger.GetRunningBalance(LedgerAccount, DateTimeOffset?, DateTimeOffset?)
+  fullName: Meridian.Ledger.IReadOnlyLedger.GetRunningBalance(Meridian.Ledger.LedgerAccount, System.DateTimeOffset?, System.DateTimeOffset?)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetRunningBalance(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+    name: GetRunningBalance
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetRunningBalance_Meridian_Ledger_LedgerAccount_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.GetRunningBalance(Meridian.Ledger.LedgerAccount,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+    name: GetRunningBalance
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_GetRunningBalance_Meridian_Ledger_LedgerAccount_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: ','
+  - name: " "
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerBalancePoint}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ledger.LedgerBalancePoint}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<LedgerBalancePoint>
+  nameWithType: IReadOnlyList<LedgerBalancePoint>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ledger.LedgerBalancePoint>
+  nameWithType.vb: IReadOnlyList(Of LedgerBalancePoint)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ledger.LedgerBalancePoint)
+  name.vb: IReadOnlyList(Of LedgerBalancePoint)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ledger.LedgerBalancePoint
+    name: LedgerBalancePoint
+    href: Meridian.Ledger.LedgerBalancePoint.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ledger.LedgerBalancePoint
+    name: LedgerBalancePoint
+    href: Meridian.Ledger.LedgerBalancePoint.html
+  - name: )
+- uid: Meridian.Ledger.Ledger.SnapshotAsOf*
+  commentId: Overload:Meridian.Ledger.Ledger.SnapshotAsOf
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_SnapshotAsOf_System_DateTimeOffset_System_String_
+  name: SnapshotAsOf
+  nameWithType: Ledger.SnapshotAsOf
+  fullName: Meridian.Ledger.Ledger.SnapshotAsOf
+- uid: Meridian.Ledger.IReadOnlyLedger.SnapshotAsOf(System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Ledger.IReadOnlyLedger.SnapshotAsOf(System.DateTimeOffset,System.String)
+  parent: Meridian.Ledger.IReadOnlyLedger
+  isExternal: true
+  href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_SnapshotAsOf_System_DateTimeOffset_System_String_
+  name: SnapshotAsOf(DateTimeOffset, string)
+  nameWithType: IReadOnlyLedger.SnapshotAsOf(DateTimeOffset, string)
+  fullName: Meridian.Ledger.IReadOnlyLedger.SnapshotAsOf(System.DateTimeOffset, string)
+  nameWithType.vb: IReadOnlyLedger.SnapshotAsOf(DateTimeOffset, String)
+  fullName.vb: Meridian.Ledger.IReadOnlyLedger.SnapshotAsOf(System.DateTimeOffset, String)
+  name.vb: SnapshotAsOf(DateTimeOffset, String)
+  spec.csharp:
+  - uid: Meridian.Ledger.IReadOnlyLedger.SnapshotAsOf(System.DateTimeOffset,System.String)
+    name: SnapshotAsOf
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_SnapshotAsOf_System_DateTimeOffset_System_String_
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Meridian.Ledger.IReadOnlyLedger.SnapshotAsOf(System.DateTimeOffset,System.String)
+    name: SnapshotAsOf
+    href: Meridian.Ledger.IReadOnlyLedger.html#Meridian_Ledger_IReadOnlyLedger_SnapshotAsOf_System_DateTimeOffset_System_String_
+  - name: (
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Ledger.LedgerSnapshot
+  commentId: T:Meridian.Ledger.LedgerSnapshot
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.LedgerSnapshot.html
+  name: LedgerSnapshot
+  nameWithType: LedgerSnapshot
+  fullName: Meridian.Ledger.LedgerSnapshot
+- uid: System.ArgumentNullException
+  commentId: T:System.ArgumentNullException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentnullexception
+  name: ArgumentNullException
+  nameWithType: ArgumentNullException
+  fullName: System.ArgumentNullException
+- uid: System.ArgumentException
+  commentId: T:System.ArgumentException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentexception
+  name: ArgumentException
+  nameWithType: ArgumentException
+  fullName: System.ArgumentException
+- uid: Meridian.Ledger.Ledger.PostLines*
+  commentId: Overload:Meridian.Ledger.Ledger.PostLines
+  href: Meridian.Ledger.Ledger.html#Meridian_Ledger_Ledger_PostLines_System_DateTimeOffset_System_String_System_Collections_Generic_IReadOnlyList_System_ValueTuple_Meridian_Ledger_LedgerAccount_System_Decimal_System_Decimal___
+  name: PostLines
+  nameWithType: Ledger.PostLines
+  fullName: Meridian.Ledger.Ledger.PostLines
+- uid: System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)>
+  nameWithType: IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)>
+  fullName: System.Collections.Generic.IReadOnlyList<(Meridian.Ledger.LedgerAccount account, decimal debit, decimal credit)>
+  nameWithType.vb: IReadOnlyList(Of (account As LedgerAccount, debit As Decimal, credit As Decimal))
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of (account As Meridian.Ledger.LedgerAccount, debit As Decimal, credit As Decimal))
+  name.vb: IReadOnlyList(Of (account As LedgerAccount, debit As Decimal, credit As Decimal))
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: (
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}.account
+    name: account
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ledger.ledgeraccount,system.decimal,system.decimal-.account
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}.debit
+    name: debit
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ledger.ledgeraccount,system.decimal,system.decimal-.debit
+  - name: ','
+  - name: " "
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}.credit
+    name: credit
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ledger.ledgeraccount,system.decimal,system.decimal-.credit
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}.account
+    name: account
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ledger.ledgeraccount,system.decimal,system.decimal-.account
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: Meridian.Ledger.LedgerAccount
+    name: LedgerAccount
+    href: Meridian.Ledger.LedgerAccount.html
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}.debit
+    name: debit
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ledger.ledgeraccount,system.decimal,system.decimal-.debit
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{Meridian.Ledger.LedgerAccount,System.Decimal,System.Decimal}.credit
+    name: credit
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-meridian.ledger.ledgeraccount,system.decimal,system.decimal-.credit
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: )
+  - name: )
+- uid: Meridian.Ledger.JournalEntryMetadata
+  commentId: T:Meridian.Ledger.JournalEntryMetadata
+  parent: Meridian.Ledger
+  href: Meridian.Ledger.JournalEntryMetadata.html
+  name: JournalEntryMetadata
+  nameWithType: JournalEntryMetadata
+  fullName: Meridian.Ledger.JournalEntryMetadata

@@ -1,0 +1,997 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  commentId: T:Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  id: OpenInterestUpdate
+  parent: Meridian.Contracts.Domain.Models
+  children:
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionContractSpec,System.Int64,System.Int64,System.Nullable{System.Int64},System.Int64,System.String)
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.Contract
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterest
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestChange
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.PreviousOpenInterest
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.SequenceNumber
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.Source
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.Symbol
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.Timestamp
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.Volume
+  - Meridian.Contracts.Domain.Models.OpenInterestUpdate.VolumeToOpenInterestRatio
+  langs:
+  - csharp
+  - vb
+  name: OpenInterestUpdate
+  nameWithType: OpenInterestUpdate
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenInterestUpdate
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Open interest update for an option contract.
+
+    Open interest represents the total number of outstanding (non-closed) contracts.
+
+    Typically updated once per day after settlement.
+  example: []
+  syntax:
+    content: 'public sealed record OpenInterestUpdate : MarketEventPayload, IMarketEventPayload, IEquatable<MarketEventPayload>, IEquatable<OpenInterestUpdate>'
+    content.vb: Public NotInheritable Class OpenInterestUpdate Inherits MarketEventPayload Implements IMarketEventPayload, IEquatable(Of MarketEventPayload), IEquatable(Of OpenInterestUpdate)
+  inheritance:
+  - System.Object
+  - Meridian.Contracts.Domain.Events.MarketEventPayload
+  implements:
+  - Meridian.Contracts.Domain.Events.IMarketEventPayload
+  - System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  - System.IEquatable{Meridian.Contracts.Domain.Models.OpenInterestUpdate}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Timestamp
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: OpenInterestUpdate.Timestamp
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the timestamp of this update (usually end-of-day settlement time).
+  example: []
+  syntax:
+    content: public DateTimeOffset Timestamp { get; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public ReadOnly Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Timestamp*
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Symbol
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: OpenInterestUpdate.Symbol
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the option contract symbol.
+  example: []
+  syntax:
+    content: public string Symbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Symbol As String
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Symbol*
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Contract
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Contract
+  id: Contract
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: Contract
+  nameWithType: OpenInterestUpdate.Contract
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Contract
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Contract
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the option contract specification.
+  example: []
+  syntax:
+    content: public OptionContractSpec Contract { get; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Models.OptionContractSpec
+    content.vb: Public ReadOnly Property Contract As OptionContractSpec
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Contract*
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterest
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterest
+  id: OpenInterest
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: OpenInterest
+  nameWithType: OpenInterestUpdate.OpenInterest
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenInterest
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the current open interest (total outstanding contracts).
+  example: []
+  syntax:
+    content: public long OpenInterest { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property OpenInterest As Long
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterest*
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.PreviousOpenInterest
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.PreviousOpenInterest
+  id: PreviousOpenInterest
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: PreviousOpenInterest
+  nameWithType: OpenInterestUpdate.PreviousOpenInterest
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.PreviousOpenInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviousOpenInterest
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the previous day's open interest, if available.
+  example: []
+  syntax:
+    content: public long? PreviousOpenInterest { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public ReadOnly Property PreviousOpenInterest As Long?
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.PreviousOpenInterest*
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Volume
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Volume
+  id: Volume
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: Volume
+  nameWithType: OpenInterestUpdate.Volume
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Volume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Volume
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the day's trading volume for this contract.
+  example: []
+  syntax:
+    content: public long Volume { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property Volume As Long
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Volume*
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.SequenceNumber
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.SequenceNumber
+  id: SequenceNumber
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: SequenceNumber
+  nameWithType: OpenInterestUpdate.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.SequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SequenceNumber
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the sequence number for ordering events.
+  example: []
+  syntax:
+    content: public long SequenceNumber { get; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public ReadOnly Property SequenceNumber As Long
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.SequenceNumber*
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Source
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Source
+  id: Source
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: OpenInterestUpdate.Source
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the data source identifier.
+  example: []
+  syntax:
+    content: public string Source { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Source As String
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Source*
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionContractSpec,System.Int64,System.Int64,System.Nullable{System.Int64},System.Int64,System.String)
+  commentId: M:Meridian.Contracts.Domain.Models.OpenInterestUpdate.#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionContractSpec,System.Int64,System.Int64,System.Nullable{System.Int64},System.Int64,System.String)
+  id: '#ctor(System.DateTimeOffset,System.String,Meridian.Contracts.Domain.Models.OptionContractSpec,System.Int64,System.Int64,System.Nullable{System.Int64},System.Int64,System.String)'
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: OpenInterestUpdate(DateTimeOffset, string, OptionContractSpec, long, long, long?, long, string)
+  nameWithType: OpenInterestUpdate.OpenInterestUpdate(DateTimeOffset, string, OptionContractSpec, long, long, long?, long, string)
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestUpdate(System.DateTimeOffset, string, Meridian.Contracts.Domain.Models.OptionContractSpec, long, long, long?, long, string)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Initializes a new instance of the <xref href="Meridian.Contracts.Domain.Models.OpenInterestUpdate" data-throw-if-not-resolved="false"></xref> record.
+  example: []
+  syntax:
+    content: public OpenInterestUpdate(DateTimeOffset Timestamp, string Symbol, OptionContractSpec Contract, long OpenInterest, long Volume, long? PreviousOpenInterest = null, long SequenceNumber = 0, string Source = "IB")
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Symbol
+      type: System.String
+    - id: Contract
+      type: Meridian.Contracts.Domain.Models.OptionContractSpec
+    - id: OpenInterest
+      type: System.Int64
+    - id: Volume
+      type: System.Int64
+    - id: PreviousOpenInterest
+      type: System.Nullable{System.Int64}
+    - id: SequenceNumber
+      type: System.Int64
+    - id: Source
+      type: System.String
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Symbol As String, Contract As OptionContractSpec, OpenInterest As Long, Volume As Long, PreviousOpenInterest As Long? = Nothing, SequenceNumber As Long = 0, Source As String = "IB")
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.#ctor*
+  nameWithType.vb: OpenInterestUpdate.New(DateTimeOffset, String, OptionContractSpec, Long, Long, Long?, Long, String)
+  fullName.vb: Meridian.Contracts.Domain.Models.OpenInterestUpdate.New(System.DateTimeOffset, String, Meridian.Contracts.Domain.Models.OptionContractSpec, Long, Long, Long?, Long, String)
+  name.vb: New(DateTimeOffset, String, OptionContractSpec, Long, Long, Long?, Long, String)
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestChange
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestChange
+  id: OpenInterestChange
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: OpenInterestChange
+  nameWithType: OpenInterestUpdate.OpenInterestChange
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestChange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenInterestChange
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 87
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Gets the change in open interest from previous day.
+
+    Positive indicates new positions opened; negative indicates positions closed.
+  example: []
+  syntax:
+    content: public long? OpenInterestChange { get; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int64}
+    content.vb: Public ReadOnly Property OpenInterestChange As Long?
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestChange*
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.VolumeToOpenInterestRatio
+  commentId: P:Meridian.Contracts.Domain.Models.OpenInterestUpdate.VolumeToOpenInterestRatio
+  id: VolumeToOpenInterestRatio
+  parent: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  langs:
+  - csharp
+  - vb
+  name: VolumeToOpenInterestRatio
+  nameWithType: OpenInterestUpdate.VolumeToOpenInterestRatio
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.VolumeToOpenInterestRatio
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolumeToOpenInterestRatio
+    path: ../../src/Meridian.Contracts/Domain/Models/OpenInterestUpdate.cs
+    startLine: 95
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Gets the volume-to-open-interest ratio.
+
+    High ratios may indicate unusual activity or hedging flows.
+  example: []
+  syntax:
+    content: public decimal VolumeToOpenInterestRatio { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property VolumeToOpenInterestRatio As Decimal
+  overload: Meridian.Contracts.Domain.Models.OpenInterestUpdate.VolumeToOpenInterestRatio*
+references:
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.MarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  name: MarketEventPayload
+  nameWithType: MarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.MarketEventPayload
+- uid: Meridian.Contracts.Domain.Events.IMarketEventPayload
+  commentId: T:Meridian.Contracts.Domain.Events.IMarketEventPayload
+  parent: Meridian.Contracts.Domain.Events
+  href: Meridian.Contracts.Domain.Events.IMarketEventPayload.html
+  name: IMarketEventPayload
+  nameWithType: IMarketEventPayload
+  fullName: Meridian.Contracts.Domain.Events.IMarketEventPayload
+- uid: System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Events.MarketEventPayload}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<MarketEventPayload>
+  nameWithType: IEquatable<MarketEventPayload>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Events.MarketEventPayload>
+  nameWithType.vb: IEquatable(Of MarketEventPayload)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Events.MarketEventPayload)
+  name.vb: IEquatable(Of MarketEventPayload)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Events.MarketEventPayload
+    name: MarketEventPayload
+    href: Meridian.Contracts.Domain.Events.MarketEventPayload.html
+  - name: )
+- uid: System.IEquatable{Meridian.Contracts.Domain.Models.OpenInterestUpdate}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Models.OpenInterestUpdate}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OpenInterestUpdate>
+  nameWithType: IEquatable<OpenInterestUpdate>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Models.OpenInterestUpdate>
+  nameWithType.vb: IEquatable(Of OpenInterestUpdate)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Models.OpenInterestUpdate)
+  name.vb: IEquatable(Of OpenInterestUpdate)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+    name: OpenInterestUpdate
+    href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+    name: OpenInterestUpdate
+    href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.Events
+  commentId: N:Meridian.Contracts.Domain.Events
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Events
+  nameWithType: Meridian.Contracts.Domain.Events
+  fullName: Meridian.Contracts.Domain.Events
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Events
+    name: Events
+    href: Meridian.Contracts.Domain.Events.html
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Timestamp*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Timestamp
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_Timestamp
+  name: Timestamp
+  nameWithType: OpenInterestUpdate.Timestamp
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Symbol*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Symbol
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_Symbol
+  name: Symbol
+  nameWithType: OpenInterestUpdate.Symbol
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Contract*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Contract
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_Contract
+  name: Contract
+  nameWithType: OpenInterestUpdate.Contract
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Contract
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec
+  commentId: T:Meridian.Contracts.Domain.Models.OptionContractSpec
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html
+  name: OptionContractSpec
+  nameWithType: OptionContractSpec
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterest*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterest
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_OpenInterest
+  name: OpenInterest
+  nameWithType: OpenInterestUpdate.OpenInterest
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterest
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.PreviousOpenInterest*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.PreviousOpenInterest
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_PreviousOpenInterest
+  name: PreviousOpenInterest
+  nameWithType: OpenInterestUpdate.PreviousOpenInterest
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.PreviousOpenInterest
+- uid: System.Nullable{System.Int64}
+  commentId: T:System.Nullable{System.Int64}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long?
+  nameWithType: long?
+  fullName: long?
+  nameWithType.vb: Long?
+  fullName.vb: Long?
+  name.vb: Long?
+  spec.csharp:
+  - uid: System.Int64
+    name: long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+  spec.vb:
+  - uid: System.Int64
+    name: Long
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int64
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Volume*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Volume
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_Volume
+  name: Volume
+  nameWithType: OpenInterestUpdate.Volume
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Volume
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.SequenceNumber*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.SequenceNumber
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_SequenceNumber
+  name: SequenceNumber
+  nameWithType: OpenInterestUpdate.SequenceNumber
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.SequenceNumber
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Source*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.Source
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_Source
+  name: Source
+  nameWithType: OpenInterestUpdate.Source
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.Source
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  commentId: T:Meridian.Contracts.Domain.Models.OpenInterestUpdate
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html
+  name: OpenInterestUpdate
+  nameWithType: OpenInterestUpdate
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.#ctor
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate__ctor_System_DateTimeOffset_System_String_Meridian_Contracts_Domain_Models_OptionContractSpec_System_Int64_System_Int64_System_Nullable_System_Int64__System_Int64_System_String_
+  name: OpenInterestUpdate
+  nameWithType: OpenInterestUpdate.OpenInterestUpdate
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestUpdate
+  nameWithType.vb: OpenInterestUpdate.New
+  fullName.vb: Meridian.Contracts.Domain.Models.OpenInterestUpdate.New
+  name.vb: New
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestChange*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestChange
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_OpenInterestChange
+  name: OpenInterestChange
+  nameWithType: OpenInterestUpdate.OpenInterestChange
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.OpenInterestChange
+- uid: Meridian.Contracts.Domain.Models.OpenInterestUpdate.VolumeToOpenInterestRatio*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OpenInterestUpdate.VolumeToOpenInterestRatio
+  href: Meridian.Contracts.Domain.Models.OpenInterestUpdate.html#Meridian_Contracts_Domain_Models_OpenInterestUpdate_VolumeToOpenInterestRatio
+  name: VolumeToOpenInterestRatio
+  nameWithType: OpenInterestUpdate.VolumeToOpenInterestRatio
+  fullName: Meridian.Contracts.Domain.Models.OpenInterestUpdate.VolumeToOpenInterestRatio
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal

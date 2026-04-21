@@ -1,0 +1,697 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.TimestampGapAlert
+  commentId: T:Meridian.Application.Monitoring.TimestampGapAlert
+  id: TimestampGapAlert
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.TimestampGapAlert.#ctor(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Double,System.Int64,System.DateTimeOffset)
+  - Meridian.Application.Monitoring.TimestampGapAlert.DetectedAt
+  - Meridian.Application.Monitoring.TimestampGapAlert.EventType
+  - Meridian.Application.Monitoring.TimestampGapAlert.GapDurationSeconds
+  - Meridian.Application.Monitoring.TimestampGapAlert.GapEndTimestamp
+  - Meridian.Application.Monitoring.TimestampGapAlert.GapStartTimestamp
+  - Meridian.Application.Monitoring.TimestampGapAlert.Symbol
+  - Meridian.Application.Monitoring.TimestampGapAlert.TotalGaps
+  langs:
+  - csharp
+  - vb
+  name: TimestampGapAlert
+  nameWithType: TimestampGapAlert
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TimestampGapAlert
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 436
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Alert for a large time gap between events.
+  example: []
+  syntax:
+    content: 'public readonly record struct TimestampGapAlert : IEquatable<TimestampGapAlert>'
+    content.vb: Public Structure TimestampGapAlert Implements IEquatable(Of TimestampGapAlert)
+  implements:
+  - System.IEquatable{Meridian.Application.Monitoring.TimestampGapAlert}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.#ctor(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Double,System.Int64,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Monitoring.TimestampGapAlert.#ctor(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Double,System.Int64,System.DateTimeOffset)
+  id: '#ctor(System.String,System.String,System.DateTimeOffset,System.DateTimeOffset,System.Double,System.Int64,System.DateTimeOffset)'
+  parent: Meridian.Application.Monitoring.TimestampGapAlert
+  langs:
+  - csharp
+  - vb
+  name: TimestampGapAlert(string, string, DateTimeOffset, DateTimeOffset, double, long, DateTimeOffset)
+  nameWithType: TimestampGapAlert.TimestampGapAlert(string, string, DateTimeOffset, DateTimeOffset, double, long, DateTimeOffset)
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.TimestampGapAlert(string, string, System.DateTimeOffset, System.DateTimeOffset, double, long, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 436
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Alert for a large time gap between events.
+  example: []
+  syntax:
+    content: public TimestampGapAlert(string Symbol, string EventType, DateTimeOffset GapStartTimestamp, DateTimeOffset GapEndTimestamp, double GapDurationSeconds, long TotalGaps, DateTimeOffset DetectedAt)
+    parameters:
+    - id: Symbol
+      type: System.String
+    - id: EventType
+      type: System.String
+    - id: GapStartTimestamp
+      type: System.DateTimeOffset
+    - id: GapEndTimestamp
+      type: System.DateTimeOffset
+    - id: GapDurationSeconds
+      type: System.Double
+    - id: TotalGaps
+      type: System.Int64
+    - id: DetectedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(Symbol As String, EventType As String, GapStartTimestamp As DateTimeOffset, GapEndTimestamp As DateTimeOffset, GapDurationSeconds As Double, TotalGaps As Long, DetectedAt As DateTimeOffset)
+  overload: Meridian.Application.Monitoring.TimestampGapAlert.#ctor*
+  nameWithType.vb: TimestampGapAlert.New(String, String, DateTimeOffset, DateTimeOffset, Double, Long, DateTimeOffset)
+  fullName.vb: Meridian.Application.Monitoring.TimestampGapAlert.New(String, String, System.DateTimeOffset, System.DateTimeOffset, Double, Long, System.DateTimeOffset)
+  name.vb: New(String, String, DateTimeOffset, DateTimeOffset, Double, Long, DateTimeOffset)
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.Symbol
+  commentId: P:Meridian.Application.Monitoring.TimestampGapAlert.Symbol
+  id: Symbol
+  parent: Meridian.Application.Monitoring.TimestampGapAlert
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: TimestampGapAlert.Symbol
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 437
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Application.Monitoring.TimestampGapAlert.Symbol*
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.EventType
+  commentId: P:Meridian.Application.Monitoring.TimestampGapAlert.EventType
+  id: EventType
+  parent: Meridian.Application.Monitoring.TimestampGapAlert
+  langs:
+  - csharp
+  - vb
+  name: EventType
+  nameWithType: TimestampGapAlert.EventType
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.EventType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EventType
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 438
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public string EventType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property EventType As String
+  overload: Meridian.Application.Monitoring.TimestampGapAlert.EventType*
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.GapStartTimestamp
+  commentId: P:Meridian.Application.Monitoring.TimestampGapAlert.GapStartTimestamp
+  id: GapStartTimestamp
+  parent: Meridian.Application.Monitoring.TimestampGapAlert
+  langs:
+  - csharp
+  - vb
+  name: GapStartTimestamp
+  nameWithType: TimestampGapAlert.GapStartTimestamp
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.GapStartTimestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapStartTimestamp
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 439
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset GapStartTimestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property GapStartTimestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.TimestampGapAlert.GapStartTimestamp*
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.GapEndTimestamp
+  commentId: P:Meridian.Application.Monitoring.TimestampGapAlert.GapEndTimestamp
+  id: GapEndTimestamp
+  parent: Meridian.Application.Monitoring.TimestampGapAlert
+  langs:
+  - csharp
+  - vb
+  name: GapEndTimestamp
+  nameWithType: TimestampGapAlert.GapEndTimestamp
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.GapEndTimestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapEndTimestamp
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 440
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset GapEndTimestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property GapEndTimestamp As DateTimeOffset
+  overload: Meridian.Application.Monitoring.TimestampGapAlert.GapEndTimestamp*
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.GapDurationSeconds
+  commentId: P:Meridian.Application.Monitoring.TimestampGapAlert.GapDurationSeconds
+  id: GapDurationSeconds
+  parent: Meridian.Application.Monitoring.TimestampGapAlert
+  langs:
+  - csharp
+  - vb
+  name: GapDurationSeconds
+  nameWithType: TimestampGapAlert.GapDurationSeconds
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.GapDurationSeconds
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapDurationSeconds
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 441
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public double GapDurationSeconds { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property GapDurationSeconds As Double
+  overload: Meridian.Application.Monitoring.TimestampGapAlert.GapDurationSeconds*
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.TotalGaps
+  commentId: P:Meridian.Application.Monitoring.TimestampGapAlert.TotalGaps
+  id: TotalGaps
+  parent: Meridian.Application.Monitoring.TimestampGapAlert
+  langs:
+  - csharp
+  - vb
+  name: TotalGaps
+  nameWithType: TimestampGapAlert.TotalGaps
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.TotalGaps
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TotalGaps
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 442
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public long TotalGaps { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property TotalGaps As Long
+  overload: Meridian.Application.Monitoring.TimestampGapAlert.TotalGaps*
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.DetectedAt
+  commentId: P:Meridian.Application.Monitoring.TimestampGapAlert.DetectedAt
+  id: DetectedAt
+  parent: Meridian.Application.Monitoring.TimestampGapAlert
+  langs:
+  - csharp
+  - vb
+  name: DetectedAt
+  nameWithType: TimestampGapAlert.DetectedAt
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.DetectedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DetectedAt
+    path: ../../src/Meridian.Application/Monitoring/TimestampMonotonicityChecker.cs
+    startLine: 443
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: public DateTimeOffset DetectedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property DetectedAt As DateTimeOffset
+  overload: Meridian.Application.Monitoring.TimestampGapAlert.DetectedAt*
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: System.IEquatable{Meridian.Application.Monitoring.TimestampGapAlert}
+  commentId: T:System.IEquatable{Meridian.Application.Monitoring.TimestampGapAlert}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TimestampGapAlert>
+  nameWithType: IEquatable<TimestampGapAlert>
+  fullName: System.IEquatable<Meridian.Application.Monitoring.TimestampGapAlert>
+  nameWithType.vb: IEquatable(Of TimestampGapAlert)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Monitoring.TimestampGapAlert)
+  name.vb: IEquatable(Of TimestampGapAlert)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.TimestampGapAlert
+    name: TimestampGapAlert
+    href: Meridian.Application.Monitoring.TimestampGapAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.TimestampGapAlert
+    name: TimestampGapAlert
+    href: Meridian.Application.Monitoring.TimestampGapAlert.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampGapAlert.#ctor
+  href: Meridian.Application.Monitoring.TimestampGapAlert.html#Meridian_Application_Monitoring_TimestampGapAlert__ctor_System_String_System_String_System_DateTimeOffset_System_DateTimeOffset_System_Double_System_Int64_System_DateTimeOffset_
+  name: TimestampGapAlert
+  nameWithType: TimestampGapAlert.TimestampGapAlert
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.TimestampGapAlert
+  nameWithType.vb: TimestampGapAlert.New
+  fullName.vb: Meridian.Application.Monitoring.TimestampGapAlert.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.Symbol*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampGapAlert.Symbol
+  href: Meridian.Application.Monitoring.TimestampGapAlert.html#Meridian_Application_Monitoring_TimestampGapAlert_Symbol
+  name: Symbol
+  nameWithType: TimestampGapAlert.Symbol
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.Symbol
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.EventType*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampGapAlert.EventType
+  href: Meridian.Application.Monitoring.TimestampGapAlert.html#Meridian_Application_Monitoring_TimestampGapAlert_EventType
+  name: EventType
+  nameWithType: TimestampGapAlert.EventType
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.EventType
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.GapStartTimestamp*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampGapAlert.GapStartTimestamp
+  href: Meridian.Application.Monitoring.TimestampGapAlert.html#Meridian_Application_Monitoring_TimestampGapAlert_GapStartTimestamp
+  name: GapStartTimestamp
+  nameWithType: TimestampGapAlert.GapStartTimestamp
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.GapStartTimestamp
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.GapEndTimestamp*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampGapAlert.GapEndTimestamp
+  href: Meridian.Application.Monitoring.TimestampGapAlert.html#Meridian_Application_Monitoring_TimestampGapAlert_GapEndTimestamp
+  name: GapEndTimestamp
+  nameWithType: TimestampGapAlert.GapEndTimestamp
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.GapEndTimestamp
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.GapDurationSeconds*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampGapAlert.GapDurationSeconds
+  href: Meridian.Application.Monitoring.TimestampGapAlert.html#Meridian_Application_Monitoring_TimestampGapAlert_GapDurationSeconds
+  name: GapDurationSeconds
+  nameWithType: TimestampGapAlert.GapDurationSeconds
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.GapDurationSeconds
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.TotalGaps*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampGapAlert.TotalGaps
+  href: Meridian.Application.Monitoring.TimestampGapAlert.html#Meridian_Application_Monitoring_TimestampGapAlert_TotalGaps
+  name: TotalGaps
+  nameWithType: TimestampGapAlert.TotalGaps
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.TotalGaps
+- uid: Meridian.Application.Monitoring.TimestampGapAlert.DetectedAt*
+  commentId: Overload:Meridian.Application.Monitoring.TimestampGapAlert.DetectedAt
+  href: Meridian.Application.Monitoring.TimestampGapAlert.html#Meridian_Application_Monitoring_TimestampGapAlert_DetectedAt
+  name: DetectedAt
+  nameWithType: TimestampGapAlert.DetectedAt
+  fullName: Meridian.Application.Monitoring.TimestampGapAlert.DetectedAt

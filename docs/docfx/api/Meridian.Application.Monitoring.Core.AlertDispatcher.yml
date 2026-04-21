@@ -1,0 +1,1280 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher
+  commentId: T:Meridian.Application.Monitoring.Core.AlertDispatcher
+  id: AlertDispatcher
+  parent: Meridian.Application.Monitoring.Core
+  children:
+  - Meridian.Application.Monitoring.Core.AlertDispatcher.#ctor(System.Int32,Serilog.ILogger)
+  - Meridian.Application.Monitoring.Core.AlertDispatcher.Dispose
+  - Meridian.Application.Monitoring.Core.AlertDispatcher.GetRecentAlerts(System.Int32,Meridian.Application.Monitoring.Core.AlertFilter)
+  - Meridian.Application.Monitoring.Core.AlertDispatcher.GetStatistics
+  - Meridian.Application.Monitoring.Core.AlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+  - Meridian.Application.Monitoring.Core.AlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)
+  - Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert},Meridian.Application.Monitoring.Core.AlertFilter)
+  - Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Application.Monitoring.Core.AlertFilter)
+  langs:
+  - csharp
+  - vb
+  name: AlertDispatcher
+  nameWithType: AlertDispatcher
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AlertDispatcher
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: >-
+    Default implementation of IAlertDispatcher providing centralized
+
+    alert publishing and subscription management.
+  example: []
+  syntax:
+    content: >-
+      [ImplementsAdr("ADR-001", "Alert dispatcher implementation")]
+
+      public sealed class AlertDispatcher : IAlertDispatcher, IDisposable
+    content.vb: >-
+      <ImplementsAdr("ADR-001", "Alert dispatcher implementation")>
+
+      Public NotInheritable Class AlertDispatcher Implements IAlertDispatcher, IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - Meridian.Application.Monitoring.Core.IAlertDispatcher
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  attributes:
+  - type: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute
+    ctor: Meridian.Infrastructure.Contracts.ImplementsAdrAttribute.#ctor(System.String,System.String)
+    arguments:
+    - type: System.String
+      value: ADR-001
+    - type: System.String
+      value: Alert dispatcher implementation
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.#ctor(System.Int32,Serilog.ILogger)
+  commentId: M:Meridian.Application.Monitoring.Core.AlertDispatcher.#ctor(System.Int32,Serilog.ILogger)
+  id: '#ctor(System.Int32,Serilog.ILogger)'
+  parent: Meridian.Application.Monitoring.Core.AlertDispatcher
+  langs:
+  - csharp
+  - vb
+  name: AlertDispatcher(int, ILogger?)
+  nameWithType: AlertDispatcher.AlertDispatcher(int, ILogger?)
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.AlertDispatcher(int, Serilog.ILogger?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Creates a new alert dispatcher.
+  example: []
+  syntax:
+    content: public AlertDispatcher(int maxRecentAlerts = 1000, ILogger? log = null)
+    parameters:
+    - id: maxRecentAlerts
+      type: System.Int32
+      description: 'Maximum number of recent alerts to retain (default: 1000).'
+    - id: log
+      type: Serilog.ILogger
+      description: Optional logger.
+    content.vb: Public Sub New(maxRecentAlerts As Integer = 1000, log As ILogger = Nothing)
+  overload: Meridian.Application.Monitoring.Core.AlertDispatcher.#ctor*
+  nameWithType.vb: AlertDispatcher.New(Integer, ILogger)
+  fullName.vb: Meridian.Application.Monitoring.Core.AlertDispatcher.New(Integer, Serilog.ILogger)
+  name.vb: New(Integer, ILogger)
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+  commentId: M:Meridian.Application.Monitoring.Core.AlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+  id: Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+  parent: Meridian.Application.Monitoring.Core.AlertDispatcher
+  langs:
+  - csharp
+  - vb
+  name: Publish(MonitoringAlert)
+  nameWithType: AlertDispatcher.Publish(MonitoringAlert)
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Publish
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Publishes an alert to all subscribers.
+  example: []
+  syntax:
+    content: public void Publish(MonitoringAlert alert)
+    parameters:
+    - id: alert
+      type: Meridian.Application.Monitoring.Core.MonitoringAlert
+      description: Alert to publish.
+    content.vb: Public Sub Publish(alert As MonitoringAlert)
+  overload: Meridian.Application.Monitoring.Core.AlertDispatcher.Publish*
+  implements:
+  - Meridian.Application.Monitoring.Core.IAlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.Core.AlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)
+  id: PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.Core.AlertDispatcher
+  langs:
+  - csharp
+  - vb
+  name: PublishAsync(MonitoringAlert, CancellationToken)
+  nameWithType: AlertDispatcher.PublishAsync(MonitoringAlert, CancellationToken)
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PublishAsync
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    startLine: 77
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Publishes an alert asynchronously.
+  example: []
+  syntax:
+    content: public Task PublishAsync(MonitoringAlert alert, CancellationToken ct = default)
+    parameters:
+    - id: alert
+      type: Meridian.Application.Monitoring.Core.MonitoringAlert
+      description: Alert to publish.
+    - id: ct
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function PublishAsync(alert As MonitoringAlert, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Application.Monitoring.Core.AlertDispatcher.PublishAsync*
+  implements:
+  - Meridian.Application.Monitoring.Core.IAlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert},Meridian.Application.Monitoring.Core.AlertFilter)
+  commentId: M:Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert},Meridian.Application.Monitoring.Core.AlertFilter)
+  id: Subscribe(System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert},Meridian.Application.Monitoring.Core.AlertFilter)
+  parent: Meridian.Application.Monitoring.Core.AlertDispatcher
+  langs:
+  - csharp
+  - vb
+  name: Subscribe(Action<MonitoringAlert>, AlertFilter?)
+  nameWithType: AlertDispatcher.Subscribe(Action<MonitoringAlert>, AlertFilter?)
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Action<Meridian.Application.Monitoring.Core.MonitoringAlert>, Meridian.Application.Monitoring.Core.AlertFilter?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subscribe
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Subscribes to alerts with the specified filter.
+  example: []
+  syntax:
+    content: public IDisposable Subscribe(Action<MonitoringAlert> handler, AlertFilter? filter = null)
+    parameters:
+    - id: handler
+      type: System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert}
+      description: Handler to receive alerts.
+    - id: filter
+      type: Meridian.Application.Monitoring.Core.AlertFilter
+      description: Filter for alerts to receive.
+    return:
+      type: System.IDisposable
+      description: Subscription handle (dispose to unsubscribe).
+    content.vb: Public Function Subscribe(handler As Action(Of MonitoringAlert), filter As AlertFilter = Nothing) As IDisposable
+  overload: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe*
+  implements:
+  - Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert},Meridian.Application.Monitoring.Core.AlertFilter)
+  nameWithType.vb: AlertDispatcher.Subscribe(Action(Of MonitoringAlert), AlertFilter)
+  fullName.vb: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Action(Of Meridian.Application.Monitoring.Core.MonitoringAlert), Meridian.Application.Monitoring.Core.AlertFilter)
+  name.vb: Subscribe(Action(Of MonitoringAlert), AlertFilter)
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Application.Monitoring.Core.AlertFilter)
+  commentId: M:Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Application.Monitoring.Core.AlertFilter)
+  id: Subscribe(System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Application.Monitoring.Core.AlertFilter)
+  parent: Meridian.Application.Monitoring.Core.AlertDispatcher
+  langs:
+  - csharp
+  - vb
+  name: Subscribe(Func<MonitoringAlert, Task>, AlertFilter?)
+  nameWithType: AlertDispatcher.Subscribe(Func<MonitoringAlert, Task>, AlertFilter?)
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Func<Meridian.Application.Monitoring.Core.MonitoringAlert, System.Threading.Tasks.Task>, Meridian.Application.Monitoring.Core.AlertFilter?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Subscribe
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    startLine: 148
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Subscribes to alerts with an async handler.
+  example: []
+  syntax:
+    content: public IDisposable Subscribe(Func<MonitoringAlert, Task> handler, AlertFilter? filter = null)
+    parameters:
+    - id: handler
+      type: System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task}
+      description: Async handler to receive alerts.
+    - id: filter
+      type: Meridian.Application.Monitoring.Core.AlertFilter
+      description: Filter for alerts to receive.
+    return:
+      type: System.IDisposable
+      description: Subscription handle (dispose to unsubscribe).
+    content.vb: Public Function Subscribe(handler As Func(Of MonitoringAlert, Task), filter As AlertFilter = Nothing) As IDisposable
+  overload: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe*
+  implements:
+  - Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Application.Monitoring.Core.AlertFilter)
+  nameWithType.vb: AlertDispatcher.Subscribe(Func(Of MonitoringAlert, Task), AlertFilter)
+  fullName.vb: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe(System.Func(Of Meridian.Application.Monitoring.Core.MonitoringAlert, System.Threading.Tasks.Task), Meridian.Application.Monitoring.Core.AlertFilter)
+  name.vb: Subscribe(Func(Of MonitoringAlert, Task), AlertFilter)
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.GetRecentAlerts(System.Int32,Meridian.Application.Monitoring.Core.AlertFilter)
+  commentId: M:Meridian.Application.Monitoring.Core.AlertDispatcher.GetRecentAlerts(System.Int32,Meridian.Application.Monitoring.Core.AlertFilter)
+  id: GetRecentAlerts(System.Int32,Meridian.Application.Monitoring.Core.AlertFilter)
+  parent: Meridian.Application.Monitoring.Core.AlertDispatcher
+  langs:
+  - csharp
+  - vb
+  name: GetRecentAlerts(int, AlertFilter?)
+  nameWithType: AlertDispatcher.GetRecentAlerts(int, AlertFilter?)
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.GetRecentAlerts(int, Meridian.Application.Monitoring.Core.AlertFilter?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentAlerts
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    startLine: 165
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Gets recent alerts matching the filter.
+  example: []
+  syntax:
+    content: public IReadOnlyList<MonitoringAlert> GetRecentAlerts(int count = 100, AlertFilter? filter = null)
+    parameters:
+    - id: count
+      type: System.Int32
+      description: Maximum number of alerts to return.
+    - id: filter
+      type: Meridian.Application.Monitoring.Core.AlertFilter
+      description: Filter for alerts.
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.MonitoringAlert}
+      description: Recent alerts matching the filter.
+    content.vb: Public Function GetRecentAlerts(count As Integer = 100, filter As AlertFilter = Nothing) As IReadOnlyList(Of MonitoringAlert)
+  overload: Meridian.Application.Monitoring.Core.AlertDispatcher.GetRecentAlerts*
+  implements:
+  - Meridian.Application.Monitoring.Core.IAlertDispatcher.GetRecentAlerts(System.Int32,Meridian.Application.Monitoring.Core.AlertFilter)
+  nameWithType.vb: AlertDispatcher.GetRecentAlerts(Integer, AlertFilter)
+  fullName.vb: Meridian.Application.Monitoring.Core.AlertDispatcher.GetRecentAlerts(Integer, Meridian.Application.Monitoring.Core.AlertFilter)
+  name.vb: GetRecentAlerts(Integer, AlertFilter)
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.GetStatistics
+  commentId: M:Meridian.Application.Monitoring.Core.AlertDispatcher.GetStatistics
+  id: GetStatistics
+  parent: Meridian.Application.Monitoring.Core.AlertDispatcher
+  langs:
+  - csharp
+  - vb
+  name: GetStatistics()
+  nameWithType: AlertDispatcher.GetStatistics()
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.GetStatistics()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatistics
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Gets alert statistics.
+  example: []
+  syntax:
+    content: public AlertStatistics GetStatistics()
+    return:
+      type: Meridian.Application.Monitoring.Core.AlertStatistics
+      description: Statistics about published alerts.
+    content.vb: Public Function GetStatistics() As AlertStatistics
+  overload: Meridian.Application.Monitoring.Core.AlertDispatcher.GetStatistics*
+  implements:
+  - Meridian.Application.Monitoring.Core.IAlertDispatcher.GetStatistics
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.Dispose
+  commentId: M:Meridian.Application.Monitoring.Core.AlertDispatcher.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.Core.AlertDispatcher
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: AlertDispatcher.Dispose()
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/Core/AlertDispatcher.cs
+    startLine: 233
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.Core
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.Core.AlertDispatcher.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring.Core
+  commentId: N:Meridian.Application.Monitoring.Core
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.Core
+  nameWithType: Meridian.Application.Monitoring.Core
+  fullName: Meridian.Application.Monitoring.Core
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.Core
+    name: Core
+    href: Meridian.Application.Monitoring.Core.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Monitoring.Core.IAlertDispatcher
+  commentId: T:Meridian.Application.Monitoring.Core.IAlertDispatcher
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.IAlertDispatcher.html
+  name: IAlertDispatcher
+  nameWithType: IAlertDispatcher
+  fullName: Meridian.Application.Monitoring.Core.IAlertDispatcher
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertDispatcher.#ctor
+  href: Meridian.Application.Monitoring.Core.AlertDispatcher.html#Meridian_Application_Monitoring_Core_AlertDispatcher__ctor_System_Int32_Serilog_ILogger_
+  name: AlertDispatcher
+  nameWithType: AlertDispatcher.AlertDispatcher
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.AlertDispatcher
+  nameWithType.vb: AlertDispatcher.New
+  fullName.vb: Meridian.Application.Monitoring.Core.AlertDispatcher.New
+  name.vb: New
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.Publish*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertDispatcher.Publish
+  href: Meridian.Application.Monitoring.Core.AlertDispatcher.html#Meridian_Application_Monitoring_Core_AlertDispatcher_Publish_Meridian_Application_Monitoring_Core_MonitoringAlert_
+  name: Publish
+  nameWithType: AlertDispatcher.Publish
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.Publish
+- uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+  commentId: M:Meridian.Application.Monitoring.Core.IAlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+  parent: Meridian.Application.Monitoring.Core.IAlertDispatcher
+  name: Publish(MonitoringAlert)
+  nameWithType: IAlertDispatcher.Publish(MonitoringAlert)
+  fullName: Meridian.Application.Monitoring.Core.IAlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+    name: Publish
+  - name: (
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.Publish(Meridian.Application.Monitoring.Core.MonitoringAlert)
+    name: Publish
+  - name: (
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+  commentId: T:Meridian.Application.Monitoring.Core.MonitoringAlert
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  name: MonitoringAlert
+  nameWithType: MonitoringAlert
+  fullName: Meridian.Application.Monitoring.Core.MonitoringAlert
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.PublishAsync*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertDispatcher.PublishAsync
+  href: Meridian.Application.Monitoring.Core.AlertDispatcher.html#Meridian_Application_Monitoring_Core_AlertDispatcher_PublishAsync_Meridian_Application_Monitoring_Core_MonitoringAlert_System_Threading_CancellationToken_
+  name: PublishAsync
+  nameWithType: AlertDispatcher.PublishAsync
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.PublishAsync
+- uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Monitoring.Core.IAlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)
+  parent: Meridian.Application.Monitoring.Core.IAlertDispatcher
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: PublishAsync(MonitoringAlert, CancellationToken)
+  nameWithType: IAlertDispatcher.PublishAsync(MonitoringAlert, CancellationToken)
+  fullName: Meridian.Application.Monitoring.Core.IAlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert, System.Threading.CancellationToken)
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)
+    name: PublishAsync
+  - name: (
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.PublishAsync(Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.CancellationToken)
+    name: PublishAsync
+  - name: (
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe
+  href: Meridian.Application.Monitoring.Core.AlertDispatcher.html#Meridian_Application_Monitoring_Core_AlertDispatcher_Subscribe_System_Action_Meridian_Application_Monitoring_Core_MonitoringAlert__Meridian_Application_Monitoring_Core_AlertFilter_
+  name: Subscribe
+  nameWithType: AlertDispatcher.Subscribe
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.Subscribe
+- uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert},Meridian.Application.Monitoring.Core.AlertFilter)
+  commentId: M:Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert},Meridian.Application.Monitoring.Core.AlertFilter)
+  parent: Meridian.Application.Monitoring.Core.IAlertDispatcher
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Subscribe(Action<MonitoringAlert>, AlertFilter)
+  nameWithType: IAlertDispatcher.Subscribe(Action<MonitoringAlert>, AlertFilter)
+  fullName: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Action<Meridian.Application.Monitoring.Core.MonitoringAlert>, Meridian.Application.Monitoring.Core.AlertFilter)
+  nameWithType.vb: IAlertDispatcher.Subscribe(Action(Of MonitoringAlert), AlertFilter)
+  fullName.vb: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Action(Of Meridian.Application.Monitoring.Core.MonitoringAlert), Meridian.Application.Monitoring.Core.AlertFilter)
+  name.vb: Subscribe(Action(Of MonitoringAlert), AlertFilter)
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert},Meridian.Application.Monitoring.Core.AlertFilter)
+    name: Subscribe
+  - name: (
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.AlertFilter
+    name: AlertFilter
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert},Meridian.Application.Monitoring.Core.AlertFilter)
+    name: Subscribe
+  - name: (
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.AlertFilter
+    name: AlertFilter
+  - name: )
+- uid: System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert}
+  commentId: T:System.Action{Meridian.Application.Monitoring.Core.MonitoringAlert}
+  parent: System
+  definition: System.Action`1
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<MonitoringAlert>
+  nameWithType: Action<MonitoringAlert>
+  fullName: System.Action<Meridian.Application.Monitoring.Core.MonitoringAlert>
+  nameWithType.vb: Action(Of MonitoringAlert)
+  fullName.vb: System.Action(Of Meridian.Application.Monitoring.Core.MonitoringAlert)
+  name.vb: Action(Of MonitoringAlert)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+    href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+    href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.AlertFilter
+  commentId: T:Meridian.Application.Monitoring.Core.AlertFilter
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertFilter.html
+  name: AlertFilter
+  nameWithType: AlertFilter
+  fullName: Meridian.Application.Monitoring.Core.AlertFilter
+- uid: System.Action`1
+  commentId: T:System.Action`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.action-1
+  name: Action<T>
+  nameWithType: Action<T>
+  fullName: System.Action<T>
+  nameWithType.vb: Action(Of T)
+  fullName.vb: System.Action(Of T)
+  name.vb: Action(Of T)
+  spec.csharp:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Action`1
+    name: Action
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.action-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Application.Monitoring.Core.AlertFilter)
+  commentId: M:Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Application.Monitoring.Core.AlertFilter)
+  parent: Meridian.Application.Monitoring.Core.IAlertDispatcher
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Subscribe(Func<MonitoringAlert, Task>, AlertFilter)
+  nameWithType: IAlertDispatcher.Subscribe(Func<MonitoringAlert, Task>, AlertFilter)
+  fullName: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Func<Meridian.Application.Monitoring.Core.MonitoringAlert, System.Threading.Tasks.Task>, Meridian.Application.Monitoring.Core.AlertFilter)
+  nameWithType.vb: IAlertDispatcher.Subscribe(Func(Of MonitoringAlert, Task), AlertFilter)
+  fullName.vb: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Func(Of Meridian.Application.Monitoring.Core.MonitoringAlert, System.Threading.Tasks.Task), Meridian.Application.Monitoring.Core.AlertFilter)
+  name.vb: Subscribe(Func(Of MonitoringAlert, Task), AlertFilter)
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Application.Monitoring.Core.AlertFilter)
+    name: Subscribe
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.AlertFilter
+    name: AlertFilter
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.Subscribe(System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task},Meridian.Application.Monitoring.Core.AlertFilter)
+    name: Subscribe
+  - name: (
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.AlertFilter
+    name: AlertFilter
+  - name: )
+- uid: System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task}
+  commentId: T:System.Func{Meridian.Application.Monitoring.Core.MonitoringAlert,System.Threading.Tasks.Task}
+  parent: System
+  definition: System.Func`2
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<MonitoringAlert, Task>
+  nameWithType: Func<MonitoringAlert, Task>
+  fullName: System.Func<Meridian.Application.Monitoring.Core.MonitoringAlert, System.Threading.Tasks.Task>
+  nameWithType.vb: Func(Of MonitoringAlert, Task)
+  fullName.vb: System.Func(Of Meridian.Application.Monitoring.Core.MonitoringAlert, System.Threading.Tasks.Task)
+  name.vb: Func(Of MonitoringAlert, Task)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+    href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+    href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  - name: ','
+  - name: " "
+  - uid: System.Threading.Tasks.Task
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  - name: )
+- uid: System.Func`2
+  commentId: T:System.Func`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.func-2
+  name: Func<T, TResult>
+  nameWithType: Func<T, TResult>
+  fullName: System.Func<T, TResult>
+  nameWithType.vb: Func(Of T, TResult)
+  fullName.vb: System.Func(Of T, TResult)
+  name.vb: Func(Of T, TResult)
+  spec.csharp:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: <
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Func`2
+    name: Func
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.func-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: ','
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.GetRecentAlerts*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertDispatcher.GetRecentAlerts
+  href: Meridian.Application.Monitoring.Core.AlertDispatcher.html#Meridian_Application_Monitoring_Core_AlertDispatcher_GetRecentAlerts_System_Int32_Meridian_Application_Monitoring_Core_AlertFilter_
+  name: GetRecentAlerts
+  nameWithType: AlertDispatcher.GetRecentAlerts
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.GetRecentAlerts
+- uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.GetRecentAlerts(System.Int32,Meridian.Application.Monitoring.Core.AlertFilter)
+  commentId: M:Meridian.Application.Monitoring.Core.IAlertDispatcher.GetRecentAlerts(System.Int32,Meridian.Application.Monitoring.Core.AlertFilter)
+  parent: Meridian.Application.Monitoring.Core.IAlertDispatcher
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: GetRecentAlerts(int, AlertFilter)
+  nameWithType: IAlertDispatcher.GetRecentAlerts(int, AlertFilter)
+  fullName: Meridian.Application.Monitoring.Core.IAlertDispatcher.GetRecentAlerts(int, Meridian.Application.Monitoring.Core.AlertFilter)
+  nameWithType.vb: IAlertDispatcher.GetRecentAlerts(Integer, AlertFilter)
+  fullName.vb: Meridian.Application.Monitoring.Core.IAlertDispatcher.GetRecentAlerts(Integer, Meridian.Application.Monitoring.Core.AlertFilter)
+  name.vb: GetRecentAlerts(Integer, AlertFilter)
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.GetRecentAlerts(System.Int32,Meridian.Application.Monitoring.Core.AlertFilter)
+    name: GetRecentAlerts
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.AlertFilter
+    name: AlertFilter
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.GetRecentAlerts(System.Int32,Meridian.Application.Monitoring.Core.AlertFilter)
+    name: GetRecentAlerts
+  - name: (
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.AlertFilter
+    name: AlertFilter
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.MonitoringAlert}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.Core.MonitoringAlert}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<MonitoringAlert>
+  nameWithType: IReadOnlyList<MonitoringAlert>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.Core.MonitoringAlert>
+  nameWithType.vb: IReadOnlyList(Of MonitoringAlert)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.Core.MonitoringAlert)
+  name.vb: IReadOnlyList(Of MonitoringAlert)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+    href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.Core.MonitoringAlert
+    name: MonitoringAlert
+    href: Meridian.Application.Monitoring.Core.MonitoringAlert.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.GetStatistics*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertDispatcher.GetStatistics
+  href: Meridian.Application.Monitoring.Core.AlertDispatcher.html#Meridian_Application_Monitoring_Core_AlertDispatcher_GetStatistics
+  name: GetStatistics
+  nameWithType: AlertDispatcher.GetStatistics
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.GetStatistics
+- uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.GetStatistics
+  commentId: M:Meridian.Application.Monitoring.Core.IAlertDispatcher.GetStatistics
+  parent: Meridian.Application.Monitoring.Core.IAlertDispatcher
+  name: GetStatistics()
+  nameWithType: IAlertDispatcher.GetStatistics()
+  fullName: Meridian.Application.Monitoring.Core.IAlertDispatcher.GetStatistics()
+  spec.csharp:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.GetStatistics
+    name: GetStatistics
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Meridian.Application.Monitoring.Core.IAlertDispatcher.GetStatistics
+    name: GetStatistics
+  - name: (
+  - name: )
+- uid: Meridian.Application.Monitoring.Core.AlertStatistics
+  commentId: T:Meridian.Application.Monitoring.Core.AlertStatistics
+  parent: Meridian.Application.Monitoring.Core
+  href: Meridian.Application.Monitoring.Core.AlertStatistics.html
+  name: AlertStatistics
+  nameWithType: AlertStatistics
+  fullName: Meridian.Application.Monitoring.Core.AlertStatistics
+- uid: Meridian.Application.Monitoring.Core.AlertDispatcher.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.Core.AlertDispatcher.Dispose
+  href: Meridian.Application.Monitoring.Core.AlertDispatcher.html#Meridian_Application_Monitoring_Core_AlertDispatcher_Dispose
+  name: Dispose
+  nameWithType: AlertDispatcher.Dispose
+  fullName: Meridian.Application.Monitoring.Core.AlertDispatcher.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

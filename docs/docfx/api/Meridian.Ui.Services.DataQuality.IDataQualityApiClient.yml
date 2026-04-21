@@ -1,0 +1,881 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  commentId: T:Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  id: IDataQualityApiClient
+  parent: Meridian.Ui.Services.DataQuality
+  children:
+  - Meridian.Ui.Services.DataQuality.IDataQualityApiClient.AcknowledgeAnomalyAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetAnomaliesAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetDashboardAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetGapsAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetLatencyStatisticsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetProviderComparisonAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairAllGapsAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairGapAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RunQualityCheckAsync(System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IDataQualityApiClient
+  nameWithType: IDataQualityApiClient
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IDataQualityApiClient
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  summary: >-
+    Quality-specific HTTP contract routed through the shared desktop API client infrastructure.
+
+    This replaces feature-local <xref href="System.Net.Http.HttpClient" data-throw-if-not-resolved="false"></xref> usage as the long-term access pattern.
+  example: []
+  syntax:
+    content: public interface IDataQualityApiClient
+    content.vb: Public Interface IDataQualityApiClient
+  derivedClasses:
+  - Meridian.Ui.Services.DataQuality.DataQualityApiClient
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetDashboardAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetDashboardAsync(System.Threading.CancellationToken)
+  id: GetDashboardAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetDashboardAsync(CancellationToken)
+  nameWithType: IDataQualityApiClient.GetDashboardAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetDashboardAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDashboardAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<QualityDashboardResponse?> GetDashboardAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.QualityDashboardResponse}
+    content.vb: Function GetDashboardAsync(ct As CancellationToken = Nothing) As Task(Of QualityDashboardResponse)
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetDashboardAsync*
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetGapsAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetGapsAsync(System.Int32,System.Threading.CancellationToken)
+  id: GetGapsAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetGapsAsync(int, CancellationToken)
+  nameWithType: IDataQualityApiClient.GetGapsAsync(int, CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetGapsAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetGapsAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<IReadOnlyList<QualityGapResponse>> GetGapsAsync(int count, CancellationToken ct = default)
+    parameters:
+    - id: count
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.QualityGapResponse}}
+    content.vb: Function GetGapsAsync(count As Integer, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of QualityGapResponse))
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetGapsAsync*
+  nameWithType.vb: IDataQualityApiClient.GetGapsAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetGapsAsync(Integer, System.Threading.CancellationToken)
+  name.vb: GetGapsAsync(Integer, CancellationToken)
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetAnomaliesAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetAnomaliesAsync(System.Int32,System.Threading.CancellationToken)
+  id: GetAnomaliesAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetAnomaliesAsync(int, CancellationToken)
+  nameWithType: IDataQualityApiClient.GetAnomaliesAsync(int, CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetAnomaliesAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAnomaliesAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<IReadOnlyList<QualityAnomalyResponse>> GetAnomaliesAsync(int count, CancellationToken ct = default)
+    parameters:
+    - id: count
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.QualityAnomalyResponse}}
+    content.vb: Function GetAnomaliesAsync(count As Integer, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of QualityAnomalyResponse))
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetAnomaliesAsync*
+  nameWithType.vb: IDataQualityApiClient.GetAnomaliesAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetAnomaliesAsync(Integer, System.Threading.CancellationToken)
+  name.vb: GetAnomaliesAsync(Integer, CancellationToken)
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetLatencyStatisticsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetLatencyStatisticsAsync(System.Threading.CancellationToken)
+  id: GetLatencyStatisticsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetLatencyStatisticsAsync(CancellationToken)
+  nameWithType: IDataQualityApiClient.GetLatencyStatisticsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetLatencyStatisticsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetLatencyStatisticsAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<QualityLatencyStatisticsResponse?> GetLatencyStatisticsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.QualityLatencyStatisticsResponse}
+    content.vb: Function GetLatencyStatisticsAsync(ct As CancellationToken = Nothing) As Task(Of QualityLatencyStatisticsResponse)
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetLatencyStatisticsAsync*
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetProviderComparisonAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetProviderComparisonAsync(System.String,System.Threading.CancellationToken)
+  id: GetProviderComparisonAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  langs:
+  - csharp
+  - vb
+  name: GetProviderComparisonAsync(string, CancellationToken)
+  nameWithType: IDataQualityApiClient.GetProviderComparisonAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetProviderComparisonAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetProviderComparisonAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<QualityProviderComparisonResponse?> GetProviderComparisonAsync(string symbol, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.QualityProviderComparisonResponse}
+    content.vb: Function GetProviderComparisonAsync(symbol As String, ct As CancellationToken = Nothing) As Task(Of QualityProviderComparisonResponse)
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetProviderComparisonAsync*
+  nameWithType.vb: IDataQualityApiClient.GetProviderComparisonAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetProviderComparisonAsync(String, System.Threading.CancellationToken)
+  name.vb: GetProviderComparisonAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.AcknowledgeAnomalyAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.AcknowledgeAnomalyAsync(System.String,System.Threading.CancellationToken)
+  id: AcknowledgeAnomalyAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  langs:
+  - csharp
+  - vb
+  name: AcknowledgeAnomalyAsync(string, CancellationToken)
+  nameWithType: IDataQualityApiClient.AcknowledgeAnomalyAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.AcknowledgeAnomalyAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AcknowledgeAnomalyAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<bool> AcknowledgeAnomalyAsync(string anomalyId, CancellationToken ct = default)
+    parameters:
+    - id: anomalyId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Function AcknowledgeAnomalyAsync(anomalyId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.AcknowledgeAnomalyAsync*
+  nameWithType.vb: IDataQualityApiClient.AcknowledgeAnomalyAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.AcknowledgeAnomalyAsync(String, System.Threading.CancellationToken)
+  name.vb: AcknowledgeAnomalyAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairGapAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairGapAsync(System.String,System.Threading.CancellationToken)
+  id: RepairGapAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  langs:
+  - csharp
+  - vb
+  name: RepairGapAsync(string, CancellationToken)
+  nameWithType: IDataQualityApiClient.RepairGapAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairGapAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepairGapAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<bool> RepairGapAsync(string gapId, CancellationToken ct = default)
+    parameters:
+    - id: gapId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Function RepairGapAsync(gapId As String, ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairGapAsync*
+  nameWithType.vb: IDataQualityApiClient.RepairGapAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairGapAsync(String, System.Threading.CancellationToken)
+  name.vb: RepairGapAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairAllGapsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairAllGapsAsync(System.Threading.CancellationToken)
+  id: RepairAllGapsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  langs:
+  - csharp
+  - vb
+  name: RepairAllGapsAsync(CancellationToken)
+  nameWithType: IDataQualityApiClient.RepairAllGapsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairAllGapsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RepairAllGapsAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<bool> RepairAllGapsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+    content.vb: Function RepairAllGapsAsync(ct As CancellationToken = Nothing) As Task(Of Boolean)
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairAllGapsAsync*
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RunQualityCheckAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RunQualityCheckAsync(System.String,System.Threading.CancellationToken)
+  id: RunQualityCheckAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.DataQuality.IDataQualityApiClient
+  langs:
+  - csharp
+  - vb
+  name: RunQualityCheckAsync(string, CancellationToken)
+  nameWithType: IDataQualityApiClient.RunQualityCheckAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RunQualityCheckAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunQualityCheckAsync
+    path: ../../src/Meridian.Ui.Services/Services/DataQuality/IDataQualityApiClient.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services.DataQuality
+  syntax:
+    content: Task<QualityCheckResult?> RunQualityCheckAsync(string path, CancellationToken ct = default)
+    parameters:
+    - id: path
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.Services.QualityCheckResult}
+    content.vb: Function RunQualityCheckAsync(path As String, ct As CancellationToken = Nothing) As Task(Of QualityCheckResult)
+  overload: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RunQualityCheckAsync*
+  nameWithType.vb: IDataQualityApiClient.RunQualityCheckAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RunQualityCheckAsync(String, System.Threading.CancellationToken)
+  name.vb: RunQualityCheckAsync(String, CancellationToken)
+references:
+- uid: System.Net.Http.HttpClient
+  commentId: T:System.Net.Http.HttpClient
+  parent: System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.net.http.httpclient
+  name: HttpClient
+  nameWithType: HttpClient
+  fullName: System.Net.Http.HttpClient
+- uid: Meridian.Ui.Services.DataQuality
+  commentId: N:Meridian.Ui.Services.DataQuality
+  href: Meridian.html
+  name: Meridian.Ui.Services.DataQuality
+  nameWithType: Meridian.Ui.Services.DataQuality
+  fullName: Meridian.Ui.Services.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  - name: .
+  - uid: Meridian.Ui.Services.DataQuality
+    name: DataQuality
+    href: Meridian.Ui.Services.DataQuality.html
+- uid: System.Net.Http
+  commentId: N:System.Net.Http
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Net.Http
+  nameWithType: System.Net.Http
+  fullName: System.Net.Http
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Net
+    name: Net
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net
+  - name: .
+  - uid: System.Net.Http
+    name: Http
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.net.http
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetDashboardAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetDashboardAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.html#Meridian_Ui_Services_DataQuality_IDataQualityApiClient_GetDashboardAsync_System_Threading_CancellationToken_
+  name: GetDashboardAsync
+  nameWithType: IDataQualityApiClient.GetDashboardAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetDashboardAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.QualityDashboardResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.QualityDashboardResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QualityDashboardResponse>
+  nameWithType: Task<QualityDashboardResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DataQuality.QualityDashboardResponse>
+  nameWithType.vb: Task(Of QualityDashboardResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DataQuality.QualityDashboardResponse)
+  name.vb: Task(Of QualityDashboardResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+    name: QualityDashboardResponse
+    href: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.QualityDashboardResponse
+    name: QualityDashboardResponse
+    href: Meridian.Ui.Services.DataQuality.QualityDashboardResponse.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetGapsAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetGapsAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.html#Meridian_Ui_Services_DataQuality_IDataQualityApiClient_GetGapsAsync_System_Int32_System_Threading_CancellationToken_
+  name: GetGapsAsync
+  nameWithType: IDataQualityApiClient.GetGapsAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetGapsAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.QualityGapResponse}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.QualityGapResponse}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<QualityGapResponse>>
+  nameWithType: Task<IReadOnlyList<QualityGapResponse>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.DataQuality.QualityGapResponse>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of QualityGapResponse))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.DataQuality.QualityGapResponse))
+  name.vb: Task(Of IReadOnlyList(Of QualityGapResponse))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.QualityGapResponse
+    name: QualityGapResponse
+    href: Meridian.Ui.Services.DataQuality.QualityGapResponse.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.QualityGapResponse
+    name: QualityGapResponse
+    href: Meridian.Ui.Services.DataQuality.QualityGapResponse.html
+  - name: )
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetAnomaliesAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetAnomaliesAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.html#Meridian_Ui_Services_DataQuality_IDataQualityApiClient_GetAnomaliesAsync_System_Int32_System_Threading_CancellationToken_
+  name: GetAnomaliesAsync
+  nameWithType: IDataQualityApiClient.GetAnomaliesAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetAnomaliesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.QualityAnomalyResponse}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.DataQuality.QualityAnomalyResponse}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<QualityAnomalyResponse>>
+  nameWithType: Task<IReadOnlyList<QualityAnomalyResponse>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.DataQuality.QualityAnomalyResponse>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of QualityAnomalyResponse))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.DataQuality.QualityAnomalyResponse))
+  name.vb: Task(Of IReadOnlyList(Of QualityAnomalyResponse))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.QualityAnomalyResponse
+    name: QualityAnomalyResponse
+    href: Meridian.Ui.Services.DataQuality.QualityAnomalyResponse.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.QualityAnomalyResponse
+    name: QualityAnomalyResponse
+    href: Meridian.Ui.Services.DataQuality.QualityAnomalyResponse.html
+  - name: )
+  - name: )
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetLatencyStatisticsAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetLatencyStatisticsAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.html#Meridian_Ui_Services_DataQuality_IDataQualityApiClient_GetLatencyStatisticsAsync_System_Threading_CancellationToken_
+  name: GetLatencyStatisticsAsync
+  nameWithType: IDataQualityApiClient.GetLatencyStatisticsAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetLatencyStatisticsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.QualityLatencyStatisticsResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.QualityLatencyStatisticsResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QualityLatencyStatisticsResponse>
+  nameWithType: Task<QualityLatencyStatisticsResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DataQuality.QualityLatencyStatisticsResponse>
+  nameWithType.vb: Task(Of QualityLatencyStatisticsResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DataQuality.QualityLatencyStatisticsResponse)
+  name.vb: Task(Of QualityLatencyStatisticsResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.QualityLatencyStatisticsResponse
+    name: QualityLatencyStatisticsResponse
+    href: Meridian.Ui.Services.DataQuality.QualityLatencyStatisticsResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.QualityLatencyStatisticsResponse
+    name: QualityLatencyStatisticsResponse
+    href: Meridian.Ui.Services.DataQuality.QualityLatencyStatisticsResponse.html
+  - name: )
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetProviderComparisonAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetProviderComparisonAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.html#Meridian_Ui_Services_DataQuality_IDataQualityApiClient_GetProviderComparisonAsync_System_String_System_Threading_CancellationToken_
+  name: GetProviderComparisonAsync
+  nameWithType: IDataQualityApiClient.GetProviderComparisonAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.GetProviderComparisonAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.QualityProviderComparisonResponse}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.DataQuality.QualityProviderComparisonResponse}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QualityProviderComparisonResponse>
+  nameWithType: Task<QualityProviderComparisonResponse>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.DataQuality.QualityProviderComparisonResponse>
+  nameWithType.vb: Task(Of QualityProviderComparisonResponse)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.DataQuality.QualityProviderComparisonResponse)
+  name.vb: Task(Of QualityProviderComparisonResponse)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.DataQuality.QualityProviderComparisonResponse
+    name: QualityProviderComparisonResponse
+    href: Meridian.Ui.Services.DataQuality.QualityProviderComparisonResponse.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.DataQuality.QualityProviderComparisonResponse
+    name: QualityProviderComparisonResponse
+    href: Meridian.Ui.Services.DataQuality.QualityProviderComparisonResponse.html
+  - name: )
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.AcknowledgeAnomalyAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.AcknowledgeAnomalyAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.html#Meridian_Ui_Services_DataQuality_IDataQualityApiClient_AcknowledgeAnomalyAsync_System_String_System_Threading_CancellationToken_
+  name: AcknowledgeAnomalyAsync
+  nameWithType: IDataQualityApiClient.AcknowledgeAnomalyAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.AcknowledgeAnomalyAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairGapAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairGapAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.html#Meridian_Ui_Services_DataQuality_IDataQualityApiClient_RepairGapAsync_System_String_System_Threading_CancellationToken_
+  name: RepairGapAsync
+  nameWithType: IDataQualityApiClient.RepairGapAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairGapAsync
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairAllGapsAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairAllGapsAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.html#Meridian_Ui_Services_DataQuality_IDataQualityApiClient_RepairAllGapsAsync_System_Threading_CancellationToken_
+  name: RepairAllGapsAsync
+  nameWithType: IDataQualityApiClient.RepairAllGapsAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RepairAllGapsAsync
+- uid: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RunQualityCheckAsync*
+  commentId: Overload:Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RunQualityCheckAsync
+  href: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.html#Meridian_Ui_Services_DataQuality_IDataQualityApiClient_RunQualityCheckAsync_System_String_System_Threading_CancellationToken_
+  name: RunQualityCheckAsync
+  nameWithType: IDataQualityApiClient.RunQualityCheckAsync
+  fullName: Meridian.Ui.Services.DataQuality.IDataQualityApiClient.RunQualityCheckAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.Services.QualityCheckResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.Services.QualityCheckResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QualityCheckResult>
+  nameWithType: Task<QualityCheckResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.Services.QualityCheckResult>
+  nameWithType.vb: Task(Of QualityCheckResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.Services.QualityCheckResult)
+  name.vb: Task(Of QualityCheckResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.Services.QualityCheckResult
+    name: QualityCheckResult
+    href: Meridian.Ui.Services.Services.QualityCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.Services.QualityCheckResult
+    name: QualityCheckResult
+    href: Meridian.Ui.Services.Services.QualityCheckResult.html
+  - name: )

@@ -1,0 +1,1009 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.HistoricalBarDto
+  commentId: T:Meridian.Contracts.Domain.HistoricalBarDto
+  id: HistoricalBarDto
+  parent: Meridian.Contracts.Domain
+  children:
+  - Meridian.Contracts.Domain.HistoricalBarDto.Close
+  - Meridian.Contracts.Domain.HistoricalBarDto.High
+  - Meridian.Contracts.Domain.HistoricalBarDto.Interval
+  - Meridian.Contracts.Domain.HistoricalBarDto.IsAdjusted
+  - Meridian.Contracts.Domain.HistoricalBarDto.Low
+  - Meridian.Contracts.Domain.HistoricalBarDto.Open
+  - Meridian.Contracts.Domain.HistoricalBarDto.Source
+  - Meridian.Contracts.Domain.HistoricalBarDto.Symbol
+  - Meridian.Contracts.Domain.HistoricalBarDto.Timestamp
+  - Meridian.Contracts.Domain.HistoricalBarDto.TradeCount
+  - Meridian.Contracts.Domain.HistoricalBarDto.Volume
+  - Meridian.Contracts.Domain.HistoricalBarDto.Vwap
+  langs:
+  - csharp
+  - vb
+  name: HistoricalBarDto
+  nameWithType: HistoricalBarDto
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HistoricalBarDto
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 247
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Historical bar data transfer object.
+  example: []
+  syntax:
+    content: public sealed class HistoricalBarDto
+    content.vb: Public NotInheritable Class HistoricalBarDto
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Timestamp
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.Timestamp
+  id: Timestamp
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: HistoricalBarDto.Timestamp
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 252
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the bar timestamp.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("timestamp")]
+
+      public DateTimeOffset Timestamp { get; set; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: >-
+      <JsonPropertyName("timestamp")>
+
+      Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.Timestamp*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: timestamp
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Symbol
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.Symbol
+  id: Symbol
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: HistoricalBarDto.Symbol
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 258
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the symbol for the bar.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("symbol")]
+
+      public string Symbol { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("symbol")>
+
+      Public Property Symbol As String
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.Symbol*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: symbol
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Open
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.Open
+  id: Open
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: Open
+  nameWithType: HistoricalBarDto.Open
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Open
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Open
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 264
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the open price.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("open")]
+
+      public decimal Open { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("open")>
+
+      Public Property Open As Decimal
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.Open*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: open
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.High
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.High
+  id: High
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: High
+  nameWithType: HistoricalBarDto.High
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.High
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: High
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 270
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the high price.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("high")]
+
+      public decimal High { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("high")>
+
+      Public Property High As Decimal
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.High*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: high
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Low
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.Low
+  id: Low
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: Low
+  nameWithType: HistoricalBarDto.Low
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Low
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Low
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 276
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the low price.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("low")]
+
+      public decimal Low { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("low")>
+
+      Public Property Low As Decimal
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.Low*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: low
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Close
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.Close
+  id: Close
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: Close
+  nameWithType: HistoricalBarDto.Close
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Close
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Close
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 282
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the close price.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("close")]
+
+      public decimal Close { get; set; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: >-
+      <JsonPropertyName("close")>
+
+      Public Property Close As Decimal
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.Close*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: close
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Volume
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.Volume
+  id: Volume
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: Volume
+  nameWithType: HistoricalBarDto.Volume
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Volume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Volume
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 288
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the traded volume.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("volume")]
+
+      public long Volume { get; set; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("volume")>
+
+      Public Property Volume As Long
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.Volume*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: volume
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Vwap
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.Vwap
+  id: Vwap
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: Vwap
+  nameWithType: HistoricalBarDto.Vwap
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Vwap
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vwap
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 294
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the volume-weighted average price, if available.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("vwap")]
+
+      public decimal? Vwap { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: >-
+      <JsonPropertyName("vwap")>
+
+      Public Property Vwap As Decimal?
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.Vwap*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: vwap
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.TradeCount
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.TradeCount
+  id: TradeCount
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: TradeCount
+  nameWithType: HistoricalBarDto.TradeCount
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.TradeCount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeCount
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 300
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the trade count, if available.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("tradeCount")]
+
+      public int? TradeCount { get; set; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: >-
+      <JsonPropertyName("tradeCount")>
+
+      Public Property TradeCount As Integer?
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.TradeCount*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: tradeCount
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Interval
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.Interval
+  id: Interval
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: Interval
+  nameWithType: HistoricalBarDto.Interval
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Interval
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Interval
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 306
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the bar interval label.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("interval")]
+
+      public string Interval { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("interval")>
+
+      Public Property Interval As String
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.Interval*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: interval
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Source
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.Source
+  id: Source
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: Source
+  nameWithType: HistoricalBarDto.Source
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Source
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Source
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets the data source identifier.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("source")]
+
+      public string? Source { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("source")>
+
+      Public Property Source As String
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.Source*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: source
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.IsAdjusted
+  commentId: P:Meridian.Contracts.Domain.HistoricalBarDto.IsAdjusted
+  id: IsAdjusted
+  parent: Meridian.Contracts.Domain.HistoricalBarDto
+  langs:
+  - csharp
+  - vb
+  name: IsAdjusted
+  nameWithType: HistoricalBarDto.IsAdjusted
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.IsAdjusted
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/MarketDataModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsAdjusted
+    path: ../../src/Meridian.Contracts/Domain/MarketDataModels.cs
+    startLine: 318
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain
+  summary: Gets or sets a value indicating whether prices are adjusted.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("isAdjusted")]
+
+      public bool IsAdjusted { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: >-
+      <JsonPropertyName("isAdjusted")>
+
+      Public Property IsAdjusted As Boolean
+  overload: Meridian.Contracts.Domain.HistoricalBarDto.IsAdjusted*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: isAdjusted
+references:
+- uid: Meridian.Contracts.Domain
+  commentId: N:Meridian.Contracts.Domain
+  href: Meridian.html
+  name: Meridian.Contracts.Domain
+  nameWithType: Meridian.Contracts.Domain
+  fullName: Meridian.Contracts.Domain
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Timestamp*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.Timestamp
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_Timestamp
+  name: Timestamp
+  nameWithType: HistoricalBarDto.Timestamp
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Timestamp
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Symbol*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.Symbol
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_Symbol
+  name: Symbol
+  nameWithType: HistoricalBarDto.Symbol
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Symbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Open*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.Open
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_Open
+  name: Open
+  nameWithType: HistoricalBarDto.Open
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Open
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.High*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.High
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_High
+  name: High
+  nameWithType: HistoricalBarDto.High
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.High
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Low*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.Low
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_Low
+  name: Low
+  nameWithType: HistoricalBarDto.Low
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Low
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Close*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.Close
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_Close
+  name: Close
+  nameWithType: HistoricalBarDto.Close
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Close
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Volume*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.Volume
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_Volume
+  name: Volume
+  nameWithType: HistoricalBarDto.Volume
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Volume
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Vwap*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.Vwap
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_Vwap
+  name: Vwap
+  nameWithType: HistoricalBarDto.Vwap
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Vwap
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.TradeCount*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.TradeCount
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_TradeCount
+  name: TradeCount
+  nameWithType: HistoricalBarDto.TradeCount
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.TradeCount
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Interval*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.Interval
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_Interval
+  name: Interval
+  nameWithType: HistoricalBarDto.Interval
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Interval
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.Source*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.Source
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_Source
+  name: Source
+  nameWithType: HistoricalBarDto.Source
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.Source
+- uid: Meridian.Contracts.Domain.HistoricalBarDto.IsAdjusted*
+  commentId: Overload:Meridian.Contracts.Domain.HistoricalBarDto.IsAdjusted
+  href: Meridian.Contracts.Domain.HistoricalBarDto.html#Meridian_Contracts_Domain_HistoricalBarDto_IsAdjusted
+  name: IsAdjusted
+  nameWithType: HistoricalBarDto.IsAdjusted
+  fullName: Meridian.Contracts.Domain.HistoricalBarDto.IsAdjusted
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

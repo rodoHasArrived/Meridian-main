@@ -1,0 +1,338 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Workstation.FundOperationsTab
+  commentId: T:Meridian.Contracts.Workstation.FundOperationsTab
+  id: FundOperationsTab
+  parent: Meridian.Contracts.Workstation
+  children:
+  - Meridian.Contracts.Workstation.FundOperationsTab.Accounts
+  - Meridian.Contracts.Workstation.FundOperationsTab.AuditTrail
+  - Meridian.Contracts.Workstation.FundOperationsTab.Banking
+  - Meridian.Contracts.Workstation.FundOperationsTab.CashFinancing
+  - Meridian.Contracts.Workstation.FundOperationsTab.Journal
+  - Meridian.Contracts.Workstation.FundOperationsTab.Overview
+  - Meridian.Contracts.Workstation.FundOperationsTab.Portfolio
+  - Meridian.Contracts.Workstation.FundOperationsTab.Reconciliation
+  - Meridian.Contracts.Workstation.FundOperationsTab.ReportPack
+  - Meridian.Contracts.Workstation.FundOperationsTab.TrialBalance
+  langs:
+  - csharp
+  - vb
+  name: FundOperationsTab
+  nameWithType: FundOperationsTab
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FundOperationsTab
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  summary: Tab targets within the governance-first fund operations workspace.
+  example: []
+  syntax:
+    content: 'public enum FundOperationsTab : byte'
+    content.vb: Public Enum FundOperationsTab As Byte
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.Overview
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.Overview
+  id: Overview
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: Overview
+  nameWithType: FundOperationsTab.Overview
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.Overview
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Overview
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Overview = 0
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.Accounts
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.Accounts
+  id: Accounts
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: Accounts
+  nameWithType: FundOperationsTab.Accounts
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.Accounts
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accounts
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Accounts = 1
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.Banking
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.Banking
+  id: Banking
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: Banking
+  nameWithType: FundOperationsTab.Banking
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.Banking
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Banking
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Banking = 2
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.Portfolio
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.Portfolio
+  id: Portfolio
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: Portfolio
+  nameWithType: FundOperationsTab.Portfolio
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.Portfolio
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Portfolio
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Portfolio = 3
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.CashFinancing
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.CashFinancing
+  id: CashFinancing
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: CashFinancing
+  nameWithType: FundOperationsTab.CashFinancing
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.CashFinancing
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashFinancing
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: CashFinancing = 4
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.Journal
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.Journal
+  id: Journal
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: Journal
+  nameWithType: FundOperationsTab.Journal
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.Journal
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Journal
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Journal = 5
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.TrialBalance
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.TrialBalance
+  id: TrialBalance
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: TrialBalance
+  nameWithType: FundOperationsTab.TrialBalance
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.TrialBalance
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TrialBalance
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: TrialBalance = 6
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.Reconciliation
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.Reconciliation
+  id: Reconciliation
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: Reconciliation
+  nameWithType: FundOperationsTab.Reconciliation
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.Reconciliation
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reconciliation
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: Reconciliation = 7
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.AuditTrail
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.AuditTrail
+  id: AuditTrail
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: AuditTrail
+  nameWithType: FundOperationsTab.AuditTrail
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.AuditTrail
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AuditTrail
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: AuditTrail = 8
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+- uid: Meridian.Contracts.Workstation.FundOperationsTab.ReportPack
+  commentId: F:Meridian.Contracts.Workstation.FundOperationsTab.ReportPack
+  id: ReportPack
+  parent: Meridian.Contracts.Workstation.FundOperationsTab
+  langs:
+  - csharp
+  - vb
+  name: ReportPack
+  nameWithType: FundOperationsTab.ReportPack
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab.ReportPack
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReportPack
+    path: ../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Workstation
+  syntax:
+    content: ReportPack = 9
+    return:
+      type: Meridian.Contracts.Workstation.FundOperationsTab
+references:
+- uid: Meridian.Contracts.Workstation
+  commentId: N:Meridian.Contracts.Workstation
+  href: Meridian.html
+  name: Meridian.Contracts.Workstation
+  nameWithType: Meridian.Contracts.Workstation
+  fullName: Meridian.Contracts.Workstation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Workstation
+    name: Workstation
+    href: Meridian.Contracts.Workstation.html
+- uid: Meridian.Contracts.Workstation.FundOperationsTab
+  commentId: T:Meridian.Contracts.Workstation.FundOperationsTab
+  parent: Meridian.Contracts.Workstation
+  href: Meridian.Contracts.Workstation.FundOperationsTab.html
+  name: FundOperationsTab
+  nameWithType: FundOperationsTab
+  fullName: Meridian.Contracts.Workstation.FundOperationsTab

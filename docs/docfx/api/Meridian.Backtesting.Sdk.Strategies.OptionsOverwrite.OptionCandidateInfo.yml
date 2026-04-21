@@ -1,0 +1,1299 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  commentId: T:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  id: OptionCandidateInfo
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  children:
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.#ctor(System.String,System.Decimal,System.DateOnly,Meridian.Contracts.Domain.Enums.OptionStyle,System.Int32,System.Decimal,System.Decimal,System.Int32,System.Int64,System.Int64,System.Double,System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Int32},System.Nullable{System.Decimal})
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Ask
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Bid
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToExpiration
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToNextExDiv
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Delta
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Expiration
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.ImpliedVolatility
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.IvPercentile
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Mid
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Multiplier
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.NextDividendAmount
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OpenInterest
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.SpreadPct
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Strike
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Style
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.UnderlyingSymbol
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Vega
+  - Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Volume
+  langs:
+  - csharp
+  - vb
+  name: OptionCandidateInfo
+  nameWithType: OptionCandidateInfo
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionCandidateInfo
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    A single call option that is a candidate for the overwrite trade.
+
+    Aggregates all data needed by filters, scoring, and BSM mark-to-market.
+  example: []
+  syntax:
+    content: 'public sealed record OptionCandidateInfo : IEquatable<OptionCandidateInfo>'
+    content.vb: Public NotInheritable Class OptionCandidateInfo Implements IEquatable(Of OptionCandidateInfo)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.#ctor(System.String,System.Decimal,System.DateOnly,Meridian.Contracts.Domain.Enums.OptionStyle,System.Int32,System.Decimal,System.Decimal,System.Int32,System.Int64,System.Int64,System.Double,System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Int32},System.Nullable{System.Decimal})
+  commentId: M:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.#ctor(System.String,System.Decimal,System.DateOnly,Meridian.Contracts.Domain.Enums.OptionStyle,System.Int32,System.Decimal,System.Decimal,System.Int32,System.Int64,System.Int64,System.Double,System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Int32},System.Nullable{System.Decimal})
+  id: '#ctor(System.String,System.Decimal,System.DateOnly,Meridian.Contracts.Domain.Enums.OptionStyle,System.Int32,System.Decimal,System.Decimal,System.Int32,System.Int64,System.Int64,System.Double,System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Double},System.Nullable{System.Int32},System.Nullable{System.Decimal})'
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: OptionCandidateInfo(string, decimal, DateOnly, OptionStyle, int, decimal, decimal, int, long, long, double, double?, double?, double?, int?, decimal?)
+  nameWithType: OptionCandidateInfo.OptionCandidateInfo(string, decimal, DateOnly, OptionStyle, int, decimal, decimal, int, long, long, double, double?, double?, double?, int?, decimal?)
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OptionCandidateInfo(string, decimal, System.DateOnly, Meridian.Contracts.Domain.Enums.OptionStyle, int, decimal, decimal, int, long, long, double, double?, double?, double?, int?, decimal?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: >-
+    A single call option that is a candidate for the overwrite trade.
+
+    Aggregates all data needed by filters, scoring, and BSM mark-to-market.
+  example: []
+  syntax:
+    content: public OptionCandidateInfo(string UnderlyingSymbol, decimal Strike, DateOnly Expiration, OptionStyle Style, int Multiplier, decimal Bid, decimal Ask, int DaysToExpiration, long OpenInterest, long Volume, double Delta, double? ImpliedVolatility = null, double? Vega = null, double? IvPercentile = null, int? DaysToNextExDiv = null, decimal? NextDividendAmount = null)
+    parameters:
+    - id: UnderlyingSymbol
+      type: System.String
+    - id: Strike
+      type: System.Decimal
+    - id: Expiration
+      type: System.DateOnly
+    - id: Style
+      type: Meridian.Contracts.Domain.Enums.OptionStyle
+    - id: Multiplier
+      type: System.Int32
+    - id: Bid
+      type: System.Decimal
+    - id: Ask
+      type: System.Decimal
+    - id: DaysToExpiration
+      type: System.Int32
+    - id: OpenInterest
+      type: System.Int64
+    - id: Volume
+      type: System.Int64
+    - id: Delta
+      type: System.Double
+    - id: ImpliedVolatility
+      type: System.Nullable{System.Double}
+    - id: Vega
+      type: System.Nullable{System.Double}
+    - id: IvPercentile
+      type: System.Nullable{System.Double}
+    - id: DaysToNextExDiv
+      type: System.Nullable{System.Int32}
+    - id: NextDividendAmount
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Sub New(UnderlyingSymbol As String, Strike As Decimal, Expiration As DateOnly, Style As OptionStyle, Multiplier As Integer, Bid As Decimal, Ask As Decimal, DaysToExpiration As Integer, OpenInterest As Long, Volume As Long, Delta As Double, ImpliedVolatility As Double? = Nothing, Vega As Double? = Nothing, IvPercentile As Double? = Nothing, DaysToNextExDiv As Integer? = Nothing, NextDividendAmount As Decimal? = Nothing)
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.#ctor*
+  nameWithType.vb: OptionCandidateInfo.New(String, Decimal, DateOnly, OptionStyle, Integer, Decimal, Decimal, Integer, Long, Long, Double, Double?, Double?, Double?, Integer?, Decimal?)
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.New(String, Decimal, System.DateOnly, Meridian.Contracts.Domain.Enums.OptionStyle, Integer, Decimal, Decimal, Integer, Long, Long, Double, Double?, Double?, Double?, Integer?, Decimal?)
+  name.vb: New(String, Decimal, DateOnly, OptionStyle, Integer, Decimal, Decimal, Integer, Long, Long, Double, Double?, Double?, Double?, Integer?, Decimal?)
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.UnderlyingSymbol
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: OptionCandidateInfo.UnderlyingSymbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public string UnderlyingSymbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property UnderlyingSymbol As String
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.UnderlyingSymbol*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Strike
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Strike
+  id: Strike
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Strike
+  nameWithType: OptionCandidateInfo.Strike
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Strike
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strike
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public decimal Strike { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Strike As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Strike*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Expiration
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Expiration
+  id: Expiration
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Expiration
+  nameWithType: OptionCandidateInfo.Expiration
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Expiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expiration
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public DateOnly Expiration { get; init; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public Property Expiration As DateOnly
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Expiration*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Style
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Style
+  id: Style
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Style
+  nameWithType: OptionCandidateInfo.Style
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Style
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Style
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public OptionStyle Style { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.OptionStyle
+    content.vb: Public Property Style As OptionStyle
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Style*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Multiplier
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Multiplier
+  id: Multiplier
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Multiplier
+  nameWithType: OptionCandidateInfo.Multiplier
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Multiplier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Multiplier
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public int Multiplier { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Multiplier As Integer
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Multiplier*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Bid
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Bid
+  id: Bid
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Bid
+  nameWithType: OptionCandidateInfo.Bid
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Bid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Bid
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public decimal Bid { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Bid As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Bid*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Ask
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Ask
+  id: Ask
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Ask
+  nameWithType: OptionCandidateInfo.Ask
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Ask
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Ask
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public decimal Ask { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Ask As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Ask*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToExpiration
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToExpiration
+  id: DaysToExpiration
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: DaysToExpiration
+  nameWithType: OptionCandidateInfo.DaysToExpiration
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToExpiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DaysToExpiration
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public int DaysToExpiration { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DaysToExpiration As Integer
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToExpiration*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OpenInterest
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OpenInterest
+  id: OpenInterest
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: OpenInterest
+  nameWithType: OptionCandidateInfo.OpenInterest
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OpenInterest
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OpenInterest
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public long OpenInterest { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property OpenInterest As Long
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OpenInterest*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Volume
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Volume
+  id: Volume
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Volume
+  nameWithType: OptionCandidateInfo.Volume
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Volume
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Volume
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public long Volume { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Volume As Long
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Volume*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Delta
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Delta
+  id: Delta
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Delta
+  nameWithType: OptionCandidateInfo.Delta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Delta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Delta
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public double Delta { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Delta As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Delta*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.ImpliedVolatility
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.ImpliedVolatility
+  id: ImpliedVolatility
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: ImpliedVolatility
+  nameWithType: OptionCandidateInfo.ImpliedVolatility
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.ImpliedVolatility
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImpliedVolatility
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public double? ImpliedVolatility { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: Public Property ImpliedVolatility As Double?
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.ImpliedVolatility*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Vega
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Vega
+  id: Vega
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Vega
+  nameWithType: OptionCandidateInfo.Vega
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Vega
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vega
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public double? Vega { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: Public Property Vega As Double?
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Vega*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.IvPercentile
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.IvPercentile
+  id: IvPercentile
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: IvPercentile
+  nameWithType: OptionCandidateInfo.IvPercentile
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.IvPercentile
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IvPercentile
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public double? IvPercentile { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Double}
+    content.vb: Public Property IvPercentile As Double?
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.IvPercentile*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToNextExDiv
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToNextExDiv
+  id: DaysToNextExDiv
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: DaysToNextExDiv
+  nameWithType: OptionCandidateInfo.DaysToNextExDiv
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToNextExDiv
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DaysToNextExDiv
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public int? DaysToNextExDiv { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Int32}
+    content.vb: Public Property DaysToNextExDiv As Integer?
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToNextExDiv*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.NextDividendAmount
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.NextDividendAmount
+  id: NextDividendAmount
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: NextDividendAmount
+  nameWithType: OptionCandidateInfo.NextDividendAmount
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.NextDividendAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: NextDividendAmount
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 65
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  syntax:
+    content: public decimal? NextDividendAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Nullable{System.Decimal}
+    content.vb: Public Property NextDividendAmount As Decimal?
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.NextDividendAmount*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Mid
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Mid
+  id: Mid
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: Mid
+  nameWithType: OptionCandidateInfo.Mid
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Mid
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Mid
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 68
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: Mid-point price.
+  example: []
+  syntax:
+    content: public decimal Mid { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property Mid As Decimal
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Mid*
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.SpreadPct
+  commentId: P:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.SpreadPct
+  id: SpreadPct
+  parent: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+  langs:
+  - csharp
+  - vb
+  name: SpreadPct
+  nameWithType: OptionCandidateInfo.SpreadPct
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.SpreadPct
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SpreadPct
+    path: ../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  summary: 'Fractional spread: (ask - bid) / mid.'
+  example: []
+  syntax:
+    content: public double SpreadPct { get; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public ReadOnly Property SpreadPct As Double
+  overload: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.SpreadPct*
+references:
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  commentId: N:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  nameWithType: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies
+    name: Strategies
+    href: Meridian.Backtesting.Sdk.Strategies.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite
+    name: OptionsOverwrite
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OptionCandidateInfo>
+  nameWithType: IEquatable<OptionCandidateInfo>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo>
+  nameWithType.vb: IEquatable(Of OptionCandidateInfo)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo)
+  name.vb: IEquatable(Of OptionCandidateInfo)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+    name: OptionCandidateInfo
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo
+    name: OptionCandidateInfo
+    href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.#ctor
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo__ctor_System_String_System_Decimal_System_DateOnly_Meridian_Contracts_Domain_Enums_OptionStyle_System_Int32_System_Decimal_System_Decimal_System_Int32_System_Int64_System_Int64_System_Double_System_Nullable_System_Double__System_Nullable_System_Double__System_Nullable_System_Double__System_Nullable_System_Int32__System_Nullable_System_Decimal__
+  name: OptionCandidateInfo
+  nameWithType: OptionCandidateInfo.OptionCandidateInfo
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OptionCandidateInfo
+  nameWithType.vb: OptionCandidateInfo.New
+  fullName.vb: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Contracts.Domain.Enums.OptionStyle
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionStyle
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OptionStyle.html
+  name: OptionStyle
+  nameWithType: OptionStyle
+  fullName: Meridian.Contracts.Domain.Enums.OptionStyle
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.Nullable{System.Double}
+  commentId: T:System.Nullable{System.Double}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double?
+  nameWithType: double?
+  fullName: double?
+  nameWithType.vb: Double?
+  fullName.vb: Double?
+  name.vb: Double?
+  spec.csharp:
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+  spec.vb:
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: '?'
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: System.Nullable{System.Decimal}
+  commentId: T:System.Nullable{System.Decimal}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal?
+  nameWithType: decimal?
+  fullName: decimal?
+  nameWithType.vb: Decimal?
+  fullName.vb: Decimal?
+  name.vb: Decimal?
+  spec.csharp:
+  - uid: System.Decimal
+    name: decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+  spec.vb:
+  - uid: System.Decimal
+    name: Decimal
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.decimal
+  - name: '?'
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.UnderlyingSymbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.UnderlyingSymbol
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: OptionCandidateInfo.UnderlyingSymbol
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.UnderlyingSymbol
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Strike*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Strike
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Strike
+  name: Strike
+  nameWithType: OptionCandidateInfo.Strike
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Strike
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Expiration*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Expiration
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Expiration
+  name: Expiration
+  nameWithType: OptionCandidateInfo.Expiration
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Expiration
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Style*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Style
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Style
+  name: Style
+  nameWithType: OptionCandidateInfo.Style
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Style
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Multiplier*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Multiplier
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Multiplier
+  name: Multiplier
+  nameWithType: OptionCandidateInfo.Multiplier
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Multiplier
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Bid*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Bid
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Bid
+  name: Bid
+  nameWithType: OptionCandidateInfo.Bid
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Bid
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Ask*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Ask
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Ask
+  name: Ask
+  nameWithType: OptionCandidateInfo.Ask
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Ask
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToExpiration*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToExpiration
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_DaysToExpiration
+  name: DaysToExpiration
+  nameWithType: OptionCandidateInfo.DaysToExpiration
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToExpiration
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OpenInterest*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OpenInterest
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_OpenInterest
+  name: OpenInterest
+  nameWithType: OptionCandidateInfo.OpenInterest
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.OpenInterest
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Volume*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Volume
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Volume
+  name: Volume
+  nameWithType: OptionCandidateInfo.Volume
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Volume
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Delta*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Delta
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Delta
+  name: Delta
+  nameWithType: OptionCandidateInfo.Delta
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Delta
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.ImpliedVolatility*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.ImpliedVolatility
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_ImpliedVolatility
+  name: ImpliedVolatility
+  nameWithType: OptionCandidateInfo.ImpliedVolatility
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.ImpliedVolatility
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Vega*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Vega
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Vega
+  name: Vega
+  nameWithType: OptionCandidateInfo.Vega
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Vega
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.IvPercentile*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.IvPercentile
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_IvPercentile
+  name: IvPercentile
+  nameWithType: OptionCandidateInfo.IvPercentile
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.IvPercentile
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToNextExDiv*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToNextExDiv
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_DaysToNextExDiv
+  name: DaysToNextExDiv
+  nameWithType: OptionCandidateInfo.DaysToNextExDiv
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.DaysToNextExDiv
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.NextDividendAmount*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.NextDividendAmount
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_NextDividendAmount
+  name: NextDividendAmount
+  nameWithType: OptionCandidateInfo.NextDividendAmount
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.NextDividendAmount
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Mid*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Mid
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_Mid
+  name: Mid
+  nameWithType: OptionCandidateInfo.Mid
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.Mid
+- uid: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.SpreadPct*
+  commentId: Overload:Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.SpreadPct
+  href: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.html#Meridian_Backtesting_Sdk_Strategies_OptionsOverwrite_OptionCandidateInfo_SpreadPct
+  name: SpreadPct
+  nameWithType: OptionCandidateInfo.SpreadPct
+  fullName: Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.OptionCandidateInfo.SpreadPct

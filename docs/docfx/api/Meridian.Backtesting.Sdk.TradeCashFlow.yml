@@ -1,0 +1,615 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Sdk.TradeCashFlow
+  commentId: T:Meridian.Backtesting.Sdk.TradeCashFlow
+  id: TradeCashFlow
+  parent: Meridian.Backtesting.Sdk
+  children:
+  - Meridian.Backtesting.Sdk.TradeCashFlow.#ctor(System.DateTimeOffset,System.Decimal,System.String,System.Int64,System.Decimal,System.String)
+  - Meridian.Backtesting.Sdk.TradeCashFlow.Price
+  - Meridian.Backtesting.Sdk.TradeCashFlow.Quantity
+  - Meridian.Backtesting.Sdk.TradeCashFlow.Symbol
+  langs:
+  - csharp
+  - vb
+  name: TradeCashFlow
+  nameWithType: TradeCashFlow
+  fullName: Meridian.Backtesting.Sdk.TradeCashFlow
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TradeCashFlow
+    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Cash flow arising from executing a trade (buy or sell).
+  example: []
+  syntax:
+    content: 'public sealed record TradeCashFlow : CashFlowEntry, IEquatable<CashFlowEntry>, IEquatable<TradeCashFlow>'
+    content.vb: Public NotInheritable Class TradeCashFlow Inherits CashFlowEntry Implements IEquatable(Of CashFlowEntry), IEquatable(Of TradeCashFlow)
+  inheritance:
+  - System.Object
+  - Meridian.Backtesting.Sdk.CashFlowEntry
+  implements:
+  - System.IEquatable{Meridian.Backtesting.Sdk.CashFlowEntry}
+  - System.IEquatable{Meridian.Backtesting.Sdk.TradeCashFlow}
+  inheritedMembers:
+  - Meridian.Backtesting.Sdk.CashFlowEntry.Timestamp
+  - Meridian.Backtesting.Sdk.CashFlowEntry.Amount
+  - Meridian.Backtesting.Sdk.CashFlowEntry.AccountId
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Backtesting.Sdk.TradeCashFlow.#ctor(System.DateTimeOffset,System.Decimal,System.String,System.Int64,System.Decimal,System.String)
+  commentId: M:Meridian.Backtesting.Sdk.TradeCashFlow.#ctor(System.DateTimeOffset,System.Decimal,System.String,System.Int64,System.Decimal,System.String)
+  id: '#ctor(System.DateTimeOffset,System.Decimal,System.String,System.Int64,System.Decimal,System.String)'
+  parent: Meridian.Backtesting.Sdk.TradeCashFlow
+  langs:
+  - csharp
+  - vb
+  name: TradeCashFlow(DateTimeOffset, decimal, string, long, decimal, string?)
+  nameWithType: TradeCashFlow.TradeCashFlow(DateTimeOffset, decimal, string, long, decimal, string?)
+  fullName: Meridian.Backtesting.Sdk.TradeCashFlow.TradeCashFlow(System.DateTimeOffset, decimal, string, long, decimal, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  summary: Cash flow arising from executing a trade (buy or sell).
+  example: []
+  syntax:
+    content: public TradeCashFlow(DateTimeOffset Timestamp, decimal Amount, string Symbol, long Quantity, decimal Price, string? AccountId = null)
+    parameters:
+    - id: Timestamp
+      type: System.DateTimeOffset
+    - id: Amount
+      type: System.Decimal
+    - id: Symbol
+      type: System.String
+    - id: Quantity
+      type: System.Int64
+    - id: Price
+      type: System.Decimal
+    - id: AccountId
+      type: System.String
+    content.vb: Public Sub New(Timestamp As DateTimeOffset, Amount As Decimal, Symbol As String, Quantity As Long, Price As Decimal, AccountId As String = Nothing)
+  overload: Meridian.Backtesting.Sdk.TradeCashFlow.#ctor*
+  nameWithType.vb: TradeCashFlow.New(DateTimeOffset, Decimal, String, Long, Decimal, String)
+  fullName.vb: Meridian.Backtesting.Sdk.TradeCashFlow.New(System.DateTimeOffset, Decimal, String, Long, Decimal, String)
+  name.vb: New(DateTimeOffset, Decimal, String, Long, Decimal, String)
+- uid: Meridian.Backtesting.Sdk.TradeCashFlow.Symbol
+  commentId: P:Meridian.Backtesting.Sdk.TradeCashFlow.Symbol
+  id: Symbol
+  parent: Meridian.Backtesting.Sdk.TradeCashFlow
+  langs:
+  - csharp
+  - vb
+  name: Symbol
+  nameWithType: TradeCashFlow.Symbol
+  fullName: Meridian.Backtesting.Sdk.TradeCashFlow.Symbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Symbol
+    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public string Symbol { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Symbol As String
+  overload: Meridian.Backtesting.Sdk.TradeCashFlow.Symbol*
+- uid: Meridian.Backtesting.Sdk.TradeCashFlow.Quantity
+  commentId: P:Meridian.Backtesting.Sdk.TradeCashFlow.Quantity
+  id: Quantity
+  parent: Meridian.Backtesting.Sdk.TradeCashFlow
+  langs:
+  - csharp
+  - vb
+  name: Quantity
+  nameWithType: TradeCashFlow.Quantity
+  fullName: Meridian.Backtesting.Sdk.TradeCashFlow.Quantity
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Quantity
+    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public long Quantity { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property Quantity As Long
+  overload: Meridian.Backtesting.Sdk.TradeCashFlow.Quantity*
+- uid: Meridian.Backtesting.Sdk.TradeCashFlow.Price
+  commentId: P:Meridian.Backtesting.Sdk.TradeCashFlow.Price
+  id: Price
+  parent: Meridian.Backtesting.Sdk.TradeCashFlow
+  langs:
+  - csharp
+  - vb
+  name: Price
+  nameWithType: TradeCashFlow.Price
+  fullName: Meridian.Backtesting.Sdk.TradeCashFlow.Price
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Price
+    path: ../../src/Meridian.Backtesting.Sdk/CashFlowEntry.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Backtesting.Sdk
+  namespace: Meridian.Backtesting.Sdk
+  syntax:
+    content: public decimal Price { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property Price As Decimal
+  overload: Meridian.Backtesting.Sdk.TradeCashFlow.Price*
+references:
+- uid: Meridian.Backtesting.Sdk
+  commentId: N:Meridian.Backtesting.Sdk
+  href: Meridian.html
+  name: Meridian.Backtesting.Sdk
+  nameWithType: Meridian.Backtesting.Sdk
+  fullName: Meridian.Backtesting.Sdk
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Backtesting
+    name: Backtesting
+    href: Meridian.Backtesting.html
+  - name: .
+  - uid: Meridian.Backtesting.Sdk
+    name: Sdk
+    href: Meridian.Backtesting.Sdk.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Backtesting.Sdk.CashFlowEntry
+  commentId: T:Meridian.Backtesting.Sdk.CashFlowEntry
+  parent: Meridian.Backtesting.Sdk
+  href: Meridian.Backtesting.Sdk.CashFlowEntry.html
+  name: CashFlowEntry
+  nameWithType: CashFlowEntry
+  fullName: Meridian.Backtesting.Sdk.CashFlowEntry
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.CashFlowEntry}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.CashFlowEntry}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CashFlowEntry>
+  nameWithType: IEquatable<CashFlowEntry>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.CashFlowEntry>
+  nameWithType.vb: IEquatable(Of CashFlowEntry)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.CashFlowEntry)
+  name.vb: IEquatable(Of CashFlowEntry)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.CashFlowEntry
+    name: CashFlowEntry
+    href: Meridian.Backtesting.Sdk.CashFlowEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.CashFlowEntry
+    name: CashFlowEntry
+    href: Meridian.Backtesting.Sdk.CashFlowEntry.html
+  - name: )
+- uid: System.IEquatable{Meridian.Backtesting.Sdk.TradeCashFlow}
+  commentId: T:System.IEquatable{Meridian.Backtesting.Sdk.TradeCashFlow}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<TradeCashFlow>
+  nameWithType: IEquatable<TradeCashFlow>
+  fullName: System.IEquatable<Meridian.Backtesting.Sdk.TradeCashFlow>
+  nameWithType.vb: IEquatable(Of TradeCashFlow)
+  fullName.vb: System.IEquatable(Of Meridian.Backtesting.Sdk.TradeCashFlow)
+  name.vb: IEquatable(Of TradeCashFlow)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Backtesting.Sdk.TradeCashFlow
+    name: TradeCashFlow
+    href: Meridian.Backtesting.Sdk.TradeCashFlow.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Backtesting.Sdk.TradeCashFlow
+    name: TradeCashFlow
+    href: Meridian.Backtesting.Sdk.TradeCashFlow.html
+  - name: )
+- uid: Meridian.Backtesting.Sdk.CashFlowEntry.Timestamp
+  commentId: P:Meridian.Backtesting.Sdk.CashFlowEntry.Timestamp
+  parent: Meridian.Backtesting.Sdk.CashFlowEntry
+  href: Meridian.Backtesting.Sdk.CashFlowEntry.html#Meridian_Backtesting_Sdk_CashFlowEntry_Timestamp
+  name: Timestamp
+  nameWithType: CashFlowEntry.Timestamp
+  fullName: Meridian.Backtesting.Sdk.CashFlowEntry.Timestamp
+- uid: Meridian.Backtesting.Sdk.CashFlowEntry.Amount
+  commentId: P:Meridian.Backtesting.Sdk.CashFlowEntry.Amount
+  parent: Meridian.Backtesting.Sdk.CashFlowEntry
+  href: Meridian.Backtesting.Sdk.CashFlowEntry.html#Meridian_Backtesting_Sdk_CashFlowEntry_Amount
+  name: Amount
+  nameWithType: CashFlowEntry.Amount
+  fullName: Meridian.Backtesting.Sdk.CashFlowEntry.Amount
+- uid: Meridian.Backtesting.Sdk.CashFlowEntry.AccountId
+  commentId: P:Meridian.Backtesting.Sdk.CashFlowEntry.AccountId
+  parent: Meridian.Backtesting.Sdk.CashFlowEntry
+  href: Meridian.Backtesting.Sdk.CashFlowEntry.html#Meridian_Backtesting_Sdk_CashFlowEntry_AccountId
+  name: AccountId
+  nameWithType: CashFlowEntry.AccountId
+  fullName: Meridian.Backtesting.Sdk.CashFlowEntry.AccountId
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Backtesting.Sdk.TradeCashFlow.#ctor*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeCashFlow.#ctor
+  href: Meridian.Backtesting.Sdk.TradeCashFlow.html#Meridian_Backtesting_Sdk_TradeCashFlow__ctor_System_DateTimeOffset_System_Decimal_System_String_System_Int64_System_Decimal_System_String_
+  name: TradeCashFlow
+  nameWithType: TradeCashFlow.TradeCashFlow
+  fullName: Meridian.Backtesting.Sdk.TradeCashFlow.TradeCashFlow
+  nameWithType.vb: TradeCashFlow.New
+  fullName.vb: Meridian.Backtesting.Sdk.TradeCashFlow.New
+  name.vb: New
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Backtesting.Sdk.TradeCashFlow.Symbol*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeCashFlow.Symbol
+  href: Meridian.Backtesting.Sdk.TradeCashFlow.html#Meridian_Backtesting_Sdk_TradeCashFlow_Symbol
+  name: Symbol
+  nameWithType: TradeCashFlow.Symbol
+  fullName: Meridian.Backtesting.Sdk.TradeCashFlow.Symbol
+- uid: Meridian.Backtesting.Sdk.TradeCashFlow.Quantity*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeCashFlow.Quantity
+  href: Meridian.Backtesting.Sdk.TradeCashFlow.html#Meridian_Backtesting_Sdk_TradeCashFlow_Quantity
+  name: Quantity
+  nameWithType: TradeCashFlow.Quantity
+  fullName: Meridian.Backtesting.Sdk.TradeCashFlow.Quantity
+- uid: Meridian.Backtesting.Sdk.TradeCashFlow.Price*
+  commentId: Overload:Meridian.Backtesting.Sdk.TradeCashFlow.Price
+  href: Meridian.Backtesting.Sdk.TradeCashFlow.html#Meridian_Backtesting_Sdk_TradeCashFlow_Price
+  name: Price
+  nameWithType: TradeCashFlow.Price
+  fullName: Meridian.Backtesting.Sdk.TradeCashFlow.Price

@@ -1,0 +1,929 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  commentId: T:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  id: ResubscriptionMetricsSnapshot
+  parent: Meridian.Application.Subscriptions.Models
+  children:
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,Meridian.Application.Subscriptions.Models.CircuitState,System.Int64,System.Int64,System.Double,System.Double,System.DateTimeOffset)
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerCloses
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerOpens
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CurrentCircuitState
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.RateLimitedSkips
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeAttempts
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeFailures
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeSuccesses
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SuccessRate
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsCircuitOpen
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsInCooldown
+  - Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.Timestamp
+  langs:
+  - csharp
+  - vb
+  name: ResubscriptionMetricsSnapshot
+  nameWithType: ResubscriptionMetricsSnapshot
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  type: Struct
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscriptionMetricsSnapshot
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Immutable snapshot of resubscription metrics at a point in time.
+  example: []
+  syntax:
+    content: 'public readonly record struct ResubscriptionMetricsSnapshot : IEquatable<ResubscriptionMetricsSnapshot>'
+    content.vb: Public Structure ResubscriptionMetricsSnapshot Implements IEquatable(Of ResubscriptionMetricsSnapshot)
+  implements:
+  - System.IEquatable{Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot}
+  inheritedMembers:
+  - System.ValueType.Equals(System.Object)
+  - System.ValueType.GetHashCode
+  - System.ValueType.ToString
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,Meridian.Application.Subscriptions.Models.CircuitState,System.Int64,System.Int64,System.Double,System.Double,System.DateTimeOffset)
+  commentId: M:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,Meridian.Application.Subscriptions.Models.CircuitState,System.Int64,System.Int64,System.Double,System.Double,System.DateTimeOffset)
+  id: '#ctor(System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,System.Int64,Meridian.Application.Subscriptions.Models.CircuitState,System.Int64,System.Int64,System.Double,System.Double,System.DateTimeOffset)'
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ResubscriptionMetricsSnapshot(long, long, long, long, long, long, long, CircuitState, long, long, double, double, DateTimeOffset)
+  nameWithType: ResubscriptionMetricsSnapshot.ResubscriptionMetricsSnapshot(long, long, long, long, long, long, long, CircuitState, long, long, double, double, DateTimeOffset)
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscriptionMetricsSnapshot(long, long, long, long, long, long, long, Meridian.Application.Subscriptions.Models.CircuitState, long, long, double, double, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 190
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  summary: Immutable snapshot of resubscription metrics at a point in time.
+  example: []
+  syntax:
+    content: public ResubscriptionMetricsSnapshot(long ResubscribeAttempts, long ResubscribeSuccesses, long ResubscribeFailures, long RateLimitedSkips, long CircuitBreakerOpens, long CircuitBreakerCloses, long CircuitBreakerHalfOpens, CircuitState CurrentCircuitState, long SymbolsInCooldown, long SymbolsCircuitOpen, double SuccessRate, double AverageResubscribeTimeMs, DateTimeOffset Timestamp)
+    parameters:
+    - id: ResubscribeAttempts
+      type: System.Int64
+    - id: ResubscribeSuccesses
+      type: System.Int64
+    - id: ResubscribeFailures
+      type: System.Int64
+    - id: RateLimitedSkips
+      type: System.Int64
+    - id: CircuitBreakerOpens
+      type: System.Int64
+    - id: CircuitBreakerCloses
+      type: System.Int64
+    - id: CircuitBreakerHalfOpens
+      type: System.Int64
+    - id: CurrentCircuitState
+      type: Meridian.Application.Subscriptions.Models.CircuitState
+    - id: SymbolsInCooldown
+      type: System.Int64
+    - id: SymbolsCircuitOpen
+      type: System.Int64
+    - id: SuccessRate
+      type: System.Double
+    - id: AverageResubscribeTimeMs
+      type: System.Double
+    - id: Timestamp
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(ResubscribeAttempts As Long, ResubscribeSuccesses As Long, ResubscribeFailures As Long, RateLimitedSkips As Long, CircuitBreakerOpens As Long, CircuitBreakerCloses As Long, CircuitBreakerHalfOpens As Long, CurrentCircuitState As CircuitState, SymbolsInCooldown As Long, SymbolsCircuitOpen As Long, SuccessRate As Double, AverageResubscribeTimeMs As Double, Timestamp As DateTimeOffset)
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.#ctor*
+  nameWithType.vb: ResubscriptionMetricsSnapshot.New(Long, Long, Long, Long, Long, Long, Long, CircuitState, Long, Long, Double, Double, DateTimeOffset)
+  fullName.vb: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.New(Long, Long, Long, Long, Long, Long, Long, Meridian.Application.Subscriptions.Models.CircuitState, Long, Long, Double, Double, System.DateTimeOffset)
+  name.vb: New(Long, Long, Long, Long, Long, Long, Long, CircuitState, Long, Long, Double, Double, DateTimeOffset)
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeAttempts
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeAttempts
+  id: ResubscribeAttempts
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ResubscribeAttempts
+  nameWithType: ResubscriptionMetricsSnapshot.ResubscribeAttempts
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeAttempts
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscribeAttempts
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long ResubscribeAttempts { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ResubscribeAttempts As Long
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeAttempts*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeSuccesses
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeSuccesses
+  id: ResubscribeSuccesses
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ResubscribeSuccesses
+  nameWithType: ResubscriptionMetricsSnapshot.ResubscribeSuccesses
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeSuccesses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscribeSuccesses
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 192
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long ResubscribeSuccesses { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ResubscribeSuccesses As Long
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeSuccesses*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeFailures
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeFailures
+  id: ResubscribeFailures
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: ResubscribeFailures
+  nameWithType: ResubscriptionMetricsSnapshot.ResubscribeFailures
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeFailures
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResubscribeFailures
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long ResubscribeFailures { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property ResubscribeFailures As Long
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeFailures*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.RateLimitedSkips
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.RateLimitedSkips
+  id: RateLimitedSkips
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: RateLimitedSkips
+  nameWithType: ResubscriptionMetricsSnapshot.RateLimitedSkips
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.RateLimitedSkips
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RateLimitedSkips
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 194
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long RateLimitedSkips { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property RateLimitedSkips As Long
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.RateLimitedSkips*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerOpens
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerOpens
+  id: CircuitBreakerOpens
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerOpens
+  nameWithType: ResubscriptionMetricsSnapshot.CircuitBreakerOpens
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerOpens
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerOpens
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 195
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long CircuitBreakerOpens { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property CircuitBreakerOpens As Long
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerOpens*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerCloses
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerCloses
+  id: CircuitBreakerCloses
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerCloses
+  nameWithType: ResubscriptionMetricsSnapshot.CircuitBreakerCloses
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerCloses
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerCloses
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long CircuitBreakerCloses { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property CircuitBreakerCloses As Long
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerCloses*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens
+  id: CircuitBreakerHalfOpens
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CircuitBreakerHalfOpens
+  nameWithType: ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CircuitBreakerHalfOpens
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 197
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long CircuitBreakerHalfOpens { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property CircuitBreakerHalfOpens As Long
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CurrentCircuitState
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CurrentCircuitState
+  id: CurrentCircuitState
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: CurrentCircuitState
+  nameWithType: ResubscriptionMetricsSnapshot.CurrentCircuitState
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CurrentCircuitState
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CurrentCircuitState
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 198
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public CircuitState CurrentCircuitState { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Application.Subscriptions.Models.CircuitState
+    content.vb: Public Property CurrentCircuitState As CircuitState
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CurrentCircuitState*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsInCooldown
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsInCooldown
+  id: SymbolsInCooldown
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SymbolsInCooldown
+  nameWithType: ResubscriptionMetricsSnapshot.SymbolsInCooldown
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsInCooldown
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolsInCooldown
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long SymbolsInCooldown { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SymbolsInCooldown As Long
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsInCooldown*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsCircuitOpen
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsCircuitOpen
+  id: SymbolsCircuitOpen
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SymbolsCircuitOpen
+  nameWithType: ResubscriptionMetricsSnapshot.SymbolsCircuitOpen
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsCircuitOpen
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolsCircuitOpen
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 200
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public long SymbolsCircuitOpen { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property SymbolsCircuitOpen As Long
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsCircuitOpen*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SuccessRate
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SuccessRate
+  id: SuccessRate
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: SuccessRate
+  nameWithType: ResubscriptionMetricsSnapshot.SuccessRate
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SuccessRate
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SuccessRate
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 201
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public double SuccessRate { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property SuccessRate As Double
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SuccessRate*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs
+  id: AverageResubscribeTimeMs
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: AverageResubscribeTimeMs
+  nameWithType: ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AverageResubscribeTimeMs
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public double AverageResubscribeTimeMs { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageResubscribeTimeMs As Double
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs*
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.Timestamp
+  commentId: P:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.Timestamp
+  id: Timestamp
+  parent: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+  langs:
+  - csharp
+  - vb
+  name: Timestamp
+  nameWithType: ResubscriptionMetricsSnapshot.Timestamp
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.Timestamp
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Timestamp
+    path: ../../src/Meridian.Core/Subscriptions/Models/ResubscriptionMetrics.cs
+    startLine: 203
+  assemblies:
+  - Meridian.Core
+  namespace: Meridian.Application.Subscriptions.Models
+  syntax:
+    content: public DateTimeOffset Timestamp { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property Timestamp As DateTimeOffset
+  overload: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.Timestamp*
+references:
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.IEquatable{Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot}
+  commentId: T:System.IEquatable{Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ResubscriptionMetricsSnapshot>
+  nameWithType: IEquatable<ResubscriptionMetricsSnapshot>
+  fullName: System.IEquatable<Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot>
+  nameWithType.vb: IEquatable(Of ResubscriptionMetricsSnapshot)
+  fullName.vb: System.IEquatable(Of Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot)
+  name.vb: IEquatable(Of ResubscriptionMetricsSnapshot)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+    name: ResubscriptionMetricsSnapshot
+    href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot
+    name: ResubscriptionMetricsSnapshot
+    href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html
+  - name: )
+- uid: System.ValueType.Equals(System.Object)
+  commentId: M:System.ValueType.Equals(System.Object)
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  name: Equals(object)
+  nameWithType: ValueType.Equals(object)
+  fullName: System.ValueType.Equals(object)
+  nameWithType.vb: ValueType.Equals(Object)
+  fullName.vb: System.ValueType.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.equals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.ValueType.GetHashCode
+  commentId: M:System.ValueType.GetHashCode
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  name: GetHashCode()
+  nameWithType: ValueType.GetHashCode()
+  fullName: System.ValueType.GetHashCode()
+  spec.csharp:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.gethashcode
+  - name: (
+  - name: )
+- uid: System.ValueType.ToString
+  commentId: M:System.ValueType.ToString
+  parent: System.ValueType
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  name: ToString()
+  nameWithType: ValueType.ToString()
+  fullName: System.ValueType.ToString()
+  spec.csharp:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.ValueType.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.valuetype.tostring
+  - name: (
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.ValueType
+  commentId: T:System.ValueType
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.valuetype
+  name: ValueType
+  nameWithType: ValueType
+  fullName: System.ValueType
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.#ctor
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot__ctor_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_System_Int64_Meridian_Application_Subscriptions_Models_CircuitState_System_Int64_System_Int64_System_Double_System_Double_System_DateTimeOffset_
+  name: ResubscriptionMetricsSnapshot
+  nameWithType: ResubscriptionMetricsSnapshot.ResubscriptionMetricsSnapshot
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscriptionMetricsSnapshot
+  nameWithType.vb: ResubscriptionMetricsSnapshot.New
+  fullName.vb: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.New
+  name.vb: New
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Application.Subscriptions.Models.CircuitState
+  commentId: T:Meridian.Application.Subscriptions.Models.CircuitState
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.CircuitState.html
+  name: CircuitState
+  nameWithType: CircuitState
+  fullName: Meridian.Application.Subscriptions.Models.CircuitState
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeAttempts*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeAttempts
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_ResubscribeAttempts
+  name: ResubscribeAttempts
+  nameWithType: ResubscriptionMetricsSnapshot.ResubscribeAttempts
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeAttempts
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeSuccesses*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeSuccesses
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_ResubscribeSuccesses
+  name: ResubscribeSuccesses
+  nameWithType: ResubscriptionMetricsSnapshot.ResubscribeSuccesses
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeSuccesses
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeFailures*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeFailures
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_ResubscribeFailures
+  name: ResubscribeFailures
+  nameWithType: ResubscriptionMetricsSnapshot.ResubscribeFailures
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.ResubscribeFailures
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.RateLimitedSkips*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.RateLimitedSkips
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_RateLimitedSkips
+  name: RateLimitedSkips
+  nameWithType: ResubscriptionMetricsSnapshot.RateLimitedSkips
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.RateLimitedSkips
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerOpens*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerOpens
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_CircuitBreakerOpens
+  name: CircuitBreakerOpens
+  nameWithType: ResubscriptionMetricsSnapshot.CircuitBreakerOpens
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerOpens
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerCloses*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerCloses
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_CircuitBreakerCloses
+  name: CircuitBreakerCloses
+  nameWithType: ResubscriptionMetricsSnapshot.CircuitBreakerCloses
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerCloses
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_CircuitBreakerHalfOpens
+  name: CircuitBreakerHalfOpens
+  nameWithType: ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CircuitBreakerHalfOpens
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CurrentCircuitState*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CurrentCircuitState
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_CurrentCircuitState
+  name: CurrentCircuitState
+  nameWithType: ResubscriptionMetricsSnapshot.CurrentCircuitState
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.CurrentCircuitState
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsInCooldown*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsInCooldown
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_SymbolsInCooldown
+  name: SymbolsInCooldown
+  nameWithType: ResubscriptionMetricsSnapshot.SymbolsInCooldown
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsInCooldown
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsCircuitOpen*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsCircuitOpen
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_SymbolsCircuitOpen
+  name: SymbolsCircuitOpen
+  nameWithType: ResubscriptionMetricsSnapshot.SymbolsCircuitOpen
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SymbolsCircuitOpen
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SuccessRate*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SuccessRate
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_SuccessRate
+  name: SuccessRate
+  nameWithType: ResubscriptionMetricsSnapshot.SuccessRate
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.SuccessRate
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_AverageResubscribeTimeMs
+  name: AverageResubscribeTimeMs
+  nameWithType: ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.AverageResubscribeTimeMs
+- uid: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.Timestamp*
+  commentId: Overload:Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.Timestamp
+  href: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.html#Meridian_Application_Subscriptions_Models_ResubscriptionMetricsSnapshot_Timestamp
+  name: Timestamp
+  nameWithType: ResubscriptionMetricsSnapshot.Timestamp
+  fullName: Meridian.Application.Subscriptions.Models.ResubscriptionMetricsSnapshot.Timestamp

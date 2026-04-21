@@ -1,0 +1,1041 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService
+  commentId: T:Meridian.Execution.Services.ExecutionAuditTrailService
+  id: ExecutionAuditTrailService
+  parent: Meridian.Execution.Services
+  children:
+  - Meridian.Execution.Services.ExecutionAuditTrailService.#ctor(Meridian.Execution.Services.ExecutionAuditTrailOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.ExecutionAuditTrailService})
+  - Meridian.Execution.Services.ExecutionAuditTrailService.DisposeAsync
+  - Meridian.Execution.Services.ExecutionAuditTrailService.GetAllAsync(System.Threading.CancellationToken)
+  - Meridian.Execution.Services.ExecutionAuditTrailService.GetRecentAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync(Meridian.Execution.Services.ExecutionAuditEntry,System.Threading.CancellationToken)
+  - Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ExecutionAuditTrailService
+  nameWithType: ExecutionAuditTrailService
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecutionAuditTrailService
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Durable execution audit trail backed by the platform WAL.
+
+    The payload volume is low compared with market-data paths, so we bias toward
+
+    explicit durability and traceability over raw throughput.
+  example: []
+  syntax:
+    content: 'public sealed class ExecutionAuditTrailService : IAsyncDisposable'
+    content.vb: Public NotInheritable Class ExecutionAuditTrailService Implements IAsyncDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IAsyncDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.#ctor(Meridian.Execution.Services.ExecutionAuditTrailOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.ExecutionAuditTrailService})
+  commentId: M:Meridian.Execution.Services.ExecutionAuditTrailService.#ctor(Meridian.Execution.Services.ExecutionAuditTrailOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.ExecutionAuditTrailService})
+  id: '#ctor(Meridian.Execution.Services.ExecutionAuditTrailOptions,Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.ExecutionAuditTrailService})'
+  parent: Meridian.Execution.Services.ExecutionAuditTrailService
+  langs:
+  - csharp
+  - vb
+  name: ExecutionAuditTrailService(ExecutionAuditTrailOptions?, ILogger<ExecutionAuditTrailService>)
+  nameWithType: ExecutionAuditTrailService.ExecutionAuditTrailService(ExecutionAuditTrailOptions?, ILogger<ExecutionAuditTrailService>)
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.ExecutionAuditTrailService(Meridian.Execution.Services.ExecutionAuditTrailOptions?, Microsoft.Extensions.Logging.ILogger<Meridian.Execution.Services.ExecutionAuditTrailService>)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  syntax:
+    content: public ExecutionAuditTrailService(ExecutionAuditTrailOptions? options, ILogger<ExecutionAuditTrailService> logger)
+    parameters:
+    - id: options
+      type: Meridian.Execution.Services.ExecutionAuditTrailOptions
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.ExecutionAuditTrailService}
+    content.vb: Public Sub New(options As ExecutionAuditTrailOptions, logger As ILogger(Of ExecutionAuditTrailService))
+  overload: Meridian.Execution.Services.ExecutionAuditTrailService.#ctor*
+  nameWithType.vb: ExecutionAuditTrailService.New(ExecutionAuditTrailOptions, ILogger(Of ExecutionAuditTrailService))
+  fullName.vb: Meridian.Execution.Services.ExecutionAuditTrailService.New(Meridian.Execution.Services.ExecutionAuditTrailOptions, Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.Services.ExecutionAuditTrailService))
+  name.vb: New(ExecutionAuditTrailOptions, ILogger(Of ExecutionAuditTrailService))
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.GetRecentAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.ExecutionAuditTrailService.GetRecentAsync(System.Int32,System.Threading.CancellationToken)
+  id: GetRecentAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.ExecutionAuditTrailService
+  langs:
+  - csharp
+  - vb
+  name: GetRecentAsync(int, CancellationToken)
+  nameWithType: ExecutionAuditTrailService.GetRecentAsync(int, CancellationToken)
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.GetRecentAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRecentAsync
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 78
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns the most recent audit entries, newest first.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<ExecutionAuditEntry>> GetRecentAsync(int take = 100, CancellationToken ct = default)
+    parameters:
+    - id: take
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionAuditEntry}}
+    content.vb: Public Function GetRecentAsync(take As Integer = 100, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ExecutionAuditEntry))
+  overload: Meridian.Execution.Services.ExecutionAuditTrailService.GetRecentAsync*
+  nameWithType.vb: ExecutionAuditTrailService.GetRecentAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Execution.Services.ExecutionAuditTrailService.GetRecentAsync(Integer, System.Threading.CancellationToken)
+  name.vb: GetRecentAsync(Integer, CancellationToken)
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.GetAllAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.ExecutionAuditTrailService.GetAllAsync(System.Threading.CancellationToken)
+  id: GetAllAsync(System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.ExecutionAuditTrailService
+  langs:
+  - csharp
+  - vb
+  name: GetAllAsync(CancellationToken)
+  nameWithType: ExecutionAuditTrailService.GetAllAsync(CancellationToken)
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.GetAllAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllAsync
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 96
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Returns all retained audit entries in chronological order.
+  example: []
+  syntax:
+    content: public Task<IReadOnlyList<ExecutionAuditEntry>> GetAllAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionAuditEntry}}
+    content.vb: Public Function GetAllAsync(ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of ExecutionAuditEntry))
+  overload: Meridian.Execution.Services.ExecutionAuditTrailService.GetAllAsync*
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Threading.CancellationToken)
+  id: RecordAsync(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String},System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.ExecutionAuditTrailService
+  langs:
+  - csharp
+  - vb
+  name: RecordAsync(string, string, string, string?, string?, string?, string?, string?, string?, string?, IReadOnlyDictionary<string, string>?, CancellationToken)
+  nameWithType: ExecutionAuditTrailService.RecordAsync(string, string, string, string?, string?, string?, string?, string?, string?, string?, IReadOnlyDictionary<string, string>?, CancellationToken)
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync(string, string, string, string?, string?, string?, string?, string?, string?, string?, System.Collections.Generic.IReadOnlyDictionary<string, string>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordAsync
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 110
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Appends a new audit entry and returns the persisted record.
+  example: []
+  syntax:
+    content: public Task<ExecutionAuditEntry> RecordAsync(string category, string action, string outcome, string? actor = null, string? brokerName = null, string? orderId = null, string? runId = null, string? symbol = null, string? correlationId = null, string? message = null, IReadOnlyDictionary<string, string>? metadata = null, CancellationToken ct = default)
+    parameters:
+    - id: category
+      type: System.String
+    - id: action
+      type: System.String
+    - id: outcome
+      type: System.String
+    - id: actor
+      type: System.String
+    - id: brokerName
+      type: System.String
+    - id: orderId
+      type: System.String
+    - id: runId
+      type: System.String
+    - id: symbol
+      type: System.String
+    - id: correlationId
+      type: System.String
+    - id: message
+      type: System.String
+    - id: metadata
+      type: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Execution.Services.ExecutionAuditEntry}
+    content.vb: Public Function RecordAsync(category As String, action As String, outcome As String, actor As String = Nothing, brokerName As String = Nothing, orderId As String = Nothing, runId As String = Nothing, symbol As String = Nothing, correlationId As String = Nothing, message As String = Nothing, metadata As IReadOnlyDictionary(Of String, String) = Nothing, ct As CancellationToken = Nothing) As Task(Of ExecutionAuditEntry)
+  overload: Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync*
+  nameWithType.vb: ExecutionAuditTrailService.RecordAsync(String, String, String, String, String, String, String, String, String, String, IReadOnlyDictionary(Of String, String), CancellationToken)
+  fullName.vb: Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync(String, String, String, String, String, String, String, String, String, String, System.Collections.Generic.IReadOnlyDictionary(Of String, String), System.Threading.CancellationToken)
+  name.vb: RecordAsync(String, String, String, String, String, String, String, String, String, String, IReadOnlyDictionary(Of String, String), CancellationToken)
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync(Meridian.Execution.Services.ExecutionAuditEntry,System.Threading.CancellationToken)
+  commentId: M:Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync(Meridian.Execution.Services.ExecutionAuditEntry,System.Threading.CancellationToken)
+  id: RecordAsync(Meridian.Execution.Services.ExecutionAuditEntry,System.Threading.CancellationToken)
+  parent: Meridian.Execution.Services.ExecutionAuditTrailService
+  langs:
+  - csharp
+  - vb
+  name: RecordAsync(ExecutionAuditEntry, CancellationToken)
+  nameWithType: ExecutionAuditTrailService.RecordAsync(ExecutionAuditEntry, CancellationToken)
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync(Meridian.Execution.Services.ExecutionAuditEntry, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordAsync
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 146
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: Appends a pre-built audit entry.
+  example: []
+  syntax:
+    content: public Task RecordAsync(ExecutionAuditEntry entry, CancellationToken ct = default)
+    parameters:
+    - id: entry
+      type: Meridian.Execution.Services.ExecutionAuditEntry
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function RecordAsync(entry As ExecutionAuditEntry, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync*
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.DisposeAsync
+  commentId: M:Meridian.Execution.Services.ExecutionAuditTrailService.DisposeAsync
+  id: DisposeAsync
+  parent: Meridian.Execution.Services.ExecutionAuditTrailService
+  langs:
+  - csharp
+  - vb
+  name: DisposeAsync()
+  nameWithType: ExecutionAuditTrailService.DisposeAsync()
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.DisposeAsync()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DisposeAsync
+    path: ../../src/Meridian.Execution/Services/ExecutionAuditTrailService.cs
+    startLine: 168
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Services
+  summary: >-
+    Performs application-defined tasks associated with freeing, releasing, or
+
+    resetting unmanaged resources asynchronously.
+  example: []
+  syntax:
+    content: public ValueTask DisposeAsync()
+    return:
+      type: System.Threading.Tasks.ValueTask
+      description: A task that represents the asynchronous dispose operation.
+    content.vb: Public Function DisposeAsync() As ValueTask
+  overload: Meridian.Execution.Services.ExecutionAuditTrailService.DisposeAsync*
+  implements:
+  - System.IAsyncDisposable.DisposeAsync
+references:
+- uid: Meridian.Execution.Services
+  commentId: N:Meridian.Execution.Services
+  href: Meridian.html
+  name: Meridian.Execution.Services
+  nameWithType: Meridian.Execution.Services
+  fullName: Meridian.Execution.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Services
+    name: Services
+    href: Meridian.Execution.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IAsyncDisposable
+  commentId: T:System.IAsyncDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable
+  name: IAsyncDisposable
+  nameWithType: IAsyncDisposable
+  fullName: System.IAsyncDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.#ctor*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailService.#ctor
+  href: Meridian.Execution.Services.ExecutionAuditTrailService.html#Meridian_Execution_Services_ExecutionAuditTrailService__ctor_Meridian_Execution_Services_ExecutionAuditTrailOptions_Microsoft_Extensions_Logging_ILogger_Meridian_Execution_Services_ExecutionAuditTrailService__
+  name: ExecutionAuditTrailService
+  nameWithType: ExecutionAuditTrailService.ExecutionAuditTrailService
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.ExecutionAuditTrailService
+  nameWithType.vb: ExecutionAuditTrailService.New
+  fullName.vb: Meridian.Execution.Services.ExecutionAuditTrailService.New
+  name.vb: New
+- uid: Meridian.Execution.Services.ExecutionAuditTrailOptions
+  commentId: T:Meridian.Execution.Services.ExecutionAuditTrailOptions
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.ExecutionAuditTrailOptions.html
+  name: ExecutionAuditTrailOptions
+  nameWithType: ExecutionAuditTrailOptions
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailOptions
+- uid: Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.ExecutionAuditTrailService}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{Meridian.Execution.Services.ExecutionAuditTrailService}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<ExecutionAuditTrailService>
+  nameWithType: ILogger<ExecutionAuditTrailService>
+  fullName: Microsoft.Extensions.Logging.ILogger<Meridian.Execution.Services.ExecutionAuditTrailService>
+  nameWithType.vb: ILogger(Of ExecutionAuditTrailService)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of Meridian.Execution.Services.ExecutionAuditTrailService)
+  name.vb: ILogger(Of ExecutionAuditTrailService)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionAuditTrailService
+    name: ExecutionAuditTrailService
+    href: Meridian.Execution.Services.ExecutionAuditTrailService.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionAuditTrailService
+    name: ExecutionAuditTrailService
+    href: Meridian.Execution.Services.ExecutionAuditTrailService.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.GetRecentAsync*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailService.GetRecentAsync
+  href: Meridian.Execution.Services.ExecutionAuditTrailService.html#Meridian_Execution_Services_ExecutionAuditTrailService_GetRecentAsync_System_Int32_System_Threading_CancellationToken_
+  name: GetRecentAsync
+  nameWithType: ExecutionAuditTrailService.GetRecentAsync
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.GetRecentAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionAuditEntry}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Execution.Services.ExecutionAuditEntry}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<ExecutionAuditEntry>>
+  nameWithType: Task<IReadOnlyList<ExecutionAuditEntry>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Execution.Services.ExecutionAuditEntry>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of ExecutionAuditEntry))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Execution.Services.ExecutionAuditEntry))
+  name.vb: Task(Of IReadOnlyList(Of ExecutionAuditEntry))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionAuditEntry
+    name: ExecutionAuditEntry
+    href: Meridian.Execution.Services.ExecutionAuditEntry.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionAuditEntry
+    name: ExecutionAuditEntry
+    href: Meridian.Execution.Services.ExecutionAuditEntry.html
+  - name: )
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.GetAllAsync*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailService.GetAllAsync
+  href: Meridian.Execution.Services.ExecutionAuditTrailService.html#Meridian_Execution_Services_ExecutionAuditTrailService_GetAllAsync_System_Threading_CancellationToken_
+  name: GetAllAsync
+  nameWithType: ExecutionAuditTrailService.GetAllAsync
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.GetAllAsync
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync
+  href: Meridian.Execution.Services.ExecutionAuditTrailService.html#Meridian_Execution_Services_ExecutionAuditTrailService_RecordAsync_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_String_System_Collections_Generic_IReadOnlyDictionary_System_String_System_String__System_Threading_CancellationToken_
+  name: RecordAsync
+  nameWithType: ExecutionAuditTrailService.RecordAsync
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.RecordAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyDictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<string, string>
+  nameWithType: IReadOnlyDictionary<string, string>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<string, string>
+  nameWithType.vb: IReadOnlyDictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of String, String)
+  name.vb: IReadOnlyDictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Execution.Services.ExecutionAuditEntry}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Execution.Services.ExecutionAuditEntry}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ExecutionAuditEntry>
+  nameWithType: Task<ExecutionAuditEntry>
+  fullName: System.Threading.Tasks.Task<Meridian.Execution.Services.ExecutionAuditEntry>
+  nameWithType.vb: Task(Of ExecutionAuditEntry)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Execution.Services.ExecutionAuditEntry)
+  name.vb: Task(Of ExecutionAuditEntry)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Execution.Services.ExecutionAuditEntry
+    name: ExecutionAuditEntry
+    href: Meridian.Execution.Services.ExecutionAuditEntry.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Services.ExecutionAuditEntry
+    name: ExecutionAuditEntry
+    href: Meridian.Execution.Services.ExecutionAuditEntry.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyDictionary`2
+  commentId: T:System.Collections.Generic.IReadOnlyDictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  name: IReadOnlyDictionary<TKey, TValue>
+  nameWithType: IReadOnlyDictionary<TKey, TValue>
+  fullName: System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>
+  nameWithType.vb: IReadOnlyDictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.IReadOnlyDictionary(Of TKey, TValue)
+  name.vb: IReadOnlyDictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyDictionary`2
+    name: IReadOnlyDictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlydictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Execution.Services.ExecutionAuditEntry
+  commentId: T:Meridian.Execution.Services.ExecutionAuditEntry
+  parent: Meridian.Execution.Services
+  href: Meridian.Execution.Services.ExecutionAuditEntry.html
+  name: ExecutionAuditEntry
+  nameWithType: ExecutionAuditEntry
+  fullName: Meridian.Execution.Services.ExecutionAuditEntry
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Execution.Services.ExecutionAuditTrailService.DisposeAsync*
+  commentId: Overload:Meridian.Execution.Services.ExecutionAuditTrailService.DisposeAsync
+  href: Meridian.Execution.Services.ExecutionAuditTrailService.html#Meridian_Execution_Services_ExecutionAuditTrailService_DisposeAsync
+  name: DisposeAsync
+  nameWithType: ExecutionAuditTrailService.DisposeAsync
+  fullName: Meridian.Execution.Services.ExecutionAuditTrailService.DisposeAsync
+- uid: System.IAsyncDisposable.DisposeAsync
+  commentId: M:System.IAsyncDisposable.DisposeAsync
+  parent: System.IAsyncDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  name: DisposeAsync()
+  nameWithType: IAsyncDisposable.DisposeAsync()
+  fullName: System.IAsyncDisposable.DisposeAsync()
+  spec.csharp:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IAsyncDisposable.DisposeAsync
+    name: DisposeAsync
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iasyncdisposable.disposeasync
+  - name: (
+  - name: )
+- uid: System.Threading.Tasks.ValueTask
+  commentId: T:System.Threading.Tasks.ValueTask
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.valuetask
+  name: ValueTask
+  nameWithType: ValueTask
+  fullName: System.Threading.Tasks.ValueTask

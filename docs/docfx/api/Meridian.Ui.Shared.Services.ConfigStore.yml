@@ -1,0 +1,878 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Shared.Services.ConfigStore
+  commentId: T:Meridian.Ui.Shared.Services.ConfigStore
+  id: ConfigStore
+  parent: Meridian.Ui.Shared.Services
+  children:
+  - Meridian.Ui.Shared.Services.ConfigStore.#ctor
+  - Meridian.Ui.Shared.Services.ConfigStore.#ctor(System.String)
+  - Meridian.Ui.Shared.Services.ConfigStore.ConfigPath
+  - Meridian.Ui.Shared.Services.ConfigStore.GetBackfillStatusPath(Meridian.Application.Config.AppConfig)
+  - Meridian.Ui.Shared.Services.ConfigStore.GetDataRoot(Meridian.Application.Config.AppConfig)
+  - Meridian.Ui.Shared.Services.ConfigStore.GetStatusPath(Meridian.Application.Config.AppConfig)
+  - Meridian.Ui.Shared.Services.ConfigStore.Load
+  - Meridian.Ui.Shared.Services.ConfigStore.LoadConfig(System.String)
+  - Meridian.Ui.Shared.Services.ConfigStore.SaveAsync(Meridian.Application.Config.AppConfig)
+  - Meridian.Ui.Shared.Services.ConfigStore.TryLoadProviderMetrics
+  - Meridian.Ui.Shared.Services.ConfigStore.TryLoadStatusJson
+  langs:
+  - csharp
+  - vb
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Ui.Shared.Services.ConfigStore
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigStore
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  summary: >-
+    ConfigStore for web dashboard hosting.
+
+    Delegates all operations to the core <xref href="Meridian.Application.UI.ConfigStore" data-throw-if-not-resolved="false"></xref> and only provides
+
+    a web-specific default config path (4 directories up from BaseDirectory).
+  example: []
+  syntax:
+    content: public sealed class ConfigStore
+    content.vb: Public NotInheritable Class ConfigStore
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Shared.Services.ConfigStore.#ctor
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.#ctor
+  id: '#ctor'
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: ConfigStore()
+  nameWithType: ConfigStore.ConfigStore()
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.ConfigStore()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public ConfigStore()
+    content.vb: Public Sub New()
+  overload: Meridian.Ui.Shared.Services.ConfigStore.#ctor*
+  nameWithType.vb: ConfigStore.New()
+  fullName.vb: Meridian.Ui.Shared.Services.ConfigStore.New()
+  name.vb: New()
+- uid: Meridian.Ui.Shared.Services.ConfigStore.#ctor(System.String)
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.#ctor(System.String)
+  id: '#ctor(System.String)'
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: ConfigStore(string?)
+  nameWithType: ConfigStore.ConfigStore(string?)
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.ConfigStore(string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public ConfigStore(string? configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+    content.vb: Public Sub New(configPath As String)
+  overload: Meridian.Ui.Shared.Services.ConfigStore.#ctor*
+  nameWithType.vb: ConfigStore.New(String)
+  fullName.vb: Meridian.Ui.Shared.Services.ConfigStore.New(String)
+  name.vb: New(String)
+- uid: Meridian.Ui.Shared.Services.ConfigStore.ConfigPath
+  commentId: P:Meridian.Ui.Shared.Services.ConfigStore.ConfigPath
+  id: ConfigPath
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: ConfigPath
+  nameWithType: ConfigStore.ConfigPath
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.ConfigPath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConfigPath
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public string ConfigPath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property ConfigPath As String
+  overload: Meridian.Ui.Shared.Services.ConfigStore.ConfigPath*
+- uid: Meridian.Ui.Shared.Services.ConfigStore.LoadConfig(System.String)
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.LoadConfig(System.String)
+  id: LoadConfig(System.String)
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: LoadConfig(string)
+  nameWithType: ConfigStore.LoadConfig(string)
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.LoadConfig(string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoadConfig
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public static AppConfig LoadConfig(string path)
+    parameters:
+    - id: path
+      type: System.String
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Shared Function LoadConfig(path As String) As AppConfig
+  overload: Meridian.Ui.Shared.Services.ConfigStore.LoadConfig*
+  nameWithType.vb: ConfigStore.LoadConfig(String)
+  fullName.vb: Meridian.Ui.Shared.Services.ConfigStore.LoadConfig(String)
+  name.vb: LoadConfig(String)
+- uid: Meridian.Ui.Shared.Services.ConfigStore.Load
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.Load
+  id: Load
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: Load()
+  nameWithType: ConfigStore.Load()
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.Load()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Load
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public AppConfig Load()
+    return:
+      type: Meridian.Application.Config.AppConfig
+    content.vb: Public Function Load() As AppConfig
+  overload: Meridian.Ui.Shared.Services.ConfigStore.Load*
+- uid: Meridian.Ui.Shared.Services.ConfigStore.SaveAsync(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.SaveAsync(Meridian.Application.Config.AppConfig)
+  id: SaveAsync(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: SaveAsync(AppConfig)
+  nameWithType: ConfigStore.SaveAsync(AppConfig)
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.SaveAsync(Meridian.Application.Config.AppConfig)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveAsync
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public Task SaveAsync(AppConfig cfg)
+    parameters:
+    - id: cfg
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SaveAsync(cfg As AppConfig) As Task
+  overload: Meridian.Ui.Shared.Services.ConfigStore.SaveAsync*
+- uid: Meridian.Ui.Shared.Services.ConfigStore.TryLoadProviderMetrics
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.TryLoadProviderMetrics
+  id: TryLoadProviderMetrics
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: TryLoadProviderMetrics()
+  nameWithType: ConfigStore.TryLoadProviderMetrics()
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.TryLoadProviderMetrics()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryLoadProviderMetrics
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public ProviderMetricsStatus? TryLoadProviderMetrics()
+    return:
+      type: Meridian.Application.Monitoring.ProviderMetricsStatus
+    content.vb: Public Function TryLoadProviderMetrics() As ProviderMetricsStatus
+  overload: Meridian.Ui.Shared.Services.ConfigStore.TryLoadProviderMetrics*
+- uid: Meridian.Ui.Shared.Services.ConfigStore.TryLoadStatusJson
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.TryLoadStatusJson
+  id: TryLoadStatusJson
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: TryLoadStatusJson()
+  nameWithType: ConfigStore.TryLoadStatusJson()
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.TryLoadStatusJson()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TryLoadStatusJson
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public string? TryLoadStatusJson()
+    return:
+      type: System.String
+    content.vb: Public Function TryLoadStatusJson() As String
+  overload: Meridian.Ui.Shared.Services.ConfigStore.TryLoadStatusJson*
+- uid: Meridian.Ui.Shared.Services.ConfigStore.GetDataRoot(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.GetDataRoot(Meridian.Application.Config.AppConfig)
+  id: GetDataRoot(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: GetDataRoot(AppConfig?)
+  nameWithType: ConfigStore.GetDataRoot(AppConfig?)
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.GetDataRoot(Meridian.Application.Config.AppConfig?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDataRoot
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 37
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public string GetDataRoot(AppConfig? cfg = null)
+    parameters:
+    - id: cfg
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: System.String
+    content.vb: Public Function GetDataRoot(cfg As AppConfig = Nothing) As String
+  overload: Meridian.Ui.Shared.Services.ConfigStore.GetDataRoot*
+  nameWithType.vb: ConfigStore.GetDataRoot(AppConfig)
+  fullName.vb: Meridian.Ui.Shared.Services.ConfigStore.GetDataRoot(Meridian.Application.Config.AppConfig)
+  name.vb: GetDataRoot(AppConfig)
+- uid: Meridian.Ui.Shared.Services.ConfigStore.GetStatusPath(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.GetStatusPath(Meridian.Application.Config.AppConfig)
+  id: GetStatusPath(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: GetStatusPath(AppConfig?)
+  nameWithType: ConfigStore.GetStatusPath(AppConfig?)
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.GetStatusPath(Meridian.Application.Config.AppConfig?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatusPath
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public string GetStatusPath(AppConfig? cfg = null)
+    parameters:
+    - id: cfg
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: System.String
+    content.vb: Public Function GetStatusPath(cfg As AppConfig = Nothing) As String
+  overload: Meridian.Ui.Shared.Services.ConfigStore.GetStatusPath*
+  nameWithType.vb: ConfigStore.GetStatusPath(AppConfig)
+  fullName.vb: Meridian.Ui.Shared.Services.ConfigStore.GetStatusPath(Meridian.Application.Config.AppConfig)
+  name.vb: GetStatusPath(AppConfig)
+- uid: Meridian.Ui.Shared.Services.ConfigStore.GetBackfillStatusPath(Meridian.Application.Config.AppConfig)
+  commentId: M:Meridian.Ui.Shared.Services.ConfigStore.GetBackfillStatusPath(Meridian.Application.Config.AppConfig)
+  id: GetBackfillStatusPath(Meridian.Application.Config.AppConfig)
+  parent: Meridian.Ui.Shared.Services.ConfigStore
+  langs:
+  - csharp
+  - vb
+  name: GetBackfillStatusPath(AppConfig?)
+  nameWithType: ConfigStore.GetBackfillStatusPath(AppConfig?)
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.GetBackfillStatusPath(Meridian.Application.Config.AppConfig?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Shared/Services/ConfigStore.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBackfillStatusPath
+    path: ../../src/Meridian.Ui.Shared/Services/ConfigStore.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Ui.Shared
+  namespace: Meridian.Ui.Shared.Services
+  syntax:
+    content: public string GetBackfillStatusPath(AppConfig? cfg = null)
+    parameters:
+    - id: cfg
+      type: Meridian.Application.Config.AppConfig
+    return:
+      type: System.String
+    content.vb: Public Function GetBackfillStatusPath(cfg As AppConfig = Nothing) As String
+  overload: Meridian.Ui.Shared.Services.ConfigStore.GetBackfillStatusPath*
+  nameWithType.vb: ConfigStore.GetBackfillStatusPath(AppConfig)
+  fullName.vb: Meridian.Ui.Shared.Services.ConfigStore.GetBackfillStatusPath(Meridian.Application.Config.AppConfig)
+  name.vb: GetBackfillStatusPath(AppConfig)
+references:
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: Meridian.Ui.Shared.Services
+  commentId: N:Meridian.Ui.Shared.Services
+  href: Meridian.html
+  name: Meridian.Ui.Shared.Services
+  nameWithType: Meridian.Ui.Shared.Services
+  fullName: Meridian.Ui.Shared.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Services
+    name: Services
+    href: Meridian.Ui.Shared.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Shared
+    name: Shared
+    href: Meridian.Ui.Shared.html
+  - name: .
+  - uid: Meridian.Ui.Shared.Services
+    name: Services
+    href: Meridian.Ui.Shared.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Shared.Services.ConfigStore.#ctor*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.#ctor
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore__ctor
+  name: ConfigStore
+  nameWithType: ConfigStore.ConfigStore
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.ConfigStore
+  nameWithType.vb: ConfigStore.New
+  fullName.vb: Meridian.Ui.Shared.Services.ConfigStore.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Ui.Shared.Services.ConfigStore.ConfigPath*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.ConfigPath
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore_ConfigPath
+  name: ConfigPath
+  nameWithType: ConfigStore.ConfigPath
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.ConfigPath
+- uid: Meridian.Ui.Shared.Services.ConfigStore.LoadConfig*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.LoadConfig
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore_LoadConfig_System_String_
+  name: LoadConfig
+  nameWithType: ConfigStore.LoadConfig
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.LoadConfig
+- uid: Meridian.Application.Config.AppConfig
+  commentId: T:Meridian.Application.Config.AppConfig
+  parent: Meridian.Application.Config
+  href: Meridian.Application.Config.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: Meridian.Application.Config.AppConfig
+- uid: Meridian.Application.Config
+  commentId: N:Meridian.Application.Config
+  href: Meridian.html
+  name: Meridian.Application.Config
+  nameWithType: Meridian.Application.Config
+  fullName: Meridian.Application.Config
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Config
+    name: Config
+    href: Meridian.Application.Config.html
+- uid: Meridian.Ui.Shared.Services.ConfigStore.Load*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.Load
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore_Load
+  name: Load
+  nameWithType: ConfigStore.Load
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.Load
+- uid: Meridian.Ui.Shared.Services.ConfigStore.SaveAsync*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.SaveAsync
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore_SaveAsync_Meridian_Application_Config_AppConfig_
+  name: SaveAsync
+  nameWithType: ConfigStore.SaveAsync
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.SaveAsync
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Shared.Services.ConfigStore.TryLoadProviderMetrics*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.TryLoadProviderMetrics
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore_TryLoadProviderMetrics
+  name: TryLoadProviderMetrics
+  nameWithType: ConfigStore.TryLoadProviderMetrics
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.TryLoadProviderMetrics
+- uid: Meridian.Application.Monitoring.ProviderMetricsStatus
+  commentId: T:Meridian.Application.Monitoring.ProviderMetricsStatus
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.ProviderMetricsStatus.html
+  name: ProviderMetricsStatus
+  nameWithType: ProviderMetricsStatus
+  fullName: Meridian.Application.Monitoring.ProviderMetricsStatus
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Ui.Shared.Services.ConfigStore.TryLoadStatusJson*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.TryLoadStatusJson
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore_TryLoadStatusJson
+  name: TryLoadStatusJson
+  nameWithType: ConfigStore.TryLoadStatusJson
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.TryLoadStatusJson
+- uid: Meridian.Ui.Shared.Services.ConfigStore.GetDataRoot*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.GetDataRoot
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore_GetDataRoot_Meridian_Application_Config_AppConfig_
+  name: GetDataRoot
+  nameWithType: ConfigStore.GetDataRoot
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.GetDataRoot
+- uid: Meridian.Ui.Shared.Services.ConfigStore.GetStatusPath*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.GetStatusPath
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore_GetStatusPath_Meridian_Application_Config_AppConfig_
+  name: GetStatusPath
+  nameWithType: ConfigStore.GetStatusPath
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.GetStatusPath
+- uid: Meridian.Ui.Shared.Services.ConfigStore.GetBackfillStatusPath*
+  commentId: Overload:Meridian.Ui.Shared.Services.ConfigStore.GetBackfillStatusPath
+  href: Meridian.Ui.Shared.Services.ConfigStore.html#Meridian_Ui_Shared_Services_ConfigStore_GetBackfillStatusPath_Meridian_Application_Config_AppConfig_
+  name: GetBackfillStatusPath
+  nameWithType: ConfigStore.GetBackfillStatusPath
+  fullName: Meridian.Ui.Shared.Services.ConfigStore.GetBackfillStatusPath

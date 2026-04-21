@@ -1,0 +1,813 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  commentId: T:Meridian.Contracts.DirectLending.PaymentAllocationDto
+  id: PaymentAllocationDto
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.#ctor(System.Guid,System.Guid,System.Guid,System.Int32,System.String,System.String,System.Decimal,System.String,System.Guid,System.DateTimeOffset)
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocatedAmount
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationId
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationRule
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationSequenceNumber
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.CashTransactionId
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.CreatedAt
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.LoanId
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.SourceEventId
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetReference
+  - Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetType
+  langs:
+  - csharp
+  - vb
+  name: PaymentAllocationDto
+  nameWithType: PaymentAllocationDto
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PaymentAllocationDto
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record PaymentAllocationDto : IEquatable<PaymentAllocationDto>'
+    content.vb: Public NotInheritable Class PaymentAllocationDto Implements IEquatable(Of PaymentAllocationDto)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.PaymentAllocationDto}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.#ctor(System.Guid,System.Guid,System.Guid,System.Int32,System.String,System.String,System.Decimal,System.String,System.Guid,System.DateTimeOffset)
+  commentId: M:Meridian.Contracts.DirectLending.PaymentAllocationDto.#ctor(System.Guid,System.Guid,System.Guid,System.Int32,System.String,System.String,System.Decimal,System.String,System.Guid,System.DateTimeOffset)
+  id: '#ctor(System.Guid,System.Guid,System.Guid,System.Int32,System.String,System.String,System.Decimal,System.String,System.Guid,System.DateTimeOffset)'
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: PaymentAllocationDto(Guid, Guid, Guid, int, string, string, decimal, string, Guid, DateTimeOffset)
+  nameWithType: PaymentAllocationDto.PaymentAllocationDto(Guid, Guid, Guid, int, string, string, decimal, string, Guid, DateTimeOffset)
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.PaymentAllocationDto(System.Guid, System.Guid, System.Guid, int, string, string, decimal, string, System.Guid, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public PaymentAllocationDto(Guid AllocationId, Guid LoanId, Guid CashTransactionId, int AllocationSequenceNumber, string TargetType, string TargetReference, decimal AllocatedAmount, string AllocationRule, Guid SourceEventId, DateTimeOffset CreatedAt)
+    parameters:
+    - id: AllocationId
+      type: System.Guid
+    - id: LoanId
+      type: System.Guid
+    - id: CashTransactionId
+      type: System.Guid
+    - id: AllocationSequenceNumber
+      type: System.Int32
+    - id: TargetType
+      type: System.String
+    - id: TargetReference
+      type: System.String
+    - id: AllocatedAmount
+      type: System.Decimal
+    - id: AllocationRule
+      type: System.String
+    - id: SourceEventId
+      type: System.Guid
+    - id: CreatedAt
+      type: System.DateTimeOffset
+    content.vb: Public Sub New(AllocationId As Guid, LoanId As Guid, CashTransactionId As Guid, AllocationSequenceNumber As Integer, TargetType As String, TargetReference As String, AllocatedAmount As Decimal, AllocationRule As String, SourceEventId As Guid, CreatedAt As DateTimeOffset)
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.#ctor*
+  nameWithType.vb: PaymentAllocationDto.New(Guid, Guid, Guid, Integer, String, String, Decimal, String, Guid, DateTimeOffset)
+  fullName.vb: Meridian.Contracts.DirectLending.PaymentAllocationDto.New(System.Guid, System.Guid, System.Guid, Integer, String, String, Decimal, String, System.Guid, System.DateTimeOffset)
+  name.vb: New(Guid, Guid, Guid, Integer, String, String, Decimal, String, Guid, DateTimeOffset)
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationId
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationId
+  id: AllocationId
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: AllocationId
+  nameWithType: PaymentAllocationDto.AllocationId
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocationId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid AllocationId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property AllocationId As Guid
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationId*
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.LoanId
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.LoanId
+  id: LoanId
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: LoanId
+  nameWithType: PaymentAllocationDto.LoanId
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.LoanId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LoanId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 51
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid LoanId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property LoanId As Guid
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.LoanId*
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.CashTransactionId
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.CashTransactionId
+  id: CashTransactionId
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: CashTransactionId
+  nameWithType: PaymentAllocationDto.CashTransactionId
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.CashTransactionId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CashTransactionId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 52
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid CashTransactionId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property CashTransactionId As Guid
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.CashTransactionId*
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationSequenceNumber
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationSequenceNumber
+  id: AllocationSequenceNumber
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: AllocationSequenceNumber
+  nameWithType: PaymentAllocationDto.AllocationSequenceNumber
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationSequenceNumber
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocationSequenceNumber
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 53
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public int AllocationSequenceNumber { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property AllocationSequenceNumber As Integer
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationSequenceNumber*
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetType
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetType
+  id: TargetType
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: TargetType
+  nameWithType: PaymentAllocationDto.TargetType
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetType
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 54
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string TargetType { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TargetType As String
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetType*
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetReference
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetReference
+  id: TargetReference
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: TargetReference
+  nameWithType: PaymentAllocationDto.TargetReference
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetReference
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TargetReference
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 55
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string TargetReference { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TargetReference As String
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetReference*
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocatedAmount
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocatedAmount
+  id: AllocatedAmount
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: AllocatedAmount
+  nameWithType: PaymentAllocationDto.AllocatedAmount
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocatedAmount
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocatedAmount
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal AllocatedAmount { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AllocatedAmount As Decimal
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocatedAmount*
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationRule
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationRule
+  id: AllocationRule
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: AllocationRule
+  nameWithType: PaymentAllocationDto.AllocationRule
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationRule
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AllocationRule
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public string AllocationRule { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property AllocationRule As String
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationRule*
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.SourceEventId
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.SourceEventId
+  id: SourceEventId
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: SourceEventId
+  nameWithType: PaymentAllocationDto.SourceEventId
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.SourceEventId
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SourceEventId
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 58
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public Guid SourceEventId { get; init; }
+    parameters: []
+    return:
+      type: System.Guid
+    content.vb: Public Property SourceEventId As Guid
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.SourceEventId*
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.CreatedAt
+  commentId: P:Meridian.Contracts.DirectLending.PaymentAllocationDto.CreatedAt
+  id: CreatedAt
+  parent: Meridian.Contracts.DirectLending.PaymentAllocationDto
+  langs:
+  - csharp
+  - vb
+  name: CreatedAt
+  nameWithType: PaymentAllocationDto.CreatedAt
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.CreatedAt
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreatedAt
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public DateTimeOffset CreatedAt { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property CreatedAt As DateTimeOffset
+  overload: Meridian.Contracts.DirectLending.PaymentAllocationDto.CreatedAt*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.PaymentAllocationDto}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.PaymentAllocationDto}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<PaymentAllocationDto>
+  nameWithType: IEquatable<PaymentAllocationDto>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.PaymentAllocationDto>
+  nameWithType.vb: IEquatable(Of PaymentAllocationDto)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.PaymentAllocationDto)
+  name.vb: IEquatable(Of PaymentAllocationDto)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.PaymentAllocationDto
+    name: PaymentAllocationDto
+    href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.PaymentAllocationDto
+    name: PaymentAllocationDto
+    href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.#ctor
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto__ctor_System_Guid_System_Guid_System_Guid_System_Int32_System_String_System_String_System_Decimal_System_String_System_Guid_System_DateTimeOffset_
+  name: PaymentAllocationDto
+  nameWithType: PaymentAllocationDto.PaymentAllocationDto
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.PaymentAllocationDto
+  nameWithType.vb: PaymentAllocationDto.New
+  fullName.vb: Meridian.Contracts.DirectLending.PaymentAllocationDto.New
+  name.vb: New
+- uid: System.Guid
+  commentId: T:System.Guid
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.guid
+  name: Guid
+  nameWithType: Guid
+  fullName: System.Guid
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationId*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationId
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_AllocationId
+  name: AllocationId
+  nameWithType: PaymentAllocationDto.AllocationId
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationId
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.LoanId*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.LoanId
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_LoanId
+  name: LoanId
+  nameWithType: PaymentAllocationDto.LoanId
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.LoanId
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.CashTransactionId*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.CashTransactionId
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_CashTransactionId
+  name: CashTransactionId
+  nameWithType: PaymentAllocationDto.CashTransactionId
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.CashTransactionId
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationSequenceNumber*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationSequenceNumber
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_AllocationSequenceNumber
+  name: AllocationSequenceNumber
+  nameWithType: PaymentAllocationDto.AllocationSequenceNumber
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationSequenceNumber
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetType*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetType
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_TargetType
+  name: TargetType
+  nameWithType: PaymentAllocationDto.TargetType
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetType
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetReference*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetReference
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_TargetReference
+  name: TargetReference
+  nameWithType: PaymentAllocationDto.TargetReference
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.TargetReference
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocatedAmount*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocatedAmount
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_AllocatedAmount
+  name: AllocatedAmount
+  nameWithType: PaymentAllocationDto.AllocatedAmount
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocatedAmount
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationRule*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationRule
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_AllocationRule
+  name: AllocationRule
+  nameWithType: PaymentAllocationDto.AllocationRule
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.AllocationRule
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.SourceEventId*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.SourceEventId
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_SourceEventId
+  name: SourceEventId
+  nameWithType: PaymentAllocationDto.SourceEventId
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.SourceEventId
+- uid: Meridian.Contracts.DirectLending.PaymentAllocationDto.CreatedAt*
+  commentId: Overload:Meridian.Contracts.DirectLending.PaymentAllocationDto.CreatedAt
+  href: Meridian.Contracts.DirectLending.PaymentAllocationDto.html#Meridian_Contracts_DirectLending_PaymentAllocationDto_CreatedAt
+  name: CreatedAt
+  nameWithType: PaymentAllocationDto.CreatedAt
+  fullName: Meridian.Contracts.DirectLending.PaymentAllocationDto.CreatedAt

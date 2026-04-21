@@ -1,0 +1,186 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Etl.EtlRecordDisposition
+  commentId: T:Meridian.Contracts.Etl.EtlRecordDisposition
+  id: EtlRecordDisposition
+  parent: Meridian.Contracts.Etl
+  children:
+  - Meridian.Contracts.Etl.EtlRecordDisposition.Accepted
+  - Meridian.Contracts.Etl.EtlRecordDisposition.Rejected
+  - Meridian.Contracts.Etl.EtlRecordDisposition.SkippedDuplicate
+  - Meridian.Contracts.Etl.EtlRecordDisposition.SkippedOutOfRange
+  langs:
+  - csharp
+  - vb
+  name: EtlRecordDisposition
+  nameWithType: EtlRecordDisposition
+  fullName: Meridian.Contracts.Etl.EtlRecordDisposition
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EtlRecordDisposition
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonConverter(typeof(JsonStringEnumConverter))]
+
+      public enum EtlRecordDisposition : byte
+    content.vb: >-
+      <JsonConverter(GetType(JsonStringEnumConverter))>
+
+      Public Enum EtlRecordDisposition As Byte
+  attributes:
+  - type: System.Text.Json.Serialization.JsonConverterAttribute
+    ctor: System.Text.Json.Serialization.JsonConverterAttribute.#ctor(System.Type)
+    arguments:
+    - type: System.Type
+      value: System.Text.Json.Serialization.JsonStringEnumConverter
+- uid: Meridian.Contracts.Etl.EtlRecordDisposition.Accepted
+  commentId: F:Meridian.Contracts.Etl.EtlRecordDisposition.Accepted
+  id: Accepted
+  parent: Meridian.Contracts.Etl.EtlRecordDisposition
+  langs:
+  - csharp
+  - vb
+  name: Accepted
+  nameWithType: EtlRecordDisposition.Accepted
+  fullName: Meridian.Contracts.Etl.EtlRecordDisposition.Accepted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Accepted
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: Accepted = 0
+    return:
+      type: Meridian.Contracts.Etl.EtlRecordDisposition
+- uid: Meridian.Contracts.Etl.EtlRecordDisposition.Rejected
+  commentId: F:Meridian.Contracts.Etl.EtlRecordDisposition.Rejected
+  id: Rejected
+  parent: Meridian.Contracts.Etl.EtlRecordDisposition
+  langs:
+  - csharp
+  - vb
+  name: Rejected
+  nameWithType: EtlRecordDisposition.Rejected
+  fullName: Meridian.Contracts.Etl.EtlRecordDisposition.Rejected
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rejected
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 45
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: Rejected = 1
+    return:
+      type: Meridian.Contracts.Etl.EtlRecordDisposition
+- uid: Meridian.Contracts.Etl.EtlRecordDisposition.SkippedDuplicate
+  commentId: F:Meridian.Contracts.Etl.EtlRecordDisposition.SkippedDuplicate
+  id: SkippedDuplicate
+  parent: Meridian.Contracts.Etl.EtlRecordDisposition
+  langs:
+  - csharp
+  - vb
+  name: SkippedDuplicate
+  nameWithType: EtlRecordDisposition.SkippedDuplicate
+  fullName: Meridian.Contracts.Etl.EtlRecordDisposition.SkippedDuplicate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkippedDuplicate
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 46
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: SkippedDuplicate = 2
+    return:
+      type: Meridian.Contracts.Etl.EtlRecordDisposition
+- uid: Meridian.Contracts.Etl.EtlRecordDisposition.SkippedOutOfRange
+  commentId: F:Meridian.Contracts.Etl.EtlRecordDisposition.SkippedOutOfRange
+  id: SkippedOutOfRange
+  parent: Meridian.Contracts.Etl.EtlRecordDisposition
+  langs:
+  - csharp
+  - vb
+  name: SkippedOutOfRange
+  nameWithType: EtlRecordDisposition.SkippedOutOfRange
+  fullName: Meridian.Contracts.Etl.EtlRecordDisposition.SkippedOutOfRange
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SkippedOutOfRange
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 47
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: SkippedOutOfRange = 3
+    return:
+      type: Meridian.Contracts.Etl.EtlRecordDisposition
+references:
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: Meridian.Contracts.Etl.EtlRecordDisposition
+  commentId: T:Meridian.Contracts.Etl.EtlRecordDisposition
+  parent: Meridian.Contracts.Etl
+  href: Meridian.Contracts.Etl.EtlRecordDisposition.html
+  name: EtlRecordDisposition
+  nameWithType: EtlRecordDisposition
+  fullName: Meridian.Contracts.Etl.EtlRecordDisposition

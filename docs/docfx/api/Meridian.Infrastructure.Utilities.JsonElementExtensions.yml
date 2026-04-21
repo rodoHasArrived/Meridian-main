@@ -1,0 +1,1230 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  commentId: T:Meridian.Infrastructure.Utilities.JsonElementExtensions
+  id: JsonElementExtensions
+  parent: Meridian.Infrastructure.Utilities
+  children:
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetArrayOrEmpty(System.Text.Json.JsonElement,System.String)
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetBoolOrDefault(System.Text.Json.JsonElement,System.String,System.Boolean)
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixMs(System.Text.Json.JsonElement,System.String,System.Nullable{System.DateTimeOffset})
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds(System.Text.Json.JsonElement,System.String,System.Nullable{System.DateTimeOffset})
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDecimalOrDefault(System.Text.Json.JsonElement,System.String,System.Decimal)
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDoubleOrDefault(System.Text.Json.JsonElement,System.String,System.Double)
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32ArrayOrEmpty(System.Text.Json.JsonElement,System.String)
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32OrDefault(System.Text.Json.JsonElement,System.String,System.Int32)
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt64OrDefault(System.Text.Json.JsonElement,System.String,System.Int64)
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrEmpty(System.Text.Json.JsonElement,System.String)
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrNull(System.Text.Json.JsonElement,System.String)
+  - Meridian.Infrastructure.Utilities.JsonElementExtensions.HasProperty(System.Text.Json.JsonElement,System.String)
+  langs:
+  - csharp
+  - vb
+  name: JsonElementExtensions
+  nameWithType: JsonElementExtensions
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: JsonElementExtensions
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Extension methods for <xref href="System.Text.Json.JsonElement" data-throw-if-not-resolved="false"></xref> to simplify property extraction.
+
+    Reduces boilerplate TryGetProperty patterns across provider implementations.
+
+
+    Example usage:
+
+
+    <pre><code class="lang-csharp">// Before
+
+    var sym = elem.TryGetProperty("S", out var sProp) ? sProp.GetString() : null;
+
+    var price = elem.TryGetProperty("p", out var pProp) ? pProp.GetDecimal() : 0m;
+
+
+    // After
+
+    var sym = elem.GetStringOrNull("S");
+
+    var price = elem.GetDecimalOrDefault("p");</code></pre>
+  example: []
+  syntax:
+    content: public static class JsonElementExtensions
+    content.vb: Public Module JsonElementExtensions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrNull(System.Text.Json.JsonElement,System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrNull(System.Text.Json.JsonElement,System.String)
+  id: GetStringOrNull(System.Text.Json.JsonElement,System.String)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetStringOrNull(JsonElement, string)
+  nameWithType: JsonElementExtensions.GetStringOrNull(JsonElement, string)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrNull(System.Text.Json.JsonElement, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStringOrNull
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets a string property value or null if not present.
+  example: []
+  syntax:
+    content: public static string? GetStringOrNull(this JsonElement element, string propertyName)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    return:
+      type: System.String
+      description: The string value or null.
+    content.vb: Public Shared Function GetStringOrNull(element As JsonElement, propertyName As String) As String
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrNull*
+  nameWithType.vb: JsonElementExtensions.GetStringOrNull(JsonElement, String)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrNull(System.Text.Json.JsonElement, String)
+  name.vb: GetStringOrNull(JsonElement, String)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrEmpty(System.Text.Json.JsonElement,System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrEmpty(System.Text.Json.JsonElement,System.String)
+  id: GetStringOrEmpty(System.Text.Json.JsonElement,System.String)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetStringOrEmpty(JsonElement, string)
+  nameWithType: JsonElementExtensions.GetStringOrEmpty(JsonElement, string)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrEmpty(System.Text.Json.JsonElement, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStringOrEmpty
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 38
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets a string property value or empty string if not present.
+  example: []
+  syntax:
+    content: public static string GetStringOrEmpty(this JsonElement element, string propertyName)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    return:
+      type: System.String
+      description: The string value or empty string.
+    content.vb: Public Shared Function GetStringOrEmpty(element As JsonElement, propertyName As String) As String
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrEmpty*
+  nameWithType.vb: JsonElementExtensions.GetStringOrEmpty(JsonElement, String)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrEmpty(System.Text.Json.JsonElement, String)
+  name.vb: GetStringOrEmpty(JsonElement, String)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDecimalOrDefault(System.Text.Json.JsonElement,System.String,System.Decimal)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDecimalOrDefault(System.Text.Json.JsonElement,System.String,System.Decimal)
+  id: GetDecimalOrDefault(System.Text.Json.JsonElement,System.String,System.Decimal)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetDecimalOrDefault(JsonElement, string, decimal)
+  nameWithType: JsonElementExtensions.GetDecimalOrDefault(JsonElement, string, decimal)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDecimalOrDefault(System.Text.Json.JsonElement, string, decimal)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDecimalOrDefault
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 50
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets a decimal property value or default if not present.
+  example: []
+  syntax:
+    content: public static decimal GetDecimalOrDefault(this JsonElement element, string propertyName, decimal defaultValue = 0)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    - id: defaultValue
+      type: System.Decimal
+      description: The default value if property not found.
+    return:
+      type: System.Decimal
+      description: The decimal value or default.
+    content.vb: Public Shared Function GetDecimalOrDefault(element As JsonElement, propertyName As String, defaultValue As Decimal = 0) As Decimal
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDecimalOrDefault*
+  nameWithType.vb: JsonElementExtensions.GetDecimalOrDefault(JsonElement, String, Decimal)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDecimalOrDefault(System.Text.Json.JsonElement, String, Decimal)
+  name.vb: GetDecimalOrDefault(JsonElement, String, Decimal)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDoubleOrDefault(System.Text.Json.JsonElement,System.String,System.Double)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDoubleOrDefault(System.Text.Json.JsonElement,System.String,System.Double)
+  id: GetDoubleOrDefault(System.Text.Json.JsonElement,System.String,System.Double)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetDoubleOrDefault(JsonElement, string, double)
+  nameWithType: JsonElementExtensions.GetDoubleOrDefault(JsonElement, string, double)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDoubleOrDefault(System.Text.Json.JsonElement, string, double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDoubleOrDefault
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets a double property value or default if not present.
+  example: []
+  syntax:
+    content: public static double GetDoubleOrDefault(this JsonElement element, string propertyName, double defaultValue = 0)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    - id: defaultValue
+      type: System.Double
+      description: The default value if property not found.
+    return:
+      type: System.Double
+      description: The double value or default.
+    content.vb: Public Shared Function GetDoubleOrDefault(element As JsonElement, propertyName As String, defaultValue As Double = 0) As Double
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDoubleOrDefault*
+  nameWithType.vb: JsonElementExtensions.GetDoubleOrDefault(JsonElement, String, Double)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDoubleOrDefault(System.Text.Json.JsonElement, String, Double)
+  name.vb: GetDoubleOrDefault(JsonElement, String, Double)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32OrDefault(System.Text.Json.JsonElement,System.String,System.Int32)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32OrDefault(System.Text.Json.JsonElement,System.String,System.Int32)
+  id: GetInt32OrDefault(System.Text.Json.JsonElement,System.String,System.Int32)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetInt32OrDefault(JsonElement, string, int)
+  nameWithType: JsonElementExtensions.GetInt32OrDefault(JsonElement, string, int)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32OrDefault(System.Text.Json.JsonElement, string, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetInt32OrDefault
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 91
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets an int property value or default if not present.
+  example: []
+  syntax:
+    content: public static int GetInt32OrDefault(this JsonElement element, string propertyName, int defaultValue = 0)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    - id: defaultValue
+      type: System.Int32
+      description: The default value if property not found.
+    return:
+      type: System.Int32
+      description: The int value or default.
+    content.vb: Public Shared Function GetInt32OrDefault(element As JsonElement, propertyName As String, defaultValue As Integer = 0) As Integer
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32OrDefault*
+  nameWithType.vb: JsonElementExtensions.GetInt32OrDefault(JsonElement, String, Integer)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32OrDefault(System.Text.Json.JsonElement, String, Integer)
+  name.vb: GetInt32OrDefault(JsonElement, String, Integer)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt64OrDefault(System.Text.Json.JsonElement,System.String,System.Int64)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt64OrDefault(System.Text.Json.JsonElement,System.String,System.Int64)
+  id: GetInt64OrDefault(System.Text.Json.JsonElement,System.String,System.Int64)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetInt64OrDefault(JsonElement, string, long)
+  nameWithType: JsonElementExtensions.GetInt64OrDefault(JsonElement, string, long)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt64OrDefault(System.Text.Json.JsonElement, string, long)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetInt64OrDefault
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 111
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets a long property value or default if not present.
+  example: []
+  syntax:
+    content: public static long GetInt64OrDefault(this JsonElement element, string propertyName, long defaultValue = 0)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    - id: defaultValue
+      type: System.Int64
+      description: The default value if property not found.
+    return:
+      type: System.Int64
+      description: The long value or default.
+    content.vb: Public Shared Function GetInt64OrDefault(element As JsonElement, propertyName As String, defaultValue As Long = 0) As Long
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt64OrDefault*
+  nameWithType.vb: JsonElementExtensions.GetInt64OrDefault(JsonElement, String, Long)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt64OrDefault(System.Text.Json.JsonElement, String, Long)
+  name.vb: GetInt64OrDefault(JsonElement, String, Long)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetBoolOrDefault(System.Text.Json.JsonElement,System.String,System.Boolean)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetBoolOrDefault(System.Text.Json.JsonElement,System.String,System.Boolean)
+  id: GetBoolOrDefault(System.Text.Json.JsonElement,System.String,System.Boolean)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetBoolOrDefault(JsonElement, string, bool)
+  nameWithType: JsonElementExtensions.GetBoolOrDefault(JsonElement, string, bool)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetBoolOrDefault(System.Text.Json.JsonElement, string, bool)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBoolOrDefault
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 131
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets a boolean property value or default if not present.
+  example: []
+  syntax:
+    content: public static bool GetBoolOrDefault(this JsonElement element, string propertyName, bool defaultValue = false)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    - id: defaultValue
+      type: System.Boolean
+      description: The default value if property not found.
+    return:
+      type: System.Boolean
+      description: The boolean value or default.
+    content.vb: Public Shared Function GetBoolOrDefault(element As JsonElement, propertyName As String, defaultValue As Boolean = False) As Boolean
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetBoolOrDefault*
+  nameWithType.vb: JsonElementExtensions.GetBoolOrDefault(JsonElement, String, Boolean)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetBoolOrDefault(System.Text.Json.JsonElement, String, Boolean)
+  name.vb: GetBoolOrDefault(JsonElement, String, Boolean)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixMs(System.Text.Json.JsonElement,System.String,System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixMs(System.Text.Json.JsonElement,System.String,System.Nullable{System.DateTimeOffset})
+  id: GetDateTimeOffsetFromUnixMs(System.Text.Json.JsonElement,System.String,System.Nullable{System.DateTimeOffset})
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetDateTimeOffsetFromUnixMs(JsonElement, string, DateTimeOffset?)
+  nameWithType: JsonElementExtensions.GetDateTimeOffsetFromUnixMs(JsonElement, string, DateTimeOffset?)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixMs(System.Text.Json.JsonElement, string, System.DateTimeOffset?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDateTimeOffsetFromUnixMs
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 152
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets a DateTimeOffset from a Unix milliseconds timestamp property.
+  example: []
+  syntax:
+    content: public static DateTimeOffset GetDateTimeOffsetFromUnixMs(this JsonElement element, string propertyName, DateTimeOffset? defaultValue = null)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    - id: defaultValue
+      type: System.Nullable{System.DateTimeOffset}
+      description: The default value if property not found or invalid.
+    return:
+      type: System.DateTimeOffset
+      description: The DateTimeOffset value or default.
+    content.vb: Public Shared Function GetDateTimeOffsetFromUnixMs(element As JsonElement, propertyName As String, defaultValue As DateTimeOffset? = Nothing) As DateTimeOffset
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixMs*
+  nameWithType.vb: JsonElementExtensions.GetDateTimeOffsetFromUnixMs(JsonElement, String, DateTimeOffset?)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixMs(System.Text.Json.JsonElement, String, System.DateTimeOffset?)
+  name.vb: GetDateTimeOffsetFromUnixMs(JsonElement, String, DateTimeOffset?)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds(System.Text.Json.JsonElement,System.String,System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds(System.Text.Json.JsonElement,System.String,System.Nullable{System.DateTimeOffset})
+  id: GetDateTimeOffsetFromUnixSeconds(System.Text.Json.JsonElement,System.String,System.Nullable{System.DateTimeOffset})
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetDateTimeOffsetFromUnixSeconds(JsonElement, string, DateTimeOffset?)
+  nameWithType: JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds(JsonElement, string, DateTimeOffset?)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds(System.Text.Json.JsonElement, string, System.DateTimeOffset?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDateTimeOffsetFromUnixSeconds
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets a DateTimeOffset from a Unix seconds timestamp property.
+  example: []
+  syntax:
+    content: public static DateTimeOffset GetDateTimeOffsetFromUnixSeconds(this JsonElement element, string propertyName, DateTimeOffset? defaultValue = null)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    - id: defaultValue
+      type: System.Nullable{System.DateTimeOffset}
+      description: The default value if property not found or invalid.
+    return:
+      type: System.DateTimeOffset
+      description: The DateTimeOffset value or default.
+    content.vb: Public Shared Function GetDateTimeOffsetFromUnixSeconds(element As JsonElement, propertyName As String, defaultValue As DateTimeOffset? = Nothing) As DateTimeOffset
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds*
+  nameWithType.vb: JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds(JsonElement, String, DateTimeOffset?)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds(System.Text.Json.JsonElement, String, System.DateTimeOffset?)
+  name.vb: GetDateTimeOffsetFromUnixSeconds(JsonElement, String, DateTimeOffset?)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.HasProperty(System.Text.Json.JsonElement,System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.HasProperty(System.Text.Json.JsonElement,System.String)
+  id: HasProperty(System.Text.Json.JsonElement,System.String)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: HasProperty(JsonElement, string)
+  nameWithType: JsonElementExtensions.HasProperty(JsonElement, string)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.HasProperty(System.Text.Json.JsonElement, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: HasProperty
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Checks if a property exists and has a non-null value.
+  example: []
+  syntax:
+    content: public static bool HasProperty(this JsonElement element, string propertyName)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to check.
+    return:
+      type: System.Boolean
+      description: True if the property exists and is not null.
+    content.vb: Public Shared Function HasProperty(element As JsonElement, propertyName As String) As Boolean
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.HasProperty*
+  nameWithType.vb: JsonElementExtensions.HasProperty(JsonElement, String)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.HasProperty(System.Text.Json.JsonElement, String)
+  name.vb: HasProperty(JsonElement, String)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetArrayOrEmpty(System.Text.Json.JsonElement,System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetArrayOrEmpty(System.Text.Json.JsonElement,System.String)
+  id: GetArrayOrEmpty(System.Text.Json.JsonElement,System.String)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetArrayOrEmpty(JsonElement, string)
+  nameWithType: JsonElementExtensions.GetArrayOrEmpty(JsonElement, string)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetArrayOrEmpty(System.Text.Json.JsonElement, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetArrayOrEmpty
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 217
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: >-
+    Gets an array property as an enumerable of JsonElements.
+
+    Returns empty enumerable if property not found or not an array.
+  example: []
+  syntax:
+    content: public static IEnumerable<JsonElement> GetArrayOrEmpty(this JsonElement element, string propertyName)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    return:
+      type: System.Collections.Generic.IEnumerable{System.Text.Json.JsonElement}
+      description: Enumerable of JsonElements or empty.
+    content.vb: Public Shared Function GetArrayOrEmpty(element As JsonElement, propertyName As String) As IEnumerable(Of JsonElement)
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetArrayOrEmpty*
+  nameWithType.vb: JsonElementExtensions.GetArrayOrEmpty(JsonElement, String)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetArrayOrEmpty(System.Text.Json.JsonElement, String)
+  name.vb: GetArrayOrEmpty(JsonElement, String)
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32ArrayOrEmpty(System.Text.Json.JsonElement,System.String)
+  commentId: M:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32ArrayOrEmpty(System.Text.Json.JsonElement,System.String)
+  id: GetInt32ArrayOrEmpty(System.Text.Json.JsonElement,System.String)
+  isExtensionMethod: true
+  parent: Meridian.Infrastructure.Utilities.JsonElementExtensions
+  langs:
+  - csharp
+  - vb
+  name: GetInt32ArrayOrEmpty(JsonElement, string)
+  nameWithType: JsonElementExtensions.GetInt32ArrayOrEmpty(JsonElement, string)
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32ArrayOrEmpty(System.Text.Json.JsonElement, string)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetInt32ArrayOrEmpty
+    path: ../../src/Meridian.Infrastructure/Utilities/JsonElementExtensions.cs
+    startLine: 232
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Utilities
+  summary: Gets an array of integers from a property.
+  example: []
+  syntax:
+    content: public static int[] GetInt32ArrayOrEmpty(this JsonElement element, string propertyName)
+    parameters:
+    - id: element
+      type: System.Text.Json.JsonElement
+      description: The JSON element.
+    - id: propertyName
+      type: System.String
+      description: The property name to look up.
+    return:
+      type: System.Int32[]
+      description: Array of integers or empty array.
+    content.vb: Public Shared Function GetInt32ArrayOrEmpty(element As JsonElement, propertyName As String) As Integer()
+  overload: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32ArrayOrEmpty*
+  nameWithType.vb: JsonElementExtensions.GetInt32ArrayOrEmpty(JsonElement, String)
+  fullName.vb: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32ArrayOrEmpty(System.Text.Json.JsonElement, String)
+  name.vb: GetInt32ArrayOrEmpty(JsonElement, String)
+references:
+- uid: System.Text.Json.JsonElement
+  commentId: T:System.Text.Json.JsonElement
+  parent: System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.json.jsonelement
+  name: JsonElement
+  nameWithType: JsonElement
+  fullName: System.Text.Json.JsonElement
+- uid: Meridian.Infrastructure.Utilities
+  commentId: N:Meridian.Infrastructure.Utilities
+  href: Meridian.html
+  name: Meridian.Infrastructure.Utilities
+  nameWithType: Meridian.Infrastructure.Utilities
+  fullName: Meridian.Infrastructure.Utilities
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Utilities
+    name: Utilities
+    href: Meridian.Infrastructure.Utilities.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System.Text.Json
+  commentId: N:System.Text.Json
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.Json
+  nameWithType: System.Text.Json
+  fullName: System.Text.Json
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.Json
+    name: Json
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrNull*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrNull
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetStringOrNull_System_Text_Json_JsonElement_System_String_
+  name: GetStringOrNull
+  nameWithType: JsonElementExtensions.GetStringOrNull
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrNull
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrEmpty*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrEmpty
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetStringOrEmpty_System_Text_Json_JsonElement_System_String_
+  name: GetStringOrEmpty
+  nameWithType: JsonElementExtensions.GetStringOrEmpty
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetStringOrEmpty
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDecimalOrDefault*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDecimalOrDefault
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetDecimalOrDefault_System_Text_Json_JsonElement_System_String_System_Decimal_
+  name: GetDecimalOrDefault
+  nameWithType: JsonElementExtensions.GetDecimalOrDefault
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDecimalOrDefault
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDoubleOrDefault*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDoubleOrDefault
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetDoubleOrDefault_System_Text_Json_JsonElement_System_String_System_Double_
+  name: GetDoubleOrDefault
+  nameWithType: JsonElementExtensions.GetDoubleOrDefault
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDoubleOrDefault
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32OrDefault*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32OrDefault
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetInt32OrDefault_System_Text_Json_JsonElement_System_String_System_Int32_
+  name: GetInt32OrDefault
+  nameWithType: JsonElementExtensions.GetInt32OrDefault
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32OrDefault
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt64OrDefault*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt64OrDefault
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetInt64OrDefault_System_Text_Json_JsonElement_System_String_System_Int64_
+  name: GetInt64OrDefault
+  nameWithType: JsonElementExtensions.GetInt64OrDefault
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt64OrDefault
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetBoolOrDefault*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetBoolOrDefault
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetBoolOrDefault_System_Text_Json_JsonElement_System_String_System_Boolean_
+  name: GetBoolOrDefault
+  nameWithType: JsonElementExtensions.GetBoolOrDefault
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetBoolOrDefault
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixMs*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixMs
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetDateTimeOffsetFromUnixMs_System_Text_Json_JsonElement_System_String_System_Nullable_System_DateTimeOffset__
+  name: GetDateTimeOffsetFromUnixMs
+  nameWithType: JsonElementExtensions.GetDateTimeOffsetFromUnixMs
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixMs
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetDateTimeOffsetFromUnixSeconds_System_Text_Json_JsonElement_System_String_System_Nullable_System_DateTimeOffset__
+  name: GetDateTimeOffsetFromUnixSeconds
+  nameWithType: JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetDateTimeOffsetFromUnixSeconds
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.HasProperty*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.HasProperty
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_HasProperty_System_Text_Json_JsonElement_System_String_
+  name: HasProperty
+  nameWithType: JsonElementExtensions.HasProperty
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.HasProperty
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetArrayOrEmpty*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetArrayOrEmpty
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetArrayOrEmpty_System_Text_Json_JsonElement_System_String_
+  name: GetArrayOrEmpty
+  nameWithType: JsonElementExtensions.GetArrayOrEmpty
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetArrayOrEmpty
+- uid: System.Collections.Generic.IEnumerable{System.Text.Json.JsonElement}
+  commentId: T:System.Collections.Generic.IEnumerable{System.Text.Json.JsonElement}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<JsonElement>
+  nameWithType: IEnumerable<JsonElement>
+  fullName: System.Collections.Generic.IEnumerable<System.Text.Json.JsonElement>
+  nameWithType.vb: IEnumerable(Of JsonElement)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of System.Text.Json.JsonElement)
+  name.vb: IEnumerable(Of JsonElement)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.Text.Json.JsonElement
+    name: JsonElement
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.jsonelement
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Text.Json.JsonElement
+    name: JsonElement
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.json.jsonelement
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32ArrayOrEmpty*
+  commentId: Overload:Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32ArrayOrEmpty
+  href: Meridian.Infrastructure.Utilities.JsonElementExtensions.html#Meridian_Infrastructure_Utilities_JsonElementExtensions_GetInt32ArrayOrEmpty_System_Text_Json_JsonElement_System_String_
+  name: GetInt32ArrayOrEmpty
+  nameWithType: JsonElementExtensions.GetInt32ArrayOrEmpty
+  fullName: Meridian.Infrastructure.Utilities.JsonElementExtensions.GetInt32ArrayOrEmpty
+- uid: System.Int32[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int[]
+  nameWithType: int[]
+  fullName: int[]
+  nameWithType.vb: Integer()
+  fullName.vb: Integer()
+  name.vb: Integer()
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: (
+  - name: )

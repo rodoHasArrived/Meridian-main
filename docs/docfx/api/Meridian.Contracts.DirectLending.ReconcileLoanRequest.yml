@@ -1,0 +1,482 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.DirectLending.ReconcileLoanRequest
+  commentId: T:Meridian.Contracts.DirectLending.ReconcileLoanRequest
+  id: ReconcileLoanRequest
+  parent: Meridian.Contracts.DirectLending
+  children:
+  - Meridian.Contracts.DirectLending.ReconcileLoanRequest.#ctor(System.Decimal,System.Int32)
+  - Meridian.Contracts.DirectLending.ReconcileLoanRequest.AmountTolerance
+  - Meridian.Contracts.DirectLending.ReconcileLoanRequest.DateToleranceDays
+  langs:
+  - csharp
+  - vb
+  name: ReconcileLoanRequest
+  nameWithType: ReconcileLoanRequest
+  fullName: Meridian.Contracts.DirectLending.ReconcileLoanRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ReconcileLoanRequest
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: 'public sealed record ReconcileLoanRequest : IEquatable<ReconcileLoanRequest>'
+    content.vb: Public NotInheritable Class ReconcileLoanRequest Implements IEquatable(Of ReconcileLoanRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.DirectLending.ReconcileLoanRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.DirectLending.ReconcileLoanRequest.#ctor(System.Decimal,System.Int32)
+  commentId: M:Meridian.Contracts.DirectLending.ReconcileLoanRequest.#ctor(System.Decimal,System.Int32)
+  id: '#ctor(System.Decimal,System.Int32)'
+  parent: Meridian.Contracts.DirectLending.ReconcileLoanRequest
+  langs:
+  - csharp
+  - vb
+  name: ReconcileLoanRequest(decimal, int)
+  nameWithType: ReconcileLoanRequest.ReconcileLoanRequest(decimal, int)
+  fullName: Meridian.Contracts.DirectLending.ReconcileLoanRequest.ReconcileLoanRequest(decimal, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 158
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public ReconcileLoanRequest(decimal AmountTolerance, int DateToleranceDays)
+    parameters:
+    - id: AmountTolerance
+      type: System.Decimal
+    - id: DateToleranceDays
+      type: System.Int32
+    content.vb: Public Sub New(AmountTolerance As Decimal, DateToleranceDays As Integer)
+  overload: Meridian.Contracts.DirectLending.ReconcileLoanRequest.#ctor*
+  nameWithType.vb: ReconcileLoanRequest.New(Decimal, Integer)
+  fullName.vb: Meridian.Contracts.DirectLending.ReconcileLoanRequest.New(Decimal, Integer)
+  name.vb: New(Decimal, Integer)
+- uid: Meridian.Contracts.DirectLending.ReconcileLoanRequest.AmountTolerance
+  commentId: P:Meridian.Contracts.DirectLending.ReconcileLoanRequest.AmountTolerance
+  id: AmountTolerance
+  parent: Meridian.Contracts.DirectLending.ReconcileLoanRequest
+  langs:
+  - csharp
+  - vb
+  name: AmountTolerance
+  nameWithType: ReconcileLoanRequest.AmountTolerance
+  fullName: Meridian.Contracts.DirectLending.ReconcileLoanRequest.AmountTolerance
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AmountTolerance
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 159
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public decimal AmountTolerance { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property AmountTolerance As Decimal
+  overload: Meridian.Contracts.DirectLending.ReconcileLoanRequest.AmountTolerance*
+- uid: Meridian.Contracts.DirectLending.ReconcileLoanRequest.DateToleranceDays
+  commentId: P:Meridian.Contracts.DirectLending.ReconcileLoanRequest.DateToleranceDays
+  id: DateToleranceDays
+  parent: Meridian.Contracts.DirectLending.ReconcileLoanRequest
+  langs:
+  - csharp
+  - vb
+  name: DateToleranceDays
+  nameWithType: ReconcileLoanRequest.DateToleranceDays
+  fullName: Meridian.Contracts.DirectLending.ReconcileLoanRequest.DateToleranceDays
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DateToleranceDays
+    path: ../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs
+    startLine: 160
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.DirectLending
+  syntax:
+    content: public int DateToleranceDays { get; init; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property DateToleranceDays As Integer
+  overload: Meridian.Contracts.DirectLending.ReconcileLoanRequest.DateToleranceDays*
+references:
+- uid: Meridian.Contracts.DirectLending
+  commentId: N:Meridian.Contracts.DirectLending
+  href: Meridian.html
+  name: Meridian.Contracts.DirectLending
+  nameWithType: Meridian.Contracts.DirectLending
+  fullName: Meridian.Contracts.DirectLending
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.DirectLending
+    name: DirectLending
+    href: Meridian.Contracts.DirectLending.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.DirectLending.ReconcileLoanRequest}
+  commentId: T:System.IEquatable{Meridian.Contracts.DirectLending.ReconcileLoanRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ReconcileLoanRequest>
+  nameWithType: IEquatable<ReconcileLoanRequest>
+  fullName: System.IEquatable<Meridian.Contracts.DirectLending.ReconcileLoanRequest>
+  nameWithType.vb: IEquatable(Of ReconcileLoanRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.DirectLending.ReconcileLoanRequest)
+  name.vb: IEquatable(Of ReconcileLoanRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.DirectLending.ReconcileLoanRequest
+    name: ReconcileLoanRequest
+    href: Meridian.Contracts.DirectLending.ReconcileLoanRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.DirectLending.ReconcileLoanRequest
+    name: ReconcileLoanRequest
+    href: Meridian.Contracts.DirectLending.ReconcileLoanRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.DirectLending.ReconcileLoanRequest.#ctor*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconcileLoanRequest.#ctor
+  href: Meridian.Contracts.DirectLending.ReconcileLoanRequest.html#Meridian_Contracts_DirectLending_ReconcileLoanRequest__ctor_System_Decimal_System_Int32_
+  name: ReconcileLoanRequest
+  nameWithType: ReconcileLoanRequest.ReconcileLoanRequest
+  fullName: Meridian.Contracts.DirectLending.ReconcileLoanRequest.ReconcileLoanRequest
+  nameWithType.vb: ReconcileLoanRequest.New
+  fullName.vb: Meridian.Contracts.DirectLending.ReconcileLoanRequest.New
+  name.vb: New
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.DirectLending.ReconcileLoanRequest.AmountTolerance*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconcileLoanRequest.AmountTolerance
+  href: Meridian.Contracts.DirectLending.ReconcileLoanRequest.html#Meridian_Contracts_DirectLending_ReconcileLoanRequest_AmountTolerance
+  name: AmountTolerance
+  nameWithType: ReconcileLoanRequest.AmountTolerance
+  fullName: Meridian.Contracts.DirectLending.ReconcileLoanRequest.AmountTolerance
+- uid: Meridian.Contracts.DirectLending.ReconcileLoanRequest.DateToleranceDays*
+  commentId: Overload:Meridian.Contracts.DirectLending.ReconcileLoanRequest.DateToleranceDays
+  href: Meridian.Contracts.DirectLending.ReconcileLoanRequest.html#Meridian_Contracts_DirectLending_ReconcileLoanRequest_DateToleranceDays
+  name: DateToleranceDays
+  nameWithType: ReconcileLoanRequest.DateToleranceDays
+  fullName: Meridian.Contracts.DirectLending.ReconcileLoanRequest.DateToleranceDays

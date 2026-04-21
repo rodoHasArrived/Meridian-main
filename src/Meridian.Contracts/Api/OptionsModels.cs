@@ -150,6 +150,20 @@ public sealed record OptionsSummaryResponse(
     int ContractsWithGreeks,
     int ContractsWithOpenInterest,
     bool ProviderAvailable,
+    DateTimeOffset Timestamp,
+    string? ProviderId = null,
+    string? ProviderDisplayName = null,
+    string ProviderMode = "Unavailable",
+    bool IsFallbackProvider = false,
+    string? ProviderStatusMessage = null
+);
+
+/// <summary>
+/// Response DTO for tracked option underlyings.
+/// </summary>
+public sealed record OptionsTrackedUnderlyingsResponse(
+    IReadOnlyList<string> Underlyings,
+    int Count,
     DateTimeOffset Timestamp
 );
 

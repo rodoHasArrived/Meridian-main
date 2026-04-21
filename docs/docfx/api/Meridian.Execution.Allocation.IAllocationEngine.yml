@@ -1,0 +1,190 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Allocation.IAllocationEngine
+  commentId: T:Meridian.Execution.Allocation.IAllocationEngine
+  id: IAllocationEngine
+  parent: Meridian.Execution.Allocation
+  children:
+  - Meridian.Execution.Allocation.IAllocationEngine.Allocate(System.String,System.Int64,System.Decimal,Meridian.Execution.Allocation.AllocationRule,System.DateTimeOffset)
+  langs:
+  - csharp
+  - vb
+  name: IAllocationEngine
+  nameWithType: IAllocationEngine
+  fullName: Meridian.Execution.Allocation.IAllocationEngine
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/IAllocationEngine.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IAllocationEngine
+    path: ../../src/Meridian.Execution/Allocation/IAllocationEngine.cs
+    startLine: 6
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: >-
+    Distributes block-trade quantities across multiple destination sleeves, entities,
+
+    or vehicles according to an <xref href="Meridian.Execution.Allocation.AllocationRule" data-throw-if-not-resolved="false"></xref>.
+  example: []
+  syntax:
+    content: public interface IAllocationEngine
+    content.vb: Public Interface IAllocationEngine
+  derivedClasses:
+  - Meridian.Execution.Allocation.ProportionalAllocationEngine
+- uid: Meridian.Execution.Allocation.IAllocationEngine.Allocate(System.String,System.Int64,System.Decimal,Meridian.Execution.Allocation.AllocationRule,System.DateTimeOffset)
+  commentId: M:Meridian.Execution.Allocation.IAllocationEngine.Allocate(System.String,System.Int64,System.Decimal,Meridian.Execution.Allocation.AllocationRule,System.DateTimeOffset)
+  id: Allocate(System.String,System.Int64,System.Decimal,Meridian.Execution.Allocation.AllocationRule,System.DateTimeOffset)
+  parent: Meridian.Execution.Allocation.IAllocationEngine
+  langs:
+  - csharp
+  - vb
+  name: Allocate(string, long, decimal, AllocationRule, DateTimeOffset)
+  nameWithType: IAllocationEngine.Allocate(string, long, decimal, AllocationRule, DateTimeOffset)
+  fullName: Meridian.Execution.Allocation.IAllocationEngine.Allocate(string, long, decimal, Meridian.Execution.Allocation.AllocationRule, System.DateTimeOffset)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution/Allocation/IAllocationEngine.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Allocate
+    path: ../../src/Meridian.Execution/Allocation/IAllocationEngine.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Execution
+  namespace: Meridian.Execution.Allocation
+  summary: >-
+    Allocates <code class="paramref">totalQuantity</code> shares/contracts of <code class="paramref">symbol</code>
+
+    executed at <code class="paramref">fillPrice</code> across the slices defined in
+
+    <code class="paramref">rule</code>.
+  example: []
+  syntax:
+    content: AllocationResult Allocate(string symbol, long totalQuantity, decimal fillPrice, AllocationRule rule, DateTimeOffset allocatedAt)
+    parameters:
+    - id: symbol
+      type: System.String
+      description: Instrument symbol of the block trade.
+    - id: totalQuantity
+      type: System.Int64
+      description: Unsigned quantity of the block (always positive; direction is implied by context).
+    - id: fillPrice
+      type: System.Decimal
+      description: Execution price of the block trade.
+    - id: rule
+      type: Meridian.Execution.Allocation.AllocationRule
+      description: The allocation rule that defines slice weights.
+    - id: allocatedAt
+      type: System.DateTimeOffset
+      description: Timestamp of the block fill.
+    return:
+      type: Meridian.Execution.Allocation.AllocationResult
+      description: An <xref href="Meridian.Execution.Allocation.AllocationResult" data-throw-if-not-resolved="false"></xref> containing the per-slice distribution.
+    content.vb: Function Allocate(symbol As String, totalQuantity As Long, fillPrice As Decimal, rule As AllocationRule, allocatedAt As DateTimeOffset) As AllocationResult
+  overload: Meridian.Execution.Allocation.IAllocationEngine.Allocate*
+  nameWithType.vb: IAllocationEngine.Allocate(String, Long, Decimal, AllocationRule, DateTimeOffset)
+  fullName.vb: Meridian.Execution.Allocation.IAllocationEngine.Allocate(String, Long, Decimal, Meridian.Execution.Allocation.AllocationRule, System.DateTimeOffset)
+  name.vb: Allocate(String, Long, Decimal, AllocationRule, DateTimeOffset)
+references:
+- uid: Meridian.Execution.Allocation.AllocationRule
+  commentId: T:Meridian.Execution.Allocation.AllocationRule
+  parent: Meridian.Execution.Allocation
+  href: Meridian.Execution.Allocation.AllocationRule.html
+  name: AllocationRule
+  nameWithType: AllocationRule
+  fullName: Meridian.Execution.Allocation.AllocationRule
+- uid: Meridian.Execution.Allocation
+  commentId: N:Meridian.Execution.Allocation
+  href: Meridian.html
+  name: Meridian.Execution.Allocation
+  nameWithType: Meridian.Execution.Allocation
+  fullName: Meridian.Execution.Allocation
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Allocation
+    name: Allocation
+    href: Meridian.Execution.Allocation.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Allocation
+    name: Allocation
+    href: Meridian.Execution.Allocation.html
+- uid: Meridian.Execution.Allocation.AllocationResult
+  commentId: T:Meridian.Execution.Allocation.AllocationResult
+  parent: Meridian.Execution.Allocation
+  href: Meridian.Execution.Allocation.AllocationResult.html
+  name: AllocationResult
+  nameWithType: AllocationResult
+  fullName: Meridian.Execution.Allocation.AllocationResult
+- uid: Meridian.Execution.Allocation.IAllocationEngine.Allocate*
+  commentId: Overload:Meridian.Execution.Allocation.IAllocationEngine.Allocate
+  href: Meridian.Execution.Allocation.IAllocationEngine.html#Meridian_Execution_Allocation_IAllocationEngine_Allocate_System_String_System_Int64_System_Decimal_Meridian_Execution_Allocation_AllocationRule_System_DateTimeOffset_
+  name: Allocate
+  nameWithType: IAllocationEngine.Allocate
+  fullName: Meridian.Execution.Allocation.IAllocationEngine.Allocate
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System

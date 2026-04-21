@@ -1,0 +1,817 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  commentId: T:Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  id: SymbolImportExportService
+  parent: Meridian.Application.Subscriptions.Services
+  children:
+  - Meridian.Application.Subscriptions.Services.SymbolImportExportService.#ctor(Meridian.Application.UI.ConfigStore)
+  - Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsv(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  - Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsvBytes(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  - Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportAutoDetectAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromCsvAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  - Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromTextAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SymbolImportExportService
+  nameWithType: SymbolImportExportService
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SymbolImportExportService
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    startLine: 13
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Service for bulk import and export of symbol subscriptions via CSV, text files, and other formats.
+  example: []
+  syntax:
+    content: public sealed class SymbolImportExportService
+    content.vb: Public NotInheritable Class SymbolImportExportService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.#ctor(Meridian.Application.UI.ConfigStore)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolImportExportService.#ctor(Meridian.Application.UI.ConfigStore)
+  id: '#ctor(Meridian.Application.UI.ConfigStore)'
+  parent: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  langs:
+  - csharp
+  - vb
+  name: SymbolImportExportService(ConfigStore)
+  nameWithType: SymbolImportExportService.SymbolImportExportService(ConfigStore)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.SymbolImportExportService(Meridian.Application.UI.ConfigStore)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  syntax:
+    content: public SymbolImportExportService(ConfigStore configStore)
+    parameters:
+    - id: configStore
+      type: Meridian.Application.UI.ConfigStore
+    content.vb: Public Sub New(configStore As ConfigStore)
+  overload: Meridian.Application.Subscriptions.Services.SymbolImportExportService.#ctor*
+  nameWithType.vb: SymbolImportExportService.New(ConfigStore)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolImportExportService.New(Meridian.Application.UI.ConfigStore)
+  name.vb: New(ConfigStore)
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromTextAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromTextAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  id: ImportFromTextAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  langs:
+  - csharp
+  - vb
+  name: ImportFromTextAsync(string, BulkImportOptions?, CancellationToken)
+  nameWithType: SymbolImportExportService.ImportFromTextAsync(string, BulkImportOptions?, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromTextAsync(string, Meridian.Application.Subscriptions.Models.BulkImportOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportFromTextAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: >-
+    Import symbols from plain text content (one symbol per line).
+
+    Supports comments (#, ;, //) and inline comments.
+  example: []
+  syntax:
+    content: public Task<BulkImportResult> ImportFromTextAsync(string textContent, BulkImportOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: textContent
+      type: System.String
+    - id: options
+      type: Meridian.Application.Subscriptions.Models.BulkImportOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BulkImportResult}
+    content.vb: Public Function ImportFromTextAsync(textContent As String, options As BulkImportOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of BulkImportResult)
+  overload: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromTextAsync*
+  nameWithType.vb: SymbolImportExportService.ImportFromTextAsync(String, BulkImportOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromTextAsync(String, Meridian.Application.Subscriptions.Models.BulkImportOptions, System.Threading.CancellationToken)
+  name.vb: ImportFromTextAsync(String, BulkImportOptions, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportAutoDetectAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportAutoDetectAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  id: ImportAutoDetectAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  langs:
+  - csharp
+  - vb
+  name: ImportAutoDetectAsync(string, BulkImportOptions?, CancellationToken)
+  nameWithType: SymbolImportExportService.ImportAutoDetectAsync(string, BulkImportOptions?, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportAutoDetectAsync(string, Meridian.Application.Subscriptions.Models.BulkImportOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportAutoDetectAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    startLine: 156
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Detect import format and route to appropriate handler.
+  example: []
+  syntax:
+    content: public Task<BulkImportResult> ImportAutoDetectAsync(string content, BulkImportOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: content
+      type: System.String
+    - id: options
+      type: Meridian.Application.Subscriptions.Models.BulkImportOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BulkImportResult}
+    content.vb: Public Function ImportAutoDetectAsync(content As String, options As BulkImportOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of BulkImportResult)
+  overload: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportAutoDetectAsync*
+  nameWithType.vb: SymbolImportExportService.ImportAutoDetectAsync(String, BulkImportOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportAutoDetectAsync(String, Meridian.Application.Subscriptions.Models.BulkImportOptions, System.Threading.CancellationToken)
+  name.vb: ImportAutoDetectAsync(String, BulkImportOptions, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromCsvAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromCsvAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  id: ImportFromCsvAsync(System.String,Meridian.Application.Subscriptions.Models.BulkImportOptions,System.Threading.CancellationToken)
+  parent: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  langs:
+  - csharp
+  - vb
+  name: ImportFromCsvAsync(string, BulkImportOptions?, CancellationToken)
+  nameWithType: SymbolImportExportService.ImportFromCsvAsync(string, BulkImportOptions?, CancellationToken)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromCsvAsync(string, Meridian.Application.Subscriptions.Models.BulkImportOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImportFromCsvAsync
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    startLine: 179
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Import symbols from CSV content.
+  example: []
+  syntax:
+    content: public Task<BulkImportResult> ImportFromCsvAsync(string csvContent, BulkImportOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: csvContent
+      type: System.String
+    - id: options
+      type: Meridian.Application.Subscriptions.Models.BulkImportOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BulkImportResult}
+    content.vb: Public Function ImportFromCsvAsync(csvContent As String, options As BulkImportOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of BulkImportResult)
+  overload: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromCsvAsync*
+  nameWithType.vb: SymbolImportExportService.ImportFromCsvAsync(String, BulkImportOptions, CancellationToken)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromCsvAsync(String, Meridian.Application.Subscriptions.Models.BulkImportOptions, System.Threading.CancellationToken)
+  name.vb: ImportFromCsvAsync(String, BulkImportOptions, CancellationToken)
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsv(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsv(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  id: ExportToCsv(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  parent: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  langs:
+  - csharp
+  - vb
+  name: ExportToCsv(BulkExportOptions?)
+  nameWithType: SymbolImportExportService.ExportToCsv(BulkExportOptions?)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsv(Meridian.Application.Subscriptions.Models.BulkExportOptions?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportToCsv
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    startLine: 283
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Export current symbol subscriptions to CSV.
+  example: []
+  syntax:
+    content: public string ExportToCsv(BulkExportOptions? options = null)
+    parameters:
+    - id: options
+      type: Meridian.Application.Subscriptions.Models.BulkExportOptions
+    return:
+      type: System.String
+    content.vb: Public Function ExportToCsv(options As BulkExportOptions = Nothing) As String
+  overload: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsv*
+  nameWithType.vb: SymbolImportExportService.ExportToCsv(BulkExportOptions)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsv(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  name.vb: ExportToCsv(BulkExportOptions)
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsvBytes(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  commentId: M:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsvBytes(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  id: ExportToCsvBytes(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  parent: Meridian.Application.Subscriptions.Services.SymbolImportExportService
+  langs:
+  - csharp
+  - vb
+  name: ExportToCsvBytes(BulkExportOptions?)
+  nameWithType: SymbolImportExportService.ExportToCsvBytes(BulkExportOptions?)
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsvBytes(Meridian.Application.Subscriptions.Models.BulkExportOptions?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExportToCsvBytes
+    path: ../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs
+    startLine: 316
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Subscriptions.Services
+  summary: Get export as bytes for file download.
+  example: []
+  syntax:
+    content: public byte[] ExportToCsvBytes(BulkExportOptions? options = null)
+    parameters:
+    - id: options
+      type: Meridian.Application.Subscriptions.Models.BulkExportOptions
+    return:
+      type: System.Byte[]
+    content.vb: Public Function ExportToCsvBytes(options As BulkExportOptions = Nothing) As Byte()
+  overload: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsvBytes*
+  nameWithType.vb: SymbolImportExportService.ExportToCsvBytes(BulkExportOptions)
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsvBytes(Meridian.Application.Subscriptions.Models.BulkExportOptions)
+  name.vb: ExportToCsvBytes(BulkExportOptions)
+references:
+- uid: Meridian.Application.Subscriptions.Services
+  commentId: N:Meridian.Application.Subscriptions.Services
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Services
+  nameWithType: Meridian.Application.Subscriptions.Services
+  fullName: Meridian.Application.Subscriptions.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Services
+    name: Services
+    href: Meridian.Application.Subscriptions.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.#ctor*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolImportExportService.#ctor
+  href: Meridian.Application.Subscriptions.Services.SymbolImportExportService.html#Meridian_Application_Subscriptions_Services_SymbolImportExportService__ctor_Meridian_Application_UI_ConfigStore_
+  name: SymbolImportExportService
+  nameWithType: SymbolImportExportService.SymbolImportExportService
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.SymbolImportExportService
+  nameWithType.vb: SymbolImportExportService.New
+  fullName.vb: Meridian.Application.Subscriptions.Services.SymbolImportExportService.New
+  name.vb: New
+- uid: Meridian.Application.UI.ConfigStore
+  commentId: T:Meridian.Application.UI.ConfigStore
+  parent: Meridian.Application.UI
+  href: Meridian.Application.UI.ConfigStore.html
+  name: ConfigStore
+  nameWithType: ConfigStore
+  fullName: Meridian.Application.UI.ConfigStore
+- uid: Meridian.Application.UI
+  commentId: N:Meridian.Application.UI
+  href: Meridian.html
+  name: Meridian.Application.UI
+  nameWithType: Meridian.Application.UI
+  fullName: Meridian.Application.UI
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.UI
+    name: UI
+    href: Meridian.Application.UI.html
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromTextAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromTextAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolImportExportService.html#Meridian_Application_Subscriptions_Services_SymbolImportExportService_ImportFromTextAsync_System_String_Meridian_Application_Subscriptions_Models_BulkImportOptions_System_Threading_CancellationToken_
+  name: ImportFromTextAsync
+  nameWithType: SymbolImportExportService.ImportFromTextAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromTextAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Application.Subscriptions.Models.BulkImportOptions
+  commentId: T:Meridian.Application.Subscriptions.Models.BulkImportOptions
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BulkImportOptions.html
+  name: BulkImportOptions
+  nameWithType: BulkImportOptions
+  fullName: Meridian.Application.Subscriptions.Models.BulkImportOptions
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BulkImportResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Application.Subscriptions.Models.BulkImportResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BulkImportResult>
+  nameWithType: Task<BulkImportResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Application.Subscriptions.Models.BulkImportResult>
+  nameWithType.vb: Task(Of BulkImportResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Application.Subscriptions.Models.BulkImportResult)
+  name.vb: Task(Of BulkImportResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Application.Subscriptions.Models.BulkImportResult
+    name: BulkImportResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Subscriptions.Models.BulkImportResult
+    name: BulkImportResult
+  - name: )
+- uid: Meridian.Application.Subscriptions.Models
+  commentId: N:Meridian.Application.Subscriptions.Models
+  href: Meridian.html
+  name: Meridian.Application.Subscriptions.Models
+  nameWithType: Meridian.Application.Subscriptions.Models
+  fullName: Meridian.Application.Subscriptions.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions
+    name: Subscriptions
+    href: Meridian.Application.Subscriptions.html
+  - name: .
+  - uid: Meridian.Application.Subscriptions.Models
+    name: Models
+    href: Meridian.Application.Subscriptions.Models.html
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportAutoDetectAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportAutoDetectAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolImportExportService.html#Meridian_Application_Subscriptions_Services_SymbolImportExportService_ImportAutoDetectAsync_System_String_Meridian_Application_Subscriptions_Models_BulkImportOptions_System_Threading_CancellationToken_
+  name: ImportAutoDetectAsync
+  nameWithType: SymbolImportExportService.ImportAutoDetectAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportAutoDetectAsync
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromCsvAsync*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromCsvAsync
+  href: Meridian.Application.Subscriptions.Services.SymbolImportExportService.html#Meridian_Application_Subscriptions_Services_SymbolImportExportService_ImportFromCsvAsync_System_String_Meridian_Application_Subscriptions_Models_BulkImportOptions_System_Threading_CancellationToken_
+  name: ImportFromCsvAsync
+  nameWithType: SymbolImportExportService.ImportFromCsvAsync
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ImportFromCsvAsync
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsv*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsv
+  href: Meridian.Application.Subscriptions.Services.SymbolImportExportService.html#Meridian_Application_Subscriptions_Services_SymbolImportExportService_ExportToCsv_Meridian_Application_Subscriptions_Models_BulkExportOptions_
+  name: ExportToCsv
+  nameWithType: SymbolImportExportService.ExportToCsv
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsv
+- uid: Meridian.Application.Subscriptions.Models.BulkExportOptions
+  commentId: T:Meridian.Application.Subscriptions.Models.BulkExportOptions
+  parent: Meridian.Application.Subscriptions.Models
+  href: Meridian.Application.Subscriptions.Models.BulkExportOptions.html
+  name: BulkExportOptions
+  nameWithType: BulkExportOptions
+  fullName: Meridian.Application.Subscriptions.Models.BulkExportOptions
+- uid: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsvBytes*
+  commentId: Overload:Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsvBytes
+  href: Meridian.Application.Subscriptions.Services.SymbolImportExportService.html#Meridian_Application_Subscriptions_Services_SymbolImportExportService_ExportToCsvBytes_Meridian_Application_Subscriptions_Models_BulkExportOptions_
+  name: ExportToCsvBytes
+  nameWithType: SymbolImportExportService.ExportToCsvBytes
+  fullName: Meridian.Application.Subscriptions.Services.SymbolImportExportService.ExportToCsvBytes
+- uid: System.Byte[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.byte
+  name: byte[]
+  nameWithType: byte[]
+  fullName: byte[]
+  nameWithType.vb: Byte()
+  fullName.vb: Byte()
+  name.vb: Byte()
+  spec.csharp:
+  - uid: System.Byte
+    name: byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.Byte
+    name: Byte
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.byte
+  - name: (
+  - name: )

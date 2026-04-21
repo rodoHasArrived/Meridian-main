@@ -36,6 +36,35 @@ public sealed class OptionsChainService
     public bool IsProviderAvailable => _provider is not null;
 
     /// <summary>
+    /// Returns a UI-friendly status summary for the active options provider.
+    /// </summary>
+    public OptionsProviderStatus GetProviderStatus()
+    {
+        if (_provider is null)
+        {
+            return new OptionsProviderStatus(
+                ProviderId: null,
+                ProviderDisplayName: null,
+                Mode: "Unavailable",
+                IsFallback: false,
+                Message: "No options provider configured.");
+        }
+
+        var isFallback = string.Equals(_provider.ProviderId, "synthetic", StringComparison.OrdinalIgnoreCase);
+        var mode = isFallback ? "Fallback" : "Configured";
+        var message = isFallback
+            ? $"{_provider.ProviderDisplayName} fallback is active."
+            : $"{_provider.ProviderDisplayName} is configured.";
+
+        return new OptionsProviderStatus(
+            ProviderId: _provider.ProviderId,
+            ProviderDisplayName: _provider.ProviderDisplayName,
+            Mode: mode,
+            IsFallback: isFallback,
+            Message: message);
+    }
+
+    /// <summary>
     /// Gets available expiration dates for an underlying symbol.
     /// </summary>
     public async Task<IReadOnlyList<DateOnly>> GetExpirationsAsync(
@@ -290,3 +319,13 @@ public sealed class OptionsChainService
         return date.Day >= 15 && date.Day <= 21;
     }
 }
+
+/// <summary>
+/// Summary of the currently active options provider for UI status surfaces.
+/// </summary>
+public sealed record OptionsProviderStatus(
+    string? ProviderId,
+    string? ProviderDisplayName,
+    string Mode,
+    bool IsFallback,
+    string Message);

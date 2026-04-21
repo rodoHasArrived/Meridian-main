@@ -1,0 +1,614 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.ConsolidationOptions
+  commentId: T:Meridian.Storage.Services.ConsolidationOptions
+  id: ConsolidationOptions
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.ConsolidationOptions.#ctor(Meridian.Storage.Services.SourceSelectionStrategy,System.Boolean,System.Boolean,System.Decimal,System.Int64)
+  - Meridian.Storage.Services.ConsolidationOptions.FillGapsFromAlternates
+  - Meridian.Storage.Services.ConsolidationOptions.PriceTolerancePct
+  - Meridian.Storage.Services.ConsolidationOptions.Strategy
+  - Meridian.Storage.Services.ConsolidationOptions.ValidateCrossSource
+  - Meridian.Storage.Services.ConsolidationOptions.VolumeTolerancePct
+  langs:
+  - csharp
+  - vb
+  name: ConsolidationOptions
+  nameWithType: ConsolidationOptions
+  fullName: Meridian.Storage.Services.ConsolidationOptions
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ConsolidationOptions
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public sealed record ConsolidationOptions : IEquatable<ConsolidationOptions>'
+    content.vb: Public NotInheritable Class ConsolidationOptions Implements IEquatable(Of ConsolidationOptions)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Storage.Services.ConsolidationOptions}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Services.ConsolidationOptions.#ctor(Meridian.Storage.Services.SourceSelectionStrategy,System.Boolean,System.Boolean,System.Decimal,System.Int64)
+  commentId: M:Meridian.Storage.Services.ConsolidationOptions.#ctor(Meridian.Storage.Services.SourceSelectionStrategy,System.Boolean,System.Boolean,System.Decimal,System.Int64)
+  id: '#ctor(Meridian.Storage.Services.SourceSelectionStrategy,System.Boolean,System.Boolean,System.Decimal,System.Int64)'
+  parent: Meridian.Storage.Services.ConsolidationOptions
+  langs:
+  - csharp
+  - vb
+  name: ConsolidationOptions(SourceSelectionStrategy, bool, bool, decimal, long)
+  nameWithType: ConsolidationOptions.ConsolidationOptions(SourceSelectionStrategy, bool, bool, decimal, long)
+  fullName: Meridian.Storage.Services.ConsolidationOptions.ConsolidationOptions(Meridian.Storage.Services.SourceSelectionStrategy, bool, bool, decimal, long)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 644
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public ConsolidationOptions(SourceSelectionStrategy Strategy = SourceSelectionStrategy.HighestQualityScore, bool FillGapsFromAlternates = true, bool ValidateCrossSource = true, decimal PriceTolerancePct = 0.01, long VolumeTolerancePct = 5)
+    parameters:
+    - id: Strategy
+      type: Meridian.Storage.Services.SourceSelectionStrategy
+    - id: FillGapsFromAlternates
+      type: System.Boolean
+    - id: ValidateCrossSource
+      type: System.Boolean
+    - id: PriceTolerancePct
+      type: System.Decimal
+    - id: VolumeTolerancePct
+      type: System.Int64
+    content.vb: Public Sub New(Strategy As SourceSelectionStrategy = SourceSelectionStrategy.HighestQualityScore, FillGapsFromAlternates As Boolean = True, ValidateCrossSource As Boolean = True, PriceTolerancePct As Decimal = 0.01, VolumeTolerancePct As Long = 5)
+  overload: Meridian.Storage.Services.ConsolidationOptions.#ctor*
+  nameWithType.vb: ConsolidationOptions.New(SourceSelectionStrategy, Boolean, Boolean, Decimal, Long)
+  fullName.vb: Meridian.Storage.Services.ConsolidationOptions.New(Meridian.Storage.Services.SourceSelectionStrategy, Boolean, Boolean, Decimal, Long)
+  name.vb: New(SourceSelectionStrategy, Boolean, Boolean, Decimal, Long)
+- uid: Meridian.Storage.Services.ConsolidationOptions.Strategy
+  commentId: P:Meridian.Storage.Services.ConsolidationOptions.Strategy
+  id: Strategy
+  parent: Meridian.Storage.Services.ConsolidationOptions
+  langs:
+  - csharp
+  - vb
+  name: Strategy
+  nameWithType: ConsolidationOptions.Strategy
+  fullName: Meridian.Storage.Services.ConsolidationOptions.Strategy
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strategy
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 645
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public SourceSelectionStrategy Strategy { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Storage.Services.SourceSelectionStrategy
+    content.vb: Public Property Strategy As SourceSelectionStrategy
+  overload: Meridian.Storage.Services.ConsolidationOptions.Strategy*
+- uid: Meridian.Storage.Services.ConsolidationOptions.FillGapsFromAlternates
+  commentId: P:Meridian.Storage.Services.ConsolidationOptions.FillGapsFromAlternates
+  id: FillGapsFromAlternates
+  parent: Meridian.Storage.Services.ConsolidationOptions
+  langs:
+  - csharp
+  - vb
+  name: FillGapsFromAlternates
+  nameWithType: ConsolidationOptions.FillGapsFromAlternates
+  fullName: Meridian.Storage.Services.ConsolidationOptions.FillGapsFromAlternates
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FillGapsFromAlternates
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 646
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public bool FillGapsFromAlternates { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property FillGapsFromAlternates As Boolean
+  overload: Meridian.Storage.Services.ConsolidationOptions.FillGapsFromAlternates*
+- uid: Meridian.Storage.Services.ConsolidationOptions.ValidateCrossSource
+  commentId: P:Meridian.Storage.Services.ConsolidationOptions.ValidateCrossSource
+  id: ValidateCrossSource
+  parent: Meridian.Storage.Services.ConsolidationOptions
+  langs:
+  - csharp
+  - vb
+  name: ValidateCrossSource
+  nameWithType: ConsolidationOptions.ValidateCrossSource
+  fullName: Meridian.Storage.Services.ConsolidationOptions.ValidateCrossSource
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidateCrossSource
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 647
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public bool ValidateCrossSource { get; init; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property ValidateCrossSource As Boolean
+  overload: Meridian.Storage.Services.ConsolidationOptions.ValidateCrossSource*
+- uid: Meridian.Storage.Services.ConsolidationOptions.PriceTolerancePct
+  commentId: P:Meridian.Storage.Services.ConsolidationOptions.PriceTolerancePct
+  id: PriceTolerancePct
+  parent: Meridian.Storage.Services.ConsolidationOptions
+  langs:
+  - csharp
+  - vb
+  name: PriceTolerancePct
+  nameWithType: ConsolidationOptions.PriceTolerancePct
+  fullName: Meridian.Storage.Services.ConsolidationOptions.PriceTolerancePct
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PriceTolerancePct
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 648
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public decimal PriceTolerancePct { get; init; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public Property PriceTolerancePct As Decimal
+  overload: Meridian.Storage.Services.ConsolidationOptions.PriceTolerancePct*
+- uid: Meridian.Storage.Services.ConsolidationOptions.VolumeTolerancePct
+  commentId: P:Meridian.Storage.Services.ConsolidationOptions.VolumeTolerancePct
+  id: VolumeTolerancePct
+  parent: Meridian.Storage.Services.ConsolidationOptions
+  langs:
+  - csharp
+  - vb
+  name: VolumeTolerancePct
+  nameWithType: ConsolidationOptions.VolumeTolerancePct
+  fullName: Meridian.Storage.Services.ConsolidationOptions.VolumeTolerancePct
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/DataQualityService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: VolumeTolerancePct
+    path: ../../src/Meridian.Storage/Services/DataQualityService.cs
+    startLine: 649
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: public long VolumeTolerancePct { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: Public Property VolumeTolerancePct As Long
+  overload: Meridian.Storage.Services.ConsolidationOptions.VolumeTolerancePct*
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Storage.Services.ConsolidationOptions}
+  commentId: T:System.IEquatable{Meridian.Storage.Services.ConsolidationOptions}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<ConsolidationOptions>
+  nameWithType: IEquatable<ConsolidationOptions>
+  fullName: System.IEquatable<Meridian.Storage.Services.ConsolidationOptions>
+  nameWithType.vb: IEquatable(Of ConsolidationOptions)
+  fullName.vb: System.IEquatable(Of Meridian.Storage.Services.ConsolidationOptions)
+  name.vb: IEquatable(Of ConsolidationOptions)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Storage.Services.ConsolidationOptions
+    name: ConsolidationOptions
+    href: Meridian.Storage.Services.ConsolidationOptions.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Storage.Services.ConsolidationOptions
+    name: ConsolidationOptions
+    href: Meridian.Storage.Services.ConsolidationOptions.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Storage.Services.ConsolidationOptions.#ctor*
+  commentId: Overload:Meridian.Storage.Services.ConsolidationOptions.#ctor
+  href: Meridian.Storage.Services.ConsolidationOptions.html#Meridian_Storage_Services_ConsolidationOptions__ctor_Meridian_Storage_Services_SourceSelectionStrategy_System_Boolean_System_Boolean_System_Decimal_System_Int64_
+  name: ConsolidationOptions
+  nameWithType: ConsolidationOptions.ConsolidationOptions
+  fullName: Meridian.Storage.Services.ConsolidationOptions.ConsolidationOptions
+  nameWithType.vb: ConsolidationOptions.New
+  fullName.vb: Meridian.Storage.Services.ConsolidationOptions.New
+  name.vb: New
+- uid: Meridian.Storage.Services.SourceSelectionStrategy
+  commentId: T:Meridian.Storage.Services.SourceSelectionStrategy
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.SourceSelectionStrategy.html
+  name: SourceSelectionStrategy
+  nameWithType: SourceSelectionStrategy
+  fullName: Meridian.Storage.Services.SourceSelectionStrategy
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Storage.Services.ConsolidationOptions.Strategy*
+  commentId: Overload:Meridian.Storage.Services.ConsolidationOptions.Strategy
+  href: Meridian.Storage.Services.ConsolidationOptions.html#Meridian_Storage_Services_ConsolidationOptions_Strategy
+  name: Strategy
+  nameWithType: ConsolidationOptions.Strategy
+  fullName: Meridian.Storage.Services.ConsolidationOptions.Strategy
+- uid: Meridian.Storage.Services.ConsolidationOptions.FillGapsFromAlternates*
+  commentId: Overload:Meridian.Storage.Services.ConsolidationOptions.FillGapsFromAlternates
+  href: Meridian.Storage.Services.ConsolidationOptions.html#Meridian_Storage_Services_ConsolidationOptions_FillGapsFromAlternates
+  name: FillGapsFromAlternates
+  nameWithType: ConsolidationOptions.FillGapsFromAlternates
+  fullName: Meridian.Storage.Services.ConsolidationOptions.FillGapsFromAlternates
+- uid: Meridian.Storage.Services.ConsolidationOptions.ValidateCrossSource*
+  commentId: Overload:Meridian.Storage.Services.ConsolidationOptions.ValidateCrossSource
+  href: Meridian.Storage.Services.ConsolidationOptions.html#Meridian_Storage_Services_ConsolidationOptions_ValidateCrossSource
+  name: ValidateCrossSource
+  nameWithType: ConsolidationOptions.ValidateCrossSource
+  fullName: Meridian.Storage.Services.ConsolidationOptions.ValidateCrossSource
+- uid: Meridian.Storage.Services.ConsolidationOptions.PriceTolerancePct*
+  commentId: Overload:Meridian.Storage.Services.ConsolidationOptions.PriceTolerancePct
+  href: Meridian.Storage.Services.ConsolidationOptions.html#Meridian_Storage_Services_ConsolidationOptions_PriceTolerancePct
+  name: PriceTolerancePct
+  nameWithType: ConsolidationOptions.PriceTolerancePct
+  fullName: Meridian.Storage.Services.ConsolidationOptions.PriceTolerancePct
+- uid: Meridian.Storage.Services.ConsolidationOptions.VolumeTolerancePct*
+  commentId: Overload:Meridian.Storage.Services.ConsolidationOptions.VolumeTolerancePct
+  href: Meridian.Storage.Services.ConsolidationOptions.html#Meridian_Storage_Services_ConsolidationOptions_VolumeTolerancePct
+  name: VolumeTolerancePct
+  nameWithType: ConsolidationOptions.VolumeTolerancePct
+  fullName: Meridian.Storage.Services.ConsolidationOptions.VolumeTolerancePct

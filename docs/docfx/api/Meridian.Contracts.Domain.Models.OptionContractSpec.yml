@@ -1,0 +1,1095 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec
+  commentId: T:Meridian.Contracts.Domain.Models.OptionContractSpec
+  id: OptionContractSpec
+  parent: Meridian.Contracts.Domain.Models
+  children:
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.#ctor(System.String,System.Decimal,System.DateOnly,Meridian.Contracts.Domain.Enums.OptionRight,Meridian.Contracts.Domain.Enums.OptionStyle,System.UInt16,System.String,System.String,System.String,Meridian.Contracts.Domain.Enums.InstrumentType)
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.Currency
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.DaysToExpiration(System.DateOnly)
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.Exchange
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.Expiration
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.InstrumentType
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.IsExpired(System.DateOnly)
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.Multiplier
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.OccSymbol
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.Right
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.Strike
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.Style
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.ToOccSymbol
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.ToString
+  - Meridian.Contracts.Domain.Models.OptionContractSpec.UnderlyingSymbol
+  langs:
+  - csharp
+  - vb
+  name: OptionContractSpec
+  nameWithType: OptionContractSpec
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionContractSpec
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 9
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Specification for an exchange-traded option contract.
+
+    Encapsulates the defining characteristics of an options contract:
+
+    underlying symbol, strike, expiration, right, style, and multiplier.
+  example: []
+  syntax:
+    content: 'public sealed record OptionContractSpec : IEquatable<OptionContractSpec>'
+    content.vb: Public NotInheritable Class OptionContractSpec Implements IEquatable(Of OptionContractSpec)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Contracts.Domain.Models.OptionContractSpec}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.UnderlyingSymbol
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.UnderlyingSymbol
+  id: UnderlyingSymbol
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: UnderlyingSymbol
+  nameWithType: OptionContractSpec.UnderlyingSymbol
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.UnderlyingSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UnderlyingSymbol
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the underlying symbol (e.g., "AAPL", "SPX", "QQQ").
+  example: []
+  syntax:
+    content: public string UnderlyingSymbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property UnderlyingSymbol As String
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.UnderlyingSymbol*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Strike
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.Strike
+  id: Strike
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: Strike
+  nameWithType: OptionContractSpec.Strike
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Strike
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Strike
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the strike price of the option contract.
+  example: []
+  syntax:
+    content: public decimal Strike { get; }
+    parameters: []
+    return:
+      type: System.Decimal
+    content.vb: Public ReadOnly Property Strike As Decimal
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.Strike*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Expiration
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.Expiration
+  id: Expiration
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: Expiration
+  nameWithType: OptionContractSpec.Expiration
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Expiration
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Expiration
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the expiration date of the option contract.
+  example: []
+  syntax:
+    content: public DateOnly Expiration { get; }
+    parameters: []
+    return:
+      type: System.DateOnly
+    content.vb: Public ReadOnly Property Expiration As DateOnly
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.Expiration*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Right
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.Right
+  id: Right
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: Right
+  nameWithType: OptionContractSpec.Right
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Right
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Right
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets whether this is a call or put option.
+  example: []
+  syntax:
+    content: public OptionRight Right { get; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.OptionRight
+    content.vb: Public ReadOnly Property Right As OptionRight
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.Right*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Style
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.Style
+  id: Style
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: Style
+  nameWithType: OptionContractSpec.Style
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Style
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Style
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the exercise style (American or European).
+  example: []
+  syntax:
+    content: public OptionStyle Style { get; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.OptionStyle
+    content.vb: Public ReadOnly Property Style As OptionStyle
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.Style*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Multiplier
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.Multiplier
+  id: Multiplier
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: Multiplier
+  nameWithType: OptionContractSpec.Multiplier
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Multiplier
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Multiplier
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the contract multiplier (typically 100 for equity options).
+  example: []
+  syntax:
+    content: public ushort Multiplier { get; }
+    parameters: []
+    return:
+      type: System.UInt16
+    content.vb: Public ReadOnly Property Multiplier As UShort
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.Multiplier*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Exchange
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.Exchange
+  id: Exchange
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: Exchange
+  nameWithType: OptionContractSpec.Exchange
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Exchange
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Exchange
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 44
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the exchange where the option is listed (e.g., "CBOE", "SMART", "ISE").
+  example: []
+  syntax:
+    content: public string Exchange { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Exchange As String
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.Exchange*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Currency
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.Currency
+  id: Currency
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: Currency
+  nameWithType: OptionContractSpec.Currency
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Currency
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Currency
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the settlement currency (e.g., "USD").
+  example: []
+  syntax:
+    content: public string Currency { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Currency As String
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.Currency*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.OccSymbol
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.OccSymbol
+  id: OccSymbol
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: OccSymbol
+  nameWithType: OptionContractSpec.OccSymbol
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.OccSymbol
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OccSymbol
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 56
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Gets the OCC (Options Clearing Corporation) symbol, if available.
+
+    Format: underlying (padded to 6) + YYMMDD + C/P + strike*1000 (padded to 8).
+
+    Example: "AAPL  260321C00150000" for AAPL Mar 21 2026 150 Call.
+  example: []
+  syntax:
+    content: public string? OccSymbol { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property OccSymbol As String
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.OccSymbol*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.InstrumentType
+  commentId: P:Meridian.Contracts.Domain.Models.OptionContractSpec.InstrumentType
+  id: InstrumentType
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: InstrumentType
+  nameWithType: OptionContractSpec.InstrumentType
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.InstrumentType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: InstrumentType
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the instrument type classification for this contract.
+  example: []
+  syntax:
+    content: public InstrumentType InstrumentType { get; }
+    parameters: []
+    return:
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+    content.vb: Public ReadOnly Property InstrumentType As InstrumentType
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.InstrumentType*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.#ctor(System.String,System.Decimal,System.DateOnly,Meridian.Contracts.Domain.Enums.OptionRight,Meridian.Contracts.Domain.Enums.OptionStyle,System.UInt16,System.String,System.String,System.String,Meridian.Contracts.Domain.Enums.InstrumentType)
+  commentId: M:Meridian.Contracts.Domain.Models.OptionContractSpec.#ctor(System.String,System.Decimal,System.DateOnly,Meridian.Contracts.Domain.Enums.OptionRight,Meridian.Contracts.Domain.Enums.OptionStyle,System.UInt16,System.String,System.String,System.String,Meridian.Contracts.Domain.Enums.InstrumentType)
+  id: '#ctor(System.String,System.Decimal,System.DateOnly,Meridian.Contracts.Domain.Enums.OptionRight,Meridian.Contracts.Domain.Enums.OptionStyle,System.UInt16,System.String,System.String,System.String,Meridian.Contracts.Domain.Enums.InstrumentType)'
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: OptionContractSpec(string, decimal, DateOnly, OptionRight, OptionStyle, ushort, string, string, string?, InstrumentType)
+  nameWithType: OptionContractSpec.OptionContractSpec(string, decimal, DateOnly, OptionRight, OptionStyle, ushort, string, string, string?, InstrumentType)
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.OptionContractSpec(string, decimal, System.DateOnly, Meridian.Contracts.Domain.Enums.OptionRight, Meridian.Contracts.Domain.Enums.OptionStyle, ushort, string, string, string?, Meridian.Contracts.Domain.Enums.InstrumentType)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 66
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Initializes a new instance of the <xref href="Meridian.Contracts.Domain.Models.OptionContractSpec" data-throw-if-not-resolved="false"></xref> record.
+  example: []
+  syntax:
+    content: public OptionContractSpec(string UnderlyingSymbol, decimal Strike, DateOnly Expiration, OptionRight Right, OptionStyle Style = OptionStyle.American, ushort Multiplier = 100, string Exchange = "SMART", string Currency = "USD", string? OccSymbol = null, InstrumentType InstrumentType = InstrumentType.EquityOption)
+    parameters:
+    - id: UnderlyingSymbol
+      type: System.String
+    - id: Strike
+      type: System.Decimal
+    - id: Expiration
+      type: System.DateOnly
+    - id: Right
+      type: Meridian.Contracts.Domain.Enums.OptionRight
+    - id: Style
+      type: Meridian.Contracts.Domain.Enums.OptionStyle
+    - id: Multiplier
+      type: System.UInt16
+    - id: Exchange
+      type: System.String
+    - id: Currency
+      type: System.String
+    - id: OccSymbol
+      type: System.String
+    - id: InstrumentType
+      type: Meridian.Contracts.Domain.Enums.InstrumentType
+    content.vb: Public Sub New(UnderlyingSymbol As String, Strike As Decimal, Expiration As DateOnly, Right As OptionRight, Style As OptionStyle = OptionStyle.American, Multiplier As UShort = 100, Exchange As String = "SMART", Currency As String = "USD", OccSymbol As String = Nothing, InstrumentType As InstrumentType = InstrumentType.EquityOption)
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.#ctor*
+  nameWithType.vb: OptionContractSpec.New(String, Decimal, DateOnly, OptionRight, OptionStyle, UShort, String, String, String, InstrumentType)
+  fullName.vb: Meridian.Contracts.Domain.Models.OptionContractSpec.New(String, Decimal, System.DateOnly, Meridian.Contracts.Domain.Enums.OptionRight, Meridian.Contracts.Domain.Enums.OptionStyle, UShort, String, String, String, Meridian.Contracts.Domain.Enums.InstrumentType)
+  name.vb: New(String, Decimal, DateOnly, OptionRight, OptionStyle, UShort, String, String, String, InstrumentType)
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.ToString
+  commentId: M:Meridian.Contracts.Domain.Models.OptionContractSpec.ToString
+  id: ToString
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: ToString()
+  nameWithType: OptionContractSpec.ToString()
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.ToString()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToString
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 106
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Returns a human-readable description of the contract.
+
+    Example: "AAPL 2026-03-21 150.00 Call"
+  example: []
+  syntax:
+    content: public override string ToString()
+    return:
+      type: System.String
+    content.vb: Public Overrides Function ToString() As String
+  overridden: System.Object.ToString
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.ToString*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.ToOccSymbol
+  commentId: M:Meridian.Contracts.Domain.Models.OptionContractSpec.ToOccSymbol
+  id: ToOccSymbol
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: ToOccSymbol()
+  nameWithType: OptionContractSpec.ToOccSymbol()
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.ToOccSymbol()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ToOccSymbol
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 113
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: >-
+    Generates the OCC-standard symbol for this contract.
+
+    Format: UNDERLYING(6) + YYMMDD + C/P + STRIKE*1000(8)
+  example: []
+  syntax:
+    content: public string ToOccSymbol()
+    return:
+      type: System.String
+    content.vb: Public Function ToOccSymbol() As String
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.ToOccSymbol*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.DaysToExpiration(System.DateOnly)
+  commentId: M:Meridian.Contracts.Domain.Models.OptionContractSpec.DaysToExpiration(System.DateOnly)
+  id: DaysToExpiration(System.DateOnly)
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: DaysToExpiration(DateOnly)
+  nameWithType: OptionContractSpec.DaysToExpiration(DateOnly)
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.DaysToExpiration(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DaysToExpiration
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 126
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Gets the number of calendar days until expiration from the given date.
+  example: []
+  syntax:
+    content: public int DaysToExpiration(DateOnly asOf)
+    parameters:
+    - id: asOf
+      type: System.DateOnly
+    return:
+      type: System.Int32
+    content.vb: Public Function DaysToExpiration(asOf As DateOnly) As Integer
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.DaysToExpiration*
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.IsExpired(System.DateOnly)
+  commentId: M:Meridian.Contracts.Domain.Models.OptionContractSpec.IsExpired(System.DateOnly)
+  id: IsExpired(System.DateOnly)
+  parent: Meridian.Contracts.Domain.Models.OptionContractSpec
+  langs:
+  - csharp
+  - vb
+  name: IsExpired(DateOnly)
+  nameWithType: OptionContractSpec.IsExpired(DateOnly)
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.IsExpired(System.DateOnly)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IsExpired
+    path: ../../src/Meridian.Contracts/Domain/Models/OptionContractSpec.cs
+    startLine: 132
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Domain.Models
+  summary: Returns true if the contract has expired as of the given date.
+  example: []
+  syntax:
+    content: public bool IsExpired(DateOnly asOf)
+    parameters:
+    - id: asOf
+      type: System.DateOnly
+    return:
+      type: System.Boolean
+    content.vb: Public Function IsExpired(asOf As DateOnly) As Boolean
+  overload: Meridian.Contracts.Domain.Models.OptionContractSpec.IsExpired*
+references:
+- uid: Meridian.Contracts.Domain.Models
+  commentId: N:Meridian.Contracts.Domain.Models
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Models
+  nameWithType: Meridian.Contracts.Domain.Models
+  fullName: Meridian.Contracts.Domain.Models
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Models
+    name: Models
+    href: Meridian.Contracts.Domain.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Contracts.Domain.Models.OptionContractSpec}
+  commentId: T:System.IEquatable{Meridian.Contracts.Domain.Models.OptionContractSpec}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OptionContractSpec>
+  nameWithType: IEquatable<OptionContractSpec>
+  fullName: System.IEquatable<Meridian.Contracts.Domain.Models.OptionContractSpec>
+  nameWithType.vb: IEquatable(Of OptionContractSpec)
+  fullName.vb: System.IEquatable(Of Meridian.Contracts.Domain.Models.OptionContractSpec)
+  name.vb: IEquatable(Of OptionContractSpec)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Contracts.Domain.Models.OptionContractSpec
+    name: OptionContractSpec
+    href: Meridian.Contracts.Domain.Models.OptionContractSpec.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Contracts.Domain.Models.OptionContractSpec
+    name: OptionContractSpec
+    href: Meridian.Contracts.Domain.Models.OptionContractSpec.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.UnderlyingSymbol*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.UnderlyingSymbol
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_UnderlyingSymbol
+  name: UnderlyingSymbol
+  nameWithType: OptionContractSpec.UnderlyingSymbol
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.UnderlyingSymbol
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Strike*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.Strike
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_Strike
+  name: Strike
+  nameWithType: OptionContractSpec.Strike
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Strike
+- uid: System.Decimal
+  commentId: T:System.Decimal
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.decimal
+  name: decimal
+  nameWithType: decimal
+  fullName: decimal
+  nameWithType.vb: Decimal
+  fullName.vb: Decimal
+  name.vb: Decimal
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Expiration*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.Expiration
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_Expiration
+  name: Expiration
+  nameWithType: OptionContractSpec.Expiration
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Expiration
+- uid: System.DateOnly
+  commentId: T:System.DateOnly
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.dateonly
+  name: DateOnly
+  nameWithType: DateOnly
+  fullName: System.DateOnly
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Right*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.Right
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_Right
+  name: Right
+  nameWithType: OptionContractSpec.Right
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Right
+- uid: Meridian.Contracts.Domain.Enums.OptionRight
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionRight
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OptionRight.html
+  name: OptionRight
+  nameWithType: OptionRight
+  fullName: Meridian.Contracts.Domain.Enums.OptionRight
+- uid: Meridian.Contracts.Domain.Enums
+  commentId: N:Meridian.Contracts.Domain.Enums
+  href: Meridian.html
+  name: Meridian.Contracts.Domain.Enums
+  nameWithType: Meridian.Contracts.Domain.Enums
+  fullName: Meridian.Contracts.Domain.Enums
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Domain
+    name: Domain
+    href: Meridian.Contracts.Domain.html
+  - name: .
+  - uid: Meridian.Contracts.Domain.Enums
+    name: Enums
+    href: Meridian.Contracts.Domain.Enums.html
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Style*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.Style
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_Style
+  name: Style
+  nameWithType: OptionContractSpec.Style
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Style
+- uid: Meridian.Contracts.Domain.Enums.OptionStyle
+  commentId: T:Meridian.Contracts.Domain.Enums.OptionStyle
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.OptionStyle.html
+  name: OptionStyle
+  nameWithType: OptionStyle
+  fullName: Meridian.Contracts.Domain.Enums.OptionStyle
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Multiplier*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.Multiplier
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_Multiplier
+  name: Multiplier
+  nameWithType: OptionContractSpec.Multiplier
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Multiplier
+- uid: System.UInt16
+  commentId: T:System.UInt16
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.uint16
+  name: ushort
+  nameWithType: ushort
+  fullName: ushort
+  nameWithType.vb: UShort
+  fullName.vb: UShort
+  name.vb: UShort
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Exchange*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.Exchange
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_Exchange
+  name: Exchange
+  nameWithType: OptionContractSpec.Exchange
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Exchange
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.Currency*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.Currency
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_Currency
+  name: Currency
+  nameWithType: OptionContractSpec.Currency
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.Currency
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.OccSymbol*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.OccSymbol
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_OccSymbol
+  name: OccSymbol
+  nameWithType: OptionContractSpec.OccSymbol
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.OccSymbol
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.InstrumentType*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.InstrumentType
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_InstrumentType
+  name: InstrumentType
+  nameWithType: OptionContractSpec.InstrumentType
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.InstrumentType
+- uid: Meridian.Contracts.Domain.Enums.InstrumentType
+  commentId: T:Meridian.Contracts.Domain.Enums.InstrumentType
+  parent: Meridian.Contracts.Domain.Enums
+  href: Meridian.Contracts.Domain.Enums.InstrumentType.html
+  name: InstrumentType
+  nameWithType: InstrumentType
+  fullName: Meridian.Contracts.Domain.Enums.InstrumentType
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec
+  commentId: T:Meridian.Contracts.Domain.Models.OptionContractSpec
+  parent: Meridian.Contracts.Domain.Models
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html
+  name: OptionContractSpec
+  nameWithType: OptionContractSpec
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.#ctor*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.#ctor
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec__ctor_System_String_System_Decimal_System_DateOnly_Meridian_Contracts_Domain_Enums_OptionRight_Meridian_Contracts_Domain_Enums_OptionStyle_System_UInt16_System_String_System_String_System_String_Meridian_Contracts_Domain_Enums_InstrumentType_
+  name: OptionContractSpec
+  nameWithType: OptionContractSpec.OptionContractSpec
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.OptionContractSpec
+  nameWithType.vb: OptionContractSpec.New
+  fullName.vb: Meridian.Contracts.Domain.Models.OptionContractSpec.New
+  name.vb: New
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.ToString*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.ToString
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_ToString
+  name: ToString
+  nameWithType: OptionContractSpec.ToString
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.ToString
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.ToOccSymbol*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.ToOccSymbol
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_ToOccSymbol
+  name: ToOccSymbol
+  nameWithType: OptionContractSpec.ToOccSymbol
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.ToOccSymbol
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.DaysToExpiration*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.DaysToExpiration
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_DaysToExpiration_System_DateOnly_
+  name: DaysToExpiration
+  nameWithType: OptionContractSpec.DaysToExpiration
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.DaysToExpiration
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Contracts.Domain.Models.OptionContractSpec.IsExpired*
+  commentId: Overload:Meridian.Contracts.Domain.Models.OptionContractSpec.IsExpired
+  href: Meridian.Contracts.Domain.Models.OptionContractSpec.html#Meridian_Contracts_Domain_Models_OptionContractSpec_IsExpired_System_DateOnly_
+  name: IsExpired
+  nameWithType: OptionContractSpec.IsExpired
+  fullName: Meridian.Contracts.Domain.Models.OptionContractSpec.IsExpired
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean

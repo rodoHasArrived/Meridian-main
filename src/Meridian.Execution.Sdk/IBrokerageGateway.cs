@@ -3,7 +3,7 @@ namespace Meridian.Execution.Sdk;
 /// <summary>
 /// Extended execution gateway contract for full brokerage providers.
 /// Adds account querying, position sync, and connection lifecycle on top of
-/// <see cref="IExecutionGateway"/>. Each broker (Alpaca, IB, StockSharp, etc.)
+/// <see cref="IExecutionGateway"/>. Each broker (Alpaca, IB, etc.)
 /// implements this interface to expose its full trading capabilities.
 /// </summary>
 public interface IBrokerageGateway : IExecutionGateway, IAsyncDisposable
@@ -94,6 +94,44 @@ public sealed record BrokerageCapabilities
             SupportsFractionalShares = fractional,
             SupportsExtendedHours = extendedHours,
         };
+
+    /// <summary>
+    /// Brokerage capabilities for brokers that support both US equities and fixed income
+    /// instruments (US Treasuries, corporate bonds, municipal bonds).
+    /// Fixed income orders may use notional (dollar-amount) sizing in addition to share qty.
+    /// </summary>
+    public static BrokerageCapabilities UsEquityAndFixedIncome(
+        bool modification = true,
+        bool partialFills = true,
+        bool shortSelling = true,
+        bool fractional = true,
+        bool extendedHours = false) => new()
+        {
+            SupportedOrderTypes = new HashSet<OrderType>
+        {
+            OrderType.Market,
+            OrderType.Limit,
+            OrderType.StopMarket,
+            OrderType.StopLimit
+        },
+            SupportedTimeInForce = new HashSet<TimeInForce>
+        {
+            TimeInForce.Day,
+            TimeInForce.GoodTilCancelled,
+            TimeInForce.ImmediateOrCancel,
+            TimeInForce.FillOrKill
+        },
+            SupportsOrderModification = modification,
+            SupportsPartialFills = partialFills,
+            SupportsShortSelling = shortSelling,
+            SupportsFractionalShares = fractional,
+            SupportsExtendedHours = extendedHours,
+            SupportedAssetClasses = ["equity", "us_treasury", "bond"],
+            Extensions = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["supportsNotionalOrders"] = "true",
+            }
+        };
 }
 
 /// <summary>
@@ -128,8 +166,17 @@ public sealed record AccountInfo
 /// </summary>
 public sealed record BrokerPosition
 {
+    /// <summary>Stable provider-side identifier for this position.</summary>
+    public string? PositionId { get; init; }
+
     /// <summary>Ticker symbol.</summary>
     public required string Symbol { get; init; }
+
+    /// <summary>Underlying symbol for derivatives; defaults to <see cref="Symbol"/> for spot assets.</summary>
+    public string? UnderlyingSymbol { get; init; }
+
+    /// <summary>Human-readable description suitable for blotter-style UIs.</summary>
+    public string? Description { get; init; }
 
     /// <summary>Signed quantity (negative for short positions).</summary>
     public decimal Quantity { get; init; }
@@ -146,8 +193,26 @@ public sealed record BrokerPosition
     /// <summary>Unrealized P&amp;L.</summary>
     public decimal UnrealizedPnl { get; init; }
 
-    /// <summary>Asset class (e.g., "equity", "crypto").</summary>
+    /// <summary>Asset class (e.g., "equity", "us_treasury", "bond").</summary>
     public string AssetClass { get; init; } = "equity";
+
+    /// <summary>Expiration date for derivative positions when available.</summary>
+    public DateOnly? Expiration { get; init; }
+
+    /// <summary>Strike price for option positions when available.</summary>
+    public decimal? Strike { get; init; }
+
+    /// <summary>Option right or derivative-side classification (e.g., "call", "put").</summary>
+    public string? Right { get; init; }
+
+    /// <summary>Provider-specific metadata required to manage the position.</summary>
+    public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+
+    /// <summary>
+    /// Accrued interest for fixed income positions (bonds, treasuries).
+    /// Null for non-fixed-income positions.
+    /// </summary>
+    public decimal? AccruedInterest { get; init; }
 }
 
 /// <summary>

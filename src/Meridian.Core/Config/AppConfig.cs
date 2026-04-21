@@ -11,14 +11,13 @@ namespace Meridian.Application.Config;
 /// Market data provider selector:
 /// - <see cref="DataSourceKind.IB"/> uses Interactive Brokers via IMarketDataClient/IBMarketDataClient.
 /// - <see cref="DataSourceKind.Alpaca"/> uses Alpaca market data via WebSocket (trades; quotes optional in future).
-/// - <see cref="DataSourceKind.StockSharp"/> uses StockSharp connectors (Rithmic, IQFeed, CQG, IB, etc.).
 /// - <see cref="DataSourceKind.NYSE"/> uses the NYSE market data feed.
 /// - <see cref="DataSourceKind.Synthetic"/> uses the built-in synthetic historical/reference dataset for offline development.
 /// </param>
 /// <param name="Alpaca">Alpaca provider options (required if DataSource == DataSourceKind.Alpaca).</param>
 /// <param name="IB">Interactive Brokers provider options (required if DataSource == DataSourceKind.IB).</param>
+/// <param name="IBClientPortal">Interactive Brokers Client Portal HTTP settings for portfolio/account import.</param>
 /// <param name="Polygon">Polygon provider options (required if DataSource == DataSourceKind.Polygon).</param>
-/// <param name="StockSharp">StockSharp connector configuration (required if DataSource == DataSourceKind.StockSharp).</param>
 /// <param name="Synthetic">Synthetic market-data provider configuration for offline/backtest development.</param>
 /// <param name="Storage">Storage configuration options (naming convention, partitioning, etc.).</param>
 /// <param name="Symbols">Symbol subscriptions.</param>
@@ -33,14 +32,15 @@ namespace Meridian.Application.Config;
 /// <param name="OfflineFirstMode">When true, enables air-gapped offline-first mode: backfill requests are queued and deferred until connectivity is restored. Default is false.</param>
 /// <param name="PluginsPath">Optional directory path for loading external data source plugins. When set, plugins are loaded and registered dynamically.</param>
 /// <param name="CoLocationProfile">When true, activates exchange colocation profile: low-latency GC settings and network tuning. Default is false.</param>
+/// <param name="ProviderConnections">Relationship-aware provider operations configuration (connections, bindings, policies).</param>
 public sealed record AppConfig(
     string DataRoot = "data",
     bool? Compress = null,
     [property: JsonConverter(typeof(DataSourceKindConverter))] DataSourceKind DataSource = DataSourceKind.Synthetic,
     AlpacaOptions? Alpaca = null,
     IBOptions? IB = null,
+    IBClientPortalOptions? IBClientPortal = null,
     PolygonOptions? Polygon = null,
-    StockSharpConfig? StockSharp = null,
     SyntheticMarketDataConfig? Synthetic = null,
     StorageConfig? Storage = null,
     SymbolConfig[]? Symbols = null,
@@ -54,7 +54,8 @@ public sealed record AppConfig(
     ValidationPipelineConfig? Validation = null,
     bool OfflineFirstMode = false,
     string? PluginsPath = null,
-    bool CoLocationProfile = false
+    bool CoLocationProfile = false,
+    ProviderConnectionsConfig? ProviderConnections = null
 );
 
 /// <summary>

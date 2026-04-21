@@ -46,6 +46,15 @@ public static class DtoExtensions
     );
 
     /// <summary>
+    /// Converts IBClientPortalOptionsDto to IBClientPortalOptions domain type.
+    /// </summary>
+    public static IBClientPortalOptions ToDomain(this IBClientPortalOptionsDto dto) => new(
+        Enabled: dto.Enabled,
+        BaseUrl: dto.BaseUrl,
+        AllowSelfSignedCertificates: dto.AllowSelfSignedCertificates
+    );
+
+    /// <summary>
     /// Converts DerivativesConfigDto to DerivativesConfig domain type.
     /// </summary>
     public static DerivativesConfig ToDomain(this DerivativesConfigDto dto) => new(

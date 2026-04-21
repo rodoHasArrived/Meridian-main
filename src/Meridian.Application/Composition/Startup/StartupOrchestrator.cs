@@ -12,7 +12,6 @@ namespace Meridian.Application.Composition.Startup;
 /// <para><b>Phase sequence:</b></para>
 /// <list type="number">
 ///   <item><description>Command dispatch — one-shot CLI commands exit here.</description></item>
-///   <item><description>Web mode check — HTTP-only dashboard exits here (skips validation).</description></item>
 ///   <item><description>Validation — configuration, file permissions, schema compatibility.</description></item>
 ///   <item><description>Runtime selection — desktop, backfill, or streaming collector.</description></item>
 /// </list>
@@ -40,19 +39,12 @@ public sealed class StartupOrchestrator
         if (commandResult.HasValue)
             return commandResult.Value;
 
-        // Phase 2 — Web mode (skips validation; the web server handles its own health checks)
-        if (ctx.Deployment.Mode == DeploymentMode.Web)
-        {
-            var webRunner = new WebModeRunner(_log, _dashboardServerFactory);
-            return await webRunner.RunAsync(ctx, ctx.CancellationToken);
-        }
-
-        // Phase 3 — Validation
+        // Phase 2 — Validation
         var validationResult = await RunValidationAsync(ctx);
         if (!validationResult.Success)
             return validationResult.ExitCode.GetValueOrDefault(1);
 
-        // Phase 4 — Runtime selection
+        // Phase 3 — Runtime selection
         var plan = ResolvePlan(ctx);
         return await ExecutePlanAsync(plan);
     }

@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Backtesting.Plugins
+  commentId: N:Meridian.Backtesting.Plugins
+  id: Meridian.Backtesting.Plugins
+  children:
+  - Meridian.Backtesting.Plugins.StrategyParameterInfo
+  - Meridian.Backtesting.Plugins.StrategyPluginLoader
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Backtesting.Plugins
+  nameWithType: Meridian.Backtesting.Plugins
+  fullName: Meridian.Backtesting.Plugins
+  type: Namespace
+  assemblies:
+  - Meridian.Backtesting
+references:
+- uid: Meridian.Backtesting.Plugins.StrategyPluginLoader
+  commentId: T:Meridian.Backtesting.Plugins.StrategyPluginLoader
+  href: Meridian.Backtesting.Plugins.StrategyPluginLoader.html
+  name: StrategyPluginLoader
+  nameWithType: StrategyPluginLoader
+  fullName: Meridian.Backtesting.Plugins.StrategyPluginLoader
+- uid: Meridian.Backtesting.Plugins.StrategyParameterInfo
+  commentId: T:Meridian.Backtesting.Plugins.StrategyParameterInfo
+  href: Meridian.Backtesting.Plugins.StrategyParameterInfo.html
+  name: StrategyParameterInfo
+  nameWithType: StrategyParameterInfo
+  fullName: Meridian.Backtesting.Plugins.StrategyParameterInfo

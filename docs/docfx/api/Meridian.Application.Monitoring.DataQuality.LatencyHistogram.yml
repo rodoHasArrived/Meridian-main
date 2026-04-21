@@ -1,0 +1,1128 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  commentId: T:Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  id: LatencyHistogram
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.#ctor(Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig)
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Dispose
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetAllDistributions
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetBuckets(System.String,System.String)
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetDistribution(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetHighLatencySymbols(System.Double)
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetPercentile(System.String,System.Double,System.String)
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetStatistics
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(System.String,System.DateTimeOffset,System.DateTimeOffset,System.String)
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(System.String,System.Double,System.String)
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Reset(System.String,System.String)
+  - Meridian.Application.Monitoring.DataQuality.LatencyHistogram.ResetAll
+  langs:
+  - csharp
+  - vb
+  name: LatencyHistogram
+  nameWithType: LatencyHistogram
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: LatencyHistogram
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: >-
+    Tracks latency distributions and provides histogram data for visualization.
+
+    Supports per-symbol and per-provider tracking with percentile calculations.
+  example: []
+  syntax:
+    content: 'public sealed class LatencyHistogram : IDisposable'
+    content.vb: Public NotInheritable Class LatencyHistogram Implements IDisposable
+  inheritance:
+  - System.Object
+  implements:
+  - System.IDisposable
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.#ctor(Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.#ctor(Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig)
+  id: '#ctor(Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig)'
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: LatencyHistogram(LatencyHistogramConfig?)
+  nameWithType: LatencyHistogram.LatencyHistogram(LatencyHistogramConfig?)
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.LatencyHistogram(Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: public LatencyHistogram(LatencyHistogramConfig? config = null)
+    parameters:
+    - id: config
+      type: Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig
+    content.vb: Public Sub New(config As LatencyHistogramConfig = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.#ctor*
+  nameWithType.vb: LatencyHistogram.New(LatencyHistogramConfig)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.New(Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig)
+  name.vb: New(LatencyHistogramConfig)
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(System.String,System.Double,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(System.String,System.Double,System.String)
+  id: RecordLatency(System.String,System.Double,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: RecordLatency(string, double, string?)
+  nameWithType: LatencyHistogram.RecordLatency(string, double, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(string, double, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordLatency
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Records a latency measurement in milliseconds.
+  example: []
+  syntax:
+    content: public void RecordLatency(string symbol, double latencyMs, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: latencyMs
+      type: System.Double
+    - id: provider
+      type: System.String
+    content.vb: Public Sub RecordLatency(symbol As String, latencyMs As Double, provider As String = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency*
+  nameWithType.vb: LatencyHistogram.RecordLatency(String, Double, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(String, Double, String)
+  name.vb: RecordLatency(String, Double, String)
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(System.String,System.DateTimeOffset,System.DateTimeOffset,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(System.String,System.DateTimeOffset,System.DateTimeOffset,System.String)
+  id: RecordLatency(System.String,System.DateTimeOffset,System.DateTimeOffset,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: RecordLatency(string, DateTimeOffset, DateTimeOffset, string?)
+  nameWithType: LatencyHistogram.RecordLatency(string, DateTimeOffset, DateTimeOffset, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(string, System.DateTimeOffset, System.DateTimeOffset, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RecordLatency
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 48
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Records latency from timestamps.
+  example: []
+  syntax:
+    content: public void RecordLatency(string symbol, DateTimeOffset eventTimestamp, DateTimeOffset receiveTimestamp, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: eventTimestamp
+      type: System.DateTimeOffset
+    - id: receiveTimestamp
+      type: System.DateTimeOffset
+    - id: provider
+      type: System.String
+    content.vb: Public Sub RecordLatency(symbol As String, eventTimestamp As DateTimeOffset, receiveTimestamp As DateTimeOffset, provider As String = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency*
+  nameWithType.vb: LatencyHistogram.RecordLatency(String, DateTimeOffset, DateTimeOffset, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency(String, System.DateTimeOffset, System.DateTimeOffset, String)
+  name.vb: RecordLatency(String, DateTimeOffset, DateTimeOffset, String)
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetDistribution(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetDistribution(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  id: GetDistribution(System.String,System.String,System.Nullable{System.DateTimeOffset},System.Nullable{System.DateTimeOffset})
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: GetDistribution(string, string?, DateTimeOffset?, DateTimeOffset?)
+  nameWithType: LatencyHistogram.GetDistribution(string, string?, DateTimeOffset?, DateTimeOffset?)
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetDistribution(string, string?, System.DateTimeOffset?, System.DateTimeOffset?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetDistribution
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets the latency distribution for a symbol.
+  example: []
+  syntax:
+    content: public LatencyDistribution? GetDistribution(string symbol, string? provider = null, DateTimeOffset? from = null, DateTimeOffset? to = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    - id: from
+      type: System.Nullable{System.DateTimeOffset}
+    - id: to
+      type: System.Nullable{System.DateTimeOffset}
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.LatencyDistribution
+    content.vb: Public Function GetDistribution(symbol As String, provider As String = Nothing, from As DateTimeOffset? = Nothing, [to] As DateTimeOffset? = Nothing) As LatencyDistribution
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetDistribution*
+  nameWithType.vb: LatencyHistogram.GetDistribution(String, String, DateTimeOffset?, DateTimeOffset?)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetDistribution(String, String, System.DateTimeOffset?, System.DateTimeOffset?)
+  name.vb: GetDistribution(String, String, DateTimeOffset?, DateTimeOffset?)
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetAllDistributions
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetAllDistributions
+  id: GetAllDistributions
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: GetAllDistributions()
+  nameWithType: LatencyHistogram.GetAllDistributions()
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetAllDistributions()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetAllDistributions
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 71
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets latency distributions for all tracked symbols.
+  example: []
+  syntax:
+    content: public IReadOnlyList<LatencyDistribution> GetAllDistributions()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.LatencyDistribution}
+    content.vb: Public Function GetAllDistributions() As IReadOnlyList(Of LatencyDistribution)
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetAllDistributions*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetBuckets(System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetBuckets(System.String,System.String)
+  id: GetBuckets(System.String,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: GetBuckets(string, string?)
+  nameWithType: LatencyHistogram.GetBuckets(string, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetBuckets(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetBuckets
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 89
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets the histogram buckets for visualization.
+  example: []
+  syntax:
+    content: public IReadOnlyList<HistogramBucket> GetBuckets(string symbol, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.HistogramBucket}
+    content.vb: Public Function GetBuckets(symbol As String, provider As String = Nothing) As IReadOnlyList(Of HistogramBucket)
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetBuckets*
+  nameWithType.vb: LatencyHistogram.GetBuckets(String, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetBuckets(String, String)
+  name.vb: GetBuckets(String, String)
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetPercentile(System.String,System.Double,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetPercentile(System.String,System.Double,System.String)
+  id: GetPercentile(System.String,System.Double,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: GetPercentile(string, double, string?)
+  nameWithType: LatencyHistogram.GetPercentile(string, double, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetPercentile(string, double, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetPercentile
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 103
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets percentile latency value.
+  example: []
+  syntax:
+    content: public double GetPercentile(string symbol, double percentile, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: percentile
+      type: System.Double
+    - id: provider
+      type: System.String
+    return:
+      type: System.Double
+    content.vb: Public Function GetPercentile(symbol As String, percentile As Double, provider As String = Nothing) As Double
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetPercentile*
+  nameWithType.vb: LatencyHistogram.GetPercentile(String, Double, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetPercentile(String, Double, String)
+  name.vb: GetPercentile(String, Double, String)
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetStatistics
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetStatistics
+  id: GetStatistics
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: GetStatistics()
+  nameWithType: LatencyHistogram.GetStatistics()
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetStatistics()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetStatistics
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 117
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets overall latency statistics.
+  example: []
+  syntax:
+    content: public LatencyStatistics GetStatistics()
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+    content.vb: Public Function GetStatistics() As LatencyStatistics
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetStatistics*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetHighLatencySymbols(System.Double)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetHighLatencySymbols(System.Double)
+  id: GetHighLatencySymbols(System.Double)
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: GetHighLatencySymbols(double)
+  nameWithType: LatencyHistogram.GetHighLatencySymbols(double)
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetHighLatencySymbols(double)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetHighLatencySymbols
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 161
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gets symbols with latency above threshold.
+  example: []
+  syntax:
+    content: public IReadOnlyList<(string Symbol, double P99Ms)> GetHighLatencySymbols(double thresholdMs)
+    parameters:
+    - id: thresholdMs
+      type: System.Double
+    return:
+      type: System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.String,System.Double}}
+    content.vb: Public Function GetHighLatencySymbols(thresholdMs As Double) As IReadOnlyList(Of (Symbol As String, P99Ms As Double))
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetHighLatencySymbols*
+  nameWithType.vb: LatencyHistogram.GetHighLatencySymbols(Double)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetHighLatencySymbols(Double)
+  name.vb: GetHighLatencySymbols(Double)
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Reset(System.String,System.String)
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Reset(System.String,System.String)
+  id: Reset(System.String,System.String)
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: Reset(string, string?)
+  nameWithType: LatencyHistogram.Reset(string, string?)
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Reset(string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Reset
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 177
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Resets tracking for a symbol.
+  example: []
+  syntax:
+    content: public void Reset(string symbol, string? provider = null)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: provider
+      type: System.String
+    content.vb: Public Sub Reset(symbol As String, provider As String = Nothing)
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Reset*
+  nameWithType.vb: LatencyHistogram.Reset(String, String)
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Reset(String, String)
+  name.vb: Reset(String, String)
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.ResetAll
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.ResetAll
+  id: ResetAll
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: ResetAll()
+  nameWithType: LatencyHistogram.ResetAll()
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.ResetAll()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResetAll
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 186
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Resets all tracking.
+  example: []
+  syntax:
+    content: public void ResetAll()
+    content.vb: Public Sub ResetAll()
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.ResetAll*
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Dispose
+  commentId: M:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Dispose
+  id: Dispose
+  parent: Meridian.Application.Monitoring.DataQuality.LatencyHistogram
+  langs:
+  - csharp
+  - vb
+  name: Dispose()
+  nameWithType: LatencyHistogram.Dispose()
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Dispose()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Dispose
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/LatencyHistogram.cs
+    startLine: 214
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+  example: []
+  syntax:
+    content: public void Dispose()
+    content.vb: Public Sub Dispose()
+  overload: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Dispose*
+  implements:
+  - System.IDisposable.Dispose
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IDisposable
+  commentId: T:System.IDisposable
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable
+  name: IDisposable
+  nameWithType: IDisposable
+  fullName: System.IDisposable
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.#ctor*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.#ctor
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram__ctor_Meridian_Application_Monitoring_DataQuality_LatencyHistogramConfig_
+  name: LatencyHistogram
+  nameWithType: LatencyHistogram.LatencyHistogram
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.LatencyHistogram
+  nameWithType.vb: LatencyHistogram.New
+  fullName.vb: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.New
+  name.vb: New
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig
+  commentId: T:Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig.html
+  name: LatencyHistogramConfig
+  nameWithType: LatencyHistogramConfig
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogramConfig
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_RecordLatency_System_String_System_Double_System_String_
+  name: RecordLatency
+  nameWithType: LatencyHistogram.RecordLatency
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.RecordLatency
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetDistribution*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetDistribution
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_GetDistribution_System_String_System_String_System_Nullable_System_DateTimeOffset__System_Nullable_System_DateTimeOffset__
+  name: GetDistribution
+  nameWithType: LatencyHistogram.GetDistribution
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetDistribution
+- uid: System.Nullable{System.DateTimeOffset}
+  commentId: T:System.Nullable{System.DateTimeOffset}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset?
+  nameWithType: DateTimeOffset?
+  fullName: System.DateTimeOffset?
+  spec.csharp:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+  spec.vb:
+  - uid: System.DateTimeOffset
+    name: DateTimeOffset
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  - name: '?'
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyDistribution
+  commentId: T:Meridian.Application.Monitoring.DataQuality.LatencyDistribution
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.LatencyDistribution.html
+  name: LatencyDistribution
+  nameWithType: LatencyDistribution
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyDistribution
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetAllDistributions*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetAllDistributions
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_GetAllDistributions
+  name: GetAllDistributions
+  nameWithType: LatencyHistogram.GetAllDistributions
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetAllDistributions
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.LatencyDistribution}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.LatencyDistribution}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<LatencyDistribution>
+  nameWithType: IReadOnlyList<LatencyDistribution>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.LatencyDistribution>
+  nameWithType.vb: IReadOnlyList(Of LatencyDistribution)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.LatencyDistribution)
+  name.vb: IReadOnlyList(Of LatencyDistribution)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.LatencyDistribution
+    name: LatencyDistribution
+    href: Meridian.Application.Monitoring.DataQuality.LatencyDistribution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.LatencyDistribution
+    name: LatencyDistribution
+    href: Meridian.Application.Monitoring.DataQuality.LatencyDistribution.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetBuckets*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetBuckets
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_GetBuckets_System_String_System_String_
+  name: GetBuckets
+  nameWithType: LatencyHistogram.GetBuckets
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetBuckets
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.HistogramBucket}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Application.Monitoring.DataQuality.HistogramBucket}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<HistogramBucket>
+  nameWithType: IReadOnlyList<HistogramBucket>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Application.Monitoring.DataQuality.HistogramBucket>
+  nameWithType.vb: IReadOnlyList(Of HistogramBucket)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Application.Monitoring.DataQuality.HistogramBucket)
+  name.vb: IReadOnlyList(Of HistogramBucket)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Application.Monitoring.DataQuality.HistogramBucket
+    name: HistogramBucket
+    href: Meridian.Application.Monitoring.DataQuality.HistogramBucket.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Application.Monitoring.DataQuality.HistogramBucket
+    name: HistogramBucket
+    href: Meridian.Application.Monitoring.DataQuality.HistogramBucket.html
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetPercentile*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetPercentile
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_GetPercentile_System_String_System_Double_System_String_
+  name: GetPercentile
+  nameWithType: LatencyHistogram.GetPercentile
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetPercentile
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetStatistics*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetStatistics
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_GetStatistics
+  name: GetStatistics
+  nameWithType: LatencyHistogram.GetStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  commentId: T:Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.LatencyStatistics.html
+  name: LatencyStatistics
+  nameWithType: LatencyStatistics
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyStatistics
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetHighLatencySymbols*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetHighLatencySymbols
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_GetHighLatencySymbols_System_Double_
+  name: GetHighLatencySymbols
+  nameWithType: LatencyHistogram.GetHighLatencySymbols
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.GetHighLatencySymbols
+- uid: System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.String,System.Double}}
+  commentId: T:System.Collections.Generic.IReadOnlyList{System.ValueTuple{System.String,System.Double}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<(string Symbol, double P99Ms)>
+  nameWithType: IReadOnlyList<(string Symbol, double P99Ms)>
+  fullName: System.Collections.Generic.IReadOnlyList<(string Symbol, double P99Ms)>
+  nameWithType.vb: IReadOnlyList(Of (Symbol As String, P99Ms As Double))
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of (Symbol As String, P99Ms As Double))
+  name.vb: IReadOnlyList(Of (Symbol As String, P99Ms As Double))
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Double}.Symbol
+    name: Symbol
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.double-.symbol
+  - name: ','
+  - name: " "
+  - uid: System.Double
+    name: double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Double}.P99Ms
+    name: P99Ms
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.double-.p99ms
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.Double}.Symbol
+    name: Symbol
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.double-.symbol
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Double}.P99Ms
+    name: P99Ms
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.double-.p99ms
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Double
+    name: Double
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.double
+  - name: )
+  - name: )
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Reset*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Reset
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_Reset_System_String_System_String_
+  name: Reset
+  nameWithType: LatencyHistogram.Reset
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Reset
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.ResetAll*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.ResetAll
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_ResetAll
+  name: ResetAll
+  nameWithType: LatencyHistogram.ResetAll
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.ResetAll
+- uid: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Dispose*
+  commentId: Overload:Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Dispose
+  href: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.html#Meridian_Application_Monitoring_DataQuality_LatencyHistogram_Dispose
+  name: Dispose
+  nameWithType: LatencyHistogram.Dispose
+  fullName: Meridian.Application.Monitoring.DataQuality.LatencyHistogram.Dispose
+- uid: System.IDisposable.Dispose
+  commentId: M:System.IDisposable.Dispose
+  parent: System.IDisposable
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  name: Dispose()
+  nameWithType: IDisposable.Dispose()
+  fullName: System.IDisposable.Dispose()
+  spec.csharp:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.IDisposable.Dispose
+    name: Dispose
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.idisposable.dispose
+  - name: (
+  - name: )

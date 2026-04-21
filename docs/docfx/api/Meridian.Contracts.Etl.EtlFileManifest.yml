@@ -1,0 +1,554 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Contracts.Etl.EtlFileManifest
+  commentId: T:Meridian.Contracts.Etl.EtlFileManifest
+  id: EtlFileManifest
+  parent: Meridian.Contracts.Etl
+  children:
+  - Meridian.Contracts.Etl.EtlFileManifest.ChecksumSha256
+  - Meridian.Contracts.Etl.EtlFileManifest.FileName
+  - Meridian.Contracts.Etl.EtlFileManifest.RelativePath
+  - Meridian.Contracts.Etl.EtlFileManifest.SizeBytes
+  - Meridian.Contracts.Etl.EtlFileManifest.StagedAtUtc
+  langs:
+  - csharp
+  - vb
+  name: EtlFileManifest
+  nameWithType: EtlFileManifest
+  fullName: Meridian.Contracts.Etl.EtlFileManifest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: EtlFileManifest
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 191
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: public sealed class EtlFileManifest
+    content.vb: Public NotInheritable Class EtlFileManifest
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Contracts.Etl.EtlFileManifest.FileName
+  commentId: P:Meridian.Contracts.Etl.EtlFileManifest.FileName
+  id: FileName
+  parent: Meridian.Contracts.Etl.EtlFileManifest
+  langs:
+  - csharp
+  - vb
+  name: FileName
+  nameWithType: EtlFileManifest.FileName
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.FileName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileName
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 193
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonPropertyName("fileName")]
+
+      public required string FileName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("fileName")>
+
+      Public Property FileName As String
+  overload: Meridian.Contracts.Etl.EtlFileManifest.FileName*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: fileName
+- uid: Meridian.Contracts.Etl.EtlFileManifest.RelativePath
+  commentId: P:Meridian.Contracts.Etl.EtlFileManifest.RelativePath
+  id: RelativePath
+  parent: Meridian.Contracts.Etl.EtlFileManifest
+  langs:
+  - csharp
+  - vb
+  name: RelativePath
+  nameWithType: EtlFileManifest.RelativePath
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.RelativePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RelativePath
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 196
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonPropertyName("relativePath")]
+
+      public required string RelativePath { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("relativePath")>
+
+      Public Property RelativePath As String
+  overload: Meridian.Contracts.Etl.EtlFileManifest.RelativePath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: relativePath
+- uid: Meridian.Contracts.Etl.EtlFileManifest.ChecksumSha256
+  commentId: P:Meridian.Contracts.Etl.EtlFileManifest.ChecksumSha256
+  id: ChecksumSha256
+  parent: Meridian.Contracts.Etl.EtlFileManifest
+  langs:
+  - csharp
+  - vb
+  name: ChecksumSha256
+  nameWithType: EtlFileManifest.ChecksumSha256
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.ChecksumSha256
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChecksumSha256
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 199
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonPropertyName("checksumSha256")]
+
+      public required string ChecksumSha256 { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("checksumSha256")>
+
+      Public Property ChecksumSha256 As String
+  overload: Meridian.Contracts.Etl.EtlFileManifest.ChecksumSha256*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: checksumSha256
+- uid: Meridian.Contracts.Etl.EtlFileManifest.SizeBytes
+  commentId: P:Meridian.Contracts.Etl.EtlFileManifest.SizeBytes
+  id: SizeBytes
+  parent: Meridian.Contracts.Etl.EtlFileManifest
+  langs:
+  - csharp
+  - vb
+  name: SizeBytes
+  nameWithType: EtlFileManifest.SizeBytes
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.SizeBytes
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SizeBytes
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 202
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonPropertyName("sizeBytes")]
+
+      public long SizeBytes { get; init; }
+    parameters: []
+    return:
+      type: System.Int64
+    content.vb: >-
+      <JsonPropertyName("sizeBytes")>
+
+      Public Property SizeBytes As Long
+  overload: Meridian.Contracts.Etl.EtlFileManifest.SizeBytes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: sizeBytes
+- uid: Meridian.Contracts.Etl.EtlFileManifest.StagedAtUtc
+  commentId: P:Meridian.Contracts.Etl.EtlFileManifest.StagedAtUtc
+  id: StagedAtUtc
+  parent: Meridian.Contracts.Etl.EtlFileManifest
+  langs:
+  - csharp
+  - vb
+  name: StagedAtUtc
+  nameWithType: EtlFileManifest.StagedAtUtc
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.StagedAtUtc
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Contracts/Etl/EtlModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StagedAtUtc
+    path: ../../src/Meridian.Contracts/Etl/EtlModels.cs
+    startLine: 205
+  assemblies:
+  - Meridian.Contracts
+  namespace: Meridian.Contracts.Etl
+  syntax:
+    content: >-
+      [JsonPropertyName("stagedAtUtc")]
+
+      public DateTime StagedAtUtc { get; init; }
+    parameters: []
+    return:
+      type: System.DateTime
+    content.vb: >-
+      <JsonPropertyName("stagedAtUtc")>
+
+      Public Property StagedAtUtc As Date
+  overload: Meridian.Contracts.Etl.EtlFileManifest.StagedAtUtc*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: stagedAtUtc
+references:
+- uid: Meridian.Contracts.Etl
+  commentId: N:Meridian.Contracts.Etl
+  href: Meridian.html
+  name: Meridian.Contracts.Etl
+  nameWithType: Meridian.Contracts.Etl
+  fullName: Meridian.Contracts.Etl
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Contracts
+    name: Contracts
+    href: Meridian.Contracts.html
+  - name: .
+  - uid: Meridian.Contracts.Etl
+    name: Etl
+    href: Meridian.Contracts.Etl.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Contracts.Etl.EtlFileManifest.FileName*
+  commentId: Overload:Meridian.Contracts.Etl.EtlFileManifest.FileName
+  href: Meridian.Contracts.Etl.EtlFileManifest.html#Meridian_Contracts_Etl_EtlFileManifest_FileName
+  name: FileName
+  nameWithType: EtlFileManifest.FileName
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.FileName
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Contracts.Etl.EtlFileManifest.RelativePath*
+  commentId: Overload:Meridian.Contracts.Etl.EtlFileManifest.RelativePath
+  href: Meridian.Contracts.Etl.EtlFileManifest.html#Meridian_Contracts_Etl_EtlFileManifest_RelativePath
+  name: RelativePath
+  nameWithType: EtlFileManifest.RelativePath
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.RelativePath
+- uid: Meridian.Contracts.Etl.EtlFileManifest.ChecksumSha256*
+  commentId: Overload:Meridian.Contracts.Etl.EtlFileManifest.ChecksumSha256
+  href: Meridian.Contracts.Etl.EtlFileManifest.html#Meridian_Contracts_Etl_EtlFileManifest_ChecksumSha256
+  name: ChecksumSha256
+  nameWithType: EtlFileManifest.ChecksumSha256
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.ChecksumSha256
+- uid: Meridian.Contracts.Etl.EtlFileManifest.SizeBytes*
+  commentId: Overload:Meridian.Contracts.Etl.EtlFileManifest.SizeBytes
+  href: Meridian.Contracts.Etl.EtlFileManifest.html#Meridian_Contracts_Etl_EtlFileManifest_SizeBytes
+  name: SizeBytes
+  nameWithType: EtlFileManifest.SizeBytes
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.SizeBytes
+- uid: System.Int64
+  commentId: T:System.Int64
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int64
+  name: long
+  nameWithType: long
+  fullName: long
+  nameWithType.vb: Long
+  fullName.vb: Long
+  name.vb: Long
+- uid: Meridian.Contracts.Etl.EtlFileManifest.StagedAtUtc*
+  commentId: Overload:Meridian.Contracts.Etl.EtlFileManifest.StagedAtUtc
+  href: Meridian.Contracts.Etl.EtlFileManifest.html#Meridian_Contracts_Etl_EtlFileManifest_StagedAtUtc
+  name: StagedAtUtc
+  nameWithType: EtlFileManifest.StagedAtUtc
+  fullName: Meridian.Contracts.Etl.EtlFileManifest.StagedAtUtc
+- uid: System.DateTime
+  commentId: T:System.DateTime
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetime
+  name: DateTime
+  nameWithType: DateTime
+  fullName: System.DateTime
+  nameWithType.vb: Date
+  fullName.vb: Date
+  name.vb: Date

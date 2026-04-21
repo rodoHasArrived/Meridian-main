@@ -1,0 +1,486 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest
+  id: CreateSessionRequest
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  children:
+  - Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.#ctor(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String)
+  - Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionKind
+  - Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionName
+  langs:
+  - csharp
+  - vb
+  name: CreateSessionRequest
+  nameWithType: CreateSessionRequest
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: CreateSessionRequest
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: 'public sealed record CreateSessionRequest : IEquatable<CreateSessionRequest>'
+    content.vb: Public NotInheritable Class CreateSessionRequest Implements IEquatable(Of CreateSessionRequest)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.#ctor(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String)
+  commentId: M:Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.#ctor(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String)
+  id: '#ctor(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind,System.String)'
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest
+  langs:
+  - csharp
+  - vb
+  name: CreateSessionRequest(CppTraderSessionKind, string?)
+  nameWithType: CreateSessionRequest.CreateSessionRequest(CppTraderSessionKind, string?)
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.CreateSessionRequest(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind, string?)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public CreateSessionRequest(CppTraderSessionKind SessionKind, string? SessionName = null)
+    parameters:
+    - id: SessionKind
+      type: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+    - id: SessionName
+      type: System.String
+    content.vb: Public Sub New(SessionKind As CppTraderSessionKind, SessionName As String = Nothing)
+  overload: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.#ctor*
+  nameWithType.vb: CreateSessionRequest.New(CppTraderSessionKind, String)
+  fullName.vb: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.New(Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind, String)
+  name.vb: New(CppTraderSessionKind, String)
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionKind
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionKind
+  id: SessionKind
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest
+  langs:
+  - csharp
+  - vb
+  name: SessionKind
+  nameWithType: CreateSessionRequest.SessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionKind
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionKind
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public CppTraderSessionKind SessionKind { get; init; }
+    parameters: []
+    return:
+      type: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+    content.vb: Public Property SessionKind As CppTraderSessionKind
+  overload: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionKind*
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionName
+  commentId: P:Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionName
+  id: SessionName
+  parent: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest
+  langs:
+  - csharp
+  - vb
+  name: SessionName
+  nameWithType: CreateSessionRequest.SessionName
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionName
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SessionName
+    path: ../../src/Meridian.Infrastructure.CppTrader/Protocol/CppTraderProtocolModels.cs
+    startLine: 21
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+  namespace: Meridian.Infrastructure.CppTrader.Protocol
+  syntax:
+    content: public string? SessionName { get; init; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property SessionName As String
+  overload: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionName*
+references:
+- uid: Meridian.Infrastructure.CppTrader.Protocol
+  commentId: N:Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Protocol
+  nameWithType: Meridian.Infrastructure.CppTrader.Protocol
+  fullName: Meridian.Infrastructure.CppTrader.Protocol
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Protocol
+    name: Protocol
+    href: Meridian.Infrastructure.CppTrader.Protocol.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest}
+  commentId: T:System.IEquatable{Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<CreateSessionRequest>
+  nameWithType: IEquatable<CreateSessionRequest>
+  fullName: System.IEquatable<Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest>
+  nameWithType.vb: IEquatable(Of CreateSessionRequest)
+  fullName.vb: System.IEquatable(Of Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest)
+  name.vb: IEquatable(Of CreateSessionRequest)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest
+    name: CreateSessionRequest
+    href: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest
+    name: CreateSessionRequest
+    href: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.#ctor*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.#ctor
+  href: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.html#Meridian_Infrastructure_CppTrader_Protocol_CreateSessionRequest__ctor_Meridian_Infrastructure_CppTrader_Protocol_CppTraderSessionKind_System_String_
+  name: CreateSessionRequest
+  nameWithType: CreateSessionRequest.CreateSessionRequest
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.CreateSessionRequest
+  nameWithType.vb: CreateSessionRequest.New
+  fullName.vb: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.New
+  name.vb: New
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  commentId: T:Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+  parent: Meridian.Infrastructure.CppTrader.Protocol
+  href: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind.html
+  name: CppTraderSessionKind
+  nameWithType: CppTraderSessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CppTraderSessionKind
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionKind*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionKind
+  href: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.html#Meridian_Infrastructure_CppTrader_Protocol_CreateSessionRequest_SessionKind
+  name: SessionKind
+  nameWithType: CreateSessionRequest.SessionKind
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionKind
+- uid: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionName*
+  commentId: Overload:Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionName
+  href: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.html#Meridian_Infrastructure_CppTrader_Protocol_CreateSessionRequest_SessionName
+  name: SessionName
+  nameWithType: CreateSessionRequest.SessionName
+  fullName: Meridian.Infrastructure.CppTrader.Protocol.CreateSessionRequest.SessionName

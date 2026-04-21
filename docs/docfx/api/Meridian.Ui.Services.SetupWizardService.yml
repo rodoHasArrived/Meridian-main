@@ -1,0 +1,914 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.SetupWizardService
+  commentId: T:Meridian.Ui.Services.SetupWizardService
+  id: SetupWizardService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.SetupWizardService.#ctor
+  - Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync(Meridian.Ui.Services.SetupPreset,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SetupWizardService.GetSetupPresets
+  - Meridian.Ui.Services.SetupWizardService.RunPreflightChecksAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  - Meridian.Ui.Services.SetupWizardService.TestProviderConnectivityAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: SetupWizardService
+  nameWithType: SetupWizardService
+  fullName: Meridian.Ui.Services.SetupWizardService
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SetupWizardService
+    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    startLine: 10
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Service for guided setup wizard with preflight connectivity checks.
+
+    Validates provider credentials and connectivity before enabling services.
+  example: []
+  syntax:
+    content: public sealed class SetupWizardService
+    content.vb: Public NotInheritable Class SetupWizardService
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Ui.Services.SetupWizardService.#ctor
+  commentId: M:Meridian.Ui.Services.SetupWizardService.#ctor
+  id: '#ctor'
+  parent: Meridian.Ui.Services.SetupWizardService
+  langs:
+  - csharp
+  - vb
+  name: SetupWizardService()
+  nameWithType: SetupWizardService.SetupWizardService()
+  fullName: Meridian.Ui.Services.SetupWizardService.SetupWizardService()
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    startLine: 16
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: public SetupWizardService()
+    content.vb: Public Sub New()
+  overload: Meridian.Ui.Services.SetupWizardService.#ctor*
+  nameWithType.vb: SetupWizardService.New()
+  fullName.vb: Meridian.Ui.Services.SetupWizardService.New()
+  name.vb: New()
+- uid: Meridian.Ui.Services.SetupWizardService.RunPreflightChecksAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SetupWizardService.RunPreflightChecksAsync(System.Threading.CancellationToken)
+  id: RunPreflightChecksAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SetupWizardService
+  langs:
+  - csharp
+  - vb
+  name: RunPreflightChecksAsync(CancellationToken)
+  nameWithType: SetupWizardService.RunPreflightChecksAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.SetupWizardService.RunPreflightChecksAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunPreflightChecksAsync
+    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Performs preflight checks for all configured providers.
+  example: []
+  syntax:
+    content: public Task<PreflightCheckResult> RunPreflightChecksAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PreflightCheckResult}
+    content.vb: Public Function RunPreflightChecksAsync(ct As CancellationToken = Nothing) As Task(Of PreflightCheckResult)
+  overload: Meridian.Ui.Services.SetupWizardService.RunPreflightChecksAsync*
+- uid: Meridian.Ui.Services.SetupWizardService.TestProviderConnectivityAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SetupWizardService.TestProviderConnectivityAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  id: TestProviderConnectivityAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SetupWizardService
+  langs:
+  - csharp
+  - vb
+  name: TestProviderConnectivityAsync(string, Dictionary<string, string>, CancellationToken)
+  nameWithType: SetupWizardService.TestProviderConnectivityAsync(string, Dictionary<string, string>, CancellationToken)
+  fullName: Meridian.Ui.Services.SetupWizardService.TestProviderConnectivityAsync(string, System.Collections.Generic.Dictionary<string, string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: TestProviderConnectivityAsync
+    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Tests connectivity to a specific provider.
+  example: []
+  syntax:
+    content: public Task<ProviderTestResult> TestProviderConnectivityAsync(string provider, Dictionary<string, string> credentials, CancellationToken ct = default)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: credentials
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderTestResult}
+    content.vb: Public Function TestProviderConnectivityAsync(provider As String, credentials As Dictionary(Of String, String), ct As CancellationToken = Nothing) As Task(Of ProviderTestResult)
+  overload: Meridian.Ui.Services.SetupWizardService.TestProviderConnectivityAsync*
+  nameWithType.vb: SetupWizardService.TestProviderConnectivityAsync(String, Dictionary(Of String, String), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SetupWizardService.TestProviderConnectivityAsync(String, System.Collections.Generic.Dictionary(Of String, String), System.Threading.CancellationToken)
+  name.vb: TestProviderConnectivityAsync(String, Dictionary(Of String, String), CancellationToken)
+- uid: Meridian.Ui.Services.SetupWizardService.GetSetupPresets
+  commentId: M:Meridian.Ui.Services.SetupWizardService.GetSetupPresets
+  id: GetSetupPresets
+  parent: Meridian.Ui.Services.SetupWizardService
+  langs:
+  - csharp
+  - vb
+  name: GetSetupPresets()
+  nameWithType: SetupWizardService.GetSetupPresets()
+  fullName: Meridian.Ui.Services.SetupWizardService.GetSetupPresets()
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetSetupPresets
+    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    startLine: 502
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Gets available setup presets for quick configuration.
+  example: []
+  syntax:
+    content: public IReadOnlyList<SetupPreset> GetSetupPresets()
+    return:
+      type: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.SetupPreset}
+    content.vb: Public Function GetSetupPresets() As IReadOnlyList(Of SetupPreset)
+  overload: Meridian.Ui.Services.SetupWizardService.GetSetupPresets*
+- uid: Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync(Meridian.Ui.Services.SetupPreset,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync(Meridian.Ui.Services.SetupPreset,System.String,System.Threading.CancellationToken)
+  id: ApplyPresetAsync(Meridian.Ui.Services.SetupPreset,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SetupWizardService
+  langs:
+  - csharp
+  - vb
+  name: ApplyPresetAsync(SetupPreset, string, CancellationToken)
+  nameWithType: SetupWizardService.ApplyPresetAsync(SetupPreset, string, CancellationToken)
+  fullName: Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync(Meridian.Ui.Services.SetupPreset, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyPresetAsync
+    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    startLine: 602
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Applies a setup preset to the configuration.
+  example: []
+  syntax:
+    content: public Task ApplyPresetAsync(SetupPreset preset, string provider, CancellationToken ct = default)
+    parameters:
+    - id: preset
+      type: Meridian.Ui.Services.SetupPreset
+    - id: provider
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function ApplyPresetAsync(preset As SetupPreset, provider As String, ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync*
+  nameWithType.vb: SetupWizardService.ApplyPresetAsync(SetupPreset, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync(Meridian.Ui.Services.SetupPreset, String, System.Threading.CancellationToken)
+  name.vb: ApplyPresetAsync(SetupPreset, String, CancellationToken)
+- uid: Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  id: SaveCredentialsAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.SetupWizardService
+  langs:
+  - csharp
+  - vb
+  name: SaveCredentialsAsync(string, Dictionary<string, string>, CancellationToken)
+  nameWithType: SetupWizardService.SaveCredentialsAsync(string, Dictionary<string, string>, CancellationToken)
+  fullName: Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync(string, System.Collections.Generic.Dictionary<string, string>, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/SetupWizardService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveCredentialsAsync
+    path: ../../src/Meridian.Ui.Services/Services/SetupWizardService.cs
+    startLine: 629
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Saves provider credentials securely.
+  example: []
+  syntax:
+    content: public Task SaveCredentialsAsync(string provider, Dictionary<string, string> credentials, CancellationToken ct = default)
+    parameters:
+    - id: provider
+      type: System.String
+    - id: credentials
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task
+    content.vb: Public Function SaveCredentialsAsync(provider As String, credentials As Dictionary(Of String, String), ct As CancellationToken = Nothing) As Task
+  overload: Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync*
+  nameWithType.vb: SetupWizardService.SaveCredentialsAsync(String, Dictionary(Of String, String), CancellationToken)
+  fullName.vb: Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync(String, System.Collections.Generic.Dictionary(Of String, String), System.Threading.CancellationToken)
+  name.vb: SaveCredentialsAsync(String, Dictionary(Of String, String), CancellationToken)
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.SetupWizardService.#ctor*
+  commentId: Overload:Meridian.Ui.Services.SetupWizardService.#ctor
+  href: Meridian.Ui.Services.SetupWizardService.html#Meridian_Ui_Services_SetupWizardService__ctor
+  name: SetupWizardService
+  nameWithType: SetupWizardService.SetupWizardService
+  fullName: Meridian.Ui.Services.SetupWizardService.SetupWizardService
+  nameWithType.vb: SetupWizardService.New
+  fullName.vb: Meridian.Ui.Services.SetupWizardService.New
+  name.vb: New
+- uid: Meridian.Ui.Services.SetupWizardService.RunPreflightChecksAsync*
+  commentId: Overload:Meridian.Ui.Services.SetupWizardService.RunPreflightChecksAsync
+  href: Meridian.Ui.Services.SetupWizardService.html#Meridian_Ui_Services_SetupWizardService_RunPreflightChecksAsync_System_Threading_CancellationToken_
+  name: RunPreflightChecksAsync
+  nameWithType: SetupWizardService.RunPreflightChecksAsync
+  fullName: Meridian.Ui.Services.SetupWizardService.RunPreflightChecksAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PreflightCheckResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PreflightCheckResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PreflightCheckResult>
+  nameWithType: Task<PreflightCheckResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PreflightCheckResult>
+  nameWithType.vb: Task(Of PreflightCheckResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PreflightCheckResult)
+  name.vb: Task(Of PreflightCheckResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PreflightCheckResult
+    name: PreflightCheckResult
+    href: Meridian.Ui.Services.PreflightCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PreflightCheckResult
+    name: PreflightCheckResult
+    href: Meridian.Ui.Services.PreflightCheckResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.SetupWizardService.TestProviderConnectivityAsync*
+  commentId: Overload:Meridian.Ui.Services.SetupWizardService.TestProviderConnectivityAsync
+  href: Meridian.Ui.Services.SetupWizardService.html#Meridian_Ui_Services_SetupWizardService_TestProviderConnectivityAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_Threading_CancellationToken_
+  name: TestProviderConnectivityAsync
+  nameWithType: SetupWizardService.TestProviderConnectivityAsync
+  fullName: Meridian.Ui.Services.SetupWizardService.TestProviderConnectivityAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderTestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ProviderTestResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ProviderTestResult>
+  nameWithType: Task<ProviderTestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ProviderTestResult>
+  nameWithType.vb: Task(Of ProviderTestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ProviderTestResult)
+  name.vb: Task(Of ProviderTestResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ProviderTestResult
+    name: ProviderTestResult
+    href: Meridian.Ui.Services.ProviderTestResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ProviderTestResult
+    name: ProviderTestResult
+    href: Meridian.Ui.Services.ProviderTestResult.html
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.SetupWizardService.GetSetupPresets*
+  commentId: Overload:Meridian.Ui.Services.SetupWizardService.GetSetupPresets
+  href: Meridian.Ui.Services.SetupWizardService.html#Meridian_Ui_Services_SetupWizardService_GetSetupPresets
+  name: GetSetupPresets
+  nameWithType: SetupWizardService.GetSetupPresets
+  fullName: Meridian.Ui.Services.SetupWizardService.GetSetupPresets
+- uid: System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.SetupPreset}
+  commentId: T:System.Collections.Generic.IReadOnlyList{Meridian.Ui.Services.SetupPreset}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<SetupPreset>
+  nameWithType: IReadOnlyList<SetupPreset>
+  fullName: System.Collections.Generic.IReadOnlyList<Meridian.Ui.Services.SetupPreset>
+  nameWithType.vb: IReadOnlyList(Of SetupPreset)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of Meridian.Ui.Services.SetupPreset)
+  name.vb: IReadOnlyList(Of SetupPreset)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Ui.Services.SetupPreset
+    name: SetupPreset
+    href: Meridian.Ui.Services.SetupPreset.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SetupPreset
+    name: SetupPreset
+    href: Meridian.Ui.Services.SetupPreset.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync*
+  commentId: Overload:Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync
+  href: Meridian.Ui.Services.SetupWizardService.html#Meridian_Ui_Services_SetupWizardService_ApplyPresetAsync_Meridian_Ui_Services_SetupPreset_System_String_System_Threading_CancellationToken_
+  name: ApplyPresetAsync
+  nameWithType: SetupWizardService.ApplyPresetAsync
+  fullName: Meridian.Ui.Services.SetupWizardService.ApplyPresetAsync
+- uid: Meridian.Ui.Services.SetupPreset
+  commentId: T:Meridian.Ui.Services.SetupPreset
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SetupPreset.html
+  name: SetupPreset
+  nameWithType: SetupPreset
+  fullName: Meridian.Ui.Services.SetupPreset
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync*
+  commentId: Overload:Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync
+  href: Meridian.Ui.Services.SetupWizardService.html#Meridian_Ui_Services_SetupWizardService_SaveCredentialsAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_Threading_CancellationToken_
+  name: SaveCredentialsAsync
+  nameWithType: SetupWizardService.SaveCredentialsAsync
+  fullName: Meridian.Ui.Services.SetupWizardService.SaveCredentialsAsync

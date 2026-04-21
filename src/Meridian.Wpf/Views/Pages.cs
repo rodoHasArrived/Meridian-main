@@ -75,6 +75,10 @@ public partial class RunRiskPage : Page { }
 // Position Blotter page
 public partial class PositionBlotterPage : Page { }
 
+// Multi-account & aggregate portfolio pages (Phase 6)
+public partial class AccountPortfolioPage : Page { }
+public partial class AggregatePortfolioPage : Page { }
+
 // Security Master workstation page
 public partial class SecurityMasterPage : Page { }
 
@@ -83,10 +87,6 @@ public partial class DirectLendingPage : Page { }
 
 // Data Browser page
 public partial class DataBrowserPage : Page { }
-
-// Workspace shell landing pages
-public partial class ResearchWorkspaceShellPage : Page { }
-public partial class TradingWorkspaceShellPage : Page { }
 
 // Workspaces & Notifications pages
 public partial class WorkspacePage : Page { }
@@ -112,7 +112,4 @@ public partial class AgentPage : Page { }
 
 // Docking host control (used by workspace shell pages)
 public partial class MeridianDockingManager : UserControl { }
-
-// Embedded React dashboard via WebView2
-public partial class DashboardWebPage : Page { }
 

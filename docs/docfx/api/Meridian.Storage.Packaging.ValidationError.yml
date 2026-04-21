@@ -1,0 +1,534 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Packaging.ValidationError
+  commentId: T:Meridian.Storage.Packaging.ValidationError
+  id: ValidationError
+  parent: Meridian.Storage.Packaging
+  children:
+  - Meridian.Storage.Packaging.ValidationError.ActualValue
+  - Meridian.Storage.Packaging.ValidationError.ErrorType
+  - Meridian.Storage.Packaging.ValidationError.ExpectedValue
+  - Meridian.Storage.Packaging.ValidationError.FilePath
+  - Meridian.Storage.Packaging.ValidationError.Message
+  langs:
+  - csharp
+  - vb
+  name: ValidationError
+  nameWithType: ValidationError
+  fullName: Meridian.Storage.Packaging.ValidationError
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidationError
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 312
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  summary: Details of a validation error during import.
+  example: []
+  syntax:
+    content: public sealed class ValidationError
+    content.vb: Public NotInheritable Class ValidationError
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Storage.Packaging.ValidationError.FilePath
+  commentId: P:Meridian.Storage.Packaging.ValidationError.FilePath
+  id: FilePath
+  parent: Meridian.Storage.Packaging.ValidationError
+  langs:
+  - csharp
+  - vb
+  name: FilePath
+  nameWithType: ValidationError.FilePath
+  fullName: Meridian.Storage.Packaging.ValidationError.FilePath
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FilePath
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 314
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("filePath")]
+
+      public string FilePath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("filePath")>
+
+      Public Property FilePath As String
+  overload: Meridian.Storage.Packaging.ValidationError.FilePath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: filePath
+- uid: Meridian.Storage.Packaging.ValidationError.ErrorType
+  commentId: P:Meridian.Storage.Packaging.ValidationError.ErrorType
+  id: ErrorType
+  parent: Meridian.Storage.Packaging.ValidationError
+  langs:
+  - csharp
+  - vb
+  name: ErrorType
+  nameWithType: ValidationError.ErrorType
+  fullName: Meridian.Storage.Packaging.ValidationError.ErrorType
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ErrorType
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 317
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("errorType")]
+
+      public string ErrorType { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("errorType")>
+
+      Public Property ErrorType As String
+  overload: Meridian.Storage.Packaging.ValidationError.ErrorType*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: errorType
+- uid: Meridian.Storage.Packaging.ValidationError.ExpectedValue
+  commentId: P:Meridian.Storage.Packaging.ValidationError.ExpectedValue
+  id: ExpectedValue
+  parent: Meridian.Storage.Packaging.ValidationError
+  langs:
+  - csharp
+  - vb
+  name: ExpectedValue
+  nameWithType: ValidationError.ExpectedValue
+  fullName: Meridian.Storage.Packaging.ValidationError.ExpectedValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExpectedValue
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 320
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("expectedValue")]
+
+      public string? ExpectedValue { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("expectedValue")>
+
+      Public Property ExpectedValue As String
+  overload: Meridian.Storage.Packaging.ValidationError.ExpectedValue*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: expectedValue
+- uid: Meridian.Storage.Packaging.ValidationError.ActualValue
+  commentId: P:Meridian.Storage.Packaging.ValidationError.ActualValue
+  id: ActualValue
+  parent: Meridian.Storage.Packaging.ValidationError
+  langs:
+  - csharp
+  - vb
+  name: ActualValue
+  nameWithType: ValidationError.ActualValue
+  fullName: Meridian.Storage.Packaging.ValidationError.ActualValue
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ActualValue
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 323
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("actualValue")]
+
+      public string? ActualValue { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("actualValue")>
+
+      Public Property ActualValue As String
+  overload: Meridian.Storage.Packaging.ValidationError.ActualValue*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: actualValue
+- uid: Meridian.Storage.Packaging.ValidationError.Message
+  commentId: P:Meridian.Storage.Packaging.ValidationError.Message
+  id: Message
+  parent: Meridian.Storage.Packaging.ValidationError
+  langs:
+  - csharp
+  - vb
+  name: Message
+  nameWithType: ValidationError.Message
+  fullName: Meridian.Storage.Packaging.ValidationError.Message
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Storage/Packaging/PackageResult.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Message
+    path: ../../src/Meridian.Storage/Packaging/PackageResult.cs
+    startLine: 326
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Packaging
+  syntax:
+    content: >-
+      [JsonPropertyName("message")]
+
+      public string Message { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("message")>
+
+      Public Property Message As String
+  overload: Meridian.Storage.Packaging.ValidationError.Message*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: message
+references:
+- uid: Meridian.Storage.Packaging
+  commentId: N:Meridian.Storage.Packaging
+  href: Meridian.html
+  name: Meridian.Storage.Packaging
+  nameWithType: Meridian.Storage.Packaging
+  fullName: Meridian.Storage.Packaging
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Packaging
+    name: Packaging
+    href: Meridian.Storage.Packaging.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Storage.Packaging.ValidationError.FilePath*
+  commentId: Overload:Meridian.Storage.Packaging.ValidationError.FilePath
+  href: Meridian.Storage.Packaging.ValidationError.html#Meridian_Storage_Packaging_ValidationError_FilePath
+  name: FilePath
+  nameWithType: ValidationError.FilePath
+  fullName: Meridian.Storage.Packaging.ValidationError.FilePath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: Meridian.Storage.Packaging.ValidationError.ErrorType*
+  commentId: Overload:Meridian.Storage.Packaging.ValidationError.ErrorType
+  href: Meridian.Storage.Packaging.ValidationError.html#Meridian_Storage_Packaging_ValidationError_ErrorType
+  name: ErrorType
+  nameWithType: ValidationError.ErrorType
+  fullName: Meridian.Storage.Packaging.ValidationError.ErrorType
+- uid: Meridian.Storage.Packaging.ValidationError.ExpectedValue*
+  commentId: Overload:Meridian.Storage.Packaging.ValidationError.ExpectedValue
+  href: Meridian.Storage.Packaging.ValidationError.html#Meridian_Storage_Packaging_ValidationError_ExpectedValue
+  name: ExpectedValue
+  nameWithType: ValidationError.ExpectedValue
+  fullName: Meridian.Storage.Packaging.ValidationError.ExpectedValue
+- uid: Meridian.Storage.Packaging.ValidationError.ActualValue*
+  commentId: Overload:Meridian.Storage.Packaging.ValidationError.ActualValue
+  href: Meridian.Storage.Packaging.ValidationError.html#Meridian_Storage_Packaging_ValidationError_ActualValue
+  name: ActualValue
+  nameWithType: ValidationError.ActualValue
+  fullName: Meridian.Storage.Packaging.ValidationError.ActualValue
+- uid: Meridian.Storage.Packaging.ValidationError.Message*
+  commentId: Overload:Meridian.Storage.Packaging.ValidationError.Message
+  href: Meridian.Storage.Packaging.ValidationError.html#Meridian_Storage_Packaging_ValidationError_Message
+  name: Message
+  nameWithType: ValidationError.Message
+  fullName: Meridian.Storage.Packaging.ValidationError.Message

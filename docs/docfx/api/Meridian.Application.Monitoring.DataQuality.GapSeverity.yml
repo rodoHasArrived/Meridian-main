@@ -1,0 +1,211 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.DataQuality.GapSeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapSeverity
+  id: GapSeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  children:
+  - Meridian.Application.Monitoring.DataQuality.GapSeverity.Critical
+  - Meridian.Application.Monitoring.DataQuality.GapSeverity.Major
+  - Meridian.Application.Monitoring.DataQuality.GapSeverity.Minor
+  - Meridian.Application.Monitoring.DataQuality.GapSeverity.Moderate
+  - Meridian.Application.Monitoring.DataQuality.GapSeverity.Significant
+  langs:
+  - csharp
+  - vb
+  name: GapSeverity
+  nameWithType: GapSeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.GapSeverity
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GapSeverity
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 57
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  summary: Gap severity classification.
+  example: []
+  syntax:
+    content: 'public enum GapSeverity : byte'
+    content.vb: Public Enum GapSeverity As Byte
+- uid: Meridian.Application.Monitoring.DataQuality.GapSeverity.Minor
+  commentId: F:Meridian.Application.Monitoring.DataQuality.GapSeverity.Minor
+  id: Minor
+  parent: Meridian.Application.Monitoring.DataQuality.GapSeverity
+  langs:
+  - csharp
+  - vb
+  name: Minor
+  nameWithType: GapSeverity.Minor
+  fullName: Meridian.Application.Monitoring.DataQuality.GapSeverity.Minor
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minor
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 59
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Minor = 0
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapSeverity
+- uid: Meridian.Application.Monitoring.DataQuality.GapSeverity.Moderate
+  commentId: F:Meridian.Application.Monitoring.DataQuality.GapSeverity.Moderate
+  id: Moderate
+  parent: Meridian.Application.Monitoring.DataQuality.GapSeverity
+  langs:
+  - csharp
+  - vb
+  name: Moderate
+  nameWithType: GapSeverity.Moderate
+  fullName: Meridian.Application.Monitoring.DataQuality.GapSeverity.Moderate
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Moderate
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 60
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Moderate = 1
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapSeverity
+- uid: Meridian.Application.Monitoring.DataQuality.GapSeverity.Significant
+  commentId: F:Meridian.Application.Monitoring.DataQuality.GapSeverity.Significant
+  id: Significant
+  parent: Meridian.Application.Monitoring.DataQuality.GapSeverity
+  langs:
+  - csharp
+  - vb
+  name: Significant
+  nameWithType: GapSeverity.Significant
+  fullName: Meridian.Application.Monitoring.DataQuality.GapSeverity.Significant
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Significant
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 61
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Significant = 2
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapSeverity
+- uid: Meridian.Application.Monitoring.DataQuality.GapSeverity.Major
+  commentId: F:Meridian.Application.Monitoring.DataQuality.GapSeverity.Major
+  id: Major
+  parent: Meridian.Application.Monitoring.DataQuality.GapSeverity
+  langs:
+  - csharp
+  - vb
+  name: Major
+  nameWithType: GapSeverity.Major
+  fullName: Meridian.Application.Monitoring.DataQuality.GapSeverity.Major
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Major
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 62
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Major = 3
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapSeverity
+- uid: Meridian.Application.Monitoring.DataQuality.GapSeverity.Critical
+  commentId: F:Meridian.Application.Monitoring.DataQuality.GapSeverity.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.DataQuality.GapSeverity
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: GapSeverity.Critical
+  fullName: Meridian.Application.Monitoring.DataQuality.GapSeverity.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Monitoring/DataQuality/DataQualityModels.cs
+    startLine: 63
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring.DataQuality
+  syntax:
+    content: Critical = 4
+    return:
+      type: Meridian.Application.Monitoring.DataQuality.GapSeverity
+references:
+- uid: Meridian.Application.Monitoring.DataQuality
+  commentId: N:Meridian.Application.Monitoring.DataQuality
+  href: Meridian.html
+  name: Meridian.Application.Monitoring.DataQuality
+  nameWithType: Meridian.Application.Monitoring.DataQuality
+  fullName: Meridian.Application.Monitoring.DataQuality
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  - name: .
+  - uid: Meridian.Application.Monitoring.DataQuality
+    name: DataQuality
+    href: Meridian.Application.Monitoring.DataQuality.html
+- uid: Meridian.Application.Monitoring.DataQuality.GapSeverity
+  commentId: T:Meridian.Application.Monitoring.DataQuality.GapSeverity
+  parent: Meridian.Application.Monitoring.DataQuality
+  href: Meridian.Application.Monitoring.DataQuality.GapSeverity.html
+  name: GapSeverity
+  nameWithType: GapSeverity
+  fullName: Meridian.Application.Monitoring.DataQuality.GapSeverity

@@ -1,0 +1,149 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Monitoring.BackpressureLevel
+  commentId: T:Meridian.Application.Monitoring.BackpressureLevel
+  id: BackpressureLevel
+  parent: Meridian.Application.Monitoring
+  children:
+  - Meridian.Application.Monitoring.BackpressureLevel.Critical
+  - Meridian.Application.Monitoring.BackpressureLevel.None
+  - Meridian.Application.Monitoring.BackpressureLevel.Warning
+  langs:
+  - csharp
+  - vb
+  name: BackpressureLevel
+  nameWithType: BackpressureLevel
+  fullName: Meridian.Application.Monitoring.BackpressureLevel
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: BackpressureLevel
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 320
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  summary: Backpressure severity level.
+  example: []
+  syntax:
+    content: 'public enum BackpressureLevel : byte'
+    content.vb: Public Enum BackpressureLevel As Byte
+- uid: Meridian.Application.Monitoring.BackpressureLevel.None
+  commentId: F:Meridian.Application.Monitoring.BackpressureLevel.None
+  id: None
+  parent: Meridian.Application.Monitoring.BackpressureLevel
+  langs:
+  - csharp
+  - vb
+  name: None
+  nameWithType: BackpressureLevel.None
+  fullName: Meridian.Application.Monitoring.BackpressureLevel.None
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: None
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 322
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: None = 0
+    return:
+      type: Meridian.Application.Monitoring.BackpressureLevel
+- uid: Meridian.Application.Monitoring.BackpressureLevel.Warning
+  commentId: F:Meridian.Application.Monitoring.BackpressureLevel.Warning
+  id: Warning
+  parent: Meridian.Application.Monitoring.BackpressureLevel
+  langs:
+  - csharp
+  - vb
+  name: Warning
+  nameWithType: BackpressureLevel.Warning
+  fullName: Meridian.Application.Monitoring.BackpressureLevel.Warning
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Warning
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 323
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Warning = 1
+    return:
+      type: Meridian.Application.Monitoring.BackpressureLevel
+- uid: Meridian.Application.Monitoring.BackpressureLevel.Critical
+  commentId: F:Meridian.Application.Monitoring.BackpressureLevel.Critical
+  id: Critical
+  parent: Meridian.Application.Monitoring.BackpressureLevel
+  langs:
+  - csharp
+  - vb
+  name: Critical
+  nameWithType: BackpressureLevel.Critical
+  fullName: Meridian.Application.Monitoring.BackpressureLevel.Critical
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Critical
+    path: ../../src/Meridian.Application/Monitoring/BackpressureAlertService.cs
+    startLine: 324
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Monitoring
+  syntax:
+    content: Critical = 2
+    return:
+      type: Meridian.Application.Monitoring.BackpressureLevel
+references:
+- uid: Meridian.Application.Monitoring
+  commentId: N:Meridian.Application.Monitoring
+  href: Meridian.html
+  name: Meridian.Application.Monitoring
+  nameWithType: Meridian.Application.Monitoring
+  fullName: Meridian.Application.Monitoring
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Monitoring
+    name: Monitoring
+    href: Meridian.Application.Monitoring.html
+- uid: Meridian.Application.Monitoring.BackpressureLevel
+  commentId: T:Meridian.Application.Monitoring.BackpressureLevel
+  parent: Meridian.Application.Monitoring
+  href: Meridian.Application.Monitoring.BackpressureLevel.html
+  name: BackpressureLevel
+  nameWithType: BackpressureLevel
+  fullName: Meridian.Application.Monitoring.BackpressureLevel

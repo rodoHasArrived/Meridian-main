@@ -1,0 +1,553 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Application.Composition.Startup.StartupOrchestrator
+  commentId: T:Meridian.Application.Composition.Startup.StartupOrchestrator
+  id: StartupOrchestrator
+  parent: Meridian.Application.Composition.Startup
+  children:
+  - Meridian.Application.Composition.Startup.StartupOrchestrator.#ctor(Serilog.ILogger,Meridian.Application.Composition.Startup.DashboardServerFactory)
+  - Meridian.Application.Composition.Startup.StartupOrchestrator.RunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext)
+  langs:
+  - csharp
+  - vb
+  name: StartupOrchestrator
+  nameWithType: StartupOrchestrator
+  fullName: Meridian.Application.Composition.Startup.StartupOrchestrator
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: StartupOrchestrator
+    path: ../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup
+  summary: Sequences the named startup phases and delegates execution to the appropriate mode runner.
+  remarks: >-
+    <p><b>Phase sequence:</b></p>
+
+    <ol><li>Command dispatch — one-shot CLI commands exit here.</li><li>Validation — configuration, file permissions, schema compatibility.</li><li>Runtime selection — desktop, backfill, or streaming collector.</li></ol>
+  example: []
+  syntax:
+    content: public sealed class StartupOrchestrator
+    content.vb: Public NotInheritable Class StartupOrchestrator
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Application.Composition.Startup.StartupOrchestrator.#ctor(Serilog.ILogger,Meridian.Application.Composition.Startup.DashboardServerFactory)
+  commentId: M:Meridian.Application.Composition.Startup.StartupOrchestrator.#ctor(Serilog.ILogger,Meridian.Application.Composition.Startup.DashboardServerFactory)
+  id: '#ctor(Serilog.ILogger,Meridian.Application.Composition.Startup.DashboardServerFactory)'
+  parent: Meridian.Application.Composition.Startup.StartupOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: StartupOrchestrator(ILogger, DashboardServerFactory)
+  nameWithType: StartupOrchestrator.StartupOrchestrator(ILogger, DashboardServerFactory)
+  fullName: Meridian.Application.Composition.Startup.StartupOrchestrator.StartupOrchestrator(Serilog.ILogger, Meridian.Application.Composition.Startup.DashboardServerFactory)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup
+  syntax:
+    content: public StartupOrchestrator(ILogger log, DashboardServerFactory dashboardServerFactory)
+    parameters:
+    - id: log
+      type: Serilog.ILogger
+    - id: dashboardServerFactory
+      type: Meridian.Application.Composition.Startup.DashboardServerFactory
+    content.vb: Public Sub New(log As ILogger, dashboardServerFactory As DashboardServerFactory)
+  overload: Meridian.Application.Composition.Startup.StartupOrchestrator.#ctor*
+  nameWithType.vb: StartupOrchestrator.New(ILogger, DashboardServerFactory)
+  fullName.vb: Meridian.Application.Composition.Startup.StartupOrchestrator.New(Serilog.ILogger, Meridian.Application.Composition.Startup.DashboardServerFactory)
+  name.vb: New(ILogger, DashboardServerFactory)
+- uid: Meridian.Application.Composition.Startup.StartupOrchestrator.RunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext)
+  commentId: M:Meridian.Application.Composition.Startup.StartupOrchestrator.RunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext)
+  id: RunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext)
+  parent: Meridian.Application.Composition.Startup.StartupOrchestrator
+  langs:
+  - csharp
+  - vb
+  name: RunAsync(StartupContext)
+  nameWithType: StartupOrchestrator.RunAsync(StartupContext)
+  fullName: Meridian.Application.Composition.Startup.StartupOrchestrator.RunAsync(Meridian.Application.Composition.Startup.StartupModels.StartupContext)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunAsync
+    path: ../../src/Meridian.Application/Composition/Startup/StartupOrchestrator.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Application
+  namespace: Meridian.Application.Composition.Startup
+  summary: Runs the full startup sequence using the supplied <code class="paramref">ctx</code>.
+  example: []
+  syntax:
+    content: public Task<int> RunAsync(StartupContext ctx)
+    parameters:
+    - id: ctx
+      type: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+    return:
+      type: System.Threading.Tasks.Task{System.Int32}
+      description: Process exit code.
+    content.vb: Public Function RunAsync(ctx As StartupContext) As Task(Of Integer)
+  overload: Meridian.Application.Composition.Startup.StartupOrchestrator.RunAsync*
+references:
+- uid: Meridian.Application.Composition.Startup
+  commentId: N:Meridian.Application.Composition.Startup
+  href: Meridian.html
+  name: Meridian.Application.Composition.Startup
+  nameWithType: Meridian.Application.Composition.Startup
+  fullName: Meridian.Application.Composition.Startup
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Application.Composition.Startup.StartupOrchestrator.#ctor*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupOrchestrator.#ctor
+  href: Meridian.Application.Composition.Startup.StartupOrchestrator.html#Meridian_Application_Composition_Startup_StartupOrchestrator__ctor_Serilog_ILogger_Meridian_Application_Composition_Startup_DashboardServerFactory_
+  name: StartupOrchestrator
+  nameWithType: StartupOrchestrator.StartupOrchestrator
+  fullName: Meridian.Application.Composition.Startup.StartupOrchestrator.StartupOrchestrator
+  nameWithType.vb: StartupOrchestrator.New
+  fullName.vb: Meridian.Application.Composition.Startup.StartupOrchestrator.New
+  name.vb: New
+- uid: Serilog.ILogger
+  commentId: T:Serilog.ILogger
+  parent: Serilog
+  isExternal: true
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Serilog.ILogger
+- uid: Meridian.Application.Composition.Startup.DashboardServerFactory
+  commentId: T:Meridian.Application.Composition.Startup.DashboardServerFactory
+  parent: Meridian.Application.Composition.Startup
+  href: Meridian.Application.Composition.Startup.DashboardServerFactory.html
+  name: DashboardServerFactory
+  nameWithType: DashboardServerFactory
+  fullName: Meridian.Application.Composition.Startup.DashboardServerFactory
+- uid: Serilog
+  commentId: N:Serilog
+  isExternal: true
+  name: Serilog
+  nameWithType: Serilog
+  fullName: Serilog
+- uid: Meridian.Application.Composition.Startup.StartupOrchestrator.RunAsync*
+  commentId: Overload:Meridian.Application.Composition.Startup.StartupOrchestrator.RunAsync
+  href: Meridian.Application.Composition.Startup.StartupOrchestrator.html#Meridian_Application_Composition_Startup_StartupOrchestrator_RunAsync_Meridian_Application_Composition_Startup_StartupModels_StartupContext_
+  name: RunAsync
+  nameWithType: StartupOrchestrator.RunAsync
+  fullName: Meridian.Application.Composition.Startup.StartupOrchestrator.RunAsync
+- uid: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  commentId: T:Meridian.Application.Composition.Startup.StartupModels.StartupContext
+  parent: Meridian.Application.Composition.Startup.StartupModels
+  href: Meridian.Application.Composition.Startup.StartupModels.StartupContext.html
+  name: StartupContext
+  nameWithType: StartupContext
+  fullName: Meridian.Application.Composition.Startup.StartupModels.StartupContext
+- uid: System.Threading.Tasks.Task{System.Int32}
+  commentId: T:System.Threading.Tasks.Task{System.Int32}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<int>
+  nameWithType: Task<int>
+  fullName: System.Threading.Tasks.Task<int>
+  nameWithType.vb: Task(Of Integer)
+  fullName.vb: System.Threading.Tasks.Task(Of Integer)
+  name.vb: Task(Of Integer)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: Meridian.Application.Composition.Startup.StartupModels
+  commentId: N:Meridian.Application.Composition.Startup.StartupModels
+  href: Meridian.html
+  name: Meridian.Application.Composition.Startup.StartupModels
+  nameWithType: Meridian.Application.Composition.Startup.StartupModels
+  fullName: Meridian.Application.Composition.Startup.StartupModels
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.StartupModels
+    name: StartupModels
+    href: Meridian.Application.Composition.Startup.StartupModels.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Application
+    name: Application
+    href: Meridian.Application.html
+  - name: .
+  - uid: Meridian.Application.Composition
+    name: Composition
+    href: Meridian.Application.Composition.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup
+    name: Startup
+    href: Meridian.Application.Composition.Startup.html
+  - name: .
+  - uid: Meridian.Application.Composition.Startup.StartupModels
+    name: StartupModels
+    href: Meridian.Application.Composition.Startup.StartupModels.html
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

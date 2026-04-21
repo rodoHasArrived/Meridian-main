@@ -303,6 +303,8 @@ public static class UiApiRoutes
     public const string SecurityMasterDeactivate = "/api/security-master/deactivate";
     public const string SecurityMasterAliasesUpsert = "/api/security-master/aliases/upsert";
     public const string SecurityMasterTradingParameters = "/api/security-master/{securityId:guid}/trading-parameters";
+    public const string SecurityMasterPreferredEquityTerms = "/api/security-master/{securityId:guid}/preferred-equity-terms";
+    public const string SecurityMasterConvertibleEquityTerms = "/api/security-master/{securityId:guid}/convertible-equity-terms";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
@@ -416,17 +418,33 @@ public static class UiApiRoutes
     // Execution / Paper Trading Cockpit endpoints
     public const string ExecutionAccount = "/api/execution/account";
     public const string ExecutionPositions = "/api/execution/positions";
+    public const string ExecutionBlotterPositions = "/api/execution/positions/blotter";
     public const string ExecutionOrders = "/api/execution/orders";
     public const string ExecutionOrderById = "/api/execution/orders/{orderId}";
     public const string ExecutionOrderSubmit = "/api/execution/orders/submit";
     public const string ExecutionOrderCancel = "/api/execution/orders/{orderId}/cancel";
+    public const string ExecutionPositionActionClose = "/api/execution/positions/actions/close";
+    public const string ExecutionPositionActionUpsize = "/api/execution/positions/actions/upsize";
     public const string ExecutionPortfolio = "/api/execution/portfolio";
     public const string ExecutionHealth = "/api/execution/health";
     public const string ExecutionCapabilities = "/api/execution/capabilities";
+    public const string ExecutionAudit = "/api/execution/audit";
     public const string ExecutionSessions = "/api/execution/sessions";
     public const string ExecutionSessionById = "/api/execution/sessions/{sessionId}";
     public const string ExecutionSessionCreate = "/api/execution/sessions/create";
     public const string ExecutionSessionClose = "/api/execution/sessions/{sessionId}/close";
+    public const string ExecutionSessionReplay = "/api/execution/sessions/{sessionId}/replay";
+
+    // Multi-account execution endpoints
+    public const string ExecutionAccounts = "/api/execution/accounts";
+    public const string ExecutionAccountById = "/api/execution/accounts/{accountId}";
+    public const string ExecutionAccountPositions = "/api/execution/accounts/{accountId}/positions";
+    public const string ExecutionPortfolioAggregate = "/api/execution/portfolio/aggregate";
+
+    // Cross-strategy portfolio workstation endpoints
+    public const string PortfolioAggregate = "/api/portfolio/aggregate";
+    public const string PortfolioExposure = "/api/portfolio/exposure";
+    public const string PortfolioSymbolExposure = "/api/portfolio/symbols/{symbol}/exposure";
 
     // Promotion workflow endpoints (Backtest → Paper → Live)
     public const string PromotionEvaluate = "/api/promotion/evaluate/{runId}";
@@ -435,11 +453,13 @@ public static class UiApiRoutes
     public const string PromotionHistory = "/api/promotion/history";
 
     // Strategy run comparison and diff endpoints
+    public const string WorkstationResearchBriefing = "/api/workstation/research/briefing";
     public const string RunsCompare = "/api/workstation/runs/compare";
     public const string RunsDiff = "/api/workstation/runs/diff";
     public const string RunsReconciliation = "/api/workstation/runs/{runId}/reconciliation";
     public const string RunsReconciliationHistory = "/api/workstation/runs/{runId}/reconciliation/history";
     public const string RunsLedger = "/api/workstation/runs/{runId}/ledger";
+    public const string RunsContinuity = "/api/workstation/runs/{runId}/continuity";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
     public const string WorkstationSecurityMasterSearch = "/api/workstation/security-master/securities";

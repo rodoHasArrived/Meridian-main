@@ -1,0 +1,311 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.ChartTimeframe
+  commentId: T:Meridian.Ui.Services.ChartTimeframe
+  id: ChartTimeframe
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.ChartTimeframe.Daily
+  - Meridian.Ui.Services.ChartTimeframe.Hour1
+  - Meridian.Ui.Services.ChartTimeframe.Hour4
+  - Meridian.Ui.Services.ChartTimeframe.Minute1
+  - Meridian.Ui.Services.ChartTimeframe.Minute15
+  - Meridian.Ui.Services.ChartTimeframe.Minute30
+  - Meridian.Ui.Services.ChartTimeframe.Minute5
+  - Meridian.Ui.Services.ChartTimeframe.Monthly
+  - Meridian.Ui.Services.ChartTimeframe.Weekly
+  langs:
+  - csharp
+  - vb
+  name: ChartTimeframe
+  nameWithType: ChartTimeframe
+  fullName: Meridian.Ui.Services.ChartTimeframe
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ChartTimeframe
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 504
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: Chart timeframe.
+  example: []
+  syntax:
+    content: 'public enum ChartTimeframe : byte'
+    content.vb: Public Enum ChartTimeframe As Byte
+- uid: Meridian.Ui.Services.ChartTimeframe.Minute1
+  commentId: F:Meridian.Ui.Services.ChartTimeframe.Minute1
+  id: Minute1
+  parent: Meridian.Ui.Services.ChartTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Minute1
+  nameWithType: ChartTimeframe.Minute1
+  fullName: Meridian.Ui.Services.ChartTimeframe.Minute1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute1
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 506
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Minute1 = 0
+    return:
+      type: Meridian.Ui.Services.ChartTimeframe
+- uid: Meridian.Ui.Services.ChartTimeframe.Minute5
+  commentId: F:Meridian.Ui.Services.ChartTimeframe.Minute5
+  id: Minute5
+  parent: Meridian.Ui.Services.ChartTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Minute5
+  nameWithType: ChartTimeframe.Minute5
+  fullName: Meridian.Ui.Services.ChartTimeframe.Minute5
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute5
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 507
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Minute5 = 1
+    return:
+      type: Meridian.Ui.Services.ChartTimeframe
+- uid: Meridian.Ui.Services.ChartTimeframe.Minute15
+  commentId: F:Meridian.Ui.Services.ChartTimeframe.Minute15
+  id: Minute15
+  parent: Meridian.Ui.Services.ChartTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Minute15
+  nameWithType: ChartTimeframe.Minute15
+  fullName: Meridian.Ui.Services.ChartTimeframe.Minute15
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute15
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 508
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Minute15 = 2
+    return:
+      type: Meridian.Ui.Services.ChartTimeframe
+- uid: Meridian.Ui.Services.ChartTimeframe.Minute30
+  commentId: F:Meridian.Ui.Services.ChartTimeframe.Minute30
+  id: Minute30
+  parent: Meridian.Ui.Services.ChartTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Minute30
+  nameWithType: ChartTimeframe.Minute30
+  fullName: Meridian.Ui.Services.ChartTimeframe.Minute30
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Minute30
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 509
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Minute30 = 3
+    return:
+      type: Meridian.Ui.Services.ChartTimeframe
+- uid: Meridian.Ui.Services.ChartTimeframe.Hour1
+  commentId: F:Meridian.Ui.Services.ChartTimeframe.Hour1
+  id: Hour1
+  parent: Meridian.Ui.Services.ChartTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Hour1
+  nameWithType: ChartTimeframe.Hour1
+  fullName: Meridian.Ui.Services.ChartTimeframe.Hour1
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hour1
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 510
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Hour1 = 4
+    return:
+      type: Meridian.Ui.Services.ChartTimeframe
+- uid: Meridian.Ui.Services.ChartTimeframe.Hour4
+  commentId: F:Meridian.Ui.Services.ChartTimeframe.Hour4
+  id: Hour4
+  parent: Meridian.Ui.Services.ChartTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Hour4
+  nameWithType: ChartTimeframe.Hour4
+  fullName: Meridian.Ui.Services.ChartTimeframe.Hour4
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Hour4
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 511
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Hour4 = 5
+    return:
+      type: Meridian.Ui.Services.ChartTimeframe
+- uid: Meridian.Ui.Services.ChartTimeframe.Daily
+  commentId: F:Meridian.Ui.Services.ChartTimeframe.Daily
+  id: Daily
+  parent: Meridian.Ui.Services.ChartTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Daily
+  nameWithType: ChartTimeframe.Daily
+  fullName: Meridian.Ui.Services.ChartTimeframe.Daily
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Daily
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 512
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Daily = 6
+    return:
+      type: Meridian.Ui.Services.ChartTimeframe
+- uid: Meridian.Ui.Services.ChartTimeframe.Weekly
+  commentId: F:Meridian.Ui.Services.ChartTimeframe.Weekly
+  id: Weekly
+  parent: Meridian.Ui.Services.ChartTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Weekly
+  nameWithType: ChartTimeframe.Weekly
+  fullName: Meridian.Ui.Services.ChartTimeframe.Weekly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Weekly
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 513
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Weekly = 7
+    return:
+      type: Meridian.Ui.Services.ChartTimeframe
+- uid: Meridian.Ui.Services.ChartTimeframe.Monthly
+  commentId: F:Meridian.Ui.Services.ChartTimeframe.Monthly
+  id: Monthly
+  parent: Meridian.Ui.Services.ChartTimeframe
+  langs:
+  - csharp
+  - vb
+  name: Monthly
+  nameWithType: ChartTimeframe.Monthly
+  fullName: Meridian.Ui.Services.ChartTimeframe.Monthly
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Services/ChartingService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Monthly
+    path: ../../src/Meridian.Ui.Services/Services/ChartingService.cs
+    startLine: 514
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Monthly = 8
+    return:
+      type: Meridian.Ui.Services.ChartTimeframe
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.ChartTimeframe
+  commentId: T:Meridian.Ui.Services.ChartTimeframe
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.ChartTimeframe.html
+  name: ChartTimeframe
+  nameWithType: ChartTimeframe
+  fullName: Meridian.Ui.Services.ChartTimeframe

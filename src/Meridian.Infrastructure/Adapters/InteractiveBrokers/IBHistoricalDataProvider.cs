@@ -233,7 +233,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
                         High: (decimal)bar.High,
                         Low: (decimal)bar.Low,
                         Close: (decimal)bar.Close,
-                        Volume: bar.Volume,
+                        Volume: ConvertVolume(bar.Volume),
                         Source: Name,
                         SequenceNumber: sessionDate.DayNumber,
                         // IB returns adjusted prices when using ADJUSTED_LAST
@@ -241,7 +241,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
                         AdjustedHigh: (decimal)bar.High,
                         AdjustedLow: (decimal)bar.Low,
                         AdjustedClose: (decimal)bar.Close,
-                        AdjustedVolume: bar.Volume
+                        AdjustedVolume: ConvertVolume(bar.Volume)
                     ));
                 }
 
@@ -405,8 +405,8 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
                         High: (decimal)bar.High,
                         Low: (decimal)bar.Low,
                         Close: (decimal)bar.Close,
-                        Volume: bar.Volume,
-                        VWAP: bar.Wap,
+                        Volume: ConvertVolume(bar.Volume),
+                        VWAP: bar.WAP,
                         TradeCount: bar.Count,
                         Source: Name
                     ));
@@ -501,6 +501,9 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider, IRateLim
         return $"{(int)Math.Ceiling(duration.TotalDays / 365)} Y";
     }
 
+    private static long ConvertVolume(decimal volume)
+        => volume <= 0 ? 0L : decimal.ToInt64(decimal.Truncate(volume));
+
     public void Dispose()
     {
         if (_disposed) return;
@@ -548,6 +551,17 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
 {
     private static readonly Serilog.ILogger _log = LoggingSetup.ForContext<IBHistoricalDataProvider>();
 
+    public IBHistoricalDataProvider() { }
+
+    public IBHistoricalDataProvider(
+        EnhancedIBConnectionManager connectionManager,
+        int priority = 10,
+        Serilog.ILogger? log = null)
+    {
+        if (log is not null)
+            _ = log;
+    }
+
     public string Name => "ibkr";
     public string DisplayName => "Interactive Brokers (requires IBAPI build)";
     public string Description =>
@@ -564,7 +578,7 @@ public sealed class IBHistoricalDataProvider : IHistoricalDataProvider
 
     // IProviderMetadata
     public string ProviderId => "ibkr";
-    public string ProviderDisplayName => "Interactive Brokers";
+    public string ProviderDisplayName => DisplayName;
     public string ProviderDescription => Description;
     public int ProviderPriority => Priority;
 

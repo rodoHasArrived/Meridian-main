@@ -106,6 +106,74 @@ public sealed class SessionState
     public WindowBounds? WindowBounds { get; set; }
     public DateTime SavedAt { get; set; }
     public string? ActiveWorkspaceId { get; set; }
+    public WorkstationLayoutState? WorkstationLayout { get; set; }
+}
+
+/// <summary>
+/// Persisted docking and pane composition for a workstation workspace.
+/// </summary>
+public sealed class WorkstationLayoutState
+{
+    public string LayoutId { get; set; } = "default";
+    public string DisplayName { get; set; } = "Default Layout";
+    public string ActivePaneId { get; set; } = "pane-1";
+    public string? OperatingContextKey { get; set; }
+    public BoundedWindowMode WindowMode { get; set; } = BoundedWindowMode.DockFloat;
+    public string? LayoutPresetId { get; set; }
+    public string? DockLayoutXml { get; set; }
+    public List<WorkstationPaneState> Panes { get; set; } = new();
+    public List<FloatingWorkspaceWindowState> FloatingWindows { get; set; } = new();
+    public Dictionary<string, string> LayoutContext { get; set; } = new();
+    public DateTime SavedAt { get; set; }
+}
+
+/// <summary>
+/// Bounded workstation shell mode for one-shell dock and float behavior.
+/// </summary>
+public enum BoundedWindowMode : byte
+{
+    Focused,
+    DockFloat,
+    WorkbenchPreset
+}
+
+/// <summary>
+/// Describes a single docked or floating pane within a workstation layout.
+/// </summary>
+public sealed class WorkstationPaneState
+{
+    public string PaneId { get; set; } = string.Empty;
+    public string PageTag { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string DockZone { get; set; } = "document";
+    public bool IsToolPane { get; set; }
+    public bool IsPinned { get; set; }
+    public bool IsActive { get; set; }
+    public int Order { get; set; }
+}
+
+/// <summary>
+/// Metadata for a floating workspace window that can be restored on the next launch.
+/// </summary>
+public sealed class FloatingWorkspaceWindowState
+{
+    public string WindowId { get; set; } = string.Empty;
+    public string PaneId { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public WindowBounds? Bounds { get; set; }
+    public bool IsOpen { get; set; } = true;
+}
+
+/// <summary>
+/// User-saveable workstation layout preset.
+/// </summary>
+public sealed class WorkspaceLayoutPreset
+{
+    public string PresetId { get; set; } = Guid.NewGuid().ToString("N");
+    public string Name { get; set; } = string.Empty;
+    public bool IsBuiltIn { get; set; }
+    public WorkstationLayoutState Layout { get; set; } = new();
+    public DateTime SavedAt { get; set; } = DateTime.UtcNow;
 }
 
 /// <summary>

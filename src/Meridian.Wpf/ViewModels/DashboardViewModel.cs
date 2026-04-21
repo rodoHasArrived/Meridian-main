@@ -43,6 +43,7 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
     private readonly DispatcherTimer _staleCheckTimer;
     private readonly DispatcherTimer _activityPollTimer;
     private readonly CancellationTokenSource _cts = new();   // P6: lifecycle cancellation
+    private bool _isDisposed;
 
     // Sparkline history buffers – store last N data points for each metric card.
     private readonly List<double> _publishedHistory = new(SparklineCapacity);
@@ -429,8 +430,23 @@ public sealed class DashboardViewModel : BindableBase, IDisposable, IPageActionB
 
     public void Dispose()
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _isDisposed = true;
         Stop();
-        _cts.Cancel();
+
+        try
+        {
+            _cts.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Page unload and container disposal can both release the token source.
+        }
+
         _cts.Dispose();
         _messagingService.MessageReceived -= OnMessageReceived;
         _connectionService.ConnectionStateChanged -= OnConnectionStateChanged;

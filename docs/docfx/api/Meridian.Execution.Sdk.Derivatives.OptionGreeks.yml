@@ -1,0 +1,843 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  commentId: T:Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  id: OptionGreeks
+  parent: Meridian.Execution.Sdk.Derivatives
+  children:
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.#ctor(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.AsOf
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.Delta
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarDelta(System.Int32,System.Int32)
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarTheta(System.Int32,System.Int32)
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.Gamma
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.ImpliedVolatility
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.Rho
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.Theta
+  - Meridian.Execution.Sdk.Derivatives.OptionGreeks.Vega
+  langs:
+  - csharp
+  - vb
+  name: OptionGreeks
+  nameWithType: OptionGreeks
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  type: Class
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: OptionGreeks
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: >-
+    A point-in-time snapshot of an option position's Greek sensitivities.
+
+    All values are expressed in the standard "per share" convention;
+
+    multiply by <xref href="Meridian.Execution.Sdk.Derivatives.OptionDetails.ContractMultiplier" data-throw-if-not-resolved="false"></xref> for the full contract impact.
+  example: []
+  syntax:
+    content: 'public sealed record OptionGreeks : IEquatable<OptionGreeks>'
+    content.vb: Public NotInheritable Class OptionGreeks Implements IEquatable(Of OptionGreeks)
+  inheritance:
+  - System.Object
+  implements:
+  - System.IEquatable{Meridian.Execution.Sdk.Derivatives.OptionGreeks}
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.#ctor(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  commentId: M:Meridian.Execution.Sdk.Derivatives.OptionGreeks.#ctor(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)
+  id: '#ctor(System.Double,System.Double,System.Double,System.Double,System.Double,System.Double,System.DateTimeOffset)'
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: OptionGreeks(double, double, double, double, double, double, DateTimeOffset)
+  nameWithType: OptionGreeks.OptionGreeks(double, double, double, double, double, double, DateTimeOffset)
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.OptionGreeks(double, double, double, double, double, double, System.DateTimeOffset)
+  type: Constructor
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: .ctor
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: >-
+    A point-in-time snapshot of an option position's Greek sensitivities.
+
+    All values are expressed in the standard "per share" convention;
+
+    multiply by <xref href="Meridian.Execution.Sdk.Derivatives.OptionDetails.ContractMultiplier" data-throw-if-not-resolved="false"></xref> for the full contract impact.
+  example: []
+  syntax:
+    content: public OptionGreeks(double Delta, double Gamma, double Theta, double Vega, double Rho, double ImpliedVolatility, DateTimeOffset AsOf)
+    parameters:
+    - id: Delta
+      type: System.Double
+      description: >-
+        Rate of change of option price with respect to a $1 move in the underlying.
+
+        Range: [−1, 0] for puts; [0, 1] for calls.
+    - id: Gamma
+      type: System.Double
+      description: >-
+        Rate of change of delta with respect to a $1 move in the underlying.
+
+        Always positive for long options.
+    - id: Theta
+      type: System.Double
+      description: Time decay per calendar day (negative for long positions; the option loses value daily).
+    - id: Vega
+      type: System.Double
+      description: Sensitivity to a 1 % (100-basis-point) change in implied volatility.
+    - id: Rho
+      type: System.Double
+      description: Sensitivity to a 1 % change in the risk-free interest rate.
+    - id: ImpliedVolatility
+      type: System.Double
+      description: >-
+        Implied annualized volatility derived from the current market price (decimal fraction;
+
+        e.g., 0.25 = 25 %).
+    - id: AsOf
+      type: System.DateTimeOffset
+      description: Timestamp of the Greeks snapshot.
+    content.vb: Public Sub New(Delta As Double, Gamma As Double, Theta As Double, Vega As Double, Rho As Double, ImpliedVolatility As Double, AsOf As DateTimeOffset)
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.#ctor*
+  nameWithType.vb: OptionGreeks.New(Double, Double, Double, Double, Double, Double, DateTimeOffset)
+  fullName.vb: Meridian.Execution.Sdk.Derivatives.OptionGreeks.New(Double, Double, Double, Double, Double, Double, System.DateTimeOffset)
+  name.vb: New(Double, Double, Double, Double, Double, Double, DateTimeOffset)
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Delta
+  commentId: P:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Delta
+  id: Delta
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: Delta
+  nameWithType: OptionGreeks.Delta
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Delta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Delta
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: >-
+    Rate of change of option price with respect to a $1 move in the underlying.
+
+    Range: [−1, 0] for puts; [0, 1] for calls.
+  example: []
+  syntax:
+    content: public double Delta { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Delta As Double
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Delta*
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Gamma
+  commentId: P:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Gamma
+  id: Gamma
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: Gamma
+  nameWithType: OptionGreeks.Gamma
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Gamma
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Gamma
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: >-
+    Rate of change of delta with respect to a $1 move in the underlying.
+
+    Always positive for long options.
+  example: []
+  syntax:
+    content: public double Gamma { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Gamma As Double
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Gamma*
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Theta
+  commentId: P:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Theta
+  id: Theta
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: Theta
+  nameWithType: OptionGreeks.Theta
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Theta
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Theta
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Time decay per calendar day (negative for long positions; the option loses value daily).
+  example: []
+  syntax:
+    content: public double Theta { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Theta As Double
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Theta*
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Vega
+  commentId: P:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Vega
+  id: Vega
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: Vega
+  nameWithType: OptionGreeks.Vega
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Vega
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Vega
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 33
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Sensitivity to a 1 % (100-basis-point) change in implied volatility.
+  example: []
+  syntax:
+    content: public double Vega { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Vega As Double
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Vega*
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Rho
+  commentId: P:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Rho
+  id: Rho
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: Rho
+  nameWithType: OptionGreeks.Rho
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Rho
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Rho
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 34
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Sensitivity to a 1 % change in the risk-free interest rate.
+  example: []
+  syntax:
+    content: public double Rho { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property Rho As Double
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Rho*
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.ImpliedVolatility
+  commentId: P:Meridian.Execution.Sdk.Derivatives.OptionGreeks.ImpliedVolatility
+  id: ImpliedVolatility
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: ImpliedVolatility
+  nameWithType: OptionGreeks.ImpliedVolatility
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.ImpliedVolatility
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ImpliedVolatility
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: >-
+    Implied annualized volatility derived from the current market price (decimal fraction;
+
+    e.g., 0.25 = 25 %).
+  example: []
+  syntax:
+    content: public double ImpliedVolatility { get; init; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property ImpliedVolatility As Double
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.ImpliedVolatility*
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.AsOf
+  commentId: P:Meridian.Execution.Sdk.Derivatives.OptionGreeks.AsOf
+  id: AsOf
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: AsOf
+  nameWithType: OptionGreeks.AsOf
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.AsOf
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: AsOf
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: Timestamp of the Greeks snapshot.
+  example: []
+  syntax:
+    content: public DateTimeOffset AsOf { get; init; }
+    parameters: []
+    return:
+      type: System.DateTimeOffset
+    content.vb: Public Property AsOf As DateTimeOffset
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.AsOf*
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarDelta(System.Int32,System.Int32)
+  commentId: M:Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarDelta(System.Int32,System.Int32)
+  id: DollarDelta(System.Int32,System.Int32)
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: DollarDelta(int, int)
+  nameWithType: OptionGreeks.DollarDelta(int, int)
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarDelta(int, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DollarDelta
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: >-
+    Dollar-delta: the P&amp;L sensitivity to a $1 move, scaled for a given number of
+
+    <code class="paramref">contracts</code> with the specified <code class="paramref">multiplier</code>.
+  example: []
+  syntax:
+    content: public double DollarDelta(int contracts, int multiplier = 100)
+    parameters:
+    - id: contracts
+      type: System.Int32
+    - id: multiplier
+      type: System.Int32
+    return:
+      type: System.Double
+    content.vb: Public Function DollarDelta(contracts As Integer, multiplier As Integer = 100) As Double
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarDelta*
+  nameWithType.vb: OptionGreeks.DollarDelta(Integer, Integer)
+  fullName.vb: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarDelta(Integer, Integer)
+  name.vb: DollarDelta(Integer, Integer)
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarTheta(System.Int32,System.Int32)
+  commentId: M:Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarTheta(System.Int32,System.Int32)
+  id: DollarTheta(System.Int32,System.Int32)
+  parent: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+  langs:
+  - csharp
+  - vb
+  name: DollarTheta(int, int)
+  nameWithType: OptionGreeks.DollarTheta(int, int)
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarTheta(int, int)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DollarTheta
+    path: ../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs
+    startLine: 49
+  assemblies:
+  - Meridian.Execution.Sdk
+  namespace: Meridian.Execution.Sdk.Derivatives
+  summary: >-
+    Dollar-theta: daily time-decay cost, scaled for a given number of
+
+    <code class="paramref">contracts</code> with the specified <code class="paramref">multiplier</code>.
+  example: []
+  syntax:
+    content: public double DollarTheta(int contracts, int multiplier = 100)
+    parameters:
+    - id: contracts
+      type: System.Int32
+    - id: multiplier
+      type: System.Int32
+    return:
+      type: System.Double
+    content.vb: Public Function DollarTheta(contracts As Integer, multiplier As Integer = 100) As Double
+  overload: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarTheta*
+  nameWithType.vb: OptionGreeks.DollarTheta(Integer, Integer)
+  fullName.vb: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarTheta(Integer, Integer)
+  name.vb: DollarTheta(Integer, Integer)
+references:
+- uid: Meridian.Execution.Sdk.Derivatives.OptionDetails.ContractMultiplier
+  commentId: P:Meridian.Execution.Sdk.Derivatives.OptionDetails.ContractMultiplier
+  href: Meridian.Execution.Sdk.Derivatives.OptionDetails.html#Meridian_Execution_Sdk_Derivatives_OptionDetails_ContractMultiplier
+  name: ContractMultiplier
+  nameWithType: OptionDetails.ContractMultiplier
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionDetails.ContractMultiplier
+- uid: Meridian.Execution.Sdk.Derivatives
+  commentId: N:Meridian.Execution.Sdk.Derivatives
+  href: Meridian.html
+  name: Meridian.Execution.Sdk.Derivatives
+  nameWithType: Meridian.Execution.Sdk.Derivatives
+  fullName: Meridian.Execution.Sdk.Derivatives
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Execution
+    name: Execution
+    href: Meridian.Execution.html
+  - name: .
+  - uid: Meridian.Execution.Sdk
+    name: Sdk
+    href: Meridian.Execution.Sdk.html
+  - name: .
+  - uid: Meridian.Execution.Sdk.Derivatives
+    name: Derivatives
+    href: Meridian.Execution.Sdk.Derivatives.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.IEquatable{Meridian.Execution.Sdk.Derivatives.OptionGreeks}
+  commentId: T:System.IEquatable{Meridian.Execution.Sdk.Derivatives.OptionGreeks}
+  parent: System
+  definition: System.IEquatable`1
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<OptionGreeks>
+  nameWithType: IEquatable<OptionGreeks>
+  fullName: System.IEquatable<Meridian.Execution.Sdk.Derivatives.OptionGreeks>
+  nameWithType.vb: IEquatable(Of OptionGreeks)
+  fullName.vb: System.IEquatable(Of Meridian.Execution.Sdk.Derivatives.OptionGreeks)
+  name.vb: IEquatable(Of OptionGreeks)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+    name: OptionGreeks
+    href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks
+    name: OptionGreeks
+    href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.IEquatable`1
+  commentId: T:System.IEquatable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  name: IEquatable<T>
+  nameWithType: IEquatable<T>
+  fullName: System.IEquatable<T>
+  nameWithType.vb: IEquatable(Of T)
+  fullName.vb: System.IEquatable(Of T)
+  name.vb: IEquatable(Of T)
+  spec.csharp:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.IEquatable`1
+    name: IEquatable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.iequatable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.#ctor*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.#ctor
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks__ctor_System_Double_System_Double_System_Double_System_Double_System_Double_System_Double_System_DateTimeOffset_
+  name: OptionGreeks
+  nameWithType: OptionGreeks.OptionGreeks
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.OptionGreeks
+  nameWithType.vb: OptionGreeks.New
+  fullName.vb: Meridian.Execution.Sdk.Derivatives.OptionGreeks.New
+  name.vb: New
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: System.DateTimeOffset
+  commentId: T:System.DateTimeOffset
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.datetimeoffset
+  name: DateTimeOffset
+  nameWithType: DateTimeOffset
+  fullName: System.DateTimeOffset
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Delta*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Delta
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks_Delta
+  name: Delta
+  nameWithType: OptionGreeks.Delta
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Delta
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Gamma*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Gamma
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks_Gamma
+  name: Gamma
+  nameWithType: OptionGreeks.Gamma
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Gamma
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Theta*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Theta
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks_Theta
+  name: Theta
+  nameWithType: OptionGreeks.Theta
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Theta
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Vega*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Vega
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks_Vega
+  name: Vega
+  nameWithType: OptionGreeks.Vega
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Vega
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Rho*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.Rho
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks_Rho
+  name: Rho
+  nameWithType: OptionGreeks.Rho
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.Rho
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.ImpliedVolatility*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.ImpliedVolatility
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks_ImpliedVolatility
+  name: ImpliedVolatility
+  nameWithType: OptionGreeks.ImpliedVolatility
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.ImpliedVolatility
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.AsOf*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.AsOf
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks_AsOf
+  name: AsOf
+  nameWithType: OptionGreeks.AsOf
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.AsOf
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarDelta*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarDelta
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks_DollarDelta_System_Int32_System_Int32_
+  name: DollarDelta
+  nameWithType: OptionGreeks.DollarDelta
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarDelta
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarTheta*
+  commentId: Overload:Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarTheta
+  href: Meridian.Execution.Sdk.Derivatives.OptionGreeks.html#Meridian_Execution_Sdk_Derivatives_OptionGreeks_DollarTheta_System_Int32_System_Int32_
+  name: DollarTheta
+  nameWithType: OptionGreeks.DollarTheta
+  fullName: Meridian.Execution.Sdk.Derivatives.OptionGreeks.DollarTheta

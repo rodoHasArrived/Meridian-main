@@ -1,0 +1,1690 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Ui.Services.IAdminMaintenanceService
+  commentId: T:Meridian.Ui.Services.IAdminMaintenanceService
+  id: IAdminMaintenanceService
+  parent: Meridian.Ui.Services
+  children:
+  - Meridian.Ui.Services.IAdminMaintenanceService.ApplyRetentionPoliciesAsync(System.Boolean,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.DeleteRetentionPolicyAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.ExecuteCleanupAsync(Meridian.Ui.Services.CleanupOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.GetErrorCodesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceRunStatusAsync(System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceScheduleAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.GetRetentionPoliciesAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.GetTierConfigurationAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.GetTierUsageAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.MigrateToTierAsync(System.String,Meridian.Ui.Services.TierMigrationOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.PreviewCleanupAsync(Meridian.Ui.Services.CleanupOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.RunMaintenanceNowAsync(Meridian.Ui.Services.MaintenanceRunOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.RunQuickCheckAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.SaveRetentionPolicyAsync(Meridian.Ui.Services.StorageRetentionPolicy,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.ShowConfigAsync(System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.UpdateMaintenanceScheduleAsync(Meridian.Ui.Services.MaintenanceScheduleConfig,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.UpdateTierConfigurationAsync(System.Collections.Generic.List{Meridian.Ui.Services.StorageTierConfig},System.Boolean,System.String,System.Threading.CancellationToken)
+  - Meridian.Ui.Services.IAdminMaintenanceService.ValidatePermissionsAsync(System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IAdminMaintenanceService
+  nameWithType: IAdminMaintenanceService
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IAdminMaintenanceService
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 11
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  summary: >-
+    Interface for administrative and maintenance operations including
+
+    archive scheduling, tier migration, retention policies, and file cleanup.
+
+    Shared between WPF desktop applications.
+  example: []
+  syntax:
+    content: public interface IAdminMaintenanceService
+    content.vb: Public Interface IAdminMaintenanceService
+  derivedClasses:
+  - Meridian.Ui.Services.AdminMaintenanceServiceBase
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceScheduleAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceScheduleAsync(System.Threading.CancellationToken)
+  id: GetMaintenanceScheduleAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetMaintenanceScheduleAsync(CancellationToken)
+  nameWithType: IAdminMaintenanceService.GetMaintenanceScheduleAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceScheduleAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMaintenanceScheduleAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 14
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<MaintenanceScheduleResult> GetMaintenanceScheduleAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceScheduleResult}
+    content.vb: Function GetMaintenanceScheduleAsync(ct As CancellationToken = Nothing) As Task(Of MaintenanceScheduleResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceScheduleAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.UpdateMaintenanceScheduleAsync(Meridian.Ui.Services.MaintenanceScheduleConfig,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.UpdateMaintenanceScheduleAsync(Meridian.Ui.Services.MaintenanceScheduleConfig,System.Threading.CancellationToken)
+  id: UpdateMaintenanceScheduleAsync(Meridian.Ui.Services.MaintenanceScheduleConfig,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: UpdateMaintenanceScheduleAsync(MaintenanceScheduleConfig, CancellationToken)
+  nameWithType: IAdminMaintenanceService.UpdateMaintenanceScheduleAsync(MaintenanceScheduleConfig, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.UpdateMaintenanceScheduleAsync(Meridian.Ui.Services.MaintenanceScheduleConfig, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateMaintenanceScheduleAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 15
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<OperationResult> UpdateMaintenanceScheduleAsync(MaintenanceScheduleConfig schedule, CancellationToken ct = default)
+    parameters:
+    - id: schedule
+      type: Meridian.Ui.Services.MaintenanceScheduleConfig
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.OperationResult}
+    content.vb: Function UpdateMaintenanceScheduleAsync(schedule As MaintenanceScheduleConfig, ct As CancellationToken = Nothing) As Task(Of OperationResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.UpdateMaintenanceScheduleAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.RunMaintenanceNowAsync(Meridian.Ui.Services.MaintenanceRunOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.RunMaintenanceNowAsync(Meridian.Ui.Services.MaintenanceRunOptions,System.Threading.CancellationToken)
+  id: RunMaintenanceNowAsync(Meridian.Ui.Services.MaintenanceRunOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: RunMaintenanceNowAsync(MaintenanceRunOptions?, CancellationToken)
+  nameWithType: IAdminMaintenanceService.RunMaintenanceNowAsync(MaintenanceRunOptions?, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.RunMaintenanceNowAsync(Meridian.Ui.Services.MaintenanceRunOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunMaintenanceNowAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 18
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<MaintenanceRunResult> RunMaintenanceNowAsync(MaintenanceRunOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.MaintenanceRunOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceRunResult}
+    content.vb: Function RunMaintenanceNowAsync(options As MaintenanceRunOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of MaintenanceRunResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.RunMaintenanceNowAsync*
+  nameWithType.vb: IAdminMaintenanceService.RunMaintenanceNowAsync(MaintenanceRunOptions, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.IAdminMaintenanceService.RunMaintenanceNowAsync(Meridian.Ui.Services.MaintenanceRunOptions, System.Threading.CancellationToken)
+  name.vb: RunMaintenanceNowAsync(MaintenanceRunOptions, CancellationToken)
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceRunStatusAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceRunStatusAsync(System.String,System.Threading.CancellationToken)
+  id: GetMaintenanceRunStatusAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetMaintenanceRunStatusAsync(string, CancellationToken)
+  nameWithType: IAdminMaintenanceService.GetMaintenanceRunStatusAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceRunStatusAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMaintenanceRunStatusAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 19
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<MaintenanceRunResult> GetMaintenanceRunStatusAsync(string runId, CancellationToken ct = default)
+    parameters:
+    - id: runId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceRunResult}
+    content.vb: Function GetMaintenanceRunStatusAsync(runId As String, ct As CancellationToken = Nothing) As Task(Of MaintenanceRunResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceRunStatusAsync*
+  nameWithType.vb: IAdminMaintenanceService.GetMaintenanceRunStatusAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceRunStatusAsync(String, System.Threading.CancellationToken)
+  name.vb: GetMaintenanceRunStatusAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  id: GetMaintenanceHistoryAsync(System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetMaintenanceHistoryAsync(int, CancellationToken)
+  nameWithType: IAdminMaintenanceService.GetMaintenanceHistoryAsync(int, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceHistoryAsync(int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetMaintenanceHistoryAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 20
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<MaintenanceHistoryResult> GetMaintenanceHistoryAsync(int limit = 20, CancellationToken ct = default)
+    parameters:
+    - id: limit
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceHistoryResult}
+    content.vb: Function GetMaintenanceHistoryAsync(limit As Integer = 20, ct As CancellationToken = Nothing) As Task(Of MaintenanceHistoryResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceHistoryAsync*
+  nameWithType.vb: IAdminMaintenanceService.GetMaintenanceHistoryAsync(Integer, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceHistoryAsync(Integer, System.Threading.CancellationToken)
+  name.vb: GetMaintenanceHistoryAsync(Integer, CancellationToken)
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetTierConfigurationAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.GetTierConfigurationAsync(System.Threading.CancellationToken)
+  id: GetTierConfigurationAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetTierConfigurationAsync(CancellationToken)
+  nameWithType: IAdminMaintenanceService.GetTierConfigurationAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetTierConfigurationAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTierConfigurationAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 23
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<TierConfigResult> GetTierConfigurationAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.TierConfigResult}
+    content.vb: Function GetTierConfigurationAsync(ct As CancellationToken = Nothing) As Task(Of TierConfigResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.GetTierConfigurationAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.UpdateTierConfigurationAsync(System.Collections.Generic.List{Meridian.Ui.Services.StorageTierConfig},System.Boolean,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.UpdateTierConfigurationAsync(System.Collections.Generic.List{Meridian.Ui.Services.StorageTierConfig},System.Boolean,System.String,System.Threading.CancellationToken)
+  id: UpdateTierConfigurationAsync(System.Collections.Generic.List{Meridian.Ui.Services.StorageTierConfig},System.Boolean,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: UpdateTierConfigurationAsync(List<StorageTierConfig>, bool, string?, CancellationToken)
+  nameWithType: IAdminMaintenanceService.UpdateTierConfigurationAsync(List<StorageTierConfig>, bool, string?, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.UpdateTierConfigurationAsync(System.Collections.Generic.List<Meridian.Ui.Services.StorageTierConfig>, bool, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: UpdateTierConfigurationAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 24
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<OperationResult> UpdateTierConfigurationAsync(List<StorageTierConfig> tiers, bool autoMigrationEnabled, string? migrationSchedule = null, CancellationToken ct = default)
+    parameters:
+    - id: tiers
+      type: System.Collections.Generic.List{Meridian.Ui.Services.StorageTierConfig}
+    - id: autoMigrationEnabled
+      type: System.Boolean
+    - id: migrationSchedule
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.OperationResult}
+    content.vb: Function UpdateTierConfigurationAsync(tiers As List(Of StorageTierConfig), autoMigrationEnabled As Boolean, migrationSchedule As String = Nothing, ct As CancellationToken = Nothing) As Task(Of OperationResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.UpdateTierConfigurationAsync*
+  nameWithType.vb: IAdminMaintenanceService.UpdateTierConfigurationAsync(List(Of StorageTierConfig), Boolean, String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.IAdminMaintenanceService.UpdateTierConfigurationAsync(System.Collections.Generic.List(Of Meridian.Ui.Services.StorageTierConfig), Boolean, String, System.Threading.CancellationToken)
+  name.vb: UpdateTierConfigurationAsync(List(Of StorageTierConfig), Boolean, String, CancellationToken)
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.MigrateToTierAsync(System.String,Meridian.Ui.Services.TierMigrationOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.MigrateToTierAsync(System.String,Meridian.Ui.Services.TierMigrationOptions,System.Threading.CancellationToken)
+  id: MigrateToTierAsync(System.String,Meridian.Ui.Services.TierMigrationOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: MigrateToTierAsync(string, TierMigrationOptions?, CancellationToken)
+  nameWithType: IAdminMaintenanceService.MigrateToTierAsync(string, TierMigrationOptions?, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.MigrateToTierAsync(string, Meridian.Ui.Services.TierMigrationOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MigrateToTierAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 25
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<TierMigrationResult> MigrateToTierAsync(string targetTier, TierMigrationOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: targetTier
+      type: System.String
+    - id: options
+      type: Meridian.Ui.Services.TierMigrationOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.TierMigrationResult}
+    content.vb: Function MigrateToTierAsync(targetTier As String, options As TierMigrationOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of TierMigrationResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.MigrateToTierAsync*
+  nameWithType.vb: IAdminMaintenanceService.MigrateToTierAsync(String, TierMigrationOptions, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.IAdminMaintenanceService.MigrateToTierAsync(String, Meridian.Ui.Services.TierMigrationOptions, System.Threading.CancellationToken)
+  name.vb: MigrateToTierAsync(String, TierMigrationOptions, CancellationToken)
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetTierUsageAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.GetTierUsageAsync(System.Threading.CancellationToken)
+  id: GetTierUsageAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetTierUsageAsync(CancellationToken)
+  nameWithType: IAdminMaintenanceService.GetTierUsageAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetTierUsageAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetTierUsageAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 26
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<TierUsageResult> GetTierUsageAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.TierUsageResult}
+    content.vb: Function GetTierUsageAsync(ct As CancellationToken = Nothing) As Task(Of TierUsageResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.GetTierUsageAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetRetentionPoliciesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.GetRetentionPoliciesAsync(System.Threading.CancellationToken)
+  id: GetRetentionPoliciesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetRetentionPoliciesAsync(CancellationToken)
+  nameWithType: IAdminMaintenanceService.GetRetentionPoliciesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetRetentionPoliciesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetRetentionPoliciesAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 29
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<RetentionPoliciesResult> GetRetentionPoliciesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.RetentionPoliciesResult}
+    content.vb: Function GetRetentionPoliciesAsync(ct As CancellationToken = Nothing) As Task(Of RetentionPoliciesResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.GetRetentionPoliciesAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.SaveRetentionPolicyAsync(Meridian.Ui.Services.StorageRetentionPolicy,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.SaveRetentionPolicyAsync(Meridian.Ui.Services.StorageRetentionPolicy,System.Threading.CancellationToken)
+  id: SaveRetentionPolicyAsync(Meridian.Ui.Services.StorageRetentionPolicy,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: SaveRetentionPolicyAsync(StorageRetentionPolicy, CancellationToken)
+  nameWithType: IAdminMaintenanceService.SaveRetentionPolicyAsync(StorageRetentionPolicy, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.SaveRetentionPolicyAsync(Meridian.Ui.Services.StorageRetentionPolicy, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SaveRetentionPolicyAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 30
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<OperationResult> SaveRetentionPolicyAsync(StorageRetentionPolicy policy, CancellationToken ct = default)
+    parameters:
+    - id: policy
+      type: Meridian.Ui.Services.StorageRetentionPolicy
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.OperationResult}
+    content.vb: Function SaveRetentionPolicyAsync(policy As StorageRetentionPolicy, ct As CancellationToken = Nothing) As Task(Of OperationResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.SaveRetentionPolicyAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.DeleteRetentionPolicyAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.DeleteRetentionPolicyAsync(System.String,System.Threading.CancellationToken)
+  id: DeleteRetentionPolicyAsync(System.String,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: DeleteRetentionPolicyAsync(string, CancellationToken)
+  nameWithType: IAdminMaintenanceService.DeleteRetentionPolicyAsync(string, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.DeleteRetentionPolicyAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: DeleteRetentionPolicyAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 31
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<OperationResult> DeleteRetentionPolicyAsync(string policyId, CancellationToken ct = default)
+    parameters:
+    - id: policyId
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.OperationResult}
+    content.vb: Function DeleteRetentionPolicyAsync(policyId As String, ct As CancellationToken = Nothing) As Task(Of OperationResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.DeleteRetentionPolicyAsync*
+  nameWithType.vb: IAdminMaintenanceService.DeleteRetentionPolicyAsync(String, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.IAdminMaintenanceService.DeleteRetentionPolicyAsync(String, System.Threading.CancellationToken)
+  name.vb: DeleteRetentionPolicyAsync(String, CancellationToken)
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.ApplyRetentionPoliciesAsync(System.Boolean,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.ApplyRetentionPoliciesAsync(System.Boolean,System.Threading.CancellationToken)
+  id: ApplyRetentionPoliciesAsync(System.Boolean,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: ApplyRetentionPoliciesAsync(bool, CancellationToken)
+  nameWithType: IAdminMaintenanceService.ApplyRetentionPoliciesAsync(bool, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.ApplyRetentionPoliciesAsync(bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ApplyRetentionPoliciesAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 32
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<RetentionApplyResult> ApplyRetentionPoliciesAsync(bool dryRun = false, CancellationToken ct = default)
+    parameters:
+    - id: dryRun
+      type: System.Boolean
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.RetentionApplyResult}
+    content.vb: Function ApplyRetentionPoliciesAsync(dryRun As Boolean = False, ct As CancellationToken = Nothing) As Task(Of RetentionApplyResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.ApplyRetentionPoliciesAsync*
+  nameWithType.vb: IAdminMaintenanceService.ApplyRetentionPoliciesAsync(Boolean, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.IAdminMaintenanceService.ApplyRetentionPoliciesAsync(Boolean, System.Threading.CancellationToken)
+  name.vb: ApplyRetentionPoliciesAsync(Boolean, CancellationToken)
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.PreviewCleanupAsync(Meridian.Ui.Services.CleanupOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.PreviewCleanupAsync(Meridian.Ui.Services.CleanupOptions,System.Threading.CancellationToken)
+  id: PreviewCleanupAsync(Meridian.Ui.Services.CleanupOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: PreviewCleanupAsync(CleanupOptions, CancellationToken)
+  nameWithType: IAdminMaintenanceService.PreviewCleanupAsync(CleanupOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.PreviewCleanupAsync(Meridian.Ui.Services.CleanupOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: PreviewCleanupAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 35
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<CleanupPreviewResult> PreviewCleanupAsync(CleanupOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.CleanupOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.CleanupPreviewResult}
+    content.vb: Function PreviewCleanupAsync(options As CleanupOptions, ct As CancellationToken = Nothing) As Task(Of CleanupPreviewResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.PreviewCleanupAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.ExecuteCleanupAsync(Meridian.Ui.Services.CleanupOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.ExecuteCleanupAsync(Meridian.Ui.Services.CleanupOptions,System.Threading.CancellationToken)
+  id: ExecuteCleanupAsync(Meridian.Ui.Services.CleanupOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: ExecuteCleanupAsync(CleanupOptions, CancellationToken)
+  nameWithType: IAdminMaintenanceService.ExecuteCleanupAsync(CleanupOptions, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.ExecuteCleanupAsync(Meridian.Ui.Services.CleanupOptions, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ExecuteCleanupAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 36
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<MaintenanceCleanupResult> ExecuteCleanupAsync(CleanupOptions options, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.CleanupOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceCleanupResult}
+    content.vb: Function ExecuteCleanupAsync(options As CleanupOptions, ct As CancellationToken = Nothing) As Task(Of MaintenanceCleanupResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.ExecuteCleanupAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.ValidatePermissionsAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.ValidatePermissionsAsync(System.Threading.CancellationToken)
+  id: ValidatePermissionsAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: ValidatePermissionsAsync(CancellationToken)
+  nameWithType: IAdminMaintenanceService.ValidatePermissionsAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.ValidatePermissionsAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ValidatePermissionsAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 39
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<PermissionValidationResult> ValidatePermissionsAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.PermissionValidationResult}
+    content.vb: Function ValidatePermissionsAsync(ct As CancellationToken = Nothing) As Task(Of PermissionValidationResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.ValidatePermissionsAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions,System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions,System.Threading.CancellationToken)
+  id: RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions,System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: RunSelfTestAsync(SelfTestOptions?, CancellationToken)
+  nameWithType: IAdminMaintenanceService.RunSelfTestAsync(SelfTestOptions?, CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunSelfTestAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 40
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<SelfTestResult> RunSelfTestAsync(SelfTestOptions? options = null, CancellationToken ct = default)
+    parameters:
+    - id: options
+      type: Meridian.Ui.Services.SelfTestOptions
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.SelfTestResult}
+    content.vb: Function RunSelfTestAsync(options As SelfTestOptions = Nothing, ct As CancellationToken = Nothing) As Task(Of SelfTestResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.RunSelfTestAsync*
+  nameWithType.vb: IAdminMaintenanceService.RunSelfTestAsync(SelfTestOptions, CancellationToken)
+  fullName.vb: Meridian.Ui.Services.IAdminMaintenanceService.RunSelfTestAsync(Meridian.Ui.Services.SelfTestOptions, System.Threading.CancellationToken)
+  name.vb: RunSelfTestAsync(SelfTestOptions, CancellationToken)
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetErrorCodesAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.GetErrorCodesAsync(System.Threading.CancellationToken)
+  id: GetErrorCodesAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: GetErrorCodesAsync(CancellationToken)
+  nameWithType: IAdminMaintenanceService.GetErrorCodesAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetErrorCodesAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: GetErrorCodesAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 41
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<ErrorCodesResult> GetErrorCodesAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ErrorCodesResult}
+    content.vb: Function GetErrorCodesAsync(ct As CancellationToken = Nothing) As Task(Of ErrorCodesResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.GetErrorCodesAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.ShowConfigAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.ShowConfigAsync(System.Threading.CancellationToken)
+  id: ShowConfigAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: ShowConfigAsync(CancellationToken)
+  nameWithType: IAdminMaintenanceService.ShowConfigAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.ShowConfigAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ShowConfigAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 42
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<ShowConfigResult> ShowConfigAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.ShowConfigResult}
+    content.vb: Function ShowConfigAsync(ct As CancellationToken = Nothing) As Task(Of ShowConfigResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.ShowConfigAsync*
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.RunQuickCheckAsync(System.Threading.CancellationToken)
+  commentId: M:Meridian.Ui.Services.IAdminMaintenanceService.RunQuickCheckAsync(System.Threading.CancellationToken)
+  id: RunQuickCheckAsync(System.Threading.CancellationToken)
+  parent: Meridian.Ui.Services.IAdminMaintenanceService
+  langs:
+  - csharp
+  - vb
+  name: RunQuickCheckAsync(CancellationToken)
+  nameWithType: IAdminMaintenanceService.RunQuickCheckAsync(CancellationToken)
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.RunQuickCheckAsync(System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: RunQuickCheckAsync
+    path: ../../src/Meridian.Ui.Services/Contracts/IAdminMaintenanceService.cs
+    startLine: 43
+  assemblies:
+  - Meridian.Ui.Services
+  namespace: Meridian.Ui.Services
+  syntax:
+    content: Task<QuickCheckResult> RunQuickCheckAsync(CancellationToken ct = default)
+    parameters:
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Ui.Services.QuickCheckResult}
+    content.vb: Function RunQuickCheckAsync(ct As CancellationToken = Nothing) As Task(Of QuickCheckResult)
+  overload: Meridian.Ui.Services.IAdminMaintenanceService.RunQuickCheckAsync*
+references:
+- uid: Meridian.Ui.Services
+  commentId: N:Meridian.Ui.Services
+  href: Meridian.html
+  name: Meridian.Ui.Services
+  nameWithType: Meridian.Ui.Services
+  fullName: Meridian.Ui.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Ui
+    name: Ui
+    href: Meridian.Ui.html
+  - name: .
+  - uid: Meridian.Ui.Services
+    name: Services
+    href: Meridian.Ui.Services.html
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceScheduleAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceScheduleAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_GetMaintenanceScheduleAsync_System_Threading_CancellationToken_
+  name: GetMaintenanceScheduleAsync
+  nameWithType: IAdminMaintenanceService.GetMaintenanceScheduleAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceScheduleAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceScheduleResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceScheduleResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MaintenanceScheduleResult>
+  nameWithType: Task<MaintenanceScheduleResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.MaintenanceScheduleResult>
+  nameWithType.vb: Task(Of MaintenanceScheduleResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.MaintenanceScheduleResult)
+  name.vb: Task(Of MaintenanceScheduleResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.MaintenanceScheduleResult
+    name: MaintenanceScheduleResult
+    href: Meridian.Ui.Services.MaintenanceScheduleResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceScheduleResult
+    name: MaintenanceScheduleResult
+    href: Meridian.Ui.Services.MaintenanceScheduleResult.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.UpdateMaintenanceScheduleAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.UpdateMaintenanceScheduleAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_UpdateMaintenanceScheduleAsync_Meridian_Ui_Services_MaintenanceScheduleConfig_System_Threading_CancellationToken_
+  name: UpdateMaintenanceScheduleAsync
+  nameWithType: IAdminMaintenanceService.UpdateMaintenanceScheduleAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.UpdateMaintenanceScheduleAsync
+- uid: Meridian.Ui.Services.MaintenanceScheduleConfig
+  commentId: T:Meridian.Ui.Services.MaintenanceScheduleConfig
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.MaintenanceScheduleConfig.html
+  name: MaintenanceScheduleConfig
+  nameWithType: MaintenanceScheduleConfig
+  fullName: Meridian.Ui.Services.MaintenanceScheduleConfig
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.OperationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.OperationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<OperationResult>
+  nameWithType: Task<OperationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.OperationResult>
+  nameWithType.vb: Task(Of OperationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.OperationResult)
+  name.vb: Task(Of OperationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.OperationResult
+    name: OperationResult
+    href: Meridian.Ui.Services.OperationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.OperationResult
+    name: OperationResult
+    href: Meridian.Ui.Services.OperationResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.RunMaintenanceNowAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.RunMaintenanceNowAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_RunMaintenanceNowAsync_Meridian_Ui_Services_MaintenanceRunOptions_System_Threading_CancellationToken_
+  name: RunMaintenanceNowAsync
+  nameWithType: IAdminMaintenanceService.RunMaintenanceNowAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.RunMaintenanceNowAsync
+- uid: Meridian.Ui.Services.MaintenanceRunOptions
+  commentId: T:Meridian.Ui.Services.MaintenanceRunOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.MaintenanceRunOptions.html
+  name: MaintenanceRunOptions
+  nameWithType: MaintenanceRunOptions
+  fullName: Meridian.Ui.Services.MaintenanceRunOptions
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceRunResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceRunResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MaintenanceRunResult>
+  nameWithType: Task<MaintenanceRunResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.MaintenanceRunResult>
+  nameWithType.vb: Task(Of MaintenanceRunResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.MaintenanceRunResult)
+  name.vb: Task(Of MaintenanceRunResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.MaintenanceRunResult
+    name: MaintenanceRunResult
+    href: Meridian.Ui.Services.MaintenanceRunResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceRunResult
+    name: MaintenanceRunResult
+    href: Meridian.Ui.Services.MaintenanceRunResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceRunStatusAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceRunStatusAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_GetMaintenanceRunStatusAsync_System_String_System_Threading_CancellationToken_
+  name: GetMaintenanceRunStatusAsync
+  nameWithType: IAdminMaintenanceService.GetMaintenanceRunStatusAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceRunStatusAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceHistoryAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceHistoryAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_GetMaintenanceHistoryAsync_System_Int32_System_Threading_CancellationToken_
+  name: GetMaintenanceHistoryAsync
+  nameWithType: IAdminMaintenanceService.GetMaintenanceHistoryAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetMaintenanceHistoryAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceHistoryResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceHistoryResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MaintenanceHistoryResult>
+  nameWithType: Task<MaintenanceHistoryResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.MaintenanceHistoryResult>
+  nameWithType.vb: Task(Of MaintenanceHistoryResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.MaintenanceHistoryResult)
+  name.vb: Task(Of MaintenanceHistoryResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.MaintenanceHistoryResult
+    name: MaintenanceHistoryResult
+    href: Meridian.Ui.Services.MaintenanceHistoryResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceHistoryResult
+    name: MaintenanceHistoryResult
+    href: Meridian.Ui.Services.MaintenanceHistoryResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetTierConfigurationAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.GetTierConfigurationAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_GetTierConfigurationAsync_System_Threading_CancellationToken_
+  name: GetTierConfigurationAsync
+  nameWithType: IAdminMaintenanceService.GetTierConfigurationAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetTierConfigurationAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.TierConfigResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.TierConfigResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TierConfigResult>
+  nameWithType: Task<TierConfigResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.TierConfigResult>
+  nameWithType.vb: Task(Of TierConfigResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.TierConfigResult)
+  name.vb: Task(Of TierConfigResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.TierConfigResult
+    name: TierConfigResult
+    href: Meridian.Ui.Services.TierConfigResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TierConfigResult
+    name: TierConfigResult
+    href: Meridian.Ui.Services.TierConfigResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.UpdateTierConfigurationAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.UpdateTierConfigurationAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_UpdateTierConfigurationAsync_System_Collections_Generic_List_Meridian_Ui_Services_StorageTierConfig__System_Boolean_System_String_System_Threading_CancellationToken_
+  name: UpdateTierConfigurationAsync
+  nameWithType: IAdminMaintenanceService.UpdateTierConfigurationAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.UpdateTierConfigurationAsync
+- uid: System.Collections.Generic.List{Meridian.Ui.Services.StorageTierConfig}
+  commentId: T:System.Collections.Generic.List{Meridian.Ui.Services.StorageTierConfig}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<StorageTierConfig>
+  nameWithType: List<StorageTierConfig>
+  fullName: System.Collections.Generic.List<Meridian.Ui.Services.StorageTierConfig>
+  nameWithType.vb: List(Of StorageTierConfig)
+  fullName.vb: System.Collections.Generic.List(Of Meridian.Ui.Services.StorageTierConfig)
+  name.vb: List(Of StorageTierConfig)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: Meridian.Ui.Services.StorageTierConfig
+    name: StorageTierConfig
+    href: Meridian.Ui.Services.StorageTierConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.StorageTierConfig
+    name: StorageTierConfig
+    href: Meridian.Ui.Services.StorageTierConfig.html
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.MigrateToTierAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.MigrateToTierAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_MigrateToTierAsync_System_String_Meridian_Ui_Services_TierMigrationOptions_System_Threading_CancellationToken_
+  name: MigrateToTierAsync
+  nameWithType: IAdminMaintenanceService.MigrateToTierAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.MigrateToTierAsync
+- uid: Meridian.Ui.Services.TierMigrationOptions
+  commentId: T:Meridian.Ui.Services.TierMigrationOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.TierMigrationOptions.html
+  name: TierMigrationOptions
+  nameWithType: TierMigrationOptions
+  fullName: Meridian.Ui.Services.TierMigrationOptions
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.TierMigrationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.TierMigrationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TierMigrationResult>
+  nameWithType: Task<TierMigrationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.TierMigrationResult>
+  nameWithType.vb: Task(Of TierMigrationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.TierMigrationResult)
+  name.vb: Task(Of TierMigrationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.TierMigrationResult
+    name: TierMigrationResult
+    href: Meridian.Ui.Services.TierMigrationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TierMigrationResult
+    name: TierMigrationResult
+    href: Meridian.Ui.Services.TierMigrationResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetTierUsageAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.GetTierUsageAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_GetTierUsageAsync_System_Threading_CancellationToken_
+  name: GetTierUsageAsync
+  nameWithType: IAdminMaintenanceService.GetTierUsageAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetTierUsageAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.TierUsageResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.TierUsageResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TierUsageResult>
+  nameWithType: Task<TierUsageResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.TierUsageResult>
+  nameWithType.vb: Task(Of TierUsageResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.TierUsageResult)
+  name.vb: Task(Of TierUsageResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.TierUsageResult
+    name: TierUsageResult
+    href: Meridian.Ui.Services.TierUsageResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.TierUsageResult
+    name: TierUsageResult
+    href: Meridian.Ui.Services.TierUsageResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetRetentionPoliciesAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.GetRetentionPoliciesAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_GetRetentionPoliciesAsync_System_Threading_CancellationToken_
+  name: GetRetentionPoliciesAsync
+  nameWithType: IAdminMaintenanceService.GetRetentionPoliciesAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetRetentionPoliciesAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.RetentionPoliciesResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.RetentionPoliciesResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<RetentionPoliciesResult>
+  nameWithType: Task<RetentionPoliciesResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.RetentionPoliciesResult>
+  nameWithType.vb: Task(Of RetentionPoliciesResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.RetentionPoliciesResult)
+  name.vb: Task(Of RetentionPoliciesResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.RetentionPoliciesResult
+    name: RetentionPoliciesResult
+    href: Meridian.Ui.Services.RetentionPoliciesResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.RetentionPoliciesResult
+    name: RetentionPoliciesResult
+    href: Meridian.Ui.Services.RetentionPoliciesResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.SaveRetentionPolicyAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.SaveRetentionPolicyAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_SaveRetentionPolicyAsync_Meridian_Ui_Services_StorageRetentionPolicy_System_Threading_CancellationToken_
+  name: SaveRetentionPolicyAsync
+  nameWithType: IAdminMaintenanceService.SaveRetentionPolicyAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.SaveRetentionPolicyAsync
+- uid: Meridian.Ui.Services.StorageRetentionPolicy
+  commentId: T:Meridian.Ui.Services.StorageRetentionPolicy
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.StorageRetentionPolicy.html
+  name: StorageRetentionPolicy
+  nameWithType: StorageRetentionPolicy
+  fullName: Meridian.Ui.Services.StorageRetentionPolicy
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.DeleteRetentionPolicyAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.DeleteRetentionPolicyAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_DeleteRetentionPolicyAsync_System_String_System_Threading_CancellationToken_
+  name: DeleteRetentionPolicyAsync
+  nameWithType: IAdminMaintenanceService.DeleteRetentionPolicyAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.DeleteRetentionPolicyAsync
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.ApplyRetentionPoliciesAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.ApplyRetentionPoliciesAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_ApplyRetentionPoliciesAsync_System_Boolean_System_Threading_CancellationToken_
+  name: ApplyRetentionPoliciesAsync
+  nameWithType: IAdminMaintenanceService.ApplyRetentionPoliciesAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.ApplyRetentionPoliciesAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.RetentionApplyResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.RetentionApplyResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<RetentionApplyResult>
+  nameWithType: Task<RetentionApplyResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.RetentionApplyResult>
+  nameWithType.vb: Task(Of RetentionApplyResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.RetentionApplyResult)
+  name.vb: Task(Of RetentionApplyResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.RetentionApplyResult
+    name: RetentionApplyResult
+    href: Meridian.Ui.Services.RetentionApplyResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.RetentionApplyResult
+    name: RetentionApplyResult
+    href: Meridian.Ui.Services.RetentionApplyResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.PreviewCleanupAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.PreviewCleanupAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_PreviewCleanupAsync_Meridian_Ui_Services_CleanupOptions_System_Threading_CancellationToken_
+  name: PreviewCleanupAsync
+  nameWithType: IAdminMaintenanceService.PreviewCleanupAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.PreviewCleanupAsync
+- uid: Meridian.Ui.Services.CleanupOptions
+  commentId: T:Meridian.Ui.Services.CleanupOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.CleanupOptions.html
+  name: CleanupOptions
+  nameWithType: CleanupOptions
+  fullName: Meridian.Ui.Services.CleanupOptions
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.CleanupPreviewResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.CleanupPreviewResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<CleanupPreviewResult>
+  nameWithType: Task<CleanupPreviewResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.CleanupPreviewResult>
+  nameWithType.vb: Task(Of CleanupPreviewResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.CleanupPreviewResult)
+  name.vb: Task(Of CleanupPreviewResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.CleanupPreviewResult
+    name: CleanupPreviewResult
+    href: Meridian.Ui.Services.CleanupPreviewResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.CleanupPreviewResult
+    name: CleanupPreviewResult
+    href: Meridian.Ui.Services.CleanupPreviewResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.ExecuteCleanupAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.ExecuteCleanupAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_ExecuteCleanupAsync_Meridian_Ui_Services_CleanupOptions_System_Threading_CancellationToken_
+  name: ExecuteCleanupAsync
+  nameWithType: IAdminMaintenanceService.ExecuteCleanupAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.ExecuteCleanupAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceCleanupResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.MaintenanceCleanupResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MaintenanceCleanupResult>
+  nameWithType: Task<MaintenanceCleanupResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.MaintenanceCleanupResult>
+  nameWithType.vb: Task(Of MaintenanceCleanupResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.MaintenanceCleanupResult)
+  name.vb: Task(Of MaintenanceCleanupResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.MaintenanceCleanupResult
+    name: MaintenanceCleanupResult
+    href: Meridian.Ui.Services.MaintenanceCleanupResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.MaintenanceCleanupResult
+    name: MaintenanceCleanupResult
+    href: Meridian.Ui.Services.MaintenanceCleanupResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.ValidatePermissionsAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.ValidatePermissionsAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_ValidatePermissionsAsync_System_Threading_CancellationToken_
+  name: ValidatePermissionsAsync
+  nameWithType: IAdminMaintenanceService.ValidatePermissionsAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.ValidatePermissionsAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.PermissionValidationResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.PermissionValidationResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<PermissionValidationResult>
+  nameWithType: Task<PermissionValidationResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.PermissionValidationResult>
+  nameWithType.vb: Task(Of PermissionValidationResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.PermissionValidationResult)
+  name.vb: Task(Of PermissionValidationResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.PermissionValidationResult
+    name: PermissionValidationResult
+    href: Meridian.Ui.Services.PermissionValidationResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.PermissionValidationResult
+    name: PermissionValidationResult
+    href: Meridian.Ui.Services.PermissionValidationResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.RunSelfTestAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.RunSelfTestAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_RunSelfTestAsync_Meridian_Ui_Services_SelfTestOptions_System_Threading_CancellationToken_
+  name: RunSelfTestAsync
+  nameWithType: IAdminMaintenanceService.RunSelfTestAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.RunSelfTestAsync
+- uid: Meridian.Ui.Services.SelfTestOptions
+  commentId: T:Meridian.Ui.Services.SelfTestOptions
+  parent: Meridian.Ui.Services
+  href: Meridian.Ui.Services.SelfTestOptions.html
+  name: SelfTestOptions
+  nameWithType: SelfTestOptions
+  fullName: Meridian.Ui.Services.SelfTestOptions
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.SelfTestResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.SelfTestResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SelfTestResult>
+  nameWithType: Task<SelfTestResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.SelfTestResult>
+  nameWithType.vb: Task(Of SelfTestResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.SelfTestResult)
+  name.vb: Task(Of SelfTestResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.SelfTestResult
+    name: SelfTestResult
+    href: Meridian.Ui.Services.SelfTestResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.SelfTestResult
+    name: SelfTestResult
+    href: Meridian.Ui.Services.SelfTestResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.GetErrorCodesAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.GetErrorCodesAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_GetErrorCodesAsync_System_Threading_CancellationToken_
+  name: GetErrorCodesAsync
+  nameWithType: IAdminMaintenanceService.GetErrorCodesAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.GetErrorCodesAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ErrorCodesResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ErrorCodesResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ErrorCodesResult>
+  nameWithType: Task<ErrorCodesResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ErrorCodesResult>
+  nameWithType.vb: Task(Of ErrorCodesResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ErrorCodesResult)
+  name.vb: Task(Of ErrorCodesResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ErrorCodesResult
+    name: ErrorCodesResult
+    href: Meridian.Ui.Services.ErrorCodesResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ErrorCodesResult
+    name: ErrorCodesResult
+    href: Meridian.Ui.Services.ErrorCodesResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.ShowConfigAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.ShowConfigAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_ShowConfigAsync_System_Threading_CancellationToken_
+  name: ShowConfigAsync
+  nameWithType: IAdminMaintenanceService.ShowConfigAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.ShowConfigAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.ShowConfigResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.ShowConfigResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<ShowConfigResult>
+  nameWithType: Task<ShowConfigResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.ShowConfigResult>
+  nameWithType.vb: Task(Of ShowConfigResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.ShowConfigResult)
+  name.vb: Task(Of ShowConfigResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.ShowConfigResult
+    name: ShowConfigResult
+    href: Meridian.Ui.Services.ShowConfigResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.ShowConfigResult
+    name: ShowConfigResult
+    href: Meridian.Ui.Services.ShowConfigResult.html
+  - name: )
+- uid: Meridian.Ui.Services.IAdminMaintenanceService.RunQuickCheckAsync*
+  commentId: Overload:Meridian.Ui.Services.IAdminMaintenanceService.RunQuickCheckAsync
+  href: Meridian.Ui.Services.IAdminMaintenanceService.html#Meridian_Ui_Services_IAdminMaintenanceService_RunQuickCheckAsync_System_Threading_CancellationToken_
+  name: RunQuickCheckAsync
+  nameWithType: IAdminMaintenanceService.RunQuickCheckAsync
+  fullName: Meridian.Ui.Services.IAdminMaintenanceService.RunQuickCheckAsync
+- uid: System.Threading.Tasks.Task{Meridian.Ui.Services.QuickCheckResult}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Ui.Services.QuickCheckResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<QuickCheckResult>
+  nameWithType: Task<QuickCheckResult>
+  fullName: System.Threading.Tasks.Task<Meridian.Ui.Services.QuickCheckResult>
+  nameWithType.vb: Task(Of QuickCheckResult)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Ui.Services.QuickCheckResult)
+  name.vb: Task(Of QuickCheckResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Ui.Services.QuickCheckResult
+    name: QuickCheckResult
+    href: Meridian.Ui.Services.QuickCheckResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Ui.Services.QuickCheckResult
+    name: QuickCheckResult
+    href: Meridian.Ui.Services.QuickCheckResult.html
+  - name: )

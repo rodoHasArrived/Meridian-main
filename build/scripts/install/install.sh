@@ -95,8 +95,8 @@ install_native() {
     info "  1. Set API credentials as environment variables:"
     info "       export ALPACA__KEYID=your-key-id"
     info "       export ALPACA__SECRETKEY=your-secret-key"
-    info "  2. Start the web dashboard:"
-    info "       make run-ui"
+    info "  2. Start the desktop-local backend:"
+    info "       make run"
 }
 
 install_docker() {
@@ -121,7 +121,7 @@ install_docker() {
     info ""
     info "Next steps:"
     info "  Start the container: docker compose -f deploy/docker/docker-compose.yml up -d"
-    info "  Open dashboard:      http://localhost:8080"
+    info "  API endpoint:        http://localhost:8080"
 }
 
 check_prerequisites() {

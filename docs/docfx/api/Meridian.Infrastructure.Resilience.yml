@@ -1,0 +1,104 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Resilience
+  commentId: N:Meridian.Infrastructure.Resilience
+  id: Meridian.Infrastructure.Resilience
+  children:
+  - Meridian.Infrastructure.Resilience.HttpHandleResult
+  - Meridian.Infrastructure.Resilience.HttpResiliencePolicy
+  - Meridian.Infrastructure.Resilience.RateLimitEventArgs
+  - Meridian.Infrastructure.Resilience.ReconnectionGap
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  - Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  - Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  - Meridian.Infrastructure.Resilience.WebSocketResiliencePolicy
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.Resilience
+  nameWithType: Meridian.Infrastructure.Resilience
+  fullName: Meridian.Infrastructure.Resilience
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure
+references:
+- uid: Meridian.Infrastructure.Resilience.HttpResiliencePolicy
+  commentId: T:Meridian.Infrastructure.Resilience.HttpResiliencePolicy
+  href: Meridian.Infrastructure.Resilience.HttpResiliencePolicy.html
+  name: HttpResiliencePolicy
+  nameWithType: HttpResiliencePolicy
+  fullName: Meridian.Infrastructure.Resilience.HttpResiliencePolicy
+- uid: Meridian.Infrastructure.Resilience.HttpHandleResult
+  commentId: T:Meridian.Infrastructure.Resilience.HttpHandleResult
+  parent: Meridian.Infrastructure.Resilience
+  href: Meridian.Infrastructure.Resilience.HttpHandleResult.html
+  name: HttpHandleResult
+  nameWithType: HttpHandleResult
+  fullName: Meridian.Infrastructure.Resilience.HttpHandleResult
+- uid: Meridian.Infrastructure.Resilience.RateLimitEventArgs
+  commentId: T:Meridian.Infrastructure.Resilience.RateLimitEventArgs
+  href: Meridian.Infrastructure.Resilience.RateLimitEventArgs.html
+  name: RateLimitEventArgs
+  nameWithType: RateLimitEventArgs
+  fullName: Meridian.Infrastructure.Resilience.RateLimitEventArgs
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+  parent: Meridian.Infrastructure.Resilience
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig.html
+  name: WebSocketConnectionConfig
+  nameWithType: WebSocketConnectionConfig
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionConfig
+- uid: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+  href: Meridian.Infrastructure.Resilience.WebSocketConnectionManager.html
+  name: WebSocketConnectionManager
+  nameWithType: WebSocketConnectionManager
+  fullName: Meridian.Infrastructure.Resilience.WebSocketConnectionManager
+- uid: Meridian.Infrastructure.Resilience.ReconnectionGap
+  commentId: T:Meridian.Infrastructure.Resilience.ReconnectionGap
+  href: Meridian.Infrastructure.Resilience.ReconnectionGap.html
+  name: ReconnectionGap
+  nameWithType: ReconnectionGap
+  fullName: Meridian.Infrastructure.Resilience.ReconnectionGap
+- uid: Meridian.Infrastructure.Resilience.WebSocketResiliencePolicy
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketResiliencePolicy
+  href: Meridian.Infrastructure.Resilience.WebSocketResiliencePolicy.html
+  name: WebSocketResiliencePolicy
+  nameWithType: WebSocketResiliencePolicy
+  fullName: Meridian.Infrastructure.Resilience.WebSocketResiliencePolicy
+- uid: Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  commentId: T:Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+  href: Meridian.Infrastructure.Resilience.WebSocketHeartbeat.html
+  name: WebSocketHeartbeat
+  nameWithType: WebSocketHeartbeat
+  fullName: Meridian.Infrastructure.Resilience.WebSocketHeartbeat
+- uid: Meridian.Infrastructure.Resilience
+  commentId: N:Meridian.Infrastructure.Resilience
+  href: Meridian.html
+  name: Meridian.Infrastructure.Resilience
+  nameWithType: Meridian.Infrastructure.Resilience
+  fullName: Meridian.Infrastructure.Resilience
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Resilience
+    name: Resilience
+    href: Meridian.Infrastructure.Resilience.html

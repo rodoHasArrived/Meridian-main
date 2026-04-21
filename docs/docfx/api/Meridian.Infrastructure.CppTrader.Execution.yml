@@ -1,0 +1,69 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.CppTrader.Execution
+  commentId: N:Meridian.Infrastructure.CppTrader.Execution
+  id: Meridian.Infrastructure.CppTrader.Execution
+  children:
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  - Meridian.Infrastructure.CppTrader.Execution.CppTraderOrderGateway
+  langs:
+  - csharp
+  - vb
+  name: Meridian.Infrastructure.CppTrader.Execution
+  nameWithType: Meridian.Infrastructure.CppTrader.Execution
+  fullName: Meridian.Infrastructure.CppTrader.Execution
+  type: Namespace
+  assemblies:
+  - Meridian.Infrastructure.CppTrader
+references:
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  commentId: T:Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+  parent: Meridian.Infrastructure.CppTrader.Execution
+  href: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter.html
+  name: CppTraderLiveFeedAdapter
+  nameWithType: CppTraderLiveFeedAdapter
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderLiveFeedAdapter
+- uid: Meridian.Infrastructure.CppTrader.Execution.CppTraderOrderGateway
+  commentId: T:Meridian.Infrastructure.CppTrader.Execution.CppTraderOrderGateway
+  href: Meridian.Infrastructure.CppTrader.Execution.CppTraderOrderGateway.html
+  name: CppTraderOrderGateway
+  nameWithType: CppTraderOrderGateway
+  fullName: Meridian.Infrastructure.CppTrader.Execution.CppTraderOrderGateway
+- uid: Meridian.Infrastructure.CppTrader.Execution
+  commentId: N:Meridian.Infrastructure.CppTrader.Execution
+  href: Meridian.html
+  name: Meridian.Infrastructure.CppTrader.Execution
+  nameWithType: Meridian.Infrastructure.CppTrader.Execution
+  fullName: Meridian.Infrastructure.CppTrader.Execution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Execution
+    name: Execution
+    href: Meridian.Infrastructure.CppTrader.Execution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader
+    name: CppTrader
+    href: Meridian.Infrastructure.CppTrader.html
+  - name: .
+  - uid: Meridian.Infrastructure.CppTrader.Execution
+    name: Execution
+    href: Meridian.Infrastructure.CppTrader.Execution.html

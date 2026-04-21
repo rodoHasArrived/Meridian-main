@@ -32,6 +32,13 @@ type SecurityIdentifierSnapshot(identifier: Identifier) =
         | IdentifierKind.Figi -> "Figi"
         | IdentifierKind.ProviderSymbol _ -> "ProviderSymbol"
         | IdentifierKind.InternalCode -> "InternalCode"
+        | IdentifierKind.Lei -> "Lei"
+        | IdentifierKind.PermId -> "PermId"
+        | IdentifierKind.Bbgid -> "Bbgid"
+        | IdentifierKind.Wkn -> "Wkn"
+        | IdentifierKind.Valoren -> "Valoren"
+        | IdentifierKind.PermTicker -> "PermTicker"
+        | IdentifierKind.Ric -> "Ric"
 
     member _.Kind = kind
     member _.Value = identifier.Value
@@ -51,7 +58,55 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
     let assetSpecificTermsJson =
         match record.Kind with
         | SecurityKind.Equity terms ->
-            JsonSerializer.Serialize({| schemaVersion = schemaVersion; shareClass = terms.ShareClass |})
+            let preferredTermsToLegacy (preferred: PreferredTerms) =
+                let liquidationKind, liquidationMultiple =
+                    match preferred.LiquidationPreference with
+                    | LiquidationPreference.Pari -> "Pari", None
+                    | LiquidationPreference.Senior multiple -> "Senior", Some multiple
+                    | LiquidationPreference.Subordinated -> "Subordinated", None
+
+                {| dividendRate = preferred.DividendRate
+                   dividendType = preferred.DividendType |> DividendType.asString
+                   redemptionPrice = preferred.RedemptionPrice
+                   redemptionDate = preferred.RedemptionDate
+                   callableDate = preferred.CallableDate
+                   participationTerms =
+                        preferred.ParticipationTerms
+                        |> Option.map (fun terms ->
+                            {| participatesInCommonDividends = terms.ParticipatesInCommonDividends
+                               additionalDividendThreshold = terms.AdditionalDividendThreshold |})
+                   liquidationPreference =
+                        {| kind = liquidationKind
+                           multiple = liquidationMultiple |} |}
+
+            let convertibleTermsToLegacy (convertible: ConvertibleTerms) =
+                let (SecurityId underlyingSecurityId) = convertible.UnderlyingSecurityId
+                {| underlyingSecurityId = underlyingSecurityId
+                   conversionRatio = convertible.ConversionRatio
+                   conversionPrice = convertible.ConversionPrice
+                   conversionStartDate = convertible.ConversionStartDate
+                   conversionEndDate = convertible.ConversionEndDate |}
+
+            let classification =
+                terms.Classification |> Option.map EquityClassification.asString
+
+            let preferredTerms, convertibleTerms =
+                match terms.Classification with
+                | Some (EquityClassification.Preferred preferred) ->
+                    Some (preferredTermsToLegacy preferred), None
+                | Some (EquityClassification.Convertible convertible) ->
+                    None, Some (convertibleTermsToLegacy convertible)
+                | Some (EquityClassification.ConvertiblePreferred (preferred, convertible)) ->
+                    Some (preferredTermsToLegacy preferred), Some (convertibleTermsToLegacy convertible)
+                | _ ->
+                    None, None
+
+            JsonSerializer.Serialize(
+                {| schemaVersion = schemaVersion
+                   shareClass = terms.ShareClass
+                   classification = classification
+                   preferredTerms = preferredTerms
+                   convertibleTerms = convertibleTerms |})
         | SecurityKind.Option terms ->
             let (SecurityId underlyingId) = terms.UnderlyingId
             JsonSerializer.Serialize(
@@ -315,4 +370,3 @@ type SecurityMasterCommandFacade private () =
 
     static member Deactivate(current: SecurityMasterRecord, command: DeactivateSecurity) =
         SecurityMasterCommandFacade.ToResult(Some current, SecurityMaster.deactivate current command)
-

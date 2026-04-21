@@ -1,0 +1,4 @@
+interface:
+  display_name: "Meridian Implementation Assurance"
+  short_description: "Ship Meridian changes with validation evidence"
+  default_prompt: "Use $meridian-implementation-assurance to implement and verify this Meridian change with explicit validation evidence and doc sync."

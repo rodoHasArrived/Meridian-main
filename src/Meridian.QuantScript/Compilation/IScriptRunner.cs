@@ -13,4 +13,14 @@ public interface IScriptRunner
         string source,
         IReadOnlyDictionary<string, object?> parameters,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Continues execution from a prior successful checkpoint, preserving globals and script state.
+    /// Intended for notebook-style cell execution where earlier cells should not be rerun unless stale.
+    /// </summary>
+    Task<ScriptRunResult> ContinueWithAsync(
+        string source,
+        ScriptExecutionCheckpoint checkpoint,
+        IReadOnlyDictionary<string, object?> parameters,
+        CancellationToken ct = default);
 }

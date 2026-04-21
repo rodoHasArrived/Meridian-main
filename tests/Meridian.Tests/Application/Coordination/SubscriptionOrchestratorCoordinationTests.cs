@@ -83,6 +83,37 @@ public sealed class SubscriptionOrchestratorCoordinationTests
         }
     }
 
+    [Fact]
+    public async Task ApplyAsync_WhenUnsubscribeCancels_PropagatesOperationCanceledException()
+    {
+        var publisher = new TestMarketEventPublisher();
+        var client = new CancellingUnsubscribeMarketDataClient();
+        var orchestrator = new SubscriptionOrchestrator(
+            new MarketDepthCollector(publisher),
+            new TradeDataCollector(publisher),
+            client,
+            "polygon");
+
+        var config = new AppConfig(
+            DataRoot: CreateTempDir(),
+            Symbols:
+            [
+                new SymbolConfig("SPY", SubscribeTrades: false, SubscribeDepth: true, DepthLevels: 5)
+            ]);
+
+        try
+        {
+            await orchestrator.ApplyAsync(config);
+
+            Func<Task> act = () => orchestrator.ApplyAsync(config with { Symbols = [] });
+            await act.Should().ThrowAsync<OperationCanceledException>();
+        }
+        finally
+        {
+            DeleteTempDir(config.DataRoot);
+        }
+    }
+
     private static CoordinationConfig CreateConfig(string dataRoot)
         => new(
             Enabled: true,
@@ -164,5 +195,42 @@ public sealed class SubscriptionOrchestratorCoordinationTests
             _depthSubscriptionIds.Clear();
             return ValueTask.CompletedTask;
         }
+    }
+
+    private sealed class CancellingUnsubscribeMarketDataClient : IMarketDataClient
+    {
+        private int _nextId = 2000;
+
+        public bool IsEnabled => true;
+        public bool IsConnected { get; private set; }
+        public string ProviderId => "cancelling";
+        public string ProviderDisplayName => "Cancelling Client";
+        public string ProviderDescription => "Throws during unsubscribe for cancellation propagation tests";
+        public int ProviderPriority => 0;
+        public ProviderCapabilities ProviderCapabilities => ProviderCapabilities.Streaming(trades: true, depth: true);
+
+        public Task ConnectAsync(CancellationToken ct = default)
+        {
+            IsConnected = true;
+            return Task.CompletedTask;
+        }
+
+        public Task DisconnectAsync(CancellationToken ct = default)
+        {
+            IsConnected = false;
+            return Task.CompletedTask;
+        }
+
+        public int SubscribeMarketDepth(SymbolConfig cfg) => Interlocked.Increment(ref _nextId);
+
+        public void UnsubscribeMarketDepth(int subscriptionId) => throw new OperationCanceledException("cancelled");
+
+        public int SubscribeTrades(SymbolConfig cfg) => Interlocked.Increment(ref _nextId);
+
+        public void UnsubscribeTrades(int subscriptionId)
+        {
+        }
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }

@@ -1,0 +1,504 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  commentId: T:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  id: ISymbolResolver
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  children:
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.MapSymbolAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.Name
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.ResolveAsync(System.String,System.String,System.Threading.CancellationToken)
+  - Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: ISymbolResolver
+  nameWithType: ISymbolResolver
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  type: Interface
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ISymbolResolver
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 7
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  summary: Contract for resolving and normalizing symbols across different providers and exchanges.
+  example: []
+  syntax:
+    content: public interface ISymbolResolver
+    content.vb: Public Interface ISymbolResolver
+  derivedClasses:
+  - Meridian.Infrastructure.Adapters.OpenFigi.OpenFigiSymbolResolver
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.Name
+  commentId: P:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.Name
+  id: Name
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  langs:
+  - csharp
+  - vb
+  name: Name
+  nameWithType: ISymbolResolver.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.Name
+  type: Property
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: Name
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 12
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  summary: Resolver name for identification.
+  example: []
+  syntax:
+    content: string Name { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: ReadOnly Property Name As String
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.Name*
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.ResolveAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.ResolveAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: ResolveAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  langs:
+  - csharp
+  - vb
+  name: ResolveAsync(string, string?, CancellationToken)
+  nameWithType: ISymbolResolver.ResolveAsync(string, string?, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.ResolveAsync(string, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: ResolveAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 17
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  summary: Resolve a symbol to its canonical identifiers.
+  example: []
+  syntax:
+    content: Task<SymbolResolution?> ResolveAsync(string symbol, string? exchange = null, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: exchange
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution}
+    content.vb: Function ResolveAsync(symbol As String, exchange As String = Nothing, ct As CancellationToken = Nothing) As Task(Of SymbolResolution)
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.ResolveAsync*
+  nameWithType.vb: ISymbolResolver.ResolveAsync(String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.ResolveAsync(String, String, System.Threading.CancellationToken)
+  name.vb: ResolveAsync(String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.MapSymbolAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.MapSymbolAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: MapSymbolAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  langs:
+  - csharp
+  - vb
+  name: MapSymbolAsync(string, string, string, CancellationToken)
+  nameWithType: ISymbolResolver.MapSymbolAsync(string, string, string, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.MapSymbolAsync(string, string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MapSymbolAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 22
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  summary: Map a symbol from one provider format to another.
+  example: []
+  syntax:
+    content: Task<string?> MapSymbolAsync(string symbol, string fromProvider, string toProvider, CancellationToken ct = default)
+    parameters:
+    - id: symbol
+      type: System.String
+    - id: fromProvider
+      type: System.String
+    - id: toProvider
+      type: System.String
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Function MapSymbolAsync(symbol As String, fromProvider As String, toProvider As String, ct As CancellationToken = Nothing) As Task(Of String)
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.MapSymbolAsync*
+  nameWithType.vb: ISymbolResolver.MapSymbolAsync(String, String, String, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.MapSymbolAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: MapSymbolAsync(String, String, String, CancellationToken)
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  commentId: M:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  id: SearchAsync(System.String,System.Int32,System.Threading.CancellationToken)
+  parent: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver
+  langs:
+  - csharp
+  - vb
+  name: SearchAsync(string, int, CancellationToken)
+  nameWithType: ISymbolResolver.SearchAsync(string, int, CancellationToken)
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.SearchAsync(string, int, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: SearchAsync
+    path: ../../src/Meridian.Infrastructure/Adapters/Core/SymbolResolution/ISymbolResolver.cs
+    startLine: 27
+  assemblies:
+  - Meridian.Infrastructure
+  namespace: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  summary: Search for symbols matching a query.
+  example: []
+  syntax:
+    content: Task<IReadOnlyList<SymbolSearchResult>> SearchAsync(string query, int maxResults = 10, CancellationToken ct = default)
+    parameters:
+    - id: query
+      type: System.String
+    - id: maxResults
+      type: System.Int32
+    - id: ct
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult}}
+    content.vb: Function SearchAsync(query As String, maxResults As Integer = 10, ct As CancellationToken = Nothing) As Task(Of IReadOnlyList(Of SymbolSearchResult))
+  overload: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.SearchAsync*
+  nameWithType.vb: ISymbolResolver.SearchAsync(String, Integer, CancellationToken)
+  fullName.vb: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.SearchAsync(String, Integer, System.Threading.CancellationToken)
+  name.vb: SearchAsync(String, Integer, CancellationToken)
+references:
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  commentId: N:Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  href: Meridian.html
+  name: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  nameWithType: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+    name: SymbolResolution
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Infrastructure
+    name: Infrastructure
+    href: Meridian.Infrastructure.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters
+    name: Adapters
+    href: Meridian.Infrastructure.Adapters.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core
+    name: Core
+    href: Meridian.Infrastructure.Adapters.Core.html
+  - name: .
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution
+    name: SymbolResolution
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.html
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.Name*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.Name
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_ISymbolResolver_Name
+  name: Name
+  nameWithType: ISymbolResolver.Name
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.Name
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.ResolveAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.ResolveAsync
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_ISymbolResolver_ResolveAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: ResolveAsync
+  nameWithType: ISymbolResolver.ResolveAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.ResolveAsync
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution}
+  commentId: T:System.Threading.Tasks.Task{Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<SymbolResolution>
+  nameWithType: Task<SymbolResolution>
+  fullName: System.Threading.Tasks.Task<Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution>
+  nameWithType.vb: Task(Of SymbolResolution)
+  fullName.vb: System.Threading.Tasks.Task(Of Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution)
+  name.vb: Task(Of SymbolResolution)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution
+    name: SymbolResolution
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution
+    name: SymbolResolution
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolResolution.html
+  - name: )
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.MapSymbolAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.MapSymbolAsync
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_ISymbolResolver_MapSymbolAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: MapSymbolAsync
+  nameWithType: ISymbolResolver.MapSymbolAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.MapSymbolAsync
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.SearchAsync*
+  commentId: Overload:Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.SearchAsync
+  href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.html#Meridian_Infrastructure_Adapters_Core_SymbolResolution_ISymbolResolver_SearchAsync_System_String_System_Int32_System_Threading_CancellationToken_
+  name: SearchAsync
+  nameWithType: ISymbolResolver.SearchAsync
+  fullName: Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver.SearchAsync
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.IReadOnlyList{Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<IReadOnlyList<SymbolSearchResult>>
+  nameWithType: Task<IReadOnlyList<SymbolSearchResult>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.IReadOnlyList<Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult>>
+  nameWithType.vb: Task(Of IReadOnlyList(Of SymbolSearchResult))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.IReadOnlyList(Of Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult))
+  name.vb: Task(Of IReadOnlyList(Of SymbolSearchResult))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+    name: SymbolSearchResult
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult
+    name: SymbolSearchResult
+    href: Meridian.Infrastructure.Adapters.Core.SymbolResolution.SymbolSearchResult.html
+  - name: )
+  - name: )

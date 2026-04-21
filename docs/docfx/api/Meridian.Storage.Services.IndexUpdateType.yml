@@ -1,0 +1,201 @@
+### YamlMime:ManagedReference
+items:
+- uid: Meridian.Storage.Services.IndexUpdateType
+  commentId: T:Meridian.Storage.Services.IndexUpdateType
+  id: IndexUpdateType
+  parent: Meridian.Storage.Services
+  children:
+  - Meridian.Storage.Services.IndexUpdateType.FileAppended
+  - Meridian.Storage.Services.IndexUpdateType.FileCreated
+  - Meridian.Storage.Services.IndexUpdateType.FileDeleted
+  - Meridian.Storage.Services.IndexUpdateType.FileMoved
+  - Meridian.Storage.Services.IndexUpdateType.MetadataChanged
+  langs:
+  - csharp
+  - vb
+  name: IndexUpdateType
+  nameWithType: IndexUpdateType
+  fullName: Meridian.Storage.Services.IndexUpdateType
+  type: Enum
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: IndexUpdateType
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 724
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: 'public enum IndexUpdateType : byte'
+    content.vb: Public Enum IndexUpdateType As Byte
+- uid: Meridian.Storage.Services.IndexUpdateType.FileCreated
+  commentId: F:Meridian.Storage.Services.IndexUpdateType.FileCreated
+  id: FileCreated
+  parent: Meridian.Storage.Services.IndexUpdateType
+  langs:
+  - csharp
+  - vb
+  name: FileCreated
+  nameWithType: IndexUpdateType.FileCreated
+  fullName: Meridian.Storage.Services.IndexUpdateType.FileCreated
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileCreated
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 726
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: FileCreated = 0
+    return:
+      type: Meridian.Storage.Services.IndexUpdateType
+- uid: Meridian.Storage.Services.IndexUpdateType.FileAppended
+  commentId: F:Meridian.Storage.Services.IndexUpdateType.FileAppended
+  id: FileAppended
+  parent: Meridian.Storage.Services.IndexUpdateType
+  langs:
+  - csharp
+  - vb
+  name: FileAppended
+  nameWithType: IndexUpdateType.FileAppended
+  fullName: Meridian.Storage.Services.IndexUpdateType.FileAppended
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileAppended
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 727
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: FileAppended = 1
+    return:
+      type: Meridian.Storage.Services.IndexUpdateType
+- uid: Meridian.Storage.Services.IndexUpdateType.FileDeleted
+  commentId: F:Meridian.Storage.Services.IndexUpdateType.FileDeleted
+  id: FileDeleted
+  parent: Meridian.Storage.Services.IndexUpdateType
+  langs:
+  - csharp
+  - vb
+  name: FileDeleted
+  nameWithType: IndexUpdateType.FileDeleted
+  fullName: Meridian.Storage.Services.IndexUpdateType.FileDeleted
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileDeleted
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 728
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: FileDeleted = 2
+    return:
+      type: Meridian.Storage.Services.IndexUpdateType
+- uid: Meridian.Storage.Services.IndexUpdateType.FileMoved
+  commentId: F:Meridian.Storage.Services.IndexUpdateType.FileMoved
+  id: FileMoved
+  parent: Meridian.Storage.Services.IndexUpdateType
+  langs:
+  - csharp
+  - vb
+  name: FileMoved
+  nameWithType: IndexUpdateType.FileMoved
+  fullName: Meridian.Storage.Services.IndexUpdateType.FileMoved
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: FileMoved
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 729
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: FileMoved = 3
+    return:
+      type: Meridian.Storage.Services.IndexUpdateType
+- uid: Meridian.Storage.Services.IndexUpdateType.MetadataChanged
+  commentId: F:Meridian.Storage.Services.IndexUpdateType.MetadataChanged
+  id: MetadataChanged
+  parent: Meridian.Storage.Services.IndexUpdateType
+  langs:
+  - csharp
+  - vb
+  name: MetadataChanged
+  nameWithType: IndexUpdateType.MetadataChanged
+  fullName: Meridian.Storage.Services.IndexUpdateType.MetadataChanged
+  type: Field
+  source:
+    remote:
+      path: src/Meridian.Storage/Services/StorageSearchService.cs
+      branch: main
+      repo: https://github.com/rodoHasArrived/Meridian-main.git
+    id: MetadataChanged
+    path: ../../src/Meridian.Storage/Services/StorageSearchService.cs
+    startLine: 730
+  assemblies:
+  - Meridian.Storage
+  namespace: Meridian.Storage.Services
+  syntax:
+    content: MetadataChanged = 4
+    return:
+      type: Meridian.Storage.Services.IndexUpdateType
+references:
+- uid: Meridian.Storage.Services
+  commentId: N:Meridian.Storage.Services
+  href: Meridian.html
+  name: Meridian.Storage.Services
+  nameWithType: Meridian.Storage.Services
+  fullName: Meridian.Storage.Services
+  spec.csharp:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+  spec.vb:
+  - uid: Meridian
+    name: Meridian
+    href: Meridian.html
+  - name: .
+  - uid: Meridian.Storage
+    name: Storage
+    href: Meridian.Storage.html
+  - name: .
+  - uid: Meridian.Storage.Services
+    name: Services
+    href: Meridian.Storage.Services.html
+- uid: Meridian.Storage.Services.IndexUpdateType
+  commentId: T:Meridian.Storage.Services.IndexUpdateType
+  parent: Meridian.Storage.Services
+  href: Meridian.Storage.Services.IndexUpdateType.html
+  name: IndexUpdateType
+  nameWithType: IndexUpdateType
+  fullName: Meridian.Storage.Services.IndexUpdateType
